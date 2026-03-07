@@ -235,3 +235,18 @@
 .animate-zoom-in-out {
   animation: zoom-in-out 3s ease-in-out infinite;
 }
+
+@keyframes urgent-pulse {
+  0%, 100% {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    border-color: hsl(var(--border));
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(239, 68, 68, 0.5);
+    border-color: rgba(239, 68, 68, 0.8);
+  }
+}
+
+.animate-urgent-pulse {
+  animation: urgent-pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}

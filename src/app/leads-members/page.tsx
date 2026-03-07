@@ -63,12 +63,13 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                          lead.purpose === 'Relief' ? LifeBuoy : 
                          lead.purpose === 'Other' ? Info : HandHelping;
     const priorityLabel = lead.priority || 'Medium';
+    const isUrgent = priorityLabel === 'Urgent';
 
     return (
         <Card 
             className={cn(
                 "flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white shadow-sm animate-fade-in-up transition-all duration-500",
-                priorityLabel === 'Urgent' && "ring-2 ring-red-500 shadow-[0_0_25px_rgba(239,68,68,0.25)] border-red-500/50"
+                isUrgent && "animate-urgent-pulse border-red-500/50"
             )}
             style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
             onClick={() => router.push(`/leads-members/${lead.id}/summary`)}
@@ -184,7 +185,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                 </div>
                 <div className={cn(
                     "text-[10px] font-bold tracking-tight flex items-center gap-1.5", 
-                    priorityLabel === 'Urgent' ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary'
+                    isUrgent ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary'
                 )}>
                     {getPriorityIcon(priorityLabel)}
                     {priorityLabel} Priority
@@ -242,11 +243,13 @@ export default function LeadPage() {
       .filter(c => c.status === 'Active' || c.status === 'Upcoming')
       .map(c => {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
+          const isUrgent = c.priority === 'Urgent';
           return {
               id: c.id,
               text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/campaign-members/${c.id}/summary`,
-              priorityIcon: getPriorityIcon(c.priority)
+              priorityIcon: getPriorityIcon(c.priority),
+              isUrgent
           };
       });
     
@@ -254,11 +257,13 @@ export default function LeadPage() {
       .filter(l => l.status === 'Active' || l.status === 'Upcoming')
       .map(l => {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
+          const isUrgent = l.priority === 'Urgent';
           return {
               id: l.id,
               text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/leads-members/${l.id}/summary`,
-              priorityIcon: getPriorityIcon(l.priority)
+              priorityIcon: getPriorityIcon(l.priority),
+              isUrgent
           };
       });
 
@@ -367,7 +372,7 @@ export default function LeadPage() {
                 <div className="flex flex-nowrap items-center gap-3 pb-2">
                     <Input placeholder="Search Appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary font-normal text-primary" disabled={isLoading}/>
                     <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary font-bold"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem></SelectContent></Select>
-                    <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary font-bold"><SelectValue placeholder="All Purposes" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}</SelectContent></Select>
+                    <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs border-primary/20 font-bold text-primary"><SelectValue placeholder="All Purposes" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}</SelectContent></Select>
                     <Select value={authenticityFilter} onValueChange={setAuthenticityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs text-primary font-bold"><SelectValue placeholder="All Authenticity" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Authenticity</SelectItem><SelectItem value="Pending Verification" className="font-bold">Pending</SelectItem><SelectItem value="Verified" className="font-bold text-primary">Verified</SelectItem><SelectItem value="On Hold" className="font-bold">On Hold</SelectItem><SelectItem value="Rejected" className="font-bold text-destructive">Rejected</SelectItem><SelectItem value="Need More Details" className="font-bold">Need Details</SelectItem></SelectContent></Select>
                     <Select value={visibilityFilter} onValueChange={setVisibilityFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary font-bold"><SelectValue placeholder="All Visibilities" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-bold">All Visibilities</SelectItem><SelectItem value="Hold" className="font-bold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-bold">Ready To Publish</SelectItem><SelectItem value="Published" className="font-bold text-primary font-normal">Published</SelectItem></SelectContent></Select>
                     <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">

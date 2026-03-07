@@ -39,13 +39,14 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
             {campaigns.map((campaign, index) => {
                 const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
                 const priorityLabel = campaign.priority || 'Medium';
+                const isUrgent = priorityLabel === 'Urgent';
                 
                 return (
                     <Card 
                         key={campaign.id} 
                         className={cn(
                             "flex flex-col hover:shadow-xl transition-all duration-500 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20 bg-white shadow-sm",
-                            priorityLabel === 'Urgent' && "ring-2 ring-red-500 shadow-[0_0_25px_rgba(239,68,68,0.25)] border-red-500/50"
+                            isUrgent && "animate-urgent-pulse border-red-500/50"
                         )}
                         style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
                         onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}
@@ -85,7 +86,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                             </div>
                             <div className={cn(
                                 "text-[10px] font-bold tracking-tight flex items-center gap-1.5", 
-                                priorityLabel === 'Urgent' ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary'
+                                isUrgent ? 'text-red-600 animate-in fade-in slide-in-from-left' : 'text-primary'
                             )}>
                                 {getPriorityIcon(priorityLabel)}
                                 {priorityLabel} Priority
@@ -129,11 +130,13 @@ export function PublicCampaignsView() {
       .filter(c => c.status === 'Active' || c.status === 'Upcoming')
       .map(c => {
           const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
+          const isUrgent = c.priority === 'Urgent';
           return {
               id: c.id,
               text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/campaign-public/${c.id}/summary`,
-              priorityIcon: getPriorityIcon(c.priority)
+              priorityIcon: getPriorityIcon(c.priority),
+              isUrgent
           };
       });
     
@@ -141,11 +144,13 @@ export function PublicCampaignsView() {
       .filter(l => l.status === 'Active' || l.status === 'Upcoming')
       .map(l => {
           const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
+          const isUrgent = l.priority === 'Urgent';
           return {
               id: l.id,
               text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/leads-public/${l.id}/summary`,
-              priorityIcon: getPriorityIcon(l.priority)
+              priorityIcon: getPriorityIcon(l.priority),
+              isUrgent
           };
       });
 
