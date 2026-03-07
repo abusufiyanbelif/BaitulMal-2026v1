@@ -162,7 +162,7 @@ export function NotificationBell() {
                                     <CheckCircle2 className="h-10 w-10" />
                                 </div>
                                 <p className="text-sm font-bold text-primary tracking-tight">Everything Is Verified</p>
-                                <p className="text-[10px] text-muted-foreground font-normal">All organizational data has been vetted and allocated.</p>
+                                <p className="text-[10px] text-muted-foreground font-normal">All Organizational Data Has Been Vetted And Allocated.</p>
                             </div>
                         ) : (
                             <div className="space-y-4">

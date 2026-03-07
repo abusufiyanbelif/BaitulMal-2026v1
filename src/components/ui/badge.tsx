@@ -55,7 +55,10 @@ function Badge({ className, variant, children, ...props }: BadgeProps) {
   let displayChildren = children;
   if (typeof children === 'string' && children.trim().length > 0) {
       const content = children.trim();
-      displayChildren = content.charAt(0).toUpperCase() + content.slice(1).toLowerCase();
+      // Only transform if it's actually all caps or needs fixing
+      if (content === content.toUpperCase()) {
+          displayChildren = content.charAt(0).toUpperCase() + content.slice(1).toLowerCase();
+      }
   }
 
   return (
