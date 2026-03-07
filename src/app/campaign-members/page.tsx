@@ -86,7 +86,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
         <Card 
             className={cn(
                 "flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white shadow-sm animate-fade-in-up transition-all duration-500",
-                priorityLabel === 'Urgent' && "ring-2 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] border-red-500/50"
+                priorityLabel === 'Urgent' && "ring-2 ring-red-500 shadow-[0_0_25px_rgba(239,68,68,0.25)] border-red-500/50"
             )}
             style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
             onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}

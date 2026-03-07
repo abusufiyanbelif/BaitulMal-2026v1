@@ -95,7 +95,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
           )} />
           
           {currentItem.priorityIcon && (
-            <div className="shrink-0 flex items-center [&>svg]:h-5 [&>svg]:w-5">
+            <div className="shrink-0 flex items-center [&>svg]:h-6 [&>svg]:w-6 animate-pulse">
               {currentItem.priorityIcon}
             </div>
           )}

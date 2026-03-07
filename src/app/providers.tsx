@@ -12,6 +12,10 @@ import { cn } from '@/lib/utils';
 import { ThemeProvider } from 'next-themes';
 import { THEME_SUGGESTIONS } from '@/lib/themes';
 
+/**
+ * Enhanced Providers Component
+ * Ensures theme persistence across sessions and handles institutional visual rules.
+ */
 export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
@@ -47,8 +51,9 @@ export function Providers({ children }: { children: ReactNode }) {
         attribute="class" 
         defaultTheme="bms3-a" 
         enableSystem={false}
-        storageKey="institutional-theme"
+        storageKey="institutional-theme-v2"
         themes={allThemes}
+        disableTransitionOnChange
       >
         <div className="relative min-h-screen w-full overflow-x-hidden flex flex-col">
           <div className="fixed inset-0 -z-10 flex items-center justify-center pointer-events-none opacity-[0.03] mix-blend-multiply overflow-hidden">

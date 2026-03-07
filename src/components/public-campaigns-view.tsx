@@ -45,7 +45,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                         key={campaign.id} 
                         className={cn(
                             "flex flex-col hover:shadow-xl transition-all duration-500 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20 bg-white shadow-sm",
-                            priorityLabel === 'Urgent' && "ring-2 ring-red-500 shadow-[0_0_20px_rgba(239,68,68,0.3)] border-red-500/50"
+                            priorityLabel === 'Urgent' && "ring-2 ring-red-500 shadow-[0_0_25px_rgba(239,68,68,0.25)] border-red-500/50"
                         )}
                         style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
                         onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}

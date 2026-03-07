@@ -27,7 +27,7 @@ import {
 import { Button } from '@/components/ui/button';
 
 /**
- * Streamlined Institutional Footer - Fully theme-reactive.
+ * Institutional Footer - Fully theme-reactive.
  * Includes interactive QR code maximization and download capabilities.
  */
 export function AppFooter() {
@@ -138,7 +138,7 @@ export function AppFooter() {
               {validQrUrl ? (
                 <div 
                   onClick={() => setIsQrDialogOpen(true)}
-                  className="relative w-28 h-28 bg-white p-1.5 rounded-xl border-2 border-primary shadow-inner cursor-pointer group transition-all hover:scale-105 active:scale-95"
+                  className="relative w-32 h-32 bg-white p-2 rounded-xl border-4 border-primary shadow-2xl cursor-pointer group transition-all hover:scale-110 active:scale-95"
                 >
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validQrUrl)}`}
@@ -147,13 +147,13 @@ export function AppFooter() {
                     className="object-contain p-1"
                     unoptimized
                   />
-                  <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-xl">
-                    <Maximize2 className="text-primary h-6 w-6 drop-shadow-sm" />
+                  <div className="absolute inset-0 bg-primary/10 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-lg">
+                    <Maximize2 className="text-primary h-8 w-8 drop-shadow-md" />
                   </div>
                 </div>
               ) : (
-                <div className="w-28 h-28 bg-white/50 rounded-xl border-2 border-dashed border-border flex items-center justify-center text-muted-foreground/10">
-                  <QrCode className="h-10 w-10" />
+                <div className="w-32 h-32 bg-white/50 rounded-xl border-2 border-dashed border-border flex items-center justify-center text-muted-foreground/10">
+                  <QrCode className="h-12 w-12" />
                 </div>
               )}
             </div>
