@@ -22,7 +22,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 /**
  * Re-engineered "Old Style" Zakat Money Bag.
- * Featuring a flared top, dark red tie, and yellowish cloth body.
+ * Featuring a flared top, dark green tie, and yellowish cloth body.
  */
 const ZakatCustomIcon = ({ className }: { className?: string }) => (
   <svg 
@@ -34,36 +34,36 @@ const ZakatCustomIcon = ({ className }: { className?: string }) => (
     {/* Shadow */}
     <path 
       d="M256 100C160 100 120 180 120 320C120 420 180 480 256 480C332 480 392 420 392 320C392 180 352 100 256 100Z" 
-      fill="#EAB308" 
-      opacity="0.1"
+      fill="#13a663" 
+      opacity="0.05"
     />
 
     {/* Main Bag Body (Yellowish Cloth) */}
     <path 
       d="M256 130C170 130 135 200 135 330C135 430 185 470 256 470C327 470 377 430 377 330C377 200 342 130 256 130Z" 
-      fill="#FDE047" 
-      stroke="#A16207"
+      fill="#FEF9C3" 
+      stroke="#166534"
       strokeWidth="4"
     />
     
     {/* Top Flared Opening */}
     <path 
       d="M200 130C180 110 170 60 210 45C235 35 277 35 302 45C342 60 332 110 312 130" 
-      fill="#FDE047" 
-      stroke="#A16207"
+      fill="#FEF9C3" 
+      stroke="#166534"
       strokeWidth="4"
     />
 
-    {/* The Tie (Dark Red) */}
+    {/* The Tie (Institutional Green) */}
     <path 
       d="M190 135C190 135 235 155 256 155C277 155 322 135 322 135" 
-      stroke="#991B1B" 
+      stroke="#166534" 
       strokeWidth="16" 
       strokeLinecap="round" 
     />
     <path 
       d="M256 155L235 195M256 155L277 195" 
-      stroke="#991B1B" 
+      stroke="#166534" 
       strokeWidth="10" 
       strokeLinecap="round" 
     />
@@ -73,7 +73,7 @@ const ZakatCustomIcon = ({ className }: { className?: string }) => (
       x="256" 
       y="310" 
       textAnchor="middle" 
-      fill="#7F1D1D" 
+      fill="#166534" 
       style={{ fontSize: '68px', fontWeight: '900', fontFamily: 'serif' }}
     >
       2.5%
@@ -82,7 +82,7 @@ const ZakatCustomIcon = ({ className }: { className?: string }) => (
       x="256" 
       y="375" 
       textAnchor="middle" 
-      fill="#7F1D1D" 
+      fill="#166534" 
       style={{ fontSize: '52px', fontWeight: 'bold', fontFamily: 'serif' }}
     >
       Zakat

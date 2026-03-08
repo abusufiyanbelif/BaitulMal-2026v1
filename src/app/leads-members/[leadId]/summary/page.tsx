@@ -134,6 +134,12 @@ export default function LeadSummaryPage() {
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
     const { download } = useDownloadAs();
 
+    // Permission Definitions
+    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
+    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
+    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
+    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.update', false) || !!getNestedValue(userProfile, 'permissions.leads-members.summary.update', false);
+
     const [editMode, setEditMode] = useState(false);
     const [editableLead, setEditableLead] = useState<Partial<Lead>>({});
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -319,13 +325,8 @@ export default function LeadSummaryPage() {
     };
 
     const handleToggleDocumentPublic = (urlToToggle: string) => {
-        setExistingDocuments(prev => prev.map(doc => doc.url === urlToToggle ? { ...doc, isPublic: !doc.isPublic } : doc));
+        setExistingDocuments(prev => prev.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc));
     };
-
-    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
-    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
-    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
-    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.update', false) || !!getNestedValue(userProfile, 'permissions.leads-members.summary.update', false);
 
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
         if (!leadDocRef || !lead?.documents || !canUpdateSummary) return;
@@ -544,7 +545,7 @@ export default function LeadSummaryPage() {
                                     </div>
                                     
                                     {editableLead.purpose === 'Education' && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5 border-primary/10 animate-fade-in-up">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5 animate-fade-in-up border-primary/10">
                                             <div className="space-y-1"><Label className="font-bold text-xs">Degree</Label><Select value={editableLead.degree} onValueChange={(val) => handleFieldChange('degree', val)}><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom">{educationDegrees.map(d=><SelectItem key={d} value={d} className="font-bold">{d}</SelectItem>)}</SelectContent></Select></div>
                                             <div className="space-y-1"><Label className="font-bold text-xs">Year</Label><Select value={editableLead.year} onValueChange={(val) => handleFieldChange('year', val)}><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom">{educationYears.map(y=><SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select></div>
                                             <div className="space-y-1"><Label className="font-bold text-xs">Semester</Label><Select value={editableLead.semester} onValueChange={(val) => handleFieldChange('semester', val)}><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom">{educationSemesters.map(s=><SelectItem key={s} value={s} className="font-bold">{s}</SelectItem>)}</SelectContent></Select></div>
@@ -708,7 +709,8 @@ export default function LeadSummaryPage() {
                                                                 <TableCell className="text-right font-mono font-bold text-primary text-base">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
                                                             </TableRow>
                                                         </TableFooter>
-                                                    </Table>
+                                                    )}
+                                                </Table>
                                             ) : (
                                                 <Table>
                                                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">

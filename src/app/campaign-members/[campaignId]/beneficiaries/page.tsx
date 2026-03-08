@@ -368,7 +368,7 @@ export default function BeneficiariesPage() {
             </Button>
         </div>
         
-        <h1 className="text-4xl font-bold tracking-tight text-primary">{campaign.name}</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-primary uppercase">{campaign.name}</h1>
         
         <div className="border-b border-primary/10 mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
@@ -414,15 +414,13 @@ export default function BeneficiariesPage() {
 
         <div className="flex flex-wrap items-center gap-3 bg-primary/5 p-4 rounded-xl border border-primary/10">
           <div className="relative flex-1 min-w-[300px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
             <Input 
                 placeholder="Search Name, Phone, Address..." 
                 value={searchTerm} 
                 onChange={(e) => setSearchTerm(e.target.value)} 
                 className="pl-10 pr-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary rounded-[12px]" 
             />
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/50">
-                <Search className="h-4 w-4" />
-            </div>
           </div>
 
           <Popover>
@@ -464,7 +462,7 @@ export default function BeneficiariesPage() {
             </Popover>
 
           <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPages({}); }}>
-            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-normal"><SelectValue placeholder="Disbursement" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold"><SelectValue placeholder="Disbursement" /></SelectTrigger>
             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
               <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
               <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
@@ -475,7 +473,7 @@ export default function BeneficiariesPage() {
             </SelectContent>
           </Select>
           <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPages({}); }}>
-            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-normal"><SelectValue placeholder="Zakat Eligibility" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold"><SelectValue placeholder="Zakat Eligibility" /></SelectTrigger>
             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
               <SelectItem value="All" className="font-normal">All Zakat Status</SelectItem>
               <SelectItem value="Eligible" className="font-normal">Eligible</SelectItem>
@@ -504,7 +502,7 @@ export default function BeneficiariesPage() {
                     <div className="text-right">Kit Amount (₹)</div>
                     <div className="text-right">Zakat Allocation (₹)</div>
                     <div>Referred By</div>
-                    <div className="text-right">Actions</div>
+                    <div className="text-right pr-4">Actions</div>
                 </div>
 
                 <div className="w-full">
@@ -573,7 +571,7 @@ export default function BeneficiariesPage() {
                                                     <div className="text-right font-mono text-sm font-bold text-primary">₹{(b.kitAmount || 0).toLocaleString('en-IN')}</div>
                                                     <div className="text-right font-mono text-sm font-bold text-primary">₹{(b.zakatAllocation || 0).toLocaleString('en-IN')}</div>
                                                     <div className="text-xs font-normal text-primary/70 truncate">{b.referralBy || 'N/A'}</div>
-                                                    <div className="text-right">
+                                                    <div className="text-right pr-4">
                                                         <div className="flex items-center justify-end gap-1">
                                                             <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>

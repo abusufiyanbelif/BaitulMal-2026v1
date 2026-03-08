@@ -5,11 +5,10 @@ import type { Beneficiary } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { FieldValue, DocumentData } from 'firebase-admin/firestore';
 
-const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually means the server is missing credentials. Please ensure your 'serviceAccountKey.json' is correctly placed in the project root or that Application Default Credentials are configured.";
+const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure Server Credentials Are Configured Correctly.";
 
 function sanitizeBeneficiaryForMasterList(data: DocumentData): Partial<Beneficiary> {
     const { kitAmount, itemCategoryId, itemCategoryName, zakatAllocation, ...masterData } = data;
-    // Map 'Given' to 'Verified' for master list, otherwise keep it or default to 'Pending'
     const status = data.status === 'Given' ? 'Verified' : (data.status || 'Pending');
     return {
         ...masterData,
@@ -35,10 +34,10 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
         });
 
         revalidatePath('/beneficiaries');
-        return { success: true, message: 'Beneficiary Created Successfully.', id: docRef.id };
+        return { success: true, message: 'Beneficiary Record Registered Successfully.', id: docRef.id };
     } catch (error: any) {
-        console.error("Error creating beneficiary:", error);
-        return { success: false, message: `Failed To Create Beneficiary: ${error.message}` };
+        console.error("Error Creating Beneficiary:", error);
+        return { success: false, message: `Registration Failed: ${error.message}` };
     }
 }
 
@@ -56,8 +55,6 @@ export async function updateMasterBeneficiaryAction(
         const masterBeneficiaryRef = adminDb.collection('beneficiaries').doc(beneficiaryId);
 
         const { zakatAllocation, kitAmount, status, ...masterData } = data;
-
-        // Ensure status doesn't become null/empty
         const statusToSet = status || 'Pending';
 
         batch.set(masterBeneficiaryRef, {
@@ -68,13 +65,10 @@ export async function updateMasterBeneficiaryAction(
             updatedByName: updatedBy.name,
         }, { merge: true });
         
-        // --- PROPAGATE STATUS TO ALL INITIATIVES ---
-        // If the verification status changed, we must update all sub-collections
         const allInstancesQuery = adminDb.collectionGroup('beneficiaries').where('id', '==', beneficiaryId);
         const allInstancesSnap = await allInstancesQuery.get();
 
         allInstancesSnap.forEach(docSnap => {
-            // Only update if it's an initiative sub-collection, not the master doc we just staged
             if (docSnap.ref.path !== masterBeneficiaryRef.path) {
                 batch.update(docSnap.ref, { verificationStatus: statusToSet });
             }
@@ -87,10 +81,10 @@ export async function updateMasterBeneficiaryAction(
         revalidatePath('/campaign-members', 'layout');
         revalidatePath('/leads-members', 'layout');
 
-        return { success: true, message: `Beneficiary Master Record Updated Site-Wide.` };
+        return { success: true, message: `Beneficiary Master Record Synchronized Site-Wide.` };
     } catch (error: any) {
-        console.error("Error updating master beneficiary:", error);
-        return { success: false, message: `Failed To Update Beneficiary: ${error.message}` };
+        console.error("Error Updating Master Beneficiary:", error);
+        return { success: false, message: `Update Failed: ${error.message}` };
     }
 }
 
@@ -103,8 +97,6 @@ export async function bulkUpdateMasterBeneficiaryStatusAction(
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        // Firestore batch has a limit of 500 operations. Since we propagate to sub-collections, 
-        // we process in smaller chunks to be safe.
         const CHUNK_SIZE = 50;
         for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
             const chunk = ids.slice(i, i + CHUNK_SIZE);
@@ -119,7 +111,6 @@ export async function bulkUpdateMasterBeneficiaryStatusAction(
                     updatedByName: updatedBy.name,
                 });
 
-                // Find and update initiative instances
                 const allInstancesQuery = adminDb.collectionGroup('beneficiaries').where('id', '==', id);
                 const allInstancesSnap = await allInstancesQuery.get();
                 allInstancesSnap.forEach(docSnap => {
@@ -134,9 +125,9 @@ export async function bulkUpdateMasterBeneficiaryStatusAction(
         revalidatePath('/beneficiaries');
         revalidatePath('/campaign-members', 'layout');
         revalidatePath('/leads-members', 'layout');
-        return { success: true, message: `Successfully Updated ${ids.length} Beneficiaries To ${newStatus}.` };
+        return { success: true, message: `Successfully Updated ${ids.length} Profiles To ${newStatus}.` };
     } catch (error: any) {
-        console.error("Bulk Master Update Failed:", error);
+        console.error("Bulk Vetting Update Failed:", error);
         return { success: false, message: `Bulk Update Failed: ${error.message}` };
     }
 }
@@ -152,7 +143,7 @@ export async function bulkUpdateInitiativeBeneficiaryStatusAction(
 
     try {
         const collectionName = initiativeType === 'campaign' ? 'campaigns' : 'leads';
-        const CHUNK_SIZE = 400; // Straight sub-collection update is cheaper on operations
+        const CHUNK_SIZE = 400;
         
         for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
             const chunk = ids.slice(i, i + CHUNK_SIZE);
@@ -168,7 +159,7 @@ export async function bulkUpdateInitiativeBeneficiaryStatusAction(
         revalidatePath(`/${collectionName}-members/${initiativeId}/beneficiaries`);
         return { success: true, message: `Successfully Updated ${ids.length} Recipients To ${newStatus}.` };
     } catch (error: any) {
-        console.error("Bulk Initiative Update Failed:", error);
+        console.error("Bulk Distribution Update Failed:", error);
         return { success: false, message: `Bulk Update Failed: ${error.message}` };
     }
 }
@@ -206,7 +197,7 @@ export async function bulkImportBeneficiariesAction(
                 batch.set(subRef, {
                     ...fullRecord,
                     verificationStatus: fullRecord.status,
-                    status: 'Pending' // Initial disbursement status
+                    status: 'Pending' 
                 });
             }
             count++;
@@ -216,7 +207,7 @@ export async function bulkImportBeneficiariesAction(
         revalidatePath('/beneficiaries');
         if (initiativeContext) revalidatePath(`/${initiativeContext.type === 'campaign' ? 'campaign-members' : 'leads-members'}/${initiativeContext.id}/beneficiaries`);
         
-        return { success: true, message: `Successfully Imported ${count} Records.`, count };
+        return { success: true, message: `Successfully Imported ${count} Records Into The Registry.`, count };
     } catch (error: any) {
         console.error("Bulk Import Failed:", error);
         return { success: false, message: `Import Failed: ${error.message}`, count: 0 };
@@ -237,19 +228,17 @@ export async function updateInitiativeBeneficiaryDetailsAction(
     try {
         const collectionName = initiativeType === 'campaign' ? 'campaigns' : 'leads';
         const docRef = adminDb.doc(`${collectionName}/${initiativeId}/beneficiaries/${beneficiaryId}`);
-        
         await docRef.set(data, { merge: true });
 
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
         revalidatePath(`/${collectionName}/${initiativeId}/beneficiaries`);
 
-        return { success: true, message: 'Initiative-Specific Details Updated.' };
+        return { success: true, message: 'Initiative-Specific Details Registered.' };
     } catch (error: any) {
-        console.error("Error updating initiative beneficiary:", error);
-        return { success: false, message: `Failed To Update: ${error.message}` };
+        console.error("Error Updating Initiative Beneficiary:", error);
+        return { success: false, message: `Update Failed: ${error.message}` };
     }
 }
-
 
 export async function updateBeneficiaryStatusInInitiativeAction(
     initiativeType: 'campaign' | 'lead',
@@ -259,7 +248,7 @@ export async function updateBeneficiaryStatusInInitiativeAction(
 ): Promise<{ success: boolean; message: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) {
-        return { success: boolean: false, message: ADMIN_SDK_ERROR_MESSAGE };
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
 
     const collectionName = initiativeType === 'campaign' ? 'campaigns' : 'leads';
@@ -270,13 +259,12 @@ export async function updateBeneficiaryStatusInInitiativeAction(
         await docRef.set({ status: newStatus || 'Pending' }, { merge: true });
 
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
-        return { success: true, message: 'Beneficiary Status Updated Successfully.' };
+        return { success: true, message: 'Distribution Status Updated Successfully.' };
     } catch (error: any) {
-        console.error("Error updating beneficiary status:", error);
-        return { success: false, message: `Failed To Update Status: ${error.message}` };
+        console.error("Error Updating Distribution Status:", error);
+        return { success: false, message: `Update Failed: ${error.message}` };
     }
 }
-
 
 export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ success: boolean; message: string }> {
     const { adminDb, adminStorage } = getAdminServices();
@@ -307,7 +295,7 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
         const folderPath = `beneficiaries/${beneficiaryId}/`;
         await adminStorage.bucket().deleteFiles({ prefix: folderPath }).catch((storageError: any) => {
             if (storageError.code !== 404) {
-                console.warn(`Could Not Delete Beneficiary Files From Storage: ${storageError.message}`);
+                console.warn(`Could Not Delete Beneficiary Artifacts: ${storageError.message}`);
             }
         });
 
@@ -317,10 +305,10 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
         revalidatePath('/campaign-members', 'layout');
         revalidatePath('/leads-members', 'layout');
 
-        return { success: true, message: 'Beneficiary Permanently Deleted From Master List And All Linked Initiatives.' };
+        return { success: true, message: 'Beneficiary Permanently Removed From All Organizational Records.' };
     } catch (error: any) {
-        console.error('Error deleting beneficiary:', error);
-        return { success: false, message: `Failed To Delete Beneficiary: ${error.message}` };
+        console.error('Error Deleting Beneficiary:', error);
+        return { success: false, message: `Removal Failed: ${error.message}` };
     }
 }
 
@@ -330,20 +318,19 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
         return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, addedCount: 0 };
     }
     
-    const db = adminDb;
     try {
-        const batch = db.batch();
+        const batch = adminDb.batch();
         let addedCount = 0;
         
-        const masterBeneficiariesSnap = await db.collection('beneficiaries').get();
+        const masterBeneficiariesSnap = await adminDb.collection('beneficiaries').get();
         const masterIds = new Set(masterBeneficiariesSnap.docs.map(d => d.id));
 
-        const campaignsSnap = await db.collection('campaigns').get();
+        const campaignsSnap = await adminDb.collection('campaigns').get();
         for (const campaignDoc of campaignsSnap.docs) {
-            const campaignBeneficiariesSnap = await db.collection(`campaigns/${campaignDoc.id}/beneficiaries`).get();
+            const campaignBeneficiariesSnap = await adminDb.collection(`campaigns/${campaignDoc.id}/beneficiaries`).get();
             for (const benDoc of campaignBeneficiariesSnap.docs) {
                 if (!masterIds.has(benDoc.id)) {
-                    const masterRef = db.collection('beneficiaries').doc(benDoc.id);
+                    const masterRef = adminDb.collection('beneficiaries').doc(benDoc.id);
                     const sanitizedData = sanitizeBeneficiaryForMasterList(benDoc.data());
                     batch.set(masterRef, sanitizedData, { merge: true });
                     masterIds.add(benDoc.id); 
@@ -352,12 +339,12 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
             }
         }
         
-        const leadsSnap = await db.collection('leads').get();
+        const leadsSnap = await adminDb.collection('leads').get();
         for (const leadDoc of leadsSnap.docs) {
-            const leadBeneficiariesSnap = await db.collection(`leads/${leadDoc.id}/beneficiaries`).get();
+            const leadBeneficiariesSnap = await adminDb.collection(`leads/${leadDoc.id}/beneficiaries`).get();
             for (const benDoc of leadBeneficiariesSnap.docs) {
                 if (!masterIds.has(benDoc.id)) {
-                    const masterRef = db.collection('beneficiaries').doc(benDoc.id);
+                    const masterRef = adminDb.collection('beneficiaries').doc(benDoc.id);
                     const sanitizedData = sanitizeBeneficiaryForMasterList(benDoc.data());
                     batch.set(masterRef, sanitizedData, { merge: true });
                     masterIds.add(benDoc.id);
@@ -371,10 +358,10 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
         }
 
         revalidatePath('/beneficiaries');
-        return { success: true, message: `Sync Complete. Added ${addedCount} New Beneficiaries To Master List.`, addedCount };
+        return { success: true, message: `Synchronization Complete. Discovered ${addedCount} New Registry Entries.`, addedCount };
 
     } catch (error: any) {
-        console.error("Error syncing master beneficiary list:", error);
+        console.error("Error Syncing Master List:", error);
         return { success: false, message: `Sync Failed: ${error.message}`, addedCount: 0 };
     }
 }
