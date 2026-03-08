@@ -62,6 +62,7 @@ export function DocuExtractHeader() {
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                     alt="Logo"
                     fill
+                    sizes="64px"
                     className="object-contain p-1.5"
                     priority
                   />
@@ -99,10 +100,10 @@ export function DocuExtractHeader() {
                         <p className="text-sm font-bold tracking-tight text-primary">
                           {userProfile?.name || 'User'}
                         </p>
-                        <p className="text-[10px] font-normal text-muted-foreground pt-1 truncate uppercase tracking-widest">
+                        <p className="text-[10px] font-normal text-muted-foreground pt-1 truncate tracking-tight">
                           {user.email}
                         </p>
-                        <Badge variant="outline" className="w-fit mt-3 text-[9px] font-bold border-primary/20 text-primary uppercase tracking-tighter">Member Account</Badge>
+                        <Badge variant="outline" className="w-fit mt-3 text-[9px] font-bold border-primary/20 text-primary tracking-tight">Member Account</Badge>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-primary/5" />

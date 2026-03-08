@@ -126,7 +126,7 @@ export default function AboutOrganizationPage() {
                     <AccordionContent className="px-6 pt-6 pb-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-1">
-                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">Bank Transfer</h4>
+                                <h4 className="text-xs font-bold text-muted-foreground tracking-tight mb-3">Bank Transfer</h4>
                                 <DetailItem icon={User} label="Account Holder Name" value={paymentSettings?.bankAccountName} />
                                 <DetailItem icon={CreditCard} label="Account Number" value={paymentSettings?.bankAccountNumber} isMono />
                                 <DetailItem icon={Landmark} label="IFSC Code" value={paymentSettings?.bankIfsc} isMono />
@@ -135,15 +135,22 @@ export default function AboutOrganizationPage() {
                                 {validQrUrl ? (
                                     <div className="space-y-3 text-center">
                                         <div className="relative w-40 h-40 bg-white p-3 rounded-2xl border-4 border-primary shadow-xl">
-                                            <Image src={`/api/image-proxy?url=${encodeURIComponent(validQrUrl)}`} alt="Payment QR" fill className="object-contain p-1" unoptimized />
+                                            <Image 
+                                                src={`/api/image-proxy?url=${encodeURIComponent(validQrUrl)}`} 
+                                                alt="Payment QR" 
+                                                fill 
+                                                sizes="160px"
+                                                className="object-contain p-1" 
+                                                unoptimized 
+                                            />
                                         </div>
                                         <p className="font-mono text-sm font-bold text-primary">{paymentSettings?.upiId}</p>
-                                        <p className="text-[10px] uppercase font-bold text-muted-foreground">Scan With Any UPI App</p>
+                                        <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Scan With Any UPI App</p>
                                     </div>
                                 ) : (
                                     <div className="text-center text-muted-foreground p-4">
                                         <QrCode className="h-12 w-12 mx-auto opacity-20 mb-2" />
-                                        <p className="text-[10px] uppercase font-bold tracking-tighter">UPI QR Not Available</p>
+                                        <p className="text-[10px] font-bold tracking-tighter">UPI QR Not Available</p>
                                     </div>
                                 )}
                             </div>
@@ -196,9 +203,9 @@ export default function AboutOrganizationPage() {
                                                             <AvatarImage src={member.idProofUrl || ''} alt={member.name || 'Member'} />
                                                             <AvatarFallback className="bg-primary/10 text-primary font-bold text-[10px]">{getInitials(member.name)}</AvatarFallback>
                                                         </Avatar>
-                                                        <div className="flex-1 min-w-0">
+                                                        <div className="flex-1 min-w-0 space-y-0.5">
                                                             <p className="font-bold text-[13px] truncate text-primary">{member.name}</p>
-                                                            <p className="text-[10px] font-normal text-muted-foreground leading-tight">{member.organizationRole || 'Member'}</p>
+                                                            <p className="text-[10px] font-normal text-muted-foreground leading-tight tracking-tight">{member.organizationRole || 'Member'}</p>
                                                         </div>
                                                     </CardContent>
                                                 </Card>

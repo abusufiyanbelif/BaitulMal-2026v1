@@ -329,14 +329,14 @@ export default function CreateLeadPage() {
                 <FormItem>{renderLabel('Detailed Description', 'description')}<FormControl><Textarea placeholder="Background And Specific Needs..." {...field} rows={4} className="font-normal" /></FormControl><FormMessage /></FormItem>
               )}/>
                 <FormItem>
-                    <FormLabel className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Header Image</FormLabel>
+                    <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight">Header Image</FormLabel>
                     <FormControl>
                         <Input id="imageFile" type="file" accept="image/png, image/jpeg, image/webp" onChange={handleImageFileChange} className="hidden" />
                     </FormControl>
                     <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/20 rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
                         {imagePreview ? (
                             <>
-                                <Image src={imagePreview} alt="Preview" fill className="object-cover rounded-lg" />
+                                <Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" />
                                 <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 shadow-lg" onClick={handleRemoveImage}>
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -347,7 +347,7 @@ export default function CreateLeadPage() {
                                 <p className="mb-2 text-sm text-center text-muted-foreground font-normal">
                                     <span className="font-bold text-primary">Click To Upload</span> Or Drag And Drop
                                 </p>
-                                <p className="text-[10px] text-muted-foreground font-normal uppercase tracking-tighter">PNG, JPG, WEBP Recommended</p>
+                                <p className="text-[10px] text-muted-foreground font-normal tracking-tighter">PNG, JPG, WEBP Recommended</p>
                             </div>
                         )}
                     </label>
@@ -416,7 +416,7 @@ export default function CreateLeadPage() {
 
               {purpose === 'Education' && (
                 <div className="space-y-4 rounded-xl border p-4 bg-primary/5 animate-fade-in-zoom border-primary/10">
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Academic Qualifications</h3>
+                  <h3 className="text-sm font-bold tracking-tight text-primary">Academic Qualifications</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <FormField control={form.control} name="degree" render={({ field }) => (
                         <FormItem>
@@ -460,7 +460,7 @@ export default function CreateLeadPage() {
 
               {purpose === 'Medical' && (
                 <div className="space-y-4 rounded-xl border p-4 bg-primary/5 animate-fade-in-zoom border-primary/10">
-                  <h3 className="text-sm font-bold uppercase tracking-widest text-primary">Medical Assessment</h3>
+                  <h3 className="text-sm font-bold tracking-tight text-primary">Medical Assessment</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <FormField control={form.control} name="diseaseIdentified" render={({ field }) => (
                         <FormItem>{renderLabel('Disease Identified', 'diseaseIdentified')}<FormControl><Input placeholder="e.g. Cataract" {...field} className="h-8 font-normal" /></FormControl><FormMessage /></FormItem>
@@ -502,7 +502,7 @@ export default function CreateLeadPage() {
                                     form.setValue('allowedDonationTypes', checked ? [...donationCategories] : [], { shouldDirty: true, shouldValidate: true }); 
                                 }} 
                             />
-                            <Label htmlFor="select-all-types-lead" className="font-bold text-[10px] uppercase cursor-pointer tracking-widest">Any</Label>
+                            <Label htmlFor="select-all-types-lead" className="font-bold text-[10px] cursor-pointer tracking-tight">Any</Label>
                         </div>
                         {donationCategories.map((type) => (
                             <div key={type} className="flex flex-row items-center space-x-3 space-y-0">
@@ -517,7 +517,7 @@ export default function CreateLeadPage() {
                                         form.setValue('allowedDonationTypes', updated, { shouldDirty: true, shouldValidate: true });
                                     }} 
                                 />
-                                <Label htmlFor={`type-lead-${type}`} className="font-bold text-[10px] uppercase cursor-pointer tracking-widest opacity-80">{type}</Label>
+                                <Label htmlFor={`type-lead-${type}`} className="font-bold text-[10px] cursor-pointer tracking-tight opacity-80">{type}</Label>
                             </div>
                         ))}
                     </div>

@@ -17,8 +17,7 @@ import {
   Download,
   Landmark,
   CreditCard,
-  Copy,
-  ExternalLink
+  Copy
 } from 'lucide-react';
 import { 
   Dialog, 
@@ -87,6 +86,7 @@ export function AppFooter() {
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                     alt="Logo"
                     fill
+                    sizes="48px"
                     className="object-contain p-1.5"
                   />
                 </div>
@@ -118,7 +118,7 @@ export function AppFooter() {
           </div>
 
           <div className="space-y-6 md:pl-10">
-            <h3 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">
+            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight">
               More Info
             </h3>
             <nav className="flex flex-col gap-4">
@@ -134,7 +134,7 @@ export function AppFooter() {
           </div>
 
           <div className="flex flex-col md:items-end gap-6">
-            <h3 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">
+            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight">
               Support Us
             </h3>
             <div className="w-full sm:w-auto">
@@ -146,8 +146,8 @@ export function AppFooter() {
                     <HeartHandshake className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
                     How To Give
                 </Button>
-                <p className="text-[9px] text-muted-foreground mt-3 font-normal italic md:text-right uppercase tracking-tighter opacity-60">
-                    UPI QR, Bank Transfer, And Support Channels.
+                <p className="text-[9px] text-muted-foreground mt-3 font-normal italic md:text-right tracking-tight opacity-60">
+                    Scan Our Quick Codes Or Use Bank Transfer.
                 </p>
             </div>
           </div>
@@ -189,7 +189,7 @@ export function AppFooter() {
                 <div className="space-y-6">
                     <div className="flex items-center gap-2 text-primary font-bold">
                         <QrCode className="h-5 w-5" />
-                        <h3 className="text-lg">Scan & Pay Via UPI</h3>
+                        <h3 className="text-lg">Scan & Pay Via QR Code</h3>
                     </div>
                     <div className="flex flex-col md:flex-row items-center gap-8 p-6 rounded-2xl border border-primary/10 bg-primary/[0.02]">
                         <div className="relative w-48 h-48 bg-white p-3 rounded-2xl border-4 border-primary shadow-xl">
@@ -198,6 +198,7 @@ export function AppFooter() {
                                     src={`/api/image-proxy?url=${encodeURIComponent(validQrUrl)}`}
                                     alt="Payment QR"
                                     fill
+                                    sizes="192px"
                                     className="object-contain p-1"
                                     unoptimized
                                 />
@@ -242,7 +243,7 @@ export function AppFooter() {
                                 <p className="text-sm font-bold text-primary">{paymentSettings?.bankAccountName || 'N/A'}</p>
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Bank Name</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Bank Details</Label>
                                 <p className="text-sm font-bold text-primary">{paymentSettings?.bankAccountNumber ? 'Available Upon Request' : 'N/A'}</p>
                             </div>
                             <div className="space-y-1">

@@ -290,14 +290,14 @@ export default function CreateCampaignPage() {
                     <FormItem>{renderLabel('Description', 'description')}<FormControl><Textarea placeholder="Objectives And Target Impact..." {...field} /></FormControl><FormMessage /></FormItem>
                 )}/>
                  <FormItem>
-                    <FormLabel className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Header Image</FormLabel>
+                    <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight">Header Image</FormLabel>
                     <FormControl>
                         <Input id="imageFile" type="file" accept="image/png, image/jpeg, image/webp" onChange={handleImageFileChange} className="hidden" />
                     </FormControl>
                     <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
                         {imagePreview ? (
                             <>
-                                <Image src={imagePreview} alt="Preview" fill className="object-cover rounded-lg" />
+                                <Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" />
                                 <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 shadow-lg" onClick={handleRemoveImage}>
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -308,7 +308,7 @@ export default function CreateCampaignPage() {
                                 <p className="mb-2 text-sm text-center text-muted-foreground font-normal">
                                     <span className="font-bold text-primary">Click To Upload</span> Or Drag And Drop
                                 </p>
-                                <p className="text-[10px] text-muted-foreground font-normal uppercase tracking-tighter">PNG, JPG, WEBP (1280x400 Recommended)</p>
+                                <p className="text-[10px] text-muted-foreground font-normal tracking-tighter">PNG, JPG, WEBP (1280x400 Recommended)</p>
                             </div>
                         )}
                     </label>
@@ -351,7 +351,7 @@ export default function CreateCampaignPage() {
                                     form.setValue('allowedDonationTypes', checked ? [...donationCategories] : [], { shouldDirty: true, shouldValidate: true }); 
                                 }} 
                             />
-                            <Label htmlFor="select-all-types" className="font-bold text-[10px] uppercase cursor-pointer tracking-widest">Any</Label>
+                            <Label htmlFor="select-all-types" className="font-bold text-[10px] cursor-pointer tracking-tight">Any</Label>
                         </div>
                         {donationCategories.map((type) => (
                             <div key={type} className="flex flex-row items-center space-x-3 space-y-0">
@@ -366,7 +366,7 @@ export default function CreateCampaignPage() {
                                         form.setValue('allowedDonationTypes', updated, { shouldDirty: true, shouldValidate: true });
                                     }} 
                                 />
-                                <Label htmlFor={`type-${type}`} className="font-bold text-[10px] uppercase cursor-pointer tracking-widest opacity-80">{type}</Label>
+                                <Label htmlFor={`type-${type}`} className="font-bold text-[10px] cursor-pointer tracking-tight opacity-80">{type}</Label>
                             </div>
                         ))}
                     </div>
@@ -404,7 +404,7 @@ export default function CreateCampaignPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle className="font-bold text-primary">Duplicate Campaign Name Detected</AlertDialogTitle>
                 <AlertDialogDescription className="font-normal text-primary/70">
-                    A Campaign With This Name Already Exists In The Institutional Records. Are You Certain You Want To Proceed With A New Entry?
+                    A Campaign With This Name Already Exists In The Organizational Records. Are You Certain You Want To Proceed With A New Entry?
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

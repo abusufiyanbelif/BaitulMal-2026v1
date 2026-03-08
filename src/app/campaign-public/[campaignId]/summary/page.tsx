@@ -44,7 +44,8 @@ import {
     ZoomOut,
     RotateCw,
     RefreshCw,
-    ImageIcon
+    ImageIcon,
+    ShieldCheck
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ShareDialog } from '@/components/share-dialog';
@@ -254,7 +255,14 @@ export default function PublicCampaignSummaryPage() {
             
             <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center cursor-pointer" onClick={() => campaign.imageUrl && handleViewImage(campaign.imageUrl, campaign.name)}>
                 {campaign.imageUrl ? (
-                    <Image src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`} alt={campaign.name} fill sizes="100vw" className="object-cover" priority />
+                    <Image 
+                        src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`} 
+                        alt={campaign.name} 
+                        fill 
+                        sizes="100vw"
+                        className="object-cover" 
+                        priority 
+                    />
                 ) : ( <FallbackIcon className="w-24 h-24 text-muted-foreground/30" /> )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                 <div className="absolute bottom-0 left-0 p-6"><h1 className="text-3xl lg:text-4xl font-bold text-white shadow-lg">{campaign.name}</h1><p className="text-sm text-white/90 shadow-md font-bold">{campaign.status}</p></div>
@@ -324,7 +332,7 @@ export default function PublicCampaignSummaryPage() {
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
                                 <CardHeader className="bg-primary/5 border-b">
                                     <CardTitle className="font-bold text-primary tracking-tight">
-                                        {isRationInitiative ? 'Beneficiary Groups' : 'Breakdown Of Requirements'}
+                                        {isRationInitiative ? 'Beneficiary Groups' : 'Required Financial Allocation'}
                                     </CardTitle>
                                     <CardDescription className="font-normal text-primary/70">
                                         {isRationInitiative 

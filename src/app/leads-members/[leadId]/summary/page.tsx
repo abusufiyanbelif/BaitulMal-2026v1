@@ -84,8 +84,7 @@ import {
   Cell,
   XAxis,
   YAxis,
-  CartesianGrid,
-  ResponsiveContainer
+  CartesianGrid
 } from 'recharts';
 import {
   ChartContainer,
@@ -617,7 +616,7 @@ export default function LeadSummaryPage() {
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
                                 <CardHeader className="bg-primary/5 border-b">
                                     <CardTitle className="flex items-center gap-2 font-bold text-primary"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
-                                    <CardDescription className="font-normal text-primary/70">Verified donations for this initiative.</CardDescription>
+                                    <CardDescription className="font-normal text-primary/70">Verified Donations For This Initiative.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="pt-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -658,8 +657,8 @@ export default function LeadSummaryPage() {
                                     </CardTitle>
                                     <CardDescription className="font-normal text-primary/70">
                                         {isRationInitiative 
-                                            ? 'Breakdown of requirements by family size category.' 
-                                            : 'Itemized requirement breakdown for this initiative.'}
+                                            ? 'Breakdown Of Requirements By Family Size Category.' 
+                                            : 'Itemized Requirement Breakdown For This Initiative.'}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="p-0 sm:p-6 font-normal">
@@ -750,7 +749,7 @@ export default function LeadSummaryPage() {
 
                             {isVisible('zakat_utilization') && (
                                 <Card className="shadow-sm border-primary/5 bg-white transition-all duration-300 hover:shadow-lg">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Zakat Fund Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Secure tracking of designated Zakat resources.</CardDescription></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Zakat Fund Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Secure Tracking Of Designated Zakat Resources.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 pt-6 font-normal text-foreground">
                                         <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded"><span className="text-muted-foreground tracking-tighter font-normal">Total Zakat Collected</span><span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
                                         <Separator />
@@ -851,7 +850,7 @@ export default function LeadSummaryPage() {
                                             );
                                         })}
                                     </div>
-                                ) : <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight italic opacity-60">No documents attached.</p>
+                                ) : <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-tight italic opacity-60">No Documents Attached.</p>
                             )}
                         </CardContent>
                     </Card>
