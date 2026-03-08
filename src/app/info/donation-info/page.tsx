@@ -21,8 +21,8 @@ import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 /**
- * Custom Zakat Icon - Re-engineered in institutional green (#13a663).
- * Illustrates the 2.5% requirement with high-fidelity paths.
+ * Custom Zakat Icon - Re-engineered as a "Money Bag Offering".
+ * High-fidelity SVG illustrating the 2.5% Zakat principle.
  */
 const ZakatCustomIcon = ({ className }: { className?: string }) => (
   <svg 
@@ -31,39 +31,57 @@ const ZakatCustomIcon = ({ className }: { className?: string }) => (
     xmlns="http://www.w3.org/2000/svg" 
     className={className}
   >
-    <rect x="40" y="390" width="80" height="90" rx="8" fill="#13a663" stroke="#064e3b" strokeWidth="12" />
+    {/* Hands Offering / Cradling the Bag */}
     <path 
-      d="M120 435H380C430 435 480 410 480 360C480 330 450 310 410 310H320V320C320 340 300 360 280 360H120V435Z" 
-      fill="#fef3c7" 
-      stroke="#064e3b" 
-      strokeWidth="12" 
-      strokeLinejoin="round" 
+      d="M120 420C120 420 160 480 256 480C352 480 392 420 392 420" 
+      stroke="#13a663" 
+      strokeWidth="20" 
+      strokeLinecap="round" 
     />
     <path 
-      d="M180 310C180 180 210 100 260 100C310 100 340 180 340 310H180Z" 
-      fill="#f9fafb" 
-      stroke="#064e3b" 
+      d="M100 380C100 380 130 440 256 440C382 440 412 380 412 380" 
+      stroke="#13a663" 
       strokeWidth="12" 
-      strokeLinejoin="round"
+      strokeLinecap="round" 
+      opacity="0.3"
     />
+
+    {/* Money Bag Body */}
     <path 
-      d="M230 100L215 50C215 40 225 30 235 30H285C295 30 305 40 305 50L290 100H230Z" 
-      fill="#f9fafb" 
-      stroke="#064e3b" 
-      strokeWidth="12" 
-      strokeLinejoin="round"
+      d="M256 120C180 120 140 180 140 300C140 380 190 420 256 420C322 420 372 380 372 300C372 180 332 120 256 120Z" 
+      fill="#13a663" 
     />
-    <rect x="215" y="90" width="90" height="25" rx="12.5" fill="#13a663" stroke="#064e3b" strokeWidth="12" />
-    <circle cx="260" cy="225" r="60" fill="#13a663" stroke="#064e3b" strokeWidth="12" />
+    
+    {/* Bag Tie/Neck */}
+    <path 
+      d="M210 120C210 100 220 60 256 60C292 60 302 100 302 120" 
+      stroke="#064e3b" 
+      strokeWidth="15" 
+      strokeLinecap="round" 
+    />
+    <rect x="200" y="110" width="112" height="20" rx="10" fill="#064e3b" />
+
+    {/* Central Information Badge */}
+    <circle cx="256" cy="285" r="85" fill="white" stroke="#064e3b" strokeWidth="8" />
+    
+    {/* 2.5% Zakat Text - Branded Typography */}
     <text 
-      x="260" 
-      y="225" 
+      x="256" 
+      y="275" 
       textAnchor="middle" 
-      dominantBaseline="central" 
-      fill="white" 
+      fill="#13a663" 
       style={{ fontSize: '54px', fontWeight: '900', fontFamily: 'sans-serif' }}
     >
-      2.5
+      2.5%
+    </text>
+    <text 
+      x="256" 
+      y="320" 
+      textAnchor="middle" 
+      fill="#064e3b" 
+      style={{ fontSize: '28px', fontWeight: 'bold', fontFamily: 'sans-serif' }}
+    >
+      Zakat
     </text>
   </svg>
 );
@@ -77,9 +95,9 @@ const typeIcons: Record<string, any> = {
 };
 
 const comparisonData = [
-    { feature: 'Status', zakat: 'Obligatory (Fard)', sadaqah: 'Voluntary', lillah: 'Voluntary', fidiya: 'Obligatory Compensation', interest: 'Mandatory Disposal' },
-    { feature: 'Amount', zakat: 'Fixed (2.5%)', sadaqah: 'Any Amount', lillah: 'Any Amount', fidiya: 'Fixed Per Missed Fast', interest: 'Total Amount Earned' },
-    { feature: 'Recipient', zakat: 'Specific 8 Categories', sadaqah: 'Anyone In Need', lillah: 'Institutions/Public', fidiya: 'Poor & Needy', interest: 'Public Welfare' },
+    { feature: 'Current Status', zakat: 'Obligatory (Fard)', sadaqah: 'Voluntary', lillah: 'Voluntary', fidiya: 'Obligatory Compensation', interest: 'Mandatory Disposal' },
+    { feature: 'Required Amount', zakat: 'Fixed (2.5%)', sadaqah: 'Any Amount', lillah: 'Any Amount', fidiya: 'Fixed Per Missed Fast', interest: 'Total Amount Earned' },
+    { feature: 'Valid Recipient', zakat: 'Specific 8 Categories', sadaqah: 'Anyone In Need', lillah: 'Institutions/Public', fidiya: 'Poor & Needy', interest: 'Public Welfare' },
 ];
 
 export default function DonationInfoPage() {
@@ -162,7 +180,7 @@ export default function DonationInfoPage() {
                             ) : (
                                 <div className="flex flex-col items-center gap-4">
                                     <div className="p-6 rounded-full bg-primary/10 text-primary">
-                                        <IconComponent className="h-32 w-32" />
+                                        <IconComponent className="h-40 w-40" />
                                     </div>
                                 </div>
                             )}
