@@ -551,7 +551,7 @@ export default function CampaignSummaryPage() {
                             <>
                                 <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer transition-all duration-500 hover:shadow-lg group" onClick={() => { if(campaign?.imageUrl) handleViewImage(campaign.imageUrl, campaign.name); }}>
                                     {campaign?.imageUrl ? (
-                                        <Image src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`} alt={campaign.name} fill sizes="100vw" className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                                        <Image src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`} alt={campaign.name} fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover transition-transform duration-700 group-hover:scale-110" />
                                     ) : (
                                         <FallbackIcon className="h-20 w-20 text-muted-foreground/30 transition-transform duration-500 group-hover:scale-110" />
                                     )}
@@ -794,7 +794,7 @@ export default function CampaignSummaryPage() {
                                                 <Card key={doc.url} className="overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col active:scale-95 bg-white border-primary/10 cursor-pointer shadow-sm group animate-fade-in-up" style={{ animationDelay: `${50 + idx * 50}ms` }} onClick={() => { if (isImg) handleViewImage(doc.url, doc.name); else window.open(doc.url, '_blank'); }}>
                                                     <div className="block flex-grow">
                                                         <div className="relative aspect-square w-full bg-muted flex items-center justify-center overflow-hidden">
-                                                            {isImg ? <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="100vw" className="object-cover transition-transform duration-500 group-hover:scale-110" /> : <File className="w-10 h-10 text-muted-foreground transition-transform duration-500 group-hover:scale-110" />}
+                                                            {isImg ? <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="(max-width: 768px) 100vw, 300px" className="object-cover transition-transform duration-500 group-hover:scale-110" /> : <File className="w-10 h-10 text-muted-foreground transition-transform duration-500 group-hover:scale-110" />}
                                                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
                                                         </div>
                                                         <div className="p-2 text-center text-[10px] font-bold text-primary uppercase tracking-tighter truncate transition-colors group-hover:text-primary/80">{doc.name}</div>

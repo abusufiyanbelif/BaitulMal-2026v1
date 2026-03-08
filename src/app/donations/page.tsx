@@ -368,7 +368,7 @@ export default function DonationsPage() {
         });
         errorEmitter.emit('permission-error', permissionError);
     });
-    toast({ title: "Donation synchronized", description: "The record is now secured.", variant: 'success' });
+    toast({ title: "Donation Synchronized", description: "The Record Is Now Secured.", variant: 'success' });
   };
 
   const handleDeleteConfirm = async () => {
@@ -388,7 +388,7 @@ export default function DonationsPage() {
 
   const isLoading = areDonationsLoading || isProfileLoading;
 
-  if (isLoading) return <SectionLoader label="Loading donation records..." description="Retrieving logs." />;
+  if (isLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Logs." />;
 
   return (
     <main className="container mx-auto p-4 md:p-8 font-normal text-primary relative overflow-hidden">
@@ -397,7 +397,7 @@ export default function DonationsPage() {
             <div className="flex gap-2 w-full sm:w-auto">
                 <Button variant="secondary" onClick={handleSync} disabled={isSyncing} className="flex-1 sm:flex-none font-bold text-[10px] border-primary/10 text-primary active:scale-95 transition-transform">
                   {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
-                  Sync records
+                  Sync Records
                 </Button>
                 <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-white font-bold text-xs active:scale-95 transition-transform shadow-md rounded-[12px]">
                   <PlusCircle className="mr-2 h-4 w-4" /> Add Record

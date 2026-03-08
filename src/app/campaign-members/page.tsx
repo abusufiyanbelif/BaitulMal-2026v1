@@ -95,9 +95,9 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
     return (
         <Card 
             className={cn(
-                "flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white shadow-sm animate-fade-in-up transition-all duration-500",
-                isUrgent && "animate-urgent-pulse border-red-500/50",
-                isHigh && "animate-high-pulse border-orange-500/50",
+                "flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white shadow-none animate-fade-in-up transition-all duration-500",
+                isUrgent && "border-red-500/50",
+                isHigh && "border-orange-500/50",
                 isCompleted && "hover:shadow-none hover:-translate-y-0"
             )}
             style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
@@ -397,7 +397,7 @@ export default function CampaignPage() {
             <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link>
           </Button>
           {canCreate && !isLoading && (
-            <Button asChild size="sm" className="font-bold active:scale-95 transition-transform shadow-md">
+            <Button asChild size="sm" className="font-bold active:scale-95 transition-transform shadow-none">
               <Link href="/campaign-members/create"><Plus className="mr-2 h-4 w-4" /> New Campaign</Link>
             </Button>
           )}
@@ -413,7 +413,7 @@ export default function CampaignPage() {
           <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
         </div>
 
-        <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white/30 overflow-hidden">
+        <Card className="animate-fade-in-zoom shadow-none border-primary/10 bg-white/30 overflow-hidden">
           <CardHeader className="p-4 sm:p-6 border-b bg-primary/5">
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex flex-nowrap items-center gap-3 pb-2">
@@ -435,7 +435,7 @@ export default function CampaignPage() {
             {sections.length > 0 ? (
               <Accordion type="multiple" defaultValue={['ongoing_upcoming']} className="space-y-6">
                 {sections.map(section => (
-                  <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-sm overflow-hidden">
+                  <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-none overflow-hidden">
                     <AccordionTrigger className="hover:no-underline py-5 group font-bold">
                       <div className="flex items-center gap-4">
                         <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />

@@ -122,9 +122,25 @@ export function usePublicData() {
       };
     });
 
+    // Overall metrics calculation only considering public items
     const totalTarget = allPublicItems.reduce((sum, item) => sum + (item.targetAmount || 0), 0);
-    const grandTotalRaised = donations.reduce((sum, d) => sum + d.amount, 0);
     const totalCollectedForGoals = Array.from(collectedAmounts.values()).reduce((sum, amount) => sum + amount, 0);
+    
+    // Calculate total verified funds, but exclude those explicitly linked to non-public items
+    const grandTotalRaised = donations.reduce((sum, d) => {
+      const links = d.linkSplit || [];
+      if (links.length === 0) return sum + d.amount; // Unlinked counts as General Impact
+      
+      const publicPortion = links.reduce((linkSum, link) => {
+        // Include if linked to a public item or a general link
+        if (itemsById.has(link.linkId) || link.linkType === 'general') {
+          return linkSum + link.amount;
+        }
+        return linkSum;
+      }, 0);
+      return sum + publicPortion;
+    }, 0);
+
     const overallProgress = totalTarget > 0 ? Math.min((totalCollectedForGoals / totalTarget) * 100, 100) : 0;
 
     const yearlyData: Record<string, { totalGoalReceived: number; overallTotalReceived: number; totalTarget: number; }> = {};
@@ -192,7 +208,7 @@ export function usePublicData() {
             const initiativeName = primaryLink?.linkName || 'General Fund';
             return {
                 id: d.id,
-                text: `₹${d.amount.toLocaleString('en-IN')} for ${initiativeName}`,
+                text: `₹${d.amount.toLocaleString('en-IN')} For ${initiativeName}`,
                 href: (primaryLink?.linkType === 'campaign') 
                     ? `/campaign-public/${primaryLink.linkId}/summary` 
                     : (primaryLink?.linkType === 'lead') 
@@ -211,7 +227,7 @@ export function usePublicData() {
         progress: overallProgress,
       },
       yearlySummary: sortedYearlyData,
-      categorySummary: Object.entries(amountsByCategory).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})`})),
+      categorySummary: Object.entries(amountsByCategory).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` })),
       recentDonationsFormatted,
     };
 

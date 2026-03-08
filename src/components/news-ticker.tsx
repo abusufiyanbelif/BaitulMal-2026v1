@@ -23,27 +23,38 @@ interface NewsTickerProps {
 
 /**
  * A sophisticated vertical news ticker that cycles through items with a Fade + Slide Up animation.
- * Refined to remove box-shadows and pulse animations if items are not urgent/high active.
+ * Optimized to remove shadows and prioritize Urgent/High priority initiatives.
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  // Prioritize sorting: Urgent > High > Others
+  const sortedItems = React.useMemo(() => {
+    if (variant === 'active') {
+        return [...items].sort((a, b) => {
+            const getScore = (item: TickerItem) => (item.isUrgent ? 2 : item.isHigh ? 1 : 0);
+            return getScore(b) - getScore(a);
+        });
+    }
+    return items;
+  }, [items, variant]);
+
   useEffect(() => {
-    if (!items || items.length <= 1) return;
+    if (!sortedItems || sortedItems.length <= 1) return;
 
     const timer = setInterval(() => {
       handleNext();
     }, 5000);
 
     return () => clearInterval(timer);
-  }, [items]);
+  }, [sortedItems]);
 
   const handleNext = () => {
     if (isTransitioning) return;
     setIsTransitioning(true);
     setTimeout(() => {
-      setCurrentIndex((prev) => (prev + 1) % items.length);
+      setCurrentIndex((prev) => (prev + 1) % sortedItems.length);
       setIsTransitioning(false);
     }, 400); 
   };
@@ -52,23 +63,23 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
     if (isTransitioning) return;
     setIsTransitioning(true);
     setTimeout(() => {
-      setCurrentIndex((prev) => (prev - 1 + items.length) % items.length);
+      setCurrentIndex((prev) => (prev - 1 + sortedItems.length) % sortedItems.length);
       setIsTransitioning(false);
     }, 400);
   };
 
-  if (!items || items.length === 0) return null;
+  if (!sortedItems || sortedItems.length === 0) return null;
 
-  const currentItem = items[currentIndex];
+  const currentItem = sortedItems[currentIndex];
   const isCompleted = variant === 'completed';
   const isDonation = variant === 'donation';
 
   return (
     <div className={cn(
-      "group border rounded-lg overflow-hidden relative flex items-center mb-2 h-12 bg-white transition-all",
+      "group border rounded-lg overflow-hidden relative flex items-center mb-2 h-12 bg-white transition-all shadow-none",
       isCompleted ? "border-muted" : "border-primary/10",
-      !isCompleted && currentItem?.isUrgent && "animate-urgent-pulse border-red-500/50",
-      !isCompleted && currentItem?.isHigh && "animate-high-pulse border-orange-500/50"
+      !isCompleted && currentItem?.isUrgent && "border-red-500/50",
+      !isCompleted && currentItem?.isHigh && "border-orange-500/50"
     )}>
       {/* Label Section */}
       <div className={cn(

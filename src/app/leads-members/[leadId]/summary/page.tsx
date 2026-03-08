@@ -581,7 +581,7 @@ export default function LeadSummaryPage() {
                             ) : (
                                 <>
                                     <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer transition-all duration-500 hover:shadow-lg group" onClick={() => { if (lead?.imageUrl) handleViewImage(lead.imageUrl, lead.name); }}>
-                                        {lead?.imageUrl ? ( <Image src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`} alt={lead.name} fill sizes="100vw" className="object-cover transition-transform duration-700 group-hover:scale-110" /> ) : ( <FallbackIcon className="h-20 w-20 text-primary/10 transition-transform duration-500 group-hover:scale-110" /> )}
+                                        {lead?.imageUrl ? ( <Image src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`} alt={lead.name} fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover transition-transform duration-700 group-hover:scale-110" /> ) : ( <FallbackIcon className="h-20 w-20 text-primary/10 transition-transform duration-500 group-hover:scale-110" /> )}
                                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                     </div>
                                     <div className="space-y-2 font-normal text-foreground">
@@ -663,8 +663,8 @@ export default function LeadSummaryPage() {
                                     </CardTitle>
                                     <CardDescription className="font-normal text-primary/70">
                                         {isRationInitiative 
-                                            ? 'Breakdown Of Requirements By Family Size Category.' 
-                                            : 'Itemized Requirement Breakdown For This Initiative.'}
+                                            ? 'Breakdown of requirements by family size category.' 
+                                            : 'Itemized requirement breakdown for this initiative.'}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="p-0 sm:p-6 font-normal">
@@ -755,7 +755,7 @@ export default function LeadSummaryPage() {
 
                             {isVisible('zakat_utilization') && (
                                 <Card className="shadow-sm border-primary/5 bg-white transition-all duration-300 hover:shadow-lg">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Zakat Fund Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Secure Tracking Of Designated Zakat Resources.</CardDescription></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Zakat Fund Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Secure tracking of designated Zakat resources.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 pt-6 font-normal text-foreground">
                                         <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded"><span className="text-muted-foreground tracking-tighter font-normal">Total Zakat Collected</span><span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
                                         <Separator />
@@ -844,7 +844,7 @@ export default function LeadSummaryPage() {
                                                 <Card key={doc.url} className="overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col active:scale-95 bg-white border-primary/10 cursor-pointer shadow-sm group animate-fade-in-up" style={{ animationDelay: `${50 + idx * 50}ms` }} onClick={() => { if (isImg) handleViewImage(doc.url, doc.name); else window.open(doc.url, '_blank'); }}>
                                                     <div className="block flex-grow">
                                                         <div className="relative aspect-square w-full bg-muted flex items-center justify-center overflow-hidden">
-                                                            {isImg ? <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="100vw" className="object-cover transition-transform duration-500 group-hover:scale-110" /> : <File className="w-10 h-10 text-muted-foreground transition-transform duration-500 group-hover:scale-110" />}
+                                                            {isImg ? <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="(max-width: 768px) 100vw, 300px" className="object-cover transition-transform duration-500 group-hover:scale-110" /> : <File className="w-10 h-10 text-muted-foreground transition-transform duration-500 group-hover:scale-110" />}
                                                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
                                                         </div>
                                                         <div className="p-2 text-center text-[10px] font-bold text-primary uppercase tracking-tighter truncate transition-colors group-hover:text-primary/80">{doc.name}</div>

@@ -63,7 +63,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from "cmdk";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useToast } from '@/hooks/use-toast';
 import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction, updateMasterBeneficiaryAction, bulkImportBeneficiariesAction, bulkUpdateMasterBeneficiaryStatusAction } from './actions';
@@ -363,19 +363,19 @@ export default function BeneficiariesPage() {
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[250px] p-0 rounded-[12px] shadow-dropdown border-primary/10" align="start">
-                        <Command>
-                            <CommandInput placeholder="Search Referrals..." className="h-9 font-normal" />
-                            <CommandList>
+                        <Command className="w-full">
+                            <CommandInput placeholder="Search Referrals..." className="h-9 font-normal px-3 py-2 w-full outline-none" />
+                            <CommandList className="max-h-[300px] overflow-y-auto">
                                 <CommandEmpty className="py-2 text-center text-xs text-muted-foreground font-normal">No Source Found.</CommandEmpty>
-                                <CommandGroup>
-                                    <CommandItem onSelect={() => setSelectedReferrals([])} className="font-normal text-xs">
+                                <CommandGroup className="p-1">
+                                    <CommandItem onSelect={() => setSelectedReferrals([])} className="flex items-center px-2 py-1.5 rounded-md hover:bg-primary/5 cursor-pointer font-normal text-xs">
                                         <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", selectedReferrals.length === 0 ? "bg-primary text-primary-foreground" : "opacity-50")}>
                                             {selectedReferrals.length === 0 && <Check className="h-3 w-3" />}
                                         </div>
                                         <span>Show All Sources</span>
                                     </CommandItem>
                                     {uniqueReferrals.map((source) => (
-                                        <CommandItem key={source} onSelect={() => toggleReferral(source)} className="font-normal text-xs">
+                                        <CommandItem key={source} onSelect={() => toggleReferral(source)} className="flex items-center px-2 py-1.5 rounded-md hover:bg-primary/5 cursor-pointer font-normal text-xs">
                                             <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", selectedReferrals.includes(source) ? "bg-primary text-primary-foreground" : "opacity-50")}>
                                                 {selectedReferrals.includes(source) && <Check className="h-3 w-3" />}
                                             </div>
