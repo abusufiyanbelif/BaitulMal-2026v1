@@ -21,8 +21,8 @@ import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 /**
- * Custom Zakat Icon - Re-engineered as a "Money Bag Offering".
- * High-fidelity SVG illustrating the 2.5% Zakat principle.
+ * Custom Zakat Icon - Re-engineered as an "Old Style" Money Bag.
+ * Based on user-provided reference: Yellow cloth bag with a dark tie.
  */
 const ZakatCustomIcon = ({ className }: { className?: string }) => (
   <svg 
@@ -31,55 +31,70 @@ const ZakatCustomIcon = ({ className }: { className?: string }) => (
     xmlns="http://www.w3.org/2000/svg" 
     className={className}
   >
-    {/* Hands Offering / Cradling the Bag */}
+    {/* Bag Shadow/Depth */}
     <path 
-      d="M120 420C120 420 160 480 256 480C352 480 392 420 392 420" 
-      stroke="#13a663" 
-      strokeWidth="20" 
-      strokeLinecap="round" 
+      d="M256 100C160 100 120 180 120 320C120 420 180 480 256 480C332 480 392 420 392 320C392 180 352 100 256 100Z" 
+      fill="#EAB308" 
+      opacity="0.2"
     />
+
+    {/* Main Bag Body (Yellow/Gold) */}
     <path 
-      d="M100 380C100 380 130 440 256 440C382 440 412 380 412 380" 
-      stroke="#13a663" 
+      d="M256 120C170 120 130 190 130 330C130 430 180 470 256 470C332 470 382 430 382 330C382 190 342 120 256 120Z" 
+      fill="#FACC15" 
+    />
+    
+    {/* Bag Highlights */}
+    <path 
+      d="M180 330C180 250 210 180 256 180" 
+      stroke="white" 
       strokeWidth="12" 
       strokeLinecap="round" 
       opacity="0.3"
     />
 
-    {/* Money Bag Body */}
+    {/* Top Ruffle (Old Style Bag Opening) */}
     <path 
-      d="M256 120C180 120 140 180 140 300C140 380 190 420 256 420C322 420 372 380 372 300C372 180 332 120 256 120Z" 
-      fill="#13a663" 
+      d="M210 120C190 100 180 60 210 40C230 30 282 30 302 40C332 60 322 100 302 120" 
+      fill="#FACC15" 
     />
-    
-    {/* Bag Tie/Neck */}
     <path 
-      d="M210 120C210 100 220 60 256 60C292 60 302 100 302 120" 
-      stroke="#064e3b" 
-      strokeWidth="15" 
+      d="M210 120C190 100 180 60 210 40C230 30 282 30 302 40C332 60 322 100 302 120Z" 
+      stroke="#A16207" 
+      strokeWidth="4"
+    />
+
+    {/* The Tie (Dark Red/Brown) */}
+    <path 
+      d="M190 120C190 120 230 140 256 140C282 140 322 120 322 120" 
+      stroke="#7F1D1D" 
+      strokeWidth="14" 
       strokeLinecap="round" 
     />
-    <rect x="200" y="110" width="112" height="20" rx="10" fill="#064e3b" />
+    <path 
+      d="M256 140L230 180M256 140L282 180" 
+      stroke="#7F1D1D" 
+      strokeWidth="10" 
+      strokeLinecap="round" 
+    />
+    <circle cx="256" cy="140" r="10" fill="#7F1D1D" />
 
-    {/* Central Information Badge */}
-    <circle cx="256" cy="285" r="85" fill="white" stroke="#064e3b" strokeWidth="8" />
-    
-    {/* 2.5% Zakat Text - Branded Typography */}
+    {/* Icon Text: 2.5% Zakat (Old Style Handwriting feel) */}
     <text 
       x="256" 
-      y="275" 
+      y="300" 
       textAnchor="middle" 
-      fill="#13a663" 
-      style={{ fontSize: '54px', fontWeight: '900', fontFamily: 'sans-serif' }}
+      fill="#7F1D1D" 
+      style={{ fontSize: '64px', fontWeight: '900', fontFamily: 'serif' }}
     >
       2.5%
     </text>
     <text 
       x="256" 
-      y="320" 
+      y="360" 
       textAnchor="middle" 
-      fill="#064e3b" 
-      style={{ fontSize: '28px', fontWeight: 'bold', fontFamily: 'sans-serif' }}
+      fill="#7F1D1D" 
+      style={{ fontSize: '48px', fontWeight: 'bold', fontFamily: 'serif' }}
     >
       Zakat
     </text>
@@ -153,7 +168,7 @@ export default function DonationInfoPage() {
       <Tabs defaultValue={donationTypes[0]?.id} className="max-w-5xl mx-auto">
         <div className="flex justify-center mb-8">
             <ScrollArea className="w-full sm:w-auto">
-                <TabsList className="bg-muted/50 p-1">
+                <TabsList className="bg-muted/50 p-1 rounded-xl">
                     {donationTypes.map((type) => (
                         <TabsTrigger key={type.id} value={type.id} className="px-6 py-2 font-bold tracking-tight data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                             {type.title?.split(' ')[0] || type.id}
@@ -173,20 +188,20 @@ export default function DonationInfoPage() {
 
             return (
                 <TabsContent key={type.id} value={type.id} className="animate-fade-in-up">
-                    <Card className="overflow-hidden border-primary/10 shadow-xl bg-white">
-                        <div className="relative h-64 md:h-80 w-full flex items-center justify-center bg-primary/5">
+                    <Card className="overflow-hidden border-primary/10 shadow-xl bg-white rounded-2xl">
+                        <div className="relative h-64 md:h-80 w-full flex items-center justify-center bg-primary/[0.02] border-b">
                             {displayImageUrl ? (
                                 <Image src={displayImageUrl} alt={type.title || 'Header'} fill sizes="100vw" className="object-cover" priority />
                             ) : (
                                 <div className="flex flex-col items-center gap-4">
-                                    <div className="p-6 rounded-full bg-primary/10 text-primary">
+                                    <div className="p-6 rounded-full bg-white shadow-inner border border-primary/10 transition-transform duration-700 hover:scale-110">
                                         <IconComponent className="h-40 w-40" />
                                     </div>
                                 </div>
                             )}
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                            <div className="absolute bottom-8 left-8 text-white pr-8">
-                                <h2 className="text-3xl font-bold tracking-tight drop-shadow-md">{type.title}</h2>
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent pointer-events-none" />
+                            <div className="absolute bottom-8 left-8 text-primary pr-8 bg-white/80 backdrop-blur-sm p-4 rounded-xl border border-primary/10 shadow-sm">
+                                <h2 className="text-2xl font-bold tracking-tight">{type.title}</h2>
                             </div>
                         </div>
                         <CardContent className="p-8 md:p-12 space-y-10">
@@ -215,7 +230,7 @@ export default function DonationInfoPage() {
                                             </h3>
                                             <div className="grid gap-4">
                                                 {visibleUseCases.map((useCase) => (
-                                                    <div key={useCase.id} className="group p-6 rounded-xl border border-primary/10 bg-white hover:border-primary/30 transition-all">
+                                                    <div key={useCase.id} className="group p-6 rounded-2xl border border-primary/10 bg-white hover:border-primary/30 transition-all shadow-sm">
                                                         <div className="flex items-start gap-4">
                                                             <div className="mt-1 shrink-0">
                                                                 {useCase.isAllowed ? <CheckCircle2 className="h-5 w-5 text-green-600" /> : <XCircle className="h-5 w-5 text-red-600" />}
@@ -225,7 +240,7 @@ export default function DonationInfoPage() {
                                                                 <p className="text-muted-foreground font-normal text-sm leading-relaxed">{useCase.description}</p>
                                                                 
                                                                 {(useCase.quranVerse || useCase.quranSource) && (
-                                                                    <div className="mt-4 p-4 bg-muted/20 rounded-lg border-l-2 border-primary/20 italic text-xs text-muted-foreground">
+                                                                    <div className="mt-4 p-4 bg-muted/20 rounded-xl border-l-2 border-primary/20 italic text-xs text-muted-foreground">
                                                                         {useCase.quranVerse && <p>"{useCase.quranVerse}"</p>}
                                                                         {useCase.quranSource && <p className="text-[10px] font-bold text-primary text-right mt-2">— {useCase.quranSource}</p>}
                                                                     </div>
@@ -241,7 +256,7 @@ export default function DonationInfoPage() {
 
                                 <div className="space-y-8 font-normal">
                                     {!type.hideKeyHighlights && type.purposePoints && type.purposePoints.length > 0 && (
-                                        <div className="bg-primary/[0.02] p-6 rounded-2xl border border-primary/10">
+                                        <div className="bg-primary/[0.02] p-6 rounded-2xl border border-primary/10 shadow-sm">
                                             <h4 className="font-bold text-[10px] uppercase tracking-widest text-primary/60 mb-4 flex items-center gap-2">
                                                 <ListChecks className="h-4 w-4" /> Key Highlights
                                             </h4>
@@ -280,14 +295,14 @@ export default function DonationInfoPage() {
                                     </h3>
                                     <div className="grid sm:grid-cols-2 gap-6">
                                         {visibleQA.map((qa) => (
-                                            <div key={qa.id} className="space-y-4 bg-muted/10 p-6 rounded-2xl border border-primary/5">
+                                            <div key={qa.id} className="space-y-4 bg-muted/10 p-6 rounded-2xl border border-primary/5 shadow-sm">
                                                 <div className="space-y-2">
                                                     <h4 className="font-bold text-base text-primary">Q: {qa.question}</h4>
                                                     <p className="text-sm text-foreground/80 leading-relaxed font-normal">A: {qa.answer}</p>
                                                 </div>
                                                 
                                                 {(qa.quranVerse || qa.quranSource) && (
-                                                    <div className="p-3 bg-white/50 rounded-lg border-l-2 border-primary/20 italic text-xs text-muted-foreground">
+                                                    <div className="p-3 bg-white/50 rounded-xl border-l-2 border-primary/20 italic text-xs text-muted-foreground">
                                                         {qa.quranVerse && <p>"{qa.quranVerse}"</p>}
                                                         {qa.quranSource && <p className="text-[10px] font-bold text-primary text-right mt-1">— {qa.quranSource}</p>}
                                                     </div>
@@ -315,7 +330,7 @@ export default function DonationInfoPage() {
               <h2 className="text-2xl font-bold tracking-tight text-primary">Quick Comparison</h2>
               <p className="text-muted-foreground font-normal">Identifying The Primary Differences At A Glance.</p>
           </div>
-          <Card className="shadow-xl overflow-hidden border-primary/10 bg-white">
+          <Card className="shadow-xl overflow-hidden border-primary/10 bg-white rounded-2xl">
               <Table>
                   <TableHeader className="bg-primary/5">
                   <TableRow>
@@ -328,7 +343,7 @@ export default function DonationInfoPage() {
                   </TableHeader>
                   <TableBody>
                   {comparisonData.map((row) => (
-                      <TableRow key={row.feature} className="hover:bg-primary/[0.02] transition-colors">
+                      <TableRow key={row.feature} className="hover:bg-primary/[0.02] transition-colors border-b border-primary/5 last:border-0">
                       <TableCell className="font-bold text-xs bg-primary/[0.01] tracking-tight text-primary/60">{row.feature}</TableCell>
                       <TableCell className="text-xs font-normal">{row.zakat}</TableCell>
                       <TableCell className="text-xs font-normal">{row.sadaqah}</TableCell>
