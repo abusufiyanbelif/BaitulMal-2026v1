@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info, Lightbulb, Globe, ShieldCheck, Clock, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle } from 'lucide-react';
 import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useSession } from '@/hooks/use-session';
-import { doc, updateDoc, collection } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import type { Lead } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
@@ -22,6 +22,7 @@ import { Badge } from '@/components/ui/badge';
 import { CopyLeadDialog } from '@/components/copy-lead-dialog';
 import { copyLeadAction, deleteLeadAction } from './actions';
 import { cn, getNestedValue } from '@/lib/utils';
+import { priorityLevels } from '@/lib/modules';
 import Image from 'next/image';
 import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -59,7 +60,7 @@ interface LeadCardProps {
     canUpdate: boolean;
     canCreate: boolean;
     canDelete: boolean;
-    handleStatusUpdate: (leadToUpdate: Lead, field: 'status' | 'authenticityStatus' | 'publicVisibility', value: string) => Promise<void>;
+    handleStatusUpdate: (leadToUpdate: Lead, field: 'status' | 'authenticityStatus' | 'publicVisibility' | 'priority', value: string) => Promise<void>;
     handleCopyClick: (lead: Lead) => void;
     handleDeleteClick: (lead: Lead) => void;
 }
@@ -107,7 +108,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                             <MoreHorizontal className="h-4 w-4 text-primary" />
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+                    <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()} className="rounded-[12px] border-primary/10 shadow-dropdown">
                         <DropdownMenuItem onClick={() => router.push(`/leads-members/${lead.id}/summary`)} className="cursor-pointer text-primary font-normal">
                             <Edit className="mr-2 h-4 w-4" />
                             View Details
@@ -118,7 +119,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger className="text-primary font-normal"><span>Operational Status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
-                                        <DropdownMenuSubContent>
+                                        <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={lead.status} onValueChange={(value) => handleStatusUpdate(lead, 'status', value)}>
                                                 <DropdownMenuRadioItem value="Upcoming" className="font-normal">Upcoming</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Active" className="font-normal">Active</DropdownMenuRadioItem>
@@ -130,7 +131,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger className="text-primary font-normal"><span>Verification Status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
-                                        <DropdownMenuSubContent>
+                                        <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={lead.authenticityStatus} onValueChange={(value) => handleStatusUpdate(lead, 'authenticityStatus', value as string)}>
                                                 <DropdownMenuRadioItem value="Pending Verification" className="font-normal">Pending Verification</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Verified" className="font-normal">Verified</DropdownMenuRadioItem>
@@ -144,11 +145,23 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                                 <DropdownMenuSub>
                                     <DropdownMenuSubTrigger className="text-primary font-normal"><span>Public Visibility</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
-                                        <DropdownMenuSubContent>
+                                        <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={lead.publicVisibility} onValueChange={(value) => handleStatusUpdate(lead, 'publicVisibility', value as string)}>
                                                 <DropdownMenuRadioItem value="Hold" className="font-normal">Hold (Private)</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Ready to Publish" className="font-normal">Ready To Publish</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Published" className="text-primary font-normal">Published</DropdownMenuRadioItem>
+                                            </DropdownMenuRadioGroup>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuPortal>
+                                </DropdownMenuSub>
+                                <DropdownMenuSub>
+                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Change Priority</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuPortal>
+                                        <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
+                                            <DropdownMenuRadioGroup value={lead.priority} onValueChange={(value) => handleStatusUpdate(lead, 'priority', value)}>
+                                                {priorityLevels.map(p => (
+                                                    <DropdownMenuRadioItem key={p} value={p} className="font-normal">{p} Priority</DropdownMenuRadioItem>
+                                                ))}
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
                                     </DropdownMenuPortal>
@@ -289,6 +302,18 @@ export default function LeadPage() {
     );
   }, [campaignsWithProgress, leadsWithProgress]);
 
+  const completedTickerItems = useMemo(() => {
+    const completedCampaigns = (campaignsWithProgress || [])
+      .filter(c => c.status === 'Completed')
+      .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-public/${c.id}/summary` }));
+    
+    const completedLeads = (leadsWithProgress || [])
+      .filter(l => l.status === 'Completed')
+      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
+
+    return [...completedCampaigns, ...completedLeads];
+  }, [campaignsWithProgress, leadsWithProgress]);
+
   const availableYears = useMemo(() => {
     const years = new Set<string>();
     (leadsWithProgress || []).forEach(l => l.startDate && years.add(l.startDate.split('-')[0]));
@@ -310,12 +335,12 @@ export default function LeadPage() {
     setLeadToDelete(null);
   };
 
-  const handleStatusUpdate = async (leadToUpdate: Lead, field: 'status' | 'authenticityStatus' | 'publicVisibility', value: string) => {
+  const handleStatusUpdate = async (leadToUpdate: Lead, field: 'status' | 'authenticityStatus' | 'publicVisibility' | 'priority', value: string) => {
     if (!firestore || !canUpdate) return;
     const docRef = doc(firestore, 'leads', leadToUpdate.id);
     const updateData = { [field]: value };
     updateDoc(docRef, updateData)
-        .then(() => toast({ title: 'Success', description: `Lead Visibility Updated.`, variant: 'success' }))
+        .then(() => toast({ title: 'Success', description: `Lead Details Updated.`, variant: 'success' }))
         .catch((serverError: any) => {
             const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData });
             errorEmitter.emit('permission-error', permissionError);
@@ -439,7 +464,7 @@ export default function LeadPage() {
       </main>
       
       <AlertDialog open={!!leadToDelete} onOpenChange={(open) => !open && setLeadToDelete(null)}>
-        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Delete Appeal?</AlertDialogTitle><AlertDialogDescription className="font-bold opacity-80 text-primary/70">Permanently Erase All Data For '{leadToDelete?.name}'? This Action Cannot Be Undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 transition-transform active:scale-95">Confirm Deletion</AccordionAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Delete Appeal?</AlertDialogTitle><AlertDialogDescription className="font-bold opacity-80 text-primary/70">Permanently Erase All Data For '{leadToDelete?.name}'? This Action Cannot Be Undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 transition-transform active:scale-95">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
         
       <CopyLeadDialog open={!!leadToCopy} onOpenChange={() => setLeadToCopy(null)} lead={leadToCopy} onCopyConfirm={async (opt) => { const res = await copyLeadAction({ sourceLeadId: leadToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); setLeadToCopy(null); }}/>

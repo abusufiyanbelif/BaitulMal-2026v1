@@ -127,7 +127,6 @@ export default function BeneficiariesPage() {
   const storage = useStorage();
   const { toast } = useToast();
   const { userProfile, isLoading: isProfileLoading } = useSession();
-  const auth = useAuth();
   
   const campaignDocRef = useMemoFirebase(() => (firestore && campaignId) ? doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign> : null, [firestore, campaignId]);
   const { data: campaign, isLoading: isCampaignLoading } = useDoc<Campaign>(campaignDocRef);
@@ -734,7 +733,7 @@ export default function BeneficiariesPage() {
                     beneficiary={editingBeneficiary}
                     onSubmit={handleFormSubmit} 
                     onCancel={() => { setIsFormOpen(false); setEditingBeneficiary(null); }} 
-                    itemCategories={campaign.itemCategories || []} 
+                    itemCategories={campaign?.itemCategories || []} 
                 />
             </DialogContent>
         </Dialog>

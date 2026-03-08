@@ -142,14 +142,14 @@ export default function PublicCampaignSummaryPage() {
     const fundingData = useMemo(() => {
         if (!allDonations || !campaign || !beneficiaries) return null;
         
-        const donations = allDonations.filter(d => {
+        const donationsList = allDonations.filter(d => {
             if (d.linkSplit && d.linkSplit.length > 0) {
                 return d.linkSplit.some(link => link.linkId === campaign.id && link.linkType === 'campaign');
             }
             return (d as any).campaignId === campaign.id;
         });
 
-        const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
+        const verifiedDonationsList = donationsList.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
         const paymentTypeStats: Record<string, { count: number, amount: number }> = {};
@@ -481,7 +481,7 @@ export default function PublicCampaignSummaryPage() {
                                                                 nameKey="name" 
                                                                 formatter={(value, name, item) => (
                                                                     <div className="flex flex-col">
-                                                                        <span className="font-bold">₹{Number(value).toLocaleString()}</span>
+                                                                        <span className="font-bold">Total: ₹{Number(value).toLocaleString()}</span>
                                                                         <span className="text-[10px] opacity-70">{(item as any).payload.count} Donations</span>
                                                                     </div>
                                                                 )}

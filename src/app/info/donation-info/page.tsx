@@ -21,7 +21,8 @@ import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 /**
- * Custom Zakat Icon - Engineered to match the institutional 2.5% requirement visual.
+ * Custom Zakat Icon - Re-engineered in institutional green (#13a663).
+ * Illustrates the 2.5% requirement with high-fidelity paths.
  */
 const ZakatCustomIcon = ({ className }: { className?: string }) => (
   <svg 
@@ -30,30 +31,30 @@ const ZakatCustomIcon = ({ className }: { className?: string }) => (
     xmlns="http://www.w3.org/2000/svg" 
     className={className}
   >
-    <rect x="40" y="390" width="80" height="90" rx="8" fill="hsl(var(--primary))" stroke="black" strokeWidth="18" />
+    <rect x="40" y="390" width="80" height="90" rx="8" fill="#13a663" stroke="#064e3b" strokeWidth="12" />
     <path 
       d="M120 435H380C430 435 480 410 480 360C480 330 450 310 410 310H320V320C320 340 300 360 280 360H120V435Z" 
-      fill="#FFE0B2" 
-      stroke="black" 
-      strokeWidth="18" 
+      fill="#fef3c7" 
+      stroke="#064e3b" 
+      strokeWidth="12" 
       strokeLinejoin="round" 
     />
     <path 
       d="M180 310C180 180 210 100 260 100C310 100 340 180 340 310H180Z" 
-      fill="#F5F5F5" 
-      stroke="black" 
-      strokeWidth="18" 
+      fill="#f9fafb" 
+      stroke="#064e3b" 
+      strokeWidth="12" 
       strokeLinejoin="round"
     />
     <path 
       d="M230 100L215 50C215 40 225 30 235 30H285C295 30 305 40 305 50L290 100H230Z" 
-      fill="#F5F5F5" 
-      stroke="black" 
-      strokeWidth="18" 
+      fill="#f9fafb" 
+      stroke="#064e3b" 
+      strokeWidth="12" 
       strokeLinejoin="round"
     />
-    <rect x="215" y="90" width="90" height="25" rx="12.5" fill="hsl(var(--primary))" stroke="black" strokeWidth="18" />
-    <circle cx="260" cy="225" r="60" fill="hsl(var(--primary))" stroke="black" strokeWidth="18" />
+    <rect x="215" y="90" width="90" height="25" rx="12.5" fill="#13a663" stroke="#064e3b" strokeWidth="12" />
+    <circle cx="260" cy="225" r="60" fill="#13a663" stroke="#064e3b" strokeWidth="12" />
     <text 
       x="260" 
       y="225" 
@@ -223,7 +224,7 @@ export default function DonationInfoPage() {
                                 <div className="space-y-8 font-normal">
                                     {!type.hideKeyHighlights && type.purposePoints && type.purposePoints.length > 0 && (
                                         <div className="bg-primary/[0.02] p-6 rounded-2xl border border-primary/10">
-                                            <h4 className="font-bold text-xs uppercase tracking-widest text-primary/60 mb-4 flex items-center gap-2">
+                                            <h4 className="font-bold text-[10px] uppercase tracking-widest text-primary/60 mb-4 flex items-center gap-2">
                                                 <ListChecks className="h-4 w-4" /> Key Highlights
                                             </h4>
                                             <ul className="space-y-3">
