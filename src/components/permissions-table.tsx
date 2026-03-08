@@ -1,10 +1,11 @@
-
 'use client';
 
+import React from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Checkbox } from '@/components/ui/checkbox';
-import type { UserPermissions } from '@/lib/modules';
-import { getNestedValue } from '@/lib/utils';
+import { modules, type UserPermissions, type Permission } from '@/lib/modules';
+import { getNestedValue, cn } from '@/lib/utils';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 interface PermissionsTableProps {
   permissions: UserPermissions;
@@ -23,272 +24,74 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
     }
   };
 
+  /**
+   * Renders a single row in the permissions table.
+   * Supports indentation for sub-modules and conditional checkbox rendering.
+   */
+  const renderRow = (label: string, path: string, level: number = 0, allowedPerms: Permission[]) => {
+    return (
+      <TableRow key={path} className={cn(
+        "transition-colors",
+        level > 0 ? "bg-primary/[0.01] border-l-2 border-primary/10" : "bg-white"
+      )}>
+        <TableCell className={cn(
+            "font-bold text-primary py-3", 
+            level > 0 && "pl-8 text-xs text-muted-foreground font-normal italic"
+        )}>
+          {level > 0 && "↳ "} {label}
+        </TableCell>
+        
+        {(['create', 'read', 'update', 'delete'] as const).map((p) => {
+          const isAllowed = allowedPerms.includes(p);
+          const isChecked = !!getNestedValue(permissions, `${path}.${p}`, false);
+          
+          return (
+            <TableCell key={p} className="text-center py-3">
+              {isAllowed ? (
+                <Checkbox
+                  checked={isChecked}
+                  onCheckedChange={handleCheckedChange(`${path}.${p}`)}
+                  disabled={isDisabled}
+                  className="border-primary/40 data-[state=checked]:bg-primary transition-all active:scale-90"
+                />
+              ) : (
+                <span className="text-[8px] font-black text-muted-foreground/20 uppercase tracking-tighter select-none">N/A</span>
+              )}
+            </TableCell>
+          );
+        })}
+      </TableRow>
+    );
+  };
+
   return (
-    <div className="rounded-md border overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Module</TableHead>
-            <TableHead className="text-center">Create</TableHead>
-            <TableHead className="text-center">Read</TableHead>
-            <TableHead className="text-center">Update</TableHead>
-            <TableHead className="text-center">Delete</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {/* User Management */}
-          <TableRow>
-            <TableCell className="font-medium">User Management</TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'users.create', false)}
-                onCheckedChange={handleCheckedChange('users.create')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'users.read', false)}
-                onCheckedChange={handleCheckedChange('users.read')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'users.update', false)}
-                onCheckedChange={handleCheckedChange('users.update')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'users.delete', false)}
-                onCheckedChange={handleCheckedChange('users.delete')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-          </TableRow>
-          
-          {/* Campaigns */}
-          <TableRow>
-            <TableCell className="font-medium">Campaigns</TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'campaigns.create', false)}
-                onCheckedChange={handleCheckedChange('campaigns.create')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'campaigns.read', false)}
-                onCheckedChange={handleCheckedChange('campaigns.read')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'campaigns.update', false)}
-                onCheckedChange={handleCheckedChange('campaigns.update')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'campaigns.delete', false)}
-                onCheckedChange={handleCheckedChange('campaigns.delete')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-          </TableRow>
-          
-          {/* Leads */}
-          <TableRow>
-            <TableCell className="font-medium">Leads</TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'leads-members.create', false)}
-                onCheckedChange={handleCheckedChange('leads-members.create')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'leads-members.read', false)}
-                onCheckedChange={handleCheckedChange('leads-members.read')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'leads-members.update', false)}
-                onCheckedChange={handleCheckedChange('leads-members.update')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'leads-members.delete', false)}
-                onCheckedChange={handleCheckedChange('leads-members.delete')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-          </TableRow>
-          
-          {/* Beneficiaries */}
-          <TableRow>
-            <TableCell className="font-medium">Beneficiaries (Master)</TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'beneficiaries.create', false)}
-                onCheckedChange={handleCheckedChange('beneficiaries.create')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'beneficiaries.read', false)}
-                onCheckedChange={handleCheckedChange('beneficiaries.read')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'beneficiaries.update', false)}
-                onCheckedChange={handleCheckedChange('beneficiaries.update')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'beneficiaries.delete', false)}
-                onCheckedChange={handleCheckedChange('beneficiaries.delete')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-          </TableRow>
-          
-          {/* Global Donations */}
-          <TableRow>
-            <TableCell className="font-medium">Donations (Global)</TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'donations.create', false)}
-                onCheckedChange={handleCheckedChange('donations.create')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'donations.read', false)}
-                onCheckedChange={handleCheckedChange('donations.read')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'donations.update', false)}
-                onCheckedChange={handleCheckedChange('donations.update')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'donations.delete', false)}
-                onCheckedChange={handleCheckedChange('donations.delete')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-          </TableRow>
-
-          {/* Settings */}
-          <TableRow>
-            <TableCell className="font-medium">Settings</TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'settings.create', false)}
-                onCheckedChange={handleCheckedChange('settings.create')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'settings.read', false)}
-                onCheckedChange={handleCheckedChange('settings.read')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'settings.update', false)}
-                onCheckedChange={handleCheckedChange('settings.update')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'settings.delete', false)}
-                onCheckedChange={handleCheckedChange('settings.delete')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-          </TableRow>
-
-          {/* Read-Only Access Modules */}
-          <TableRow>
-            <TableCell className="font-medium">Extractor</TableCell>
-            <TableCell />
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'extractor.read', false)}
-                onCheckedChange={handleCheckedChange('extractor.read')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell />
-            <TableCell />
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-medium">Story Creator</TableCell>
-            <TableCell />
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'storyCreator.read', false)}
-                onCheckedChange={handleCheckedChange('storyCreator.read')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell />
-            <TableCell />
-          </TableRow>
-           <TableRow>
-            <TableCell className="font-medium">Diagnostics</TableCell>
-            <TableCell />
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'diagnostics.read', false)}
-                onCheckedChange={handleCheckedChange('diagnostics.read')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell />
-            <TableCell />
-          </TableRow>
-          <TableRow>
-            <TableCell className="font-medium">Data Analytics</TableCell>
-            <TableCell />
-            <TableCell className="text-center">
-              <Checkbox
-                checked={!!getNestedValue(permissions, 'analytics.read', false)}
-                onCheckedChange={handleCheckedChange('analytics.read')}
-                disabled={isDisabled}
-              />
-            </TableCell>
-            <TableCell />
-            <TableCell />
-          </TableRow>
-        </TableBody>
-      </Table>
+    <div className="rounded-xl border border-primary/10 overflow-hidden shadow-sm bg-white animate-fade-in-up">
+      <ScrollArea className="w-full">
+        <div className="min-w-[600px]">
+          <Table>
+            <TableHeader className="bg-primary/5">
+              <TableRow className="hover:bg-transparent border-b border-primary/10">
+                <TableHead className="font-bold text-primary tracking-tight py-4">Module / Section</TableHead>
+                <TableHead className="text-center font-bold text-primary tracking-tight py-4">Create</TableHead>
+                <TableHead className="text-center font-bold text-primary tracking-tight py-4">Read</TableHead>
+                <TableHead className="text-center font-bold text-primary tracking-tight py-4">Update</TableHead>
+                <TableHead className="text-center font-bold text-primary tracking-tight py-4">Delete</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {modules.map((mod) => (
+                <React.Fragment key={mod.id}>
+                  {renderRow(mod.name, mod.id, 0, mod.permissions as unknown as Permission[])}
+                  {'subModules' in mod && mod.subModules && (mod.subModules as any).map((subMod: any) => (
+                    renderRow(subMod.name, `${mod.id}.${subMod.id}`, 1, subMod.permissions as unknown as Permission[])
+                  ))}
+                </React.Fragment>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+        <ScrollBar orientation="horizontal" />
+      </ScrollArea>
     </div>
   );
 }
