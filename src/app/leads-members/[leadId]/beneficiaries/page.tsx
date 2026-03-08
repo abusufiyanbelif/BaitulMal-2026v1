@@ -103,17 +103,17 @@ const gridClass = "grid grid-cols-[40px_40px_50px_200px_120px_140px_140px_100px_
 
 function StatCard({ title, count, description, icon: Icon, colorClass, delay }: { title: string, count: number, description: string, icon: any, colorClass?: string, delay: string }) {
     return (
-        <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md hover:-translate-y-1", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
+        <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
                     <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">{count}</p>
                 </div>
-                <div className="p-2 rounded-lg bg-primary/5 text-primary">
+                <div className="p-2 rounded-lg bg-primary/10 text-primary">
                     <Icon className="h-5 w-5" />
                 </div>
             </div>
-            <p className="text-[10px] font-bold text-muted-foreground mt-auto">{description}</p>
+            <p className="text-[10px] font-medium text-muted-foreground mt-auto">{description}</p>
         </Card>
     )
 }
@@ -240,11 +240,11 @@ export default function BeneficiariesPage() {
     if (selectedIds.length === 0) return;
     setIsBulkUpdating(true);
     const res = await bulkUpdateInitiativeBeneficiaryStatusAction('lead', leadId, selectedIds, newStatus);
-    if (res.success) {
-        toast({ title: "Status Updated", description: `Successfully marked ${selectedIds.length} recipients as ${newStatus}.`, variant: "success" });
+    if (res && res.success) {
+        toast({ title: "Status Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Update Failed", description: res.message, variant: "destructive" });
+        toast({ title: "Update Failed", description: res?.message || "Failed to update records.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -253,11 +253,11 @@ export default function BeneficiariesPage() {
     if (!userProfile || selectedIds.length === 0) return;
     setIsBulkUpdating(true);
     const res = await bulkUpdateMasterBeneficiaryStatusAction(selectedIds, newStatus, { id: userProfile.id, name: userProfile.name });
-    if (res.success) {
-        toast({ title: "Vetting Updated", description: `Updated master vetting for ${selectedIds.length} beneficiaries to ${newStatus}.`, variant: "success" });
+    if (res && res.success) {
+        toast({ title: "Vetting Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Update Failed", description: res.message, variant: "destructive" });
+        toast({ title: "Update Failed", description: res?.message || "Failed to update vetting.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -290,7 +290,7 @@ export default function BeneficiariesPage() {
 
   const handleRemoveFromInitiative = (beneficiaryId: string) => {
     if (!firestore || !leadId || !canUpdate) return;
-    if (!confirm('Are You Certain You Want To Remove This Beneficiary? The Master Record Will Remain Unaffected.')) return;
+    if (!confirm('Are You Certain You Want To Remove This Beneficiary?')) return;
     const ref = doc(firestore, 'leads', leadId, 'beneficiaries', beneficiaryId);
     deleteDoc(ref).then(() => {
         toast({ title: 'Beneficiary Removed', variant: 'success' });
@@ -300,33 +300,50 @@ export default function BeneficiariesPage() {
   const handleFormSubmit = async (data: BeneficiaryFormData, masterIdOrEvent?: string | React.BaseSyntheticEvent) => {
     setIsSubmitting(true);
     if (!firestore || !storage || !leadId || !userProfile || !lead) { setIsSubmitting(false); return; }
-    const masterId = typeof masterIdOrEvent === 'string' ? masterIdOrEvent : editingBeneficiary?.id;
-    const batch = writeBatch(firestore);
-    const masterRef = masterId ? doc(firestore, 'beneficiaries', masterId) : doc(collection(firestore, 'beneficiaries'));
-    const leadRefSub = doc(firestore, 'leads', leadId, 'beneficiaries', masterRef.id);
-    let masterVerificationStatus: any = 'Pending';
-    if (masterId) {
-        const masterSnap = await getDoc(masterRef);
-        if (masterSnap.exists()) masterVerificationStatus = masterSnap.data().status || 'Pending';
+    
+    try {
+        const masterId = typeof masterIdOrEvent === 'string' ? masterIdOrEvent : editingBeneficiary?.id;
+        const batch = writeBatch(firestore);
+        const masterRef = masterId ? doc(firestore, 'beneficiaries', masterId) : doc(collection(firestore, 'beneficiaries'));
+        const leadRefSub = doc(firestore, 'leads', leadId, 'beneficiaries', masterRef.id);
+        
+        let masterVerificationStatus: any = 'Pending';
+        if (masterId) {
+            const masterSnap = await getDoc(masterRef);
+            if (masterSnap.exists()) masterVerificationStatus = masterSnap.data().status || 'Pending';
+        }
+        
+        let idProofUrl = editingBeneficiary?.idProofUrl || '';
+        const fileList = data.idProofFile as FileList | undefined;
+        if (fileList && fileList.length > 0) {
+            const file = fileList[0];
+            const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
+            const fRef = storageRef(storage, `beneficiaries/${masterRef.id}/id_proof.png`);
+            await uploadBytes(fRef, resizedBlob);
+            idProofUrl = await getDownloadURL(fRef);
+        }
+        
+        const { idProofFile, idProofDeleted, ...rest } = data;
+        const fullData = { ...rest, id: masterRef.id, idProofUrl, verificationStatus: masterVerificationStatus, addedDate: editingBeneficiary?.addedDate || new Date().toISOString().split('T')[0], createdAt: editingBeneficiary ? (editingBeneficiary as any).createdAt : serverTimestamp(), createdById: editingBeneficiary ? (editingBeneficiary as any).createdById : userProfile.id, createdByName: editingBeneficiary ? (editingBeneficiary as any).createdByName : userProfile.name };
+        const { status, kitAmount, zakatAllocation, ...masterData } = fullData;
+        const masterStatusToSave = status === 'Given' ? 'Verified' : status;
+        
+        batch.set(masterRef, { ...masterData, status: masterStatusToSave }, { merge: true });
+        batch.set(leadRefSub, fullData, { merge: true });
+        
+        if (!editingBeneficiary) {
+            batch.update(doc(firestore, 'leads', leadId), { targetAmount: (lead.targetAmount || 0) + (data.kitAmount || 0) });
+        }
+        
+        await batch.commit();
+        toast({ title: 'Success', variant: 'success' });
+        setIsFormOpen(false);
+        setEditingBeneficiary(null);
+    } catch (e: any) {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'lead beneficiaries', operation: 'create' }));
+    } finally {
+        setIsSubmitting(false);
     }
-    let idProofUrl = editingBeneficiary?.idProofUrl || '';
-    const fileList = data.idProofFile as FileList | undefined;
-    if (fileList && fileList.length > 0) {
-        const file = fileList[0];
-        const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
-        const fRef = storageRef(storage, `beneficiaries/${masterRef.id}/id_proof.png`);
-        await uploadBytes(fRef, resizedBlob);
-        idProofUrl = await getDownloadURL(fRef);
-    }
-    const { idProofFile, idProofDeleted, ...rest } = data;
-    const fullData = { ...rest, id: masterRef.id, idProofUrl, verificationStatus: masterVerificationStatus, addedDate: editingBeneficiary?.addedDate || new Date().toISOString().split('T')[0], createdAt: editingBeneficiary ? (editingBeneficiary as any).createdAt : serverTimestamp(), createdById: editingBeneficiary ? (editingBeneficiary as any).createdById : userProfile.id, createdByName: editingBeneficiary ? (editingBeneficiary as any).createdByName : userProfile.name };
-    const { status, kitAmount, zakatAllocation, ...masterData } = fullData;
-    const masterStatusToSave = status === 'Given' ? 'Verified' : status;
-    batch.set(masterRef, { ...masterData, status: masterStatusToSave }, { merge: true });
-    batch.set(leadRefSub, fullData, { merge: true });
-    if (!editingBeneficiary) batch.update(doc(firestore, 'leads', leadId), { targetAmount: (lead.targetAmount || 0) + (data.kitAmount || 0) });
-    await batch.commit().then(() => { toast({ title: 'Success', variant: 'success' }); setIsFormOpen(false); setEditingBeneficiary(null); }).catch(e => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadRefSub.path, operation: 'create' })));
-    setIsSubmitting(false);
   };
 
   const handleExport = () => {
@@ -346,8 +363,8 @@ export default function BeneficiariesPage() {
   const handleImport = async (records: Partial<Beneficiary>[]) => {
     if (!userProfile) return;
     const res = await bulkImportBeneficiariesAction(records, { id: userProfile.id, name: userProfile.name }, { type: 'lead', id: leadId });
-    if (res.success) toast({ title: 'Import Complete', description: res.message, variant: 'success' });
-    else toast({ title: 'Import Failed', description: res.message, variant: 'destructive' });
+    if (res && res.success) toast({ title: 'Import Complete', description: res.message, variant: 'success' });
+    else toast({ title: 'Import Failed', description: res?.message || "Import failed.", variant: 'destructive' });
   };
 
   if (isLeadLoading || areBeneficiariesLoading || isProfileLoading) return <BrandedLoader />;
@@ -400,7 +417,7 @@ export default function BeneficiariesPage() {
             <StatCard title="Total" count={stats.total} description="All Recipients" icon={Users} delay="100ms" />
             <StatCard title="Pending" count={stats.pending} description="Awaiting Support" icon={Hourglass} delay="150ms" />
             <StatCard title="Verified" count={stats.verified} description="Assistance Secured" icon={CheckCircle2} delay="200ms" />
-            <StatCard title="Given" count={stats.given} description="Assistance Disbursed" icon={CheckCircle2} delay="250ms" colorClass="border-green-200 bg-green-50/30" />
+            <StatCard title="Given" count={stats.given} description="Assistance Disbursed" icon={CheckCircle2} delay="250ms" colorClass="border-primary/10 bg-primary/5" />
             <StatCard title="Hold" count={stats.hold} description="Suspended Status" icon={XCircle} delay="300ms" />
             <StatCard title="Need Details" count={stats.needDetails} description="Review Required" icon={Info} delay="350ms" />
         </div>
@@ -477,7 +494,7 @@ export default function BeneficiariesPage() {
           </Select>
         </div>
 
-        <div className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
+        <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
             <ScrollArea className="w-full">
                 <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold text-[hsl(var(--table-header-fg))] tracking-tight", gridClass)}>
                     <div className="flex justify-center">
@@ -497,7 +514,7 @@ export default function BeneficiariesPage() {
                     <div className="text-right">Kit Amount (₹)</div>
                     <div className="text-right">Zakat Allocation (₹)</div>
                     <div>Referred By</div>
-                    <div className="text-right">Actions</div>
+                    <div className="text-right pr-4">Actions</div>
                 </div>
 
                 <div className="w-full">
@@ -516,7 +533,7 @@ export default function BeneficiariesPage() {
                         return (
                             <Collapsible key={catId} open={isExpanded} onOpenChange={() => toggleGroup(catId)} className="w-full">
                                 <CollapsibleTrigger className="w-full bg-primary/[0.02] px-4 py-3 text-[12px] font-bold text-primary flex items-center gap-2 border-b border-primary/10 hover:bg-primary/5 transition-colors">
-                                    <ChevronDown className={cn("h-4 w-4 transition-transform", !isExpanded && "-rotate-90")} />
+                                    <ChevronDown className={cn("h-4 w-4 transition-transform text-primary", !isExpanded && "-rotate-90")} />
                                     {categoryName} ({list.length} Beneficiaries)
                                 </CollapsibleTrigger>
                                 <CollapsibleContent className="w-full">
@@ -556,7 +573,7 @@ export default function BeneficiariesPage() {
                                                     </div>
                                                     <div className="text-center">
                                                         <Badge 
-                                                            variant={b.status === 'Given' ? 'given' : b.status === 'Verified' ? 'eligible' : 'outline'} 
+                                                            variant={b.status === 'Given' ? 'eligible' : b.status === 'Verified' ? 'active' : 'outline'} 
                                                             className="text-[10px] font-bold"
                                                         >
                                                             {b.status}
@@ -566,7 +583,7 @@ export default function BeneficiariesPage() {
                                                     <div className="text-right font-mono text-sm font-bold text-primary">₹{(b.kitAmount || 0).toLocaleString('en-IN')}</div>
                                                     <div className="text-right font-mono text-sm font-bold text-primary">₹{(b.zakatAllocation || 0).toLocaleString('en-IN')}</div>
                                                     <div className="text-xs font-normal text-primary/70 truncate">{b.referralBy || 'N/A'}</div>
-                                                    <div className="text-right">
+                                                    <div className="text-right pr-4">
                                                         <div className="flex items-center justify-end gap-1">
                                                             <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
@@ -582,9 +599,9 @@ export default function BeneficiariesPage() {
                                                                             <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                                                                 <DropdownMenuRadioGroup value={b.verificationStatus || 'Pending'} onValueChange={(s) => handleVerificationChange(b, s)}>
                                                                                     <DropdownMenuRadioItem value="Pending" className="font-normal">Pending</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Verified" className="font-normal">Verified</SelectItem>
-                                                                                    <DropdownMenuRadioItem value="Hold" className="font-normal">Hold</SelectItem>
-                                                                                    <DropdownMenuRadioItem value="Need More Details" className="font-normal">Need Details</SelectItem>
+                                                                                    <DropdownMenuRadioItem value="Verified" className="font-normal">Verified</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Hold" className="font-normal">Hold</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Need More Details" className="font-normal">Need Details</DropdownMenuRadioItem>
                                                                                 </DropdownMenuRadioGroup>
                                                                             </DropdownMenuSubContent></DropdownMenuPortal>
                                                                         </DropdownMenuSub>

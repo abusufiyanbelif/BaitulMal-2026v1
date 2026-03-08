@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -12,10 +12,9 @@ import {
 import { Button } from '@/components/ui/button';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, Info, FileWarning, Loader2, XCircle, UploadCloud, Download, Save } from 'lucide-react';
+import { CheckCircle, Loader2, XCircle, UploadCloud, Download, Save } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Beneficiary } from '@/lib/types';
 
@@ -66,37 +65,39 @@ export function BeneficiaryImportDialog({
     reader.onload = (event) => {
       const text = event.target?.result as string;
       const lines = text.split('\n');
-      if (lines.length === 0) {
+      if (lines.length <= 1) {
           setIsProcessing(false);
           return;
       }
       const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
       
-      const processed: ProcessedRecord[] = lines.slice(1).map((line, idx) => {
-        if (!line.trim()) return null;
-        const values = line.split(',').map(v => v.trim());
-        const data: Partial<Beneficiary> = {};
-        
-        headers.forEach((header, hIdx) => {
-          if (header === 'name') data.name = values[hIdx];
-          if (header === 'phone') data.phone = values[hIdx];
-          if (header === 'address') data.address = values[hIdx];
-          if (header === 'age') data.age = Number(values[hIdx]) || undefined;
-          if (header === 'occupation') data.occupation = values[hIdx];
-          if (header === 'familymembers') data.members = Number(values[hIdx]) || undefined;
-          if (header === 'idtype') data.idProofType = values[hIdx];
-          if (header === 'idnumber') data.idNumber = values[hIdx];
-          if (header === 'referralby') data.referralBy = values[hIdx];
-        });
+      const processed: ProcessedRecord[] = lines.slice(1)
+        .map((line, idx) => {
+            if (!line.trim()) return null;
+            const values = line.split(',').map(v => v.trim());
+            const data: Partial<Beneficiary> = {};
+            
+            headers.forEach((header, hIdx) => {
+                if (header === 'name') data.name = values[hIdx];
+                if (header === 'phone') data.phone = values[hIdx];
+                if (header === 'address') data.address = values[hIdx];
+                if (header === 'age') data.age = Number(values[hIdx]) || undefined;
+                if (header === 'occupation') data.occupation = values[hIdx];
+                if (header === 'familymembers') data.members = Number(values[hIdx]) || undefined;
+                if (header === 'idtype') data.idProofType = values[hIdx];
+                if (header === 'idnumber') data.idNumber = values[hIdx];
+                if (header === 'referralby') data.referralBy = values[hIdx];
+            });
 
-        const isValid = !!data.name && !!data.phone;
-        return {
-          row: idx + 2,
-          data,
-          isValid,
-          reason: isValid ? undefined : 'Missing Mandatory Name Or Phone.'
-        };
-      }).filter((r): r is ProcessedRecord => r !== null);
+            const isValid = !!data.name && !!data.phone;
+            return {
+                row: idx + 2,
+                data,
+                isValid,
+                reason: isValid ? undefined : 'Missing Mandatory Name Or Phone.'
+            };
+        })
+        .filter((r): r is ProcessedRecord => r !== null);
 
       setProcessedRecords(processed);
       setIsProcessing(false);
@@ -107,7 +108,7 @@ export function BeneficiaryImportDialog({
   const handleConfirmImport = async () => {
     const validRecords = processedRecords.filter(r => r.isValid).map(r => r.data);
     if (validRecords.length === 0) {
-        toast({ title: 'No Valid Data', description: 'Please Upload A File With Valid Records.', variant: 'destructive' });
+        toast({ title: 'No Valid Data', description: 'Please upload a file with valid records.', variant: 'destructive' });
         return;
     }
     setIsSubmitting(true);
@@ -122,9 +123,9 @@ export function BeneficiaryImportDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col rounded-[16px] border-primary/10">
         <DialogHeader>
-          <DialogTitle className="text-xl font-bold text-primary tracking-tight">Institutional Data Import</DialogTitle>
+          <DialogTitle className="text-xl font-bold text-primary tracking-tight">Import Records</DialogTitle>
           <DialogDescription className="font-normal text-primary/70">
-            Upload A CSV File To Bulk-Register Beneficiaries. Please Use The Approved Template.
+            Upload A CSV File To Bulk-Register Beneficiaries.
           </DialogDescription>
         </DialogHeader>
 

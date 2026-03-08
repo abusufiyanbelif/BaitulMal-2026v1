@@ -122,7 +122,7 @@ const donationPaymentTypeChartConfig = {
 export default function CampaignSummaryPage() {
     const params = useParams();
     const pathname = usePathname();
-    const campaignId = params.campaignId as string;
+    const campaignId = params?.campaignId as string;
     const firestore = useFirestore();
     const storage = useStorage();
     const auth = useAuth();
@@ -463,7 +463,7 @@ export default function CampaignSummaryPage() {
                         {editMode ? (
                             <div className="space-y-6 font-normal animate-fade-in-zoom">
                                 <div className="space-y-2">
-                                    <Label className="font-bold text-xs text-muted-foreground tracking-tight">Header Image</Label>
+                                    <Label className="font-bold text-xs text-muted-foreground tracking-tighter uppercase">Header Image</Label>
                                     <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
                                     <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-all duration-300 group">
                                         {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 transition-all duration-300 hover:scale-110 active:scale-90 shadow-lg" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6 transition-transform group-hover:scale-105"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground group-hover:text-primary" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click To Upload</span></p></div> )}
@@ -521,8 +521,8 @@ export default function CampaignSummaryPage() {
                                         <Select value={editableCampaign.publicVisibility} onValueChange={(value) => handleFieldChange('publicVisibility', value)}>
                                             <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom">
-                                                <SelectItem value="Hold" className="font-bold">Hold (Private)</SelectItem>
-                                                <SelectItem value="Ready to Publish" className="font-bold">Ready To Publish</SelectItem>
+                                                <SelectItem value="Hold" className="font-normal">Hold (Private)</SelectItem>
+                                                <SelectItem value="Ready to Publish" className="font-normal">Ready To Publish</SelectItem>
                                                 <SelectItem value="Published" className="font-bold text-primary">Published</SelectItem>
                                             </SelectContent>
                                         </Select>
@@ -579,7 +579,7 @@ export default function CampaignSummaryPage() {
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
                                 <CardHeader className="bg-primary/5 border-b">
                                     <CardTitle className="flex items-center gap-2 font-bold text-primary"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
-                                    <CardDescription className="font-normal text-primary/70">Verified donations for this campaign.</CardDescription>
+                                    <CardDescription className="font-normal text-primary/70">Verified Donations For This Campaign.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="pt-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center font-normal">
@@ -718,8 +718,8 @@ export default function CampaignSummaryPage() {
                                         <Separator />
                                         <div className="pl-4 border-l-2 border-dashed border-primary/20 space-y-2 py-2 font-bold">
                                             <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground tracking-tighter font-normal">Allocated As Assistance</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
-                                            <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="font-bold font-mono">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
-                                            <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="font-bold font-mono">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
+                                            <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="font-mono text-primary font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
+                                            <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
                                         </div>
                                         <Separator />
                                         <div className="flex justify-between items-center text-base font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded"><span>Net Zakat Balance</span><span className="font-bold text-primary font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
@@ -758,7 +758,7 @@ export default function CampaignSummaryPage() {
                                                                 formatter={(value, name, item) => (
                                                                     <div className="flex flex-col">
                                                                         <span className="font-bold">₹{Number(value).toLocaleString()}</span>
-                                                                        <span className="text-[10px] opacity-70">{item.payload.count} Donations</span>
+                                                                        <span className="text-[10px] opacity-70">{(item as any).payload.count} Donations</span>
                                                                     </div>
                                                                 )}
                                                             />

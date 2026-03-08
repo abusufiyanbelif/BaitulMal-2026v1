@@ -223,11 +223,11 @@ export default function BeneficiariesPage() {
     if (!userProfile || selectedIds.length === 0) return;
     setIsBulkUpdating(true);
     const res = await bulkUpdateMasterBeneficiaryStatusAction(selectedIds, newStatus, { id: userProfile.id, name: userProfile.name });
-    if (res.success) {
+    if (res && res.success) {
         toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Update Failed", description: res.message, variant: "destructive" });
+        toast({ title: "Update Failed", description: res?.message || "Failed to update records.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -235,7 +235,7 @@ export default function BeneficiariesPage() {
   const handleStatusChange = async (beneficiary: Beneficiary, newStatus: string) => {
     if (!canUpdate || !userProfile) return;
     const res = await updateMasterBeneficiaryAction(beneficiary.id, { status: newStatus as any }, { id: userProfile.id, name: userProfile.name });
-    if (res.success) {
+    if (res && res.success) {
         toast({ title: 'Status Updated', variant: 'success' });
     }
   };
@@ -244,7 +244,7 @@ export default function BeneficiariesPage() {
     if (!canUpdate || !userProfile) return;
     const newStatus = !beneficiary.isEligibleForZakat;
     const res = await updateMasterBeneficiaryAction(beneficiary.id, { isEligibleForZakat: newStatus }, { id: userProfile.id, name: userProfile.name });
-    if (res.success) {
+    if (res && res.success) {
         toast({ title: newStatus ? 'Marked Zakat Eligible' : 'Marked Not Eligible', variant: 'success' });
     }
   };
@@ -273,16 +273,16 @@ export default function BeneficiariesPage() {
   const handleImport = async (records: Partial<Beneficiary>[]) => {
     if (!userProfile) return;
     const res = await bulkImportBeneficiariesAction(records, { id: userProfile.id, name: userProfile.name });
-    if (res.success) {
+    if (res && res.success) {
         toast({ title: 'Import Complete', description: res.message, variant: 'success' });
     } else {
-        toast({ title: 'Import Failed', description: res.message, variant: 'destructive' });
+        toast({ title: 'Import Failed', description: res?.message || "Operation failed.", variant: 'destructive' });
     }
   };
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Master Registry..." description="Retrieving Records." />;
+  if (isLoading) return <SectionLoader label="Loading master registry..." description="Retrieving records." />;
   
   if (!canRead) return (
     <main className="container mx-auto p-8 text-primary font-normal">
@@ -366,7 +366,7 @@ export default function BeneficiariesPage() {
                         <Command className="w-full">
                             <CommandInput placeholder="Search Referrals..." className="h-9 font-normal px-3 py-2 w-full outline-none" />
                             <CommandList className="max-h-[300px] overflow-y-auto">
-                                <CommandEmpty className="py-2 text-center text-xs text-muted-foreground font-normal">No Source Found.</CommandEmpty>
+                                <CommandEmpty className="py-2 text-center text-xs text-muted-foreground font-normal">No source found.</CommandEmpty>
                                 <CommandGroup className="p-1">
                                     <CommandItem onSelect={() => setSelectedReferrals([])} className="flex items-center px-2 py-1.5 rounded-md hover:bg-primary/5 cursor-pointer font-normal text-xs">
                                         <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", selectedReferrals.length === 0 ? "bg-primary text-primary-foreground" : "opacity-50")}>
@@ -429,7 +429,7 @@ export default function BeneficiariesPage() {
                 <div className="text-center font-bold tracking-tight text-[10px]">Disbursement</div>
                 <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Zakat</SortableHeader>
                 <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">Referred By</SortableHeader>
-                <div className="text-right">Actions</div>
+                <div className="text-right pr-4">Actions</div>
             </div>
 
             <Accordion type="single" collapsible className="w-full">
@@ -457,7 +457,7 @@ export default function BeneficiariesPage() {
                     <div className="text-center"><p className="text-[9px] font-bold text-muted-foreground opacity-40 tracking-tight">Project Specific</p></div>
                     <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
                     <div className="pl-4 text-xs font-normal text-primary/70">{b.referralBy || 'N/A'}</div>
-                    <div className="text-right">
+                    <div className="text-right pr-4">
                         <div className="flex items-center justify-end gap-1">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>

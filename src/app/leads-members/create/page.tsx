@@ -604,6 +604,5 @@ export default function CreateLeadPage() {
         </AlertDialogContent>
       </AlertDialog>
     </main>
-    </>
   );
 }

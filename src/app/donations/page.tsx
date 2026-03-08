@@ -24,8 +24,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuPortal,
   DropdownMenuSub,
-  DropdownMenuSubTrigger,
   DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem
 } from '@/components/ui/dropdown-menu';
@@ -66,14 +66,14 @@ type SortKey = keyof Donation | 'srNo';
 
 const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1000px]";
 
-function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: any, handleSort: (key: any) => void }) {
+function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2", className)} onClick={() => handleSort(sortKey)}>
+        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))]", className)} onClick={() => handleSort(sortKey)}>
             {children}
             <div className="flex flex-col opacity-40">
-                <ArrowUp className={cn("h-2.5 w-2.5 -mb-1", isSorted && sortConfig.direction === 'ascending' && "text-primary opacity-100")} />
-                <ArrowDown className={cn("h-2.5 w-2.5", isSorted && sortConfig.direction === 'descending' && "text-primary opacity-100")} />
+                <ArrowUp className={cn("h-2.5 w-2.5 -mb-1", isSorted && sortConfig?.direction === 'ascending' && "text-primary opacity-100")} />
+                <ArrowDown className={cn("h-2.5 w-2.5", isSorted && sortConfig?.direction === 'descending' && "text-primary opacity-100")} />
             </div>
         </div>
     );
@@ -112,7 +112,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                 <div className="whitespace-nowrap text-xs font-normal text-primary/80 text-center">{donation.donationDate}</div>
                 <div className="text-center"><Badge variant="secondary" className="text-[9px] font-bold">{donation.donationType}</Badge></div>
                 <div className="text-center">
-                    <Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'outline'} className="text-[9px] font-bold">
+                    <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'active'} className="text-[9px] font-bold">
                         {donation.status}
                     </Badge>
                 </div>
@@ -142,7 +142,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                     <div className="space-y-6 max-w-5xl mx-auto">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><IndianRupee className="h-3 w-3"/> Category Breakdown</h4>
+                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary"><IndianRupee className="h-3 w-3"/> Category Breakdown</h4>
                                 <div className="border border-primary/10 rounded-md bg-white overflow-hidden shadow-sm">
                                     <ScrollArea className="w-full">
                                         <Table>
@@ -158,7 +158,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
+                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
                                 <div className="border border-primary/10 rounded-md bg-white overflow-hidden shadow-sm">
                                     <ScrollArea className="w-full">
                                         <Table>
@@ -184,7 +184,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <h4 className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 text-primary"><ImageIcon className="h-3 w-3"/> Transaction Documents</h4>
+                            <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary"><ImageIcon className="h-3 w-3"/> Transaction Documents</h4>
                             <div className="border border-primary/10 rounded-md bg-white overflow-hidden shadow-sm">
                                 <ScrollArea className="w-full">
                                     <Table>
@@ -213,7 +213,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                             ))}
                                         </TableBody>
                                     </Table>
-                                    <ScrollBar orientation="vertical" />
+                                    <ScrollBar orientation="horizontal" />
                                 </ScrollArea>
                             </div>
                         </div>
@@ -320,7 +320,11 @@ export default function DonationsPage() {
   const handleSync = async () => {
     setIsSyncing(true);
     const res = await syncDonationsAction();
-    toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' });
+    if (res && res.success) {
+        toast({ title: 'Success', description: res.message, variant: 'success' });
+    } else {
+        toast({ title: 'Error', description: res?.message || 'Sync failed.', variant: 'destructive' });
+    }
     setIsSyncing(false);
   };
 
@@ -340,11 +344,11 @@ export default function DonationsPage() {
     if (selectedIds.length === 0) return;
     setIsBulkUpdating(true);
     const res = await bulkUpdateDonationStatusAction(selectedIds, newStatus);
-    if (res.success) {
+    if (res && res.success) {
         toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Update Failed", description: res.message, variant: "destructive" });
+        toast({ title: "Update Failed", description: res?.message || "Failed to update status.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -375,7 +379,11 @@ export default function DonationsPage() {
     if (!donationToDelete) return;
     setIsDeleteDialogOpen(false);
     const res = await deleteDonationAction(donationToDelete);
-    toast({ title: res.success ? 'Deleted' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' });
+    if (res && res.success) {
+        toast({ title: 'Deleted', description: res.message, variant: 'success' });
+    } else {
+        toast({ title: 'Error', description: res?.message || 'Delete failed.', variant: 'destructive' });
+    }
     setDonationToDelete(null);
   };
 
@@ -388,7 +396,7 @@ export default function DonationsPage() {
 
   const isLoading = areDonationsLoading || isProfileLoading;
 
-  if (isLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Logs." />;
+  if (isLoading) return <SectionLoader label="Loading donation records..." description="Retrieving logs." />;
 
   return (
     <main className="container mx-auto p-4 md:p-8 font-normal text-primary relative overflow-hidden">
@@ -417,7 +425,7 @@ export default function DonationsPage() {
                         pathname === '/donations' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
                     )}>Donation List</Link>
                 </div>
-                <ScrollBar orientation="horizontal" className="hidden" />
+                <ScrollBar orientation="horizontal" />
             </ScrollArea>
         </div>
 
@@ -453,10 +461,10 @@ export default function DonationsPage() {
                         <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor Name</SortableHeader>
                         <SortableHeader sortKey="amount" sortConfig={sortConfig} handleSort={handleSort} className="text-right">Amount (₹)</SortableHeader>
                         <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Entry Date</SortableHeader>
-                        <div className="text-center">Method</div>
+                        <div className="text-center font-bold text-[10px] uppercase text-[hsl(var(--table-header-fg))]">Method</div>
                         <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Vetting Status</SortableHeader>
-                        <div>Target Initiative</div>
-                        <div className="text-right pr-4">Actions</div>
+                        <div className="font-bold text-[10px] uppercase text-[hsl(var(--table-header-fg))]">Target Initiative</div>
+                        <div className="text-right pr-4 font-bold text-[10px] uppercase text-[hsl(var(--table-header-fg))]">Actions</div>
                     </div>
                     <div className="w-full">
                         {paginatedDonations.map((d, i) => (
@@ -489,7 +497,6 @@ export default function DonationsPage() {
             )}
         </Card>
 
-        {/* Bulk Action Bar */}
         {selectedIds.length > 0 && (
             <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-bottom w-full max-w-[95vw] sm:max-w-fit">
                 <div className="flex items-center gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
@@ -542,7 +549,7 @@ export default function DonationsPage() {
 
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent className="rounded-[12px] border-primary/10">
-                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Confirm Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Verification Evidence. This Action Is Irreversible.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Confirm Permanent Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Verification Evidence. This Action Is Irreversible.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 rounded-[12px]">Confirm Deletion</AlertDialogAction>
@@ -559,7 +566,7 @@ export default function DonationsPage() {
                             <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Evidence Document" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                         )}
                     </div>
-                    <ScrollBar orientation="vertical" />
+                    <ScrollBar orientation="horizontal" />
                 </ScrollArea>
                 <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">
                     <Button variant="secondary" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>

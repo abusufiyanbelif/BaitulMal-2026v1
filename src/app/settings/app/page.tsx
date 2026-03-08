@@ -426,46 +426,6 @@ export default function AppSettingsPage() {
         principles: guidingPrinciplesData?.principles || [],
     };
 
-    const isDirty = useMemo(() => {
-        if (!isEditMode || !editableData) return false;
-        const initialData: FormDataType = {
-            name: brandingSettings?.name || '',
-            logoUrl: brandingSettings?.logoUrl || '',
-            logoWidth: brandingSettings?.logoWidth || 40,
-            logoHeight: brandingSettings?.logoHeight || 40,
-            heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.',
-            heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact.',
-            isHeroVisible: brandingSettings?.isHeroVisible ?? true,
-            isNewsTickerVisible: brandingSettings?.isNewsTickerVisible ?? true,
-            isWisdomVisible: brandingSettings?.isWisdomVisible ?? true,
-            isOverallSummaryVisible: brandingSettings?.isOverallSummaryVisible ?? true,
-            isDonationSummaryVisible: brandingSettings?.isDonationSummaryVisible ?? true,
-            isPurposeSummaryVisible: brandingSettings?.isPurposeSummaryVisible ?? true,
-            isInitiativeSummaryVisible: brandingSettings?.isInitiativeSummaryVisible ?? true,
-            isRecentVerificationVisible: brandingSettings?.isRecentVerificationVisible ?? true,
-            qrCodeUrl: paymentSettings?.qrCodeUrl || '',
-            qrWidth: paymentSettings?.qrWidth || 120,
-            qrHeight: paymentSettings?.qrHeight || 120,
-            upiId: paymentSettings?.upiId || '',
-            paymentMobileNumber: paymentSettings?.paymentMobileNumber || '',
-            contactEmail: paymentSettings?.contactEmail || '',
-            contactPhone: paymentSettings?.contactPhone || '',
-            regNo: paymentSettings?.regNo || '',
-            pan: paymentSettings?.pan || '',
-            address: paymentSettings?.address || '',
-            website: paymentSettings?.website || '',
-            copyright: paymentSettings?.copyright || '',
-            bankAccountName: paymentSettings?.bankAccountName || '',
-            bankAccountNumber: paymentSettings?.bankAccountNumber || '',
-            bankIfsc: paymentSettings?.bankIfsc || '',
-            isGuidingPrinciplesPublic: guidingPrinciplesData?.isGuidingPrinciplesPublic || false,
-            gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
-            gpDescription: guidingPrinciplesData?.description || '',
-            principles: guidingPrinciplesData?.principles || [],
-        };
-        return JSON.stringify(initialData) !== JSON.stringify(editableData) || !!logoFile || !!qrCodeFile;
-    }, [isEditMode, editableData, brandingSettings, paymentSettings, guidingPrinciplesData, logoFile, qrCodeFile]);
-
     if (isLoading) {
         return <BrandedLoader />;
     }
@@ -486,7 +446,7 @@ export default function AppSettingsPage() {
                         <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="font-bold border-primary/20 text-primary">
                             <X className="mr-2 h-4 w-4" /> Cancel
                         </Button>
-                        <Button onClick={handleSave} disabled={isSubmitting || !isDirty} className="font-bold shadow-md">
+                        <Button onClick={handleSave} disabled={isSubmitting} className="font-bold shadow-md">
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
                             Save All Changes
                         </Button>
@@ -623,7 +583,6 @@ export default function AppSettingsPage() {
                     defaultOpen={false}
                 >
                     <div className="space-y-8">
-                        {/* Identity & Registration Heading */}
                         <div className="space-y-4">
                             <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Identity & Registration</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
@@ -675,7 +634,6 @@ export default function AppSettingsPage() {
                             </div>
                         </div>
 
-                        {/* Visual Identity Sub-section */}
                         <div className="space-y-4">
                             <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Visual Branding</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
@@ -717,7 +675,6 @@ export default function AppSettingsPage() {
                             </div>
                         </div>
 
-                        {/* Communications Sub-section */}
                         <div className="space-y-4">
                             <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Communications & Footer</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
