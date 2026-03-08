@@ -1,4 +1,3 @@
-
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
@@ -260,7 +259,7 @@ export async function updateBeneficiaryStatusInInitiativeAction(
 ): Promise<{ success: boolean; message: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) {
-        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+        return { success: boolean: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
 
     const collectionName = initiativeType === 'campaign' ? 'campaigns' : 'leads';

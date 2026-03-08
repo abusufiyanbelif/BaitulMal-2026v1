@@ -27,7 +27,7 @@ import Image from 'next/image';
 import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { parseISO, startOfDay, endOfDay } from 'date-fns';
+import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { NewsTicker } from '@/components/news-ticker';
 import { usePublicData } from '@/hooks/use-public-data';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -300,18 +300,6 @@ export default function LeadPage() {
     return [...activeCampaignsList, ...activeLeadsList].sort((a, b) => 
         (priorityWeight[b.priority] || 0) - (priorityWeight[a.priority] || 0)
     );
-  }, [campaignsWithProgress, leadsWithProgress]);
-
-  const completedTickerItems = useMemo(() => {
-    const completedCampaigns = (campaignsWithProgress || [])
-      .filter(c => c.status === 'Completed')
-      .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-public/${c.id}/summary` }));
-    
-    const completedLeads = (leadsWithProgress || [])
-      .filter(l => l.status === 'Completed')
-      .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
-
-    return [...completedCampaigns, ...completedLeads];
   }, [campaignsWithProgress, leadsWithProgress]);
 
   const availableYears = useMemo(() => {

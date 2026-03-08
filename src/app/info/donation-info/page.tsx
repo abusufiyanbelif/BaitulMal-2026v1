@@ -158,7 +158,7 @@ export default function DonationInfoPage() {
                     <Card className="overflow-hidden border-primary/10 shadow-xl bg-white">
                         <div className="relative h-64 md:h-80 w-full flex items-center justify-center bg-primary/5">
                             {displayImageUrl ? (
-                                <Image src={displayImageUrl} alt={type.title || 'Header'} fill className="object-cover" priority />
+                                <Image src={displayImageUrl} alt={type.title || 'Header'} fill sizes="100vw" className="object-cover" priority />
                             ) : (
                                 <div className="flex flex-col items-center gap-4">
                                     <div className="p-6 rounded-full bg-primary/10 text-primary">

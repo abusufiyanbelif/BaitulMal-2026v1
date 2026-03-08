@@ -391,7 +391,7 @@ export default function PublicCampaignSummaryPage() {
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
-                                                        {campaign.itemCategories?.[0]?.items.map((item, idx) => (
+                                                        {campaign?.itemCategories?.[0]?.items.map((item, idx) => (
                                                             <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white">
                                                                 <TableCell className="font-medium">{item.name}</TableCell>
                                                                 <TableCell className="text-right font-normal">{item.quantity} {item.quantityType}</TableCell>
@@ -404,7 +404,7 @@ export default function PublicCampaignSummaryPage() {
                                                         <TableRow>
                                                             <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight">Single Unit Total</TableCell>
                                                             <TableCell className="text-right font-mono font-bold text-primary text-lg">
-                                                                ₹{(campaign.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
+                                                                ₹{(campaign?.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
                                                             </TableCell>
                                                         </TableRow>
                                                     </tfoot>
