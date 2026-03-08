@@ -204,7 +204,7 @@ export default function LeadSummaryPage() {
         return lead?.purpose === 'Relief' && lead?.category === 'Ration Kit';
     }, [lead]);
 
-    const availableCategories = useMemo(() => {
+    const availableCategoriesList = useMemo(() => {
         const selectedPurpose = leadPurposesConfig.find(p => p.id === (editableLead.purpose || 'Relief'));
         return selectedPurpose?.categories || [];
     }, [editableLead.purpose]);
@@ -469,7 +469,7 @@ export default function LeadSummaryPage() {
                             {editMode ? (
                                 <div className="space-y-6 font-normal animate-fade-in-zoom">
                                     <div className="space-y-2">
-                                        <Label className="font-bold text-xs text-muted-foreground tracking-tighter">Header Image</Label>
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tighter uppercase">Header Image</Label>
                                         <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
                                         <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-all duration-300 group">
                                             {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 transition-all duration-300 hover:scale-110 active:scale-90 shadow-lg" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6 transition-transform group-hover:scale-105"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground group-hover:text-primary" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click To Upload</span></p></div> )}
@@ -529,12 +529,12 @@ export default function LeadSummaryPage() {
                                                 </SelectContent>
                                             </Select>
                                         </div>
-                                        {availableCategories.length > 0 && (
+                                        {availableCategoriesList.length > 0 && (
                                             <div className="space-y-1">
                                                 <Label className="font-bold text-xs text-muted-foreground tracking-tight">Category</Label>
                                                 <Select value={editableLead.category} onValueChange={(val) => handleFieldChange('category', val)}>
                                                     <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
-                                                    <SelectContent className="animate-fade-in-zoom">{availableCategories.map(cat => <SelectItem key={cat} value={cat} className="font-bold">{cat}</SelectItem>)}</SelectContent>
+                                                    <SelectContent className="animate-fade-in-zoom">{availableCategoriesList.map(cat => <SelectItem key={cat} value={cat} className="font-bold">{cat}</SelectItem>)}</SelectContent>
                                                 </Select>
                                             </div>
                                         )}

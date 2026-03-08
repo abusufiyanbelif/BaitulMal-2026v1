@@ -115,7 +115,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay }: 
             </div>
             <p className="text-[10px] font-medium text-muted-foreground mt-auto">{description}</p>
         </Card>
-    )
+    );
 }
 
 export default function BeneficiariesPage() {
@@ -127,6 +127,7 @@ export default function BeneficiariesPage() {
   const storage = useStorage();
   const { toast } = useToast();
   const { userProfile, isLoading: isProfileLoading } = useSession();
+  const auth = useAuth();
   
   const campaignDocRef = useMemoFirebase(() => (firestore && campaignId) ? doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign> : null, [firestore, campaignId]);
   const { data: campaign, isLoading: isCampaignLoading } = useDoc<Campaign>(campaignDocRef);
@@ -185,12 +186,12 @@ export default function BeneficiariesPage() {
       return {
           total: data.length,
           pending: data.filter(b => b.status === 'Pending').length,
-          verified: data.filter(b => b.status === 'Verified').length,
+          verified: data.filter(b => b.verificationStatus === 'Verified').length,
           given: data.filter(b => b.status === 'Given').length,
-          hold: data.filter(b => b.status === 'Hold').length,
-          needDetails: data.filter(b => b.status === 'Need More Details').length,
+          hold: data.filter(b => b.verificationStatus === 'Hold').length,
+          needDetails: data.filter(b => b.verificationStatus === 'Need More Details').length,
           totalAmount: data.reduce((sum, b) => sum + (b.kitAmount || 0), 0)
-      }
+      };
   }, [filteredBeneficiaries]);
 
   const beneficiariesByCategory = useMemo(() => {
@@ -267,12 +268,6 @@ export default function BeneficiariesPage() {
   const handleVerificationChange = (beneficiary: Beneficiary, newStatus: any) => {
     if (!userProfile || !canUpdate) return;
     updateMasterBeneficiaryAction(beneficiary.id, { status: newStatus }, { id: userProfile.id, name: userProfile.name });
-  };
-
-  const handleQuickStatusToggle = (beneficiary: Beneficiary) => {
-    const newStatus = beneficiary.status === 'Given' ? 'Pending' : 'Given';
-    handleStatusChange(beneficiary, newStatus);
-    toast({ title: `Marked As ${newStatus} ${itemLabelSuffix}`, variant: 'success' });
   };
 
   const handleZakatToggle = (beneficiary: Beneficiary) => {
@@ -433,7 +428,7 @@ export default function BeneficiariesPage() {
 
           <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-[220px] justify-between h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white">
+                    <Button variant="outline" className="w-[220px] justify-between h-10 text-sm border-primary/10 text-primary font-bold rounded-[12px] bg-white">
                         <div className="flex items-center gap-2 truncate">
                             <Filter className="h-3.5 w-3.5 opacity-40 shrink-0" />
                             <span className="truncate">
@@ -524,7 +519,7 @@ export default function BeneficiariesPage() {
                         const currentPage = currentPages[catId] || 1;
                         const paginatedList = list.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
                         const isExpanded = openGroups[catId] !== false;
-                        if (paginatedList.length === 0) return null;
+                        if (list.length === 0) return null;
 
                         return (
                             <Collapsible key={catId} open={isExpanded} onOpenChange={() => toggleGroup(catId)} className="w-full">
@@ -535,7 +530,7 @@ export default function BeneficiariesPage() {
                                 <CollapsibleContent className="w-full">
                                     <div className={cn("bg-primary/[0.05] border-b border-primary/10 flex items-center gap-4 px-4 py-2 text-[10px] font-bold text-primary tracking-tight")}>
                                         <Checkbox 
-                                            checked={paginatedList.length > 0 && paginatedList.every(b => selectedIds.includes(b.id))}
+                                            checked={list.length > 0 && list.every(b => selectedIds.includes(b.id))}
                                             onCheckedChange={(checked) => toggleSelectAllForCategory(catId, !!checked)}
                                             className="border-primary/40 data-[state=checked]:bg-primary"
                                         />
@@ -591,7 +586,7 @@ export default function BeneficiariesPage() {
                                                                     
                                                                     {canUpdate && (
                                                                         <DropdownMenuSub>
-                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ChevronsUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Vetting Status</DropdownMenuSubTrigger>
+                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ChevronsUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Verification Status</DropdownMenuSubTrigger>
                                                                             <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                                                                 <DropdownMenuRadioGroup value={b.verificationStatus || 'Pending'} onValueChange={(s) => handleVerificationChange(b, s)}>
                                                                                     <DropdownMenuRadioItem value="Pending" className="font-normal">Pending</DropdownMenuRadioItem>
@@ -699,7 +694,7 @@ export default function BeneficiariesPage() {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
                                     <ClipboardCheck className="mr-2 h-4 w-4"/>
-                                    Disburse
+                                    Disburse Items
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown">

@@ -194,12 +194,6 @@ export default function CampaignSummaryPage() {
         return campaign?.category === 'Ration';
     }, [campaign]);
 
-    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
-    const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
-    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
-    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.read', false);
-    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.update', false) || !!getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
-
     const beneficiaryGroups = useMemo(() => {
         if (!campaign || !beneficiaries) return [];
         const categories = (campaign.itemCategories || []).filter(c => c.name !== 'Item Price List');
@@ -325,6 +319,8 @@ export default function CampaignSummaryPage() {
     const handleToggleDocumentPublic = (urlToToggle: string) => {
         setExistingDocuments(prev => prev.map(doc => doc.url === urlToToggle ? { ...doc, isPublic: !doc.isPublic } : doc));
     };
+
+    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.update', false) || !!getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
 
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
         if (!campaignDocRef || !campaign?.documents || !canUpdateSummary) return;
