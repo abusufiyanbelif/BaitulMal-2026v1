@@ -43,7 +43,7 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
         
         {(['create', 'read', 'update', 'delete'] as const).map((p) => {
           const isAllowed = allowedPerms.includes(p);
-          const isChecked = !!getNestedValue(permissions, `${path}.${p}`, false);
+          const isChecked = isRoleAdmin || !!getNestedValue(permissions, `${path}.${p}`, false);
           
           return (
             <TableCell key={p} className="text-center py-3">
