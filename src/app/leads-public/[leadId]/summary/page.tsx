@@ -152,7 +152,7 @@ export default function PublicLeadSummaryPage() {
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
-        const amountsByPaymentType: Record<string, number> = {};
+        const paymentTypeStats: Record<string, { count: number, amount: number }> = {};
         let zakatForGoalAmount = 0;
 
         verifiedDonationsList.forEach(d => {
@@ -160,7 +160,11 @@ export default function PublicLeadSummaryPage() {
             if (!leadAllocation) return;
 
             const paymentType = d.donationType || 'Other';
-            amountsByPaymentType[paymentType] = (amountsByPaymentType[paymentType] || 0) + 1;
+            if (!paymentTypeStats[paymentType]) {
+                paymentTypeStats[paymentType] = { count: 0, amount: 0 };
+            }
+            paymentTypeStats[paymentType].count += 1;
+            paymentTypeStats[paymentType].amount += leadAllocation.amount;
 
             const totalDonationAmount = d.amount > 0 ? d.amount : 1;
             const allocationProportion = leadAllocation.amount / totalDonationAmount;
@@ -193,7 +197,7 @@ export default function PublicLeadSummaryPage() {
             fundingProgress: (lead.targetAmount || 0) > 0 ? (totalCollectedForGoal / lead.targetAmount!) * 100 : 0,
             targetAmount: lead.targetAmount || 0,
             amountsByCategory,
-            amountsByPaymentType,
+            paymentTypeStats,
             zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal,
             totalBeneficiaries: beneficiaries.length,
             beneficiariesGiven: beneficiaries.filter(b => b.status === 'Given').length,
@@ -203,9 +207,12 @@ export default function PublicLeadSummaryPage() {
     }, [allDonations, lead, beneficiaries]);
 
     const paymentTypeChartData = useMemo(() => {
-        if (!fundingData?.amountsByPaymentType) return [];
-        return Object.entries(fundingData.amountsByPaymentType).map(([name, value]) => ({
-            name, value, fill: `var(--color-${name.replace(/\s+/g, '')})`
+        if (!fundingData?.paymentTypeStats) return [];
+        return Object.entries(fundingData.paymentTypeStats).map(([name, stats]) => ({
+            name, 
+            value: stats.amount, 
+            count: stats.count,
+            fill: `var(--color-${name.replace(/\s+/g, '')})`
         }));
     }, [fundingData]);
 
@@ -434,8 +441,8 @@ export default function PublicLeadSummaryPage() {
                                     <CardContent className="pt-6">
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                            <BarChart data={chartData} layout="vertical" margin={{ right: 20 }}>
-                                                <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartData.map((entry) => (<Cell key={entry.name} fill={`var(--color-${entry.name.replace(/\s+/g, '')})`} />))}</Bar>
+                                            <BarChart data={Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value }))} layout="vertical" margin={{ right: 20 }}>
+                                                <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{Object.keys(fundingData.amountsByCategory).map((name) => (<Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />))}</Bar>
                                             </BarChart>
                                         </ChartContainer>
                                         ) : <Skeleton className="h-[250px] w-full"/>}
@@ -445,12 +452,24 @@ export default function PublicLeadSummaryPage() {
 
                             {isVisible('donations_by_payment_type') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-[10px] tracking-tight"><PieChartIcon className="h-5 w-5"/> Donations By Payment Type</CardTitle><CardDescription className="font-normal text-primary/70">Count Of Donations Per Payment Type.</CardDescription></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-[10px] tracking-tight"><PieChartIcon className="h-5 w-5"/> Donations By Payment Type</CardTitle><CardDescription className="font-normal text-primary/70">Breakdown of funds by contribution channel.</CardDescription></CardHeader>
                                     <CardContent className="pt-6">
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
                                                 <PieChart>
-                                                    <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                                    <ChartTooltip 
+                                                        content={
+                                                            <ChartTooltipContent 
+                                                                nameKey="name" 
+                                                                formatter={(value, name, item) => (
+                                                                    <div className="flex flex-col">
+                                                                        <span className="font-bold">₹{Number(value).toLocaleString()}</span>
+                                                                        <span className="text-[10px] opacity-70">{item.payload.count} Donations</span>
+                                                                    </div>
+                                                                )}
+                                                            />
+                                                        } 
+                                                    />
                                                     <Pie data={paymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={5} className="transition-all duration-1000 ease-out focus:outline-none">
                                                         {paymentTypeChartData.map((entry) => (<Cell key={`cell-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />))}
                                                     </Pie>

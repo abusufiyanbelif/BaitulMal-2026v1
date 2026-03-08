@@ -232,7 +232,7 @@ export default function LeadSummaryPage() {
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
-        const amountsByPaymentType: Record<string, number> = {};
+        const paymentTypeStats: Record<string, { count: number, amount: number }> = {};
         let zakatForGoalAmount = 0;
 
         verifiedDonationsList.forEach(d => {
@@ -240,7 +240,11 @@ export default function LeadSummaryPage() {
             if (!leadAllocation) return;
 
             const paymentType = d.donationType || 'Other';
-            amountsByPaymentType[paymentType] = (amountsByPaymentType[paymentType] || 0) + 1;
+            if (!paymentTypeStats[paymentType]) {
+                paymentTypeStats[paymentType] = { count: 0, amount: 0 };
+            }
+            paymentTypeStats[paymentType].count += 1;
+            paymentTypeStats[paymentType].amount += leadAllocation.amount;
 
             const totalDonationAmount = d.amount > 0 ? d.amount : 1;
             const allocationProportion = leadAllocation.amount / totalDonationAmount;
@@ -273,7 +277,7 @@ export default function LeadSummaryPage() {
             fundingProgress: (lead.targetAmount || 0) > 0 ? (totalCollectedForGoal / lead.targetAmount!) * 100 : 0,
             targetAmount: lead.targetAmount || 0,
             amountsByCategory,
-            amountsByPaymentType,
+            paymentTypeStats,
             zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal,
             totalBeneficiaries: beneficiaries.length,
             beneficiariesGiven: beneficiaries.filter(b => b.status === 'Given').length,
@@ -283,9 +287,12 @@ export default function LeadSummaryPage() {
     }, [allDonations, lead, beneficiaries]);
 
     const paymentTypeChartData = useMemo(() => {
-        if (!fundingData?.amountsByPaymentType) return [];
-        return Object.entries(fundingData.amountsByPaymentType).map(([name, value]) => ({
-            name, value, fill: `var(--color-${name.replace(/\s+/g, '')})`
+        if (!fundingData?.paymentTypeStats) return [];
+        return Object.entries(fundingData.paymentTypeStats).map(([name, stats]) => ({
+            name, 
+            value: stats.amount, 
+            count: stats.count,
+            fill: `var(--color-${name.replace(/\s+/g, '')})`
         }));
     }, [fundingData]);
 
@@ -794,7 +801,19 @@ export default function LeadSummaryPage() {
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
                                                 <PieChart>
-                                                    <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                                    <ChartTooltip 
+                                                        content={
+                                                            <ChartTooltipContent 
+                                                                nameKey="name" 
+                                                                formatter={(value, name, item) => (
+                                                                    <div className="flex flex-col">
+                                                                        <span className="font-bold">₹{Number(value).toLocaleString()}</span>
+                                                                        <span className="text-[10px] opacity-70">{item.payload.count} Donations</span>
+                                                                    </div>
+                                                                )}
+                                                            />
+                                                        } 
+                                                    />
                                                     <Pie data={paymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={5} className="transition-all duration-1000 ease-out focus:outline-none">
                                                         {paymentTypeChartData.map((entry) => (<Cell key={`cell-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />))}
                                                     </Pie>
