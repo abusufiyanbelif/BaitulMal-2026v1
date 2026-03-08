@@ -32,6 +32,13 @@ const getPriorityIcon = (priority?: string) => {
   }
 };
 
+const priorityWeight: Record<string, number> = {
+  'Urgent': 4,
+  'High': 3,
+  'Medium': 2,
+  'Low': 1
+};
+
 const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: number; })[] }) => {
     const router = useRouter();
     return (
@@ -42,8 +49,9 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                                      lead.purpose === 'Relief' ? LifeBuoy : 
                                      lead.purpose === 'Other' ? Info : HandHelping;
                 const priorityLabel = lead.priority || 'Medium';
-                const isUrgent = priorityLabel === 'Urgent';
-                const isHigh = priorityLabel === 'High';
+                const isCompleted = lead.status === 'Completed';
+                const isUrgent = priorityLabel === 'Urgent' && !isCompleted;
+                const isHigh = priorityLabel === 'High' && !isCompleted;
 
                 return (
                     <Card 
@@ -51,7 +59,8 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                         className={cn(
                             "flex flex-col hover:shadow-xl transition-all duration-500 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20 bg-white shadow-sm",
                             isUrgent && "animate-urgent-pulse border-red-500/50",
-                            isHigh && "animate-high-pulse border-orange-500/50"
+                            isHigh && "animate-high-pulse border-orange-500/50",
+                            isCompleted && "hover:shadow-none hover:-translate-y-0"
                         )}
                         style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
                         onClick={() => router.push(`/leads-public/${lead.id}/summary`)}
@@ -139,6 +148,7 @@ export function PublicLeadsView() {
               id: c.id,
               text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/campaign-public/${c.id}/summary`,
+              priority: c.priority || 'Medium',
               priorityIcon: getPriorityIcon(c.priority),
               isUrgent,
               isHigh
@@ -155,13 +165,16 @@ export function PublicLeadsView() {
               id: l.id,
               text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
               href: `/leads-public/${l.id}/summary`,
+              priority: l.priority || 'Medium',
               priorityIcon: getPriorityIcon(l.priority),
               isUrgent,
               isHigh
           };
       });
 
-    return [...activeCampaignsList, ...activeLeadsList];
+    return [...activeCampaignsList, ...activeLeadsList].sort((a, b) => 
+        (priorityWeight[b.priority] || 0) - (priorityWeight[a.priority] || 0)
+    );
   }, [campaignsWithProgress, leadsWithProgress]);
 
   const completedTickerItems = useMemo(() => {

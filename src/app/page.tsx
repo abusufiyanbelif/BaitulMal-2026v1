@@ -26,6 +26,13 @@ const getPriorityIcon = (priority?: string) => {
   }
 };
 
+const priorityWeight: Record<string, number> = {
+  'Urgent': 4,
+  'High': 3,
+  'Medium': 2,
+  'Low': 1
+};
+
 export default function Home() {
     const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted } = usePublicData();
     const { brandingSettings } = useBranding();
@@ -36,12 +43,15 @@ export default function Home() {
             .map(c => {
                 const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
                 const isUrgent = c.priority === 'Urgent';
+                const isHigh = c.priority === 'High';
                 return {
                     id: c.id,
                     text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
                     href: `/campaign-public/${c.id}/summary`,
+                    priority: c.priority || 'Medium',
                     priorityIcon: getPriorityIcon(c.priority),
-                    isUrgent
+                    isUrgent,
+                    isHigh
                 };
             });
         
@@ -50,16 +60,21 @@ export default function Home() {
             .map(l => {
                 const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
                 const isUrgent = l.priority === 'Urgent';
+                const isHigh = l.priority === 'High';
                 return {
                     id: l.id,
                     text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
                     href: `/leads-public/${l.id}/summary`,
+                    priority: l.priority || 'Medium',
                     priorityIcon: getPriorityIcon(l.priority),
-                    isUrgent
+                    isUrgent,
+                    isHigh
                 };
             });
 
-        return [...activeCampaigns, ...activeLeads];
+        return [...activeCampaigns, ...activeLeads].sort((a, b) => 
+            (priorityWeight[b.priority] || 0) - (priorityWeight[a.priority] || 0)
+        );
     }, [campaignsWithProgress, leadsWithProgress]);
 
     const completedTickerItems = useMemo(() => {

@@ -23,7 +23,7 @@ interface NewsTickerProps {
 
 /**
  * A sophisticated vertical news ticker that cycles through items with a Fade + Slide Up animation.
- * Fully theme-reactive using primary and secondary semantic variables.
+ * Refined to remove box-shadows and pulse animations if items are not urgent/high active.
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -65,14 +65,14 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
 
   return (
     <div className={cn(
-      "group border rounded-lg overflow-hidden relative flex items-center mb-2 shadow-sm h-12 bg-white transition-all hover:shadow-md",
+      "group border rounded-lg overflow-hidden relative flex items-center mb-2 h-12 bg-white transition-all",
       isCompleted ? "border-muted" : "border-primary/10",
-      currentItem?.isUrgent && "animate-urgent-pulse border-red-500/50",
-      currentItem?.isHigh && "animate-high-pulse border-orange-500/50"
+      !isCompleted && currentItem?.isUrgent && "animate-urgent-pulse border-red-500/50",
+      !isCompleted && currentItem?.isHigh && "animate-high-pulse border-orange-500/50"
     )}>
       {/* Label Section */}
       <div className={cn(
-        "z-30 h-full px-4 flex items-center border-r shadow-md shrink-0 font-bold transition-colors duration-500",
+        "z-30 h-full px-4 flex items-center border-r shrink-0 font-bold transition-colors duration-500",
         isCompleted ? "bg-muted text-muted-foreground" : "bg-primary text-primary-foreground"
       )}>
         {isCompleted ? (
@@ -121,7 +121,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         <Button
           variant="ghost"
           size="icon"
-          className="h-1/2 w-8 rounded-none hover:bg-primary/5 text-primary/40 hover:text-primary transition-colors"
+          className="h-1/2 w-8 rounded-none hover:bg-primary/5 text-primary/40 hover:text-primary transition-colors shadow-none"
           onClick={(e) => { e.preventDefault(); handleNext(); }}
         >
           <ChevronUp className="h-3 w-3" />
@@ -129,7 +129,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         <Button
           variant="ghost"
           size="icon"
-          className="h-1/2 w-8 rounded-none border-t border-primary/5 hover:bg-primary/5 text-primary/40 hover:text-primary transition-colors"
+          className="h-1/2 w-8 rounded-none border-t border-primary/5 hover:bg-primary/5 text-primary/40 hover:text-primary transition-colors shadow-none"
           onClick={(e) => { e.preventDefault(); handlePrev(); }}
         >
           <ChevronDown className="h-3 w-3" />
