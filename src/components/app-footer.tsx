@@ -34,10 +34,6 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
 
-/**
- * Simplified Footer - Optimized for clarity.
- * Consolidated redundant contribution options into a single menu.
- */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
   const { paymentSettings } = usePaymentSettings();
@@ -83,7 +79,6 @@ export function AppFooter() {
       <div className="container mx-auto max-w-6xl">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-start">
           
-          {/* Column 1: Branding & Identity */}
           <div className="space-y-6">
             <Link href="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
               {validLogoUrl && (
@@ -122,7 +117,6 @@ export function AppFooter() {
             </div>
           </div>
 
-          {/* Column 2: Navigation */}
           <div className="space-y-6 md:pl-10">
             <h3 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">
               More Info
@@ -139,7 +133,6 @@ export function AppFooter() {
             </nav>
           </div>
 
-          {/* Column 3: Secure Contributions */}
           <div className="flex flex-col md:items-end gap-6">
             <h3 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">
               Support Us
@@ -154,7 +147,7 @@ export function AppFooter() {
                     How To Give
                 </Button>
                 <p className="text-[9px] text-muted-foreground mt-3 font-normal italic md:text-right uppercase tracking-tighter opacity-60">
-                    Upi Qr, Bank Transfer, And Support Channels.
+                    UPI QR, Bank Transfer, And Support Channels.
                 </p>
             </div>
           </div>
@@ -171,7 +164,7 @@ export function AppFooter() {
             {paymentSettings?.pan && (
               <span className="flex items-center gap-2">
                 <ShieldCheck className="h-3.5 w-3.5 text-primary/60" />
-                Pan: {paymentSettings.pan}
+                PAN: {paymentSettings.pan}
               </span>
             )}
           </div>
@@ -181,8 +174,7 @@ export function AppFooter() {
         </div>
       </div>
 
-      {/* Donation Options Hub Dialog */}
-      <Dialog open={isDonationDialogOpen} onOpenChange={isDonationDialogOpen ? setIsDonationDialogOpen : undefined}>
+      <Dialog open={isDonationDialogOpen} onOpenChange={setIsDonationDialogOpen}>
         <DialogContent className="sm:max-w-xl border-primary/10 overflow-hidden rounded-[24px] p-0 animate-fade-in-zoom">
           <DialogHeader className="bg-primary/5 px-6 py-6 border-b">
             <DialogTitle className="text-2xl font-bold text-primary tracking-tight">Contribution Options</DialogTitle>
@@ -194,18 +186,17 @@ export function AppFooter() {
           <ScrollArea className="max-h-[70vh]">
             <div className="p-6 space-y-8 bg-white">
                 
-                {/* Upi Section */}
                 <div className="space-y-6">
                     <div className="flex items-center gap-2 text-primary font-bold">
                         <QrCode className="h-5 w-5" />
-                        <h3 className="text-lg">Scan & Pay Via Upi</h3>
+                        <h3 className="text-lg">Scan & Pay Via UPI</h3>
                     </div>
                     <div className="flex flex-col md:flex-row items-center gap-8 p-6 rounded-2xl border border-primary/10 bg-primary/[0.02]">
                         <div className="relative w-48 h-48 bg-white p-3 rounded-2xl border-4 border-primary shadow-xl">
                             {validQrUrl ? (
                                 <Image
                                     src={`/api/image-proxy?url=${encodeURIComponent(validQrUrl)}`}
-                                    alt="Payment Qr"
+                                    alt="Payment QR"
                                     fill
                                     className="object-contain p-1"
                                     unoptimized
@@ -218,20 +209,20 @@ export function AppFooter() {
                         </div>
                         <div className="flex-1 space-y-4 text-center md:text-left w-full">
                             <div className="space-y-1">
-                                <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Upi Identifier</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">UPI Identifier</Label>
                                 <div className="flex items-center justify-center md:justify-start gap-2">
                                     <p className="font-mono text-xl font-bold text-primary tracking-tighter">
                                         {paymentSettings?.upiId || 'Not Set'}
                                     </p>
                                     {paymentSettings?.upiId && (
-                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary/40 hover:text-primary" onClick={() => handleCopy(paymentSettings.upiId!, 'Upi ID')}>
+                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary/40 hover:text-primary" onClick={() => handleCopy(paymentSettings.upiId!, 'UPI ID')}>
                                             <Copy className="h-4 w-4" />
                                         </Button>
                                     )}
                                 </div>
                             </div>
                             <Button onClick={handleDownloadQr} className="font-bold shadow-md w-full md:w-auto px-6 h-10" disabled={!validQrUrl}>
-                                <Download className="mr-2 h-4 w-4" /> Save Qr Image
+                                <Download className="mr-2 h-4 w-4" /> Save QR Image
                             </Button>
                         </div>
                     </div>
@@ -239,7 +230,6 @@ export function AppFooter() {
 
                 <Separator className="bg-primary/10" />
 
-                {/* Bank Section */}
                 <div className="space-y-6 pb-4">
                     <div className="flex items-center gap-2 text-primary font-bold">
                         <Landmark className="h-5 w-5" />
@@ -267,11 +257,11 @@ export function AppFooter() {
                                 </div>
                             </div>
                             <div className="space-y-1">
-                                <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Ifsc Code</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">IFSC Code</Label>
                                 <div className="flex items-center gap-2">
                                     <p className="text-sm font-bold font-mono text-primary">{paymentSettings?.bankIfsc || 'N/A'}</p>
                                     {paymentSettings?.bankIfsc && (
-                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-primary/40 hover:text-primary" onClick={() => handleCopy(paymentSettings.bankIfsc!, 'Ifsc Code')}>
+                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-primary/40 hover:text-primary" onClick={() => handleCopy(paymentSettings.bankIfsc!, 'IFSC Code')}>
                                             <Copy className="h-3 w-3" />
                                         </Button>
                                     )}

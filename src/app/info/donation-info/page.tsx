@@ -30,10 +30,7 @@ const ZakatCustomIcon = ({ className }: { className?: string }) => (
     xmlns="http://www.w3.org/2000/svg" 
     className={className}
   >
-    {/* Sleeve/Wrist */}
     <rect x="40" y="390" width="80" height="90" rx="8" fill="hsl(var(--primary))" stroke="black" strokeWidth="18" />
-    
-    {/* Hand/Palm */}
     <path 
       d="M120 435H380C430 435 480 410 480 360C480 330 450 310 410 310H320V320C320 340 300 360 280 360H120V435Z" 
       fill="#FFE0B2" 
@@ -41,8 +38,6 @@ const ZakatCustomIcon = ({ className }: { className?: string }) => (
       strokeWidth="18" 
       strokeLinejoin="round" 
     />
-    
-    {/* Bag Body */}
     <path 
       d="M180 310C180 180 210 100 260 100C310 100 340 180 340 310H180Z" 
       fill="#F5F5F5" 
@@ -50,8 +45,6 @@ const ZakatCustomIcon = ({ className }: { className?: string }) => (
       strokeWidth="18" 
       strokeLinejoin="round"
     />
-    
-    {/* Top of Bag (Gathered) */}
     <path 
       d="M230 100L215 50C215 40 225 30 235 30H285C295 30 305 40 305 50L290 100H230Z" 
       fill="#F5F5F5" 
@@ -59,11 +52,7 @@ const ZakatCustomIcon = ({ className }: { className?: string }) => (
       strokeWidth="18" 
       strokeLinejoin="round"
     />
-    
-    {/* Bag Tie (Green Band) */}
     <rect x="215" y="90" width="90" height="25" rx="12.5" fill="hsl(var(--primary))" stroke="black" strokeWidth="18" />
-    
-    {/* 2.5 Percent Badge */}
     <circle cx="260" cy="225" r="60" fill="hsl(var(--primary))" stroke="black" strokeWidth="18" />
     <text 
       x="260" 
@@ -203,7 +192,7 @@ export default function DonationInfoPage() {
                                     {!type.hideUseCases && visibleUseCases.length > 0 && (
                                         <div className="space-y-6">
                                             <h3 className="text-xl font-bold tracking-tight text-primary flex items-center gap-3">
-                                                <Target className="h-5 w-5" /> {type.useCasesHeading || "Practical Use Cases"}
+                                                <Target className="h-5 w-5" /> {type.useCasesHeading || "Practical Scenarios & Methodology"}
                                             </h3>
                                             <div className="grid gap-4">
                                                 {visibleUseCases.map((useCase) => (

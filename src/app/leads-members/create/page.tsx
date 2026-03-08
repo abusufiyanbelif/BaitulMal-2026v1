@@ -163,7 +163,7 @@ export default function CreateLeadPage() {
     if (!firestore || !canCreate || !userProfile || !storage) return;
     setIsLoading(true);
     setProgress(5);
-    setLoadingMessage('Initializing lead creation...');
+    setLoadingMessage('Initializing Lead Creation...');
 
     const { imageFile, ...leadCoreData } = data;
     
@@ -182,7 +182,7 @@ export default function CreateLeadPage() {
     
     if (hasImageToUpload) {
         setProgress(15);
-        setLoadingMessage('Optimizing header image...');
+        setLoadingMessage('Optimizing Header Image...');
         try {
             const file = imageFile[0];
             const resizedBlob = await new Promise<Blob>((resolve) => {
@@ -190,7 +190,7 @@ export default function CreateLeadPage() {
             });
             
             setProgress(35);
-            setLoadingMessage('Uploading background artifacts...');
+            setLoadingMessage('Uploading Background Evidence...');
             const filePath = `leads/${newLeadId}/background.png`;
             const fileRef = storageRef(storage, filePath);
             await uploadBytes(fileRef, resizedBlob);
@@ -206,7 +206,7 @@ export default function CreateLeadPage() {
     }
     
     setProgress(55);
-    setLoadingMessage('Synchronizing lead artifacts...');
+    setLoadingMessage('Synchronizing Lead Documents...');
     const documentUploadPromises = documentsToUpload.map(async (file, idx) => {
         const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
         const fileRef = storageRef(storage, `leads/${newLeadId}/documents/${safeFileName}`);
@@ -219,7 +219,7 @@ export default function CreateLeadPage() {
     const documents = await Promise.all(documentUploadPromises);
 
     setProgress(85);
-    setLoadingMessage('Synchronizing with database...');
+    setLoadingMessage('Finalizing Database Sync...');
     const newLeadData: Partial<Lead> = {
       ...leadCoreData,
       requiredAmount: data.requiredAmount || 0,
@@ -256,7 +256,7 @@ export default function CreateLeadPage() {
     setDoc(newLeadRef, newLeadData)
       .then(() => {
         setProgress(100);
-        setLoadingMessage('Lead appeal registered.');
+        setLoadingMessage('Lead Appeal Registered.');
         toast({ title: 'Success', description: 'Lead Created Successfully.', variant: 'success' });
         router.push(`/leads-members`);
       })
@@ -291,7 +291,7 @@ export default function CreateLeadPage() {
   if (!canCreate) {
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary">
-            <div className="mb-4"><Button variant="outline" asChild><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
+            <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 text-primary"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
             <Alert variant="destructive"><ShieldAlert className="h-4 w-4" /><AlertTitle className="font-bold">Access Denied</AlertTitle><AlertDescription className="font-normal text-primary/70">Missing Permissions To Create A New Support Appeal.</AlertDescription></Alert>
         </main>
     )
@@ -323,17 +323,17 @@ export default function CreateLeadPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 font-normal text-primary">
               <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem>{renderLabel('Lead Name', 'name')}<FormControl><Input placeholder="e.g. Surgery Assistance For Patient A" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem>{renderLabel('Lead Name', 'name')}<FormControl><Input placeholder="e.g. Surgery Assistance For Patient A" {...field} className="font-normal" /></FormControl><FormMessage /></FormItem>
               )}/>
               <FormField control={form.control} name="description" render={({ field }) => (
-                <FormItem>{renderLabel('Detailed Description', 'description')}<FormControl><Textarea placeholder="Background And Specific Needs..." {...field} rows={4} /></FormControl><FormMessage /></FormItem>
+                <FormItem>{renderLabel('Detailed Description', 'description')}<FormControl><Textarea placeholder="Background And Specific Needs..." {...field} rows={4} className="font-normal" /></FormControl><FormMessage /></FormItem>
               )}/>
                 <FormItem>
                     <FormLabel className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Header Image</FormLabel>
                     <FormControl>
                         <Input id="imageFile" type="file" accept="image/png, image/jpeg, image/webp" onChange={handleImageFileChange} className="hidden" />
                     </FormControl>
-                    <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
+                    <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/20 rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
                         {imagePreview ? (
                             <>
                                 <Image src={imagePreview} alt="Preview" fill className="object-cover rounded-lg" />
@@ -354,7 +354,7 @@ export default function CreateLeadPage() {
                     <FormMessage />
                 </FormItem>
                  <FormItem>
-                    <FormLabel className="font-bold text-primary">Lead Artifacts & Proof</FormLabel>
+                    <FormLabel className="font-bold text-primary">Lead Documents & Proof</FormLabel>
                     <FormControl>
                         <FileUploader
                             onFilesChange={setDocumentsToUpload}
@@ -370,7 +370,7 @@ export default function CreateLeadPage() {
                         {renderLabel('Purpose', 'purpose')}
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl><SelectTrigger className="font-normal"><SelectValue placeholder="Select Purpose" /></SelectTrigger></FormControl>
-                            <SelectContent className="rounded-[12px] shadow-dropdown">
+                            <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                 {leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id} className="font-normal">{p.name}</SelectItem>)}
                             </SelectContent>
                         </Select>
@@ -383,7 +383,7 @@ export default function CreateLeadPage() {
                           {renderLabel('Category', 'category')}
                           <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl><SelectTrigger className="font-normal"><SelectValue placeholder="Select Category" /></SelectTrigger></FormControl>
-                              <SelectContent className="rounded-[12px] shadow-dropdown">
+                              <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                   {availableCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}
                               </SelectContent>
                           </Select>
@@ -399,7 +399,7 @@ export default function CreateLeadPage() {
                         {renderLabel('Priority Level', 'priority')}
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl><SelectTrigger className="font-normal"><SelectValue placeholder="Select Priority" /></SelectTrigger></FormControl>
-                            <SelectContent className="rounded-[12px] shadow-dropdown">
+                            <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                 {priorityLevels.map(p => <SelectItem key={p} value={p} className="font-normal">{p}</SelectItem>)}
                             </SelectContent>
                         </Select>
@@ -423,7 +423,7 @@ export default function CreateLeadPage() {
                             {renderLabel('Degree/Class', 'degree')}
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl><SelectTrigger className="font-normal h-8"><SelectValue placeholder="Degree..."/></SelectTrigger></FormControl>
-                                <SelectContent className="rounded-[12px] shadow-dropdown">
+                                <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                     {educationDegrees.map(d=><SelectItem key={d} value={d} className="font-normal">{d}</SelectItem>)}
                                 </SelectContent>
                             </Select>
@@ -435,7 +435,7 @@ export default function CreateLeadPage() {
                             {renderLabel('Academic Year', 'year')}
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl><SelectTrigger className="font-normal h-8"><SelectValue placeholder="Year..."/></SelectTrigger></FormControl>
-                                <SelectContent className="rounded-[12px] shadow-dropdown">
+                                <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                     {educationYears.map(y=><SelectItem key={y} value={y} className="font-normal">{y}</SelectItem>)}
                                 </SelectContent>
                             </Select>
@@ -447,7 +447,7 @@ export default function CreateLeadPage() {
                             {renderLabel('Semester', 'semester')}
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl><SelectTrigger className="font-normal h-8"><SelectValue placeholder="Semester..."/></SelectTrigger></FormControl>
-                                <SelectContent className="rounded-[12px] shadow-dropdown">
+                                <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                     {educationSemesters.map(s=><SelectItem key={s} value={s} className="font-normal">{s}</SelectItem>)}
                                 </SelectContent>
                             </Select>
@@ -470,10 +470,10 @@ export default function CreateLeadPage() {
                     )}/>
                     <FormField control={form.control} name="seriousness" render={({ field }) => (
                         <FormItem>
-                            {renderLabel('Priority Level', 'seriousness')}
+                            {renderLabel('Urgency Level', 'seriousness')}
                             <Select onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl><SelectTrigger className="font-normal h-8"><SelectValue placeholder="Select Level..."/></SelectTrigger></FormControl>
-                                <SelectContent className="rounded-[12px] shadow-dropdown">
+                                <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                     {leadSeriousnessLevels.map(level => <SelectItem key={level} value={level} className="font-normal">{level}</SelectItem>)}
                                 </SelectContent>
                             </Select>
@@ -491,7 +491,7 @@ export default function CreateLeadPage() {
                 <div className="space-y-4">
                     <div>
                         <FormLabel className="text-base font-bold text-primary">Qualified Donation Types</FormLabel>
-                        <FormDescription className="text-xs font-normal opacity-70">Select Which Fund Types Count Toward The Target Goal metrics.</FormDescription>
+                        <FormDescription className="text-xs font-normal opacity-70">Select Which Fund Types Count Toward The Target Goal Metrics.</FormDescription>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-xl bg-primary/5 border-primary/10">
                         <div className="flex items-center space-x-2">
@@ -533,7 +533,7 @@ export default function CreateLeadPage() {
                           {renderLabel('Status', 'status')}
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl><SelectTrigger className="font-normal"><SelectValue placeholder="Select Status" /></SelectTrigger></FormControl>
-                              <SelectContent className="rounded-[12px] shadow-dropdown">
+                              <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                   <SelectItem value="Upcoming" className="font-normal">Upcoming</SelectItem>
                                   <SelectItem value="Active" className="font-normal">Active</SelectItem>
                                   <SelectItem value="Completed" className="font-normal">Completed</SelectItem>
@@ -547,11 +547,11 @@ export default function CreateLeadPage() {
                           {renderLabel('Verification Level', 'authenticityStatus')}
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                               <FormControl><SelectTrigger className="font-normal"><SelectValue placeholder="Select Authenticity" /></SelectTrigger></FormControl>
-                              <SelectContent className="rounded-[12px] shadow-dropdown">
+                              <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                   <SelectItem value="Pending Verification" className="font-normal">Pending</SelectItem>
-                                  <SelectItem value="Verified" className="font-normal">Verified</SelectItem>
+                                  <SelectItem value="Verified" className="font-normal text-primary">Verified</SelectItem>
                                   <SelectItem value="On Hold" className="font-normal">On Hold</SelectItem>
-                                  <SelectItem value="Rejected" className="font-normal">Rejected</SelectItem>
+                                  <SelectItem value="Rejected" className="font-normal text-destructive">Rejected</SelectItem>
                                   <SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem>
                               </SelectContent>
                           </Select>
@@ -564,7 +564,7 @@ export default function CreateLeadPage() {
                       {renderLabel('Public Visibility', 'publicVisibility')}
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl><SelectTrigger className="font-normal"><SelectValue placeholder="Select Visibility" /></SelectTrigger></FormControl>
-                          <SelectContent className="rounded-[12px] shadow-dropdown">
+                          <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                               <SelectItem value="Hold" className="font-normal">Hold (Private)</SelectItem>
                               <SelectItem value="Ready to Publish" className="font-normal">Ready To Publish</SelectItem>
                               <SelectItem value="Published" className="font-normal">Published</SelectItem>
@@ -591,7 +591,7 @@ export default function CreateLeadPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle className="font-bold text-primary">Duplicate Lead Entry Detected</AlertDialogTitle>
                 <AlertDialogDescription className="font-normal text-primary/70">
-                    An Appeal With This Name Already Exists In The Institutional Records. Are You Certain You Want To Create A Duplicate Record?
+                    An Appeal With This Name Already Exists In The Organizational Records. Are You Certain You Want To Create A Duplicate Record?
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
