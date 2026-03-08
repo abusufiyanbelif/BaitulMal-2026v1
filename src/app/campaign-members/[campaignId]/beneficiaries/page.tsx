@@ -52,7 +52,8 @@ import {
     Users,
     X,
     Info,
-    CheckSquare
+    CheckSquare,
+    ClipboardCheck
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -92,21 +93,21 @@ import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog'
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
-import { updateMasterBeneficiaryAction, bulkImportBeneficiariesAction, bulkUpdateInitiativeBeneficiaryStatusAction } from '@/app/beneficiaries/actions';
+import { updateMasterBeneficiaryAction, bulkImportBeneficiariesAction, bulkUpdateInitiativeBeneficiaryStatusAction, bulkUpdateMasterBeneficiaryStatusAction } from '@/app/beneficiaries/actions';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { BeneficiaryImportDialog } from '@/components/beneficiary-import-dialog';
 
-const gridClass = "grid grid-cols-[40px_40px_50px_200px_120px_120px_120px_100px_120px_120px_150px_60px] items-center gap-4 px-4 py-3 min-w-[1250px]";
+const gridClass = "grid grid-cols-[40px_40px_50px_200px_120px_140px_140px_100px_120px_120px_150px_60px] items-center gap-4 px-4 py-3 min-w-[1300px]";
 
 function StatCard({ title, count, description, icon: Icon, colorClass, delay }: { title: string, count: number, description: string, icon: any, colorClass?: string, delay: string }) {
     return (
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md hover:-translate-y-1", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{title}</p>
-                    <p className="text-3xl font-black text-primary tracking-tight">{count}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
+                    <p className="text-2xl font-black text-primary tracking-tight">{count}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/10 text-primary">
                     <Icon className="h-5 w-5" />
@@ -149,10 +150,6 @@ export default function BeneficiariesPage() {
   const [currentPages, setCurrentPages] = useState<Record<string, number>>({});
   const itemsPerPage = 15;
 
-  const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
-  const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
-  const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
-  const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.read', false);
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.update', false);
 
   const itemLabelSuffix = campaign?.category === 'Ration' ? 'Kit' : 'Item';
@@ -198,16 +195,11 @@ export default function BeneficiariesPage() {
 
   const beneficiariesByCategory = useMemo(() => {
     const groups: Record<string, Beneficiary[]> = {};
-    
     availableCategories.forEach(cat => {
         groups[cat.id] = filteredBeneficiaries.filter(b => b.itemCategoryId === cat.id);
     });
-
     const uncategorized = filteredBeneficiaries.filter(b => !b.itemCategoryId || !availableCategories.find(c => c.id === b.itemCategoryId));
-    if (uncategorized.length > 0) {
-        groups['uncategorized'] = uncategorized;
-    }
-
+    if (uncategorized.length > 0) groups['uncategorized'] = uncategorized;
     return groups;
   }, [filteredBeneficiaries, availableCategories]);
 
@@ -216,20 +208,23 @@ export default function BeneficiariesPage() {
   };
 
   const toggleReferral = (referral: string) => {
-    setSelectedReferrals(prev => 
-        prev.includes(referral) ? prev.filter(r => r !== referral) : [...prev, referral]
-    );
+    setSelectedReferrals(prev => prev.includes(referral) ? prev.filter(r => r !== referral) : [...prev, referral]);
+  };
+
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) {
+        setSelectedIds(filteredBeneficiaries.map(b => b.id));
+    } else {
+        setSelectedIds([]);
+    }
   };
 
   const toggleSelectAllForCategory = (catId: string, checked: boolean) => {
-    const list = beneficiariesByCategory[catId] || [];
-    const currentPage = currentPages[catId] || 1;
-    const paginatedIds = list.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map(b => b.id);
-    
+    const categoryIds = beneficiariesByCategory[catId]?.map(b => b.id) || [];
     if (checked) {
-        setSelectedIds(prev => Array.from(new Set([...prev, ...paginatedIds])));
+        setSelectedIds(prev => Array.from(new Set([...prev, ...categoryIds])));
     } else {
-        setSelectedIds(prev => prev.filter(id => !paginatedIds.includes(id)));
+        setSelectedIds(prev => prev.filter(id => !categoryIds.includes(id)));
     }
   };
 
@@ -237,12 +232,25 @@ export default function BeneficiariesPage() {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
-  const handleBulkStatusChange = async (newStatus: Beneficiary['status']) => {
+  const handleBulkDisbursementChange = async (newStatus: Beneficiary['status']) => {
     if (selectedIds.length === 0) return;
     setIsBulkUpdating(true);
     const res = await bulkUpdateInitiativeBeneficiaryStatusAction('campaign', campaignId, selectedIds, newStatus);
     if (res.success) {
-        toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
+        toast({ title: "Status Updated", description: `Successfully marked ${selectedIds.length} recipients as ${newStatus}.`, variant: "success" });
+        setSelectedIds([]);
+    } else {
+        toast({ title: "Update Failed", description: res.message, variant: "destructive" });
+    }
+    setIsBulkUpdating(false);
+  };
+
+  const handleBulkVerificationChange = async (newStatus: Beneficiary['status']) => {
+    if (!userProfile || selectedIds.length === 0) return;
+    setIsBulkUpdating(true);
+    const res = await bulkUpdateMasterBeneficiaryStatusAction(selectedIds, newStatus, { id: userProfile.id, name: userProfile.name });
+    if (res.success) {
+        toast({ title: "Vetting Updated", description: `Updated master vetting for ${selectedIds.length} beneficiaries to ${newStatus}.`, variant: "success" });
         setSelectedIds([]);
     } else {
         toast({ title: "Update Failed", description: res.message, variant: "destructive" });
@@ -254,6 +262,11 @@ export default function BeneficiariesPage() {
     if (!firestore || !campaignId || !canUpdate) return;
     const ref = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiary.id);
     updateDoc(ref, { status: newStatus }).catch((err: any) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { status: newStatus } })));
+  };
+
+  const handleVerificationChange = (beneficiary: Beneficiary, newStatus: any) => {
+    if (!userProfile || !canUpdate) return;
+    updateMasterBeneficiaryAction(beneficiary.id, { status: newStatus }, { id: userProfile.id, name: userProfile.name });
   };
 
   const handleQuickStatusToggle = (beneficiary: Beneficiary) => {
@@ -274,7 +287,6 @@ export default function BeneficiariesPage() {
   const handleRemoveFromInitiative = (beneficiaryId: string) => {
     if (!firestore || !campaignId || !canUpdate) return;
     if (!confirm('Are You Certain You Want To Remove This Beneficiary? The Master Record Will Remain Unaffected.')) return;
-    
     const ref = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiaryId);
     deleteDoc(ref).then(() => {
         toast({ title: 'Beneficiary Removed', variant: 'success' });
@@ -284,20 +296,15 @@ export default function BeneficiariesPage() {
   const handleFormSubmit = async (data: BeneficiaryFormData, masterIdOrEvent?: string | React.BaseSyntheticEvent) => {
     setIsSubmitting(true);
     if (!firestore || !storage || !campaignId || !userProfile || !campaign) { setIsSubmitting(false); return; }
-    
     const masterId = typeof masterIdOrEvent === 'string' ? masterIdOrEvent : editingBeneficiary?.id;
     const batch = writeBatch(firestore);
     const masterRef = masterId ? doc(firestore, 'beneficiaries', masterId) : doc(collection(firestore, 'beneficiaries'));
     const campRef = doc(firestore, 'campaigns', campaignId, 'beneficiaries', masterRef.id);
-    
     let masterVerificationStatus: any = 'Pending';
     if (masterId) {
         const masterSnap = await getDoc(masterRef);
-        if (masterSnap.exists()) {
-            masterVerificationStatus = masterSnap.data().status || 'Pending';
-        }
+        if (masterSnap.exists()) masterVerificationStatus = masterSnap.data().status || 'Pending';
     }
-
     let idProofUrl = editingBeneficiary?.idProofUrl || '';
     const fileList = data.idProofFile as FileList | undefined;
     if (fileList && fileList.length > 0) {
@@ -307,48 +314,21 @@ export default function BeneficiariesPage() {
         await uploadBytes(fRef, resizedBlob);
         idProofUrl = await getDownloadURL(fRef);
     }
-
     const { idProofFile, idProofDeleted, ...rest } = data;
-    const fullData = { 
-        ...rest, 
-        id: masterRef.id, 
-        idProofUrl, 
-        verificationStatus: masterVerificationStatus,
-        addedDate: editingBeneficiary?.addedDate || new Date().toISOString().split('T')[0], 
-        createdAt: editingBeneficiary ? (editingBeneficiary as any).createdAt : serverTimestamp(), 
-        createdById: editingBeneficiary ? (editingBeneficiary as any).createdById : userProfile.id, 
-        createdByName: editingBeneficiary ? (editingBeneficiary as any).createdByName : userProfile.name 
-    };
-    
+    const fullData = { ...rest, id: masterRef.id, idProofUrl, verificationStatus: masterVerificationStatus, addedDate: editingBeneficiary?.addedDate || new Date().toISOString().split('T')[0], createdAt: editingBeneficiary ? (editingBeneficiary as any).createdAt : serverTimestamp(), createdById: editingBeneficiary ? (editingBeneficiary as any).createdById : userProfile.id, createdByName: editingBeneficiary ? (editingBeneficiary as any).createdByName : userProfile.name };
     const { status, kitAmount, zakatAllocation, ...masterData } = fullData;
-    
     const masterStatusToSave = status === 'Given' ? 'Verified' : status;
     batch.set(masterRef, { ...masterData, status: masterStatusToSave }, { merge: true });
     batch.set(campRef, fullData, { merge: true });
-    
-    if (!editingBeneficiary) {
-        batch.update(doc(firestore, 'campaigns', campaignId), { targetAmount: (campaign.targetAmount || 0) + (data.kitAmount || 0) });
-    }
-    
-    await batch.commit().then(() => { 
-        toast({ title: 'Success', variant: 'success' }); 
-        setIsFormOpen(false); 
-        setEditingBeneficiary(null);
-    }).catch(e => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: campRef.path, operation: 'create' })));
+    if (!editingBeneficiary) batch.update(doc(firestore, 'campaigns', campaignId), { targetAmount: (campaign.targetAmount || 0) + (data.kitAmount || 0) });
+    await batch.commit().then(() => { toast({ title: 'Success', variant: 'success' }); setIsFormOpen(false); setEditingBeneficiary(null); }).catch(e => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: campRef.path, operation: 'create' })));
     setIsSubmitting(false);
   };
 
   const handleExport = () => {
     if (!filteredBeneficiaries.length) return;
-    const headers = ['Name', 'Phone', 'VerificationStatus', 'DisbursementStatus', 'KitAmount', 'Referral'];
-    const rows = filteredBeneficiaries.map(b => [
-        b.name,
-        b.phone || 'N/A',
-        b.verificationStatus || 'Pending',
-        b.status || 'Pending',
-        b.kitAmount || 0,
-        b.referralBy || 'N/A'
-    ]);
+    const headers = ['Name', 'Phone', 'Verification Status', 'Disbursement Status', 'Kit Amount', 'Referral'];
+    const rows = filteredBeneficiaries.map(b => [b.name, b.phone || 'N/A', b.verificationStatus || 'Pending', b.status || 'Pending', b.kitAmount || 0, b.referralBy || 'N/A']);
     const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -362,11 +342,8 @@ export default function BeneficiariesPage() {
   const handleImport = async (records: Partial<Beneficiary>[]) => {
     if (!userProfile) return;
     const res = await bulkImportBeneficiariesAction(records, { id: userProfile.id, name: userProfile.name }, { type: 'campaign', id: campaignId });
-    if (res.success) {
-        toast({ title: 'Import Complete', description: res.message, variant: 'success' });
-    } else {
-        toast({ title: 'Import Failed', description: res.message, variant: 'destructive' });
-    }
+    if (res.success) toast({ title: 'Import Complete', description: res.message, variant: 'success' });
+    else toast({ title: 'Import Failed', description: res.message, variant: 'destructive' });
   };
 
   if (isCampaignLoading || areBeneficiariesLoading || isProfileLoading) return <BrandedLoader />;
@@ -380,15 +357,15 @@ export default function BeneficiariesPage() {
             </Button>
         </div>
         
-        <h1 className="text-4xl font-bold tracking-tight text-primary uppercase">{campaign.name}</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-primary">{campaign.name}</h1>
         
         <div className="border-b border-primary/10 mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex w-max space-x-2 pb-2">
-                    {canReadSummary && ( <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link> )}
-                    {canReadRation && ( <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item Lists</Link> )}
-                    {canReadBeneficiaries && ( <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link> )}
-                    {canReadDonations && ( <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link> )}
+                    <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
+                    <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item Lists</Link>
+                    <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>
+                    <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link>
                 </div>
                 <ScrollBar orientation="horizontal" />
             </ScrollArea>
@@ -435,14 +412,6 @@ export default function BeneficiariesPage() {
             <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/50">
                 <Search className="h-4 w-4" />
             </div>
-            <Button 
-                variant="ghost" 
-                size="icon" 
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent"
-                onClick={() => setSearchTerm(searchTerm)}
-            >
-                <Search className="h-4 w-4 text-primary" />
-            </Button>
           </div>
 
           <Popover>
@@ -504,11 +473,15 @@ export default function BeneficiariesPage() {
           </Select>
         </div>
 
-        <div className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
+        <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
             <ScrollArea className="w-full">
-                <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold uppercase tracking-widest text-[hsl(var(--table-header-fg))]", gridClass)}>
+                <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold text-[hsl(var(--table-header-fg))] tracking-tight", gridClass)}>
                     <div className="flex justify-center">
-                        <CheckSquare className="h-4 w-4 opacity-40" />
+                        <Checkbox 
+                            checked={filteredBeneficiaries.length > 0 && selectedIds.length === filteredBeneficiaries.length}
+                            onCheckedChange={toggleSelectAll}
+                            className="border-primary/40 data-[state=checked]:bg-primary"
+                        />
                     </div>
                     <div></div>
                     <div>Sr. No.</div>
@@ -527,32 +500,29 @@ export default function BeneficiariesPage() {
                     {Object.entries(beneficiariesByCategory).map(([catId, list]) => {
                         const cat = availableCategories.find(c => c.id === catId);
                         let categoryName = cat?.name || 'Uncategorized';
-                        
                         if (campaign.category === 'Ration' && cat) {
                             if (cat.minMembers === 1 && cat.maxMembers === 1) categoryName = `Member (1)`;
                             else if (cat.minMembers !== undefined && cat.maxMembers !== undefined) categoryName = `Members (${cat.minMembers}-${cat.maxMembers})`;
                         }
-
                         const currentPage = currentPages[catId] || 1;
                         const paginatedList = list.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
                         const isExpanded = openGroups[catId] !== false;
-
                         if (paginatedList.length === 0) return null;
 
                         return (
                             <Collapsible key={catId} open={isExpanded} onOpenChange={() => toggleGroup(catId)} className="w-full">
-                                <CollapsibleTrigger className="w-full bg-[hsl(var(--table-header-bg))] px-4 py-3 text-[12px] font-black text-primary flex items-center gap-2 border-b border-primary/10 uppercase hover:bg-primary/5 transition-colors">
+                                <CollapsibleTrigger className="w-full bg-[hsl(var(--table-header-bg))] px-4 py-3 text-[12px] font-bold text-primary flex items-center gap-2 border-b border-primary/10 hover:bg-primary/5 transition-colors">
                                     <ChevronDown className={cn("h-4 w-4 transition-transform text-primary", !isExpanded && "-rotate-90")} />
                                     {categoryName} ({list.length} Beneficiaries)
                                 </CollapsibleTrigger>
                                 <CollapsibleContent className="w-full">
-                                    <div className={cn("bg-primary/[0.05] border-b border-primary/10 flex items-center gap-4 px-4 py-2 text-[10px] font-bold text-primary tracking-widest")}>
+                                    <div className={cn("bg-primary/[0.05] border-b border-primary/10 flex items-center gap-4 px-4 py-2 text-[10px] font-bold text-primary tracking-tight")}>
                                         <Checkbox 
                                             checked={paginatedList.length > 0 && paginatedList.every(b => selectedIds.includes(b.id))}
                                             onCheckedChange={(checked) => toggleSelectAllForCategory(catId, !!checked)}
                                             className="border-primary/40 data-[state=checked]:bg-primary"
                                         />
-                                        <span>Select All In Page</span>
+                                        <span>Select All In Category</span>
                                     </div>
                                     <Accordion type="single" collapsible className="w-full">
                                         {paginatedList.map((b, idx) => (
@@ -576,21 +546,21 @@ export default function BeneficiariesPage() {
                                                     <div className="font-bold text-sm text-primary truncate">{b.name}</div>
                                                     <div className="font-mono text-xs opacity-60">{b.phone || 'N/A'}</div>
                                                     <div className="text-center">
-                                                        <Badge variant={b.verificationStatus === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">
+                                                        <Badge variant={b.verificationStatus === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold">
                                                             {b.verificationStatus || 'Pending'}
                                                         </Badge>
                                                     </div>
                                                     <div className="text-center">
                                                         <Badge 
                                                             variant={b.status === 'Given' ? 'given' : b.status === 'Verified' ? 'eligible' : 'outline'} 
-                                                            className="text-[10px] font-bold uppercase"
+                                                            className="text-[10px] font-bold"
                                                         >
                                                             {b.status}
                                                         </Badge>
                                                     </div>
-                                                    <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold uppercase">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
-                                                    <div className="text-right font-mono text-sm font-bold text-primary">₹{(b.kitAmount || 0).toFixed(2)}</div>
-                                                    <div className="text-right font-mono text-sm font-bold text-primary">₹{(b.zakatAllocation || 0).toFixed(2)}</div>
+                                                    <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
+                                                    <div className="text-right font-mono text-sm font-bold text-primary">₹{(b.kitAmount || 0).toLocaleString('en-IN')}</div>
+                                                    <div className="text-right font-mono text-sm font-bold text-primary">₹{(b.zakatAllocation || 0).toLocaleString('en-IN')}</div>
                                                     <div className="text-xs font-normal text-primary/70 truncate">{b.referralBy || 'N/A'}</div>
                                                     <div className="text-right">
                                                         <div className="flex items-center justify-end gap-1">
@@ -603,22 +573,22 @@ export default function BeneficiariesPage() {
                                                                     <DropdownMenuSeparator />
                                                                     
                                                                     {canUpdate && (
-                                                                        <DropdownMenuItem onClick={() => handleQuickStatusToggle(b)} className="text-primary font-normal">
-                                                                            {b.status === 'Given' ? <Hourglass className="mr-2 h-4 w-4 text-amber-600" /> : <CheckCircle2 className="mr-2 h-4 w-4 text-green-600" />}
-                                                                            {b.status === 'Given' ? `Mark As Pending ${itemLabelSuffix}` : `Mark As Given ${itemLabelSuffix}`}
-                                                                        </DropdownMenuItem>
-                                                                    )}
-
-                                                                    {canUpdate && (
-                                                                        <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="text-primary font-normal">
-                                                                            {b.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4 text-destructive" /> : <Coins className="mr-2 h-4 w-4 text-primary" />}
-                                                                            {b.isEligibleForZakat ? 'Mark As Not Eligible' : 'Mark Eligible For Zakat'}
-                                                                        </DropdownMenuItem>
+                                                                        <DropdownMenuSub>
+                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ChevronsUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Vetting Status</DropdownMenuSubTrigger>
+                                                                            <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                                                                                <DropdownMenuRadioGroup value={b.verificationStatus || 'Pending'} onValueChange={(s) => handleVerificationChange(b, s)}>
+                                                                                    <DropdownMenuRadioItem value="Pending" className="font-normal">Pending</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Verified" className="font-normal">Verified</SelectItem>
+                                                                                    <DropdownMenuRadioItem value="Hold" className="font-normal">Hold</SelectItem>
+                                                                                    <DropdownMenuRadioItem value="Need More Details" className="font-normal">Need Details</SelectItem>
+                                                                                </DropdownMenuRadioGroup>
+                                                                            </DropdownMenuSubContent></DropdownMenuPortal>
+                                                                        </DropdownMenuSub>
                                                                     )}
 
                                                                     {canUpdate && (
                                                                         <DropdownMenuSub>
-                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ChevronsUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Disbursement</DropdownMenuSubTrigger>
+                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ClipboardCheck className="mr-2 h-4 w-4 opacity-60" /> Change Disbursement Status</DropdownMenuSubTrigger>
                                                                             <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                                                                 <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
                                                                                     <DropdownMenuRadioItem value="Pending" className="font-normal">Pending</DropdownMenuRadioItem>
@@ -627,6 +597,13 @@ export default function BeneficiariesPage() {
                                                                                 </DropdownMenuRadioGroup>
                                                                             </DropdownMenuSubContent></DropdownMenuPortal>
                                                                         </DropdownMenuSub>
+                                                                    )}
+
+                                                                    {canUpdate && (
+                                                                        <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="text-primary font-normal">
+                                                                            {b.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4 text-destructive" /> : <Coins className="mr-2 h-4 w-4 text-primary" />}
+                                                                            {b.isEligibleForZakat ? 'Mark As Not Eligible' : 'Mark Eligible For Zakat'}
+                                                                        </DropdownMenuItem>
                                                                     )}
                                                                     
                                                                     {canUpdate && (
@@ -645,37 +622,37 @@ export default function BeneficiariesPage() {
                                                 <AccordionContent className="bg-primary/[0.01] border-t border-primary/10 px-12 py-6">
                                                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Address</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Address</p>
                                                             <p className="text-sm font-normal leading-relaxed text-primary">{b.address || 'N/A'}</p>
                                                         </div>
                                                         <div className="grid grid-cols-2 gap-4">
                                                             <div className="space-y-2">
-                                                                <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Age</p>
+                                                                <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Age</p>
                                                                 <p className="text-sm font-normal text-primary">{b.age || 'N/A'}</p>
                                                             </div>
                                                             <div className="space-y-2">
-                                                                <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Occupation</p>
+                                                                <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Occupation</p>
                                                                 <p className="text-sm font-normal text-primary">{b.occupation || 'N/A'}</p>
                                                             </div>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Family Details</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Family Details</p>
                                                             <p className="text-sm font-normal text-primary">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">ID Proof</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">ID Proof</p>
                                                             <p className="text-sm font-normal text-primary">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Date Added</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Date Added</p>
                                                             <p className="text-sm font-normal text-primary">{b.addedDate || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Zakat Allocation</p>
-                                                            <p className="text-sm font-bold text-primary">₹{(b.zakatAllocation || 0).toFixed(2)}</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Zakat Allocation</p>
+                                                            <p className="text-sm font-bold text-primary">₹{(b.zakatAllocation || 0).toLocaleString('en-IN')}</p>
                                                         </div>
                                                         <div className="space-y-2 md:col-span-2">
-                                                            <p className="text-[10px] font-bold opacity-60 uppercase tracking-widest text-primary">Notes</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Notes</p>
                                                             <p className="text-sm font-normal italic opacity-80 text-primary">{b.notes || (b.isEligibleForZakat ? `Eligible For Zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
                                                         </div>
                                                     </div>
@@ -694,26 +671,43 @@ export default function BeneficiariesPage() {
 
         {/* Bulk Action Bar */}
         {selectedIds.length > 0 && (
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-bottom">
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-bottom w-full max-w-[95vw] sm:max-w-fit">
                 <div className="flex items-center gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
                     <div className="flex items-center gap-2 pr-4 border-r border-white/20">
                         <CheckSquare className="h-5 w-5" />
-                        <span className="text-sm font-bold tracking-tight">{selectedIds.length} Selected</span>
+                        <span className="text-sm font-bold tracking-tight whitespace-nowrap">{selectedIds.length} Selected</span>
                     </div>
                     
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
-                                {isBulkUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ChevronsUpDown className="mr-2 h-4 w-4"/>}
-                                Bulk Update Status
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown">
-                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Given')} className="font-bold">Mark As Given {itemLabelSuffix}</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-normal">Mark As Verified (Secured)</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Mark As Pending</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex gap-2">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
+                                    <ClipboardCheck className="mr-2 h-4 w-4"/>
+                                    Disburse
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown">
+                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Given')} className="font-bold">Mark As Given {itemLabelSuffix}</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Verified')} className="font-normal">Mark As Verified (Secured)</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Pending')} className="font-normal">Mark As Pending</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
+                                    <ChevronsUpDown className="mr-2 h-4 w-4"/>
+                                    Vet Profiles
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown border-primary/10">
+                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Verified')} className="font-bold">Set To Verified</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Hold')} className="font-normal">Set To Hold</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Need More Details')} className="font-normal">Need More Details</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
 
                     <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10 rounded-full" onClick={() => setSelectedIds([])}>
                         <X className="h-4 w-4" />
