@@ -21,8 +21,8 @@ import { cn } from '@/lib/utils';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 /**
- * Custom Zakat Icon - Re-engineered as an "Old Style" Money Bag.
- * Based on user-provided reference: Yellow cloth bag with a dark tie.
+ * Re-engineered "Old Style" Zakat Money Bag.
+ * Featuring a flared top, dark red tie, and yellowish cloth body.
  */
 const ZakatCustomIcon = ({ className }: { className?: string }) => (
   <svg 
@@ -31,70 +31,59 @@ const ZakatCustomIcon = ({ className }: { className?: string }) => (
     xmlns="http://www.w3.org/2000/svg" 
     className={className}
   >
-    {/* Bag Shadow/Depth */}
+    {/* Shadow */}
     <path 
       d="M256 100C160 100 120 180 120 320C120 420 180 480 256 480C332 480 392 420 392 320C392 180 352 100 256 100Z" 
       fill="#EAB308" 
-      opacity="0.2"
+      opacity="0.1"
     />
 
-    {/* Main Bag Body (Yellow/Gold) */}
+    {/* Main Bag Body (Yellowish Cloth) */}
     <path 
-      d="M256 120C170 120 130 190 130 330C130 430 180 470 256 470C332 470 382 430 382 330C382 190 342 120 256 120Z" 
-      fill="#FACC15" 
+      d="M256 130C170 130 135 200 135 330C135 430 185 470 256 470C327 470 377 430 377 330C377 200 342 130 256 130Z" 
+      fill="#FDE047" 
+      stroke="#A16207"
+      strokeWidth="4"
     />
     
-    {/* Bag Highlights */}
+    {/* Top Flared Opening */}
     <path 
-      d="M180 330C180 250 210 180 256 180" 
-      stroke="white" 
-      strokeWidth="12" 
-      strokeLinecap="round" 
-      opacity="0.3"
-    />
-
-    {/* Top Ruffle (Old Style Bag Opening) */}
-    <path 
-      d="M210 120C190 100 180 60 210 40C230 30 282 30 302 40C332 60 322 100 302 120" 
-      fill="#FACC15" 
-    />
-    <path 
-      d="M210 120C190 100 180 60 210 40C230 30 282 30 302 40C332 60 322 100 302 120Z" 
-      stroke="#A16207" 
+      d="M200 130C180 110 170 60 210 45C235 35 277 35 302 45C342 60 332 110 312 130" 
+      fill="#FDE047" 
+      stroke="#A16207"
       strokeWidth="4"
     />
 
-    {/* The Tie (Dark Red/Brown) */}
+    {/* The Tie (Dark Red) */}
     <path 
-      d="M190 120C190 120 230 140 256 140C282 140 322 120 322 120" 
-      stroke="#7F1D1D" 
-      strokeWidth="14" 
+      d="M190 135C190 135 235 155 256 155C277 155 322 135 322 135" 
+      stroke="#991B1B" 
+      strokeWidth="16" 
       strokeLinecap="round" 
     />
     <path 
-      d="M256 140L230 180M256 140L282 180" 
-      stroke="#7F1D1D" 
+      d="M256 155L235 195M256 155L277 195" 
+      stroke="#991B1B" 
       strokeWidth="10" 
       strokeLinecap="round" 
     />
-    <circle cx="256" cy="140" r="10" fill="#7F1D1D" />
 
-    {/* Icon Text: 2.5% Zakat (Old Style Handwriting feel) */}
+    {/* Text Inside Bag: 2.5% Zakat */}
     <text 
       x="256" 
-      y="300" 
+      y="310" 
       textAnchor="middle" 
       fill="#7F1D1D" 
-      style={{ fontSize: '64px', fontWeight: '900', fontFamily: 'serif' }}
+      style={{ fontSize: '68px', fontWeight: '900', fontFamily: 'serif' }}
     >
       2.5%
     </text>
     <text 
       x="256" 
-      y="360" 
+      y="375" 
       textAnchor="middle" 
       fill="#7F1D1D" 
-      style={{ fontSize: '48px', fontWeight: 'bold', fontFamily: 'serif' }}
+      style={{ fontSize: '52px', fontWeight: 'bold', fontFamily: 'serif' }}
     >
       Zakat
     </text>
@@ -150,7 +139,7 @@ export default function DonationInfoPage() {
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-12 text-primary font-normal">
       <div className="mb-4">
-        <Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95">
+        <Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95 text-primary">
           <Link href="/">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back To Home

@@ -103,7 +103,7 @@ const gridClass = "grid grid-cols-[40px_40px_50px_200px_120px_140px_140px_100px_
 
 function StatCard({ title, count, description, icon: Icon, colorClass, delay }: { title: string, count: number, description: string, icon: any, colorClass?: string, delay: string }) {
     return (
-        <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
+        <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-none animate-fade-in-up transition-all", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
                     <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
@@ -397,7 +397,7 @@ export default function BeneficiariesPage() {
             <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="font-normal border-primary/10 text-primary bg-white hover:bg-primary/5 active:scale-95 transition-transform">
               <CopyPlus className="mr-2 h-4 w-4"/> Select From Master
             </Button>
-            <Button size="sm" onClick={() => { setEditingBeneficiary(null); setIsFormOpen(true); }} className="bg-primary hover:bg-primary/90 text-white font-bold active:scale-95 transition-transform shadow-md rounded-[12px]">
+            <Button size="sm" onClick={() => { setEditingBeneficiary(null); setIsFormOpen(true); }} className="bg-primary hover:bg-primary/90 text-white font-bold active:scale-95 transition-transform shadow-none rounded-[12px]">
               <PlusCircle className="mr-2 h-4 w-4"/> Add New
             </Button>
           </div>
@@ -484,7 +484,7 @@ export default function BeneficiariesPage() {
           </Select>
         </div>
 
-        <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
+        <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-none transition-all">
             <ScrollArea className="w-full">
                 <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold text-[hsl(var(--table-header-fg))] tracking-tight", gridClass)}>
                     <div className="flex justify-center">

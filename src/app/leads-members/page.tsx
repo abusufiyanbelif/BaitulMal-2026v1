@@ -78,9 +78,9 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
     return (
         <Card 
             className={cn(
-                "flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white shadow-none animate-fade-in-up transition-all duration-500",
-                isUrgent && "border-red-500/50",
-                isHigh && "border-orange-500/50",
+                "flex flex-col overflow-hidden h-full group border-primary/10 bg-white shadow-none animate-fade-in-up transition-all duration-500",
+                isUrgent && "animate-urgent-pulse border-red-500/50",
+                isHigh && "animate-high-pulse border-orange-500/50",
                 isCompleted && "hover:shadow-none hover:-translate-y-0"
             )}
             style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
@@ -230,7 +230,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
             )}
         </CardContent>
          <CardFooter className="p-2 border-t bg-primary/5">
-            <Button asChild className="w-full text-xs font-bold tracking-tight hover:bg-primary hover:text-white text-primary" size="sm" variant="ghost">
+            <Button asChild className="w-full text-xs font-bold tracking-tight hover:bg-primary hover:text-white text-primary shadow-none" size="sm" variant="ghost">
                 <Link href={`/leads-members/${lead.id}/summary`}>
                     View Detailed Summary
                 </Link>

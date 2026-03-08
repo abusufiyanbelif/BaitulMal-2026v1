@@ -96,9 +96,9 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
     return (
         <Card 
             className={cn(
-                "flex flex-col interactive-hover overflow-hidden h-full group border-primary/10 bg-white shadow-none animate-fade-in-up transition-all duration-500",
-                isUrgent && "border-red-500/50",
-                isHigh && "border-orange-500/50",
+                "flex flex-col overflow-hidden h-full group border-primary/10 bg-white shadow-none animate-fade-in-up transition-all duration-500",
+                isUrgent && "animate-urgent-pulse border-red-500/50",
+                isHigh && "animate-high-pulse border-orange-500/50",
                 isCompleted && "hover:shadow-none hover:-translate-y-0"
             )}
             style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
@@ -250,7 +250,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
             )}
           </CardContent>
           <CardFooter className="p-2 border-t bg-primary/5">
-            <Button asChild className="w-full text-xs font-bold tracking-tight" size="sm" variant="ghost">
+            <Button asChild className="w-full text-xs font-bold tracking-tight shadow-none" size="sm" variant="ghost">
                 <Link href={`/campaign-members/${campaign.id}/summary`}>
                     View Detailed Summary
                 </Link>
@@ -406,9 +406,7 @@ export default function CampaignPage() {
     <>
       <main className="container mx-auto p-4 sm:p-6 space-y-6 text-primary font-normal">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <Button variant="secondary" asChild size="sm" className="font-bold border-primary/20 transition-transform active:scale-95">
-            <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link>
-          </Button>
+          <Button variant="secondary" asChild size="sm" className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
           {canCreate && !isLoading && (
             <Button asChild size="sm" className="font-bold active:scale-95 transition-transform shadow-none">
               <Link href="/campaign-members/create"><Plus className="mr-2 h-4 w-4" /> New Campaign</Link>
