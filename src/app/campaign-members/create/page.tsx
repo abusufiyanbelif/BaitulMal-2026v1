@@ -22,7 +22,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import type { Campaign } from '@/lib/types';
+import type { Campaign, DonationCategory } from '@/lib/types';
 import { donationCategories, priorityLevels } from '@/lib/modules';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -132,7 +132,7 @@ export default function CreateCampaignPage() {
     if (!firestore || !canCreate || !userProfile || !storage) return;
     setIsLoading(true);
     setProgress(5);
-    setLoadingMessage('Initializing creation hub...');
+    setLoadingMessage('Initializing creation...');
 
     const { imageFile, ...campaignCoreData } = data;
     
@@ -191,7 +191,7 @@ export default function CreateCampaignPage() {
     setProgress(85);
     setLoadingMessage('Finalizing database registration...');
     const newCampaignData: Partial<Campaign> = {
-      ...campaignCoreData,
+      ...(campaignCoreData as any),
       targetAmount: data.targetAmount || 0,
       description: data.description || '',
       createdAt: serverTimestamp(),
@@ -202,6 +202,7 @@ export default function CreateCampaignPage() {
       shopContact: '',
       shopAddress: '',
       itemCategories: data.category === 'Ration' ? [{ id: 'item-price-list', name: 'Item Price List', items: [] }] : [],
+      allowedDonationTypes: data.allowedDonationTypes as DonationCategory[],
     };
     
     if (imageUrl) {
@@ -245,7 +246,7 @@ export default function CreateCampaignPage() {
   };
 
   if (isProfileLoading || areCampaignsLoading) {
-    return <BrandedLoader message="Preparing Campaign Environment..." />;
+    return <BrandedLoader message="Preparing campaign environment..." />;
   }
 
   if (!canCreate) {

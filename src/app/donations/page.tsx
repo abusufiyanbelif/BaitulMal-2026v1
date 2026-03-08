@@ -1,6 +1,6 @@
 'use client';
 import React, { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase, useAuth } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -15,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PlusCircle, MoreHorizontal, Edit, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, IndianRupee, FolderKanban, Lightbulb, Trash2, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, ImageIcon, Loader2, CheckSquare, X, ChevronsUpDown } from 'lucide-react';
+import Link from 'next/link';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -212,7 +213,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                             ))}
                                         </TableBody>
                                     </Table>
-                                    <ScrollBar orientation="horizontal" />
+                                    <ScrollBar orientation="vertical" />
                                 </ScrollArea>
                             </div>
                         </div>
@@ -225,6 +226,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
 
 export default function DonationsPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const firestore = useFirestore();
   const storage = useStorage();
   const { toast } = useToast();
@@ -233,7 +235,7 @@ export default function DonationsPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
+  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -259,7 +261,7 @@ export default function DonationsPage() {
   const leadsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'leads') : null, [firestore]);
   const { data: allLeads } = useCollection<Lead>(leadsCollectionRef);
 
-  const handleSort = (key: string) => {
+  const handleSort = (key: SortKey) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
         direction = 'descending';
@@ -280,6 +282,7 @@ export default function DonationsPage() {
         items = items.filter(d => 
             d.donorName.toLowerCase().includes(lower) || 
             d.donorPhone.includes(searchTerm) ||
+            d.id.toLowerCase().includes(lower) ||
             d.receiverName.toLowerCase().includes(lower) ||
             d.id.toLowerCase().includes(lower)
         );
@@ -295,8 +298,12 @@ export default function DonationsPage() {
             }
             const aStr = String(aVal || '').toLowerCase();
             const bStr = String(bVal || '').toLowerCase();
-            if (aStr < bStr) return sortConfig.direction === 'ascending' ? -1 : 1;
-            if (aStr > bStr) return sortConfig.direction === 'ascending' ? 1 : -1;
+            if (aStr < bStr) {
+                return sortConfig.direction === 'ascending' ? -1 : 1;
+            }
+            if (aStr > bStr) {
+                return sortConfig.direction === 'ascending' ? 1 : -1;
+            }
             return 0;
         });
     }
@@ -442,12 +449,12 @@ export default function DonationsPage() {
                                 className="border-primary/40 data-[state=checked]:bg-primary"
                             />
                         </div>
-                        <SortableHeader sortKey="srNo" sortConfig={sortConfig}>#</SortableHeader>
-                        <SortableHeader sortKey="donorName" sortConfig={sortConfig}>Donor Name</SortableHeader>
-                        <SortableHeader sortKey="amount" sortConfig={sortConfig} className="text-right">Amount (₹)</SortableHeader>
-                        <SortableHeader sortKey="donationDate" sortConfig={sortConfig} className="text-center">Entry Date</SortableHeader>
+                        <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
+                        <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor Name</SortableHeader>
+                        <SortableHeader sortKey="amount" sortConfig={sortConfig} handleSort={handleSort} className="text-right">Amount (₹)</SortableHeader>
+                        <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Entry Date</SortableHeader>
                         <div className="text-center">Method</div>
-                        <SortableHeader sortKey="status" sortConfig={sortConfig} className="text-center">Vetting Status</SortableHeader>
+                        <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Vetting Status</SortableHeader>
                         <div>Target Initiative</div>
                         <div className="text-right pr-4">Actions</div>
                     </div>
@@ -552,7 +559,7 @@ export default function DonationsPage() {
                             <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Evidence Document" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                         )}
                     </div>
-                    <ScrollBar orientation="both" />
+                    <ScrollBar orientation="vertical" />
                 </ScrollArea>
                 <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">
                     <Button variant="secondary" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>

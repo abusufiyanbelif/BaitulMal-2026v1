@@ -8,7 +8,7 @@ import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
 import { useStorage, useFirestore, useAuth } from '@/firebase/provider';
 import { errorEmitter, FirestorePermissionError } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, writeBatch } from 'firebase/firestore';
+import { doc, setDoc, writeBatch } from 'firebase/firestore';
 import Resizer from 'react-image-file-resizer';
 import Link from 'next/link';
 
@@ -25,6 +25,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Badge } from '@/components/ui/badge';
 import type { GuidingPrinciple } from '@/lib/types';
 
 interface FormDataType {
@@ -466,13 +467,7 @@ export default function AppSettingsPage() {
     }, [isEditMode, editableData, brandingSettings, paymentSettings, guidingPrinciplesData, logoFile, qrCodeFile]);
 
     if (isLoading) {
-        return (
-            <div className="space-y-6">
-                <Skeleton className="h-20 w-full" />
-                <Skeleton className="h-20 w-full" />
-                <Skeleton className="h-20 w-full" />
-            </div>
-        )
+        return <BrandedLoader />;
     }
 
     return (

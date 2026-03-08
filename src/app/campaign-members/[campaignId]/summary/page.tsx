@@ -55,6 +55,12 @@ import {
     ShieldCheck
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { 
+    DropdownMenu, 
+    DropdownMenuContent, 
+    DropdownMenuItem, 
+    DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
@@ -314,7 +320,7 @@ export default function CampaignSummaryPage() {
     };
 
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
-        if (!leadDocRef || !campaign?.documents || !canUpdateSummary) return;
+        if (!campaignDocRef || !campaign?.documents || !canUpdateSummary) return;
         const newDocs = campaign.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
         try {
             await updateDoc(campaignDocRef, { documents: newDocs, updatedAt: serverTimestamp() });
@@ -794,7 +800,12 @@ export default function CampaignSummaryPage() {
                                                         <div className="p-2 text-center text-[10px] font-bold text-primary uppercase tracking-tighter truncate transition-colors group-hover:text-primary/80">{doc.name}</div>
                                                     </div>
                                                     <CardFooter className="p-2 border-t mt-auto flex justify-center w-full gap-2 bg-muted/5" onClick={e => e.stopPropagation()}>
-                                                        {canUpdateSummary ? ( <><Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} /><Label className="text-[9px] text-foreground font-bold uppercase tracking-tighter">Public</Label></> ) : ( <Badge variant={doc.isPublic ? "eligible" : "secondary"} className="font-bold uppercase text-[9px] tracking-tighter">{doc.isPublic ? "Public" : "Private"}</Badge> )}
+                                                        {canUpdateSummary ? ( 
+                                                            <div className="flex items-center gap-2">
+                                                                <Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} />
+                                                                <Label className="text-[9px] text-foreground font-bold uppercase tracking-tighter">Public</Label>
+                                                            </div>
+                                                        ) : ( <Badge variant={doc.isPublic ? "eligible" : "secondary"} className="font-bold uppercase text-[9px] tracking-tighter">{doc.isPublic ? "Public" : "Private"}</Badge> )}
                                                     </CardFooter>
                                                 </Card>
                                             );
@@ -818,7 +829,7 @@ export default function CampaignSummaryPage() {
                                 <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Verification Evidence" fill sizes="100vw" className="object-contain transition-all duration-300 origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                             )}
                         </div>
-                        <ScrollBar orientation="both" />
+                        <ScrollBar orientation="vertical" />
                     </ScrollArea>
                     <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">
                         <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><ZoomIn className="mr-1 h-4 w-4"/> In</Button>

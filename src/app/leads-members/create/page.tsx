@@ -1,7 +1,7 @@
 'use client';
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, errorEmitter, FirestorePermissionError, useCollection, useStorage, useMemoFirebase, useAuth, useDoc, doc } from '@/firebase';
+import { useFirestore, errorEmitter, FirestorePermissionError, useCollection, useStorage, useAuth, useMemoFirebase, useDoc, doc } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { collection, serverTimestamp, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -22,7 +22,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import type { Lead } from '@/lib/types';
+import type { Lead, DonationCategory } from '@/lib/types';
 import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters, priorityLevels } from '@/lib/modules';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -119,12 +119,12 @@ export default function CreateLeadPage() {
   const purpose = form.watch('purpose');
   const availableCategories = useMemo(() => {
     const selectedPurpose = leadPurposesConfig.find(p => p.id === purpose);
-    return selectedPurpose?.categories || [];
+    return (selectedPurpose as any)?.categories || [];
   }, [purpose]);
   
   useEffect(() => {
     form.setValue('category', '');
-  }, [purpose, form.setValue]);
+  }, [purpose, form]);
   
   const handleImageFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -221,7 +221,7 @@ export default function CreateLeadPage() {
     setProgress(85);
     setLoadingMessage('Finalizing Database Sync...');
     const newLeadData: Partial<Lead> = {
-      ...leadCoreData,
+      ...(leadCoreData as any),
       requiredAmount: data.requiredAmount || 0,
       targetAmount: data.targetAmount || 0,
       description: data.description || '',
@@ -242,6 +242,7 @@ export default function CreateLeadPage() {
       semester: data.semester || '',
       diseaseIdentified: data.diseaseIdentified || '',
       diseaseStage: data.diseaseStage || '',
+      allowedDonationTypes: data.allowedDonationTypes as DonationCategory[],
     };
     
     if (imageUrl) {
@@ -603,5 +604,6 @@ export default function CreateLeadPage() {
         </AlertDialogContent>
       </AlertDialog>
     </main>
+    </>
   );
 }

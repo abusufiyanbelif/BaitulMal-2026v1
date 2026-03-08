@@ -18,7 +18,7 @@ import {
   CartesianGrid,
 } from 'recharts';
 import { DateRange } from 'react-day-picker';
-import { format, startOfMonth, endOfMonth, startOfQuarter, subMonths, startOfYear, endOfQuarter } from 'date-fns';
+import { format, startOfMonth, endOfMonth, startOfQuarter, subMonths, startOfYear, endOfQuarter, endOfYear } from 'date-fns';
 
 import type { Donation, DonationCategory, Campaign, Lead } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';

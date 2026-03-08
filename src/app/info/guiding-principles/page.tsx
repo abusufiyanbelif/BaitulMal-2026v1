@@ -3,7 +3,7 @@
 import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
 import { useInfoSettings } from '@/hooks/use-info-settings';
 import { defaultGuidingPrinciples } from '@/lib/guiding-principles-default';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Award, CheckCircle2, ShieldCheck, Loader2 } from 'lucide-react';
 import Link from 'next/link';
