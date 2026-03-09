@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -483,7 +484,7 @@ export default function LeadSummaryPage() {
                                 <div className="space-y-6 font-normal animate-fade-in-zoom">
                                     <div className="space-y-2">
                                         <Label className="font-bold text-xs text-muted-foreground tracking-tight">Header Image</Label>
-                                        <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
+                                        <input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
                                         <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-all duration-300 group border-primary/20">
                                             {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 transition-all duration-300 hover:scale-110 active:scale-90 shadow-lg" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6 transition-transform group-hover:scale-105"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground group-hover:text-primary" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click To Upload</span></p></div> )}
                                         </label>
