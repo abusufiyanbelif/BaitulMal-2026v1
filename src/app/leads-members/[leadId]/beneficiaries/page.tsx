@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -695,38 +696,38 @@ export default function BeneficiariesPage() {
                                                     </div>
                                                 </div>
                                                 <AccordionContent className="bg-primary/[0.01] border-t border-primary/10 px-6 py-4">
-                                                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-3">
+                                                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-3 text-primary font-normal">
                                                         <div className="space-y-1 col-span-2">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Address</p>
-                                                            <p className="text-sm font-normal leading-tight text-primary">{b.address || 'N/A'}</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Address</p>
+                                                            <p className="text-sm font-normal leading-tight">{b.address || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Age</p>
-                                                            <p className="text-sm font-normal text-primary">{b.age || 'N/A'}</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Age</p>
+                                                            <p className="text-sm font-normal">{b.age || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Occupation</p>
-                                                            <p className="text-sm font-normal text-primary">{b.occupation || 'N/A'}</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Occupation</p>
+                                                            <p className="text-sm font-normal">{b.occupation || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Family Details</p>
-                                                            <p className="text-sm font-normal text-primary">T: {b.members || 0}, E: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Family Details</p>
+                                                            <p className="text-sm font-normal">T: {b.members || 0}, E: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">ID Proof</p>
-                                                            <p className="text-sm font-normal text-primary">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight">ID Proof</p>
+                                                            <p className="text-sm font-normal">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Date Added</p>
-                                                            <p className="text-sm font-normal text-primary">{b.addedDate || 'N/A'}</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Date Added</p>
+                                                            <p className="text-sm font-normal">{b.addedDate || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Zakat Allocation</p>
-                                                            <p className="text-sm font-bold text-primary">₹{(b.zakatAllocation || 0).toLocaleString('en-IN')}</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Zakat Allocation</p>
+                                                            <p className="text-sm font-bold">₹{(b.zakatAllocation || 0).toLocaleString('en-IN')}</p>
                                                         </div>
                                                         <div className="space-y-1 col-span-2">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Notes</p>
-                                                            <p className="text-sm font-normal italic opacity-80 text-primary line-clamp-2">{b.notes || (b.isEligibleForZakat ? `Eligible For Zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Notes</p>
+                                                            <p className="text-sm font-normal italic opacity-80 line-clamp-2">{b.notes || (b.isEligibleForZakat ? `Eligible For Zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
                                                         </div>
                                                     </div>
                                                 </AccordionContent>
