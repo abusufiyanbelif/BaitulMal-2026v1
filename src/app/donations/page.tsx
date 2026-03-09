@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -25,8 +24,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuPortal,
   DropdownMenuSub,
-  DropdownMenuSubContent,
   DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem
 } from '@/components/ui/dropdown-menu';
@@ -486,7 +485,7 @@ export default function DonationsPage() {
                     <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold text-[hsl(var(--table-header-fg))]", donationGridClass)}>
                         <div className="flex justify-center">
                             <Checkbox 
-                                checked={selectedIds.length > 0 && selectedIds.length === paginatedDonations.length}
+                                checked={paginatedDonations.length > 0 && selectedIds.length === paginatedDonations.length}
                                 onCheckedChange={toggleSelectAll}
                                 className="border-primary/40 data-[state=checked]:bg-primary"
                             />

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -386,8 +385,13 @@ export default function LeadSummaryPage() {
             updatedAt: serverTimestamp(),
         };
         updateDoc(leadDocRef, saveData)
-            .catch(async (serverError: any) => { errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadDocRef.path, operation: 'update', requestResourceData: saveData })); })
-            .finally(() => { toast({ title: 'Success', description: 'Lead Summary Updated.', variant: 'success' }); setEditMode(false); });
+            .catch(async (serverError: any) => { 
+                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadDocRef.path, operation: 'update', requestResourceData: saveData })); 
+            })
+            .finally(() => { 
+                toast({ title: 'Success', description: 'Lead Summary Updated.', variant: 'success' }); 
+                setEditMode(false); 
+            });
     };
     
     const handleDownload = (format: 'png' | 'pdf') => {

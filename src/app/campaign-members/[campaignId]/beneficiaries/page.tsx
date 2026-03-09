@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -552,7 +551,7 @@ export default function BeneficiariesPage() {
                 <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold text-[hsl(var(--table-header-fg))] tracking-tight", gridClass)}>
                     <div className="flex justify-center">
                         <Checkbox 
-                            checked={filteredBeneficiaries.length > 0 && selectedIds.length === filteredBeneficiaries.length}
+                            checked={beneficiaries && selectedIds.length === beneficiaries.length}
                             onCheckedChange={toggleSelectAll}
                             className="border-primary/40 data-[state=checked]:bg-primary"
                         />
