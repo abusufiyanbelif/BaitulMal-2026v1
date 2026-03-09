@@ -359,7 +359,7 @@ export default function BeneficiariesPage() {
   };
 
   if (isCampaignLoading || areBeneficiariesLoading || isProfileLoading) return <BrandedLoader />;
-  if (!lead) return <p className="text-center mt-20 text-primary font-bold">Lead Not Found.</p>;
+  if (!campaign) return <p className="text-center mt-20 text-primary font-bold">Campaign Not Found.</p>;
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative">
@@ -369,7 +369,7 @@ export default function BeneficiariesPage() {
             </Button>
         </div>
         
-        <h1 className="text-4xl font-bold tracking-tight text-primary uppercase">{campaign.name}</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-primary">{campaign.name}</h1>
         
         <div className="border-b border-primary/10 mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
@@ -613,7 +613,7 @@ export default function BeneficiariesPage() {
                                                     </div>
                                                     <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
                                                     <div className="font-bold text-sm text-primary truncate">{b.name}</div>
-                                                    <div className="font-mono text-xs opacity-60">{b.phone || 'N/A'}</div>
+                                                    <div className="font-mono text-xs opacity-60">{b.phone || 'No Phone'}</div>
                                                     <div className="text-center">
                                                         <Badge variant={b.verificationStatus === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold">
                                                             {b.verificationStatus || 'Pending'}
@@ -739,7 +739,7 @@ export default function BeneficiariesPage() {
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-primary/10">
-                <DialogHeader><DialogTitle className="text-xl font-bold text-primary tracking-tight">{editingBeneficiary ? 'Edit Beneficiary Record' : 'Add New Beneficiary'}</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle className="text-xl font-bold text-primary tracking-tight">Edit Beneficiary Record</DialogTitle></DialogHeader>
                 <BeneficiaryForm 
                     beneficiary={editingBeneficiary}
                     onSubmit={handleFormSubmit} 

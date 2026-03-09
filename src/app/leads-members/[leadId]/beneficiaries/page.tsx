@@ -99,7 +99,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { BeneficiaryImportDialog } from '@/components/beneficiary-import-dialog';
 
-const gridClass = "grid grid-cols-[40px_40px_50px_200px_120px_140px_140px_100px_120_120px_150px_60px] items-center gap-4 px-4 py-3 min-w-[1300px]";
+const gridClass = "grid grid-cols-[40px_40px_50px_200px_120px_140px_140px_100px_120px_120px_150px_60px] items-center gap-4 px-4 py-3 min-w-[1300px]";
 
 function StatCard({ title, count, description, icon: Icon, colorClass, delay }: { title: string, count: number, description: string, icon: any, colorClass?: string, delay: string }) {
     return (
@@ -373,14 +373,14 @@ export default function BeneficiariesPage() {
             </Button>
         </div>
         
-        <h1 className="text-4xl font-bold tracking-tight text-primary uppercase">{lead.name}</h1>
+        <h1 className="text-4xl font-bold tracking-tight text-primary">{lead.name}</h1>
         
         <div className="border-b border-primary/10 mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex w-max space-x-2 pb-2">
                     <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
-                    <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item list</Link>
-                    <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary list</Link>
+                    <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item List</Link>
+                    <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>
                     <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link>
                 </div>
                 <ScrollBar orientation="horizontal" />
@@ -619,7 +619,7 @@ export default function BeneficiariesPage() {
                                                     </div>
                                                     <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
                                                     <div className="font-bold text-sm text-primary truncate">{b.name}</div>
-                                                    <div className="font-mono text-xs opacity-60">{b.phone || 'N/A'}</div>
+                                                    <div className="font-mono text-xs opacity-60">{b.phone || 'No Phone'}</div>
                                                     <div className="text-center">
                                                         <Badge variant={b.verificationStatus === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold">
                                                             {b.verificationStatus || 'Pending'}
@@ -745,7 +745,7 @@ export default function BeneficiariesPage() {
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-primary/10">
-                <DialogHeader><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase">{editingBeneficiary ? 'Edit Beneficiary Record' : 'Add New Beneficiary'}</DialogTitle></DialogHeader>
+                <DialogHeader><DialogTitle className="text-xl font-bold text-primary tracking-tight">Edit Beneficiary Record</DialogTitle></DialogHeader>
                 <BeneficiaryForm 
                     beneficiary={editingBeneficiary}
                     onSubmit={handleFormSubmit} 
