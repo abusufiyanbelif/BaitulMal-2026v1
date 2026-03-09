@@ -213,11 +213,6 @@ export default function LeadSummaryPage() {
     const itemGivenLabel = useMemo(() => isRationInitiative ? 'Kits Given' : 'Assistance Given', [isRationInitiative]);
     const itemPendingLabel = useMemo(() => isRationInitiative ? 'Pending Kits' : 'Pending Support', [isRationInitiative]);
 
-    const availableCategoriesList = useMemo(() => {
-        const selectedPurpose = leadPurposesConfig.find(p => p.id === (editableLead.purpose || 'Relief'));
-        return selectedPurpose?.categories || [];
-    }, [editableLead.purpose]);
-
     const beneficiaryGroups = useMemo(() => {
         if (!lead || !beneficiaries) return [];
         const categories = (lead.itemCategories || []).filter(c => c.name !== 'Item Price List');
@@ -350,7 +345,7 @@ export default function LeadSummaryPage() {
         if (!leadDocRef || !userProfile || !canUpdateSummary || !storage) return;
         const hasFileToUpload = !!imageFile || newDocuments.length > 0;
         if (hasFileToUpload && !auth?.currentUser) {
-            toast({ title: "Authentication Error", description: "User not authenticated yet.", variant: "destructive" });
+            toast({ title: "Authentication Error", description: "User Not Authenticated Yet.", variant: "destructive" });
             return;
         }
         let imageUrl = editableLead.imageUrl || '';
@@ -418,8 +413,6 @@ export default function LeadSummaryPage() {
 
     if (isLoadingPage) return <BrandedLoader />;
 
-    if (!lead) return <p className="text-center mt-20 text-primary font-bold">Lead Summary Not Found.</p>;
-
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
              <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95 text-primary"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
@@ -478,7 +471,7 @@ export default function LeadSummaryPage() {
 
             <div className="space-y-6" ref={summaryRef}>
                 <Card className="animate-fade-in-up shadow-md border-primary/10 bg-white transition-all duration-300 hover:shadow-xl">
-                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary tracking-tight">Lead Details</CardTitle></CardHeader>
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary tracking-tight">Lead Overview</CardTitle></CardHeader>
                         <CardContent className="space-y-4 pt-6 text-foreground font-normal">
                             {editMode ? (
                                 <div className="space-y-6 font-normal animate-fade-in-zoom">
@@ -491,14 +484,14 @@ export default function LeadSummaryPage() {
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                         <div className="space-y-1">
-                                            <Label className="font-bold text-xs text-muted-foreground tracking-tight">Purpose</Label>
+                                            <Label className="font-bold text-xs text-muted-foreground tracking-tight">Purpose Type</Label>
                                             <Select value={editableLead.purpose} onValueChange={(val) => handleFieldChange('purpose', val)}>
                                                 <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                                 <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</SelectContent>
                                             </Select>
                                         </div>
                                         <div className="space-y-1">
-                                            <Label className="font-bold text-xs text-muted-foreground tracking-tight">Priority</Label>
+                                            <Label className="font-bold text-xs text-muted-foreground tracking-tight">Priority Level</Label>
                                             <Select value={editableLead.priority} onValueChange={(val) => handleFieldChange('priority', val)}>
                                                 <SelectTrigger className="font-bold text-primary border-primary/10"><SelectValue/></SelectTrigger>
                                                 <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
@@ -543,15 +536,6 @@ export default function LeadSummaryPage() {
                                                 </SelectContent>
                                             </Select>
                                         </div>
-                                        {availableCategoriesList.length > 0 && (
-                                            <div className="space-y-1">
-                                                <Label className="font-bold text-xs text-muted-foreground tracking-tight">Category</Label>
-                                                <Select value={editableLead.category} onValueChange={(val) => handleFieldChange('category', val)}>
-                                                    <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
-                                                    <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{availableCategoriesList.map(cat => <SelectItem key={cat} value={cat} className="font-bold">{cat}</SelectItem>)}</SelectContent>
-                                                </Select>
-                                            </div>
-                                        )}
                                     </div>
                                     
                                     {editableLead.purpose === 'Education' && (
@@ -570,14 +554,14 @@ export default function LeadSummaryPage() {
                                         </div>
                                     )}
 
-                                    <div><Label className="font-bold text-xs text-muted-foreground tracking-tight">Description</Label><Textarea id="description" value={editableLead.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} rows={4} className="text-primary font-normal transition-all duration-300 focus:shadow-md border-primary/10" /></div>
+                                    <div><Label className="font-bold text-xs text-muted-foreground tracking-tight">Objective Summary</Label><Textarea id="description" value={editableLead.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} rows={4} className="text-primary font-normal transition-all duration-300 focus:shadow-md border-primary/10" /></div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight">Required Amount (₹)</Label><Input type="number" value={editableLead.requiredAmount || 0} onChange={(e) => handleFieldChange('requiredAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md border-primary/10" /></div>
                                         <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight">Fundraising Goal (₹)</Label><Input type="number" value={editableLead.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md border-primary/10" /></div>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight">Start Date</Label><Input id="startDate" type="date" value={editableLead.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
-                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight">End Date</Label><Input id="endDate" type="date" value={editableLead.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight">Target Start Date</Label><Input id="startDate" type="date" value={editableLead.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight">Target Completion Date</Label><Input id="endDate" type="date" value={editableLead.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
                                     </div>
                                     
                                     <div className="space-y-2">
@@ -608,7 +592,7 @@ export default function LeadSummaryPage() {
                                     </div>
                                     <div className="space-y-2 font-normal text-foreground">
                                         <Label className="text-muted-foreground text-[10px] font-bold tracking-tight">Lead Description</Label>
-                                        <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-primary">{lead?.description || 'No description provided.'}</p>
+                                        <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-primary">{lead?.description || 'No Description Provided.'}</p>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                                         <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Purpose</p><p className="font-bold tracking-tight text-primary text-sm">{lead?.purpose} {lead?.category && `(${lead.category})`}</p></div>
@@ -628,7 +612,7 @@ export default function LeadSummaryPage() {
                                                 <>
                                                     <div className="space-y-1"><p className="text-[10px] text-muted-foreground tracking-tight">Disease Identified</p><p className="text-sm">{lead?.diseaseIdentified || 'N/A'}</p></div>
                                                     <div className="space-y-1"><p className="text-[10px] text-muted-foreground tracking-tight">Disease Stage</p><p className="text-sm">{lead?.diseaseStage || 'N/A'}</p></div>
-                                                    <div className="space-y-1"><p className="text-[10px] text-muted-foreground tracking-tight">Priority Level</p><p className="text-sm">{lead?.seriousness || 'N/A'}</p></div>
+                                                    <div className="space-y-1"><p className="text-[10px] text-muted-foreground tracking-tight">Urgency Level</p><p className="text-sm">{lead?.seriousness || 'N/A'}</p></div>
                                                 </>
                                             )}
                                         </div>
@@ -671,7 +655,7 @@ export default function LeadSummaryPage() {
 
                         {isVisible('quick_stats') && (
                             <div className="grid gap-6 grid-cols-1 sm:grid-cols-3 font-normal">
-                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.totalBeneficiaries}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.totalBeneficiaries}</div></CardContent></Card>
                                 <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">{itemGivenLabel}</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesGiven}</div></CardContent></Card>
                                 <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">{itemPendingLabel}</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesPending}</div></CardContent></Card>
                             </div>

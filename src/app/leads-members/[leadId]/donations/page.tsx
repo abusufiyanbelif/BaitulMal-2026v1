@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -38,7 +39,9 @@ import {
     Link as LinkIcon,
     CheckSquare,
     X,
-    ChevronsUpDown
+    ChevronsUpDown,
+    Download,
+    UploadCloud
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -66,10 +69,9 @@ import {
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
+    DialogFooter,
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { DonationSearchDialog } from '@/components/donation-search-dialog';
@@ -83,16 +85,17 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn, getNestedValue } from '@/lib/utils';
-import { bulkUpdateDonationStatusAction } from '@/app/donations/actions';
+import { bulkUpdateDonationStatusAction, bulkImportDonationsAction } from '@/app/donations/actions';
 import { BrandedLoader } from '@/components/branded-loader';
 import { donationCategories } from '@/lib/modules';
+import { DonationImportDialog } from '@/components/donation-import-dialog';
 
 type SortKey = keyof Donation | 'srNo' | 'amountForThisLead';
 
-function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
+function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: { key: string; direction: 'ascending' | 'descending' } | null, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <TableHead className={cn("cursor-pointer hover:bg-muted/50 transition-colors font-bold", className)} onClick={() => handleSort(sortKey)}>
+        <TableHead className={cn("cursor-pointer hover:bg-muted/50 transition-colors font-bold text-[hsl(var(--table-header-fg))]", className)} onClick={() => handleSort(sortKey)}>
             <div className="flex items-center gap-2 whitespace-nowrap">
                 {children}
                 {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
@@ -143,6 +146,7 @@ export default function DonationsPage() {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
   const [isUnlinkDialogOpen, setIsUnlinkDialogOpen] = useState(false);
   const [donationToUnlink, setDonationToUnlink] = useState<string | null>(null);
@@ -154,9 +158,9 @@ export default function DonationsPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(15);
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
@@ -200,7 +204,7 @@ export default function DonationsPage() {
             errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData }));
         })
         .finally(() => {
-            toast({ title: 'Success', description: 'Donation unlinked.', variant: 'success' });
+            toast({ title: 'Success', description: 'Donation Unlinked Successfully.', variant: 'success' });
             setDonationToUnlink(null);
         });
   };
@@ -236,13 +240,13 @@ export default function DonationsPage() {
         }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
         const finalData = { ...donationData, transactions: finalTransactions, amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0), linkSplit: finalLinkSplit, uploadedBy: userProfile.name, uploadedById: userProfile.id, ...(!editingDonation && { createdAt: serverTimestamp() }) };
         await setDoc(docRef, finalData, { merge: true });
-        toast({ title: 'Success', description: 'Donation saved.', variant: 'success' });
+        toast({ title: 'Success', description: 'Donation Saved Successfully.', variant: 'success' });
     } catch (error: any) {
         errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: editingDonation ? 'update' : 'create', requestResourceData: data }));
     }
   };
   
-  const handleSort = (key: SortKey) => {
+  const handleSort = (key: string) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') direction = 'descending';
     setSortConfig({ key, direction });
@@ -297,28 +301,65 @@ export default function DonationsPage() {
     setIsBulkUpdating(false);
   };
 
+  const handleExport = () => {
+    if (!donations || donations.length === 0) return;
+    const headers = ['ID', 'DonorName', 'DonorPhone', 'ReceiverName', 'Referral', 'TotalAmount', 'DonationDate', 'Status', 'DonationType', 'Comments', 'Suggestions'];
+    const rows = donations.map(d => [
+        d.id,
+        `"${d.donorName || ''}"`,
+        d.donorPhone || '',
+        `"${d.receiverName || ''}"`,
+        `"${d.referral || ''}"`,
+        d.amount || 0,
+        d.donationDate || '',
+        d.status || 'Pending',
+        d.donationType || '',
+        `"${(d.comments || '').replace(/"/g, '""')}"`,
+        `"${(d.suggestions || '').replace(/"/g, '""')}"`
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `donations_lead_${leadId}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImport = async (records: Partial<Donation>[]) => {
+    if (!userProfile || !lead) return;
+    const res = await bulkImportDonationsAction(
+        records, 
+        { id: userProfile.id, name: userProfile.name },
+        { type: 'lead', id: lead.id, name: lead.name }
+    );
+    if (res && res.success) toast({ title: 'Import Complete', description: res.message, variant: 'success' });
+    else toast({ title: 'Import Failed', description: res?.message || "Import Failed.", variant: 'destructive' });
+  };
+
   const isLoading = isLeadLoading || areDonationsLoading || isProfileLoading;
   
   if (isLoading && !lead) return <BrandedLoader />;
-  if (!lead) return <div className="p-8 text-center"><p>Lead not found.</p><Button asChild variant="outline" className="mt-4"><Link href="/leads-members"><ArrowLeft className="mr-2"/>Back</Link></Button></div>;
+  if (!lead) return <div className="p-8 text-center text-primary font-bold"><p>Lead Not Found.</p><Button asChild variant="outline" className="mt-4"><Link href="/leads-members"><ArrowLeft className="mr-2"/>Back</Link></Button></div>;
 
   return (
-    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary">
-        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Leads</Link></Button></div>
-        <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold tracking-tight">{lead.name}</h1></div>
+    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
+        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95 text-primary"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
+        <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold tracking-tight text-primary">{lead.name}</h1></div>
         
         <div className="border-b mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex w-max space-x-2 pb-2">
                     {canReadSummary && (
-                        <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
+                        <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Summary</Link>
                     )}
-                    <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item List</Link>
+                    <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Item List</Link>
                     {canReadBeneficiaries && (
-                        <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>
+                        <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname === `/leads-members/${leadId}/beneficiaries` ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>
                     )}
                     {canReadDonations && (
-                        <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link>
+                        <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Donations</Link>
                     )}
                 </div>
                 <ScrollBar orientation="horizontal" />
@@ -362,10 +403,12 @@ export default function DonationsPage() {
             <CardHeader className="bg-primary/5 border-b p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <div className="space-y-1.5">
-                        <CardTitle className="font-bold tracking-tight">Donation List ({filteredAndSortedDonations.length})</CardTitle>
-                        <CardDescription className="font-normal text-primary/70">Total verified collection for this lead: <span className="font-bold text-primary font-mono">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amountForThisLead, 0).toFixed(2)}</span></CardDescription>
+                        <CardTitle className="text-xl font-bold tracking-tight text-primary">Donation List ({filteredAndSortedDonations.length})</CardTitle>
+                        <CardDescription className="font-normal text-primary/70">Total Verified For This Lead: <span className="font-bold text-primary font-mono">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amountForThisLead, 0).toFixed(2)}</span></CardDescription>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm" onClick={handleExport} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><Download className="mr-2 h-4 w-4"/> Export CSV</Button>
+                        <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><UploadCloud className="mr-2 h-4 w-4"/> Import Data</Button>
                         {canUpdate && <Button variant="outline" onClick={() => setIsSearchOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><LinkIcon className="mr-2 h-4 w-4"/> Select From Master</Button>}
                         {canCreate && <Button onClick={() => setIsFormOpen(true)} className="font-bold shadow-md active:scale-95 transition-transform rounded-[12px]"><PlusCircle className="mr-2 h-4 w-4"/>Add Record</Button>}
                     </div>
@@ -380,6 +423,7 @@ export default function DonationsPage() {
             </CardHeader>
             <CardContent className="p-0">
                 <ScrollArea className="w-full">
+                    <div className="max-h-[70vh]">
                     <Table>
                         <TableHeader>
                             <TableRow>
@@ -394,8 +438,8 @@ export default function DonationsPage() {
                                 <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
                                 <SortableHeader sortKey="amountForThisLead" className="text-right" sortConfig={sortConfig} handleSort={handleSort}>Amount</SortableHeader>
                                 <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort}>Date</SortableHeader>
-                                <TableHead className="font-bold">Status</TableHead>
-                                <TableHead className="text-right pr-4 font-bold">Actions</TableHead>
+                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))]">Status</TableHead>
+                                <TableHead className="text-right pr-4 font-bold text-[hsl(var(--table-header-fg))]">Actions</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -411,32 +455,34 @@ export default function DonationsPage() {
                                     <TableCell className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
                                     <TableCell><div className="font-bold text-sm text-primary">{donation.donorName}</div><div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone}</div></TableCell>
                                     <TableCell className="text-right font-bold font-mono text-primary">₹{donation.amountForThisLead.toFixed(2)}</TableCell>
-                                    <TableCell className="text-xs font-normal">{donation.donationDate}</TableCell>
+                                    <TableCell className="text-xs font-normal text-primary/80">{donation.donationDate}</TableCell>
                                     <TableCell><Badge variant={donation.status === 'Verified' ? 'success' : 'outline'} className="text-[10px] font-bold">{donation.status}</Badge></TableCell>
                                     <TableCell className="text-right pr-4" onClick={e => e.stopPropagation()}>
                                         <DropdownMenu>
-                                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
                                             <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
-                                                <DropdownMenuItem onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4"/>View Details</DropdownMenuItem>
-                                                {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4"/>Edit</DropdownMenuItem>}
-                                                {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive font-normal"><Link2Off className="mr-2 h-4 w-4"/>Unlink</DropdownMenuItem>}
+                                                <DropdownMenuItem onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
+                                                {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
+                                                {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive font-normal"><Link2Off className="mr-2 h-4 w-4" /> Unlink</DropdownMenuItem>}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </TableCell>
                                 </TableRow>
                             ))}
-                            {paginatedDonations.length === 0 && <TableRow><TableCell colSpan={7} className="h-32 text-center text-muted-foreground font-normal italic bg-primary/[0.02] py-20">No Donation Records Found Matching Criteria.</TableCell></TableRow>}
+                            {paginatedDonations.length === 0 && <TableRow><TableCell colSpan={7} className="h-32 text-center text-muted-foreground font-normal italic bg-primary/[0.02] py-20">No Donation Records Found.</TableCell></TableRow>}
                         </TableBody>
                     </Table>
+                    </div>
                     <ScrollBar orientation="horizontal" />
+                    <ScrollBar orientation="vertical" />
                 </ScrollArea>
             </CardContent>
             {totalPages > 1 && (
                 <CardFooter className="flex items-center justify-between border-t py-4 bg-primary/5 px-4">
-                    <p className="text-[10px] font-bold text-muted-foreground">Page {currentPage} of {totalPages}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground">Page {currentPage} Of {totalPages}</p>
                     <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 h-8 text-primary">Previous</Button>
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 h-8 text-primary">Next</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 h-8 text-primary transition-transform active:scale-95">Previous</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 h-8 text-primary transition-transform active:scale-95">Next</Button>
                     </div>
                 </CardFooter>
             )}
@@ -461,6 +507,8 @@ export default function DonationsPage() {
             </DialogContent>
         </Dialog>
 
+        <DonationImportDialog open={isImportOpen} onOpenChange={setIsImportOpen} onImport={handleImport} />
+
         <DonationSearchDialog 
             open={isSearchOpen} 
             onOpenChange={setIsSearchOpen} 
@@ -471,7 +519,7 @@ export default function DonationsPage() {
         />
 
         <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
-            <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Unlink Donation?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach this record from the current lead initiative? The record remains in the global database.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 rounded-[12px] transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+            <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink Donation?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach This Record From The Current Lead Initiative? The Master Record Will Remain Verified.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 rounded-[12px] transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
         </AlertDialog>
     </main>
   );

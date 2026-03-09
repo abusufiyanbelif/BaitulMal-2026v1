@@ -3,7 +3,7 @@
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
-import type { Donation } from '@/lib/types';
+import type { Donation, DonationCategory } from '@/lib/types';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually means the server is missing credentials. Please ensure your 'serviceAccountKey.json' is correctly placed in the project root or that Application Default Credentials are configured.";
 
@@ -21,9 +21,8 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
         const donationsSnap = await donationsRef.get();
         
         for (const docSnap of donationsSnap.docs) {
-            const donation = docSnap.data() as any; // Use any to access legacy fields
+            const donation = docSnap.data() as any; 
             
-            // Check if this is a legacy donation that needs updating
             if (donation.campaignId && (!donation.linkSplit || donation.linkSplit.length === 0)) {
                 
                 const newLinkSplit = [{
@@ -33,7 +32,6 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
                     amount: donation.amount
                 }];
                 
-                // We cannot use deleteField in client-side code, but it's fine in server actions
                 batch.update(docSnap.ref, { 
                     linkSplit: newLinkSplit,
                     campaignId: FieldValue.delete(),
@@ -48,11 +46,11 @@ export async function syncDonationsAction(): Promise<{ success: boolean; message
         }
 
         revalidatePath('/donations');
-        return { success: true, message: `Sync complete. Updated ${updatedCount} legacy donation records.`, updatedCount };
+        return { success: true, message: `Sync Complete. Updated ${updatedCount} Legacy Records.`, updatedCount };
 
     } catch (error: any) {
         console.error("Error syncing donations:", error);
-        return { success: false, message: `Sync failed: ${error.message}`, updatedCount: 0 };
+        return { success: false, message: `Sync Failed: ${error.message}`, updatedCount: 0 };
     }
 }
 
@@ -84,6 +82,72 @@ export async function bulkUpdateDonationStatusAction(
     }
 }
 
+export async function bulkImportDonationsAction(
+    records: Partial<Donation>[], 
+    uploadedBy: {id: string, name: string},
+    initiativeContext?: { type: 'campaign' | 'lead', id: string, name: string }
+): Promise<{ success: boolean; message: string; count: number }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, count: 0 };
+
+    try {
+        const batch = adminDb.batch();
+        let count = 0;
+
+        for (const record of records) {
+            const docRef = record.id ? adminDb.collection('donations').doc(record.id) : adminDb.collection('donations').doc();
+            const id = docRef.id;
+            
+            const donationData = {
+                ...record,
+                id,
+                donorName: record.donorName || 'Anonymous Donor',
+                donorPhone: record.donorPhone || '',
+                amount: record.amount || 0,
+                donationDate: record.donationDate || new Date().toISOString().split('T')[0],
+                status: record.status || 'Verified',
+                donationType: record.donationType || 'Other',
+                referral: record.referral || '',
+                uploadedBy: uploadedBy.name,
+                uploadedById: uploadedBy.id,
+                createdAt: record.createdAt || FieldValue.serverTimestamp(),
+                updatedAt: FieldValue.serverTimestamp(),
+            };
+
+            // If initiative context is provided, ensure it's in the linkSplit
+            if (initiativeContext) {
+                const currentLinks = (record.linkSplit || []) as any[];
+                const exists = currentLinks.some(l => l.linkId === initiativeContext.id);
+                
+                if (!exists) {
+                    const newLink = {
+                        linkId: initiativeContext.id,
+                        linkName: initiativeContext.name,
+                        linkType: initiativeContext.type,
+                        amount: record.amount || 0
+                    };
+                    (donationData as any).linkSplit = [...currentLinks, newLink];
+                }
+            }
+
+            batch.set(docRef, donationData, { merge: true });
+            count++;
+        }
+
+        await batch.commit();
+        revalidatePath('/donations');
+        if (initiativeContext) {
+            const basePath = initiativeContext.type === 'campaign' ? 'campaign-members' : 'leads-members';
+            revalidatePath(`/${basePath}/${initiativeContext.id}/donations`);
+        }
+        
+        return { success: true, message: `Successfully Synchronized ${count} Donation Records.`, count };
+    } catch (error: any) {
+        console.error("Bulk Donation Import Failed:", error);
+        return { success: false, message: `Import Failed: ${error.message}`, count: 0 };
+    }
+}
+
 export async function deleteDonationAction(donationId: string): Promise<{ success: boolean; message: string }> {
     const { adminDb, adminStorage } = getAdminServices();
     if (!adminDb || !adminStorage) {
@@ -94,7 +158,7 @@ export async function deleteDonationAction(donationId: string): Promise<{ succes
         const docSnap = await docRef.get();
 
         if (!docSnap.exists) {
-            return { success: false, message: 'Donation not found.' };
+            return { success: false, message: 'Donation Not Found.' };
         }
 
         const donationData = docSnap.data();
@@ -102,34 +166,31 @@ export async function deleteDonationAction(donationId: string): Promise<{ succes
             .map((t: any) => t.screenshotUrl)
             .filter(Boolean);
         
-        // Delete screenshots from storage
         if (screenshotUrls.length > 0) {
             const bucket = adminStorage.bucket();
             const deletePromises = screenshotUrls.map(url => {
-                // Extract path from URL: https://firebasestorage.googleapis.com/v0/b/{bucket}/o/{path}?alt=media
                 try {
                     const path = decodeURIComponent(url.split('/o/')[1].split('?')[0]);
                     return bucket.file(path).delete().catch((err: any) => {
-                         if (err.code !== 404) { // 404 is "Not Found", which is fine.
-                             console.warn(`Failed to delete screenshot ${path}:`, err.message);
+                         if (err.code !== 404) { 
+                             console.warn(`Failed To Delete Screenshot ${path}:`, err.message);
                          }
                     });
                 } catch (e: any) {
-                    console.warn(`Could not parse screenshot URL to delete: ${url}`);
+                    console.warn(`Could Not Parse Screenshot URL To Delete: ${url}`);
                     return Promise.resolve();
                 }
             });
             await Promise.all(deletePromises);
         }
 
-        // Delete Firestore document
         await docRef.delete();
 
         revalidatePath('/donations');
-        return { success: true, message: 'Donation permanently deleted.' };
+        return { success: true, message: 'Donation Permanently Deleted.' };
 
     } catch (error: any) {
-        console.error('Error deleting donation:', error);
-        return { success: false, message: `Failed to delete donation: ${error.message}` };
+        console.error('Error Deleting Donation:', error);
+        return { success: false, message: `Failed To Delete Donation: ${error.message}` };
     }
 }

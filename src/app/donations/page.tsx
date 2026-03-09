@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -14,7 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PlusCircle, MoreHorizontal, Edit, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, IndianRupee, FolderKanban, Lightbulb, Trash2, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, ImageIcon, Loader2, CheckSquare, X, ChevronsUpDown } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Edit, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, IndianRupee, FolderKanban, Lightbulb, Trash2, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, ImageIcon, Loader2, CheckSquare, X, ChevronsUpDown, Download, UploadCloud } from 'lucide-react';
 import Link from 'next/link';
 import {
   DropdownMenu,
@@ -57,16 +58,17 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn, getNestedValue } from '@/lib/utils';
-import { syncDonationsAction, deleteDonationAction, bulkUpdateDonationStatusAction } from './actions';
+import { syncDonationsAction, deleteDonationAction, bulkUpdateDonationStatusAction, bulkImportDonationsAction } from './actions';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
+import { DonationImportDialog } from '@/components/donation-import-dialog';
 
-type SortKey = keyof Donation | 'srNo';
+type SortKey = keyof UserProfile | 'srNo' | 'donationDate' | 'amount' | 'donorName';
 
 const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1000px]";
 
-function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
+function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: { key: string; direction: 'ascending' | 'descending' } | null, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
         <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))]", className)} onClick={() => handleSort(sortKey)}>
@@ -235,12 +237,13 @@ export default function DonationsPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(15);
   const [isSyncing, setIsSyncing] = useState(false);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [donationToDelete, setDonationToDelete] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
@@ -261,7 +264,7 @@ export default function DonationsPage() {
   const leadsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'leads') : null, [firestore]);
   const { data: allLeads } = useCollection<Lead>(leadsCollectionRef);
 
-  const handleSort = (key: SortKey) => {
+  const handleSort = (key: string) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
         direction = 'descending';
@@ -291,8 +294,8 @@ export default function DonationsPage() {
     if (sortConfig) {
         items.sort((a, b) => {
             if (sortConfig.key === 'srNo') return 0;
-            const aVal = a[sortConfig.key as keyof Donation];
-            const bVal = b[sortConfig.key as keyof Donation];
+            const aVal = (a as any)[sortConfig.key];
+            const bVal = (b as any)[sortConfig.key];
             if (typeof aVal === 'number' && typeof bVal === 'number') {
                 return sortConfig.direction === 'ascending' ? aVal - bVal : bVal - aVal;
             }
@@ -323,7 +326,7 @@ export default function DonationsPage() {
     if (res && res.success) {
         toast({ title: 'Success', description: res.message, variant: 'success' });
     } else {
-        toast({ title: 'Error', description: res?.message || 'Sync failed.', variant: 'destructive' });
+        toast({ title: 'Error', description: res?.message || 'Sync Failed.', variant: 'destructive' });
     }
     setIsSyncing(false);
   };
@@ -348,7 +351,7 @@ export default function DonationsPage() {
         toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Update Failed", description: res?.message || "Failed to update status.", variant: "destructive" });
+        toast({ title: "Update Failed", description: res?.message || "Failed To Update Status.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -382,7 +385,7 @@ export default function DonationsPage() {
     if (res && res.success) {
         toast({ title: 'Deleted', description: res.message, variant: 'success' });
     } else {
-        toast({ title: 'Error', description: res?.message || 'Delete failed.', variant: 'destructive' });
+        toast({ title: 'Error', description: res?.message || 'Delete Failed.', variant: 'destructive' });
     }
     setDonationToDelete(null);
   };
@@ -394,20 +397,62 @@ export default function DonationsPage() {
     setIsImageViewerOpen(true);
   };
 
+  const handleExport = () => {
+    if (!filteredAndSortedDonations.length) return;
+    const headers = ['ID', 'DonorName', 'DonorPhone', 'ReceiverName', 'Referral', 'Amount', 'DonationDate', 'Status', 'DonationType', 'Comments', 'Suggestions'];
+    const rows = filteredAndSortedDonations.map(d => [
+        d.id,
+        `"${d.donorName || ''}"`,
+        d.donorPhone || '',
+        `"${d.receiverName || ''}"`,
+        `"${d.referral || ''}"`,
+        d.amount || 0,
+        d.donationDate || '',
+        d.status || 'Pending',
+        d.donationType || '',
+        `"${(d.comments || '').replace(/"/g, '""')}"`,
+        `"${(d.suggestions || '').replace(/"/g, '""')}"`
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "master_donation_registry.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImport = async (records: Partial<Donation>[]) => {
+    if (!userProfile) return;
+    const res = await bulkImportDonationsAction(records, { id: userProfile.id, name: userProfile.name });
+    if (res && res.success) {
+        toast({ title: 'Import Complete', description: res.message, variant: 'success' });
+    } else {
+        toast({ title: 'Import Failed', description: res?.message || "Operation Failed.", variant: 'destructive' });
+    }
+  };
+
   const isLoading = areDonationsLoading || isProfileLoading;
 
-  if (isLoading) return <SectionLoader label="Loading donation records..." description="Retrieving logs." />;
+  if (isLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Institutional Logs." />;
 
   return (
     <main className="container mx-auto p-4 md:p-8 font-normal text-primary relative overflow-hidden">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <h1 className="text-3xl font-bold tracking-tighter text-primary">Donations</h1>
-            <div className="flex gap-2 w-full sm:w-auto">
-                <Button variant="secondary" onClick={handleSync} disabled={isSyncing} className="flex-1 sm:flex-none font-bold text-[10px] border-primary/10 text-primary active:scale-95 transition-transform">
-                  {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
-                  Sync Records
+            <h1 className="text-3xl font-bold tracking-tighter text-primary">Master Donation Registry</h1>
+            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
+                <Button variant="outline" size="sm" onClick={handleExport} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+                    <Download className="mr-2 h-4 w-4"/> Export CSV
                 </Button>
-                <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-white font-bold text-xs active:scale-95 transition-transform shadow-md rounded-[12px]">
+                <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+                    <UploadCloud className="mr-2 h-4 w-4"/> Import Data
+                </Button>
+                <Button variant="secondary" onClick={handleSync} disabled={isSyncing} className="font-bold text-[10px] border-primary/10 text-primary active:scale-95 transition-transform">
+                  {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
+                  Refresh Sync
+                </Button>
+                <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="bg-primary hover:bg-primary/90 text-white font-bold text-xs active:scale-95 transition-transform shadow-md rounded-[12px]">
                   <PlusCircle className="mr-2 h-4 w-4" /> Add Record
                 </Button>
             </div>
@@ -551,6 +596,8 @@ export default function DonationsPage() {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        <DonationImportDialog open={isImportOpen} onOpenChange={setIsImportOpen} onImport={handleImport} />
 
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent className="rounded-[12px] border-primary/10">

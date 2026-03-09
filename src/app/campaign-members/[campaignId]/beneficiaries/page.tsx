@@ -243,7 +243,7 @@ export default function BeneficiariesPage() {
         toast({ title: "Status Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Failed", description: res?.message || "Bulk update failed.", variant: "destructive" });
+        toast({ title: "Failed", description: res?.message || "Bulk Update Failed.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -256,7 +256,7 @@ export default function BeneficiariesPage() {
         toast({ title: "Verification Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Failed", description: res?.message || "Bulk update failed.", variant: "destructive" });
+        toast({ title: "Failed", description: res?.message || "Bulk Update Failed.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -269,7 +269,7 @@ export default function BeneficiariesPage() {
         toast({ title: "Zakat Eligibility Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Failed", description: res?.message || "Bulk update failed.", variant: "destructive" });
+        toast({ title: "Failed", description: res?.message || "Bulk Update Failed.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -344,7 +344,7 @@ export default function BeneficiariesPage() {
         }
         
         await batch.commit();
-        toast({ title: 'Success', description: 'Beneficiary record synchronized.', variant: 'success' });
+        toast({ title: 'Success', description: 'Beneficiary Record Synchronized.', variant: 'success' });
         setIsFormOpen(false);
         setEditingBeneficiary(null);
     } catch (e: any) {
@@ -358,7 +358,7 @@ export default function BeneficiariesPage() {
     if (!userProfile) return;
     const res = await bulkImportBeneficiariesAction(records, { id: userProfile.id, name: userProfile.name }, { type: 'campaign', id: campaignId });
     if (res && res.success) toast({ title: 'Import Complete', description: res.message, variant: 'success' });
-    else toast({ title: 'Import Failed', description: res?.message || "Import operation failed.", variant: 'destructive' });
+    else toast({ title: 'Import Failed', description: res?.message || "Import Operation Failed.", variant: 'destructive' });
   };
 
   const handleExport = () => {
@@ -479,7 +479,7 @@ export default function BeneficiariesPage() {
                     <Command className="w-full">
                         <CommandInput placeholder="Search Referrals..." className="h-9 font-normal px-3 py-2 outline-none w-full" />
                         <CommandList className="max-h-[300px] overflow-y-auto">
-                            <CommandEmpty className="py-2 text-center text-xs text-muted-foreground font-normal">No source found.</CommandEmpty>
+                            <CommandEmpty className="py-2 text-center text-xs text-muted-foreground font-normal">No Source Found.</CommandEmpty>
                             <CommandGroup className="p-1">
                                 <CommandItem onSelect={() => setSelectedReferrals([])} className="flex items-center px-2 py-1.5 rounded-md hover:bg-primary/5 cursor-pointer font-bold text-xs">
                                     <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", selectedReferrals.length === 0 ? "bg-primary text-primary-foreground" : "opacity-50")}>

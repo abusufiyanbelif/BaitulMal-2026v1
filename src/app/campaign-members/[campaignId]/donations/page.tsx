@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -37,7 +38,9 @@ import {
     ImageIcon,
     CheckSquare,
     X,
-    ChevronsUpDown
+    ChevronsUpDown,
+    Download,
+    UploadCloud
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -81,13 +84,14 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn, getNestedValue } from '@/lib/utils';
-import { bulkUpdateDonationStatusAction } from '@/app/donations/actions';
+import { bulkUpdateDonationStatusAction, bulkImportDonationsAction } from '@/app/donations/actions';
 import { donationCategories } from '@/lib/modules';
 import { BrandedLoader } from '@/components/branded-loader';
+import { DonationImportDialog } from '@/components/donation-import-dialog';
 
 type SortKey = keyof Donation | 'srNo' | 'amountForThisCampaign';
 
-function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
+function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: { key: string; direction: 'ascending' | 'descending' } | null, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
         <TableHead className={cn("cursor-pointer hover:bg-muted/50 text-[hsl(var(--table-header-fg))] font-bold", className)} onClick={() => handleSort(sortKey)}>
@@ -146,6 +150,7 @@ export default function DonationsPage() {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
   const [isUnlinkDialogOpen, setIsUnlinkDialogOpen] = useState(false);
   const [donationToUnlink, setDonationToUnlink] = useState<string | null>(null);
@@ -158,10 +163,10 @@ export default function DonationsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [typeFilter, setTypeFilter] = useState('All');
-  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [itemsPerPage, setItemsPerPage] = useState(15);
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
@@ -282,7 +287,7 @@ export default function DonationsPage() {
     }
   };
   
-  const handleSort = (key: SortKey) => {
+  const handleSort = (key: string) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') direction = 'descending';
     setSortConfig({ key, direction });
@@ -347,6 +352,43 @@ export default function DonationsPage() {
     setIsBulkUpdating(false);
   };
 
+  const handleExport = () => {
+    if (!donations || donations.length === 0) return;
+    const headers = ['ID', 'DonorName', 'DonorPhone', 'ReceiverName', 'Referral', 'TotalAmount', 'DonationDate', 'Status', 'DonationType', 'Comments', 'Suggestions'];
+    const rows = donations.map(d => [
+        d.id,
+        `"${d.donorName || ''}"`,
+        d.donorPhone || '',
+        `"${d.receiverName || ''}"`,
+        `"${d.referral || ''}"`,
+        d.amount || 0,
+        d.donationDate || '',
+        d.status || 'Pending',
+        d.donationType || '',
+        `"${(d.comments || '').replace(/"/g, '""')}"`,
+        `"${(d.suggestions || '').replace(/"/g, '""')}"`
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `donations_camp_${campaignId}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleImport = async (records: Partial<Donation>[]) => {
+    if (!userProfile || !campaign) return;
+    const res = await bulkImportDonationsAction(
+        records, 
+        { id: userProfile.id, name: userProfile.name },
+        { type: 'campaign', id: campaign.id, name: campaign.name }
+    );
+    if (res && res.success) toast({ title: 'Import Complete', description: res.message, variant: 'success' });
+    else toast({ title: 'Import Failed', description: res?.message || "Import Failed.", variant: 'destructive' });
+  };
+
   const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading;
   
   if (isLoading && !campaign) return <BrandedLoader />;
@@ -354,8 +396,8 @@ export default function DonationsPage() {
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary">
-        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button></div>
-        <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold tracking-tight">{campaign.name}</h1></div>
+        <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95 text-primary"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button></div>
+        <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold tracking-tight text-primary">{campaign.name}</h1></div>
         
         <div className="mb-6">
             <ScrollArea className="w-full">
@@ -406,10 +448,12 @@ export default function DonationsPage() {
             <CardHeader className="bg-primary/5 p-4 sm:p-6 border-b">
                 <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
                     <div className="space-y-1.5">
-                        <CardTitle className="text-xl font-bold tracking-tight">Donation List ({filteredAndSortedDonations.length})</CardTitle>
-                        <CardDescription className="font-normal">Total verified for this campaign: <span className="font-bold text-primary font-mono">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amountForThisCampaign, 0).toFixed(2)}</span></CardDescription>
+                        <CardTitle className="text-xl font-bold tracking-tight text-primary">Donation List ({filteredAndSortedDonations.length})</CardTitle>
+                        <CardDescription className="font-normal text-primary/70">Total Verified For This Campaign: <span className="font-bold text-primary font-mono">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amountForThisCampaign, 0).toFixed(2)}</span></CardDescription>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm" onClick={handleExport} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><Download className="mr-2 h-4 w-4"/> Export CSV</Button>
+                        <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><UploadCloud className="mr-2 h-4 w-4"/> Import Data</Button>
                         {canUpdate && <Button variant="outline" onClick={() => setIsSearchOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><LinkIcon className="mr-2 h-4 w-4"/> Select From Master</Button>}
                         {canCreate && <Button onClick={handleAdd} className="font-bold shadow-md active:scale-95 transition-transform rounded-[12px]"><PlusCircle className="mr-2 h-4 w-4" /> Add Record</Button>}
                     </div>
@@ -417,12 +461,12 @@ export default function DonationsPage() {
                 <div className="flex flex-wrap items-center gap-2 pt-4">
                     <Input placeholder="Search Donor..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-xs h-9 text-xs font-normal" />
                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[140px] h-9 text-xs text-primary font-bold"><SelectValue placeholder="Status" /></SelectTrigger>
-                        <SelectContent><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Verified" className="font-bold">Verified</SelectItem><SelectItem value="Pending" className="font-bold">Pending</SelectItem><SelectItem value="Canceled" className="font-bold">Canceled</SelectItem></SelectContent>
+                        <SelectTrigger className="w-[140px] h-9 text-xs text-primary font-bold border-primary/20"><SelectValue placeholder="Status" /></SelectTrigger>
+                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Verified" className="font-bold">Verified</SelectItem><SelectItem value="Pending" className="font-bold">Pending</SelectItem><SelectItem value="Canceled" className="font-bold">Canceled</SelectItem></SelectContent>
                     </Select>
                     <Select value={typeFilter} onValueChange={(value) => { setTypeFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[140px] h-9 text-xs text-primary font-bold"><SelectValue placeholder="Category" /></SelectTrigger>
-                        <SelectContent><SelectItem value="All" className="font-bold">All Categories</SelectItem>{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent>
+                        <SelectTrigger className="w-[140px] h-9 text-xs text-primary font-bold border-primary/20"><SelectValue placeholder="Category" /></SelectTrigger>
+                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="All" className="font-bold">All Categories</SelectItem>{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent>
                     </Select>
                 </div>
             </CardHeader>
@@ -434,7 +478,7 @@ export default function DonationsPage() {
                     <TableRow>
                         <TableHead className="w-[40px] pl-4 bg-[hsl(var(--table-header-bg))]">
                             <Checkbox 
-                                checked={selectedIds.length > 0 && selectedIds.length === paginatedDonations.length}
+                                checked={paginatedDonations.length > 0 && selectedIds.length === paginatedDonations.length}
                                 onCheckedChange={toggleSelectAll}
                                 className="border-primary/40 data-[state=checked]:bg-primary"
                             />
@@ -443,8 +487,8 @@ export default function DonationsPage() {
                         <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
                         <SortableHeader sortKey="amountForThisCampaign" className="text-right" sortConfig={sortConfig} handleSort={handleSort}>Amount</SortableHeader>
                         <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort}>Date</SortableHeader>
-                        <TableHead className="font-bold">Status</TableHead>
-                        <TableHead className="text-right pr-4 font-bold">Actions</TableHead>
+                        <TableHead className="font-bold text-[hsl(var(--table-header-fg))]">Status</TableHead>
+                        <TableHead className="text-right pr-4 font-bold text-[hsl(var(--table-header-fg))]">Actions</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -468,11 +512,11 @@ export default function DonationsPage() {
                                 </TableCell>
                                 <TableCell><div className="font-bold text-sm text-primary">{donation.donorName}</div><div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone || 'N/A'}</div></TableCell>
                                 <TableCell className="text-right font-bold font-mono text-primary">₹{donation.amountForThisCampaign.toFixed(2)}</TableCell>
-                                <TableCell className="text-xs font-normal">{donation.donationDate}</TableCell>
+                                <TableCell className="text-xs font-normal text-primary/80">{donation.donationDate}</TableCell>
                                 <TableCell><Badge variant={donation.status === 'Verified' ? 'success' : 'outline'} className="text-[10px] font-bold">{donation.status}</Badge></TableCell>
                                 <TableCell className="text-right pr-4" onClick={(e) => e.stopPropagation()}>
                                     <DropdownMenu>
-                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                         <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
                                             <DropdownMenuItem onClick={() => router.push(`/campaign-members/${campaignId}/donations/${donation.id}`)} className="font-normal text-primary"><Eye className="mr-2 h-4 w-4" /> Details</DropdownMenuItem>
                                             {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)} className="font-normal text-primary"><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
@@ -490,7 +534,7 @@ export default function DonationsPage() {
                                         <TableHeader><TableRow className="bg-[hsl(var(--table-header-bg))]"><TableHead className="text-[10px] font-bold text-primary">Sum</TableHead><TableHead className="text-[10px] font-bold text-primary">Reference</TableHead><TableHead className="text-right text-[10px] font-bold text-primary">Evidence</TableHead></TableRow></TableHeader>
                                         <TableBody>
                                         {(donation.transactions || []).map((tx) => (
-                                            <TableRow key={tx.id} className="hover:bg-[hsl(var(--table-row-hover))]"><TableCell className="font-bold font-mono text-sm">₹{tx.amount.toFixed(2)}</TableCell><TableCell className="font-mono text-xs opacity-70">{tx.transactionId || 'N/A'}</TableCell><TableCell className="text-right">{tx.screenshotUrl ? (<Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)} className="font-bold text-[10px] h-7 border-primary/20"><ImageIcon className="mr-1 h-3 w-3" /> View</Button>) : <span className="text-muted-foreground text-[10px]">None</span>}</TableCell></TableRow>
+                                            <TableRow key={tx.id} className="hover:bg-[hsl(var(--table-row-hover))]"><TableCell className="font-bold font-mono text-sm text-primary">₹{tx.amount.toFixed(2)}</TableCell><TableCell className="font-mono text-xs opacity-70 text-primary">{tx.transactionId || 'N/A'}</TableCell><TableCell className="text-right">{tx.screenshotUrl ? (<Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)} className="font-bold text-[10px] h-7 border-primary/20 text-primary hover:bg-primary/5 transition-transform active:scale-95"><ImageIcon className="mr-1 h-3 w-3" /> View</Button>) : <span className="text-muted-foreground text-[10px]">None</span>}</TableCell></TableRow>
                                         ))}
                                         </TableBody>
                                     </Table>
@@ -501,7 +545,7 @@ export default function DonationsPage() {
                             </React.Fragment>
                         );
                     })}
-                    {paginatedDonations.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-20 text-muted-foreground italic font-normal bg-primary/[0.02]">No Donation Records Matching Your Criteria.</TableCell></TableRow>}
+                    {paginatedDonations.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-20 text-muted-foreground italic font-normal bg-primary/[0.02]">No Donation Records Found.</TableCell></TableRow>}
                     </TableBody>
                 </Table>
                 </div>
@@ -510,11 +554,11 @@ export default function DonationsPage() {
                 </ScrollArea>
             </CardContent>
             {totalPages > 1 && (
-                <CardFooter className="flex items-center justify-between py-4 border-t bg-primary/5">
-                    <p className="text-[10px] font-bold text-muted-foreground">Page {currentPage} of {totalPages}</p>
+                <CardFooter className="flex items-center justify-between py-4 border-t bg-primary/5 p-4">
+                    <p className="text-[10px] font-bold text-muted-foreground">Page {currentPage} Of {totalPages}</p>
                     <div className="flex gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 h-8">Previous</Button>
-                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 h-8">Next</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 h-8 text-primary transition-transform active:scale-95">Previous</Button>
+                        <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 h-8 text-primary transition-transform active:scale-95">Next</Button>
                     </div>
                 </CardFooter>
             )}
@@ -522,11 +566,13 @@ export default function DonationsPage() {
       
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-primary/10 p-0 overflow-hidden">
-            <DialogHeader className="border-b bg-primary/5 p-6"><DialogTitle className="text-xl font-bold tracking-tight">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle></DialogHeader>
+            <DialogHeader className="border-b bg-primary/5 p-6"><DialogTitle className="text-xl font-bold tracking-tight text-primary">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle></DialogHeader>
             <div className="p-6"><DonationForm donation={editingDonation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} campaigns={allCampaigns || []} leads={allLeads || []} defaultLinkId={`campaign_${campaignId}`} /></div>
-            <DialogFooter className="p-4 border-t bg-muted/5"><Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20">Close Form</Button></DialogFooter>
+            <DialogFooter className="p-4 border-t bg-muted/5"><Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary">Close Form</Button></DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <DonationImportDialog open={isImportOpen} onOpenChange={setIsImportOpen} onImport={handleImport} />
 
       {campaign && (
         <DonationSearchDialog 
@@ -540,9 +586,7 @@ export default function DonationsPage() {
       )}
       
       <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
-        <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown">
-            <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Unlink Donation?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach this record from the current campaign? The donation remains in the global database but will no longer contribute to this project's totals.</AlertDialogDescription></AlertDialogHeader>
-            <AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive hover:bg-destructive/90 text-white font-bold transition-transform active:scale-95 shadow-md rounded-[12px]">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink Donation?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach This Record From The Current Campaign? The Record Remains In The Master Registry.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive hover:bg-destructive/90 text-white font-bold rounded-[12px] transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
 
       <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
