@@ -98,7 +98,7 @@ export async function bulkUpdateMasterBeneficiaryStatusAction(
         }
 
         revalidatePath('/beneficiaries');
-        return { success: true, message: `Successfully Updated ${ids.length} Profiles To ${newStatus}.` };
+        return { success: true, message: `Successfully Updated ${ids.length} Profiles.` };
     } catch (error: any) {
         console.error("Bulk Vetting Update Failed:", error);
         return { success: false, message: `Bulk Update Failed: ${error.message}` };
@@ -150,7 +150,7 @@ export async function bulkUpdateBeneficiaryVettingAction(
             revalidatePath(`/${initiativeContext.type === 'campaign' ? 'campaign-members' : 'leads-members'}/${initiativeContext.id}/beneficiaries`);
         }
         
-        return { success: true, message: `Successfully Updated ${ids.length} Profiles To ${newStatus}.` };
+        return { success: true, message: `Successfully Updated ${ids.length} Profiles.` };
     } catch (error: any) {
         console.error("Bulk Vetting Sync Failed:", error);
         return { success: false, message: `Update Failed: ${error.message}` };
@@ -184,7 +184,7 @@ export async function bulkUpdateMasterZakatAction(
         }
 
         revalidatePath('/beneficiaries');
-        return { success: true, message: `Successfully Marked ${ids.length} Profiles As ${isEligible ? 'Eligible' : 'Not Eligible'} For Zakat.` };
+        return { success: true, message: `Successfully Updated ${ids.length} Profiles.` };
     } catch (error: any) {
         console.error("Bulk Zakat Update Failed:", error);
         return { success: false, message: `Bulk Update Failed: ${error.message}` };
@@ -218,7 +218,7 @@ export async function bulkUpdateInitiativeBeneficiaryStatusAction(
         }
 
         revalidatePath(`/${collectionName}-members/${initiativeId}/beneficiaries`);
-        return { success: true, message: `Successfully Updated ${ids.length} Recipients To ${newStatus}.` };
+        return { success: true, message: `Successfully Updated ${ids.length} Recipients.` };
     } catch (error: any) {
         console.error("Bulk Distribution Update Failed:", error);
         return { success: false, message: `Bulk Update Failed: ${error.message}` };
@@ -336,10 +336,6 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
         const batch = adminDb.batch();
         const masterBeneficiaryRef = adminDb.collection('beneficiaries').doc(beneficiaryId);
 
-        // We can't easily use collectionGroup here due to potential index issues, 
-        // so for a safe deletion we prioritize the master record.
-        // A thorough implementation would iterate campaigns/leads or use an index.
-        
         batch.delete(masterBeneficiaryRef);
 
         const folderPath = `beneficiaries/${beneficiaryId}/`;
@@ -355,7 +351,7 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
         revalidatePath('/campaign-members', 'layout');
         revalidatePath('/leads-members', 'layout');
 
-        return { success: true, message: 'Beneficiary Permanently Removed From All Organizational Records.' };
+        return { success: true, message: 'Beneficiary Permanently Removed.' };
     } catch (error: any) {
         console.error('Error Deleting Beneficiary:', error);
         return { success: false, message: `Removal Failed: ${error.message}` };

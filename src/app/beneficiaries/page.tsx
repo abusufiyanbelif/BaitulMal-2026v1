@@ -224,10 +224,10 @@ export default function BeneficiariesPage() {
     setIsBulkUpdating(true);
     const res = await bulkUpdateMasterBeneficiaryStatusAction(selectedIds, newStatus, { id: userProfile.id, name: userProfile.name });
     if (res && res.success) {
-        toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
+        toast({ title: "Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Update Failed", description: res?.message || "Failed to update records.", variant: "destructive" });
+        toast({ title: "Failed", description: res?.message || "Failed to update records.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -305,29 +305,28 @@ export default function BeneficiariesPage() {
       {/* Header-overlay Bulk Action Bar */}
       {selectedIds.length > 0 && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-top w-full max-w-[95vw] sm:max-w-fit">
-            <div className="flex items-center gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
-                <div className="flex items-center gap-2 pr-4 border-r border-white/20">
-                    <CheckSquare className="h-5 w-5" />
-                    <span className="text-sm font-bold tracking-tight whitespace-nowrap">{selectedIds.length} Selected</span>
+            <div className="flex items-center gap-3 px-4 py-2 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
+                <div className="flex items-center gap-2 pr-3 border-r border-white/20">
+                    <CheckSquare className="h-4 w-4" />
+                    <span className="text-xs font-bold tracking-tight whitespace-nowrap">{selectedIds.length} Selected</span>
                 </div>
                 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
-                            {isBulkUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ChevronsUpDown className="mr-2 h-4 w-4"/>}
-                            <span className="hidden sm:inline">Bulk Change Status</span>
-                            <span className="sm:hidden">Actions</span>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8 text-xs" disabled={isBulkUpdating}>
+                            {isBulkUpdating ? <Loader2 className="mr-2 h-3 w-3 animate-spin"/> : <ChevronsUpDown className="mr-2 h-3 w-3"/>}
+                            Change Vetting
                         </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown">
-                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-normal">Set To Verified</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Hold')} className="font-normal">Set To Hold</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Need More Details')} className="font-normal">Set To Need Details</DropdownMenuItem>
+                    <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-dropdown border-primary/10">
+                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-normal">Mark Verified</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Mark Pending</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Hold')} className="font-normal">Mark Hold</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Need More Details')} className="font-normal">More Details</DropdownMenuItem>
                     </DropdownMenuContent>
                 </DropdownMenu>
 
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10 rounded-full" onClick={() => setSelectedIds([])}>
+                <Button variant="ghost" size="icon" className="h-7 w-7 text-white hover:bg-white/10 rounded-full" onClick={() => setSelectedIds([])}>
                     <X className="h-4 w-4" />
                 </Button>
             </div>
@@ -499,7 +498,7 @@ export default function BeneficiariesPage() {
                                     {canUpdate && (
                                         <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="text-primary font-normal">
                                             {b.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4 text-destructive" /> : <Coins className="mr-2 h-4 w-4 text-primary" />}
-                                            {b.isEligibleForZakat ? 'Mark As Not Eligible' : 'Mark Eligible For Zakat'}
+                                            {b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat Eligible'}
                                         </DropdownMenuItem>
                                     )}
 

@@ -241,10 +241,10 @@ export default function BeneficiariesPage() {
     setIsBulkUpdating(true);
     const res = await bulkUpdateInitiativeBeneficiaryStatusAction('lead', leadId, selectedIds, newStatus);
     if (res && res.success) {
-        toast({ title: "Distribution Updated", description: res.message, variant: "success" });
+        toast({ title: "Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Update Failed", description: res?.message || "Operation failed.", variant: "destructive" });
+        toast({ title: "Failed", description: res?.message || "Operation failed.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -257,7 +257,7 @@ export default function BeneficiariesPage() {
         toast({ title: "Vetting Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Update Failed", description: res?.message || "Operation failed.", variant: "destructive" });
+        toast({ title: "Failed", description: res?.message || "Operation failed.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -267,10 +267,10 @@ export default function BeneficiariesPage() {
     setIsBulkUpdating(true);
     const res = await bulkUpdateMasterZakatAction(selectedIds, isEligible, { id: userProfile.id, name: userProfile.name });
     if (res && res.success) {
-        toast({ title: "Zakat Status Updated", description: res.message, variant: "success" });
+        toast({ title: "Zakat Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Update Failed", description: res?.message || "Operation failed.", variant: "destructive" });
+        toast({ title: "Failed", description: res?.message || "Operation failed.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -283,9 +283,7 @@ export default function BeneficiariesPage() {
 
   const handleVerificationChange = (beneficiary: Beneficiary, newStatus: any) => {
     if (!userProfile || !canUpdate || !firestore || !leadId) return;
-    // 1. Update Master
     updateMasterBeneficiaryAction(beneficiary.id, { status: newStatus }, { id: userProfile.id, name: userProfile.name });
-    // 2. Update Local Lead Doc
     const ref = doc(firestore, 'leads', leadId, 'beneficiaries', beneficiary.id);
     updateDoc(ref, { verificationStatus: newStatus }).catch((err: any) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { verificationStatus: newStatus } })));
   };
@@ -296,15 +294,15 @@ export default function BeneficiariesPage() {
     const ref = doc(firestore, 'leads', leadId, 'beneficiaries', beneficiary.id);
     updateDoc(ref, { isEligibleForZakat: newZakatStatus }).catch((err: any) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { isEligibleForZakat: newZakatStatus } })));
     updateMasterBeneficiaryAction(beneficiary.id, { isEligibleForZakat: newZakatStatus }, { id: userProfile.id, name: userProfile.name });
-    toast({ title: newZakatStatus ? 'Marked Zakat Eligible' : 'Marked Not Eligible', variant: 'success' });
+    toast({ title: newZakatStatus ? 'Marked Eligible' : 'Marked Ineligible', variant: 'success' });
   };
 
   const handleRemoveFromInitiative = (beneficiaryId: string) => {
     if (!firestore || !leadId || !canUpdate) return;
-    if (!confirm('Are You Certain You Want To Remove This Beneficiary?')) return;
+    if (!confirm('Are You Certain?')) return;
     const ref = doc(firestore, 'leads', leadId, 'beneficiaries', beneficiaryId);
     deleteDoc(ref).then(() => {
-        toast({ title: 'Beneficiary Removed', variant: 'success' });
+        toast({ title: 'Removed', variant: 'success' });
     }).catch((err: any) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'delete' })));
   };
 
@@ -389,60 +387,57 @@ export default function BeneficiariesPage() {
             </ScrollArea>
         </div>
 
-        {/* Header-overlay Bulk Action Bar */}
+        {/* Simplified Top-Positioned Action Hub */}
         {selectedIds.length > 0 && (
             <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-top w-full max-w-[95vw] sm:max-w-fit">
-                <div className="flex items-center gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
-                    <div className="flex items-center gap-2 pr-4 border-r border-white/20">
-                        <CheckSquare className="h-5 w-5" />
-                        <span className="text-sm font-bold tracking-tight whitespace-nowrap">{selectedIds.length} Selected</span>
+                <div className="flex items-center gap-3 px-4 py-2 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
+                    <div className="flex items-center gap-2 pr-3 border-r border-white/20">
+                        <CheckSquare className="h-4 w-4" />
+                        <span className="text-xs font-bold tracking-tight whitespace-nowrap">{selectedIds.length} Selected</span>
                     </div>
                     
-                    <div className="flex gap-2">
+                    <div className="flex gap-1">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
-                                    <ClipboardCheck className="mr-2 h-4 w-4"/>
-                                    Disburse Items
+                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8 text-xs px-3" disabled={isBulkUpdating}>
+                                    Distribution
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown">
-                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Given')} className="font-bold">Mark As Given {itemLabelSuffix}</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Verified')} className="font-normal">Mark As Verified (Secured)</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Pending')} className="font-normal">Mark As Pending</DropdownMenuItem>
+                            <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-dropdown border-primary/10">
+                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Given')} className="font-normal">Mark Given</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Verified')} className="font-normal">Mark Secured</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Pending')} className="font-normal">Mark Pending</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
-                                    <ChevronsUpDown className="mr-2 h-4 w-4"/>
-                                    Vet Profiles
+                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8 text-xs px-3" disabled={isBulkUpdating}>
+                                    Vetting
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown border-primary/10">
-                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Verified')} className="font-bold">Set To Verified</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Hold')} className="font-normal">Set To Hold</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Need More Details')} className="font-normal">Need More Details</DropdownMenuItem>
+                            <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-dropdown border-primary/10">
+                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Verified')} className="font-normal">Mark Verified</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Pending')} className="font-normal">Mark Pending</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Hold')} className="font-normal">Mark Hold</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Need More Details')} className="font-normal">More Details</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
-                                    <Coins className="mr-2 h-4 w-4"/>
-                                    Zakat Status
+                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8 text-xs px-3" disabled={isBulkUpdating}>
+                                    Zakat
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown border-primary/10">
-                                <DropdownMenuItem onClick={() => handleBulkZakatChange(true)} className="font-bold">Mark Zakat Eligible</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkZakatChange(false)} className="font-normal">Mark Not Eligible</DropdownMenuItem>
+                            <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-dropdown border-primary/10">
+                                <DropdownMenuItem onClick={() => handleBulkZakatChange(true)} className="font-normal">Mark Eligible</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkZakatChange(false)} className="font-normal">Mark Ineligible</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
 
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10 rounded-full" onClick={() => setSelectedIds([])}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-white hover:bg-white/10 rounded-full" onClick={() => setSelectedIds([])}>
                         <X className="h-4 w-4" />
                     </Button>
                 </div>
@@ -680,7 +675,7 @@ export default function BeneficiariesPage() {
                                                                     {canUpdate && (
                                                                         <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="text-primary font-normal">
                                                                             {b.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4 text-destructive" /> : <Coins className="mr-2 h-4 w-4 text-primary" />}
-                                                                            {b.isEligibleForZakat ? 'Mark As Not Eligible' : 'Mark Eligible For Zakat'}
+                                                                            {b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Eligible'}
                                                                         </DropdownMenuItem>
                                                                     )}
                                                                     
