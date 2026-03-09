@@ -135,7 +135,6 @@ export default function LeadSummaryPage() {
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
     const { download } = useDownloadAs();
 
-    // Permission Definitions
     const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
     const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
     const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
@@ -414,9 +413,11 @@ export default function LeadSummaryPage() {
 
     if (isLoadingPage) return <BrandedLoader />;
 
+    if (!lead) return <p className="text-center mt-20 text-primary font-bold">Lead Summary Not Found.</p>;
+
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
-             <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
+             <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95 text-primary"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2 animate-fade-in-up">
                  <div className="space-y-1">
                     {editMode ? ( <Input id="name" value={editableLead.name || ''} onChange={(e) => handleFieldChange('name', e.target.value)} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary tracking-tight">{lead?.name}</h1> )}
@@ -436,11 +437,11 @@ export default function LeadSummaryPage() {
                         <>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md">
+                                    <Button variant="outline" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md border-primary/20 text-primary">
                                         <Download className="mr-2 h-4 w-4" /> Download
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent className="animate-fade-in-zoom">
+                                <DropdownMenuContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
                                     <DropdownMenuItem onClick={() => handleDownload('png')} className="font-normal text-primary">
                                         Download As Image (PNG)
                                     </DropdownMenuItem>
@@ -449,7 +450,7 @@ export default function LeadSummaryPage() {
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                            <Button onClick={() => { if(lead) setShareDialogData({ title: `Lead: ${lead.name}`, text: lead.description || '', url: window.location.origin + `/leads-public/${leadId}/summary` }); setIsShareDialogOpen(true); }} variant="outline" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md">
+                            <Button onClick={() => { if(lead) setShareDialogData({ title: `Lead: ${lead.name}`, text: lead.description || '', url: window.location.origin + `/leads-public/${leadId}/summary` }); setIsShareDialogOpen(true); }} variant="outline" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md border-primary/20 text-primary">
                                 <Share2 className="mr-2 h-4 w-4" /> Share
                             </Button>
                         </>
@@ -479,7 +480,7 @@ export default function LeadSummaryPage() {
                                     <div className="space-y-2">
                                         <Label className="font-bold text-xs text-muted-foreground tracking-tight">Header Image</Label>
                                         <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
-                                        <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-all duration-300 group">
+                                        <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-all duration-300 group border-primary/20">
                                             {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 transition-all duration-300 hover:scale-110 active:scale-90 shadow-lg" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6 transition-transform group-hover:scale-105"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground group-hover:text-primary" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click To Upload</span></p></div> )}
                                         </label>
                                     </div>
@@ -487,15 +488,15 @@ export default function LeadSummaryPage() {
                                         <div className="space-y-1">
                                             <Label className="font-bold text-xs text-muted-foreground tracking-tight">Purpose</Label>
                                             <Select value={editableLead.purpose} onValueChange={(val) => handleFieldChange('purpose', val)}>
-                                                <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
-                                                <SelectContent className="animate-fade-in-zoom">{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</SelectContent>
+                                                <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
+                                                <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</SelectContent>
                                             </Select>
                                         </div>
                                         <div className="space-y-1">
                                             <Label className="font-bold text-xs text-muted-foreground tracking-tight">Priority</Label>
                                             <Select value={editableLead.priority} onValueChange={(val) => handleFieldChange('priority', val)}>
-                                                <SelectTrigger className="font-bold text-primary"><SelectValue/></SelectTrigger>
-                                                <SelectContent className="animate-fade-in-zoom">
+                                                <SelectTrigger className="font-bold text-primary border-primary/10"><SelectValue/></SelectTrigger>
+                                                <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
                                                     {priorityLevels.map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}
                                                 </SelectContent>
                                             </Select>
@@ -503,8 +504,8 @@ export default function LeadSummaryPage() {
                                         <div className="space-y-1">
                                             <Label className="font-bold text-xs text-muted-foreground tracking-tight">Operational Status</Label>
                                             <Select value={editableLead.status} onValueChange={(value) => handleFieldChange('status', value)}>
-                                                <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
-                                                <SelectContent className="animate-fade-in-zoom">
+                                                <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
+                                                <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
                                                     <SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem>
                                                     <SelectItem value="Active" className="font-bold text-primary">Active</SelectItem>
                                                     <SelectItem value="Completed" className="font-bold">Completed</SelectItem>
@@ -514,8 +515,8 @@ export default function LeadSummaryPage() {
                                         <div className="space-y-1">
                                             <Label className="font-bold text-xs text-muted-foreground tracking-tight">Verification Level</Label>
                                             <Select value={editableLead.authenticityStatus} onValueChange={(value) => handleFieldChange('authenticityStatus', value)}>
-                                                <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
-                                                <SelectContent className="animate-fade-in-zoom">
+                                                <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
+                                                <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
                                                     <SelectItem value="Pending Verification" className="font-bold">Pending</SelectItem>
                                                     <SelectItem value="Verified" className="font-bold text-primary">Verified</SelectItem>
                                                     <SelectItem value="On Hold" className="font-bold">On Hold</SelectItem>
@@ -529,8 +530,8 @@ export default function LeadSummaryPage() {
                                         <div className="space-y-1">
                                             <Label className="font-bold text-xs text-muted-foreground tracking-tight">Public Visibility</Label>
                                             <Select value={editableLead.publicVisibility} onValueChange={(value) => handleFieldChange('publicVisibility', value)}>
-                                                <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
-                                                <SelectContent className="animate-fade-in-zoom">
+                                                <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
+                                                <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
                                                     <SelectItem value="Hold" className="font-normal">Hold (Private)</SelectItem>
                                                     <SelectItem value="Ready to Publish" className="font-normal">Ready To Publish</SelectItem>
                                                     <SelectItem value="Published" className="font-bold text-primary">Published</SelectItem>
@@ -541,8 +542,8 @@ export default function LeadSummaryPage() {
                                             <div className="space-y-1">
                                                 <Label className="font-bold text-xs text-muted-foreground tracking-tight">Category</Label>
                                                 <Select value={editableLead.category} onValueChange={(val) => handleFieldChange('category', val)}>
-                                                    <SelectTrigger className="font-bold"><SelectValue/></SelectTrigger>
-                                                    <SelectContent className="animate-fade-in-zoom">{availableCategoriesList.map(cat => <SelectItem key={cat} value={cat} className="font-bold">{cat}</SelectItem>)}</SelectContent>
+                                                    <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
+                                                    <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{availableCategoriesList.map(cat => <SelectItem key={cat} value={cat} className="font-bold">{cat}</SelectItem>)}</SelectContent>
                                                 </Select>
                                             </div>
                                         )}
@@ -550,33 +551,33 @@ export default function LeadSummaryPage() {
                                     
                                     {editableLead.purpose === 'Education' && (
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5 animate-fade-in-up border-primary/10">
-                                            <div className="space-y-1"><Label className="font-bold text-xs">Degree</Label><Select value={editableLead.degree} onValueChange={(val) => handleFieldChange('degree', val)}><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom">{educationDegrees.map(d=><SelectItem key={d} value={d} className="font-bold">{d}</SelectItem>)}</SelectContent></Select></div>
-                                            <div className="space-y-1"><Label className="font-bold text-xs">Year</Label><Select value={editableLead.year} onValueChange={(val) => handleFieldChange('year', val)}><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom">{educationYears.map(y=><SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select></div>
-                                            <div className="space-y-1"><Label className="font-bold text-xs">Semester</Label><Select value={editableLead.semester} onValueChange={(val) => handleFieldChange('semester', val)}><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom">{educationSemesters.map(s=><SelectItem key={s} value={s} className="font-bold">{s}</SelectItem>)}</SelectContent></Select></div>
+                                            <div className="space-y-1"><Label className="font-bold text-xs">Degree</Label><Select value={editableLead.degree} onValueChange={(val) => handleFieldChange('degree', val)}><SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{educationDegrees.map(d=><SelectItem key={d} value={d} className="font-bold">{d}</SelectItem>)}</SelectContent></Select></div>
+                                            <div className="space-y-1"><Label className="font-bold text-xs">Year</Label><Select value={editableLead.year} onValueChange={(val) => handleFieldChange('year', val)}><SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{educationYears.map(y=><SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select></div>
+                                            <div className="space-y-1"><Label className="font-bold text-xs">Semester</Label><Select value={editableLead.semester} onValueChange={(val) => handleFieldChange('semester', val)}><SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{educationSemesters.map(s=><SelectItem key={s} value={s} className="font-bold">{s}</SelectItem>)}</SelectContent></Select></div>
                                         </div>
                                     )}
 
                                     {editableLead.purpose === 'Medical' && (
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5 border-primary/10 animate-fade-in-up">
-                                            <div className="space-y-1"><Label className="font-bold text-xs">Disease</Label><Input value={editableLead.diseaseIdentified || ''} onChange={(e) => handleFieldChange('diseaseIdentified', e.target.value)} className="font-bold text-primary"/></div>
-                                            <div className="space-y-1"><Label className="font-bold text-xs">Stage</Label><Input value={editableLead.diseaseStage || ''} onChange={(e) => handleFieldChange('diseaseStage', e.target.value)} className="font-bold text-primary"/></div>
-                                            <div className="space-y-1"><Label className="font-bold text-xs">Seriousness</Label><Select value={editableLead.seriousness || ''} onValueChange={(val) => handleFieldChange('seriousness', val)}><SelectTrigger className="font-bold text-primary"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom">{leadSeriousnessLevels.map(l=><SelectItem key={l} value={l} className="font-bold">{l}</SelectItem>)}</SelectContent></Select></div>
+                                            <div className="space-y-1"><Label className="font-bold text-xs">Disease</Label><Input value={editableLead.diseaseIdentified || ''} onChange={(e) => handleFieldChange('diseaseIdentified', e.target.value)} className="font-bold text-primary border-primary/10"/></div>
+                                            <div className="space-y-1"><Label className="font-bold text-xs">Stage</Label><Input value={editableLead.diseaseStage || ''} onChange={(e) => handleFieldChange('diseaseStage', e.target.value)} className="font-bold text-primary border-primary/10"/></div>
+                                            <div className="space-y-1"><Label className="font-bold text-xs">Seriousness</Label><Select value={editableLead.seriousness || ''} onValueChange={(val) => handleFieldChange('seriousness', val)}><SelectTrigger className="font-bold text-primary border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{leadSeriousnessLevels.map(l=><SelectItem key={l} value={l} className="font-bold">{l}</SelectItem>)}</SelectContent></Select></div>
                                         </div>
                                     )}
 
-                                    <div><Label className="font-bold text-xs text-muted-foreground tracking-tight">Description</Label><Textarea id="description" value={editableLead.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} rows={4} className="text-primary font-normal transition-all duration-300 focus:shadow-md" /></div>
+                                    <div><Label className="font-bold text-xs text-muted-foreground tracking-tight">Description</Label><Textarea id="description" value={editableLead.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} rows={4} className="text-primary font-normal transition-all duration-300 focus:shadow-md border-primary/10" /></div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight">Required Amount (₹)</Label><Input type="number" value={editableLead.requiredAmount || 0} onChange={(e) => handleFieldChange('requiredAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md" /></div>
-                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight">Fundraising Goal (₹)</Label><Input type="number" value={editableLead.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md" /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight">Required Amount (₹)</Label><Input type="number" value={editableLead.requiredAmount || 0} onChange={(e) => handleFieldChange('requiredAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md border-primary/10" /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight">Fundraising Goal (₹)</Label><Input type="number" value={editableLead.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md border-primary/10" /></div>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight">Start Date</Label><Input id="startDate" type="date" value={editableLead.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="font-bold text-primary" /></div>
-                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight">End Date</Label><Input id="endDate" type="date" value={editableLead.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="font-bold text-primary" /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight">Start Date</Label><Input id="startDate" type="date" value={editableLead.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight">End Date</Label><Input id="endDate" type="date" value={editableLead.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
                                     </div>
                                     
                                     <div className="space-y-2">
                                         <Label className="font-bold text-xs text-muted-foreground tracking-tight">Allowed Donation Types For Goal</Label>
-                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border rounded-md p-3 bg-white">
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border rounded-md p-3 bg-white border-primary/10">
                                             {donationCategories.map(type => (
                                                 <div key={type} className="flex items-center space-x-2 transition-all duration-300 hover:translate-x-1">
                                                     <Checkbox 
@@ -685,7 +686,7 @@ export default function LeadSummaryPage() {
                                 </CardHeader>
                                 <CardContent className="p-0 sm:p-6 font-normal">
                                     <ScrollArea className="w-full">
-                                        <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[600px]">
+                                        <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[600px] border-primary/10">
                                             {isRationInitiative ? (
                                                 <Table>
                                                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
@@ -698,7 +699,7 @@ export default function LeadSummaryPage() {
                                                     </TableHeader>
                                                     <TableBody>
                                                         {beneficiaryGroups.map((group) => (
-                                                            <TableRow key={group.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white">
+                                                            <TableRow key={group.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white border-b border-primary/5">
                                                                 <TableCell className="font-bold text-primary text-xs transition-transform group-hover:translate-x-1">{group.name}</TableCell>
                                                                 <TableCell className="text-right font-normal text-xs">{group.count}</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-xs">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
@@ -727,7 +728,7 @@ export default function LeadSummaryPage() {
                                                     </TableHeader>
                                                     <TableBody>
                                                         {lead?.itemCategories?.[0]?.items.map((item, idx) => (
-                                                            <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white">
+                                                            <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white border-b border-primary/5">
                                                                 <TableCell className="font-medium text-xs transition-transform group-hover:translate-x-1">{item.name}</TableCell>
                                                                 <TableCell className="text-right text-xs">{item.quantity} {item.quantityType}</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-xs">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
@@ -850,7 +851,7 @@ export default function LeadSummaryPage() {
                                     {existingDocuments.length > 0 ? (
                                         <div className="space-y-3 font-normal text-foreground">
                                             {existingDocuments.map((doc) => (
-                                                <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md gap-4 bg-primary/5 transition-all hover:bg-primary/10">
+                                                <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md gap-4 bg-primary/5 transition-all hover:bg-primary/10 border-primary/5">
                                                     <div className="flex items-center gap-3 flex-1 min-w-0">
                                                         <Button variant="link" className="p-0 h-auto font-bold truncate text-primary active:scale-95" onClick={() => { if (doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i)) handleViewImage(doc.url, doc.name); else window.open(doc.url, '_blank'); }}><p className="truncate text-xs">{doc.name}</p></Button>
                                                     </div>
@@ -861,7 +862,7 @@ export default function LeadSummaryPage() {
                                                 </div>
                                             ))}
                                         </div>
-                                    ) : <p className="text-[10px] text-muted-foreground font-bold tracking-tight italic opacity-60">No documents attached.</p>}
+                                    ) : <p className="text-[10px] text-muted-foreground font-bold tracking-tight italic opacity-60">No Documents Attached.</p>}
                                 </div>
                             ) : (
                                 lead?.documents && lead?.documents.length > 0 ? (
@@ -899,12 +900,12 @@ export default function LeadSummaryPage() {
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-                <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden text-primary font-normal animate-fade-in-zoom">
+                <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden text-primary font-normal animate-fade-in-zoom border-primary/10">
                     <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary tracking-tight text-sm">{imageToView?.name}</DialogTitle></DialogHeader>
                     <ScrollArea className="flex-1 bg-secondary/20">
                         <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
                             {imageToView && (
-                                Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Verification Evidence" fill sizes="100vw" className="object-contain transition-all duration-300 origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                                <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Verification Evidence" fill sizes="100vw" className="object-contain transition-all duration-300 origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                             )}
                         </div>
                         <ScrollBar orientation="vertical" />
