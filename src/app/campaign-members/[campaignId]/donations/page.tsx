@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -356,14 +355,14 @@ export default function DonationsPage() {
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary">
         <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button></div>
-        <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold tracking-tight uppercase">{campaign.name}</h1></div>
+        <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold tracking-tight">{campaign.name}</h1></div>
         
         <div className="mb-6">
             <ScrollArea className="w-full">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 w-full bg-transparent p-0 border-b border-primary/10 pb-4">
                     {canReadSummary && (<Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>)}
                     {canReadRation && (<Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item Lists</Link>)}
-                    {canReadBeneficiaries && (<Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>)}
+                    {canReadBeneficiaries && (<Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>)}
                     {canReadDonations && (<Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}/donations` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link>)}
                 </div>
                 <ScrollBar orientation="horizontal" />
@@ -437,7 +436,7 @@ export default function DonationsPage() {
                                 <TableCell><div className="font-bold text-sm text-primary">{donation.donorName}</div><div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone || 'N/A'}</div></TableCell>
                                 <TableCell className="text-right font-bold font-mono text-primary">₹{donation.amountForThisCampaign.toFixed(2)}</TableCell>
                                 <TableCell className="text-xs font-normal">{donation.donationDate}</TableCell>
-                                <TableCell><Badge variant={donation.status === 'Verified' ? 'success' : 'outline'} className="text-[10px] font-bold uppercase">{donation.status}</Badge></TableCell>
+                                <TableCell><Badge variant={donation.status === 'Verified' ? 'success' : 'outline'} className="text-[10px] font-bold">{donation.status}</Badge></TableCell>
                                 <TableCell className="text-right pr-4" onClick={(e) => e.stopPropagation()}>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
@@ -452,7 +451,7 @@ export default function DonationsPage() {
                             {isOpen && (
                                 <TableRow className="bg-primary/[0.01] border-b border-primary/10">
                                 <TableCell colSpan={7} className="p-4">
-                                    <h4 className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3">Linked Transactions</h4>
+                                    <h4 className="text-[10px] font-bold text-primary mb-3">Linked Transactions</h4>
                                     <div className="border border-primary/10 rounded-md bg-white overflow-hidden shadow-sm">
                                     <Table>
                                         <TableHeader><TableRow className="bg-[hsl(var(--table-header-bg))]"><TableHead className="text-[10px] font-bold text-primary">Sum</TableHead><TableHead className="text-[10px] font-bold text-primary">Reference</TableHead><TableHead className="text-right text-[10px] font-bold text-primary">Evidence</TableHead></TableRow></TableHeader>
@@ -539,13 +538,13 @@ export default function DonationsPage() {
       
       <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
         <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown">
-            <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink Donation?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach this record from the current campaign? The donation remains in the global database but will no longer contribute to this project's totals.</AlertDialogDescription></AlertDialogHeader>
+            <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Unlink Donation?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach this record from the current campaign? The donation remains in the global database but will no longer contribute to this project's totals.</AlertDialogDescription></AlertDialogHeader>
             <AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive hover:bg-destructive/90 text-white font-bold transition-transform active:scale-95 shadow-md rounded-[12px]">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
 
       <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
         <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-[16px] border-primary/10">
-            <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary uppercase">Evidence Viewer</DialogTitle></DialogHeader>
+            <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary">Evidence Viewer</DialogTitle></DialogHeader>
             <div className="p-4 bg-secondary/20 h-[70vh] flex items-center justify-center">
                 {imageToView && (<div className="relative w-full h-full"><Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Vetting Evidence" fill sizes="100vw" className="object-contain transition-all duration-300 origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized /></div>)}
             </div>

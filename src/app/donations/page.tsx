@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -25,8 +24,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuPortal,
   DropdownMenuSub,
-  DropdownMenuSubTrigger,
   DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem
 } from '@/components/ui/dropdown-menu';
@@ -144,7 +143,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="space-y-2">
                                 <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary"><IndianRupee className="h-3 w-3"/> Category Breakdown</h4>
-                                <div className="border border-primary/10 rounded-md bg-white overflow-hidden shadow-sm">
+                                <div className="border border-primary/10 rounded-md bg-white shadow-sm">
                                     <ScrollArea className="w-full">
                                         <Table>
                                             <TableHeader className="bg-[hsl(var(--table-header-bg))]"><TableRow><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Category</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Value</TableHead></TableRow></TableHeader>
@@ -160,7 +159,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                             </div>
                             <div className="space-y-2">
                                 <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
-                                <div className="border border-primary/10 rounded-md bg-white overflow-hidden shadow-sm">
+                                <div className="border border-primary/10 rounded-md bg-white shadow-sm">
                                     <ScrollArea className="w-full">
                                         <Table>
                                             <TableHeader><TableRow className="bg-[hsl(var(--table-header-bg))]"><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Target Initiative</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Allocated Sum</TableHead></TableRow></TableHeader>
@@ -186,7 +185,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                         </div>
                         <div className="space-y-2">
                             <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary"><ImageIcon className="h-3 w-3"/> Transaction Documents</h4>
-                            <div className="border border-primary/10 rounded-md bg-white overflow-hidden shadow-sm">
+                            <div className="border border-primary/10 rounded-md bg-white shadow-sm">
                                 <ScrollArea className="w-full">
                                     <Table>
                                         <TableHeader>
@@ -450,7 +449,7 @@ export default function DonationsPage() {
             </CardHeader>
             <CardContent className="p-0">
                 <ScrollArea className="w-full">
-                    <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold uppercase tracking-widest text-[hsl(var(--table-header-fg))]", donationGridClass)}>
+                    <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold text-[hsl(var(--table-header-fg))]", donationGridClass)}>
                         <div className="flex justify-center">
                             <Checkbox 
                                 checked={selectedIds.length > 0 && selectedIds.length === paginatedDonations.length}
@@ -462,10 +461,10 @@ export default function DonationsPage() {
                         <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor Name</SortableHeader>
                         <SortableHeader sortKey="amount" sortConfig={sortConfig} handleSort={handleSort} className="text-right">Amount (₹)</SortableHeader>
                         <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Entry Date</SortableHeader>
-                        <div className="text-center font-bold text-[10px] uppercase text-[hsl(var(--table-header-fg))]">Method</div>
+                        <div className="text-center font-bold text-[10px]">Method</div>
                         <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Vetting Status</SortableHeader>
-                        <div className="font-bold text-[10px] uppercase text-[hsl(var(--table-header-fg))]">Target Initiative</div>
-                        <div className="text-right pr-4 font-bold text-[10px] uppercase text-[hsl(var(--table-header-fg))]">Actions</div>
+                        <div className="font-bold text-[10px]">Target Initiative</div>
+                        <div className="text-right pr-4 font-bold text-[10px]">Actions</div>
                     </div>
                     <div className="w-full max-h-[70vh]">
                         {paginatedDonations.map((d, i) => (
@@ -552,7 +551,7 @@ export default function DonationsPage() {
 
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent className="rounded-[12px] border-primary/10">
-                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Confirm Permanent Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Verification Evidence. This Action Is Irreversible.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Confirm Permanent Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Verification Evidence. This Action Is Irreversible.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 rounded-[12px]">Confirm Deletion</AlertDialogAction>
