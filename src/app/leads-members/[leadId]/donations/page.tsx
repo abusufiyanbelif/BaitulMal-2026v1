@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -41,7 +40,13 @@ import {
     X,
     ChevronsUpDown,
     Download,
-    UploadCloud
+    UploadCloud,
+    Users,
+    CheckCircle2,
+    Hourglass,
+    XCircle,
+    Smartphone,
+    Wallet
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -90,7 +95,24 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { donationCategories } from '@/lib/modules';
 import { DonationImportDialog } from '@/components/donation-import-dialog';
 
-type SortKey = keyof Donation | 'srNo' | 'amountForThisLead';
+function StatCard({ title, count, description, icon: Icon, colorClass, delay, isCurrency = false }: { title: string, count: number | string, description: string, icon: any, colorClass?: string, delay: string, isCurrency?: boolean }) {
+    return (
+        <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
+            <div className="flex justify-between items-start mb-2">
+                <div className="space-y-0.5">
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
+                    <p className="text-2xl font-black text-primary tracking-tight">
+                        {isCurrency ? `₹${count}` : count}
+                    </p>
+                </div>
+                <div className="p-2 rounded-lg bg-primary/5 text-primary">
+                    <Icon className="h-5 w-5" />
+                </div>
+            </div>
+            <p className="text-[9px] font-medium text-muted-foreground mt-auto">{description}</p>
+        </Card>
+    );
+}
 
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: { key: string; direction: 'ascending' | 'descending' } | null, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
@@ -138,7 +160,7 @@ export default function DonationsPage() {
       });
   }, [allDonations, leadId]);
 
-  const campaignsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'campaigns') : null, [firestore]);
+  const allCampaignsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'campaigns') : null, [firestore]);
   const { data: allCampaigns } = useCollection<Campaign>(campaignsCollectionRef);
 
   const leadsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'leads') : null, [firestore]);
@@ -171,6 +193,20 @@ export default function DonationsPage() {
 
   const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.create', false);
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.update', false);
+
+  const stats = useMemo(() => {
+      const data = filteredAndSortedDonations;
+      return {
+          total: data.length,
+          verified: data.filter(d => d.status === 'Verified').length,
+          pending: data.filter(d => d.status === 'Pending').length,
+          canceled: data.filter(d => d.status === 'Canceled').length,
+          online: data.filter(d => d.donationType === 'Online Payment').length,
+          cash: data.filter(d => d.donationType === 'Cash').length,
+          totalAmount: data.filter(d => d.status === 'Verified').reduce((sum, d) => sum + d.amountForThisLead, 0),
+          pendingAmount: data.filter(d => d.status === 'Pending').reduce((sum, d) => sum + d.amountForThisLead, 0),
+      };
+  }, [filteredAndSortedDonations]);
 
   const handleEdit = (donation: Donation) => {
     if (!canUpdate) return;
@@ -344,11 +380,11 @@ export default function DonationsPage() {
   if (!lead) return <div className="p-8 text-center text-primary font-bold"><p>Lead Not Found.</p><Button asChild variant="outline" className="mt-4"><Link href="/leads-members"><ArrowLeft className="mr-2"/>Back</Link></Button></div>;
 
   return (
-    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
+    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative">
         <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95 text-primary"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
         <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold tracking-tight text-primary">{lead.name}</h1></div>
         
-        <div className="border-b mb-4">
+        <div className="border-b border-primary/10 mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex w-max space-x-2 pb-2">
                     {canReadSummary && (
@@ -364,6 +400,15 @@ export default function DonationsPage() {
                 </div>
                 <ScrollBar orientation="horizontal" />
             </ScrollArea>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <StatCard title="Total Count" count={stats.total} description="All records logged" icon={Users} delay="100ms" />
+            <StatCard title="Verified Sum" count={stats.totalAmount.toLocaleString('en-IN')} description="Confirmed funds" icon={CheckCircle2} delay="150ms" isCurrency />
+            <StatCard title="Pending Sum" count={stats.pendingAmount.toLocaleString('en-IN')} description="Awaiting vetting" icon={Hourglass} delay="200ms" isCurrency />
+            <StatCard title="Online Pay" count={stats.online} description="Digital transfers" icon={Smartphone} delay="250ms" />
+            <StatCard title="Cash" count={stats.cash} description="Physical collections" icon={Wallet} delay="300ms" />
+            <StatCard title="Canceled" count={stats.canceled} description="Voided records" icon={XCircle} delay="350ms" colorClass="bg-red-50/50" />
         </div>
 
         {/* Sticky Action Hub */}
@@ -404,7 +449,7 @@ export default function DonationsPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <div className="space-y-1.5">
                         <CardTitle className="text-xl font-bold tracking-tight text-primary">Donation List ({filteredAndSortedDonations.length})</CardTitle>
-                        <CardDescription className="font-normal text-primary/70">Total Verified For This Lead: <span className="font-bold text-primary font-mono">₹{filteredAndSortedDonations.reduce((sum, d) => sum + d.amountForThisLead, 0).toFixed(2)}</span></CardDescription>
+                        <CardDescription className="font-normal text-primary/70">Verified contribution logs for this individual case.</CardDescription>
                     </div>
                     <div className="flex flex-wrap gap-2">
                         <Button variant="outline" size="sm" onClick={handleExport} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><Download className="mr-2 h-4 w-4"/> Export CSV</Button>

@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -11,11 +10,43 @@ import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import Resizer from 'react-image-file-resizer';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
-import { PlusCircle, MoreHorizontal, Edit, Eye, ArrowUp, ArrowDown, ChevronDown, ChevronUp, IndianRupee, FolderKanban, Lightbulb, Trash2, ZoomIn, ZoomOut, RotateCw, RefreshCw, DatabaseZap, ImageIcon, Loader2, CheckSquare, X, ChevronsUpDown, Download, UploadCloud } from 'lucide-react';
+import { 
+    PlusCircle, 
+    MoreHorizontal, 
+    Edit, 
+    Eye, 
+    ArrowUp, 
+    ArrowDown, 
+    ChevronDown, 
+    ChevronUp, 
+    IndianRupee, 
+    FolderKanban, 
+    Lightbulb, 
+    Trash2, 
+    ZoomIn, 
+    ZoomOut, 
+    RotateCw, 
+    RefreshCw, 
+    DatabaseZap, 
+    ImageIcon, 
+    Loader2, 
+    CheckSquare, 
+    X, 
+    ChevronsUpDown, 
+    Download, 
+    UploadCloud,
+    Users,
+    CheckCircle2,
+    Hourglass,
+    XCircle,
+    Smartphone,
+    Wallet,
+    Banknote
+} from 'lucide-react';
 import Link from 'next/link';
 import {
   DropdownMenu,
@@ -43,10 +74,9 @@ import {
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
-    DialogFooter,
     DialogHeader,
     DialogTitle,
+    DialogFooter,
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { Input } from '@/components/ui/input';
@@ -64,9 +94,28 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
 import { DonationImportDialog } from '@/components/donation-import-dialog';
 
-type SortKey = keyof UserProfile | 'srNo' | 'donationDate' | 'amount' | 'donorName';
+type SortKey = keyof Donation | 'srNo';
 
 const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1000px]";
+
+function StatCard({ title, count, description, icon: Icon, colorClass, delay, isCurrency = false }: { title: string, count: number | string, description: string, icon: any, colorClass?: string, delay: string, isCurrency?: boolean }) {
+    return (
+        <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
+            <div className="flex justify-between items-start mb-2">
+                <div className="space-y-0.5">
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
+                    <p className="text-2xl font-black text-primary tracking-tight">
+                        {isCurrency ? `₹${count}` : count}
+                    </p>
+                </div>
+                <div className="p-2 rounded-lg bg-primary/5 text-primary">
+                    <Icon className="h-5 w-5" />
+                </div>
+            </div>
+            <p className="text-[9px] font-medium text-muted-foreground mt-auto">{description}</p>
+        </Card>
+    );
+}
 
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: { key: string; direction: 'ascending' | 'descending' } | null, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
@@ -140,83 +189,74 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                 </div>
             </div>
             {isOpen && (
-                <div className="bg-primary/[0.02] border-b border-primary/10 p-4">
+                <div className="bg-primary/[0.02] border-b border-primary/10 p-4 animate-fade-in-up">
                     <div className="space-y-6 max-w-5xl mx-auto">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="space-y-2">
-                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary"><IndianRupee className="h-3 w-3"/> Category Breakdown</h4>
-                                <div className="border border-primary/10 rounded-md bg-white shadow-sm">
-                                    <ScrollArea className="w-full">
-                                        <Table>
-                                            <TableHeader className="bg-[hsl(var(--table-header-bg))]"><TableRow><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Category</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Value</TableHead></TableRow></TableHeader>
-                                            <TableBody>
-                                                {(donation.typeSplit || []).map(split => (
-                                                    <TableRow key={split.category} className="h-8 hover:bg-[hsl(var(--table-row-hover))]"><TableCell className="py-1 text-[11px] font-normal text-primary/80 whitespace-nowrap">{split.category}</TableCell><TableCell className="text-right font-bold font-mono text-primary py-1 text-[11px]">₹{split.amount.toFixed(2)}</TableCell></TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                        <ScrollBar orientation="horizontal" />
-                                    </ScrollArea>
+                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary uppercase tracking-widest"><IndianRupee className="h-3 w-3"/> Category Breakdown</h4>
+                                <div className="border border-primary/10 rounded-md bg-white shadow-sm overflow-hidden">
+                                    <Table>
+                                        <TableHeader className="bg-primary/5"><TableRow><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Category</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Value</TableHead></TableRow></TableHeader>
+                                        <TableBody>
+                                            {(donation.typeSplit || []).map(split => (
+                                                <TableRow key={split.category} className="h-8 hover:bg-[hsl(var(--table-row-hover))]"><TableCell className="py-1 text-[11px] font-normal text-primary/80 whitespace-nowrap">{split.category}</TableCell><TableCell className="text-right font-bold font-mono text-primary py-1 text-[11px]">₹{split.amount.toFixed(2)}</TableCell></TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
-                                <div className="border border-primary/10 rounded-md bg-white shadow-sm">
-                                    <ScrollArea className="w-full">
-                                        <Table>
-                                            <TableHeader><TableRow className="bg-[hsl(var(--table-header-bg))]"><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Target Initiative</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Allocated Sum</TableHead></TableRow></TableHeader>
-                                            <TableBody>
-                                                {(donation.linkSplit || []).map(link => (
-                                                    <TableRow key={link.linkId} className="h-8 hover:bg-[hsl(var(--table-row-hover))]">
-                                                        <TableCell className="flex items-center gap-2 py-1">
-                                                            {link.linkType === 'campaign' ? <FolderKanban className="h-3.5 w-3.5 text-primary/40" /> : <Lightbulb className="h-3.5 w-3.5 text-primary/40" />}
-                                                            <span className="text-[10px] font-normal text-primary/80 whitespace-nowrap">{link.linkName}</span>
-                                                        </TableCell>
-                                                        <TableCell className="text-right font-bold font-mono text-primary py-1 text-[11px]">₹{link.amount.toFixed(2)}</TableCell>
-                                                    </TableRow>
-                                                ))}
-                                                {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
-                                                    <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-4 italic text-xs font-normal">Unallocated / General Fund</TableCell></TableRow>
-                                                )}
-                                            </TableBody>
-                                        </Table>
-                                        <ScrollBar orientation="horizontal" />
-                                    </ScrollArea>
+                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary uppercase tracking-widest"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
+                                <div className="border border-primary/10 rounded-md bg-white shadow-sm overflow-hidden">
+                                    <Table>
+                                        <TableHeader className="bg-primary/5"><TableRow><TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Target Initiative</TableHead><TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Allocated Sum</TableHead></TableRow></TableHeader>
+                                        <TableBody>
+                                            {(donation.linkSplit || []).map(link => (
+                                                <TableRow key={link.linkId} className="h-8 hover:bg-[hsl(var(--table-row-hover))]">
+                                                    <TableCell className="flex items-center gap-2 py-1">
+                                                        {link.linkType === 'campaign' ? <FolderKanban className="h-3.5 w-3.5 text-primary/40" /> : <Lightbulb className="h-3.5 w-3.5 text-primary/40" />}
+                                                        <span className="text-[10px] font-normal text-primary/80 whitespace-nowrap">{link.linkName}</span>
+                                                    </TableCell>
+                                                    <TableCell className="text-right font-bold font-mono text-primary py-1 text-[11px]">₹{link.amount.toFixed(2)}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                            {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
+                                                <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-4 italic text-xs font-normal">Unallocated / General Fund</TableCell></TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
                                 </div>
                             </div>
                         </div>
                         <div className="space-y-2">
-                            <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary"><ImageIcon className="h-3 w-3"/> Transaction Documents</h4>
-                            <div className="border border-primary/10 rounded-md bg-white shadow-sm">
-                                <ScrollArea className="w-full">
-                                    <Table>
-                                        <TableHeader>
-                                            <TableRow className="bg-[hsl(var(--table-header-bg))]">
-                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Amount</TableHead>
-                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Ref. ID</TableHead>
-                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Date</TableHead>
-                                                <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Evidence</TableHead>
+                            <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary uppercase tracking-widest"><ImageIcon className="h-3 w-3"/> Transaction Documents</h4>
+                            <div className="border border-primary/10 rounded-md bg-white shadow-sm overflow-hidden">
+                                <Table>
+                                    <TableHeader className="bg-primary/5">
+                                        <TableRow>
+                                            <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Amount</TableHead>
+                                            <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Ref. ID</TableHead>
+                                            <TableHead className="h-8 py-0 text-[9px] font-bold text-primary">Date</TableHead>
+                                            <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary">Evidence</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {(donation.transactions || []).map((tx) => (
+                                            <TableRow key={tx.id} className="hover:bg-[hsl(var(--table-row-hover))]">
+                                                <TableCell className="font-bold font-mono text-primary text-[11px] py-2">₹{tx.amount.toFixed(2)}</TableCell>
+                                                <TableCell className="font-mono text-[10px] py-2 text-primary/80 whitespace-nowrap">{tx.transactionId || 'N/A'}</TableCell>
+                                                <TableCell className="text-[10px] font-normal text-muted-foreground py-2 whitespace-nowrap">{tx.date || donation.donationDate}</TableCell>
+                                                <TableCell className="text-right py-2">
+                                                    {tx.screenshotUrl ? (
+                                                        <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/5" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
+                                                            <ImageIcon className="mr-1 h-3 w-3" /> View Evidence
+                                                        </Button>
+                                                    ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40">None</span>}
+                                                </TableCell>
                                             </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {(donation.transactions || []).map((tx) => (
-                                                <TableRow key={tx.id} className="hover:bg-[hsl(var(--table-row-hover))]">
-                                                    <TableCell className="font-bold font-mono text-primary text-[11px] py-2">₹{tx.amount.toFixed(2)}</TableCell>
-                                                    <TableCell className="font-mono text-[10px] py-2 text-primary/80 whitespace-nowrap">{tx.transactionId || 'N/A'}</TableCell>
-                                                    <TableCell className="text-[10px] font-normal text-muted-foreground py-2 whitespace-nowrap">{tx.date || donation.donationDate}</TableCell>
-                                                    <TableCell className="text-right py-2">
-                                                        {tx.screenshotUrl ? (
-                                                            <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/5" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
-                                                                <ImageIcon className="mr-1 h-3 w-3" /> View Evidence
-                                                            </Button>
-                                                        ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40">None</span>}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                    <ScrollBar orientation="horizontal" />
-                                </ScrollArea>
+                                        ))}
+                                    </TableBody>
+                                </Table>
                             </div>
                         </div>
                     </div>
@@ -237,7 +277,7 @@ export default function DonationsPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
+  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(15);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -264,7 +304,7 @@ export default function DonationsPage() {
   const leadsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'leads') : null, [firestore]);
   const { data: allLeads } = useCollection<Lead>(leadsCollectionRef);
 
-  const handleSort = (key: string) => {
+  const handleSort = (key: SortKey) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
         direction = 'descending';
@@ -312,6 +352,20 @@ export default function DonationsPage() {
     }
     return items;
   }, [donations, searchTerm, statusFilter, sortConfig]);
+
+  const stats = useMemo(() => {
+      const data = filteredAndSortedDonations;
+      return {
+          total: data.length,
+          verified: data.filter(d => d.status === 'Verified').length,
+          pending: data.filter(d => d.status === 'Pending').length,
+          canceled: data.filter(d => d.status === 'Canceled').length,
+          online: data.filter(d => d.donationType === 'Online Payment').length,
+          cash: data.filter(d => d.donationType === 'Cash').length,
+          totalAmount: data.filter(d => d.status === 'Verified').reduce((sum, d) => sum + d.amount, 0),
+          pendingAmount: data.filter(d => d.status === 'Pending').reduce((sum, d) => sum + d.amount, 0),
+      };
+  }, [filteredAndSortedDonations]);
 
   const paginatedDonations = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -472,6 +526,15 @@ export default function DonationsPage() {
                 </div>
                 <ScrollBar orientation="horizontal" />
             </ScrollArea>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+            <StatCard title="Total Count" count={stats.total} description="All records logged" icon={Users} delay="100ms" />
+            <StatCard title="Verified Sum" count={stats.totalAmount.toLocaleString('en-IN')} description="Confirmed funds" icon={CheckCircle2} delay="150ms" isCurrency />
+            <StatCard title="Pending Sum" count={stats.pendingAmount.toLocaleString('en-IN')} description="Awaiting vetting" icon={Hourglass} delay="200ms" isCurrency />
+            <StatCard title="Online Pay" count={stats.online} description="Digital transfers" icon={Smartphone} delay="250ms" />
+            <StatCard title="Cash" count={stats.cash} description="Physical collections" icon={Wallet} delay="300ms" />
+            <StatCard title="Canceled" count={stats.canceled} description="Voided records" icon={XCircle} delay="350ms" colorClass="bg-red-50/50" />
         </div>
 
         {/* Sticky Action Hub */}
