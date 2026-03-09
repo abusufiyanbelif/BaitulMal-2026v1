@@ -22,8 +22,7 @@ interface NewsTickerProps {
 }
 
 /**
- * A sophisticated vertical news ticker that cycles through items with a Fade + Slide Up animation.
- * Optimized to remove shadows and prioritize Urgent/High priority initiatives.
+ * Optimized vertical news ticker with responsive label stacking and text visibility.
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -81,36 +80,36 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
       !isCompleted && currentItem?.isUrgent && "border-red-500/50",
       !isCompleted && currentItem?.isHigh && "border-orange-500/50"
     )}>
-      {/* Label Section */}
+      {/* Responsive Label Section */}
       <div className={cn(
-        "z-30 h-full px-4 flex items-center border-r shrink-0 font-bold transition-colors duration-500",
+        "z-30 h-full px-2 sm:px-4 flex items-center border-r shrink-0 font-bold transition-colors duration-500",
         isCompleted ? "bg-muted text-muted-foreground" : "bg-primary text-primary-foreground"
       )}>
         {isCompleted ? (
-          <CheckCircle2 className="h-4 w-4 mr-2" />
+          <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
         ) : isDonation ? (
-          <IndianRupee className="h-4 w-4 mr-2 animate-pulse" />
+          <IndianRupee className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2 animate-pulse" />
         ) : (
-          <Megaphone className="h-4 w-4 mr-2" />
+          <Megaphone className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
         )}
-        <span className="text-[10px] sm:text-xs font-bold tracking-tight whitespace-nowrap">
+        <span className="text-[9px] sm:text-xs font-bold tracking-tight whitespace-nowrap">
           {label}
         </span>
       </div>
 
-      {/* Content Section */}
-      <div className="flex-1 flex items-center px-4 relative overflow-hidden h-full">
+      {/* Content Section with truncation protection */}
+      <div className="flex-1 flex items-center px-3 sm:px-4 relative overflow-hidden h-full">
         <div className={cn(
-          "w-full transition-all duration-500 ease-in-out flex items-center gap-3",
+          "w-full transition-all duration-500 ease-in-out flex items-center gap-2 sm:gap-3",
           isTransitioning ? "opacity-0 -translate-y-4" : "opacity-100 translate-y-0"
         )}>
           <span className={cn(
-            "h-1.5 w-1.5 rounded-full shrink-0",
+            "h-1.5 w-1.5 rounded-full shrink-0 hidden xs:block",
             isCompleted ? "bg-muted-foreground" : "bg-primary"
           )} />
           
           {currentItem.priorityIcon && (
-            <div className="shrink-0 flex items-center [&>svg]:h-5 [&>svg]:w-5 transition-transform duration-300 group-hover:scale-110">
+            <div className="shrink-0 flex items-center [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5 transition-transform duration-300 group-hover:scale-110">
               {currentItem.priorityIcon}
             </div>
           )}
@@ -118,7 +117,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
           <Link 
             href={currentItem.href} 
             className={cn(
-              "text-sm font-bold transition-colors whitespace-nowrap hover:underline underline-offset-4 truncate",
+              "text-[11px] sm:text-sm font-bold transition-colors whitespace-nowrap hover:underline underline-offset-4 truncate",
               isCompleted ? "text-muted-foreground hover:text-foreground" : "text-primary hover:text-primary/80"
             )}
           >
@@ -127,8 +126,8 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         </div>
       </div>
 
-      {/* Manual Vertical Controls */}
-      <div className="z-30 flex flex-col border-l border-primary/5 h-full opacity-0 group-hover:opacity-100 transition-opacity">
+      {/* Vertical Controls (Hidden on mobile by default, visible on hover) */}
+      <div className="z-30 flex flex-col border-l border-primary/5 h-full opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex">
         <Button
           variant="ghost"
           size="icon"

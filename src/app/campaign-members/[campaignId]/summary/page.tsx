@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -589,7 +588,7 @@ export default function CampaignSummaryPage() {
                                 </CardHeader>
                                 <CardContent className="pt-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center font-normal">
-                                        <div className="relative h-48 w-full transition-transform duration-500 hover:scale-105">
+                                        <div className="relative h-48 sm:h-64 w-full transition-transform duration-500 hover:scale-105">
                                             {isClient ? (
                                                 <ChartContainer config={{ progress: { label: 'Progress', color: 'hsl(var(--primary))' } }} className="mx-auto aspect-square h-full">
                                                     <RadialBarChart data={[{ name: 'Progress', value: fundingData.fundingProgress || 0, fill: 'hsl(var(--primary))' }]} startAngle={-270} endAngle={90} innerRadius="75%" outerRadius="100%" barSize={20}>
@@ -710,7 +709,7 @@ export default function CampaignSummaryPage() {
                                                 <span className="font-mono font-bold">₹{(fundingData.amountsByCategory[cat] || 0).toLocaleString('en-IN')}</span>
                                             </div>
                                         ))}
-                                        <Separator className="my-2" />
+                                        <Separator className="bg-primary/10 my-2" />
                                         <div className="flex justify-between items-center text-lg font-bold text-primary px-2"><span>Grand Total Received</span><span className="font-mono font-bold">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</span></div>
                                     </CardContent>
                                 </Card>
@@ -721,13 +720,13 @@ export default function CampaignSummaryPage() {
                                     <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Zakat Fund Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking of designated Zakat resources.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 pt-6 font-normal text-foreground">
                                         <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded"><span className="text-muted-foreground tracking-tight font-normal">Total Zakat Collected</span><span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span></div>
-                                        <Separator />
+                                        <Separator className="bg-primary/10" />
                                         <div className="pl-4 border-l-2 border-dashed border-primary/20 space-y-2 py-2 font-bold">
                                             <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground tracking-tight font-normal">Allocated As Assistance</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
                                             <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="font-mono text-primary font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
                                             <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
                                         </div>
-                                        <Separator />
+                                        <Separator className="bg-primary/10" />
                                         <div className="flex justify-between items-center text-base font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded"><span>Net Zakat Balance</span><span className="font-bold text-primary font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
                                     </CardContent>
                                 </Card>
@@ -792,7 +791,7 @@ export default function CampaignSummaryPage() {
                                 <div className="space-y-4 animate-fade-in-zoom">
                                     <Label className="font-bold text-[10px] text-muted-foreground tracking-tight">Upload New Verifiable Evidence</Label>
                                     <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf" />
-                                    <Separator className="my-6" />
+                                    <Separator className="bg-primary/10 my-6" />
                                     <Label className="font-bold text-[10px] text-muted-foreground tracking-tight">Manage Existing Documents</Label>
                                     {existingDocuments.length > 0 ? (
                                         <div className="space-y-3 font-normal text-foreground">
