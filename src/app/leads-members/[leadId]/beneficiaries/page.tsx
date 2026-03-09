@@ -379,70 +379,13 @@ export default function BeneficiariesPage() {
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex w-max space-x-2 pb-2">
                     <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
-                    <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item List</Link>
-                    <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>
+                    <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item list</Link>
+                    <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary list</Link>
                     <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link>
                 </div>
                 <ScrollBar orientation="horizontal" />
             </ScrollArea>
         </div>
-
-        {/* Simplified Top-Positioned Action Hub */}
-        {selectedIds.length > 0 && (
-            <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-top w-full max-w-[95vw] sm:max-w-fit">
-                <div className="flex items-center gap-3 px-4 py-2 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
-                    <div className="flex items-center gap-2 pr-3 border-r border-white/20">
-                        <CheckSquare className="h-4 w-4" />
-                        <span className="text-xs font-bold tracking-tight whitespace-nowrap">{selectedIds.length} Selected</span>
-                    </div>
-                    
-                    <div className="flex gap-1">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8 text-xs px-3" disabled={isBulkUpdating}>
-                                    Distribution
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-dropdown border-primary/10">
-                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Given')} className="font-normal">Mark Given</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Verified')} className="font-normal">Mark Secured</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Pending')} className="font-normal">Mark Pending</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8 text-xs px-3" disabled={isBulkUpdating}>
-                                    Vetting
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-dropdown border-primary/10">
-                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Verified')} className="font-normal">Mark Verified</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Pending')} className="font-normal">Mark Pending</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Hold')} className="font-normal">Mark Hold</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Need More Details')} className="font-normal">More Details</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8 text-xs px-3" disabled={isBulkUpdating}>
-                                    Zakat
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-48 rounded-xl shadow-dropdown border-primary/10">
-                                <DropdownMenuItem onClick={() => handleBulkZakatChange(true)} className="font-normal">Mark Eligible</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkZakatChange(false)} className="font-normal">Mark Ineligible</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-white hover:bg-white/10 rounded-full" onClick={() => setSelectedIds([])}>
-                        <X className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div>
-        )}
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
@@ -545,6 +488,65 @@ export default function BeneficiariesPage() {
             </SelectContent>
           </Select>
         </div>
+
+        {/* Simplified Sticky Action Hub */}
+        {selectedIds.length > 0 && (
+            <div className="sticky top-[73px] z-40 animate-fade-in-up w-full">
+                <div className="flex items-center gap-4 px-4 py-2 bg-primary/5 border border-primary/20 backdrop-blur-md rounded-xl shadow-sm mb-4">
+                    <div className="flex items-center gap-2 pr-4 border-r border-primary/10">
+                        <CheckSquare className="h-4 w-4 text-primary" />
+                        <span className="text-xs font-bold tracking-tight whitespace-nowrap text-primary">{selectedIds.length} Selected</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-1">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10 font-bold h-8 text-xs px-3" disabled={isBulkUpdating}>
+                                    Distribution
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-48 rounded-xl shadow-dropdown border-primary/10">
+                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Given')} className="font-normal">Mark Given</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Verified')} className="font-normal">Mark Secured</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Pending')} className="font-normal">Mark Pending</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10 font-bold h-8 text-xs px-3" disabled={isBulkUpdating}>
+                                    Vetting
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-48 rounded-xl shadow-dropdown border-primary/10">
+                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Verified')} className="font-normal">Mark Verified</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Pending')} className="font-normal">Mark Pending</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Hold')} className="font-normal">Mark Hold</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Need More Details')} className="font-normal">More Details</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10 font-bold h-8 text-xs px-3" disabled={isBulkUpdating}>
+                                    Zakat
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-48 rounded-xl shadow-dropdown border-primary/10">
+                                <DropdownMenuItem onClick={() => handleBulkZakatChange(true)} className="font-normal">Mark Eligible</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkZakatChange(false)} className="font-normal">Mark Ineligible</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+
+                    <div className="ml-auto">
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-primary/40 hover:text-primary rounded-full" onClick={() => setSelectedIds([])}>
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        )}
 
         <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
             <ScrollArea className="w-full">
