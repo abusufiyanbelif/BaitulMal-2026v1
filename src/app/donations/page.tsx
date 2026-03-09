@@ -24,8 +24,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuPortal,
   DropdownMenuSub,
-  DropdownMenuSubContent,
   DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem
 } from '@/components/ui/dropdown-menu';
@@ -466,7 +466,7 @@ export default function DonationsPage() {
                         <div className="font-bold text-[10px] uppercase text-[hsl(var(--table-header-fg))]">Target Initiative</div>
                         <div className="text-right pr-4 font-bold text-[10px] uppercase text-[hsl(var(--table-header-fg))]">Actions</div>
                     </div>
-                    <div className="w-full">
+                    <div className="w-full max-h-[70vh]">
                         {paginatedDonations.map((d, i) => (
                             <DonationRow 
                                 key={d.id} 
@@ -484,6 +484,7 @@ export default function DonationsPage() {
                         )}
                     </div>
                     <ScrollBar orientation="horizontal" />
+                    <ScrollBar orientation="vertical" />
                 </ScrollArea>
             </CardContent>
             {totalPages > 1 && (
@@ -499,7 +500,7 @@ export default function DonationsPage() {
 
         {selectedIds.length > 0 && (
             <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-bottom w-full max-w-[95vw] sm:max-w-fit">
-                <div className="flex items-center gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
+                <div className="flex items-center justify-start gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
                     <div className="flex items-center gap-2 pr-4 border-r border-white/20">
                         <CheckSquare className="h-5 w-5" />
                         <span className="text-sm font-bold tracking-tight whitespace-nowrap">{selectedIds.length} Selected</span>
@@ -539,6 +540,7 @@ export default function DonationsPage() {
                         onCancel={() => setIsFormOpen(false)} 
                         leads={allLeads || []} 
                         campaigns={allCampaigns || []} 
+                        defaultLinkId={'unlinked'} 
                     />
                 </ScrollArea>
                 <DialogFooter className="px-6 py-4 border-t bg-muted/5">
@@ -567,6 +569,7 @@ export default function DonationsPage() {
                         )}
                     </div>
                     <ScrollBar orientation="horizontal" />
+                    <ScrollBar orientation="vertical" />
                 </ScrollArea>
                 <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">
                     <Button variant="secondary" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>

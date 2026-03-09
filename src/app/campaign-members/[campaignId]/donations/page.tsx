@@ -365,7 +365,7 @@ export default function DonationsPage() {
                     {canReadBeneficiaries && (<Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>)}
                     {canReadDonations && (<Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}/donations` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link>)}
                 </div>
-                <ScrollBar orientation="horizontal" className="hidden" />
+                <ScrollBar orientation="horizontal" />
             </ScrollArea>
         </div>
 
@@ -378,7 +378,7 @@ export default function DonationsPage() {
                     </div>
                     <div className="flex gap-2">
                         {canUpdate && <Button variant="outline" onClick={() => setIsSearchOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><LinkIcon className="mr-2 h-4 w-4"/> Select From Master</Button>}
-                        {canCreate && <Button onClick={handleAdd} className="font-bold shadow-md active:scale-95 transition-transform"><PlusCircle className="mr-2 h-4 w-4" /> Add Record</Button>}
+                        {canCreate && <Button onClick={handleAdd} className="font-bold shadow-md active:scale-95 transition-transform rounded-[12px]"><PlusCircle className="mr-2 h-4 w-4" /> Add Record</Button>}
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-4">
@@ -395,6 +395,7 @@ export default function DonationsPage() {
             </CardHeader>
             <CardContent className="p-0">
                 <ScrollArea className="w-full">
+                <div className="max-h-[70vh]">
                 <Table>
                     <TableHeader>
                     <TableRow>
@@ -470,7 +471,9 @@ export default function DonationsPage() {
                     {paginatedDonations.length === 0 && <TableRow><TableCell colSpan={7} className="text-center py-20 text-muted-foreground italic font-normal bg-primary/[0.02]">No Donation Records Matching Your Criteria.</TableCell></TableRow>}
                     </TableBody>
                 </Table>
+                </div>
                 <ScrollBar orientation="horizontal" />
+                <ScrollBar orientation="vertical" />
                 </ScrollArea>
             </CardContent>
             {totalPages > 1 && (

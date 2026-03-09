@@ -359,7 +359,7 @@ export default function BeneficiariesPage() {
   };
 
   if (isCampaignLoading || areBeneficiariesLoading || isProfileLoading) return <BrandedLoader />;
-  if (!campaign) return <p className="text-center mt-20 text-primary font-bold">Campaign Not Found.</p>;
+  if (!lead) return <p className="text-center mt-20 text-primary font-bold">Lead Not Found.</p>;
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative">
@@ -486,7 +486,7 @@ export default function BeneficiariesPage() {
         {/* Simplified Sticky Action Hub */}
         {selectedIds.length > 0 && (
             <div className="sticky top-[73px] z-40 animate-fade-in-up w-full">
-                <div className="flex items-center gap-4 px-4 py-2 bg-primary/5 border border-primary/20 backdrop-blur-md rounded-xl shadow-sm mb-4">
+                <div className="flex items-center justify-start gap-4 px-4 py-2 bg-primary/5 border border-primary/20 backdrop-blur-md rounded-xl shadow-sm mb-4">
                     <div className="flex items-center gap-2 pr-4 border-r border-primary/10">
                         <CheckSquare className="h-4 w-4 text-primary" />
                         <span className="text-xs font-bold tracking-tight whitespace-nowrap text-primary">{selectedIds.length} Selected</span>
@@ -565,7 +565,7 @@ export default function BeneficiariesPage() {
                     <div className="text-right pr-4">Actions</div>
                 </div>
 
-                <div className="w-full">
+                <div className="w-full max-h-[70vh]">
                     {Object.entries(beneficiariesByCategory).map(([catId, list]) => {
                         const cat = availableCategories.find(c => c.id === catId);
                         let categoryName = cat?.name || 'Uncategorized';
@@ -688,41 +688,39 @@ export default function BeneficiariesPage() {
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <AccordionContent className="bg-primary/[0.01] border-t border-primary/10 px-12 py-6">
-                                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                                                        <div className="space-y-2">
+                                                <AccordionContent className="bg-primary/[0.01] border-t border-primary/10 px-6 py-4">
+                                                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-3">
+                                                        <div className="space-y-1 col-span-2">
                                                             <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Address</p>
-                                                            <p className="text-sm font-normal leading-relaxed text-primary">{b.address || 'N/A'}</p>
+                                                            <p className="text-sm font-normal leading-tight text-primary">{b.address || 'N/A'}</p>
                                                         </div>
-                                                        <div className="grid grid-cols-2 gap-4">
-                                                            <div className="space-y-2">
-                                                                <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Age</p>
-                                                                <p className="text-sm font-normal text-primary">{b.age || 'N/A'}</p>
-                                                            </div>
-                                                            <div className="space-y-2">
-                                                                <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Occupation</p>
-                                                                <p className="text-sm font-normal text-primary">{b.occupation || 'N/A'}</p>
-                                                            </div>
+                                                        <div className="space-y-1">
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Age</p>
+                                                            <p className="text-sm font-normal text-primary">{b.age || 'N/A'}</p>
                                                         </div>
-                                                        <div className="space-y-2">
+                                                        <div className="space-y-1">
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Occupation</p>
+                                                            <p className="text-sm font-normal text-primary">{b.occupation || 'N/A'}</p>
+                                                        </div>
+                                                        <div className="space-y-1">
                                                             <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Family Details</p>
-                                                            <p className="text-sm font-normal text-primary">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
+                                                            <p className="text-sm font-normal text-primary">T: {b.members || 0}, E: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                                                         </div>
-                                                        <div className="space-y-2">
+                                                        <div className="space-y-1">
                                                             <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">ID Proof</p>
                                                             <p className="text-sm font-normal text-primary">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                                                         </div>
-                                                        <div className="space-y-2">
+                                                        <div className="space-y-1">
                                                             <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Date Added</p>
                                                             <p className="text-sm font-normal text-primary">{b.addedDate || 'N/A'}</p>
                                                         </div>
-                                                        <div className="space-y-2">
+                                                        <div className="space-y-1">
                                                             <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Zakat Allocation</p>
                                                             <p className="text-sm font-bold text-primary">₹{(b.zakatAllocation || 0).toLocaleString('en-IN')}</p>
                                                         </div>
-                                                        <div className="space-y-2 md:col-span-2">
+                                                        <div className="space-y-1 col-span-2">
                                                             <p className="text-[10px] font-bold opacity-60 tracking-tight text-primary">Notes</p>
-                                                            <p className="text-sm font-normal italic opacity-80 text-primary">{b.notes || (b.isEligibleForZakat ? `Eligible For Zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
+                                                            <p className="text-sm font-normal italic opacity-80 text-primary line-clamp-2">{b.notes || (b.isEligibleForZakat ? `Eligible For Zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
                                                         </div>
                                                     </div>
                                                 </AccordionContent>
@@ -735,6 +733,7 @@ export default function BeneficiariesPage() {
                     })}
                 </div>
                 <ScrollBar orientation="horizontal" />
+                <ScrollBar orientation="vertical" />
             </ScrollArea>
         </Card>
 

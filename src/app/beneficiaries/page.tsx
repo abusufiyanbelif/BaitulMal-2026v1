@@ -414,7 +414,7 @@ export default function BeneficiariesPage() {
       {/* Simplified Sticky Action Hub */}
       {selectedIds.length > 0 && (
         <div className="sticky top-[73px] z-40 animate-fade-in-up w-full">
-            <div className="flex items-center gap-4 px-4 py-2 bg-primary/5 border border-primary/20 backdrop-blur-md rounded-xl shadow-sm mb-4">
+            <div className="flex items-center justify-start gap-4 px-4 py-2 bg-primary/5 border border-primary/20 backdrop-blur-md rounded-xl shadow-sm mb-4">
                 <div className="flex items-center gap-2 pr-4 border-r border-primary/10">
                     <CheckSquare className="h-4 w-4 text-primary" />
                     <span className="text-xs font-bold tracking-tight whitespace-nowrap text-primary">{selectedIds.length} Selected</span>
@@ -480,6 +480,7 @@ export default function BeneficiariesPage() {
             </div>
 
             <Accordion type="single" collapsible className="w-full">
+            <div className="max-h-[70vh]">
             {paginatedBeneficiaries.map((b, idx) => (
                 <AccordionItem key={b.id} value={b.id} className="border-b border-primary/10 last:border-0 hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white">
                 <div className={cn("py-3 px-4", gridClass)}>
@@ -521,7 +522,7 @@ export default function BeneficiariesPage() {
                                     {canUpdate && (
                                         <DropdownMenuSub>
                                         <DropdownMenuSubTrigger className="text-primary font-normal"><ChevronsUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Vetting</DropdownMenuSubTrigger>
-                                        <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] border-primary/10 shadow-dropdown">
+                                        <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] border-primary/10 shadow-dropdown border-primary/10">
                                             <DropdownMenuRadioGroup value={b.status || 'Pending'} onValueChange={(s) => handleStatusChange(b, s)}>
                                             <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
                                             <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</DropdownMenuRadioItem>
@@ -541,45 +542,47 @@ export default function BeneficiariesPage() {
                         </div>
                     </div>
                 </div>
-                <AccordionContent className="bg-primary/[0.02] px-4 pt-0 pb-4 border-t border-primary/10">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 px-12 text-primary font-normal">
-                    <div className="space-y-1">
+                <AccordionContent className="bg-primary/[0.02] px-6 py-4 border-t border-primary/10">
+                    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-3 text-primary font-normal">
+                    <div className="space-y-1 col-span-2">
                         <p className="text-[10px] font-bold opacity-60 tracking-tight">Address</p>
-                        <p className="text-xs leading-relaxed font-normal">{b.address || 'N/A'}</p>
+                        <p className="text-sm leading-tight font-normal">{b.address || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold opacity-60 tracking-tight">Age</p>
-                        <p className="text-xs font-normal">{b.age || 'N/A'}</p>
+                        <p className="text-sm font-normal">{b.age || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold opacity-60 tracking-tight">Occupation</p>
-                        <p className="text-xs font-normal">{b.occupation || 'N/A'}</p>
+                        <p className="text-sm font-normal">{b.occupation || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold opacity-60 tracking-tight">Family Details</p>
-                        <p className="text-xs font-normal">Total: {b.members || 0}, Earning: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
+                        <p className="text-sm font-normal">T: {b.members || 0}, E: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                     </div>
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold opacity-60 tracking-tight">ID Proof</p>
-                        <p className="text-xs font-normal">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
+                        <p className="text-sm font-normal">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                     </div>
                     <div className="space-y-1">
                         <p className="text-[10px] font-bold opacity-60 tracking-tight">Date Added</p>
-                        <p className="text-xs font-normal">{b.addedDate || 'N/A'}</p>
+                        <p className="text-sm font-normal">{b.addedDate || 'N/A'}</p>
                     </div>
-                    <div className="space-y-1 md:col-span-3">
+                    <div className="space-y-1 col-span-2">
                         <p className="text-[10px] font-bold opacity-60 tracking-tight">Notes</p>
-                        <p className="text-xs italic opacity-80 font-normal">{b.notes || (b.isEligibleForZakat ? 'Eligible For Support.' : 'N/A')}</p>
+                        <p className="text-sm italic opacity-80 font-normal line-clamp-2">{b.notes || (b.isEligibleForZakat ? 'Eligible For Support.' : 'N/A')}</p>
                     </div>
                     </div>
                 </AccordionContent>
                 </AccordionItem>
             ))}
+            </div>
             </Accordion>
             {paginatedBeneficiaries.length === 0 && (
             <div className="text-center py-20 bg-primary/[0.02] opacity-40 italic font-bold">No Beneficiaries Found Matching Criteria.</div>
             )}
             <ScrollBar orientation="horizontal" />
+            <ScrollBar orientation="vertical" />
         </ScrollArea>
       </Card>
 
