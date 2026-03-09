@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
@@ -189,7 +190,7 @@ export default function BeneficiaryDetailsPage() {
 
   const handleInitiativeStatusChange = async (initiative: LinkedInitiative, newStatus: Beneficiary['status']) => {
     const res = await updateBeneficiaryStatusInInitiativeAction(initiative.type.toLowerCase() as any, initiative.id, beneficiaryId, newStatus);
-    if (res.success) { 
+    if (res && res.success) { 
         fetchLinkedInitiatives(); 
         toast({ title: "Status Updated", description: `Disbursement status set to ${newStatus}.`, variant: "success" }); 
     }

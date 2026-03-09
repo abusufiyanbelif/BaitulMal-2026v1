@@ -1,3 +1,4 @@
+
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
@@ -44,6 +45,7 @@ export async function updateMasterBeneficiaryAction(
     try {
         const masterBeneficiaryRef = adminDb.collection('beneficiaries').doc(beneficiaryId);
 
+        // We separate local-only fields from the master profile
         const { zakatAllocation, kitAmount, status, ...masterData } = data;
         
         const updatePayload: any = {
@@ -53,6 +55,7 @@ export async function updateMasterBeneficiaryAction(
             updatedByName: updatedBy.name,
         };
 
+        // In Master context, 'status' refers to Verification/Vetting status
         if (status) {
             updatePayload.status = status;
         }
@@ -121,6 +124,7 @@ export async function bulkUpdateBeneficiaryVettingAction(
             const batch = adminDb.batch();
 
             for (const id of chunk) {
+                // 1. Always Update Master Status (The Global Truth)
                 const masterRef = adminDb.collection('beneficiaries').doc(id);
                 batch.update(masterRef, { 
                     status: newStatus,
@@ -129,6 +133,7 @@ export async function bulkUpdateBeneficiaryVettingAction(
                     updatedByName: updatedBy.name,
                 });
 
+                // 2. Update the Local Reference's Verification Tracker if in an initiative
                 if (initiativeContext) {
                     const collectionName = initiativeContext.type === 'campaign' ? 'campaigns' : 'leads';
                     const initiativeSubRef = adminDb.doc(`${collectionName}/${initiativeContext.id}/beneficiaries/${id}`);
@@ -207,6 +212,7 @@ export async function bulkUpdateInitiativeBeneficiaryStatusAction(
             
             for (const id of chunk) {
                 const docRef = adminDb.doc(`${collectionName}/${initiativeId}/beneficiaries/${id}`);
+                // In context, 'status' is Disbursement Status
                 batch.update(docRef, { status: newStatus });
             }
             await batch.commit();
@@ -233,14 +239,14 @@ export async function bulkImportBeneficiariesAction(
         let count = 0;
 
         for (const record of records) {
-            // Support for upsert: Use existing ID if provided, otherwise generate a new one.
+            // Intelligent Upsert: Use provided ID if available, else look for existing
             const masterRef = record.id ? adminDb.collection('beneficiaries').doc(record.id) : adminDb.collection('beneficiaries').doc();
             const id = masterRef.id;
             
-            const fullRecord = {
+            const masterData = {
                 ...record,
                 id,
-                status: record.status || 'Pending',
+                status: record.status || 'Verified', // Default to verified for imports
                 addedDate: record.addedDate || new Date().toISOString().split('T')[0],
                 createdAt: record.createdAt || FieldValue.serverTimestamp(),
                 createdById: record.createdById || createdBy.id,
@@ -250,16 +256,19 @@ export async function bulkImportBeneficiariesAction(
                 updatedByName: createdBy.name,
             };
 
-            batch.set(masterRef, fullRecord, { merge: true });
+            // Remove initiative-specific fields from Master save
+            const { kitAmount, zakatAllocation, ...cleanMaster } = masterData as any;
+            batch.set(masterRef, cleanMaster, { merge: true });
 
             if (initiativeContext) {
                 const collectionName = initiativeContext.type === 'campaign' ? 'campaigns' : 'leads';
                 const subRef = adminDb.doc(`${collectionName}/${initiativeContext.id}/beneficiaries/${id}`);
                 
-                // If it's an update, we want to be careful not to reset initiative-specific status if not provided.
+                // Initiative record tracks disbursement progress locally
                 const initiativeData = {
-                    ...fullRecord,
-                    verificationStatus: fullRecord.status,
+                    ...masterData,
+                    verificationStatus: masterData.status,
+                    status: (record as any).status || 'Pending' // The Disbursement status
                 };
                 
                 batch.set(subRef, initiativeData, { merge: true });
