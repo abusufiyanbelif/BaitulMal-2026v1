@@ -93,7 +93,7 @@ import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog'
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
-import { updateMasterBeneficiaryAction, bulkImportBeneficiariesAction, bulkUpdateInitiativeBeneficiaryStatusAction, bulkUpdateMasterBeneficiaryStatusAction, bulkUpdateMasterZakatAction } from '@/app/beneficiaries/actions';
+import { updateMasterBeneficiaryAction, bulkImportBeneficiariesAction, bulkUpdateInitiativeBeneficiaryStatusAction, bulkUpdateBeneficiaryVettingAction, bulkUpdateMasterZakatAction } from '@/app/beneficiaries/actions';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -252,7 +252,7 @@ export default function BeneficiariesPage() {
   const handleBulkVerificationChange = async (newStatus: Beneficiary['status']) => {
     if (!userProfile || selectedIds.length === 0) return;
     setIsBulkUpdating(true);
-    const res = await bulkUpdateMasterBeneficiaryStatusAction(selectedIds, newStatus, { id: userProfile.id, name: userProfile.name });
+    const res = await bulkUpdateBeneficiaryVettingAction(selectedIds, newStatus, { id: userProfile.id, name: userProfile.name }, { type: 'lead', id: leadId });
     if (res && res.success) {
         toast({ title: "Vetting Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
@@ -282,8 +282,12 @@ export default function BeneficiariesPage() {
   };
 
   const handleVerificationChange = (beneficiary: Beneficiary, newStatus: any) => {
-    if (!userProfile || !canUpdate) return;
+    if (!userProfile || !canUpdate || !firestore || !leadId) return;
+    // 1. Update Master
     updateMasterBeneficiaryAction(beneficiary.id, { status: newStatus }, { id: userProfile.id, name: userProfile.name });
+    // 2. Update Local Lead Doc
+    const ref = doc(firestore, 'leads', leadId, 'beneficiaries', beneficiary.id);
+    updateDoc(ref, { verificationStatus: newStatus }).catch((err: any) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { verificationStatus: newStatus } })));
   };
 
   const handleZakatToggle = (beneficiary: Beneficiary) => {
@@ -353,20 +357,6 @@ export default function BeneficiariesPage() {
     }
   };
 
-  const handleExport = () => {
-    if (!filteredBeneficiaries.length) return;
-    const headers = ['Name', 'Phone', 'Verification Status', 'Disbursement Status', 'Amount', 'Referral'];
-    const rows = filteredBeneficiaries.map(b => [b.name, b.phone || 'N/A', b.verificationStatus || 'Pending', b.status || 'Pending', b.kitAmount || 0, b.referralBy || 'N/A']);
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `beneficiaries_lead_${lead?.name.replace(/\s+/g, '_')}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const handleImport = async (records: Partial<Beneficiary>[]) => {
     if (!userProfile) return;
     const res = await bulkImportBeneficiariesAction(records, { id: userProfile.id, name: userProfile.name }, { type: 'lead', id: leadId });
@@ -399,13 +389,73 @@ export default function BeneficiariesPage() {
             </ScrollArea>
         </div>
 
+        {/* Header-overlay Bulk Action Bar */}
+        {selectedIds.length > 0 && (
+            <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-top w-full max-w-[95vw] sm:max-w-fit">
+                <div className="flex items-center gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
+                    <div className="flex items-center gap-2 pr-4 border-r border-white/20">
+                        <CheckSquare className="h-5 w-5" />
+                        <span className="text-sm font-bold tracking-tight whitespace-nowrap">{selectedIds.length} Selected</span>
+                    </div>
+                    
+                    <div className="flex gap-2">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
+                                    <ClipboardCheck className="mr-2 h-4 w-4"/>
+                                    Disburse Items
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown">
+                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Given')} className="font-bold">Mark As Given {itemLabelSuffix}</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Verified')} className="font-normal">Mark As Verified (Secured)</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Pending')} className="font-normal">Mark As Pending</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
+                                    <ChevronsUpDown className="mr-2 h-4 w-4"/>
+                                    Vet Profiles
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown border-primary/10">
+                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Verified')} className="font-bold">Set To Verified</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Hold')} className="font-normal">Set To Hold</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Need More Details')} className="font-normal">Need More Details</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
+                                    <Coins className="mr-2 h-4 w-4"/>
+                                    Zakat Status
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown border-primary/10">
+                                <DropdownMenuItem onClick={() => handleBulkZakatChange(true)} className="font-bold">Mark Zakat Eligible</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkZakatChange(false)} className="font-normal">Mark Not Eligible</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10 rounded-full" onClick={() => setSelectedIds([])}>
+                        <X className="h-4 w-4" />
+                    </Button>
+                </div>
+            </div>
+        )}
+
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <h2 className="text-3xl font-bold text-primary tracking-tight">Beneficiary List ({beneficiaries?.length || 0})</h2>
             <p className="text-sm font-bold text-muted-foreground opacity-70">Calculated Requirement: <span className="font-mono text-primary">₹{stats.totalAmount.toLocaleString('en-IN')}</span></p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleExport} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+            <Button variant="outline" size="sm" onClick={() => { if(beneficiaries) { const headers = ['Name', 'Phone', 'Vetting', 'Disbursement', 'Amount']; const rows = beneficiaries.map(b => [b.name, b.phone || 'N/A', b.verificationStatus || 'Pending', b.status || 'Pending', b.kitAmount || 0]); const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const link = document.createElement('a'); link.href = `data:text/csv;charset=utf-8,${encodeURI(csv)}`; link.download = `beneficiaries_lead_${leadId}.csv`; link.click(); } }} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
               <Download className="mr-2 h-4 w-4"/> Export CSV
             </Button>
             <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
@@ -696,65 +746,6 @@ export default function BeneficiariesPage() {
                 <ScrollBar orientation="horizontal" />
             </ScrollArea>
         </Card>
-
-        {selectedIds.length > 0 && (
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-bottom w-full max-w-[95vw] sm:max-w-fit">
-                <div className="flex items-center gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
-                    <div className="flex items-center gap-2 pr-4 border-r border-white/20">
-                        <CheckSquare className="h-5 w-5" />
-                        <span className="text-sm font-bold tracking-tight whitespace-nowrap">{selectedIds.length} Selected</span>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
-                                    <ClipboardCheck className="mr-2 h-4 w-4"/>
-                                    Disburse Items
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown">
-                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Given')} className="font-bold">Mark As Given {itemLabelSuffix}</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Verified')} className="font-normal">Mark As Verified (Secured)</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Pending')} className="font-normal">Mark As Pending</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
-                                    <ChevronsUpDown className="mr-2 h-4 w-4"/>
-                                    Vet Profiles
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown border-primary/10">
-                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Verified')} className="font-bold">Set To Verified</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Hold')} className="font-normal">Set To Hold</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Need More Details')} className="font-normal">Need More Details</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
-                                    <Coins className="mr-2 h-4 w-4"/>
-                                    Zakat Status
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown border-primary/10">
-                                <DropdownMenuItem onClick={() => handleBulkZakatChange(true)} className="font-bold">Mark Zakat Eligible</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkZakatChange(false)} className="font-normal">Mark Not Eligible</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10 rounded-full" onClick={() => setSelectedIds([])}>
-                        <X className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div>
-        )}
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-primary/10">

@@ -282,7 +282,7 @@ export default function BeneficiariesPage() {
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
   
-  if (isLoading) return <SectionLoader label="Loading master registry..." description="Retrieving records." />;
+  if (isLoading) return <SectionLoader label="Loading Master Registry..." description="Retrieving Records." />;
   
   if (!canRead) return (
     <main className="container mx-auto p-8 text-primary font-normal">
@@ -302,6 +302,38 @@ export default function BeneficiariesPage() {
         </Button>
       </div>
       
+      {/* Header-overlay Bulk Action Bar */}
+      {selectedIds.length > 0 && (
+        <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-top w-full max-w-[95vw] sm:max-w-fit">
+            <div className="flex items-center gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
+                <div className="flex items-center gap-2 pr-4 border-r border-white/20">
+                    <CheckSquare className="h-5 w-5" />
+                    <span className="text-sm font-bold tracking-tight whitespace-nowrap">{selectedIds.length} Selected</span>
+                </div>
+                
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
+                            {isBulkUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ChevronsUpDown className="mr-2 h-4 w-4"/>}
+                            <span className="hidden sm:inline">Bulk Change Status</span>
+                            <span className="sm:hidden">Actions</span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown">
+                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-normal">Set To Verified</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Hold')} className="font-normal">Set To Hold</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Need More Details')} className="font-normal">Set To Need Details</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10 rounded-full" onClick={() => setSelectedIds([])}>
+                    <X className="h-4 w-4" />
+                </Button>
+            </div>
+        </div>
+      )}
+
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="space-y-1">
             <h1 className="text-3xl font-bold tracking-tight text-primary">Master Beneficiary Registry</h1>
@@ -330,7 +362,7 @@ export default function BeneficiariesPage() {
           <StatCard title="Total" count={stats.total} description="All Filtered Records" icon={Users} delay="100ms" />
           <StatCard title="Pending" count={stats.pending} description="Awaiting Verification" icon={Hourglass} delay="150ms" />
           <StatCard title="Verified" count={stats.verified} description="Confirmed Profiles" icon={CheckCircle2} delay="200ms" />
-          <StatCard title="On Hold" count={stats.hold} description="Temporarily Paused" icon={XCircle} delay="250ms" />
+          <StatCard title="On Hold" count={stats.hold} description="Temporarily Paused" icon={XCircle} delay="150ms" />
           <StatCard title="Need Details" count={stats.needDetails} description="Incomplete Profiles" icon={Info} delay="300ms" />
           <StatCard title="Zakat" count={stats.zakat} description="Eligible For Support" icon={Coins} delay="350ms" />
       </div>
@@ -416,7 +448,7 @@ export default function BeneficiariesPage() {
             <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-semibold tracking-tight text-[hsl(var(--table-header-fg))]", gridClass)}>
                 <div className="flex justify-center">
                     <Checkbox 
-                        checked={selectedIds.length > 0 && selectedIds.length === paginatedBeneficiaries.length}
+                        checked={paginatedBeneficiaries.length > 0 && selectedIds.length === paginatedBeneficiaries.length}
                         onCheckedChange={toggleSelectAll}
                         className="border-primary/40 data-[state=checked]:bg-primary"
                     />
@@ -543,38 +575,6 @@ export default function BeneficiariesPage() {
             <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/10 h-8">Previous</Button>
             <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/10 h-8">Next</Button>
           </div>
-        </div>
-      )}
-
-      {/* Bulk Action Bar */}
-      {selectedIds.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-bottom w-full max-w-[95vw] sm:max-w-fit">
-            <div className="flex items-center gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
-                <div className="flex items-center gap-2 pr-4 border-r border-white/20">
-                    <CheckSquare className="h-5 w-5" />
-                    <span className="text-sm font-bold tracking-tight whitespace-nowrap">{selectedIds.length} Selected</span>
-                </div>
-                
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
-                            {isBulkUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ChevronsUpDown className="mr-2 h-4 w-4"/>}
-                            <span className="hidden sm:inline">Bulk Change Status</span>
-                            <span className="sm:hidden">Actions</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown">
-                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-normal">Set To Verified</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Hold')} className="font-normal">Set To Hold</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Need More Details')} className="font-normal">Set To Need Details</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-
-                <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10 rounded-full" onClick={() => setSelectedIds([])}>
-                    <X className="h-4 w-4" />
-                </Button>
-            </div>
         </div>
       )}
 

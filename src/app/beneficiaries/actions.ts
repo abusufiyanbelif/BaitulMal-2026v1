@@ -45,15 +45,19 @@ export async function updateMasterBeneficiaryAction(
         const masterBeneficiaryRef = adminDb.collection('beneficiaries').doc(beneficiaryId);
 
         const { zakatAllocation, kitAmount, status, ...masterData } = data;
-        const statusToSet = status || 'Pending';
-
-        await masterBeneficiaryRef.set({
+        
+        const updatePayload: any = {
             ...masterData,
-            status: statusToSet,
             updatedAt: FieldValue.serverTimestamp(),
             updatedById: updatedBy.id,
             updatedByName: updatedBy.name,
-        }, { merge: true });
+        };
+
+        if (status) {
+            updatePayload.status = status;
+        }
+
+        await masterBeneficiaryRef.set(updatePayload, { merge: true });
         
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
         revalidatePath('/beneficiaries');
@@ -98,6 +102,58 @@ export async function bulkUpdateMasterBeneficiaryStatusAction(
     } catch (error: any) {
         console.error("Bulk Vetting Update Failed:", error);
         return { success: false, message: `Bulk Update Failed: ${error.message}` };
+    }
+}
+
+/**
+ * Optimized action to update vetting status in both Master and an Initiative sub-collection.
+ */
+export async function bulkUpdateBeneficiaryVettingAction(
+    ids: string[],
+    newStatus: Beneficiary['status'],
+    updatedBy: { id: string, name: string },
+    initiativeContext?: { type: 'campaign' | 'lead', id: string }
+): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const CHUNK_SIZE = 50; // Smaller chunks for multi-doc updates
+        for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
+            const chunk = ids.slice(i, i + CHUNK_SIZE);
+            const batch = adminDb.batch();
+
+            for (const id of chunk) {
+                // 1. Update Master
+                const masterRef = adminDb.collection('beneficiaries').doc(id);
+                batch.update(masterRef, { 
+                    status: newStatus,
+                    updatedAt: FieldValue.serverTimestamp(),
+                    updatedById: updatedBy.id,
+                    updatedByName: updatedBy.name,
+                });
+
+                // 2. Update Initiative if provided
+                if (initiativeContext) {
+                    const collectionName = initiativeContext.type === 'campaign' ? 'campaigns' : 'leads';
+                    const initiativeSubRef = adminDb.doc(`${collectionName}/${initiativeContext.id}/beneficiaries/${id}`);
+                    batch.update(initiativeSubRef, { 
+                        verificationStatus: newStatus 
+                    });
+                }
+            }
+            await batch.commit();
+        }
+
+        revalidatePath('/beneficiaries');
+        if (initiativeContext) {
+            revalidatePath(`/${initiativeContext.type === 'campaign' ? 'campaign-members' : 'leads-members'}/${initiativeContext.id}/beneficiaries`);
+        }
+        
+        return { success: true, message: `Successfully Updated ${ids.length} Profiles To ${newStatus}.` };
+    } catch (error: any) {
+        console.error("Bulk Vetting Sync Failed:", error);
+        return { success: false, message: `Update Failed: ${error.message}` };
     }
 }
 
