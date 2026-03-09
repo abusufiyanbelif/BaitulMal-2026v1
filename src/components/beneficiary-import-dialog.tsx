@@ -17,6 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, Loader2, XCircle, UploadCloud, Download, Save, RefreshCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Beneficiary } from '@/lib/types';
+import { cn } from '@/lib/utils';
 
 interface ProcessedRecord {
   row: number;

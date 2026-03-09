@@ -91,8 +91,8 @@ import {
 } from "@/components/ui/select";
 import { cn, getNestedValue } from '@/lib/utils';
 import { bulkUpdateDonationStatusAction, bulkImportDonationsAction } from '@/app/donations/actions';
-import { BrandedLoader } from '@/components/branded-loader';
 import { donationCategories } from '@/lib/modules';
+import { BrandedLoader } from '@/components/branded-loader';
 import { DonationImportDialog } from '@/components/donation-import-dialog';
 
 function StatCard({ title, count, description, icon: Icon, colorClass, delay, isCurrency = false }: { title: string, count: number | string, description: string, icon: any, colorClass?: string, delay: string, isCurrency?: boolean }) {
@@ -149,19 +149,8 @@ export default function DonationsPage() {
   }, [firestore]);
   const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
 
-  const donations = useMemo(() => {
-    if (!allDonations || !leadId) return [];
-    return allDonations
-      .filter(d => d.linkSplit?.some(link => link.linkId === leadId && link.linkType === 'lead'))
-      .map(d => {
-        const leadLink = d.linkSplit?.find(l => l.linkId === leadId && l.linkType === 'lead');
-        const amountForThisLead = leadLink?.amount || 0;
-        return { ...d, amountForThisLead };
-      });
-  }, [allDonations, leadId]);
-
   const allCampaignsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'campaigns') : null, [firestore]);
-  const { data: allCampaigns } = useCollection<Campaign>(campaignsCollectionRef);
+  const { data: allCampaigns } = useCollection<Campaign>(allCampaignsCollectionRef);
 
   const leadsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'leads') : null, [firestore]);
   const { data: allLeads } = useCollection<Lead>(leadsCollectionRef);
@@ -193,6 +182,37 @@ export default function DonationsPage() {
 
   const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.create', false);
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.update', false);
+
+  const donations = useMemo(() => {
+    if (!allDonations || !leadId) return [];
+    return allDonations
+      .filter(d => d.linkSplit?.some(link => link.linkId === leadId && link.linkType === 'lead'))
+      .map(d => {
+        const leadLink = d.linkSplit?.find(l => l.linkId === leadId && l.linkType === 'lead');
+        const amountForThisLead = leadLink?.amount || 0;
+        return { ...d, amountForThisLead };
+      });
+  }, [allDonations, leadId]);
+
+  const filteredAndSortedDonations = useMemo(() => {
+    if (!donations) return [];
+    let items = [...donations];
+    if (statusFilter !== 'All') items = items.filter(d => d.status === statusFilter);
+    if (searchTerm) {
+      const term = searchTerm.toLowerCase();
+      items = items.filter(d => d.donorName.toLowerCase().includes(term) || d.receiverName.toLowerCase().includes(term) || d.donorPhone.includes(term));
+    }
+    if (sortConfig !== null) {
+      items.sort((a, b) => {
+        if (sortConfig.key === 'srNo') return 0;
+        const aVal = (a as any)[sortConfig.key];
+        const bVal = (b as any)[sortConfig.key];
+        if (typeof aVal === 'number') return sortConfig.direction === 'ascending' ? aVal - bVal : bVal - aVal;
+        return sortConfig.direction === 'ascending' ? String(aVal).localeCompare(String(bVal)) : String(bVal).localeCompare(String(aVal));
+      });
+    }
+    return items;
+  }, [donations, searchTerm, statusFilter, sortConfig]);
 
   const stats = useMemo(() => {
       const data = filteredAndSortedDonations;
@@ -289,26 +309,6 @@ export default function DonationsPage() {
     setCurrentPage(1);
   };
   
-  const filteredAndSortedDonations = useMemo(() => {
-    if (!donations) return [];
-    let items = [...donations];
-    if (statusFilter !== 'All') items = items.filter(d => d.status === statusFilter);
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      items = items.filter(d => d.donorName.toLowerCase().includes(term) || d.receiverName.toLowerCase().includes(term) || d.donorPhone.includes(term));
-    }
-    if (sortConfig !== null) {
-      items.sort((a, b) => {
-        if (sortConfig.key === 'srNo') return 0;
-        const aVal = (a as any)[sortConfig.key];
-        const bVal = (b as any)[sortConfig.key];
-        if (typeof aVal === 'number') return sortConfig.direction === 'ascending' ? aVal - bVal : bVal - aVal;
-        return sortConfig.direction === 'ascending' ? String(aVal).localeCompare(String(bVal)) : String(bVal).localeCompare(String(aVal));
-      });
-    }
-    return items;
-  }, [donations, searchTerm, statusFilter, sortConfig]);
-
   const totalPages = Math.ceil(filteredAndSortedDonations.length / itemsPerPage);
   const paginatedDonations = useMemo(() => filteredAndSortedDonations.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [filteredAndSortedDonations, currentPage, itemsPerPage]);
 

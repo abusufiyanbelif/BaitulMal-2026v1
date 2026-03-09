@@ -385,7 +385,7 @@ export default function CreateLeadPage() {
                           <Select onValueChange={field.onChange} value={field.value}>
                               <FormControl><SelectTrigger className="font-normal"><SelectValue placeholder="Select Category" /></SelectTrigger></FormControl>
                               <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                                  {availableCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}
+                                  {availableCategories.map((cat: string) => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}
                               </SelectContent>
                           </Select>
                           <FormMessage />
