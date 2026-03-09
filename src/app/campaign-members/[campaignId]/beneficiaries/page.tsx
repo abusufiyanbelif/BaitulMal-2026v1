@@ -93,7 +93,7 @@ import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog'
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
-import { updateMasterBeneficiaryAction, bulkImportBeneficiariesAction, bulkUpdateInitiativeBeneficiaryStatusAction, bulkUpdateMasterBeneficiaryStatusAction } from '@/app/beneficiaries/actions';
+import { updateMasterBeneficiaryAction, bulkImportBeneficiariesAction, bulkUpdateInitiativeBeneficiaryStatusAction, bulkUpdateMasterBeneficiaryStatusAction, bulkUpdateMasterZakatAction } from '@/app/beneficiaries/actions';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -103,7 +103,7 @@ const gridClass = "grid grid-cols-[40px_40px_50px_200px_120px_140px_140px_100px_
 
 function StatCard({ title, count, description, icon: Icon, colorClass, delay }: { title: string, count: number, description: string, icon: any, colorClass?: string, delay: string }) {
     return (
-        <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-none animate-fade-in-up transition-all", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
+        <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
                     <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
@@ -237,10 +237,10 @@ export default function BeneficiariesPage() {
     setIsBulkUpdating(true);
     const res = await bulkUpdateInitiativeBeneficiaryStatusAction('campaign', campaignId, selectedIds, newStatus);
     if (res && res.success) {
-        toast({ title: "Status Updated", description: res.message, variant: "success" });
+        toast({ title: "Distribution Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Update Failed", description: res?.message || "Failed to update records.", variant: "destructive" });
+        toast({ title: "Update Failed", description: res?.message || "Operation failed.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -253,7 +253,20 @@ export default function BeneficiariesPage() {
         toast({ title: "Vetting Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Update Failed", description: res?.message || "Failed to update vetting.", variant: "destructive" });
+        toast({ title: "Update Failed", description: res?.message || "Operation failed.", variant: "destructive" });
+    }
+    setIsBulkUpdating(false);
+  };
+
+  const handleBulkZakatChange = async (isEligible: boolean) => {
+    if (!userProfile || selectedIds.length === 0) return;
+    setIsBulkUpdating(true);
+    const res = await bulkUpdateMasterZakatAction(selectedIds, isEligible, { id: userProfile.id, name: userProfile.name });
+    if (res && res.success) {
+        toast({ title: "Zakat Status Updated", description: res.message, variant: "success" });
+        setSelectedIds([]);
+    } else {
+        toast({ title: "Update Failed", description: res?.message || "Operation failed.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -569,7 +582,7 @@ export default function BeneficiariesPage() {
                                                                     
                                                                     {canUpdate && (
                                                                         <DropdownMenuSub>
-                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ChevronsUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Verification Status</DropdownMenuSubTrigger>
+                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ChevronsUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Vetting Status</DropdownMenuSubTrigger>
                                                                             <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                                                                 <DropdownMenuRadioGroup value={b.verificationStatus || 'Pending'} onValueChange={(s) => handleVerificationChange(b, s)}>
                                                                                     <DropdownMenuRadioItem value="Pending" className="font-normal">Pending</DropdownMenuRadioItem>
@@ -699,6 +712,19 @@ export default function BeneficiariesPage() {
                                 <DropdownMenuItem onClick={() => handleBulkVerificationChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleBulkVerificationChange('Hold')} className="font-normal">Set To Hold</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleBulkVerificationChange('Need More Details')} className="font-normal">Need More Details</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
+                                    <Coins className="mr-2 h-4 w-4"/>
+                                    Zakat Status
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown border-primary/10">
+                                <DropdownMenuItem onClick={() => handleBulkZakatChange(true)} className="font-bold">Mark Zakat Eligible</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkZakatChange(false)} className="font-normal">Mark Not Eligible</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
