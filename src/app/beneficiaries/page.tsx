@@ -34,10 +34,9 @@ import {
     Hourglass,
     CheckCircle2,
     Info,
-    TrendingUp,
-    ChevronsUpDown,
     CheckSquare,
-    X
+    X,
+    ChevronsUpDown
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -64,7 +63,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "cmdk";
+} from "@/components/ui/command";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useToast } from '@/hooks/use-toast';
 import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction, updateMasterBeneficiaryAction, bulkImportBeneficiariesAction, bulkUpdateMasterBeneficiaryStatusAction, bulkUpdateMasterZakatAction } from './actions';
@@ -79,7 +78,7 @@ const gridClass = "grid grid-cols-[40px_40px_50px_200px_120px_140px_140px_100px_
 
 function StatCard({ title, count, description, icon: Icon, colorClass, delay }: { title: string, count: number, description: string, icon: any, colorClass?: string, delay: string }) {
     return (
-        <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md hover:-translate-y-1", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
+        <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
                     <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
@@ -225,7 +224,7 @@ export default function BeneficiariesPage() {
     setIsBulkUpdating(true);
     const res = await bulkUpdateMasterBeneficiaryStatusAction(selectedIds, newStatus, { id: userProfile.id, name: userProfile.name });
     if (res && res.success) {
-        toast({ title: "Updated", description: res.message, variant: "success" });
+        toast({ title: "Status Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
         toast({ title: "Failed", description: res?.message || "Failed to update records.", variant: "destructive" });
@@ -238,7 +237,7 @@ export default function BeneficiariesPage() {
     setIsBulkUpdating(true);
     const res = await bulkUpdateMasterZakatAction(selectedIds, isEligible, { id: userProfile.id, name: userProfile.name });
     if (res && res.success) {
-        toast({ title: "Zakat Updated", description: res.message, variant: "success" });
+        toast({ title: "Zakat Eligibility Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
         toast({ title: "Failed", description: res?.message || "Failed to update records.", variant: "destructive" });
@@ -250,7 +249,7 @@ export default function BeneficiariesPage() {
     if (!canUpdate || !userProfile) return;
     const res = await updateMasterBeneficiaryAction(beneficiary.id, { status: newStatus as any }, { id: userProfile.id, name: userProfile.name });
     if (res && res.success) {
-        toast({ title: 'Status Updated', variant: 'success' });
+        toast({ title: 'Verification Status Synchronized', variant: 'success' });
     }
   };
 
@@ -278,7 +277,7 @@ export default function BeneficiariesPage() {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "beneficiary_registry.csv");
+    link.setAttribute("download", "master_beneficiary_registry.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -296,14 +295,14 @@ export default function BeneficiariesPage() {
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Master Registry..." description="Retrieving Records." />;
+  if (isLoading) return <SectionLoader label="Loading Master Registry..." description="Retrieving Organizational Records." />;
   
   if (!canRead) return (
     <main className="container mx-auto p-8 text-primary font-normal">
         <Alert variant="destructive">
             <ShieldAlert className="h-4 w-4"/>
             <AlertTitle className="font-bold">Access Denied</AlertTitle>
-            <AlertDescription className="font-normal text-primary/70">Missing Permissions To View Beneficiaries.</AlertDescription>
+            <AlertDescription className="font-normal text-primary/70">Missing Permissions To View Beneficiary Records.</AlertDescription>
         </Alert>
     </main>
   );
@@ -319,7 +318,7 @@ export default function BeneficiariesPage() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div className="space-y-1">
             <h1 className="text-3xl font-bold tracking-tight text-primary">Master Beneficiary Registry</h1>
-            <p className="text-sm font-medium text-muted-foreground opacity-70">Total Vetted Records: {beneficiaries?.length || 0}</p>
+            <p className="text-sm font-medium text-muted-foreground opacity-70">Total Verified Profiles: {beneficiaries?.length || 0}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button onClick={handleExport} variant="outline" size="sm" className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
@@ -341,10 +340,10 @@ export default function BeneficiariesPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <StatCard title="Total" count={stats.total} description="All Filtered Records" icon={Users} delay="100ms" />
+          <StatCard title="Total" count={stats.total} description="All Registry Records" icon={Users} delay="100ms" />
           <StatCard title="Pending" count={stats.pending} description="Awaiting Verification" icon={Hourglass} delay="150ms" />
           <StatCard title="Verified" count={stats.verified} description="Confirmed Profiles" icon={CheckCircle2} delay="200ms" />
-          <StatCard title="On Hold" count={stats.hold} description="Temporarily Paused" icon={XCircle} delay="150ms" />
+          <StatCard title="On Hold" count={stats.hold} description="Suspended Profiles" icon={XCircle} delay="150ms" />
           <StatCard title="Need Details" count={stats.needDetails} description="Incomplete Profiles" icon={Info} delay="300ms" />
           <StatCard title="Zakat" count={stats.zakat} description="Eligible For Support" icon={Coins} delay="350ms" />
       </div>
@@ -382,7 +381,7 @@ export default function BeneficiariesPage() {
                             <CommandList className="max-h-[300px] overflow-y-auto">
                                 <CommandEmpty className="py-2 text-center text-xs text-muted-foreground font-normal">No source found.</CommandEmpty>
                                 <CommandGroup className="p-1">
-                                    <CommandItem onSelect={() => setSelectedReferrals([])} className="flex items-center px-2 py-1.5 rounded-md hover:bg-primary/5 cursor-pointer font-normal text-xs">
+                                    <CommandItem onSelect={() => setSelectedReferrals([])} className="flex items-center px-2 py-1.5 rounded-md hover:bg-primary/5 cursor-pointer font-bold text-xs">
                                         <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", selectedReferrals.length === 0 ? "bg-primary text-primary-foreground" : "opacity-50")}>
                                             {selectedReferrals.length === 0 && <Check className="h-3 w-3" />}
                                         </div>
@@ -521,7 +520,7 @@ export default function BeneficiariesPage() {
                         <div className="text-right pr-4">
                             <div className="flex items-center justify-end gap-1">
                                 <DropdownMenu>
-                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
                                         <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
                                         
@@ -555,35 +554,35 @@ export default function BeneficiariesPage() {
                             </div>
                         </div>
                     </div>
-                    <AccordionContent className="bg-primary/[0.02] px-6 py-4 border-t border-primary/10">
+                    <AccordionContent className="bg-primary/[0.02] px-6 py-4 border-t border-primary/10 animate-fade-in-up">
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-3 text-primary font-normal">
                         <div className="space-y-1 col-span-2">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Address</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Address</p>
                             <p className="text-sm leading-tight font-normal">{b.address || 'N/A'}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Age</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Age</p>
                             <p className="text-sm font-normal">{b.age || 'N/A'}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Occupation</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Occupation</p>
                             <p className="text-sm font-normal">{b.occupation || 'N/A'}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Family Details</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Family Details</p>
                             <p className="text-sm font-normal">T: {b.members || 0}, E: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight">ID Proof</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">ID Artifact</p>
                             <p className="text-sm font-normal">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Date Added</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Date Added</p>
                             <p className="text-sm font-normal">{b.addedDate || 'N/A'}</p>
                         </div>
                         <div className="space-y-1 col-span-2">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Notes</p>
-                            <p className="text-sm italic opacity-80 font-normal line-clamp-2">{b.notes || (b.isEligibleForZakat ? 'Eligible For Support.' : 'N/A')}</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Notes</p>
+                            <p className="text-sm italic opacity-80 font-normal line-clamp-2">{b.notes || (b.isEligibleForZakat ? 'Eligible For Zakat Support.' : 'N/A')}</p>
                         </div>
                         </div>
                     </AccordionContent>
@@ -601,10 +600,10 @@ export default function BeneficiariesPage() {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between border-t pt-4">
-          <p className="text-[10px] font-bold opacity-60">Page {currentPage} Of {totalPages}</p>
+          <p className="text-[10px] font-bold opacity-60 uppercase">Registry Page {currentPage} Of {totalPages}</p>
           <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/10 h-8">Previous</Button>
-            <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/10 h-8">Next</Button>
+            <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/10 h-8 rounded-[10px] transition-transform active:scale-95">Previous</Button>
+            <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/10 h-8 rounded-[10px] transition-transform active:scale-95">Next</Button>
           </div>
         </div>
       )}

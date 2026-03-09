@@ -104,17 +104,17 @@ const gridClass = "grid grid-cols-[40px_40px_50px_200px_120px_140px_140px_100px_
 
 function StatCard({ title, count, description, icon: Icon, colorClass, delay }: { title: string, count: number, description: string, icon: any, colorClass?: string, delay: string }) {
     return (
-        <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
+        <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
                     <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">{count}</p>
                 </div>
-                <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <div className="p-2 rounded-lg bg-primary/5 text-primary">
                     <Icon className="h-5 w-5" />
                 </div>
             </div>
-            <p className="text-[10px] font-medium text-muted-foreground mt-auto">{description}</p>
+            <p className="text-[9px] font-medium text-muted-foreground mt-auto">{description}</p>
         </Card>
     );
 }
@@ -238,10 +238,10 @@ export default function BeneficiariesPage() {
     setIsBulkUpdating(true);
     const res = await bulkUpdateInitiativeBeneficiaryStatusAction('campaign', campaignId, selectedIds, newStatus);
     if (res && res.success) {
-        toast({ title: "Updated", description: res.message, variant: "success" });
+        toast({ title: "Status Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Failed", description: res?.message || "Operation failed.", variant: "destructive" });
+        toast({ title: "Failed", description: res?.message || "Bulk update failed.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -254,7 +254,7 @@ export default function BeneficiariesPage() {
         toast({ title: "Verification Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Failed", description: res?.message || "Operation failed.", variant: "destructive" });
+        toast({ title: "Failed", description: res?.message || "Bulk update failed.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -264,10 +264,10 @@ export default function BeneficiariesPage() {
     setIsBulkUpdating(true);
     const res = await bulkUpdateMasterZakatAction(selectedIds, isEligible, { id: userProfile.id, name: userProfile.name });
     if (res && res.success) {
-        toast({ title: "Zakat Updated", description: res.message, variant: "success" });
+        toast({ title: "Zakat Eligibility Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Failed", description: res?.message || "Operation failed.", variant: "destructive" });
+        toast({ title: "Failed", description: res?.message || "Bulk update failed.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -291,7 +291,7 @@ export default function BeneficiariesPage() {
     const ref = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiary.id);
     updateDoc(ref, { isEligibleForZakat: newZakatStatus }).catch((err: any) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: { isEligibleForZakat: newZakatStatus } })));
     updateMasterBeneficiaryAction(beneficiary.id, { isEligibleForZakat: newZakatStatus }, { id: userProfile.id, name: userProfile.name });
-    toast({ title: newZakatStatus ? 'Marked Eligible' : 'Marked Ineligible', variant: 'success' });
+    toast({ title: newZakatStatus ? 'Marked Zakat Eligible' : 'Marked Not Eligible', variant: 'success' });
   };
 
   const handleRemoveFromInitiative = (beneficiaryId: string) => {
@@ -299,7 +299,7 @@ export default function BeneficiariesPage() {
     if (!confirm('Are You Certain?')) return;
     const ref = doc(firestore, 'campaigns', campaignId, 'beneficiaries', beneficiaryId);
     deleteDoc(ref).then(() => {
-        toast({ title: 'Removed', variant: 'success' });
+        toast({ title: 'Removed From Campaign', variant: 'success' });
     }).catch((err: any) => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'delete' })));
   };
 
@@ -342,11 +342,11 @@ export default function BeneficiariesPage() {
         }
         
         await batch.commit();
-        toast({ title: 'Success', variant: 'success' });
+        toast({ title: 'Success', description: 'Beneficiary record synchronized.', variant: 'success' });
         setIsFormOpen(false);
         setEditingBeneficiary(null);
     } catch (e: any) {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'campaign beneficiaries', operation: 'create' }));
+        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'campaign beneficiaries', operation: 'write' }));
     } finally {
         setIsSubmitting(false);
     }
@@ -356,11 +356,11 @@ export default function BeneficiariesPage() {
     if (!userProfile) return;
     const res = await bulkImportBeneficiariesAction(records, { id: userProfile.id, name: userProfile.name }, { type: 'campaign', id: campaignId });
     if (res && res.success) toast({ title: 'Import Complete', description: res.message, variant: 'success' });
-    else toast({ title: 'Import Failed', description: res?.message || "Import failed.", variant: 'destructive' });
+    else toast({ title: 'Import Failed', description: res?.message || "Import operation failed.", variant: 'destructive' });
   };
 
   if (isCampaignLoading || areBeneficiariesLoading || isProfileLoading) return <BrandedLoader />;
-  if (!campaign) return <p className="text-center mt-20 text-primary font-bold">Campaign Not Found.</p>;
+  if (!campaign) return <p className="text-center mt-20 text-primary font-bold">Campaign Record Not Found.</p>;
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative">
@@ -375,10 +375,10 @@ export default function BeneficiariesPage() {
         <div className="border-b border-primary/10 mb-4">
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex w-max space-x-2 pb-2">
-                    <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
-                    <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item Lists</Link>
-                    <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>
-                    <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link>
+                    <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Summary</Link>
+                    <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Item Lists</Link>
+                    <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>
+                    <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Donations</Link>
                 </div>
                 <ScrollBar orientation="horizontal" />
             </ScrollArea>
@@ -386,48 +386,50 @@ export default function BeneficiariesPage() {
 
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
-            <h2 className="text-3xl font-bold text-primary tracking-tight">Beneficiary List ({beneficiaries?.length || 0})</h2>
-            <p className="text-sm font-bold text-muted-foreground opacity-70">Total Requirement: <span className="font-mono text-primary">₹{stats.totalAmount.toLocaleString('en-IN')}</span></p>
+            <h2 className="text-3xl font-bold text-primary tracking-tight">Beneficiary Registry ({beneficiaries?.length || 0})</h2>
+            <p className="text-sm font-bold text-muted-foreground opacity-70">Calculated Requirement: <span className="font-mono text-primary">₹{stats.totalAmount.toLocaleString('en-IN')}</span></p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => { if(beneficiaries) { const headers = ['Name', 'Phone', 'Verification', 'Disbursement', 'Amount']; const rows = beneficiaries.map(b => [b.name, b.phone || 'N/A', b.verificationStatus || 'Pending', b.status || 'Pending', b.kitAmount || 0]); const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const link = document.createElement('a'); link.href = `data:text/csv;charset=utf-8,${encodeURI(csv)}`; link.download = `beneficiaries_${campaignId}.csv`; link.click(); } }} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+            <Button variant="outline" size="sm" onClick={() => { if(beneficiaries) { const headers = ['Name', 'Phone', 'Verification', 'Disbursement', 'Amount']; const rows = beneficiaries.map(b => [b.name, b.phone || 'N/A', b.verificationStatus || 'Pending', b.status || 'Pending', b.kitAmount || 0]); const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const link = document.createElement('a'); link.href = `data:text/csv;charset=utf-8,${encodeURI(csv)}`; link.download = `beneficiaries_camp_${campaignId}.csv`; link.click(); } }} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
               <Download className="mr-2 h-4 w-4"/> Export CSV
             </Button>
             <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
               <UploadCloud className="mr-2 h-4 w-4"/> Import Data
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="font-normal border-primary/10 text-primary bg-white hover:bg-primary/5 active:scale-95 transition-transform">
+            <Button variant="outline" size="sm" onClick={() => setIsSearchOpen(true)} className="font-bold border-primary/10 text-primary bg-white hover:bg-primary/5 active:scale-95 transition-transform">
               <CopyPlus className="mr-2 h-4 w-4"/> Select From Master
             </Button>
-            <Button size="sm" onClick={() => { setEditingBeneficiary(null); setIsFormOpen(true); }} className="bg-primary hover:bg-primary/90 text-white font-bold active:scale-95 transition-transform shadow-none rounded-[12px]">
-              <PlusCircle className="mr-2 h-4 w-4"/> Add New
+            <Button size="sm" onClick={() => { setEditingBeneficiary(null); setIsFormOpen(true); }} className="bg-primary hover:bg-primary/90 text-white font-bold active:scale-95 transition-transform shadow-md rounded-[12px]">
+              <PlusCircle className="mr-2 h-4 w-4"/> Add New Recipient
             </Button>
           </div>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <StatCard title="Total" count={stats.total} description="All Recipients" icon={Users} delay="100ms" />
-            <StatCard title="Pending" count={stats.pending} description="Waiting Disbursement" icon={Hourglass} delay="150ms" />
+            <StatCard title="Total" count={stats.total} description="Combined Recipients" icon={Users} delay="100ms" />
+            <StatCard title="Pending" count={stats.pending} description="Awaiting Support" icon={Hourglass} delay="150ms" />
             <StatCard title="Verified" count={stats.verified} description="Assistance Secured" icon={CheckCircle2} delay="200ms" />
-            <StatCard title="Given" count={stats.given} description={`${itemLabelSuffix} Disbursed`} icon={CheckCircle2} delay="250ms" colorClass="border-primary/10 bg-primary/5" />
-            <StatCard title="Hold" count={stats.hold} description="Suspended Items" icon={XCircle} delay="300ms" />
+            <StatCard title="Given" count={stats.given} description={`${itemLabelSuffix} Disbursed`} icon={CheckCircle2} delay="250ms" colorClass="border-primary/10 bg-primary/5 shadow-inner" />
+            <StatCard title="Hold" count={stats.hold} description="Suspended Profiles" icon={XCircle} delay="300ms" />
             <StatCard title="Need Details" count={stats.needDetails} description="Review Required" icon={Info} delay="350ms" />
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 bg-primary/5 p-4 rounded-xl border border-primary/10">
+        <div className="flex flex-wrap items-center gap-3 bg-primary/5 p-4 rounded-xl border border-primary/10 shadow-sm">
           <div className="relative flex-1 min-w-[300px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
             <Input 
                 placeholder="Search Name, Phone, Address..." 
                 value={searchTerm} 
                 onChange={(e) => setSearchTerm(e.target.value)} 
                 className="pl-10 pr-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary rounded-[12px]" 
             />
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/50">
+                <Search className="h-4 w-4" />
+            </div>
           </div>
 
           <Popover>
                 <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-[220px] justify-between h-10 text-sm border-primary/10 text-primary font-bold rounded-[12px] bg-white">
+                    <Button variant="outline" className="w-[220px] justify-between h-10 text-sm border-primary/10 text-primary font-bold rounded-[12px] bg-white transition-all hover:border-primary/30">
                         <div className="flex items-center gap-2 truncate">
                             <Filter className="h-3.5 w-3.5 opacity-40 shrink-0" />
                             <span className="truncate">
@@ -438,19 +440,19 @@ export default function BeneficiariesPage() {
                     </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-[250px] p-0 rounded-[12px] shadow-dropdown border-primary/10" align="start">
-                    <Command>
-                        <CommandInput placeholder="Search Referrals..." className="h-9 font-normal" />
-                        <CommandList>
-                            <CommandEmpty className="py-2 text-center text-xs text-muted-foreground font-normal">No Source Found.</CommandEmpty>
-                            <CommandGroup>
-                                <CommandItem onSelect={() => setSelectedReferrals([])} className="font-normal text-xs">
+                    <Command className="w-full">
+                        <CommandInput placeholder="Search Referrals..." className="h-9 font-normal px-3 py-2 outline-none w-full" />
+                        <CommandList className="max-h-[300px] overflow-y-auto">
+                            <CommandEmpty className="py-2 text-center text-xs text-muted-foreground font-normal">No source found.</CommandEmpty>
+                            <CommandGroup className="p-1">
+                                <CommandItem onSelect={() => setSelectedReferrals([])} className="flex items-center px-2 py-1.5 rounded-md hover:bg-primary/5 cursor-pointer font-bold text-xs">
                                     <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", selectedReferrals.length === 0 ? "bg-primary text-primary-foreground" : "opacity-50")}>
                                         {selectedReferrals.length === 0 && <Check className="h-3 w-3" />}
                                     </div>
                                     <span>Show All Sources</span>
                                 </CommandItem>
                                 {uniqueReferrals.map((source) => (
-                                    <CommandItem key={source} onSelect={() => toggleReferral(source)} className="font-normal text-xs">
+                                    <CommandItem key={source} onSelect={() => toggleReferral(source)} className="flex items-center px-2 py-1.5 rounded-md hover:bg-primary/5 cursor-pointer font-normal text-xs">
                                         <div className={cn("mr-2 flex h-4 w-4 items-center justify-center rounded-sm border border-primary", selectedReferrals.includes(source) ? "bg-primary text-primary-foreground" : "opacity-50")}>
                                             {selectedReferrals.includes(source) && <Check className="h-3 w-3" />}
                                         </div>
@@ -464,7 +466,7 @@ export default function BeneficiariesPage() {
             </Popover>
 
           <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPages({}); }}>
-            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold"><SelectValue placeholder="Disbursement" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold transition-all hover:border-primary/30"><SelectValue placeholder="Disbursement" /></SelectTrigger>
             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
               <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
               <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
@@ -475,7 +477,7 @@ export default function BeneficiariesPage() {
             </SelectContent>
           </Select>
           <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPages({}); }}>
-            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold"><SelectValue placeholder="Zakat Eligibility" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold transition-all hover:border-primary/30"><SelectValue placeholder="Zakat Eligibility" /></SelectTrigger>
             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
               <SelectItem value="All" className="font-normal">All Zakat Status</SelectItem>
               <SelectItem value="Eligible" className="font-normal">Eligible</SelectItem>
@@ -580,10 +582,10 @@ export default function BeneficiariesPage() {
                         if (list.length === 0) return null;
 
                         return (
-                            <Collapsible key={catId} open={isExpanded} onOpenChange={() => toggleGroup(catId)} className="w-full">
-                                <CollapsibleTrigger className="w-full bg-primary/[0.02] px-4 py-3 text-[12px] font-bold text-primary flex items-center gap-2 border-b border-primary/10 hover:bg-primary/5 transition-colors">
+                            <Collapsible key={catId} open={isExpanded} onOpenChange={() => toggleGroup(catId)} className="w-full border-b border-primary/5">
+                                <CollapsibleTrigger className="w-full bg-primary/[0.02] px-4 py-3 text-[12px] font-bold text-primary flex items-center gap-2 border-b border-primary/10 hover:bg-primary/[0.04] transition-colors">
                                     <ChevronDown className={cn("h-4 w-4 transition-transform text-primary", !isExpanded && "-rotate-90")} />
-                                    {categoryName} ({list.length} Beneficiaries)
+                                    {categoryName} ({list.length} Members)
                                 </CollapsibleTrigger>
                                 <CollapsibleContent className="w-full">
                                     <div className={cn("bg-primary/[0.05] border-b border-primary/10 flex items-center gap-4 px-4 py-2 text-[10px] font-bold text-primary tracking-tight")}>
@@ -592,11 +594,11 @@ export default function BeneficiariesPage() {
                                             onCheckedChange={(checked) => toggleSelectAllForCategory(catId, !!checked)}
                                             className="border-primary/40 data-[state=checked]:bg-primary"
                                         />
-                                        <span>Select All In Category</span>
+                                        <span>Select All In {categoryName}</span>
                                     </div>
                                     <Accordion type="single" collapsible className="w-full">
                                         {paginatedList.map((b, idx) => (
-                                            <AccordionItem key={b.id} value={b.id} className="border-b border-primary/10 last:border-0 hover:bg-[hsl(var(--table-row-hover))] transition-colors">
+                                            <AccordionItem key={b.id} value={b.id} className="border-b border-primary/5 last:border-0 hover:bg-[hsl(var(--table-row-hover))] transition-colors">
                                                 <div className={gridClass}>
                                                     <div className="flex justify-center">
                                                         <Checkbox 
@@ -622,10 +624,10 @@ export default function BeneficiariesPage() {
                                                     </div>
                                                     <div className="text-center">
                                                         <Badge 
-                                                            variant={b.status === 'Given' ? 'eligible' : b.status === 'Verified' ? 'active' : 'outline'} 
+                                                            variant={b.status === 'Given' ? 'given' : b.status === 'Verified' ? 'eligible' : 'outline'} 
                                                             className="text-[10px] font-bold"
                                                         >
-                                                            {b.status}
+                                                            {b.status || 'Pending'}
                                                         </Badge>
                                                     </div>
                                                     <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
@@ -635,17 +637,17 @@ export default function BeneficiariesPage() {
                                                     <div className="text-right pr-4">
                                                         <div className="flex items-center justify-end gap-1">
                                                             <DropdownMenu>
-                                                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                                 <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown border-primary/10">
                                                                     <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4 opacity-60" /> View Details</DropdownMenuItem>
-                                                                    {canUpdate && <DropdownMenuItem onClick={() => { setEditingBeneficiary(b); setIsFormOpen(true); }} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60" /> Edit</DropdownMenuItem>}
+                                                                    {canUpdate && <DropdownMenuItem onClick={() => { setEditingBeneficiary(b); setIsFormOpen(true); }} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60" /> Edit Profile</DropdownMenuItem>}
                                                                     
-                                                                    <DropdownMenuSeparator />
+                                                                    <DropdownMenuSeparator className="bg-primary/5" />
                                                                     
                                                                     {canUpdate && (
                                                                         <DropdownMenuSub>
-                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ChevronsUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Verification Status</DropdownMenuSubTrigger>
-                                                                            <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] border-primary/10 shadow-dropdown border-primary/10">
+                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ChevronsUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Verification</DropdownMenuSubTrigger>
+                                                                            <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                                                                 <DropdownMenuRadioGroup value={b.verificationStatus || 'Pending'} onValueChange={(s) => handleVerificationChange(b, s)}>
                                                                                     <DropdownMenuRadioItem value="Pending" className="font-normal">Pending</DropdownMenuRadioItem>
                                                                                     <DropdownMenuRadioItem value="Verified" className="font-normal">Verified</DropdownMenuRadioItem>
@@ -658,7 +660,7 @@ export default function BeneficiariesPage() {
 
                                                                     {canUpdate && (
                                                                         <DropdownMenuSub>
-                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ClipboardCheck className="mr-2 h-4 w-4 opacity-60" /> Change Disbursement Status</DropdownMenuSubTrigger>
+                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ClipboardCheck className="mr-2 h-4 w-4 opacity-60" /> Change Disbursement</DropdownMenuSubTrigger>
                                                                             <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                                                                 <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
                                                                                     <DropdownMenuRadioItem value="Pending" className="font-normal">Pending</DropdownMenuRadioItem>
@@ -672,13 +674,13 @@ export default function BeneficiariesPage() {
                                                                     {canUpdate && (
                                                                         <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="text-primary font-normal">
                                                                             {b.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4 text-destructive" /> : <Coins className="mr-2 h-4 w-4 text-primary" />}
-                                                                            {b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Eligible'}
+                                                                            {b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat Eligible'}
                                                                         </DropdownMenuItem>
                                                                     )}
                                                                     
                                                                     {canUpdate && (
                                                                         <>
-                                                                            <DropdownMenuSeparator />
+                                                                            <DropdownMenuSeparator className="bg-primary/5" />
                                                                             <DropdownMenuItem onClick={() => handleRemoveFromInitiative(b.id)} className="text-destructive font-normal">
                                                                                 <Trash2 className="mr-2 h-4 w-4" /> Remove From Campaign
                                                                             </DropdownMenuItem>
@@ -689,38 +691,38 @@ export default function BeneficiariesPage() {
                                                         </div>
                                                     </div>
                                                 </div>
-                                                <AccordionContent className="bg-primary/[0.01] border-t border-primary/10 px-6 py-4">
+                                                <AccordionContent className="bg-primary/[0.01] border-t border-primary/10 px-6 py-4 animate-fade-in-up">
                                                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-3 text-primary font-normal">
                                                         <div className="space-y-1 col-span-2">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Address</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Address</p>
                                                             <p className="text-sm font-normal leading-tight">{b.address || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Age</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Age</p>
                                                             <p className="text-sm font-normal">{b.age || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Occupation</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Occupation</p>
                                                             <p className="text-sm font-normal">{b.occupation || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Family Details</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Family Details</p>
                                                             <p className="text-sm font-normal">T: {b.members || 0}, E: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight">ID Proof</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">ID Artifact</p>
                                                             <p className="text-sm font-normal">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Date Added</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Added Date</p>
                                                             <p className="text-sm font-normal">{b.addedDate || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Zakat Allocation</p>
-                                                            <p className="text-sm font-bold">₹{(b.zakatAllocation || 0).toLocaleString('en-IN')}</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Zakat Allocation</p>
+                                                            <p className="text-sm font-bold font-mono">₹{(b.zakatAllocation || 0).toLocaleString('en-IN')}</p>
                                                         </div>
                                                         <div className="space-y-1 col-span-2">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Notes</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Internal Notes</p>
                                                             <p className="text-sm font-normal italic opacity-80 line-clamp-2">{b.notes || (b.isEligibleForZakat ? `Eligible For Zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
                                                         </div>
                                                     </div>
@@ -739,14 +741,16 @@ export default function BeneficiariesPage() {
         </Card>
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-primary/10">
-                <DialogHeader><DialogTitle className="text-xl font-bold text-primary tracking-tight">Edit Beneficiary Record</DialogTitle></DialogHeader>
-                <BeneficiaryForm 
-                    beneficiary={editingBeneficiary}
-                    onSubmit={handleFormSubmit} 
-                    onCancel={() => { setIsFormOpen(false); setEditingBeneficiary(null); }} 
-                    itemCategories={campaign?.itemCategories || []} 
-                />
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-primary/10 p-0 overflow-hidden">
+                <DialogHeader className="px-6 py-4 bg-primary/5 border-b border-primary/10"><DialogTitle className="text-xl font-bold text-primary tracking-tight">Modify Beneficiary Profile</DialogTitle></DialogHeader>
+                <div className="p-6">
+                    <BeneficiaryForm 
+                        beneficiary={editingBeneficiary}
+                        onSubmit={handleFormSubmit} 
+                        onCancel={() => { setIsFormOpen(false); setEditingBeneficiary(null); }} 
+                        itemCategories={campaign?.itemCategories || []} 
+                    />
+                </div>
             </DialogContent>
         </Dialog>
 

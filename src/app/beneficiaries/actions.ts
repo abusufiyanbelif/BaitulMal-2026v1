@@ -1,3 +1,4 @@
+
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
@@ -100,14 +101,11 @@ export async function bulkUpdateMasterBeneficiaryStatusAction(
         revalidatePath('/beneficiaries');
         return { success: true, message: `Successfully Updated ${ids.length} Profiles.` };
     } catch (error: any) {
-        console.error("Bulk Vetting Update Failed:", error);
+        console.error("Bulk Verification Update Failed:", error);
         return { success: false, message: `Bulk Update Failed: ${error.message}` };
     }
 }
 
-/**
- * Optimized action to update vetting status in both Master and an Initiative sub-collection.
- */
 export async function bulkUpdateBeneficiaryVettingAction(
     ids: string[],
     newStatus: Beneficiary['status'],
@@ -118,13 +116,12 @@ export async function bulkUpdateBeneficiaryVettingAction(
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        const CHUNK_SIZE = 50; // Smaller chunks for multi-doc updates
+        const CHUNK_SIZE = 50; 
         for (let i = 0; i < ids.length; i += CHUNK_SIZE) {
             const chunk = ids.slice(i, i + CHUNK_SIZE);
             const batch = adminDb.batch();
 
             for (const id of chunk) {
-                // 1. Update Master
                 const masterRef = adminDb.collection('beneficiaries').doc(id);
                 batch.update(masterRef, { 
                     status: newStatus,
@@ -133,7 +130,6 @@ export async function bulkUpdateBeneficiaryVettingAction(
                     updatedByName: updatedBy.name,
                 });
 
-                // 2. Update Initiative if provided
                 if (initiativeContext) {
                     const collectionName = initiativeContext.type === 'campaign' ? 'campaigns' : 'leads';
                     const initiativeSubRef = adminDb.doc(`${collectionName}/${initiativeContext.id}/beneficiaries/${id}`);
@@ -152,7 +148,7 @@ export async function bulkUpdateBeneficiaryVettingAction(
         
         return { success: true, message: `Successfully Updated ${ids.length} Profiles.` };
     } catch (error: any) {
-        console.error("Bulk Vetting Sync Failed:", error);
+        console.error("Bulk Verification Sync Failed:", error);
         return { success: false, message: `Update Failed: ${error.message}` };
     }
 }
@@ -220,7 +216,7 @@ export async function bulkUpdateInitiativeBeneficiaryStatusAction(
         revalidatePath(`/${collectionName}-members/${initiativeId}/beneficiaries`);
         return { success: true, message: `Successfully Updated ${ids.length} Recipients.` };
     } catch (error: any) {
-        console.error("Bulk Distribution Update Failed:", error);
+        console.error("Bulk Disbursement Update Failed:", error);
         return { success: false, message: `Bulk Update Failed: ${error.message}` };
     }
 }
@@ -320,9 +316,9 @@ export async function updateBeneficiaryStatusInInitiativeAction(
         await docRef.set({ status: newStatus || 'Pending' }, { merge: true });
 
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
-        return { success: true, message: 'Distribution Status Updated Successfully.' };
+        return { success: true, message: 'Disbursement Status Updated Successfully.' };
     } catch (error: any) {
-        console.error("Error Updating Distribution Status:", error);
+        console.error("Error Updating Disbursement Status:", error);
         return { success: false, message: `Update Failed: ${error.message}` };
     }
 }
