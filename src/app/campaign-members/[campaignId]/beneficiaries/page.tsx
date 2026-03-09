@@ -251,7 +251,7 @@ export default function BeneficiariesPage() {
     setIsBulkUpdating(true);
     const res = await bulkUpdateBeneficiaryVettingAction(selectedIds, newStatus, { id: userProfile.id, name: userProfile.name }, { type: 'campaign', id: campaignId });
     if (res && res.success) {
-        toast({ title: "Vetting Updated", description: res.message, variant: "success" });
+        toast({ title: "Verification Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
         toast({ title: "Failed", description: res?.message || "Operation failed.", variant: "destructive" });
@@ -390,7 +390,7 @@ export default function BeneficiariesPage() {
             <p className="text-sm font-bold text-muted-foreground opacity-70">Total Requirement: <span className="font-mono text-primary">₹{stats.totalAmount.toLocaleString('en-IN')}</span></p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => { if(beneficiaries) { const headers = ['Name', 'Phone', 'Vetting', 'Disbursement', 'Amount']; const rows = beneficiaries.map(b => [b.name, b.phone || 'N/A', b.verificationStatus || 'Pending', b.status || 'Pending', b.kitAmount || 0]); const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const link = document.createElement('a'); link.href = `data:text/csv;charset=utf-8,${encodeURI(csv)}`; link.download = `beneficiaries_${campaignId}.csv`; link.click(); } }} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+            <Button variant="outline" size="sm" onClick={() => { if(beneficiaries) { const headers = ['Name', 'Phone', 'Verification', 'Disbursement', 'Amount']; const rows = beneficiaries.map(b => [b.name, b.phone || 'N/A', b.verificationStatus || 'Pending', b.status || 'Pending', b.kitAmount || 0]); const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const link = document.createElement('a'); link.href = `data:text/csv;charset=utf-8,${encodeURI(csv)}`; link.download = `beneficiaries_${campaignId}.csv`; link.click(); } }} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
               <Download className="mr-2 h-4 w-4"/> Export CSV
             </Button>
             <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
@@ -407,11 +407,11 @@ export default function BeneficiariesPage() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <StatCard title="Total" count={stats.total} description="All Recipients" icon={Users} delay="100ms" />
-            <StatCard title="Pending" count={stats.pending} description="Waiting Distribution" icon={Hourglass} delay="150ms" />
+            <StatCard title="Pending" count={stats.pending} description="Waiting Disbursement" icon={Hourglass} delay="150ms" />
             <StatCard title="Verified" count={stats.verified} description="Assistance Secured" icon={CheckCircle2} delay="200ms" />
-            <StatCard title="Given" count={stats.given} description={`${itemLabelSuffix} Distributed`} icon={CheckCircle2} delay="250ms" colorClass="border-primary/10 bg-primary/5" />
+            <StatCard title="Given" count={stats.given} description={`${itemLabelSuffix} Disbursed`} icon={CheckCircle2} delay="250ms" colorClass="border-primary/10 bg-primary/5" />
             <StatCard title="Hold" count={stats.hold} description="Suspended Items" icon={XCircle} delay="300ms" />
-            <StatCard title="Need Details" count={stats.needDetails} description="Vetting Incomplete" icon={Info} delay="350ms" />
+            <StatCard title="Need Details" count={stats.needDetails} description="Review Required" icon={Info} delay="350ms" />
         </div>
 
         <div className="flex flex-wrap items-center gap-3 bg-primary/5 p-4 rounded-xl border border-primary/10">
@@ -484,7 +484,7 @@ export default function BeneficiariesPage() {
           </Select>
         </div>
 
-        {/* Simplified Sticky Action Hub */}
+        {/* Sticky Action Hub */}
         {selectedIds.length > 0 && (
             <div className="sticky top-[73px] z-40 animate-fade-in-up w-full">
                 <div className="flex items-center justify-start gap-4 px-4 py-2 bg-primary/5 border border-primary/20 backdrop-blur-md rounded-xl shadow-sm mb-4">
@@ -497,7 +497,7 @@ export default function BeneficiariesPage() {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10 font-bold h-8 text-xs px-3" disabled={isBulkUpdating}>
-                                    Distribution
+                                    Disbursement
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" className="w-48 rounded-xl shadow-dropdown border-primary/10">
@@ -510,7 +510,7 @@ export default function BeneficiariesPage() {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10 font-bold h-8 text-xs px-3" disabled={isBulkUpdating}>
-                                    Vetting
+                                    Verification
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" className="w-48 rounded-xl shadow-dropdown border-primary/10">
@@ -644,7 +644,7 @@ export default function BeneficiariesPage() {
                                                                     
                                                                     {canUpdate && (
                                                                         <DropdownMenuSub>
-                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ChevronsUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Vetting Status</DropdownMenuSubTrigger>
+                                                                            <DropdownMenuSubTrigger className="font-normal text-primary"><ChevronsUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Verification Status</DropdownMenuSubTrigger>
                                                                             <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] border-primary/10 shadow-dropdown border-primary/10">
                                                                                 <DropdownMenuRadioGroup value={b.verificationStatus || 'Pending'} onValueChange={(s) => handleVerificationChange(b, s)}>
                                                                                     <DropdownMenuRadioItem value="Pending" className="font-normal">Pending</DropdownMenuRadioItem>

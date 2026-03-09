@@ -88,7 +88,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/accordion";
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog';
 import { Input } from '@/components/ui/input';
@@ -255,7 +255,7 @@ export default function BeneficiariesPage() {
     setIsBulkUpdating(true);
     const res = await bulkUpdateBeneficiaryVettingAction(selectedIds, newStatus, { id: userProfile.id, name: userProfile.name }, { type: 'lead', id: leadId });
     if (res && res.success) {
-        toast({ title: "Vetting Updated", description: res.message, variant: "success" });
+        toast({ title: "Verification Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
         toast({ title: "Failed", description: res?.message || "Operation failed.", variant: "destructive" });
@@ -394,7 +394,7 @@ export default function BeneficiariesPage() {
             <p className="text-sm font-bold text-muted-foreground opacity-70">Calculated Requirement: <span className="font-mono text-primary">₹{stats.totalAmount.toLocaleString('en-IN')}</span></p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => { if(beneficiaries) { const headers = ['Name', 'Phone', 'Vetting', 'Disbursement', 'Amount']; const rows = beneficiaries.map(b => [b.name, b.phone || 'N/A', b.verificationStatus || 'Pending', b.status || 'Pending', b.kitAmount || 0]); const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const link = document.createElement('a'); link.href = `data:text/csv;charset=utf-8,${encodeURI(csv)}`; link.download = `beneficiaries_lead_${leadId}.csv`; link.click(); } }} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+            <Button variant="outline" size="sm" onClick={() => { if(beneficiaries) { const headers = ['Name', 'Phone', 'Verification', 'Disbursement', 'Amount']; const rows = beneficiaries.map(b => [b.name, b.phone || 'N/A', b.verificationStatus || 'Pending', b.status || 'Pending', b.kitAmount || 0]); const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const link = document.createElement('a'); link.href = `data:text/csv;charset=utf-8,${encodeURI(csv)}`; link.download = `beneficiaries_lead_${leadId}.csv`; link.click(); } }} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
               <Download className="mr-2 h-4 w-4"/> Export CSV
             </Button>
             <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
@@ -470,7 +470,7 @@ export default function BeneficiariesPage() {
             </Popover>
 
           <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPages({}); }}>
-            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold"><SelectValue placeholder="All Statuses" /></SelectTrigger>
+            <SelectTrigger className="w-[160px] h-10 text-sm border-primary/10 text-primary bg-white rounded-[12px] font-bold"><SelectValue placeholder="Disbursement" /></SelectTrigger>
             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
               <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
               <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
@@ -490,7 +490,7 @@ export default function BeneficiariesPage() {
           </Select>
         </div>
 
-        {/* Simplified Sticky Action Hub */}
+        {/* Sticky Action Hub */}
         {selectedIds.length > 0 && (
             <div className="sticky top-[73px] z-40 animate-fade-in-up w-full">
                 <div className="flex items-center justify-start gap-4 px-4 py-2 bg-primary/5 border border-primary/20 backdrop-blur-md rounded-xl shadow-sm mb-4">
@@ -503,7 +503,7 @@ export default function BeneficiariesPage() {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10 font-bold h-8 text-xs px-3" disabled={isBulkUpdating}>
-                                    Distribution
+                                    Disbursement
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" className="w-48 rounded-xl shadow-dropdown border-primary/10">
@@ -516,7 +516,7 @@ export default function BeneficiariesPage() {
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10 font-bold h-8 text-xs px-3" disabled={isBulkUpdating}>
-                                    Vetting
+                                    Verification
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" className="w-48 rounded-xl shadow-dropdown border-primary/10">
