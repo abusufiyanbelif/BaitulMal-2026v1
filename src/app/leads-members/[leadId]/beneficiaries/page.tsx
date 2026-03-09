@@ -581,7 +581,7 @@ export default function BeneficiariesPage() {
                                                         <div className="flex items-center justify-end gap-1">
                                                             <DropdownMenu>
                                                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                                                <DropdownMenuContent align="end" className="rounded-[12px] shadow-dropdown border-primary/10">
+                                                                <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown border-primary/10">
                                                                     <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}?redirect=${pathname}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4 opacity-60" /> View Details</DropdownMenuItem>
                                                                     {canUpdate && <DropdownMenuItem onClick={() => { setEditingBeneficiary(b); setIsFormOpen(true); }} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60" /> Edit</DropdownMenuItem>}
                                                                     
@@ -682,9 +682,8 @@ export default function BeneficiariesPage() {
                 </div>
                 <ScrollBar orientation="horizontal" />
             </ScrollArea>
-        </div>
+        </Card>
 
-        {/* Bulk Action Bar */}
         {selectedIds.length > 0 && (
             <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-bottom w-full max-w-[95vw] sm:max-w-fit">
                 <div className="flex items-center gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">

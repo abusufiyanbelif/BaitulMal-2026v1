@@ -139,7 +139,9 @@ export async function bulkUpdateInitiativeBeneficiaryStatusAction(
     newStatus: Beneficiary['status']
 ): Promise<{ success: boolean; message: string }> {
     const { adminDb } = getAdminServices();
-    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    if (!adminDb) {
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    }
 
     try {
         const collectionName = initiativeType === 'campaign' ? 'campaigns' : 'leads';

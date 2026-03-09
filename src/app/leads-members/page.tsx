@@ -117,7 +117,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                         {canUpdate && (
                             <>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Operational status</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Operational Status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={lead.status} onValueChange={(value) => handleStatusUpdate(lead, 'status', value)}>
@@ -129,7 +129,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Verification status</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Verification Status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={lead.authenticityStatus} onValueChange={(value) => handleStatusUpdate(lead, 'authenticityStatus', value as string)}>
@@ -143,7 +143,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Public visibility</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Public Visibility</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={lead.publicVisibility} onValueChange={(value) => handleStatusUpdate(lead, 'publicVisibility', value as string)}>
@@ -155,12 +155,12 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Change priority</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Change Priority</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={lead.priority} onValueChange={(value) => handleStatusUpdate(lead, 'priority', value)}>
                                                 {priorityLevels.map(p => (
-                                                    <DropdownMenuRadioItem key={p} value={p} className="font-normal">{p} priority</DropdownMenuRadioItem>
+                                                    <DropdownMenuRadioItem key={p} value={p} className="font-normal">{p} Priority</DropdownMenuRadioItem>
                                                 ))}
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
@@ -212,7 +212,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
                     isUrgent ? 'text-red-600 animate-in fade-in slide-in-from-left' : isHigh ? 'text-orange-600' : 'text-primary'
                 )}>
                     {getPriorityIcon(priorityLabel)}
-                    {priorityLabel} priority
+                    {priorityLabel} Priority
                 </div>
             </div>
             <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground pt-1">{lead.startDate} To {lead.endDate}</CardDescription>
@@ -272,11 +272,11 @@ export default function LeadPage() {
           return {
               id: c.id,
               text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
-              href: `/campaign-members/${c.id}/summary`,
               priority: c.priority || 'Medium',
               priorityIcon: getPriorityIcon(c.priority),
               isUrgent,
-              isHigh
+              isHigh,
+              href: `/campaign-members/${c.id}/summary`,
           };
       });
     
@@ -289,11 +289,11 @@ export default function LeadPage() {
           return {
               id: l.id,
               text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
-              href: `/leads-members/${l.id}/summary`,
               priority: l.priority || 'Medium',
               priorityIcon: getPriorityIcon(l.priority),
               isUrgent,
-              isHigh
+              isHigh,
+              href: `/leads-members/${l.id}/summary`,
           };
       });
 
@@ -406,10 +406,10 @@ export default function LeadPage() {
                     <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Statuses</SelectItem><SelectItem value="Active" className="font-normal">Active</SelectItem><SelectItem value="Completed" className="font-normal">Completed</SelectItem><SelectItem value="Upcoming" className="font-normal">Upcoming</SelectItem></SelectContent></Select>
                     <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs border-primary/20 font-normal text-primary"><SelectValue placeholder="All Purposes" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p} className="font-normal">{p}</SelectItem>)}</SelectContent></Select>
                     <Select value={authenticityFilter} onValueChange={setAuthenticityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Authenticity" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Authenticity</SelectItem><SelectItem value="Pending Verification" className="font-normal">Pending</SelectItem><SelectItem value="Verified" className="font-normal text-primary">Verified</SelectItem><SelectItem value="On Hold" className="font-normal">On Hold</SelectItem><SelectItem value="Rejected" className="font-normal text-destructive">Rejected</SelectItem><SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem></SelectContent></Select>
-                    <Select value={visibilityFilter} onValueChange={setVisibilityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Visibilities" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Visibilities</SelectItem><SelectItem value="Hold" className="font-normal">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-normal">Ready To Publish</SelectItem><SelectItem value="Published" className="font-normal text-primary">Published</SelectItem></SelectContent></Select>
+                    <Select value={visibilityFilter} onValueChange={setVisibilityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Visibilities" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Visibilities</SelectItem><SelectItem value="Hold" className="font-normal">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-normal">Ready To Publish</SelectItem><SelectItem value="Published" className="font-normal">Published</SelectItem></SelectContent></Select>
                     <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
                         <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-normal">{y}</SelectItem>)}</SelectContent></Select>
-                        <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-normal border-primary/20 text-primary", !dateRange ? "opacity-60" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Date range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                        <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-normal border-primary/20 text-primary", !dateRange ? "opacity-60" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Date Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
                         {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
                     </div>
                 </div>
@@ -444,7 +444,7 @@ export default function LeadPage() {
             ) : (
               <div className="text-center py-24 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
                   <Lightbulb className="h-12 w-12 mx-auto text-primary/20 mb-4" />
-                  <p className="font-bold text-sm opacity-60 text-primary tracking-widest text-center">No appeals found matching criteria.</p>
+                  <p className="font-bold text-sm opacity-60 text-primary tracking-widest text-center">No Appeals Found Matching Criteria.</p>
               </div>
             )}
           </CardContent>
@@ -452,7 +452,7 @@ export default function LeadPage() {
       </main>
       
       <AlertDialog open={!!leadToDelete} onOpenChange={(open) => !open && setLeadToDelete(null)}>
-        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Delete appeal?</AlertDialogTitle><AlertDialogDescription className="font-bold opacity-80 text-primary/70">Permanently erase all data for '{leadToDelete?.name}'? This action cannot be undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 transition-transform active:scale-95">Confirm deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Delete Appeal?</AlertDialogTitle><AlertDialogDescription className="font-bold opacity-80 text-primary/70">Permanently Erase All Data For '{leadToDelete?.name}'? This Action Cannot Be Undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 transition-transform active:scale-95">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
         
       <CopyLeadDialog open={!!leadToCopy} onOpenChange={() => setLeadToCopy(null)} lead={leadToCopy} onCopyConfirm={async (opt) => { const res = await copyLeadAction({ sourceLeadId: leadToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); setLeadToCopy(null); }}/>
