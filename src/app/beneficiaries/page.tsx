@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -264,20 +263,31 @@ export default function BeneficiariesPage() {
 
   const handleExport = () => {
     if (!filteredAndSortedBeneficiaries.length) return;
-    const headers = ['Name', 'Phone', 'Verification Status', 'Address', 'Zakat Eligible', 'Referral'];
+    const headers = ['ID', 'Name', 'Phone', 'Address', 'Age', 'Occupation', 'TotalMembers', 'EarningMembers', 'Male', 'Female', 'IDType', 'IDNumber', 'ReferralBy', 'ZakatEligible', 'ZakatAllocation', 'VerificationStatus', 'Notes'];
     const rows = filteredAndSortedBeneficiaries.map(b => [
-        b.name,
-        b.phone || 'N/A',
-        b.status || 'Pending',
-        (b.address || '').replace(/,/g, ' '),
+        b.id,
+        `"${b.name || ''}"`,
+        b.phone || '',
+        `"${(b.address || '').replace(/"/g, '""')}"`,
+        b.age || '',
+        b.occupation || '',
+        b.members || '',
+        b.earningMembers || '',
+        b.male || '',
+        b.female || '',
+        b.idProofType || '',
+        b.idNumber || '',
+        `"${b.referralBy || ''}"`,
         b.isEligibleForZakat ? 'Yes' : 'No',
-        b.referralBy || 'N/A'
+        b.zakatAllocation || 0,
+        b.status || 'Pending',
+        `"${(b.notes || '').replace(/"/g, '""')}"`
     ]);
     const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "master_beneficiary_registry.csv");
+    link.setAttribute("download", "master_beneficiary_full_registry.csv");
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -322,7 +332,7 @@ export default function BeneficiariesPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <Button onClick={handleExport} variant="outline" size="sm" className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
-            <Download className="mr-2 h-4 w-4"/> Export CSV
+            <Download className="mr-2 h-4 w-4"/> Export Full CSV
           </Button>
           <Button onClick={() => setIsImportOpen(true)} variant="outline" size="sm" className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
             <UploadCloud className="mr-2 h-4 w-4"/> Import Data

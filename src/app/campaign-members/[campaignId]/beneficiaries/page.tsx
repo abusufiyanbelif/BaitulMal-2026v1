@@ -360,6 +360,40 @@ export default function BeneficiariesPage() {
     else toast({ title: 'Import Failed', description: res?.message || "Import operation failed.", variant: 'destructive' });
   };
 
+  const handleExport = () => {
+    if (!beneficiaries || beneficiaries.length === 0) return;
+    const headers = ['ID', 'Name', 'Phone', 'Address', 'Age', 'Occupation', 'TotalMembers', 'EarningMembers', 'Male', 'Female', 'IDType', 'IDNumber', 'ReferralBy', 'RequirementAmount', 'ZakatEligible', 'ZakatAllocation', 'VerificationStatus', 'DisbursementStatus', 'Notes'];
+    const rows = beneficiaries.map(b => [
+        b.id,
+        `"${b.name || ''}"`,
+        b.phone || '',
+        `"${(b.address || '').replace(/"/g, '""')}"`,
+        b.age || '',
+        b.occupation || '',
+        b.members || '',
+        b.earningMembers || '',
+        b.male || '',
+        b.female || '',
+        b.idProofType || '',
+        b.idNumber || '',
+        `"${b.referralBy || ''}"`,
+        b.kitAmount || 0,
+        b.isEligibleForZakat ? 'Yes' : 'No',
+        b.zakatAllocation || 0,
+        b.verificationStatus || 'Pending',
+        b.status || 'Pending',
+        `"${(b.notes || '').replace(/"/g, '""')}"`
+    ]);
+    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `beneficiaries_full_camp_${campaignId}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   if (isCampaignLoading || areBeneficiariesLoading || isProfileLoading) return <BrandedLoader />;
   if (!campaign) return <p className="text-center mt-20 text-primary font-bold">Campaign Record Not Found.</p>;
 
@@ -391,8 +425,8 @@ export default function BeneficiariesPage() {
             <p className="text-sm font-bold text-muted-foreground opacity-70">Total Requirement: <span className="font-mono text-primary">₹{stats.totalAmount.toLocaleString('en-IN')}</span></p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={() => { if(beneficiaries) { const headers = ['Name', 'Phone', 'Verification', 'Disbursement', 'Amount']; const rows = beneficiaries.map(b => [b.name, b.phone || 'N/A', b.verificationStatus || 'Pending', b.status || 'Pending', b.kitAmount || 0]); const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const link = document.createElement('a'); link.href = `data:text/csv;charset=utf-8,${encodeURI(csv)}`; link.download = `beneficiaries_camp_${campaignId}.csv`; link.click(); } }} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
-              <Download className="mr-2 h-4 w-4"/> Export CSV
+            <Button variant="outline" size="sm" onClick={handleExport} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+              <Download className="mr-2 h-4 w-4"/> Export Full CSV
             </Button>
             <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
               <UploadCloud className="mr-2 h-4 w-4"/> Import Data

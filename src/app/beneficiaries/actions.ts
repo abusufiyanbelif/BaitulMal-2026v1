@@ -1,4 +1,3 @@
-
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
@@ -234,37 +233,48 @@ export async function bulkImportBeneficiariesAction(
         let count = 0;
 
         for (const record of records) {
-            const masterRef = adminDb.collection('beneficiaries').doc();
+            // Support for upsert: Use existing ID if provided, otherwise generate a new one.
+            const masterRef = record.id ? adminDb.collection('beneficiaries').doc(record.id) : adminDb.collection('beneficiaries').doc();
             const id = masterRef.id;
+            
             const fullRecord = {
                 ...record,
                 id,
                 status: record.status || 'Pending',
                 addedDate: record.addedDate || new Date().toISOString().split('T')[0],
-                createdAt: FieldValue.serverTimestamp(),
-                createdById: createdBy.id,
-                createdByName: createdBy.name,
+                createdAt: record.createdAt || FieldValue.serverTimestamp(),
+                createdById: record.createdById || createdBy.id,
+                createdByName: record.createdByName || createdBy.name,
+                updatedAt: FieldValue.serverTimestamp(),
+                updatedById: createdBy.id,
+                updatedByName: createdBy.name,
             };
 
-            batch.set(masterRef, fullRecord);
+            batch.set(masterRef, fullRecord, { merge: true });
 
             if (initiativeContext) {
                 const collectionName = initiativeContext.type === 'campaign' ? 'campaigns' : 'leads';
                 const subRef = adminDb.doc(`${collectionName}/${initiativeContext.id}/beneficiaries/${id}`);
-                batch.set(subRef, {
+                
+                // If it's an update, we want to be careful not to reset initiative-specific status if not provided.
+                const initiativeData = {
                     ...fullRecord,
                     verificationStatus: fullRecord.status,
-                    status: 'Pending' 
-                });
+                };
+                
+                batch.set(subRef, initiativeData, { merge: true });
             }
             count++;
         }
 
         await batch.commit();
         revalidatePath('/beneficiaries');
-        if (initiativeContext) revalidatePath(`/${initiativeContext.type === 'campaign' ? 'campaign-members' : 'leads-members'}/${initiativeContext.id}/beneficiaries`);
+        if (initiativeContext) {
+            const path = initiativeContext.type === 'campaign' ? 'campaign-members' : 'leads-members';
+            revalidatePath(`/${path}/${initiativeContext.id}/beneficiaries`);
+        }
         
-        return { success: true, message: `Successfully Imported ${count} Records Into The Registry.`, count };
+        return { success: true, message: `Successfully Registered/Updated ${count} Records In The Registry.`, count };
     } catch (error: any) {
         console.error("Bulk Import Failed:", error);
         return { success: false, message: `Import Failed: ${error.message}`, count: 0 };
