@@ -137,7 +137,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         {canUpdate && (
                             <>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Operational Status</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Operational status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={campaign.status} onValueChange={(value) => handleStatusUpdate(campaign, 'status', value)}>
@@ -149,7 +149,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Verification Status</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Verification status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={campaign.authenticityStatus} onValueChange={(value) => handleStatusUpdate(campaign, 'authenticityStatus', value as string)}>
@@ -163,7 +163,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Public Visibility</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Public visibility</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={campaign.publicVisibility} onValueChange={(value) => handleStatusUpdate(campaign, 'publicVisibility', value as string)}>
@@ -175,12 +175,12 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Change Priority</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Change priority</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={campaign.priority} onValueChange={(value) => handleStatusUpdate(campaign, 'priority', value)}>
                                                 {priorityLevels.map(p => (
-                                                    <DropdownMenuRadioItem key={p} value={p} className="font-normal">{p} Priority</DropdownMenuRadioItem>
+                                                    <DropdownMenuRadioItem key={p} value={p} className="font-normal">{p} priority</DropdownMenuRadioItem>
                                                 ))}
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
@@ -232,7 +232,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                     isUrgent ? 'text-red-600 animate-in fade-in slide-in-from-left' : isHigh ? 'text-orange-600' : 'text-primary'
                 )}>
                     {getPriorityIcon(priorityLabel)}
-                    {priorityLabel} Priority
+                    {priorityLabel} priority
                 </div>
             </div>
             <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground pt-1">{campaign.startDate} To {campaign.endDate}</CardDescription>
@@ -387,7 +387,7 @@ export default function CampaignPage() {
 
   const isLoading = isProfileLoading || isDeleting || isDataLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Campaigns..." description="Fetching Active And Historical Initiatives." />;
+  if (isLoading) return <SectionLoader label="Loading Campaigns..." description="Fetching active and historical initiatives." />;
 
   if (!isLoading && userProfile && !canViewCampaigns) {
     return (
@@ -416,7 +416,7 @@ export default function CampaignPage() {
 
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight text-primary">Campaigns</h1>
-          <p className="text-sm max-w-2xl font-bold leading-relaxed opacity-70">Initiatives, Budget Vetting, And Strategic Tracking.</p>
+          <p className="text-sm max-w-2xl font-bold leading-relaxed opacity-70">Initiatives, budget vetting, and strategic tracking.</p>
         </div>
 
         <div className="space-y-2">
@@ -428,14 +428,14 @@ export default function CampaignPage() {
           <CardHeader className="p-4 sm:p-6 border-b bg-primary/5">
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex flex-nowrap items-center gap-3 pb-2">
-                    <Input placeholder="Search Initiatives..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-normal" disabled={isLoading}/>
+                    <Input placeholder="Search initiatives..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-normal" disabled={isLoading}/>
                     <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Statuses</SelectItem><SelectItem value="Active" className="font-normal">Active</SelectItem><SelectItem value="Completed" className="font-normal">Completed</SelectItem><SelectItem value="Upcoming" className="font-normal">Upcoming</SelectItem></SelectContent></Select>
                     <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-normal border-primary/20 text-primary"><SelectValue placeholder="All Categories" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Categories</SelectItem><SelectItem value="Ration" className="font-normal">Ration</SelectItem><SelectItem value="Relief" className="font-normal">Relief</SelectItem><SelectItem value="General" className="font-normal">General</SelectItem></SelectContent></Select>
                     <Select value={authenticityFilter} onValueChange={setAuthenticityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Authenticity" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Authenticity</SelectItem><SelectItem value="Pending Verification" className="font-normal">Pending</SelectItem><SelectItem value="Verified" className="font-normal text-primary">Verified</SelectItem><SelectItem value="On Hold" className="font-normal">On Hold</SelectItem><SelectItem value="Rejected" className="font-normal text-destructive">Rejected</SelectItem><SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem></SelectContent></Select>
                     <Select value={visibilityFilter} onValueChange={setVisibilityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Visibilities" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Visibilities</SelectItem><SelectItem value="Hold" className="font-normal">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-normal">Ready To Publish</SelectItem><SelectItem value="Published" className="font-normal text-primary">Published</SelectItem></SelectContent></Select>
                     <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
                         <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-normal">{y}</SelectItem>)}</SelectContent></Select>
-                        <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-normal border-primary/20 text-primary", !dateRange ? "opacity-60" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Date Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                        <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-normal border-primary/20 text-primary", !dateRange ? "opacity-60" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Date range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
                         {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
                     </div>
                 </div>
@@ -470,7 +470,7 @@ export default function CampaignPage() {
             ) : (
               <div className="text-center py-24 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
                   <HandHelping className="h-16 w-16 mx-auto text-primary/20 mb-4" />
-                  <p className="font-bold tracking-tight text-sm opacity-60 text-primary">No Initiatives Found Matching Filters.</p>
+                  <p className="font-bold tracking-tight text-sm opacity-60 text-primary">No initiatives found matching filters.</p>
               </div>
             )}
           </CardContent>
@@ -478,7 +478,7 @@ export default function CampaignPage() {
       </main>
       
       <AlertDialog open={!!campaignToDelete} onOpenChange={(open) => !open && setCampaignToDelete(null)}>
-        <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Delete Initiative?</AlertDialogTitle><AlertDialogDescription className="font-bold opacity-80 text-primary/70">Permanently Erase All Data For '{campaignToDelete?.name}'? This Action Cannot Be Undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 transition-transform active:scale-95">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Delete initiative?</AlertDialogTitle><AlertDialogDescription className="font-bold opacity-80 text-primary/70">Permanently erase all data for '{campaignToDelete?.name}'? This action cannot be undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 transition-transform active:scale-95">Confirm deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
 
       <CopyCampaignDialog open={!!campaignToCopy} onOpenChange={() => setCampaignToCopy(null)} campaign={campaignToCopy} onCopyConfirm={async (opt) => { const res = await copyCampaignAction({ sourceCampaignId: campaignToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); setCampaignToCopy(null); }}/>

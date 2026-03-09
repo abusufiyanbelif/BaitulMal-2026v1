@@ -323,7 +323,7 @@ export default function CampaignSummaryPage() {
     };
 
     const handleToggleDocumentPublic = (urlToToggle: string) => {
-        setExistingDocuments(prev => prev.map(doc => doc.url === urlToToggle ? { ...doc, isPublic: !doc.isPublic } : doc));
+        setExistingDocuments(prev => prev.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc));
     };
 
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
@@ -355,7 +355,7 @@ export default function CampaignSummaryPage() {
             imageUrlFilename = '';
         } else if (imageFile) {
             try {
-                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
+                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(imageFile, 1024, 1024, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
                 const filePath = `campaigns/${campaignId}/background.png`;
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);
@@ -736,7 +736,7 @@ export default function CampaignSummaryPage() {
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
                                             <BarChart data={chartDataValues} layout="vertical" margin={{ right: 20 }}>
-                                                <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartDataValues.map((entry) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
+                                                <CartesianGrid horizontal={false} stroke dasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartDataValues.map((entry) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
                                             </BarChart>
                                         </ChartContainer>
                                         ) : <Skeleton className="h-[250px] w-full" />}

@@ -99,9 +99,9 @@ const typeIcons: Record<string, any> = {
 };
 
 const comparisonData = [
-    { feature: 'Current Status', zakat: 'Obligatory (Fard)', sadaqah: 'Voluntary', lillah: 'Voluntary', fidiya: 'Obligatory Compensation', interest: 'Mandatory Disposal' },
-    { feature: 'Required Amount', zakat: 'Fixed (2.5%)', sadaqah: 'Any Amount', lillah: 'Any Amount', fidiya: 'Fixed Per Missed Fast', interest: 'Total Amount Earned' },
-    { feature: 'Valid Recipient', zakat: 'Specific 8 Categories', sadaqah: 'Anyone In Need', lillah: 'Institutions/Public', fidiya: 'Poor & Needy', interest: 'Public Welfare' },
+    { feature: 'Status', zakat: 'Obligatory (Fard)', sadaqah: 'Voluntary', lillah: 'Voluntary', fidiya: 'Compensation', interest: 'Mandatory' },
+    { feature: 'Amount', zakat: 'Fixed (2.5%)', sadaqah: 'Any', lillah: 'Any', fidiya: 'Fixed', interest: 'Total' },
+    { feature: 'Recipient', zakat: 'Specific 8 Groups', sadaqah: 'Anyone', lillah: 'Institutional', fidiya: 'Needy', interest: 'Public Welfare' },
 ];
 
 export default function DonationInfoPage() {
@@ -125,7 +125,7 @@ export default function DonationInfoPage() {
         return (
             <main className="container mx-auto p-4 md:p-8 text-center font-normal">
                 <h1 className="text-2xl font-bold text-primary">Page Not Available</h1>
-                <p className="text-muted-foreground mt-2">This Informational Page Is Not Currently Public.</p>
+                <p className="text-muted-foreground mt-2">This informational page is not currently public.</p>
                  <Button asChild className="mt-6 font-bold" variant="outline">
                     <Link href="/">
                         <ArrowLeft className="mr-2 h-4 w-4" />
@@ -148,9 +148,9 @@ export default function DonationInfoPage() {
       </div>
 
       <section className="text-center space-y-4 animate-fade-in-up">
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-primary">Financial Wisdom In Islam</h1>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter text-primary">Financial Wisdom</h1>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto font-normal leading-relaxed">
-              Understanding The Distinct Categories Of Charitable Giving Ensures Your Contributions Are Used Correctly And Fulfill Their Intended Religious Purposes.
+              Understanding charitable giving ensures your contributions are used correctly.
           </p>
       </section>
 
@@ -215,7 +215,7 @@ export default function DonationInfoPage() {
                                     {!type.hideUseCases && visibleUseCases.length > 0 && (
                                         <div className="space-y-6">
                                             <h3 className="text-xl font-bold tracking-tight text-primary flex items-center gap-3">
-                                                <Target className="h-5 w-5" /> {type.useCasesHeading || "Practical Scenarios & Methodology"}
+                                                <Target className="h-5 w-5" /> {type.useCasesHeading || "Scenarios & Methodology"}
                                             </h3>
                                             <div className="grid gap-4">
                                                 {visibleUseCases.map((useCase) => (
@@ -227,13 +227,6 @@ export default function DonationInfoPage() {
                                                             <div className="space-y-2 flex-1">
                                                                 {useCase.title && <h4 className="font-bold text-base text-primary">{useCase.title}</h4>}
                                                                 <p className="text-muted-foreground font-normal text-sm leading-relaxed">{useCase.description}</p>
-                                                                
-                                                                {(useCase.quranVerse || useCase.quranSource) && (
-                                                                    <div className="mt-4 p-4 bg-muted/20 rounded-xl border-l-2 border-primary/20 italic text-xs text-muted-foreground">
-                                                                        {useCase.quranVerse && <p>"{useCase.quranVerse}"</p>}
-                                                                        {useCase.quranSource && <p className="text-[10px] font-bold text-primary text-right mt-2">— {useCase.quranSource}</p>}
-                                                                    </div>
-                                                                )}
                                                             </div>
                                                         </div>
                                                     </div>
@@ -247,7 +240,7 @@ export default function DonationInfoPage() {
                                     {!type.hideKeyHighlights && type.purposePoints && type.purposePoints.length > 0 && (
                                         <div className="bg-primary/[0.02] p-6 rounded-2xl border border-primary/10 shadow-sm">
                                             <h4 className="font-bold text-[10px] uppercase tracking-widest text-primary/60 mb-4 flex items-center gap-2">
-                                                <ListChecks className="h-4 w-4" /> Key Highlights
+                                                <ListChecks className="h-4 w-4" /> Key highlights
                                             </h4>
                                             <ul className="space-y-3">
                                                 {type.purposePoints.map((point, pIdx) => (
@@ -259,28 +252,13 @@ export default function DonationInfoPage() {
                                             </ul>
                                         </div>
                                     )}
-
-                                    <div className="space-y-6">
-                                        {!type.hideUsage && type.usage && (
-                                            <div className="p-4 rounded-xl bg-muted/30 border border-primary/5">
-                                                <span className="font-bold text-[10px] tracking-tight text-primary/40 block mb-2">Permissible Usage</span>
-                                                <p className="text-sm font-normal leading-relaxed whitespace-pre-wrap">{type.usage}</p>
-                                            </div>
-                                        )}
-                                        {!type.hideRestrictions && type.restrictions && (
-                                            <div className="p-4 rounded-xl bg-red-50/30 border border-red-100">
-                                                <span className="font-bold text-[10px] tracking-tight text-red-400 block mb-2">Strict Restrictions</span>
-                                                <p className="text-sm font-normal leading-relaxed text-red-900/70 whitespace-pre-wrap">{type.restrictions}</p>
-                                            </div>
-                                        )}
-                                    </div>
                                 </div>
                             </div>
 
                             {!type.hideQA && visibleQA.length > 0 && (
                                 <div className="space-y-8 pt-10 border-t border-primary/10 font-normal">
                                     <h3 className="text-xl font-bold tracking-tight text-primary flex items-center gap-3">
-                                        <BookOpen className="h-5 w-5" /> Common Questions
+                                        <BookOpen className="h-5 w-5" /> Common questions
                                     </h3>
                                     <div className="grid sm:grid-cols-2 gap-6">
                                         {visibleQA.map((qa) => (
@@ -289,19 +267,6 @@ export default function DonationInfoPage() {
                                                     <h4 className="font-bold text-base text-primary">Q: {qa.question}</h4>
                                                     <p className="text-sm text-foreground/80 leading-relaxed font-normal">A: {qa.answer}</p>
                                                 </div>
-                                                
-                                                {(qa.quranVerse || qa.quranSource) && (
-                                                    <div className="p-3 bg-white/50 rounded-xl border-l-2 border-primary/20 italic text-xs text-muted-foreground">
-                                                        {qa.quranVerse && <p>"{qa.quranVerse}"</p>}
-                                                        {qa.quranSource && <p className="text-[10px] font-bold text-primary text-right mt-1">— {qa.quranSource}</p>}
-                                                    </div>
-                                                )}
-                                                
-                                                {qa.reference && (
-                                                    <p className="text-[10px] font-bold text-primary/40 uppercase tracking-tight pt-2 flex items-center gap-1">
-                                                        <Info className="h-3 w-3" /> Reference: {qa.reference}
-                                                    </p>
-                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -317,7 +282,7 @@ export default function DonationInfoPage() {
       <section className="max-w-5xl mx-auto space-y-6 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
           <div className="text-center space-y-2">
               <h2 className="text-2xl font-bold tracking-tight text-primary">Quick Comparison</h2>
-              <p className="text-muted-foreground font-normal">Identifying The Primary Differences At A Glance.</p>
+              <p className="text-muted-foreground font-normal">Differences At A Glance.</p>
           </div>
           <Card className="shadow-xl overflow-hidden border-primary/10 bg-white rounded-2xl">
               <Table>
@@ -350,7 +315,7 @@ export default function DonationInfoPage() {
             <AlertCircle className="h-6 w-6 text-primary" />
             <AlertTitle className="font-bold text-sm tracking-tight ml-2">Consult A Scholar</AlertTitle>
             <AlertDescription className="text-base font-normal ml-2 mt-2 leading-relaxed">
-                While This Page Provides General Guidelines, Specific Financial Situations Can Vary. We Always Recommend Consulting With A Knowledgeable Religious Scholar For Precise Rulings On Your Personal Wealth And Zakat Calculation.
+                Specific situations vary. We recommend consulting a scholar for precise rulings.
             </AlertDescription>
         </Alert>
       </div>

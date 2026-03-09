@@ -355,7 +355,7 @@ export default function LeadSummaryPage() {
             imageUrl = '';
         } else if (imageFile) {
             try {
-                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(imageFile, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
+                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(imageFile, 1024, 1024, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
                 const filePath = `leads/${leadId}/background.png`;
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);

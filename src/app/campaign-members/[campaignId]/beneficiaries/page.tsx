@@ -336,20 +336,6 @@ export default function BeneficiariesPage() {
     }
   };
 
-  const handleExport = () => {
-    if (!filteredBeneficiaries.length) return;
-    const headers = ['Name', 'Phone', 'Verification Status', 'Disbursement Status', 'Kit Amount', 'Referral'];
-    const rows = filteredBeneficiaries.map(b => [b.name, b.phone || 'N/A', b.verificationStatus || 'Pending', b.status || 'Pending', b.kitAmount || 0, b.referralBy || 'N/A']);
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `beneficiaries_${campaign?.name.replace(/\s+/g, '_')}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const handleImport = async (records: Partial<Beneficiary>[]) => {
     if (!userProfile) return;
     const res = await bulkImportBeneficiariesAction(records, { id: userProfile.id, name: userProfile.name }, { type: 'campaign', id: campaignId });
@@ -388,7 +374,7 @@ export default function BeneficiariesPage() {
             <p className="text-sm font-bold text-muted-foreground opacity-70">Total Requirement: <span className="font-mono text-primary">₹{stats.totalAmount.toLocaleString('en-IN')}</span></p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleExport} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+            <Button variant="outline" size="sm" onClick={() => { if(beneficiaries) { const headers = ['Name', 'Phone', 'Vetting', 'Disbursement', 'Amount']; const rows = beneficiaries.map(b => [b.name, b.phone || 'N/A', b.verificationStatus || 'Pending', b.status || 'Pending', b.kitAmount || 0]); const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const link = document.createElement('a'); link.href = `data:text/csv;charset=utf-8,${encodeURI(csv)}`; link.download = `beneficiaries_${campaignId}.csv`; link.click(); } }} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
               <Download className="mr-2 h-4 w-4"/> Export CSV
             </Button>
             <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
