@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -210,6 +211,9 @@ export default function LeadSummaryPage() {
         return lead?.purpose === 'Relief' && lead?.category === 'Ration Kit';
     }, [lead]);
 
+    const itemGivenLabel = useMemo(() => isRationInitiative ? 'Kits Given' : 'Assistance Given', [isRationInitiative]);
+    const itemPendingLabel = useMemo(() => isRationInitiative ? 'Pending Kits' : 'Pending Support', [isRationInitiative]);
+
     const availableCategoriesList = useMemo(() => {
         const selectedPurpose = leadPurposesConfig.find(p => p.id === (editableLead.purpose || 'Relief'));
         return selectedPurpose?.categories || [];
@@ -325,7 +329,7 @@ export default function LeadSummaryPage() {
     };
 
     const handleToggleDocumentPublic = (urlToToggle: string) => {
-        setExistingDocuments(prev => prev.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc));
+        setExistingDocuments(prev => prev.map(doc => doc.url === urlToToggle ? { ...doc, isPublic: !doc.isPublic } : doc));
     };
 
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
@@ -662,8 +666,8 @@ export default function LeadSummaryPage() {
                         {isVisible('quick_stats') && (
                             <div className="grid gap-6 grid-cols-1 sm:grid-cols-3 font-normal">
                                 <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.totalBeneficiaries}</div></CardContent></Card>
-                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Assistance Given</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesGiven}</div></CardContent></Card>
-                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Pending Support</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesPending}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">{itemGivenLabel}</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesGiven}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">{itemPendingLabel}</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesPending}</div></CardContent></Card>
                             </div>
                         )}
 
@@ -900,7 +904,7 @@ export default function LeadSummaryPage() {
                     <ScrollArea className="flex-1 bg-secondary/20">
                         <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
                             {imageToView && (
-                                <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Verification Evidence" fill sizes="100vw" className="object-contain transition-all duration-300 origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                                Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Verification Evidence" fill sizes="100vw" className="object-contain transition-all duration-300 origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                             )}
                         </div>
                         <ScrollBar orientation="vertical" />

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -200,6 +201,9 @@ export default function CampaignSummaryPage() {
         return campaign?.category === 'Ration';
     }, [campaign]);
 
+    const itemGivenLabel = useMemo(() => isRationInitiative ? 'Kits Given' : 'Assistance Given', [isRationInitiative]);
+    const itemPendingLabel = useMemo(() => isRationInitiative ? 'Pending Kits' : 'Pending Support', [isRationInitiative]);
+
     const beneficiaryGroups = useMemo(() => {
         if (!campaign || !beneficiaries) return [];
         const categories = (campaign.itemCategories || []).filter(c => c.name !== 'Item Price List');
@@ -323,7 +327,7 @@ export default function CampaignSummaryPage() {
     };
 
     const handleToggleDocumentPublic = (urlToToggle: string) => {
-        setExistingDocuments(prev => prev.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc));
+        setExistingDocuments(prev => prev.map(doc => doc.url === urlToToggle ? { ...doc, isPublic: !doc.isPublic } : doc));
     };
 
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
@@ -607,8 +611,8 @@ export default function CampaignSummaryPage() {
                         {isVisible('quick_stats') && (
                             <div className="grid gap-6 grid-cols-1 sm:grid-cols-3 font-normal">
                                 <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.totalBeneficiaries}</div></CardContent></Card>
-                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Kits Given</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesGiven}</div></CardContent></Card>
-                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesPending}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">{itemGivenLabel}</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesGiven}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">{itemPendingLabel}</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesPending}</div></CardContent></Card>
                             </div>
                         )}
 

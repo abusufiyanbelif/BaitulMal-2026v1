@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -554,7 +555,7 @@ export default function DonationsPage() {
 
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent className="rounded-[12px] border-primary/10">
-                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Confirm Permanent Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Verification Evidence. This Action Is Irreversible.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Confirm Permanent Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Verification Evidence. This Action Is Irreversible.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel>
                     <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 rounded-[12px]">Confirm Deletion</AlertDialogAction>

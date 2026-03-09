@@ -153,7 +153,9 @@ export default function BeneficiariesPage() {
 
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.update', false);
 
-  const itemLabelSuffix = campaign?.category === 'Ration' ? 'Kit' : 'Item';
+  const isRation = campaign?.category === 'Ration';
+  const itemGivenLabel = isRation ? 'Kits Given' : 'Assistance Given';
+  const itemPendingLabel = isRation ? 'Pending Kits' : 'Pending Support';
 
   const availableCategories = useMemo(() => {
     if (!campaign?.itemCategories) return [];
@@ -387,7 +389,7 @@ export default function BeneficiariesPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <h2 className="text-3xl font-bold text-primary tracking-tight">Beneficiary Registry ({beneficiaries?.length || 0})</h2>
-            <p className="text-sm font-bold text-muted-foreground opacity-70">Calculated Requirement: <span className="font-mono text-primary">₹{stats.totalAmount.toLocaleString('en-IN')}</span></p>
+            <p className="text-sm font-bold text-muted-foreground opacity-70">Total Requirement: <span className="font-mono text-primary">₹{stats.totalAmount.toLocaleString('en-IN')}</span></p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" onClick={() => { if(beneficiaries) { const headers = ['Name', 'Phone', 'Verification', 'Disbursement', 'Amount']; const rows = beneficiaries.map(b => [b.name, b.phone || 'N/A', b.verificationStatus || 'Pending', b.status || 'Pending', b.kitAmount || 0]); const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const link = document.createElement('a'); link.href = `data:text/csv;charset=utf-8,${encodeURI(csv)}`; link.download = `beneficiaries_camp_${campaignId}.csv`; link.click(); } }} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
@@ -409,7 +411,7 @@ export default function BeneficiariesPage() {
             <StatCard title="Total" count={stats.total} description="Combined Recipients" icon={Users} delay="100ms" />
             <StatCard title="Pending" count={stats.pending} description="Awaiting Support" icon={Hourglass} delay="150ms" />
             <StatCard title="Verified" count={stats.verified} description="Assistance Secured" icon={CheckCircle2} delay="200ms" />
-            <StatCard title="Given" count={stats.given} description={`${itemLabelSuffix} Disbursed`} icon={CheckCircle2} delay="250ms" colorClass="border-primary/10 bg-primary/5 shadow-inner" />
+            <StatCard title="Given" count={stats.given} description={itemGivenLabel} icon={CheckCircle2} delay="250ms" colorClass="border-primary/10 bg-primary/5 shadow-inner" />
             <StatCard title="Hold" count={stats.hold} description="Suspended Profiles" icon={XCircle} delay="300ms" />
             <StatCard title="Need Details" count={stats.needDetails} description="Review Required" icon={Info} delay="350ms" />
         </div>
@@ -562,7 +564,7 @@ export default function BeneficiariesPage() {
                     <div className="text-center">Verification Status</div>
                     <div className="text-center">Disbursement Status</div>
                     <div className="text-center">Zakat</div>
-                    <div className="text-right">Kit Amount (₹)</div>
+                    <div className="text-right">Allocation Amount (₹)</div>
                     <div className="text-right">Zakat Allocation (₹)</div>
                     <div>Referred By</div>
                     <div className="text-right pr-4">Actions</div>
@@ -572,7 +574,7 @@ export default function BeneficiariesPage() {
                     {Object.entries(beneficiariesByCategory).map(([catId, list]) => {
                         const cat = availableCategories.find(c => c.id === catId);
                         let categoryName = cat?.name || 'Uncategorized';
-                        if (campaign.category === 'Ration' && cat) {
+                        if (isRation && cat) {
                             if (cat.minMembers === 1 && cat.maxMembers === 1) categoryName = `Member (1)`;
                             else if (cat.minMembers !== undefined && cat.maxMembers !== undefined) categoryName = `Members (${cat.minMembers}-${cat.maxMembers})`;
                         }

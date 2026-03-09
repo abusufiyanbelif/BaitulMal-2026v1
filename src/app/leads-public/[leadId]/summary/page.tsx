@@ -128,6 +128,9 @@ export default function PublicLeadSummaryPage() {
         return lead?.purpose === 'Relief' && lead?.category === 'Ration Kit';
     }, [lead]);
 
+    const itemGivenLabel = useMemo(() => isRationInitiative ? 'Kits Given' : 'Assistance Given', [isRationInitiative]);
+    const itemPendingLabel = useMemo(() => isRationInitiative ? 'Pending Kits' : 'Pending Support', [isRationInitiative]);
+
     const beneficiaryGroups = useMemo(() => {
         if (!lead || !beneficiaries) return [];
         const categories = (lead.itemCategories || []).filter(c => c.name !== 'Item Price List');
@@ -316,8 +319,8 @@ export default function PublicLeadSummaryPage() {
                         {isVisible('quick_stats') && (
                             <div className="grid gap-6 sm:grid-cols-3">
                                 <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
-                                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Assistance Provided</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
-                                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Pending</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">{itemGivenLabel}</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">{itemPendingLabel}</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
                             </div>
                         )}
 
