@@ -369,6 +369,39 @@ export default function DonationsPage() {
             </ScrollArea>
         </div>
 
+        {/* Sticky Action Hub */}
+        {selectedIds.length > 0 && (
+            <div className="sticky top-[73px] z-40 animate-fade-in-up w-full">
+                <div className="flex items-center justify-start gap-4 px-4 py-2 bg-primary/5 border border-primary/20 backdrop-blur-md rounded-xl shadow-sm mb-4">
+                    <div className="flex items-center gap-2 pr-4 border-r border-primary/10">
+                        <CheckSquare className="h-4 w-4 text-primary" />
+                        <span className="text-xs font-bold tracking-tight whitespace-nowrap text-primary">{selectedIds.length} Selected</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-1">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="text-primary hover:bg-primary/10 font-bold h-8 text-xs px-3" disabled={isBulkUpdating}>
+                                    Change Status
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="start" className="w-56 rounded-xl shadow-dropdown border-primary/10">
+                                <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-normal">Set To Verified</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkStatusChange('Canceled')} className="font-normal text-destructive">Set To Canceled</DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+
+                    <div className="ml-auto">
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-primary/40 hover:text-primary rounded-full" onClick={() => setSelectedIds([])}>
+                            <X className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        )}
+
         <Card className="animate-fade-in-zoom border-primary/10 shadow-sm overflow-hidden bg-white">
             <CardHeader className="bg-primary/5 p-4 sm:p-6 border-b">
                 <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
@@ -478,7 +511,7 @@ export default function DonationsPage() {
             </CardContent>
             {totalPages > 1 && (
                 <CardFooter className="flex items-center justify-between py-4 border-t bg-primary/5">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Page {currentPage} of {totalPages}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground">Page {currentPage} of {totalPages}</p>
                     <div className="flex gap-2">
                         <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 h-8">Previous</Button>
                         <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 h-8">Next</Button>
@@ -486,36 +519,6 @@ export default function DonationsPage() {
                 </CardFooter>
             )}
         </Card>
-
-        {/* Bulk Action Bar */}
-        {selectedIds.length > 0 && (
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-slide-in-from-bottom">
-                <div className="flex items-center gap-4 px-6 py-3 bg-primary text-white rounded-full shadow-2xl border border-white/20 backdrop-blur-md">
-                    <div className="flex items-center gap-2 pr-4 border-r border-white/20">
-                        <CheckSquare className="h-5 w-5" />
-                        <span className="text-sm font-bold tracking-tight">{selectedIds.length} Selected</span>
-                    </div>
-                    
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="text-white hover:bg-white/10 font-bold h-8" disabled={isBulkUpdating}>
-                                {isBulkUpdating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ChevronsUpDown className="mr-2 h-4 w-4"/>}
-                                Bulk Update Status
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-56 rounded-xl shadow-dropdown border-primary/10">
-                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-bold">Set To Verified</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Canceled')} className="font-normal text-destructive">Set To Canceled</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-white hover:bg-white/10 rounded-full" onClick={() => setSelectedIds([])}>
-                        <X className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div>
-        )}
       
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-primary/10 p-0 overflow-hidden">
