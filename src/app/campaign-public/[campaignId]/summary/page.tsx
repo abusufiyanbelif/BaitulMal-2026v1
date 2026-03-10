@@ -141,6 +141,10 @@ export default function PublicCampaignSummaryPage() {
         });
     }, [campaign, beneficiaries, isRationInitiative]);
 
+    const calculatedRequirementTotal = useMemo(() => {
+        return beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0);
+    }, [beneficiaryGroups]);
+
     const fundingData = useMemo(() => {
         if (!allDonations || !campaign || !beneficiaries) return null;
         
@@ -203,17 +207,20 @@ export default function PublicCampaignSummaryPage() {
                 return sum + amount;
             }, 0);
 
+        // UI Target Goal should match calculated requirement if available
+        const targetAmount = calculatedRequirementTotal > 0 ? calculatedRequirementTotal : (campaign.targetAmount || 0);
+
         return { 
             totalCollectedForGoal, 
-            fundingProgress: (campaign.targetAmount || 0) > 0 ? (totalCollectedForGoal / campaign.targetAmount!) * 100 : 0, 
-            targetAmount: campaign.targetAmount || 0, 
+            fundingProgress: targetAmount > 0 ? (totalCollectedForGoal / targetAmount) * 100 : 0, 
+            targetAmount, 
             totalBeneficiaries: beneficiaries.length, 
             beneficiariesGiven: beneficiaries.filter(b => b.status === 'Given').length, 
             beneficiariesPending: beneficiaries.length - beneficiaries.filter(b => b.status === 'Given').length, 
             zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, amountsByCategory, paymentTypeStats,
             grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
         };
-    }, [allDonations, campaign, beneficiaries]);
+    }, [allDonations, campaign, beneficiaries, calculatedRequirementTotal]);
 
     const paymentTypeChartData = useMemo(() => {
         if (!fundingData?.paymentTypeStats) return [];
@@ -269,7 +276,7 @@ export default function PublicCampaignSummaryPage() {
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
              <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform font-bold border-primary/20 text-primary"><Link href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button></div>
             
-            <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center cursor-pointer" onClick={() => campaign.imageUrl && handleViewImage(campaign.imageUrl, campaign.name)}>
+            <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center cursor-pointer" onClick={() => lead.imageUrl && handleViewImage(lead.imageUrl, lead.name)}>
                 {campaign.imageUrl ? (
                     <Image 
                         src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`} 
@@ -297,7 +304,7 @@ export default function PublicCampaignSummaryPage() {
                             <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed">{campaign.description || 'No description provided.'}</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 text-primary">
-                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Fundraising Goal</p><p className="mt-1 text-lg font-bold text-primary font-mono">₹{(campaign.targetAmount ?? 0).toLocaleString('en-IN')}</p></div>
+                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Fundraising Goal</p><p className="mt-1 text-lg font-bold text-primary font-mono">₹{(fundingData.targetAmount ?? 0).toLocaleString('en-IN')}</p></div>
                             <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Category</p><p className="mt-1 text-lg font-bold text-primary">{campaign.category}</p></div>
                              <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Start Date</p><p className="mt-1 text-lg font-bold text-primary">{campaign.startDate}</p></div>
                             <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">End Date</p><p className="mt-1 text-lg font-bold text-primary">{campaign.endDate}</p></div>
@@ -328,7 +335,12 @@ export default function PublicCampaignSummaryPage() {
                                         </div>
                                         <div className="space-y-4 text-center md:text-left text-primary font-bold">
                                             <div><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Raised For Goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                            <div><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                            <div>
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight">
+                                                    {calculatedRequirementTotal > 0 ? "Target Goal (Synced)" : "Target Goal"}
+                                                </p>
+                                                <p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p>
+                                            </div>
                                             <div><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Grand Total Received</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                         </div>
                                     </div>
@@ -381,7 +393,7 @@ export default function PublicCampaignSummaryPage() {
                                                     </TableBody>
                                                     {beneficiaryGroups.length > 0 && (
                                                         <tfoot className="bg-primary/5 border-t">
-                                                            <TableRow><TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight">Total Requirement</TableCell><TableCell className="text-right font-mono font-bold text-primary text-lg">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell></TableRow>
+                                                            <TableRow><TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight">Total Requirement</TableCell><TableCell className="text-right font-mono font-bold text-primary text-lg">₹{calculatedRequirementTotal.toLocaleString('en-IN')}</TableCell></TableRow>
                                                         </tfoot>
                                                     )}
                                                 </Table>

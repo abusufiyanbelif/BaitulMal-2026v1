@@ -178,7 +178,7 @@ export default function LeadSummaryPage() {
         if (!lead || !beneficiaries) return [];
         const categories = (lead.itemCategories || []).filter(c => c.name !== 'Item Price List');
         return categories.map(cat => {
-            const count = beneficiaries.filter(b => b.itemCategoryId === cat.id).length;
+            const count = beneficiaries.filter(b => b.itemCategoryId === cat.id || (!b.itemCategoryId && cat.id === 'general')).length;
             const kitAmount = cat.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
             
             let displayName = cat.name;
@@ -190,6 +190,15 @@ export default function LeadSummaryPage() {
             return { id: cat.id, name: displayName, count, kitAmount, totalAmount: count * kitAmount };
         });
     }, [lead, beneficiaries, isRationInitiative]);
+
+    const calculatedRequirementTotal = useMemo(() => {
+        if (isRationInitiative) {
+            return beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0);
+        } else {
+            const singleUnitTotal = lead?.itemCategories?.[0]?.items.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity) || 0), 0) || 0;
+            return singleUnitTotal * (beneficiaries?.length || 0);
+        }
+    }, [beneficiaryGroups, isRationInitiative, lead, beneficiaries]);
 
     const fundingData = useMemo(() => {
         if (!allDonations || !lead || !beneficiaries) return null;
@@ -238,10 +247,13 @@ export default function LeadSummaryPage() {
                 return sum + amount;
             }, 0);
 
+        // Sync target with calculated requirement total if available
+        const targetAmount = calculatedRequirementTotal > 0 ? calculatedRequirementTotal : (lead.targetAmount || 0);
+
         return {
             totalCollectedForGoal,
-            fundingProgress: (lead.targetAmount || 0) > 0 ? (totalCollectedForGoal / lead.targetAmount!) * 100 : 0,
-            targetAmount: lead.targetAmount || 0,
+            fundingProgress: targetAmount > 0 ? (totalCollectedForGoal / targetAmount) * 100 : 0,
+            targetAmount,
             amountsByCategory,
             paymentTypeStats,
             zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal,
@@ -250,7 +262,7 @@ export default function LeadSummaryPage() {
             beneficiariesPending: beneficiaries.length - beneficiaries.filter(b => b.status === 'Given').length,
             grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
         };
-    }, [allDonations, lead, beneficiaries]);
+    }, [allDonations, lead, beneficiaries, calculatedRequirementTotal]);
 
     const chartDataValues = useMemo(() => {
         return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ 
@@ -460,7 +472,7 @@ export default function LeadSummaryPage() {
               <ScrollArea className="w-full">
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 w-full bg-transparent p-0 border-b border-primary/10 pb-4">
                       <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/leads-members/${leadId}/summary` ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Summary</Link>
-                      <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Item List</Link>
+                      <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10 active:scale-95", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Item List</Link>
                       {canReadBeneficiaries && ( <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link> )}
                       {canReadDonations && ( <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Donations</Link> )}
                   </div>
@@ -595,7 +607,12 @@ export default function LeadSummaryPage() {
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                                         <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Purpose</p><p className="font-bold tracking-tight text-primary text-sm">{lead?.purpose} {lead?.category && `(${lead.category})`}</p></div>
-                                        <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Target Goal</p><p className="font-bold font-mono text-primary text-sm">₹{(lead?.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                        <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm">
+                                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight">
+                                                {calculatedRequirementTotal > 0 ? "Target Goal (Synced)" : "Target Goal"}
+                                            </p>
+                                            <p className="font-bold font-mono text-primary text-sm">₹{(fundingData?.targetAmount || 0).toLocaleString('en-IN')}</p>
+                                        </div>
                                         <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Start Date</p><p className="font-bold text-primary text-sm">{lead?.startDate || 'N/A'}</p></div>
                                         <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">End Date</p><p className="font-bold text-primary text-sm">{lead?.endDate || 'N/A'}</p></div>
                                     </div>
@@ -699,7 +716,7 @@ export default function LeadSummaryPage() {
                                                         <TableFooter className="bg-primary/5 border-t font-bold">
                                                             <TableRow>
                                                                 <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight">Total Initiative Requirement</TableCell>
-                                                                <TableCell className="text-right font-mono font-bold text-primary text-base">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold text-primary text-base">₹{calculatedRequirementTotal.toLocaleString('en-IN')}</TableCell>
                                                             </TableRow>
                                                         </TableFooter>
                                                     )}
@@ -728,7 +745,7 @@ export default function LeadSummaryPage() {
                                                         <TableRow>
                                                             <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight">Single Unit Total</TableCell>
                                                             <TableCell className="text-right font-mono font-bold text-primary text-base">
-                                                                ₹{(lead?.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
+                                                                ₹{calculatedRequirementTotal.toLocaleString('en-IN')}
                                                             </TableCell>
                                                         </TableRow>
                                                     </TableFooter>

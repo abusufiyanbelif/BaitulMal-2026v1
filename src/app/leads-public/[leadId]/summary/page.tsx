@@ -46,7 +46,8 @@ import {
     ImageIcon,
     GraduationCap,
     HeartPulse,
-    Info
+    Info,
+    ShieldCheck
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ShareDialog } from '@/components/share-dialog';
@@ -141,6 +142,15 @@ export default function PublicLeadSummaryPage() {
         });
     }, [lead, beneficiaries, isRationInitiative]);
 
+    const calculatedRequirementTotal = useMemo(() => {
+        if (isRationInitiative) {
+            return beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0);
+        } else {
+            const singleUnitTotal = lead?.itemCategories?.[0]?.items.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity) || 0), 0) || 0;
+            return singleUnitTotal * (beneficiaries?.length || 0);
+        }
+    }, [beneficiaryGroups, isRationInitiative, lead, beneficiaries]);
+
     const fundingData = useMemo(() => {
         if (!allDonations || !lead || !beneficiaries) return null;
 
@@ -188,10 +198,13 @@ export default function PublicLeadSummaryPage() {
                 return sum + amount;
             }, 0);
 
+        // Sync target with calculated requirement total if available
+        const targetAmount = calculatedRequirementTotal > 0 ? calculatedRequirementTotal : (lead.targetAmount || 0);
+
         return {
             totalCollectedForGoal,
-            fundingProgress: (lead.targetAmount || 0) > 0 ? (totalCollectedForGoal / lead.targetAmount!) * 100 : 0,
-            targetAmount: lead.targetAmount || 0,
+            fundingProgress: targetAmount > 0 ? (totalCollectedForGoal / targetAmount) * 100 : 0,
+            targetAmount,
             amountsByCategory,
             paymentTypeStats,
             zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal,
@@ -200,7 +213,7 @@ export default function PublicLeadSummaryPage() {
             beneficiariesPending: beneficiaries.length - beneficiaries.filter(b => b.status === 'Given').length,
             grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
         };
-    }, [allDonations, lead, beneficiaries]);
+    }, [allDonations, lead, beneficiaries, calculatedRequirementTotal]);
 
     const paymentTypeChartData = useMemo(() => {
         if (!fundingData?.paymentTypeStats) return [];
@@ -278,7 +291,12 @@ export default function PublicLeadSummaryPage() {
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 text-primary">
                             <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Required Amount</p><p className="mt-1 text-lg font-bold text-primary font-mono">₹{(lead.requiredAmount ?? 0).toLocaleString('en-IN')}</p></div>
-                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Fundraising Goal</p><p className="mt-1 text-lg font-bold text-primary font-mono">₹{(lead.targetAmount ?? 0).toLocaleString('en-IN')}</p></div>
+                            <div className="space-y-1">
+                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight">
+                                    {calculatedRequirementTotal > 0 ? "Target Goal (Synced)" : "Target Goal"}
+                                </p>
+                                <p className="mt-1 text-lg font-bold text-primary font-mono">₹{(fundingData?.targetAmount ?? 0).toLocaleString('en-IN')}</p>
+                            </div>
                             <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Purpose</p><p className="mt-1 text-lg font-bold text-primary">{lead.purpose}</p></div>
                             <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Start Date</p><p className="mt-1 text-lg font-bold text-primary">{lead.startDate}</p></div>
                         </div>
@@ -361,7 +379,7 @@ export default function PublicLeadSummaryPage() {
                                                     </TableBody>
                                                     {beneficiaryGroups.length > 0 && (
                                                         <tfoot className="bg-primary/5 border-t">
-                                                            <TableRow><TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight">Total Requirement</TableCell><TableCell className="text-right font-mono font-bold text-primary text-lg">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell></TableRow>
+                                                            <TableRow><TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight">Total Requirement</TableCell><TableCell className="text-right font-mono font-bold text-primary text-lg">₹{calculatedRequirementTotal.toLocaleString('en-IN')}</TableCell></TableRow>
                                                         </tfoot>
                                                     )}
                                                 </Table>
@@ -389,7 +407,7 @@ export default function PublicLeadSummaryPage() {
                                                         <TableRow>
                                                             <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight">Single Beneficiary Total</TableCell>
                                                             <TableCell className="text-right font-mono font-bold text-primary text-lg">
-                                                                ₹{(lead.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
+                                                                ₹{calculatedRequirementTotal.toLocaleString('en-IN')}
                                                             </TableCell>
                                                         </TableRow>
                                                     </tfoot>

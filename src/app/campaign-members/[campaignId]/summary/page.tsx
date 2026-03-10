@@ -189,6 +189,10 @@ export default function CampaignSummaryPage() {
         });
     }, [campaign, beneficiaries, isRationInitiative]);
 
+    const calculatedRequirementTotal = useMemo(() => {
+        return beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0);
+    }, [beneficiaryGroups]);
+
     const fundingData = useMemo(() => {
         if (!allDonations || !campaign || !beneficiaries) return null;
         
@@ -251,17 +255,20 @@ export default function CampaignSummaryPage() {
                 return sum + amount;
             }, 0);
 
+        // Ensure target is synced with calculated requirement if greater than zero
+        const targetAmount = calculatedRequirementTotal > 0 ? calculatedRequirementTotal : (campaign.targetAmount || 0);
+
         return { 
             totalCollectedForGoal, 
-            fundingProgress: (campaign.targetAmount || 0) > 0 ? (totalCollectedForGoal / campaign.targetAmount!) * 100 : 0, 
-            targetAmount: campaign.targetAmount || 0, 
+            fundingProgress: targetAmount > 0 ? (totalCollectedForGoal / targetAmount) * 100 : 0, 
+            targetAmount, 
             totalBeneficiaries: beneficiaries.length, 
             beneficiariesGiven: beneficiaries.filter(b => b.status === 'Given').length, 
             beneficiariesPending: beneficiaries.length - beneficiaries.filter(b => b.status === 'Given').length, 
             zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, amountsByCategory, paymentTypeStats,
             grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
         };
-    }, [allDonations, campaign, beneficiaries]);
+    }, [allDonations, campaign, beneficiaries, calculatedRequirementTotal]);
 
     const paymentTypeChartData = useMemo(() => {
         if (!fundingData?.paymentTypeStats) return [];
@@ -600,7 +607,12 @@ export default function CampaignSummaryPage() {
                                         </div>
                                         <div className="space-y-4 text-center md:text-left text-primary font-bold animate-fade-in-up" style={{ animationDelay: '300ms' }}>
                                             <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Raised For Goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                            <div className="transition-transform hover:translate-x-1 duration-300">
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight">
+                                                    {calculatedRequirementTotal > 0 ? "Target Goal (Synced)" : "Target Goal"}
+                                                </p>
+                                                <p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p>
+                                            </div>
                                             <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Grand Total Received</p><p className="text-2xl font-bold text-primary font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                         </div>
                                     </div>
@@ -655,7 +667,7 @@ export default function CampaignSummaryPage() {
                                                         <TableFooter className="bg-primary/5 border-t font-bold">
                                                             <TableRow>
                                                                 <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight">Total Initiative Requirement</TableCell>
-                                                                <TableCell className="text-right font-mono font-bold text-primary text-base">₹{beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0).toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold text-primary text-base">₹{calculatedRequirementTotal.toLocaleString('en-IN')}</TableCell>
                                                             </TableRow>
                                                         </TableFooter>
                                                     )}
