@@ -29,8 +29,8 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const DetailItem = ({ label, value, isMono = false }: { label: string; value: React.ReactNode; isMono?: boolean }) => (
     <div className="space-y-1">
-        <p className="text-xs font-normal text-muted-foreground">{label}</p>
-        <div className={`text-sm font-bold text-primary ${isMono ? 'font-mono' : ''}`}>{value || 'N/A'}</div>
+        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</p>
+        <div className={`text-sm font-bold text-primary ${isMono ? 'font-mono' : ''}`}>{value || <span className="italic opacity-30">N/A</span>}</div>
     </div>
 );
 
@@ -69,18 +69,13 @@ export default function UnlinkedDonationDetailsPage() {
     const handleFormSubmit = async (data: DonationFormData) => {
         const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
         if (hasFilesToUpload && !auth?.currentUser) {
-            toast({
-                title: "Authentication error",
-                description: "User is not authenticated. Please wait for the session to load or log in again.",
-                variant: "destructive",
-            });
+            toast({ title: "Authentication Error", description: "Authorization session expired.", variant: "destructive" });
             return;
         }
 
         if (!firestore || !storage || !userProfile || !canUpdate || !donation || !allCampaigns || !allLeads) return;
 
         setIsFormOpen(false);
-
         const docRef = doc(firestore, 'donations', donation.id);
         
         let finalData: any;
@@ -88,7 +83,6 @@ export default function UnlinkedDonationDetailsPage() {
         try {
             const transactionPromises = data.transactions.map(async (transaction) => {
                 let screenshotUrl = transaction.screenshotUrl || '';
-                // @ts-ignore
                 if (transaction.screenshotFile) {
                     const file = (transaction.screenshotFile as FileList)[0];
                     if(file) {
@@ -118,12 +112,7 @@ export default function UnlinkedDonationDetailsPage() {
             const finalLinkSplit = data.linkSplit?.map(split => {
                 if (!split.linkId || split.linkId === 'unlinked') {
                     if (split.amount > 0) {
-                        return {
-                            linkId: 'unallocated',
-                            linkName: 'Unallocated',
-                            linkType: 'general' as const,
-                            amount: split.amount
-                        };
+                        return { linkId: 'unallocated', linkName: 'Unallocated', linkType: 'general' as const, amount: split.amount };
                     }
                     return null;
                 }
@@ -132,12 +121,7 @@ export default function UnlinkedDonationDetailsPage() {
                 const source = linkType === 'campaign' ? allCampaigns : allLeads;
                 const linkedItem = source?.find((item: Campaign | Lead) => item.id === id);
 
-                return {
-                    linkId: id,
-                    linkName: linkedItem?.name || 'Unknown initiative',
-                    linkType: linkType,
-                    amount: split.amount
-                };
+                return { linkId: id, linkName: linkedItem?.name || 'Unknown initiative', linkType: linkType, amount: split.amount };
             }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
 
             finalData = {
@@ -154,33 +138,18 @@ export default function UnlinkedDonationDetailsPage() {
             await setDoc(docRef, finalData, { merge: true });
             toast({ title: 'Success', description: `Donation updated.`, variant: 'success' });
         } catch (error: any) {
-            console.error("Error during form submission:", error);
             if (error.code === 'permission-denied') {
-                const permissionError = new FirestorePermissionError({
-                    path: docRef.path,
-                    operation: 'update',
-                    requestResourceData: finalData,
-                });
-                errorEmitter.emit('permission-error', permissionError);
+                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: finalData }));
             } else {
-                toast({ title: 'Save failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
+                toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
             }
         }
     };
     
-    const handleShare = () => {
-        if (!donation) return;
-        setIsShareDialogOpen(true);
-    };
+    const handleShare = () => { if (donation) setIsShareDialogOpen(true); };
 
     const handleDownload = (format: 'png' | 'pdf') => {
-        download(format, {
-            contentRef: summaryRef,
-            documentTitle: 'Donation receipt',
-            documentName: `donation-receipt-${donationId}`,
-            brandingSettings,
-            paymentSettings,
-        });
+        download(format, { contentRef: summaryRef, documentTitle: 'Donation Receipt', documentName: `donation-receipt-${donationId}`, brandingSettings, paymentSettings });
     };
 
     const handleViewImage = (url: string) => {
@@ -197,8 +166,8 @@ export default function UnlinkedDonationDetailsPage() {
     if (!donation) {
         return (
             <main className="container mx-auto p-4 md:p-8 text-center font-normal">
-                <p className="text-lg text-muted-foreground">Donation not found.</p>
-                <Button asChild className="mt-4 font-bold"><Link href="/donations"><ArrowLeft className="mr-2 h-4 w-4" /> Back to donations</Link></Button>
+                <p className="text-lg text-primary font-bold opacity-60">Donation Record Not Found.</p>
+                <Button asChild className="mt-4 font-bold border-primary/20 text-primary transition-transform active:scale-95" variant="outline"><Link href="/donations"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Registry</Link></Button>
             </main>
         );
     }
@@ -209,227 +178,202 @@ export default function UnlinkedDonationDetailsPage() {
 
 
     return (
-        <main className="container mx-auto p-4 md:p-8 space-y-6">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-                <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
+        <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal overflow-hidden">
+            <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
+                <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
                     <Link href="/donations">
                         <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to donations
+                        Back To Registry
                     </Link>
                 </Button>
                 <div className="flex gap-2">
                     {canUpdate && (
-                        <Button onClick={() => setIsFormOpen(true)} className="font-bold">
-                            <Edit className="mr-2 h-4 w-4" /> Edit
+                        <Button onClick={() => setIsFormOpen(true)} className="font-bold shadow-md active:scale-95 transition-transform">
+                            <Edit className="mr-2 h-4 w-4" /> Edit Record
                         </Button>
                     )}
-                    <Button variant="outline" onClick={handleShare} className="font-bold border-primary/20 text-primary">
+                    <Button variant="outline" onClick={handleShare} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
                         <Share2 className="mr-2 h-4 w-4" /> Share
                     </Button>
                      <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="font-bold border-primary/20 text-primary">
+                            <Button variant="outline" className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
                                 <Download className="mr-2 h-4 w-4" />
                                 Receipt
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleDownload('png')} className="font-bold text-primary">
-                                <ImageIcon className="mr-2 h-4 w-4" />
-                                As image (PNG)
+                        <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
+                            <DropdownMenuItem onClick={() => handleDownload('png')} className="font-normal text-primary">
+                                <ImageIcon className="mr-2 h-4 w-4 opacity-60" />
+                                Download PNG
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDownload('pdf')} className="font-bold text-primary">
-                                <FileText className="mr-2 h-4 w-4" />
-                                As PDF
+                            <DropdownMenuItem onClick={() => handleDownload('pdf')} className="font-normal text-primary">
+                                <FileText className="mr-2 h-4 w-4 opacity-60" />
+                                Download PDF
                             </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
             </div>
 
-            <div ref={summaryRef} className="space-y-6 bg-white rounded-xl border border-primary/10 overflow-hidden shadow-sm p-4 sm:p-8">
-                <div className="grid gap-8 lg:grid-cols-2">
-                    <div className="space-y-6">
-                        <h2 className="text-xl font-bold text-primary border-b border-primary/10 pb-2">Donation summary</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <DetailItem label="Total amount" value={`₹${donation.amount.toFixed(2)}`} isMono />
-                            <DetailItem label="Donation date" value={donation.donationDate} />
-                            {donation.contributionFromDate && donation.contributionToDate && (
-                                <div className="sm:col-span-2">
-                                    <DetailItem label="Contribution period" value={`${donation.contributionFromDate} to ${donation.contributionToDate}`} />
-                                </div>
+            <div ref={summaryRef} className="space-y-6 p-4 bg-background font-normal animate-fade-in-up">
+                <div className="grid gap-6 lg:grid-cols-2">
+                    <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Donation Summary</CardTitle></CardHeader>
+                        <CardContent className="space-y-4 pt-6">
+                            <DetailItem label="Total Amount" value={`₹${donation.amount.toFixed(2)}`} isMono />
+                            <DetailItem label="Donation Date" value={donation.donationDate} />
+                             {donation.contributionFromDate && donation.contributionToDate && (
+                                <DetailItem label="Contribution Period" value={`${donation.contributionFromDate} to ${donation.contributionToDate}`} />
                             )}
-                            <DetailItem label="Status" value={<Badge variant={donation.status === 'Verified' ? 'success' : donation.status === 'Canceled' ? 'destructive' : 'secondary'} className="font-bold">{donation.status}</Badge>} />
-                            <DetailItem label="Payment method" value={<Badge variant="outline" className="font-bold border-primary/20 text-primary">{donation.donationType}</Badge>} />
-                        </div>
-                    </div>
-                    <div className="space-y-6">
-                        <h2 className="text-xl font-bold text-primary border-b border-primary/10 pb-2">Donor & receiver</h2>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <DetailItem label="Donor name" value={donation.donorName} />
-                            <DetailItem label="Donor phone" value={donation.donorPhone} isMono />
-                            <DetailItem label="Receiver name" value={donation.receiverName} />
-                            <DetailItem label="Referred by" value={donation.referral} />
-                            <div className="sm:col-span-2">
-                                <DetailItem label="Uploaded by" value={donation.uploadedBy} />
+                            <DetailItem label="Status" value={<Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="font-bold">{donation.status}</Badge>} />
+                            <DetailItem label="Payment Method" value={<Badge variant="outline" className="font-bold border-primary/20 text-primary">{donation.donationType}</Badge>} />
+                        </CardContent>
+                    </Card>
+                    <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Donor & Receiver</CardTitle></CardHeader>
+                        <CardContent className="space-y-4 pt-6">
+                            <DetailItem label="Donor Name" value={donation.donorName} />
+                            <DetailItem label="Donor Phone" value={donation.donorPhone} isMono />
+                            <DetailItem label="Receiver Name" value={donation.receiverName} />
+                            <DetailItem label="Referred By" value={donation.referral} />
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Institutional Breakdown</CardTitle></CardHeader>
+                    <CardContent className="grid gap-6 md:grid-cols-2 pt-6">
+                        <div className="space-y-3">
+                            <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Category Designation</h3>
+                            <div className="border border-primary/5 rounded-xl overflow-hidden shadow-inner">
+                                <ScrollArea className="w-full">
+                                    <Table>
+                                        <TableHeader className="bg-primary/5">
+                                            <TableRow><TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Category</TableHead><TableHead className="text-right font-bold text-primary text-[9px] uppercase tracking-tighter">Amount</TableHead></TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {typeSplit.map((s: { category: string, amount: number }) => (
+                                                <TableRow key={s.category} className="hover:bg-primary/[0.02] border-b border-primary/5"><TableCell className="font-medium text-xs">{s.category}</TableCell><TableCell className="text-right font-bold font-mono text-primary text-xs">₹{s.amount.toFixed(2)}</TableCell></TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                    <ScrollBar orientation="horizontal" />
+                                </ScrollArea>
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                <div className="grid gap-8 lg:grid-cols-2 pt-4">
-                    <div className="space-y-4">
-                        <h3 className="text-sm font-bold text-primary tracking-tight">Category breakdown</h3>
-                        <div className="border border-primary/10 rounded-lg overflow-hidden">
-                            <ScrollArea className="w-full">
-                                <Table>
-                                    <TableHeader className="bg-primary/5">
-                                        <TableRow>
-                                            <TableHead className="font-bold text-primary">Category</TableHead>
-                                            <TableHead className="text-right font-bold text-primary">Amount</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {typeSplit.map((s: { category: string, amount: number }) => (
-                                            <TableRow key={s.category}>
-                                                <TableCell className="font-normal">{s.category}</TableCell>
-                                                <TableCell className="text-right font-bold font-mono text-primary">₹{s.amount.toFixed(2)}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                                <ScrollBar orientation="horizontal" />
-                            </ScrollArea>
-                        </div>
-                    </div>
-                    <div className="space-y-4">
-                        <h3 className="text-sm font-bold text-primary tracking-tight">Initiative allocation</h3>
-                        <div className="border border-primary/10 rounded-lg overflow-hidden">
-                            <ScrollArea className="w-full">
-                                <Table>
-                                    <TableHeader className="bg-primary/5">
-                                        <TableRow>
-                                            <TableHead className="font-bold text-primary">Initiative</TableHead>
-                                            <TableHead className="text-right font-bold text-primary">Amount</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {donation.linkSplit && donation.linkSplit.length > 0 ? donation.linkSplit.map((link: DonationLink) => (
-                                            <TableRow key={link.linkId}>
-                                                <TableCell className="flex items-center gap-2 font-normal">
-                                                    {link.linkType === 'campaign' ? <FolderKanban className="h-4 w-4 text-muted-foreground" /> : <Lightbulb className="h-4 w-4 text-muted-foreground" />}
-                                                    {link.linkName}
-                                                </TableCell>
-                                                <TableCell className="text-right font-bold font-mono text-primary">₹{link.amount.toFixed(2)}</TableCell>
-                                            </TableRow>
-                                        )) : (
-                                            <TableRow>
-                                                <TableCell colSpan={2} className="text-center py-4 text-muted-foreground italic font-normal">No specific allocations / General fund</TableCell>
-                                            </TableRow>
-                                        )}
-                                    </TableBody>
-                                </Table>
-                                <ScrollBar orientation="horizontal" />
-                            </ScrollArea>
-                        </div>
-                    </div>
-                </div>
+                         {donation.linkSplit && donation.linkSplit.length > 0 && (
+                            <div className="space-y-3">
+                                <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Initiative Allocation</h3>
+                                <div className="border border-primary/5 rounded-xl overflow-hidden shadow-inner">
+                                    <ScrollArea className="w-full">
+                                        <Table>
+                                            <TableHeader className="bg-primary/5">
+                                                <TableRow><TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Initiative</TableHead><TableHead className="text-right font-bold text-primary text-[9px] uppercase tracking-tighter">Amount</TableHead></TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {donation.linkSplit.map((link: DonationLink) => (
+                                                    <TableRow key={link.linkId} className="hover:bg-primary/[0.02] border-b border-primary/5">
+                                                        <TableCell className="flex items-center gap-2 py-2">
+                                                            {link.linkType === 'campaign' ? <FolderKanban className="h-3.5 w-3.5 text-primary/40" /> : <Lightbulb className="h-3.5 w-3.5 text-primary/40" />}
+                                                            <span className="font-bold text-xs truncate max-w-[150px]">{link.linkName}</span>
+                                                        </TableCell>
+                                                        <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{link.amount.toFixed(2)}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                        <ScrollBar orientation="horizontal" />
+                                    </ScrollArea>
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
 
                 {donation.transactions && donation.transactions.length > 0 && (
-                     <div className="space-y-4 pt-4">
-                        <h3 className="text-sm font-bold text-primary tracking-tight">Transaction records</h3>
-                        <div className="border border-primary/10 rounded-lg overflow-hidden">
-                            <ScrollArea className="w-full">
-                                <Table>
-                                    <TableHeader className="bg-primary/5">
-                                        <TableRow>
-                                            <TableHead className="font-bold text-primary">Amount</TableHead>
-                                            <TableHead className="font-bold text-primary">Date</TableHead>
-                                            <TableHead className="font-bold text-primary">Reference ID</TableHead>
-                                            <TableHead className="font-bold text-primary">Sender UPI</TableHead>
-                                            <TableHead className="text-right font-bold text-primary">Artifact</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {donation.transactions.map((tx: TransactionDetail) => (
-                                            <TableRow key={tx.id}>
-                                                <TableCell className="font-bold font-mono text-primary">₹{tx.amount.toFixed(2)}</TableCell>
-                                                <TableCell className="font-normal">{tx.date || donation.donationDate}</TableCell>
-                                                <TableCell className="font-mono text-xs">{tx.transactionId || 'N/A'}</TableCell>
-                                                <TableCell className="font-mono text-xs">{tx.upiId || 'N/A'}</TableCell>
-                                                <TableCell className="text-right">
-                                                    {tx.screenshotUrl ? (
-                                                         <Button variant="outline" size="sm" onClick={() => handleViewImage(tx.screenshotUrl!)} className="font-bold border-primary/20 text-primary hover:bg-primary/10">
-                                                            <ImageIcon className="mr-2 h-4 w-4"/> View
-                                                        </Button>
-                                                    ) : <span className="text-muted-foreground text-xs italic">No screenshot</span>}
-                                                </TableCell>
+                     <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Transaction Logs</CardTitle></CardHeader>
+                        <CardContent className="pt-6">
+                            <div className="border border-primary/5 rounded-xl overflow-hidden shadow-inner">
+                                <ScrollArea className="w-full">
+                                    <Table>
+                                        <TableHeader className="bg-primary/5">
+                                            <TableRow>
+                                                <TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Amount</TableHead>
+                                                <TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Date</TableHead>
+                                                <TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Ref ID</TableHead>
+                                                <TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Sender UPI</TableHead>
+                                                <TableHead className="text-right font-bold text-primary text-[9px] uppercase tracking-tighter pr-6">Evidence</TableHead>
                                             </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                                <ScrollBar orientation="horizontal" />
-                            </ScrollArea>
-                        </div>
-                    </div>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {donation.transactions.map((tx: TransactionDetail) => (
+                                                <TableRow key={tx.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
+                                                    <TableCell className="font-bold font-mono text-primary text-xs">₹{tx.amount.toFixed(2)}</TableCell>
+                                                    <TableCell className="text-xs font-normal">{tx.date || 'N/A'}</TableCell>
+                                                    <TableCell className="text-xs font-mono opacity-60">{tx.transactionId || 'N/A'}</TableCell>
+                                                    <TableCell className="text-xs font-mono opacity-60">{tx.upiId || 'N/A'}</TableCell>
+                                                    <TableCell className="text-right pr-6">
+                                                        {tx.screenshotUrl ? (
+                                                            <Button variant="outline" size="sm" className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform" onClick={() => handleViewImage(tx.screenshotUrl!, 'Transaction Evidence')}>
+                                                                <ImageIcon className="mr-1.5 h-3 w-3"/> View Evidence
+                                                            </Button>
+                                                        ) : <span className="text-muted-foreground text-[10px] italic">No Artifact</span>}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                    <ScrollBar orientation="horizontal" />
+                                </ScrollArea>
+                            </div>
+                        </CardContent>
+                    </Card>
                 )}
 
                  {(donation.comments || donation.suggestions) && (
-                    <div className="grid gap-8 lg:grid-cols-2 pt-4">
-                        {donation.comments && (
-                            <div className="space-y-2">
-                                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Donor comments</h3>
-                                <p className="text-sm font-normal bg-primary/5 p-4 rounded-lg border border-primary/5 italic">"{donation.comments}"</p>
-                            </div>
-                        )}
-                        {donation.suggestions && (
-                            <div className="space-y-2">
-                                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Internal suggestions</h3>
-                                <p className="text-sm font-normal bg-primary/5 p-4 rounded-lg border border-primary/5 italic">"{donation.suggestions}"</p>
-                            </div>
-                        )}
-                    </div>
+                    <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Vetting Observations</CardTitle></CardHeader>
+                        <CardContent className="space-y-6 pt-6">
+                            {donation.comments && (
+                                <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Donor Comments</p><p className="text-sm font-normal bg-primary/[0.02] p-4 rounded-lg italic border border-primary/5">"{donation.comments}"</p></div>
+                            )}
+                            {donation.suggestions && (
+                                <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Institutional Suggestions</p><p className="text-sm font-normal bg-primary/[0.02] p-4 rounded-lg italic border border-primary/5">"{donation.suggestions}"</p></div>
+                            )}
+                        </CardContent>
+                    </Card>
                 )}
             </div>
 
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                    <DialogHeader>
-                        <DialogTitle className="text-xl font-bold text-primary">Edit donation record</DialogTitle>
-                    </DialogHeader>
-                    <DonationForm
-                        donation={donation}
-                        onSubmit={handleFormSubmit}
-                        onCancel={() => setIsFormOpen(false)}
-                        campaigns={allCampaigns || []}
-                        leads={allLeads || []}
-                    />
+                <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
+                    <DialogHeader className="px-6 py-4 bg-primary/5 border-b"><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">Edit Donation Hub</DialogTitle></DialogHeader>
+                    <ScrollArea className="flex-1 p-6">
+                        <DonationForm donation={donation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} campaigns={allCampaigns || []} leads={allLeads || []} defaultLinkId={'unlinked'} />
+                    </ScrollArea>
+                    <DialogFooter className="px-6 py-4 border-t bg-muted/5"><Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary">Close Editor</Button></DialogFooter>
                 </DialogContent>
             </Dialog>
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-                <DialogContent className="max-w-4xl">
-                    <DialogHeader>
-                        <DialogTitle className="font-bold text-primary">Artifact viewer</DialogTitle>
-                    </DialogHeader>
-                    {imageToView && (
-                        <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border border-primary/10 rounded-md">
-                            <Image
-                                src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
-                                alt="Artifact"
-                                fill
-                                sizes="100vw"
-                                className="object-contain transition-transform duration-200 ease-out origin-center"
-                                style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
-                                unoptimized
-                            />
+                <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10 animate-fade-in-zoom">
+                    <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="text-sm font-bold text-primary uppercase tracking-widest">Evidence Artifact Viewer</DialogTitle></DialogHeader>
+                    <ScrollArea className="flex-1 bg-secondary/20">
+                        <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
+                            {imageToView && (
+                                <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Evidence Document" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                            )}
                         </div>
-                    )}
-                    <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2">
-                        <Button variant="outline" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-primary border-primary/20"><ZoomIn className="mr-2 h-4 w-4"/> Zoom in</Button>
-                        <Button variant="outline" size="sm" onClick={() => setZoom(z => z / 1.2)} className="font-bold text-primary border-primary/20"><ZoomOut className="mr-2 h-4 w-4"/> Zoom out</Button>
-                        <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-primary border-primary/20"><RotateCw className="mr-2 h-4 w-4"/> Rotate</Button>
-                        <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-primary border-primary/20"><RefreshCw className="mr-2 h-4 w-4"/> Reset</Button>
+                        <ScrollBar orientation="horizontal" />
+                        <ScrollBar orientation="vertical" />
+                    </ScrollArea>
+                    <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">
+                        <Button variant="secondary" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
+                        <Button variant="secondary" size="sm" onClick={() => setZoom(z => z / 1.2) } className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
+                        <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
+                        <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
@@ -437,8 +381,8 @@ export default function UnlinkedDonationDetailsPage() {
                 open={isShareDialogOpen} 
                 onOpenChange={setIsShareDialogOpen} 
                 shareData={{
-                    title: `Thank you for your donation!`,
-                    text: `JazakAllah Khair for your generous donation of ₹${donation.amount.toFixed(2)}. May Allah accept it and bless you abundantly.`,
+                    title: `JazakAllah Khair!`,
+                    text: `Thank you for your generous contribution of ₹${donation.amount.toFixed(2)}. May Allah accept it and reward you abundantly.`,
                     url: window.location.href,
                 }} 
             />

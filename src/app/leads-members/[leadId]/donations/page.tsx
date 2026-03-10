@@ -95,12 +95,14 @@ import { donationCategories } from '@/lib/modules';
 import { BrandedLoader } from '@/components/branded-loader';
 import { DonationImportDialog } from '@/components/donation-import-dialog';
 
+const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1100px]";
+
 function StatCard({ title, count, description, icon: Icon, colorClass, delay, isCurrency = false }: { title: string, count: number | string, description: string, icon: any, colorClass?: string, delay: string, isCurrency?: boolean }) {
     return (
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -117,12 +119,10 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: { key: string; direction: 'ascending' | 'descending' } | null, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <TableHead className={cn("cursor-pointer hover:bg-muted/50 transition-colors font-bold text-[hsl(var(--table-header-fg))]", className)} onClick={() => handleSort(sortKey)}>
-            <div className="flex items-center gap-2 whitespace-nowrap">
-                {children}
-                {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
-            </div>
-        </TableHead>
+        <div className={cn("cursor-pointer hover:bg-muted/50 transition-colors font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-widest flex items-center gap-2", className)} onClick={() => handleSort(sortKey)}>
+            {children}
+            {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
+        </div>
     );
 };
 
@@ -203,7 +203,7 @@ export default function DonationsPage() {
         if (sortConfig.key === 'srNo') return 0;
         const aVal = (a as any)[sortConfig.key];
         const bVal = (b as any)[sortConfig.key];
-        if (typeof aVal === 'number') return sortConfig.direction === 'ascending' ? aVal - bVal : bVal - aVal;
+        if (typeof aVal === 'number' && typeof bVal === 'number') return sortConfig.direction === 'ascending' ? aVal - bVal : bVal - aVal;
         return sortConfig.direction === 'ascending' ? String(aVal).localeCompare(String(bVal)) : String(bVal).localeCompare(String(aVal));
       });
     }
@@ -374,10 +374,10 @@ export default function DonationsPage() {
   const isLoading = isLeadLoading || areDonationsLoading || isProfileLoading;
   
   if (isLoading && !lead) return <BrandedLoader />;
-  if (!lead) return <div className="p-8 text-center text-primary font-bold"><p>Lead Not Found.</p><Button asChild variant="outline" className="mt-4"><Link href="/leads-members"><ArrowLeft className="mr-2"/>Back</Link></Button></div>;
+  if (!lead) return <div className="p-8 text-center text-primary font-bold"><p>Lead Not Found.</p><Button asChild variant="outline" className="mt-4 border-primary/20 text-primary"><Link href="/leads-members"><ArrowLeft className="mr-2"/>Back</Link></Button></div>;
 
   return (
-    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative">
+    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative overflow-hidden">
         <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95 text-primary"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
         <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold tracking-tight text-primary">{lead.name}</h1></div>
         
@@ -459,55 +459,51 @@ export default function DonationsPage() {
             </CardHeader>
             <CardContent className="p-0">
                 <ScrollArea className="w-full">
-                    <div className="max-h-[70vh]">
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead className="w-[40px] pl-4 bg-[hsl(var(--table-header-bg))]">
+                    <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold text-[hsl(var(--table-header-fg))] uppercase tracking-widest", donationGridClass)}>
+                        <div className="flex justify-center">
+                            <Checkbox 
+                                checked={paginatedDonations.length > 0 && selectedIds.length === paginatedDonations.length}
+                                onCheckedChange={toggleSelectAll}
+                                className="border-primary/40 data-[state=checked]:bg-primary"
+                            />
+                        </div>
+                        <SortableHeader sortKey="srNo" className="w-[60px]" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
+                        <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
+                        <SortableHeader sortKey="amountForThisLead" className="text-right" sortConfig={sortConfig} handleSort={handleSort}>Amount</SortableHeader>
+                        <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort}>Date</SortableHeader>
+                        <div className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-tighter">Method</div>
+                        <div className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-tighter">Status</div>
+                        <div className="text-right pr-4 font-bold text-[hsl(var(--table-header-fg))] text-[10px] uppercase tracking-tighter">Actions</div>
+                    </div>
+                    <div className="w-full max-h-[70vh]">
+                        {paginatedDonations.map((donation, index) => (
+                            <TableRow key={donation.id} className={cn("hover:bg-[hsl(var(--table-row-hover))] transition-colors cursor-pointer border-b border-primary/10 bg-white items-center", donationGridClass)} onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)}>
+                                <TableCell className="pl-4 flex justify-center" onClick={(e) => e.stopPropagation()}>
                                     <Checkbox 
-                                        checked={paginatedDonations.length > 0 && selectedIds.length === paginatedDonations.length}
-                                        onCheckedChange={toggleSelectAll}
+                                        checked={selectedIds.includes(donation.id)}
+                                        onCheckedChange={() => toggleSelect(donation.id)}
                                         className="border-primary/40 data-[state=checked]:bg-primary"
                                     />
-                                </TableHead>
-                                <SortableHeader sortKey="srNo" className="w-[60px]" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
-                                <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
-                                <SortableHeader sortKey="amountForThisLead" className="text-right" sortConfig={sortConfig} handleSort={handleSort}>Amount</SortableHeader>
-                                <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort}>Date</SortableHeader>
-                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))]">Status</TableHead>
-                                <TableHead className="text-right pr-4 font-bold text-[hsl(var(--table-header-fg))]">Actions</TableHead>
+                                </TableCell>
+                                <TableCell className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
+                                <TableCell className="min-w-0"><div className="font-bold text-sm text-primary truncate">{donation.donorName}</div><div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone}</div></TableCell>
+                                <TableCell className="text-right font-bold font-mono text-primary text-sm">₹{donation.amountForThisLead.toFixed(2)}</TableCell>
+                                <TableCell className="text-xs font-normal text-primary/80 text-center">{donation.donationDate}</TableCell>
+                                <TableCell className="text-center"><Badge variant="secondary" className="text-[9px] font-bold">{donation.donationType}</Badge></TableCell>
+                                <TableCell className="text-center"><Badge variant={donation.status === 'Verified' ? 'eligible' : 'outline'} className="text-[9px] font-bold">{donation.status}</Badge></TableCell>
+                                <TableCell className="text-right pr-4" onClick={e => e.stopPropagation()}>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
+                                            <DropdownMenuItem onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4 opacity-60" /> Details</DropdownMenuItem>
+                                            {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60" /> Edit Record</DropdownMenuItem>}
+                                            {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive font-normal"><Link2Off className="mr-2 h-4 w-4 opacity-60" /> Unlink From Project</DropdownMenuItem>}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </TableCell>
                             </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {paginatedDonations.map((donation, index) => (
-                                <TableRow key={donation.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors cursor-pointer border-b border-primary/10 bg-white" onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)}>
-                                    <TableCell className="pl-4" onClick={(e) => e.stopPropagation()}>
-                                        <Checkbox 
-                                            checked={selectedIds.includes(donation.id)}
-                                            onCheckedChange={() => toggleSelect(donation.id)}
-                                            className="border-primary/40 data-[state=checked]:bg-primary"
-                                        />
-                                    </TableCell>
-                                    <TableCell className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
-                                    <TableCell><div className="font-bold text-sm text-primary">{donation.donorName}</div><div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone}</div></TableCell>
-                                    <TableCell className="text-right font-bold font-mono text-primary">₹{donation.amountForThisLead.toFixed(2)}</TableCell>
-                                    <TableCell className="text-xs font-normal text-primary/80">{donation.donationDate}</TableCell>
-                                    <TableCell><Badge variant={donation.status === 'Verified' ? 'success' : 'outline'} className="text-[10px] font-bold">{donation.status}</Badge></TableCell>
-                                    <TableCell className="text-right pr-4" onClick={e => e.stopPropagation()}>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
-                                                <DropdownMenuItem onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
-                                                {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4" /> Edit</DropdownMenuItem>}
-                                                {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive font-normal"><Link2Off className="mr-2 h-4 w-4" /> Unlink</DropdownMenuItem>}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                            {paginatedDonations.length === 0 && <TableRow><TableCell colSpan={7} className="h-32 text-center text-muted-foreground font-normal italic bg-primary/[0.02] py-20">No Donation Records Found.</TableCell></TableRow>}
-                        </TableBody>
-                    </Table>
+                        ))}
+                        {paginatedDonations.length === 0 && <div className="h-32 text-center text-muted-foreground font-normal italic bg-primary/[0.02] py-20 uppercase tracking-widest">No Donation Records Found.</div>}
                     </div>
                     <ScrollBar orientation="horizontal" />
                     <ScrollBar orientation="vertical" />
@@ -515,7 +511,7 @@ export default function DonationsPage() {
             </CardContent>
             {totalPages > 1 && (
                 <CardFooter className="flex items-center justify-between border-t py-4 bg-primary/5 px-4">
-                    <p className="text-[10px] font-bold text-muted-foreground">Page {currentPage} Of {totalPages}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Page {currentPage} Of {totalPages}</p>
                     <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 h-8 text-primary transition-transform active:scale-95">Previous</Button>
                         <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/20 h-8 text-primary transition-transform active:scale-95">Next</Button>
@@ -525,9 +521,9 @@ export default function DonationsPage() {
         </Card>
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-primary/10 p-0 overflow-hidden">
-                <DialogHeader className="p-6 bg-primary/5 border-b"><DialogTitle className="text-xl font-bold text-primary tracking-tight">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle></DialogHeader>
-                <div className="p-6">
+            <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
+                <DialogHeader className="p-6 bg-primary/5 border-b"><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle></DialogHeader>
+                <ScrollArea className="flex-1 p-6">
                     <DonationForm 
                         donation={editingDonation} 
                         onSubmit={handleFormSubmit} 
@@ -536,9 +532,9 @@ export default function DonationsPage() {
                         campaigns={allCampaigns || []} 
                         defaultLinkId={`lead_${leadId}`} 
                     />
-                </div>
+                </ScrollArea>
                 <DialogFooter className="p-4 border-t bg-muted/5">
-                    <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary">Close Form</Button>
+                    <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Close Editor</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -555,7 +551,7 @@ export default function DonationsPage() {
         />
 
         <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
-            <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink Donation?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach This Record From The Current Lead Initiative? The Master Record Will Remain Verified.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 rounded-[12px] transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+            <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink From Project?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach This Record From The Current Lead Initiative? The Master Record Will Remain Verified.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 rounded-[12px] transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
         </AlertDialog>
     </main>
   );
