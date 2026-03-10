@@ -353,7 +353,7 @@ export default function LeadSummaryPage() {
             imageUrl = '';
         } else if (imageFile) {
             try {
-                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
+                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(imageFile, 1024, 1024, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
                 const filePath = `leads/${leadId}/background.png`;
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);
@@ -503,9 +503,9 @@ export default function LeadSummaryPage() {
                                             <Select value={editableLead.status} onValueChange={(value) => handleFieldChange('status', value)}>
                                                 <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                                 <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
-                                                    <SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem>
+                                                    <SelectItem value="Upcoming" className="font-normal">Upcoming</SelectItem>
                                                     <SelectItem value="Active" className="font-bold text-primary">Active</SelectItem>
-                                                    <SelectItem value="Completed" className="font-bold">Completed</SelectItem>
+                                                    <SelectItem value="Completed" className="font-normal">Completed</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -514,11 +514,11 @@ export default function LeadSummaryPage() {
                                             <Select value={editableLead.authenticityStatus} onValueChange={(value) => handleFieldChange('authenticityStatus', value)}>
                                                 <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                                 <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
-                                                    <SelectItem value="Pending Verification" className="font-bold">Pending</SelectItem>
+                                                    <SelectItem value="Pending Verification" className="font-normal">Pending</SelectItem>
                                                     <SelectItem value="Verified" className="font-bold text-primary">Verified</SelectItem>
-                                                    <SelectItem value="On Hold" className="font-bold">On Hold</SelectItem>
+                                                    <SelectItem value="On Hold" className="font-normal">On Hold</SelectItem>
                                                     <SelectItem value="Rejected" className="font-bold text-destructive">Rejected</SelectItem>
-                                                    <SelectItem value="Need More Details" className="font-bold">Need Details</SelectItem>
+                                                    <SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -794,7 +794,7 @@ export default function LeadSummaryPage() {
 
                             {isVisible('donations_by_payment_type') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Verified Payment Channels</CardTitle></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-sm tracking-tight">Verified Payment Channels</CardTitle></CardHeader>
                                     <CardContent className="p-0 sm:p-6">
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
@@ -861,7 +861,7 @@ export default function LeadSummaryPage() {
                                                 <Card key={doc.url} className="overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col active:scale-95 bg-white border-primary/10 cursor-pointer shadow-sm group animate-fade-in-up" style={{ animationDelay: `${50 + idx * 50}ms` }} onClick={() => { if (isImg) handleViewImage(doc.url, doc.name); else window.open(doc.url, '_blank'); }}>
                                                     <div className="block flex-grow">
                                                         <div className="relative aspect-square w-full bg-muted flex items-center justify-center overflow-hidden">
-                                                            {isImg ? <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="(max-width: 768px) 100vw, 300px" className="object-cover transition-transform duration-500 group-hover:scale-110" /> : <File className="w-10 h-10 text-muted-foreground transition-transform duration-500 group-hover:scale-110" />}
+                                                            {isImg ? <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="100vw" className="object-cover transition-transform duration-500 group-hover:scale-110" /> : <File className="w-10 h-10 text-muted-foreground transition-transform duration-500 group-hover:scale-110" />}
                                                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                                         </div>
                                                         <div className="p-2 text-center text-[10px] font-bold text-primary tracking-tight truncate transition-colors group-hover:text-primary/80">{doc.name}</div>

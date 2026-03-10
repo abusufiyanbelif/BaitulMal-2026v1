@@ -282,7 +282,7 @@ export function PublicCampaignsView() {
           {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full rounded-xl" />)}
         </div>
       ) : sections.length > 0 ? (
-        <Accordion type="multiple" defaultValue={['priority', 'ongoing_upcoming']} className="space-y-6">
+        <Accordion type="multiple" defaultValue={['priority', 'ongoing_upcoming', 'completed']} className="space-y-6">
           {sections.map(section => (
             <AccordionItem key={section.id} value={section.id} className="border-none">
               <AccordionTrigger className="hover:no-underline group font-bold">

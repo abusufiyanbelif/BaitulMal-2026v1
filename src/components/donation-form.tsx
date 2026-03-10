@@ -34,7 +34,7 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { useSession } from '@/hooks/use-session';
 import { useAuth, useFirestore, useMemoFirebase, useDoc, doc } from '@/firebase';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';

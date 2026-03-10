@@ -7,7 +7,6 @@ import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useSession } from '@/hooks/use-session';
 import { doc, updateDoc } from 'firebase/firestore';
 import type { Lead } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
@@ -27,7 +26,7 @@ import Image from 'next/image';
 import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
+import { parseISO, startOfDay, endOfDay } from 'date-fns';
 import { NewsTicker } from '@/components/news-ticker';
 import { usePublicData } from '@/hooks/use-public-data';
 import { FirestorePermissionError } from '@/firebase/errors';
@@ -73,7 +72,7 @@ interface LeadCardProps {
     handleDeleteClick: (lead: Lead) => void;
 }
 
-const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handleStatusUpdate, handleCopyClick, handleDeleteClick }: LeadCardProps) => {
+function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handleStatusUpdate, handleCopyClick, handleDeleteClick }: LeadCardProps) {
     const FallbackIcon = lead.purpose === 'Education' ? GraduationCap : 
                          lead.purpose === 'Medical' ? HeartPulse : 
                          lead.purpose === 'Relief' ? LifeBuoy : 
@@ -249,7 +248,7 @@ const LeadCard = ({ lead, index, router, canUpdate, canCreate, canDelete, handle
         </CardFooter>
         </Card>
     );
-};
+}
 
 export default function LeadPage() {
   const router = useRouter();
@@ -342,7 +341,7 @@ export default function LeadPage() {
         .then(() => toast({ title: 'Success', description: `Lead Details Updated.`, variant: 'success' }))
         .catch((serverError: any) => {
             const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData });
-            errorEmitter('permission-error', permissionError);
+            errorEmitter.emit('permission-error', permissionError);
         });
   };
 
@@ -424,7 +423,7 @@ export default function LeadPage() {
                     <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Statuses</SelectItem><SelectItem value="Active" className="font-normal">Active</SelectItem><SelectItem value="Completed" className="font-normal">Completed</SelectItem><SelectItem value="Upcoming" className="font-normal">Upcoming</SelectItem></SelectContent></Select>
                     <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs border-primary/20 font-normal text-primary"><SelectValue placeholder="All Purposes" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p} className="font-normal">{p}</SelectItem>)}</SelectContent></Select>
                     <Select value={authenticityFilter} onValueChange={setAuthenticityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Authenticity" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Authenticity</SelectItem><SelectItem value="Pending Verification" className="font-normal">Pending</SelectItem><SelectItem value="Verified" className="font-normal text-primary">Verified</SelectItem><SelectItem value="On Hold" className="font-normal">On Hold</SelectItem><SelectItem value="Rejected" className="font-normal text-destructive">Rejected</SelectItem><SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem></SelectContent></Select>
-                    <Select value={visibilityFilter} onValueChange={setVisibilityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Visibilities" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Visibilities</SelectItem><SelectItem value="Hold" className="font-normal">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-normal">Ready To Publish</SelectItem><SelectItem value="Published" className="font-normal">Published</SelectItem></SelectContent></Select>
+                    <Select value={visibilityFilter} onValueChange={setVisibilityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Visibilities" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Visibilities</SelectItem><SelectItem value="Hold" className="font-normal">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-normal">Ready To Publish</SelectItem><SelectItem value="Published" className="font-normal text-primary">Published</SelectItem></SelectContent></Select>
                     <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
                         <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-normal">{y}</SelectItem>)}</SelectContent></Select>
                         <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-normal border-primary/20 text-primary", !dateRange ? "opacity-60" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Date Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
@@ -436,7 +435,7 @@ export default function LeadPage() {
           </CardHeader>
           <CardContent className="p-4 sm:p-6 bg-card/30">
             {(sections && sections.length > 0) ? (
-              <Accordion type="multiple" defaultValue={['priority', 'ongoing_upcoming']} className="space-y-6">
+              <Accordion type="multiple" defaultValue={['priority', 'ongoing_upcoming', 'completed']} className="space-y-6">
                 {sections.map(section => (
                   <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-none overflow-hidden">
                     <AccordionTrigger className="hover:no-underline py-5 group font-bold">

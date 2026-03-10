@@ -8,7 +8,6 @@ import { useFirestore, useMemoFirebase } from '@/firebase/provider';
 import { useSession } from '@/hooks/use-session';
 import { doc, updateDoc } from 'firebase/firestore';
 import type { Campaign } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -455,12 +454,12 @@ export default function CampaignPage() {
                         {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
                     </div>
                 </div>
-                <ScrollBar orientation="horizontal" />
+                <ScrollBar orientation="horizontal" className="hidden" />
             </ScrollArea>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 bg-card/30">
             {sections.length > 0 ? (
-              <Accordion type="multiple" defaultValue={['priority', 'ongoing_upcoming']} className="space-y-6">
+              <Accordion type="multiple" defaultValue={['priority', 'ongoing_upcoming', 'completed']} className="space-y-6">
                 {sections.map(section => (
                   <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-none overflow-hidden">
                     <AccordionTrigger className="hover:no-underline py-5 group font-bold">
