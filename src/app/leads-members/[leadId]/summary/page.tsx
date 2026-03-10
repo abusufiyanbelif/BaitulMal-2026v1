@@ -134,11 +134,6 @@ export default function LeadSummaryPage() {
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
     const { download } = useDownloadAs();
 
-    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
-    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
-    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
-    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.update', false) || !!getNestedValue(userProfile, 'permissions.leads-members.summary.update', false);
-
     const [editMode, setEditMode] = useState(false);
     const [editableLead, setEditableLead] = useState<Partial<Lead>>({});
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -736,9 +731,9 @@ export default function LeadSummaryPage() {
                                                     </TableFooter>
                                                 </Table>
                                             )}
-                                        </div>
-                                        <ScrollBar orientation="horizontal" />
-                                    </ScrollArea>
+                                        </ScrollArea>
+                                    </div>
+                                    <ScrollBar orientation="horizontal" />
                                 </CardContent>
                             </Card>
                         )}

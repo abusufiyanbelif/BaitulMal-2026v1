@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -251,10 +250,12 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                 <div className="space-y-1.5">
                     <div className="flex justify-between text-[10px] font-bold text-muted-foreground tracking-tight">
                         <span>Raised: ₹{campaign.collected.toLocaleString('en-IN')}</span>
-                        <span>{Math.round(campaign.progress)}%</span>
+                        <span>Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</span>
                     </div>
                     <Progress value={campaign.progress} className="h-1.5" />
-                    <p className="text-center text-[10px] text-muted-foreground font-bold tracking-tight">Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</p>
+                    <div className="text-right text-[9px] font-bold text-primary/60 tracking-tight">
+                        {Math.round(campaign.progress)}% Funded
+                    </div>
                 </div>
             )}
           </CardContent>

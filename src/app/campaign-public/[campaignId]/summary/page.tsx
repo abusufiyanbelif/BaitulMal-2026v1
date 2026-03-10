@@ -117,8 +117,6 @@ export default function PublicCampaignSummaryPage() {
     const visibilityRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'campaign_visibility') : null, [firestore]);
     const { data: visibilitySettings } = useDoc<any>(visibilityRef);
 
-    const isLoading = isCampaignLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
-
     const isRationInitiative = useMemo(() => {
         return campaign?.category === 'Ration';
     }, [campaign]);
@@ -251,6 +249,8 @@ export default function PublicCampaignSummaryPage() {
         return visibilitySettings?.[`public_${key}`] !== false;
     };
 
+    const isLoading = isCampaignLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
+
     if (isLoading) return <BrandedLoader />;
 
     if (!campaign || campaign.publicVisibility !== 'Published') {
@@ -294,7 +294,7 @@ export default function PublicCampaignSummaryPage() {
                     <CardContent className="space-y-4 pt-6 text-foreground font-normal">
                         <div className="space-y-2 text-primary">
                             <Label className="text-muted-foreground text-[10px] font-bold tracking-tight">Description</Label>
-                            <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed">{campaign.description || 'No Description Provided.'}</p>
+                            <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed">{campaign.description || 'No description provided.'}</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 text-primary">
                             <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Fundraising Goal</p><p className="mt-1 text-lg font-bold text-primary font-mono">₹{(campaign.targetAmount ?? 0).toLocaleString('en-IN')}</p></div>
@@ -426,7 +426,7 @@ export default function PublicCampaignSummaryPage() {
                             {isVisible('fund_totals') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
                                     <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight">Fund Totals By Type</CardTitle></CardHeader>
-                                    <CardContent className="space-y-2 pt-6">
+                                    <CardContent className="space-y-2 pt-6 font-normal">
                                         <ScrollArea className="w-full">
                                             <div className="space-y-2">
                                                 {donationCategories.map(cat => (

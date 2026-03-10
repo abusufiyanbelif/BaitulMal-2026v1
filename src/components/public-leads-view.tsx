@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -121,9 +120,12 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                                         <div className="space-y-1.5">
                                             <div className="flex justify-between text-[10px] font-bold opacity-60 tracking-tight">
                                                 <span>Raised: ₹{lead.collected.toLocaleString('en-IN')}</span>
-                                                <span>{Math.round(lead.progress)}%</span>
+                                                <span>Goal: ₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</span>
                                             </div>
                                             <Progress value={lead.progress} className="h-1.5" />
+                                            <div className="text-right text-[9px] font-bold text-primary/60 tracking-tight">
+                                                {Math.round(lead.progress)}% Funded
+                                            </div>
                                         </div>
                                     )}
                                 </CardContent>

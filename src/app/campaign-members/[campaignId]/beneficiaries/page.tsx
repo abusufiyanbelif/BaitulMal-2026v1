@@ -213,8 +213,9 @@ export default function BeneficiariesPage() {
     setSelectedReferrals(prev => prev.includes(referral) ? prev.filter(r => r !== referral) : [...prev, referral]);
   };
 
-  const toggleSelectAll = (checked: boolean) => {
-    if (checked) {
+  const toggleSelectAll = (checked: boolean | string) => {
+    const isChecked = checked === true;
+    if (isChecked) {
         setSelectedIds(filteredBeneficiaries.map(b => b.id));
     } else {
         setSelectedIds([]);
