@@ -66,6 +66,7 @@ import { Separator } from '@/components/ui/separator';
 import { cn, getNestedValue } from '@/lib/utils';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { BrandedLoader } from '@/components/branded-loader';
+import { SectionLoader } from '@/components/section-loader';
 
 const quantityTypes = ['kg', 'litre', 'gram', 'ml', 'piece', 'packet', 'dozen', 'month', 'year', 'semester', 'unit', 'day', 'treatment'];
 
@@ -157,7 +158,7 @@ export default function CampaignDetailsPage() {
         const campaignCopy = JSON.parse(JSON.stringify(campaign));
         setEditableCampaign(campaignCopy);
     }
-  }, [editMode, campaign])
+  }, [editMode, campaign]);
 
   useEffect(() => {
     if (!isCopyItemsOpen) {
@@ -766,7 +767,7 @@ export default function CampaignDetailsPage() {
   return (
     <>
       {isSyncing && <BrandedLoader message="Synchronizing registry amounts..." />}
-      <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
+      <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative">
         <div className="mb-4">
             <Button variant="outline" asChild className="font-bold border-primary/10 text-primary transition-transform active:scale-95">
                 <Link href="/campaign-members">

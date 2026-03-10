@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useMemo, useState, useRef } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useStorage, useAuth, useCollection, useDoc, useMemoFirebase, errorEmitter, FirestorePermissionError } from '@/firebase';
@@ -92,7 +93,7 @@ export default function UnlinkedDonationDetailsPage() {
                         const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
                         const fileRef = storageRef(storage, filePath);
                         const uploadResult = await uploadBytes(fileRef, resizedBlob);
-                        screenshotUrl = await getDownloadURL(uploadResult.ref);
+                        screenshotUrl = await getDownloadURL(fileRef);
                     }
                 }
                 return {
@@ -178,7 +179,7 @@ export default function UnlinkedDonationDetailsPage() {
 
 
     return (
-        <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal overflow-hidden">
+        <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
             <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
                 <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
                     <Link href="/donations">
@@ -216,8 +217,8 @@ export default function UnlinkedDonationDetailsPage() {
                 </div>
             </div>
 
-            <ScrollArea className="w-full">
-                <div ref={summaryRef} className="space-y-6 p-4 bg-background font-normal animate-fade-in-up min-w-[320px]">
+            <div className="space-y-6 bg-background font-normal animate-fade-in-up">
+                <div ref={summaryRef} className="space-y-6">
                     <div className="grid gap-6 lg:grid-cols-2">
                         <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                             <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Donation Summary</CardTitle></CardHeader>
@@ -347,9 +348,7 @@ export default function UnlinkedDonationDetailsPage() {
                         </Card>
                     )}
                 </div>
-                <ScrollBar orientation="vertical" />
-                <ScrollBar orientation="horizontal" />
-            </ScrollArea>
+            </div>
 
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                 <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
@@ -363,7 +362,7 @@ export default function UnlinkedDonationDetailsPage() {
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
                 <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 rounded-[12px] border-primary/10 overflow-hidden">
-                    <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">{imageToView?.title || 'Evidence Viewer'}</DialogTitle></DialogHeader>
+                    <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">{imageToView ? imageToView.title : 'Evidence Viewer'}</DialogTitle></DialogHeader>
                     <ScrollArea className="flex-1 bg-secondary/20">
                         <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
                             {imageToView && (
@@ -374,8 +373,8 @@ export default function UnlinkedDonationDetailsPage() {
                         <ScrollBar orientation="vertical" />
                     </ScrollArea>
                     <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">
-                        <Button variant="secondary" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
-                        <Button variant="secondary" size="sm" onClick={() => setZoom(z => z / 1.2) } className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
+                        <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
+                        <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5)) } className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
                         <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
                         <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
                     </DialogFooter>
