@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, ShieldAlert, Info, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, ShieldAlert, Info, RefreshCw, X } from 'lucide-react';
 import Link from 'next/link';
 import {
   AlertDialog,
@@ -36,6 +36,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { BrandedLoader } from '@/components/branded-loader';
+import { SectionLoader } from '@/components/section-loader';
 
 const quantityTypes = ['kg', 'litre', 'gram', 'ml', 'piece', 'packet', 'dozen', 'month', 'year', 'semester', 'unit', 'day', 'treatment'];
 
@@ -152,7 +154,7 @@ export default function LeadDetailsPage() {
             errorEmitter.emit('permission-error', permissionError);
         })
         .finally(() => {
-            toast({ title: 'Success', description: 'Lead item list saved.', variant: 'success' });
+            toast({ title: 'Success', description: 'Lead Item List Synchronized Successfully.', variant: 'success' });
             setEditMode(false);
         });
   };
@@ -168,21 +170,20 @@ export default function LeadDetailsPage() {
   
   const handleSyncKitAmounts = async () => {
     if (!firestore || !canUpdate || !beneficiaries || !editableLead) {
-        toast({ title: "Error", description: "Cannot sync. Data is missing or you don't have permission.", variant: 'destructive' });
+        toast({ title: "Sync Error", description: "Missing Data Or Permissions For Batch Sync.", variant: 'destructive' });
         return;
     }
     
     if (editMode) {
-        toast({ title: "Save Required", description: "Please save your changes before syncing.", variant: 'destructive' });
+        toast({ title: "Save Required", description: "Please Secure Current Inventory Edits Before Batch Syncing.", variant: 'destructive' });
         return;
     }
 
     setIsSyncing(true);
-    toast({ title: "Syncing started...", description: "Recalculating and updating beneficiary kit amounts." });
+    toast({ title: "Synchronization Triggered...", description: "Recalculating Allocations Across The Registry." });
 
     const batch = writeBatch(firestore);
     let newTotalRequiredAmount = 0;
-    
     const newKitAmount = totalKitCost;
 
     for (const beneficiary of beneficiaries) {
@@ -197,7 +198,7 @@ export default function LeadDetailsPage() {
 
     try {
         await batch.commit();
-        toast({ title: "Sync Complete!", description: `Updated ${beneficiaries.length} beneficiaries and the lead's target amount.`, variant: 'success' });
+        toast({ title: "Sync Complete!", description: `Successfully Updated ${beneficiaries.length} Recipients And Adjusted Project Goals.`, variant: 'success' });
         forceRefetchBeneficiaries();
         forceRefetchLead();
     } catch (e: any) {
@@ -205,7 +206,7 @@ export default function LeadDetailsPage() {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
             path: `leads/${leadId}`,
             operation: 'write',
-            requestResourceData: { note: `Batch sync for ${beneficiaries.length} beneficiaries` }
+            requestResourceData: { note: `Batch Sync For ${beneficiaries.length} Beneficiaries` }
         }));
     } finally {
         setIsSyncing(false);
@@ -213,43 +214,17 @@ export default function LeadDetailsPage() {
 };
 
   if (isLoading || !editableLead) {
-    return (
-        <main className="container mx-auto p-4 md:p-8">
-            <div className="mb-4">
-                <Skeleton className="h-10 w-44" />
-            </div>
-            <Skeleton className="h-9 w-64 mb-4" />
-            <Card>
-                <CardHeader>
-                    <div className="flex justify-between items-start flex-wrap gap-4">
-                        <div>
-                            <Skeleton className="h-8 w-48 mb-4" />
-                            <div className="space-y-3">
-                                <Skeleton className="h-6 w-96" />
-                                <Skeleton className="h-6 w-80" />
-                            </div>
-                        </div>
-                        <div className="flex gap-2">
-                            <Skeleton className="h-10 w-32" />
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <Skeleton className="h-64 w-full" />
-                </CardContent>
-            </Card>
-        </main>
-    );
+    return <SectionLoader label="Retrieving Case Inventory..." description="Synchronizing Requirement Lists And Costing Model." />;
   }
 
   if (!lead) {
     return (
-        <main className="container mx-auto p-4 md:p-8 text-center">
-            <p className="text-lg text-muted-foreground">Lead not found.</p>
-            <Button asChild className="mt-4">
+        <main className="container mx-auto p-4 md:p-8 text-center text-primary font-normal">
+            <p className="text-lg text-primary/60 font-bold">Lead Record Not Found In Registry.</p>
+            <Button asChild className="mt-4 font-bold active:scale-95 transition-transform" variant="outline">
                 <Link href="/leads-members">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Leads
+                    Back To Leads
                 </Link>
             </Button>
         </main>
@@ -258,60 +233,52 @@ export default function LeadDetailsPage() {
 
   return (
     <>
-    <main className="container mx-auto p-4 md:p-8">
+    {isSyncing && <BrandedLoader message="Synchronizing registry amounts..." />}
+    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative">
       <div className="mb-4">
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild className="font-bold border-primary/10 text-primary transition-transform active:scale-95">
               <Link href="/leads-members">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Leads
+                  Back To Leads
               </Link>
           </Button>
       </div>
-      <div className="flex justify-between items-center mb-4">
-          <h1 className="text-3xl font-bold">{editableLead.name}</h1>
-      </div>
+      
+      <h1 className="text-4xl font-bold tracking-tight text-primary">{editableLead.name}</h1>
 
-      <div className="border-b mb-4">
-        <ScrollArea className="w-full whitespace-nowrap">
-            <div className="flex w-max space-x-2">
+      <div className="border-b border-primary/10 mb-4">
+        <ScrollArea className="w-full">
+            <div className="flex w-max space-x-2 pb-2">
                 {canReadSummary && (
-                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/leads-members/${leadId}/summary`}>Summary</Link>
-                    </Button>
+                    <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10 active:scale-95", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Summary</Link>
                 )}
-                <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                    <Link href={`/leads-members/${leadId}`}>Item List</Link>
-                </Button>
+                <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10 active:scale-95", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Item List</Link>
                 {canReadBeneficiaries && (
-                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/leads-members/${leadId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/leads-members/${leadId}/beneficiaries`}>Beneficiary Details</Link>
-                    </Button>
+                    <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10 active:scale-95", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>
                 )}
                 {canReadDonations && (
-                    <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/leads-members/${leadId}/donations`}>Donations</Link>
-                    </Button>
+                    <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10 active:scale-95", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Donations</Link>
                 )}
             </div>
-            <ScrollBar orientation="horizontal" />
+            <ScrollBar orientation="horizontal" className="hidden" />
         </ScrollArea>
       </div>
       
-      <Card className="animate-fade-in-zoom">
-        <CardHeader>
-          <div className="flex justify-between items-center">
-            <CardTitle>Item List & Costing</CardTitle>
+      <Card className="animate-fade-in-zoom border-primary/10 shadow-sm bg-white overflow-hidden">
+        <CardHeader className="bg-primary/5 border-b">
+          <div className="flex justify-between items-center flex-wrap gap-4">
+            <CardTitle className="text-xl font-bold tracking-tight text-primary">Requirement List & Vetting Cost</CardTitle>
             <div className="flex gap-2">
                 {canUpdate && (
                   !editMode ? (
-                      <Button onClick={() => setEditMode(true)}>
-                          <Edit className="mr-2 h-4 w-4" /> Edit List
+                      <Button onClick={() => setEditMode(true)} className="font-bold shadow-md transition-transform active:scale-95">
+                          <Edit className="mr-2 h-4 w-4" /> Modify Item List
                       </Button>
                   ) : (
                       <div className="flex gap-2">
-                          <Button variant="outline" onClick={handleCancel}>Cancel</Button>
-                          <Button onClick={handleSave}>
-                              <Save className="mr-2 h-4 w-4" /> Save
+                          <Button variant="outline" onClick={handleCancel} className="font-bold border-primary/20 text-primary">Cancel</Button>
+                          <Button onClick={handleSave} className="font-bold shadow-md bg-primary text-white">
+                              <Save className="mr-2 h-4 w-4" /> Secure Changes
                           </Button>
                       </div>
                   )
@@ -319,75 +286,78 @@ export default function LeadDetailsPage() {
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
-            <h4 className="text-lg font-bold">Total Cost Per Beneficiary: <span className="font-mono">₹{totalKitCost.toFixed(2)}</span></h4>
+        <CardContent className="pt-6 font-normal">
+          <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
+            <h4 className="text-lg font-bold text-primary">Combined Cost Per Recipient: <span className="font-mono text-xl">₹{totalKitCost.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></h4>
             {canUpdate && (
-                <Button onClick={handleSyncKitAmounts} disabled={isSyncing || editMode} variant="secondary">
+                <Button onClick={handleSyncKitAmounts} disabled={isSyncing || editMode} variant="secondary" className="font-bold border-primary/10 text-primary transition-transform active:scale-95">
                     {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                    Sync All Beneficiary Amounts
+                    Sync All Allotments
                 </Button>
             )}
           </div>
-          <div className="w-full overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="w-[50px]">#</TableHead>
-                  <TableHead className="min-w-[180px]">Item Name</TableHead>
-                  <TableHead className="min-w-[100px]">Quantity</TableHead>
-                  <TableHead className="min-w-[150px]">Quantity Type</TableHead>
-                  <TableHead className="min-w-[120px]">Price per Unit (₹)</TableHead>
-                  <TableHead className="text-right min-w-[150px]">Total Price (₹)</TableHead>
-                  {canUpdate && editMode && <TableHead className="w-[50px] text-center">Action</TableHead>}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {itemList.map((item: RationItem, index: number) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{index + 1}</TableCell>
-                    <TableCell>
-                      <Input value={item.name || ''} onChange={e => handleItemChange(item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
-                    </TableCell>
-                    <TableCell>
-                      <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
-                    </TableCell>
-                    <TableCell>
-                      <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(item.id, 'quantityType', value)} disabled={!editMode || !canUpdate}>
-                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                        <SelectContent>
-                          {quantityTypes.map(type => (
-                            <SelectItem key={type} value={type}>{type}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </TableCell>
-                    <TableCell>
-                      <Input type="number" value={item.price || ''} onChange={e => handleItemChange(item.id, 'price', parseFloat(e.target.value) || 0)} className="text-right" disabled={!editMode || !canUpdate} />
-                    </TableCell>
-                    <TableCell className="text-right font-mono">
-                      ₹{((item.price || 0) * (item.quantity || 0)).toFixed(2)}
-                    </TableCell>
-                    {canUpdate && editMode && (
-                      <TableCell className="text-center">
-                        <Button variant="ghost" size="icon" onClick={() => handleDeleteItemClick(item.id, item.name)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                      </TableCell>
+          <ScrollArea className="w-full">
+            <div className="min-w-[800px] border rounded-xl overflow-hidden shadow-inner">
+                <Table>
+                <TableHeader className="bg-primary/5">
+                    <TableRow>
+                    <TableHead className="w-[50px] font-bold text-primary text-[10px] uppercase tracking-widest">#</TableHead>
+                    <TableHead className="min-w-[180px] font-bold text-primary text-[10px] uppercase tracking-widest">Item / Requirement Description</TableHead>
+                    <TableHead className="min-w-[100px] font-bold text-primary text-[10px] uppercase tracking-widest">Quantity</TableHead>
+                    <TableHead className="min-w-[150px] font-bold text-primary text-[10px] uppercase tracking-widest">Unit Type</TableHead>
+                    <TableHead className="min-w-[120px] font-bold text-primary text-[10px] uppercase tracking-widest">Price per Unit (₹)</TableHead>
+                    <TableHead className="text-right min-w-[150px] font-bold text-primary text-[10px] uppercase tracking-widest">Line Total (₹)</TableHead>
+                    {canUpdate && editMode && <TableHead className="w-[50px] text-center font-bold text-primary text-[10px] uppercase tracking-widest">Action</TableHead>}
+                    </TableRow>
+                </TableHeader>
+                <TableBody className="font-normal">
+                    {itemList.map((item: RationItem, index: number) => (
+                    <TableRow key={item.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
+                        <TableCell className="font-mono text-xs opacity-60">{index + 1}</TableCell>
+                        <TableCell>
+                        <Input value={item.name || ''} onChange={e => handleItemChange(item.id, 'name', e.target.value)} placeholder="Description..." disabled={!editMode || !canUpdate} className="font-bold h-8 text-primary" />
+                        </TableCell>
+                        <TableCell>
+                        <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="0" disabled={!editMode || !canUpdate} className="font-bold h-8 text-primary" />
+                        </TableCell>
+                        <TableCell>
+                        <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(item.id, 'quantityType', value)} disabled={!editMode || !canUpdate}>
+                            <SelectTrigger className="font-normal h-8"><SelectValue placeholder="Select Type..." /></SelectTrigger>
+                            <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                            {quantityTypes.map(type => (
+                                <SelectItem key={type} value={type} className="font-normal">{type}</SelectItem>
+                            ))}
+                            </SelectContent>
+                        </Select>
+                        </TableCell>
+                        <TableCell>
+                        <Input type="number" value={item.price || ''} onChange={e => handleItemChange(item.id, 'price', parseFloat(e.target.value) || 0)} className="text-right font-mono font-bold h-8" disabled={!editMode || !canUpdate} />
+                        </TableCell>
+                        <TableCell className="text-right font-mono font-bold text-primary">
+                        ₹{((item.price || 0) * (item.quantity || 0)).toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                        </TableCell>
+                        {canUpdate && editMode && (
+                        <TableCell className="text-center">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleDeleteItemClick(item.id, item.name)}><Trash2 className="h-4 w-4" /></Button>
+                        </TableCell>
+                        )}
+                    </TableRow>
+                    ))}
+                    {itemList.length === 0 && (
+                    <TableRow>
+                        <TableCell colSpan={canUpdate && editMode ? 7 : 6} className="text-center h-32 text-muted-foreground italic font-normal opacity-60">
+                        No Items Added To This Requirement List.
+                        </TableCell>
+                    </TableRow>
                     )}
-                  </TableRow>
-                ))}
-                {itemList.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={canUpdate && editMode ? 7 : 6} className="text-center h-24 text-muted-foreground">
-                      No items added yet.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                </TableBody>
+                </Table>
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
             {canUpdate && editMode && (
-                <Button onClick={handleAddItem} size="sm" variant="outline" className="mt-4">
-                  <Plus className="mr-2 h-4 w-4" /> Add Item
+                <Button onClick={handleAddItem} size="sm" variant="outline" className="mt-6 font-bold border-primary/20 text-primary transition-transform active:scale-95 shadow-sm">
+                  <Plus className="mr-2 h-4 w-4" /> Add Line Item
                 </Button>
             )}
         </CardContent>
@@ -395,17 +365,17 @@ export default function LeadDetailsPage() {
     </main>
 
     <AlertDialog open={isDeleteItemDialogOpen} onOpenChange={setIsDeleteItemDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown">
             <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure you want to delete this item?</AlertDialogTitle>
-                <AlertDialogDescription>
-                    This will permanently delete the item "{itemToDelete?.itemName}" from the list. This action cannot be undone.
+                <AlertDialogTitle className="font-bold text-destructive uppercase">Remove Line Item?</AlertDialogTitle>
+                <AlertDialogDescription className="font-normal text-primary/70">
+                    Permanently Erase "{itemToDelete?.itemName}" From This Requirement List? This Process Cannot Be Undone.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteItemConfirm} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                    Delete
+                <AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDeleteItemConfirm} className="bg-destructive hover:bg-destructive/90 text-white font-bold transition-transform active:scale-95 rounded-[12px] shadow-md">
+                    Confirm Deletion
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>

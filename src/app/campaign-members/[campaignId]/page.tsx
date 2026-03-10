@@ -3,7 +3,16 @@
 
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useParams, usePathname } from 'next/navigation';
-import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase, collection, doc } from '@/firebase';
+import { 
+    useFirestore, 
+    useDoc, 
+    errorEmitter, 
+    FirestorePermissionError, 
+    useCollection, 
+    useMemoFirebase, 
+    collection, 
+    doc 
+} from '@/firebase';
 import type { SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
@@ -56,6 +65,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Separator } from '@/components/ui/separator';
 import { cn, getNestedValue } from '@/lib/utils';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { BrandedLoader } from '@/components/branded-loader';
 
 const quantityTypes = ['kg', 'litre', 'gram', 'ml', 'piece', 'packet', 'dozen', 'month', 'year', 'semester', 'unit', 'day', 'treatment'];
 
@@ -234,7 +244,7 @@ export default function CampaignDetailsPage() {
             errorEmitter.emit('permission-error', permissionError);
         })
         .finally(() => {
-            toast({ title: 'Success', description: 'Campaign details saved.', variant: 'success' });
+            toast({ title: 'Success', description: 'Campaign Details Successfully Secured.', variant: 'success' });
             setEditMode(false);
         });
   };
@@ -352,11 +362,11 @@ export default function CampaignDetailsPage() {
     const max = Number(newCategoryMax);
 
     if (!newCategoryName.trim()) {
-        toast({ title: 'Invalid Name', description: 'Category name cannot be empty.', variant: 'destructive' });
+        toast({ title: 'Invalid Name', description: 'Category Name Cannot Be Empty.', variant: 'destructive' });
         return;
     }
     if (editableCampaign.category === 'Ration' && (isNaN(min) || min < 1 || isNaN(max) || max < min)) {
-        toast({ title: 'Invalid Range', description: 'Please enter valid positive numbers for min/max members, with min <= max.', variant: 'destructive' });
+        toast({ title: 'Invalid Range', description: 'Please Enter Valid Positive Numbers For Min/Max Members, With Min <= Max.', variant: 'destructive' });
         return;
     }
     
@@ -389,11 +399,11 @@ export default function CampaignDetailsPage() {
     const max = Number(categoryToEdit.maxMembers);
 
     if (!categoryToEdit.name.trim()) {
-        toast({ title: 'Invalid Name', description: 'Category name cannot be empty.', variant: 'destructive' });
+        toast({ title: 'Invalid Name', description: 'Category Name Cannot Be Empty.', variant: 'destructive' });
         return;
     }
      if (editableCampaign.category === 'Ration' && (isNaN(min) || min < 1 || isNaN(max) || max < min)) {
-        toast({ title: 'Invalid Range', description: 'Please enter valid positive numbers for min/max members, with min <= max.', variant: 'destructive' });
+        toast({ title: 'Invalid Range', description: 'Please Enter Valid Positive Numbers For Min/Max Members, With Min <= Max.', variant: 'destructive' });
         return;
     }
 
@@ -421,7 +431,7 @@ export default function CampaignDetailsPage() {
       if (!firestore || !canUpdate || !categoryToDelete || !editableCampaign) return;
 
       if (dependentBeneficiaries.length > 0 && !targetCategoryId) {
-          toast({ title: 'Error', description: 'Please select a category to move beneficiaries to.', variant: 'destructive'});
+          toast({ title: 'Error', description: 'Please Select A Category To Move Beneficiaries To.', variant: 'destructive'});
           return;
       }
 
@@ -435,7 +445,7 @@ export default function CampaignDetailsPage() {
             : 0;
 
           if (dependentBeneficiaries.length > 0 && targetCategoryId) {
-              if (!targetCategory) throw new Error("Target category not found.");
+              if (!targetCategory) throw new Error("Target Category Not Found.");
               
               for (const beneficiary of dependentBeneficiaries) {
                   const beneficiaryRef = doc(firestore, `campaigns/${campaignId}/beneficiaries`, beneficiary.id);
@@ -469,7 +479,7 @@ export default function CampaignDetailsPage() {
         
           await batch.commit();
 
-          toast({ title: 'Category Deleted', description: `Successfully deleted '${categoryToDelete.name}'.`, variant: 'success' });
+          toast({ title: 'Category Deleted', description: `Successfully Deleted '${categoryToDelete.name}'.`, variant: 'success' });
           
           setIsDeleteCategoryDialogOpen(false);
           setCategoryToDelete(null);
@@ -478,7 +488,7 @@ export default function CampaignDetailsPage() {
            errorEmitter.emit('permission-error', new FirestorePermissionError({
               path: `campaigns/${campaignId}`,
               operation: 'write',
-              requestResourceData: { note: `Batch delete category operation for ${categoryToDelete.name}` }
+              requestResourceData: { note: `Batch Delete Category Operation For ${categoryToDelete.name}` }
           }));
       } finally {
           setIsDeletingCategory(false);
@@ -493,7 +503,7 @@ export default function CampaignDetailsPage() {
 
   const handleCopyItemsConfirm = () => {
     if (!editableCampaign || !copyTargetCategory || selectedItemsToCopy.length === 0) {
-        toast({ title: 'Nothing Selected', description: 'Please select items to copy.', variant: 'destructive' });
+        toast({ title: 'Nothing Selected', description: 'Please Select Items To Copy.', variant: 'destructive' });
         return;
     }
 
@@ -541,24 +551,24 @@ export default function CampaignDetailsPage() {
     
     toast({ 
         title: 'Items Copied', 
-        description: `${addedCount} items added and ${updatedCount} items updated in '${copyTargetCategory.name}'.` 
+        description: `${addedCount} Items Added And ${updatedCount} Items Updated In '${copyTargetCategory.name}'.` 
     });
     setIsCopyItemsOpen(false);
   };
   
   const handleSyncKitAmounts = async () => {
     if (!firestore || !canUpdate || !beneficiaries || !editableCampaign) {
-      toast({ title: "Error", description: "Cannot sync. Data is missing or you don't have permission.", variant: 'destructive' });
+      toast({ title: "Sync Error", description: "Missing Data Or Permissions For Batch Sync.", variant: 'destructive' });
       return;
     }
     
     if(editMode){
-        toast({ title: "Save Required", description: "Please save your changes before syncing.", variant: 'destructive' });
+        toast({ title: "Save Required", description: "Please Secure Current Edits Before Batch Syncing.", variant: 'destructive' });
         return;
     }
 
     setIsSyncing(true);
-    toast({ title: "Syncing started...", description: "Recalculating and updating beneficiary kit amounts." });
+    toast({ title: "Synchronization Triggered...", description: "Recalculating Allocations Across The Registry." });
 
     const batch = writeBatch(firestore);
     let newTotalRequiredAmount = 0;
@@ -617,7 +627,7 @@ export default function CampaignDetailsPage() {
 
     try {
         await batch.commit();
-        toast({ title: "Sync Complete!", description: `Updated ${beneficiaries.length} beneficiaries and the campaign's target amount.`, variant: 'success' });
+        toast({ title: "Sync Complete!", description: `Successfully Updated ${beneficiaries.length} Recipients And Adjusted Project Goals.`, variant: 'success' });
         forceRefetchCampaign();
         forceRefetchBeneficiaries();
     } catch (e: any) {
@@ -625,7 +635,7 @@ export default function CampaignDetailsPage() {
         errorEmitter.emit('permission-error', new FirestorePermissionError({
             path: `campaigns/${campaignId}`,
             operation: 'write',
-            requestResourceData: { note: `Batch sync for ${beneficiaries.length} beneficiaries` }
+            requestResourceData: { note: `Batch Sync For ${beneficiaries.length} Beneficiaries` }
         }));
     } finally {
         setIsSyncing(false);
@@ -637,95 +647,98 @@ export default function CampaignDetailsPage() {
     const total = calculateTotal(category.items);
 
     return (
-      <Card className="animate-fade-in-zoom">
-        <CardHeader>
+      <Card className="animate-fade-in-zoom border-primary/10 shadow-none bg-white">
+        <CardHeader className="bg-primary/5 border-b">
             <div className="flex justify-between items-center">
-                <CardTitle>{isPriceList ? 'Item Price List' : 'Items for this category'}</CardTitle>
+                <CardTitle className="text-primary font-bold tracking-tight">{isPriceList ? 'Item Master Price List' : 'Category Requirement Breakdown'}</CardTitle>
                 {canUpdate && editMode && (
                     <div className="flex gap-2">
-                        <Button onClick={() => handleCopyItemsClick(category)} size="sm" variant="outline">
+                        <Button onClick={() => handleCopyItemsClick(category)} size="sm" variant="outline" className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
                           <Copy className="mr-2 h-4 w-4" /> Copy Items
                         </Button>
-                        <Button onClick={() => handleAddItem(category.id)} size="sm">
-                          <Plus className="mr-2 h-4 w-4" /> Add Item
+                        <Button onClick={() => handleAddItem(category.id)} size="sm" className="font-bold shadow-md transition-transform active:scale-95">
+                          <Plus className="mr-2 h-4 w-4" /> Add Line Item
                         </Button>
                     </div>
                 )}
             </div>
-             {isPriceList && <CardDescription>This list defines the unit price for all items across all categories.</CardDescription>}
+             {isPriceList && <CardDescription className="font-normal text-primary/70">Definitive Unit Prices Used To Calculate Totals For All Dependent Categories.</CardDescription>}
         </CardHeader>
         <CardContent className="pt-6">
           <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
-            <h4 className="text-lg font-bold">Total Kit Cost: <span className="font-mono">₹{total.toFixed(2)}</span></h4>
+            <h4 className="text-lg font-bold text-primary">Calculated Kit Value: <span className="font-mono text-xl">₹{total.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></h4>
           </div>
-          <div className="w-full overflow-x-auto">
-            <Table>
-                <TableHeader>
-                    <TableRow className="bg-muted/50">
-                        <TableHead className="w-[50px]">#</TableHead>
-                        <TableHead className="min-w-[180px]">Item Name</TableHead>
-                        <TableHead className="min-w-[100px]">Quantity</TableHead>
-                        <TableHead className="min-w-[150px]">Quantity Type</TableHead>
-                        <TableHead className="min-w-[120px]">Price per Unit (₹)</TableHead>
-                        <TableHead className="text-right min-w-[150px]">Total Price (₹)</TableHead>
-                        {canUpdate && editMode && <TableHead className="w-[50px] text-center">Action</TableHead>}
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {category.items.map((item, index) => {
-                        const masterItem = !isPriceList ? masterPriceList[item.name.trim().toLowerCase()] : null;
-                        const unitPrice = isPriceList ? item.price : (masterItem?.price || 0);
-                        const totalPrice = (isPriceList ? unitPrice : item.price) || 0;
-
-                        return (
-                            <TableRow key={item.id}>
-                                <TableCell>{index + 1}</TableCell>
-                                <TableCell>
-                                    <Input value={item.name || ''} onChange={e => handleItemChange(category.id, item.id, 'name', e.target.value)} placeholder="Item name" disabled={!editMode || !canUpdate} />
-                                </TableCell>
-                                <TableCell>
-                                    <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(category.id, item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="e.g. 1" disabled={!editMode || !canUpdate} />
-                                </TableCell>
-                                <TableCell>
-                                    <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(category.id, item.id, 'quantityType', value)} disabled={!editMode || !canUpdate || !isPriceList}>
-                                        <SelectTrigger><SelectValue placeholder="Select type" /></SelectTrigger>
-                                        <SelectContent>
-                                            {quantityTypes.map(type => (
-                                                <SelectItem key={type} value={type}>{type}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </TableCell>
-                                <TableCell>
-                                    <Input
-                                        type="number"
-                                        value={unitPrice || ''}
-                                        onChange={(e: any) => handleItemChange(category.id, item.id, 'price', parseFloat(e.target.value) || 0)}
-                                        className="text-right"
-                                        disabled={!editMode || !canUpdate || !isPriceList}
-                                    />
-                                </TableCell>
-                                <TableCell className="text-right font-mono">
-                                    ₹{totalPrice.toFixed(2)}
-                                </TableCell>
-                                {canUpdate && editMode && (
-                                    <TableCell className="text-center">
-                                        <Button variant="ghost" size="icon" onClick={() => handleDeleteItemClick(category.id, item.id, item.name)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                                    </TableCell>
-                                )}
-                            </TableRow>
-                        )
-                    })}
-                    {category.items.length === 0 && (
+          <ScrollArea className="w-full">
+            <div className="min-w-[800px] border rounded-xl overflow-hidden shadow-inner">
+                <Table>
+                    <TableHeader className="bg-primary/5">
                         <TableRow>
-                            <TableCell colSpan={canUpdate && editMode ? 7 : 6} className="text-center h-24 text-muted-foreground">
-                                No items added yet.
-                            </TableCell>
+                            <TableHead className="w-[50px] font-bold text-primary text-[10px] uppercase tracking-widest">#</TableHead>
+                            <TableHead className="min-w-[180px] font-bold text-primary text-[10px] uppercase tracking-widest">Item Name</TableHead>
+                            <TableHead className="min-w-[100px] font-bold text-primary text-[10px] uppercase tracking-widest">Quantity</TableHead>
+                            <TableHead className="min-w-[150px] font-bold text-primary text-[10px] uppercase tracking-widest">Unit Type</TableHead>
+                            <TableHead className="min-w-[120px] font-bold text-primary text-[10px] uppercase tracking-widest">Price / Unit (₹)</TableHead>
+                            <TableHead className="text-right min-w-[150px] font-bold text-primary text-[10px] uppercase tracking-widest">Line Total (₹)</TableHead>
+                            {canUpdate && editMode && <TableHead className="w-[50px] text-center font-bold text-primary text-[10px] uppercase tracking-widest">Action</TableHead>}
                         </TableRow>
-                    )}
-                </TableBody>
-            </Table>
-          </div>
+                    </TableHeader>
+                    <TableBody className="font-normal">
+                        {category.items.map((item, index) => {
+                            const masterItem = !isPriceList ? masterPriceList[item.name.trim().toLowerCase()] : null;
+                            const unitPrice = isPriceList ? item.price : (masterItem?.price || 0);
+                            const totalPrice = (isPriceList ? unitPrice : item.price) || 0;
+
+                            return (
+                                <TableRow key={item.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
+                                    <TableCell className="font-mono text-xs opacity-60">{index + 1}</TableCell>
+                                    <TableCell>
+                                        <Input value={item.name || ''} onChange={e => handleItemChange(category.id, item.id, 'name', e.target.value)} placeholder="Item Name..." disabled={!editMode || !canUpdate} className="font-bold text-primary h-8" />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Input type="number" value={item.quantity || ''} onChange={e => handleItemChange(category.id, item.id, 'quantity', parseFloat(e.target.value) || 0)} placeholder="0" disabled={!editMode || !canUpdate} className="font-bold h-8" />
+                                    </TableCell>
+                                    <TableCell>
+                                        <Select value={item.quantityType || ''} onValueChange={value => handleItemChange(category.id, item.id, 'quantityType', value)} disabled={!editMode || !canUpdate || !isPriceList}>
+                                            <SelectTrigger className="font-normal h-8"><SelectValue placeholder="Select Type..." /></SelectTrigger>
+                                            <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                                                {quantityTypes.map(type => (
+                                                    <SelectItem key={type} value={type} className="font-normal">{type}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </TableCell>
+                                    <TableCell>
+                                        <Input
+                                            type="number"
+                                            value={unitPrice || ''}
+                                            onChange={(e: any) => handleItemChange(category.id, item.id, 'price', parseFloat(e.target.value) || 0)}
+                                            className="text-right font-mono font-bold h-8"
+                                            disabled={!editMode || !canUpdate || !isPriceList}
+                                        />
+                                    </TableCell>
+                                    <TableCell className="text-right font-mono font-bold text-primary">
+                                        ₹{totalPrice.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+                                    </TableCell>
+                                    {canUpdate && editMode && (
+                                        <TableCell className="text-center">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleDeleteItemClick(category.id, item.id, item.name)}><Trash2 className="h-4 w-4" /></Button>
+                                        </TableCell>
+                                    )}
+                                </TableRow>
+                            )
+                        })}
+                        {category.items.length === 0 && (
+                            <TableRow>
+                                <TableCell colSpan={canUpdate && editMode ? 7 : 6} className="text-center h-32 text-muted-foreground italic font-normal opacity-60">
+                                    No Line Items Defined In This List.
+                                </TableCell>
+                            </TableRow>
+                        )}
+                    </TableBody>
+                </Table>
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
         </CardContent>
       </Card>
     );
@@ -733,50 +746,17 @@ export default function CampaignDetailsPage() {
 
 
   if (isLoading || !editableCampaign) {
-    return (
-        <main className="container mx-auto p-4 md:p-8">
-            <div className="mb-4">
-                <Skeleton className="h-10 w-44" />
-            </div>
-            <Skeleton className="h-9 w-64 mb-4" />
-            <div className="flex flex-wrap gap-2 border-b mb-4">
-                <Skeleton className="h-10 w-24" />
-                <Skeleton className="h-10 w-32" />
-                <Skeleton className="h-10 w-36" />
-                <Skeleton className="h-10 w-28" />
-            </div>
-            <Card>
-                <CardHeader>
-                    <div className="flex justify-between items-start flex-wrap gap-4">
-                        <div>
-                            <Skeleton className="h-8 w-48 mb-4" />
-                            <div className="space-y-3">
-                                <Skeleton className="h-6 w-96" />
-                                <Skeleton className="h-6 w-80" />
-                            </div>
-                        </div>
-                        <div className="flex gap-2">
-                            <Skeleton className="h-10 w-32" />
-                            <Skeleton className="h-10 w-32" />
-                        </div>
-                    </div>
-                </CardHeader>
-                <CardContent>
-                    <Skeleton className="h-64 w-full" />
-                </CardContent>
-            </Card>
-        </main>
-    );
+    return <SectionLoader label="Retrieving Campaign Inventory..." description="Synchronizing Price Lists And Category Costing." />;
   }
 
   if (!campaign) {
     return (
-        <main className="container mx-auto p-4 md:p-8 text-center">
-            <p className="text-lg text-muted-foreground">Campaign not found.</p>
-            <Button asChild className="mt-4">
+        <main className="container mx-auto p-4 md:p-8 text-center text-primary">
+            <p className="text-lg font-bold opacity-60">Campaign Not Found In Registry.</p>
+            <Button asChild className="mt-4 font-bold active:scale-95 transition-transform" variant="outline">
                 <Link href="/campaign-members">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Campaigns
+                    Back To Campaigns
                 </Link>
             </Button>
         </main>
@@ -785,252 +765,203 @@ export default function CampaignDetailsPage() {
 
   return (
     <>
-      <main className="container mx-auto p-4 md:p-8">
+      {isSyncing && <BrandedLoader message="Synchronizing registry amounts..." />}
+      <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
         <div className="mb-4">
-            <Button variant="outline" asChild>
+            <Button variant="outline" asChild className="font-bold border-primary/10 text-primary transition-transform active:scale-95">
                 <Link href="/campaign-members">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Campaigns
+                    Back To Campaigns
                 </Link>
             </Button>
         </div>
-        <div className="flex justify-between items-center mb-4">
-            <h1 className="text-3xl font-bold">{editableCampaign.name}</h1>
-        </div>
         
-        <div className="border-b mb-4">
-            <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex w-max space-x-2">
+        <h1 className="text-4xl font-bold tracking-tight text-primary">{editableCampaign.name}</h1>
+        
+        <div className="border-b border-primary/10 mb-4">
+            <ScrollArea className="w-full">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 w-full bg-transparent p-0 border-b border-primary/10 pb-4">
                     {canReadSummary && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/summary` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/campaign-members/${campaignId}/summary`}>Summary</Link>
-                        </Button>
+                        <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
                     )}
-                    <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                        <Link href={`/campaign-members/${campaignId}`}>Item Lists</Link>
-                    </Button>
+                    <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item Lists</Link>
                     {canReadBeneficiaries && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname === `/campaign-members/${campaignId}/beneficiaries` ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/campaign-members/${campaignId}/beneficiaries`}>Beneficiary List</Link>
-                        </Button>
+                        <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>
                     )}
                      {canReadDonations && (
-                        <Button variant="ghost" asChild className={cn("shrink-0", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "border-b-2 border-primary text-primary" : "text-muted-foreground")}>
-                            <Link href={`/campaign-members/${campaignId}/donations`}>Donations</Link>
-                        </Button>
+                        <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link>
                     )}
                 </div>
-                <ScrollBar orientation="horizontal" />
+                <ScrollBar orientation="horizontal" className="hidden" />
             </ScrollArea>
         </div>
 
         {isLegacyData && (
-            <Alert variant="destructive" className="mb-4">
+            <Alert variant="destructive" className="animate-fade-in-up">
               <Database className="h-4 w-4" />
-              <AlertTitle>Data Migration Required</AlertTitle>
-              <AlertDescription>
-                This campaign is using an old data format. To enable editing of its item lists and full functionality, please run the migration script from your terminal: <code className="font-mono bg-destructive/20 p-1 rounded-sm">npm run db:migrate-categories</code>
+              <AlertTitle className="font-bold">System Migration Required</AlertTitle>
+              <AlertDescription className="font-normal text-xs opacity-80">
+                This Project Uses An Outdated Data Structure. To Enable Editing, Please Request A System Administrator To Run: <code className="font-mono bg-destructive/20 p-1 rounded-sm">npm run db:migrate-categories</code>
               </AlertDescription>
             </Alert>
         )}
 
-        <Card className="animate-fade-in-zoom">
-            <CardHeader>
+        <Card className="animate-fade-in-zoom border-primary/10 bg-white shadow-sm overflow-hidden">
+            <CardHeader className="bg-primary/5 border-b">
                 <div className="flex justify-between items-start flex-wrap gap-4">
-                <div>
-                    <CardTitle>Item Lists &amp; Costing</CardTitle>
-                    <div className="text-sm text-muted-foreground mt-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                            <div className="space-y-1">
-                                <Label htmlFor="priceDate">Price Date</Label>
-                                <Input
-                                id="priceDate"
-                                type="date"
-                                value={editableCampaign.priceDate || ''}
-                                onChange={(e) => handleFieldChange( 'priceDate', e.target.value )}
-                                disabled={!editMode || !canUpdate}
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="shopName">Shop Name</Label>
-                                <Input
-                                id="shopName"
-                                value={editableCampaign.shopName || ''}
-                                onChange={(e) => handleFieldChange( 'shopName', e.target.value )}
-                                placeholder="Shop Name"
-                                disabled={!editMode || !canUpdate}
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="shopContact">Shop Contact</Label>
-                                <Input
-                                id="shopContact"
-                                value={editableCampaign.shopContact || ''}
-                                onChange={(e) => handleFieldChange( 'shopContact', e.target.value )}
-                                placeholder="Contact Number"
-                                disabled={!editMode || !canUpdate}
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <Label htmlFor="shopAddress">Shop Address</Label>
-                                <Input
-                                id="shopAddress"
-                                value={editableCampaign.shopAddress || ''}
-                                onChange={(e) => handleFieldChange( 'shopAddress', e.target.value )}
-                                placeholder="Shop Address"
-                                disabled={!editMode || !canUpdate}
-                                />
-                            </div>
-                        </div>
-                    </div>
+                <div className="space-y-1">
+                    <CardTitle className="text-xl font-bold tracking-tight text-primary">Inventory & Procurement Costing</CardTitle>
+                    <CardDescription className="font-normal text-primary/70">Manage Sourcing Dates, Shop Details, And Calculated Category Requirements.</CardDescription>
                 </div>
                 <div className="flex gap-2 flex-wrap justify-end">
                     {canUpdate && (
-                        <Button onClick={handleSyncKitAmounts} disabled={isSyncing || editMode} variant="secondary">
+                        <Button onClick={handleSyncKitAmounts} disabled={isSyncing || editMode} variant="secondary" className="font-bold border-primary/10 text-primary transition-transform active:scale-95">
                             {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                            Sync Kit Amounts
+                            Sync All Allotments
                         </Button>
                     )}
                     {canUpdate && (
                         !editMode ? (
-                            <Button onClick={() => setEditMode(true)} disabled={isLegacyData}>
-                                <Edit className="mr-2 h-4 w-4" /> Edit Details
+                            <Button onClick={() => setEditMode(true)} disabled={isLegacyData} className="font-bold shadow-md transition-transform active:scale-95">
+                                <Edit className="mr-2 h-4 w-4" /> Modify Procurement
                             </Button>
                         ) : (
                             <div className="flex gap-2">
-                                <Button variant="outline" onClick={handleCancel}>Cancel</Button>
-                                <Button onClick={handleSave}>
-                                    <Save className="mr-2 h-4 w-4" /> Save
+                                <Button variant="outline" onClick={handleCancel} className="font-bold border-primary/20 text-primary">Cancel</Button>
+                                <Button onClick={handleSave} className="font-bold shadow-md bg-primary text-white">
+                                    <Save className="mr-2 h-4 w-4" /> Secure Procurement
                                 </Button>
                             </div>
                         )
                     )}
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline">
-                                <Download className="mr-2 h-4 w-4" />
-                                Download
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem onClick={() => {}}>Download as CSV</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {}}>Download as Excel</DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => {}}>Download as PDF</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    {canUpdate && editMode && (
-                        <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
-                            <DialogTrigger asChild>
-                                <Button variant="outline">
-                                    <Plus className="mr-2 h-4 w-4" />
-                                    Add Category
-                                </Button>
-                            </DialogTrigger>
-                            <DialogContent className="sm:max-w-md">
-                                <DialogHeader>
-                                    <DialogTitle>Add New Item Category</DialogTitle>
-                                    <DialogDescription>
-                                        Define a named category of items. For Ration campaigns, you can also specify member ranges.
-                                    </DialogDescription>
-                                </DialogHeader>
-                                <div className="grid gap-4 py-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="cat-name">Category Name</Label>
-                                        <Input
-                                            id="cat-name"
-                                            value={newCategoryName}
-                                            onChange={(e) => setNewCategoryName(e.target.value)}
-                                            placeholder="e.g., 'School Kit', 'Surgery Type A'"
-                                        />
-                                    </div>
-                                    {editableCampaign.category === 'Ration' && (
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="space-y-2">
-                                                <Label htmlFor="min-members">Min Members</Label>
-                                                <Input
-                                                    id="min-members"
-                                                    type="number"
-                                                    value={newCategoryMin}
-                                                    onChange={(e) => setNewCategoryMin(e.target.value)}
-                                                    placeholder="e.g. 1"
-                                                />
-                                            </div>
-                                            <div className="space-y-2">
-                                                <Label htmlFor="max-members">Max Members</Label>
-                                                <Input
-                                                    id="max-members"
-                                                    type="number"
-                                                    value={newCategoryMax}
-                                                    onChange={(e) => setNewCategoryMax(e.target.value)}
-                                                    placeholder="e.g. 4"
-                                                />
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                                <DialogFooter>
-                                    <Button type="button" variant="outline" onClick={() => setIsAddCategoryOpen(false)}>Cancel</Button>
-                                    <Button type="submit" onClick={handleAddNewCategory}>Add Category</Button>
-                                </DialogFooter>
-                            </DialogContent>
-                        </Dialog>
-                    )}
                 </div>
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6 font-normal">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 text-primary">
+                    <div className="space-y-1.5">
+                        <Label htmlFor="priceDate" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Vetting Date</Label>
+                        <Input
+                            id="priceDate"
+                            type="date"
+                            value={editableCampaign.priceDate || ''}
+                            onChange={(e) => handleFieldChange( 'priceDate', e.target.value )}
+                            disabled={!editMode || !canUpdate}
+                            className="font-bold h-9 border-primary/10 bg-primary/[0.02]"
+                        />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="shopName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Supplier Store</Label>
+                        <Input
+                            id="shopName"
+                            value={editableCampaign.shopName || ''}
+                            onChange={(e) => handleFieldChange( 'shopName', e.target.value )}
+                            placeholder="Supplier Name"
+                            disabled={!editMode || !canUpdate}
+                            className="font-normal h-9 border-primary/10 bg-primary/[0.02]"
+                        />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="shopContact" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Supplier Phone</Label>
+                        <Input
+                            id="shopContact"
+                            value={editableCampaign.shopContact || ''}
+                            onChange={(e) => handleFieldChange( 'shopContact', e.target.value )}
+                            placeholder="Phone Number"
+                            disabled={!editMode || !canUpdate}
+                            className="font-mono h-9 border-primary/10 bg-primary/[0.02]"
+                        />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label htmlFor="shopAddress" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Procurement Hub</Label>
+                        <Input
+                            id="shopAddress"
+                            value={editableCampaign.shopAddress || ''}
+                            onChange={(e) => handleFieldChange( 'shopAddress', e.target.value )}
+                            placeholder="Store Address"
+                            disabled={!editMode || !canUpdate}
+                            className="font-normal h-9 border-primary/10 bg-primary/[0.02]"
+                        />
+                    </div>
+                </div>
+
                 {(sanitizedEditableItemCategories.length > 0) ? (
                     <Tabs defaultValue={sanitizedEditableItemCategories[0]?.id} className="w-full">
-                        <ScrollArea>
-                            <TabsList>
-                                {sanitizedEditableItemCategories.map(category => {
-                                    const categoryNameDisplay = category.name === 'Item Price List'
-                                    ? 'Item Price List'
-                                    : (editableCampaign?.category === 'Ration' && category.minMembers !== undefined && category.maxMembers !== undefined)
-                                        ? `${category.name} (${category.minMembers}-${category.maxMembers})`
-                                        : category.name;
-                                    return (
-                                        <div key={category.id} className="flex items-center gap-1 p-1">
-                                            <TabsTrigger value={category.id}>{categoryNameDisplay}</TabsTrigger>
-                                            {editMode && canUpdate && category.name !== 'Item Price List' && (
-                                                <div className="flex items-center">
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        size="icon" 
-                                                        className="h-6 w-6 shrink-0"
-                                                        onClick={() => handleEditCategoryClick(category)}
-                                                        title="Edit category"
-                                                    >
-                                                        <Edit className="h-3.5 w-3.5" />
-                                                    </Button>
-                                                    <Button 
-                                                        variant="ghost" 
-                                                        size="icon" 
-                                                        className="h-6 w-6 shrink-0"
-                                                        onClick={() => handleDeleteCategoryClick(category)}
-                                                        disabled={isDeletingCategory}
-                                                        title="Delete category"
-                                                    >
-                                                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
-                                                    </Button>
+                        <div className="flex items-center justify-between mb-4 border-b border-primary/10 pb-2">
+                            <ScrollArea className="flex-1">
+                                <TabsList className="bg-transparent h-auto p-0 gap-2 flex flex-nowrap">
+                                    {sanitizedEditableItemCategories.map(category => {
+                                        const categoryNameDisplay = category.name === 'Item Price List'
+                                        ? 'Price Master'
+                                        : (editableCampaign?.category === 'Ration' && category.minMembers !== undefined && category.maxMembers !== undefined)
+                                            ? `${category.name} (${category.minMembers}-${category.maxMembers})`
+                                            : category.name;
+                                        return (
+                                            <div key={category.id} className="flex items-center gap-1 group">
+                                                <TabsTrigger 
+                                                    value={category.id} 
+                                                    className="font-bold data-[state=active]:bg-primary data-[state=active]:text-white rounded-[10px] border border-primary/5 shadow-none transition-all active:scale-95"
+                                                >
+                                                    {categoryNameDisplay}
+                                                </TabsTrigger>
+                                                {editMode && canUpdate && category.name !== 'Item Price List' && (
+                                                    <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/10" onClick={() => handleEditCategoryClick(category)}><Edit className="h-3 w-3" /></Button>
+                                                        <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive hover:bg-destructive/10" onClick={() => handleDeleteCategoryClick(category)} disabled={isDeletingCategory}><Trash2 className="h-3 w-3" /></Button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )
+                                    })}
+                                </TabsList>
+                                <ScrollBar orientation="horizontal" className="hidden" />
+                            </ScrollArea>
+                            {canUpdate && editMode && (
+                                <Dialog open={isAddCategoryOpen} onOpenChange={setIsAddCategoryOpen}>
+                                    <DialogTrigger asChild>
+                                        <Button variant="outline" size="sm" className="font-bold border-primary/20 text-primary ml-4 shrink-0 transition-transform active:scale-95 shadow-sm">
+                                            <Plus className="mr-2 h-4 w-4" /> Add Category
+                                        </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="sm:max-w-md rounded-[16px] border-primary/10">
+                                        <DialogHeader>
+                                            <DialogTitle className="text-xl font-bold text-primary tracking-tight">Create New Item Category</DialogTitle>
+                                            <DialogDescription className="font-normal text-primary/70">Define A Named Subset Of Items (e.g. "Family Size A" or "Standard Kit").</DialogDescription>
+                                        </DialogHeader>
+                                        <div className="grid gap-4 py-4">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="cat-name" className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Category Name</Label>
+                                                <Input id="cat-name" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="e.g. Large Family Kit" className="font-normal" />
+                                            </div>
+                                            {editableCampaign.category === 'Ration' && (
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="min-members" className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Min Family Members</Label>
+                                                        <Input id="min-members" type="number" value={newCategoryMin} onChange={(e) => setNewCategoryMin(e.target.value)} placeholder="1" className="font-normal" />
+                                                    </div>
+                                                    <div className="space-y-2">
+                                                        <Label htmlFor="max-members" className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Max Family Members</Label>
+                                                        <Input id="max-members" type="number" value={newCategoryMax} onChange={(e) => setNewCategoryMax(e.target.value)} placeholder="4" className="font-normal" />
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>
-                                    )
-                                })}
-                            </TabsList>
-                            <ScrollBar orientation="horizontal" />
-                        </ScrollArea>
+                                        <DialogFooter><Button type="button" variant="outline" onClick={() => setIsAddCategoryOpen(false)} className="font-bold border-primary/20 text-primary">Cancel</Button><Button type="submit" onClick={handleAddNewCategory} className="font-bold shadow-md">Create Category</Button></DialogFooter>
+                                    </DialogContent>
+                                </Dialog>
+                            )}
+                        </div>
                         {sanitizedEditableItemCategories.map(category => (
-                            <TabsContent key={category.id} value={category.id} className="mt-4">
+                            <TabsContent key={category.id} value={category.id} className="mt-4 focus-visible:outline-none">
                                 {renderItemTable(category)}
                             </TabsContent>
                         ))}
                     </Tabs>
                 ) : (
-                    <div className="text-center text-muted-foreground py-10">
-                        No item categories defined for this campaign yet.
-                        {canUpdate && editMode && " Click 'Add Category' to begin."}
+                    <div className="text-center py-20 bg-primary/[0.02] border-2 border-dashed border-primary/10 rounded-2xl">
+                        <Info className="h-12 w-12 mx-auto text-primary/20 mb-4" />
+                        <p className="text-sm font-bold text-primary/60 tracking-widest">No Item Categories Configured.</p>
+                        {canUpdate && editMode && <p className="text-xs font-normal text-muted-foreground mt-2">Initialize Your Inventory By Adding A Category Above.</p>}
                     </div>
                 )}
             </CardContent>
@@ -1038,182 +969,135 @@ export default function CampaignDetailsPage() {
       </main>
 
       <AlertDialog open={isDeleteItemDialogOpen} onOpenChange={setIsDeleteItemDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="rounded-[16px] border-primary/10">
             <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure you want to delete this item?</AlertDialogTitle>
-                <AlertDialogDescription>
-                    This will permanently delete the item "{itemToDelete?.itemName}" from this category's list. If this item is from the 'Item Price List', it will be removed from ALL categories.
+                <AlertDialogTitle className="font-bold text-destructive uppercase">Remove Line Item?</AlertDialogTitle>
+                <AlertDialogDescription className="font-normal text-primary/70">
+                    Permanently Erase "{itemToDelete?.itemName}" From This List? If Removed From The 'Price Master', It Will Be Invalidated Across ALL Categories.
                 </AlertDialogDescription>
             </AlertDialogHeader>
-            <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDeleteItemConfirm} className="bg-destructive hover:bg-destructive/90 text-destructive-foreground">
-                    Delete
-                </AlertDialogAction>
-            </AlertDialogFooter>
+            <AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteItemConfirm} className="bg-destructive hover:bg-destructive/90 text-white font-bold transition-transform active:scale-95 rounded-[12px] shadow-md">Confirm Deletion</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
 
       <Dialog open={isEditCategoryOpen} onOpenChange={setIsEditCategoryOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-[16px] border-primary/10">
             <DialogHeader>
-                <DialogTitle>Edit Category: {categoryToEdit?.name}</DialogTitle>
-                <DialogDescription>Update the category name and member range.</DialogDescription>
+                <DialogTitle className="text-xl font-bold text-primary tracking-tight">Modify Category: {categoryToEdit?.name}</DialogTitle>
+                <DialogDescription className="font-normal text-primary/70">Update Labeling And Eligibility Logic For This Requirement Group.</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                    <Label htmlFor="edit-cat-name">Category Name</Label>
-                    <Input
-                        id="edit-cat-name"
-                        value={categoryToEdit?.name || ''}
-                        onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, name: e.target.value} : null)}
-                    />
+                    <Label htmlFor="edit-cat-name" className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Category Name</Label>
+                    <Input id="edit-cat-name" value={categoryToEdit?.name || ''} onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, name: e.target.value} : null)} className="font-normal" />
                 </div>
                  {editableCampaign?.category === 'Ration' && (
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="edit-min-members">Min Members</Label>
-                            <Input
-                                id="edit-min-members"
-                                type="number"
-                                value={categoryToEdit?.minMembers || ''}
-                                onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, minMembers: Number(e.target.value) || 0} : null)}
-                            />
+                            <Label htmlFor="edit-min-members" className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Min Family size</Label>
+                            <Input id="edit-min-members" type="number" value={categoryToEdit?.minMembers || ''} onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, minMembers: Number(e.target.value) || 0} : null)} className="font-normal" />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="edit-max-members">Max Members</Label>
-                            <Input
-                                id="edit-max-members"
-                                type="number"
-                                value={categoryToEdit?.maxMembers || ''}
-                                onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, maxMembers: Number(e.target.value) || 0} : null)}
-                            />
+                            <Label htmlFor="edit-max-members" className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Max Family size</Label>
+                            <Input id="edit-max-members" type="number" value={categoryToEdit?.maxMembers || ''} onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, maxMembers: Number(e.target.value) || 0} : null)} className="font-normal" />
                         </div>
                     </div>
                  )}
             </div>
-            <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsEditCategoryOpen(false)}>Cancel</Button>
-                <Button type="submit" onClick={handleUpdateCategory}>Save Changes</Button>
-            </DialogFooter>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setIsEditCategoryOpen(false)} className="font-bold border-primary/20 text-primary">Cancel</Button><Button type="submit" onClick={handleUpdateCategory} className="font-bold shadow-md transition-transform active:scale-95">Save Modifications</Button></DialogFooter>
         </DialogContent>
       </Dialog>
       
       <AlertDialog open={isDeleteCategoryDialogOpen} onOpenChange={setIsDeleteCategoryDialogOpen}>
-          <AlertDialogContent>
+          <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown">
               <AlertDialogHeader>
-                  <AlertDialogTitle>Delete Category: '{categoryToDelete?.name}'?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                      This category has {dependentBeneficiaries.length} dependent beneficiaries. Their kit amounts will be affected. Please choose a new category to move them to.
+                  <AlertDialogTitle className="font-bold text-destructive uppercase">Delete Category: '{categoryToDelete?.name}'?</AlertDialogTitle>
+                  <AlertDialogDescription className="font-normal text-primary/70">
+                      This Category Is Linked To {dependentBeneficiaries.length} Active Records. You MUST Select A Target Group To Re-Allocate These Individuals.
                   </AlertDialogDescription>
               </AlertDialogHeader>
               {dependentBeneficiaries.length > 0 && (
-                <div className="py-4">
-                    <Label htmlFor="target-category">Move Beneficiaries To</Label>
+                <div className="py-4 space-y-2">
+                    <Label htmlFor="target-category" className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Move Dependents To</Label>
                     <Select onValueChange={setTargetCategoryId} value={targetCategoryId || ''}>
-                        <SelectTrigger id="target-category">
-                            <SelectValue placeholder="Select a category..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {sanitizedEditableItemCategories.filter(c => c.id !== categoryToDelete?.id).map(cat => (
-                                 <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                        <SelectTrigger id="target-category" className="font-normal"><SelectValue placeholder="Select Destination Category..." /></SelectTrigger>
+                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                            {sanitizedEditableItemCategories.filter(c => c.id !== categoryToDelete?.id && c.name !== 'Item Price List').map(cat => (
+                                 <SelectItem key={cat.id} value={cat.id} className="font-normal">{cat.name}</SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
                 </div>
               )}
-              <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDeleteCategoryConfirm} disabled={isDeletingCategory || (dependentBeneficiaries.length > 0 && !targetCategoryId)}>
-                     {isDeletingCategory && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                     Confirm & Delete
-                  </AlertDialogAction>
-              </AlertDialogFooter>
+              <AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteCategoryConfirm} disabled={isDeletingCategory || (dependentBeneficiaries.length > 0 && !targetCategoryId)} className="bg-destructive hover:bg-destructive/90 text-white font-bold transition-transform active:scale-95 rounded-[12px] shadow-md">{isDeletingCategory ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Trash2 className="mr-2 h-4 w-4"/>}Confirm & Purge</AlertDialogAction></AlertDialogFooter>
           </AlertDialogContent>
       </AlertDialog>
 
         <Dialog open={isCopyItemsOpen} onOpenChange={setIsCopyItemsOpen}>
-            <DialogContent>
+            <DialogContent className="max-w-xl rounded-[16px] border-primary/10">
                 <DialogHeader>
-                    <DialogTitle>Copy Items to '{copyTargetCategory?.name}'</DialogTitle>
-                    <DialogDescription>
-                        Select items from a source category to copy or replace in the current category.
-                    </DialogDescription>
+                    <DialogTitle className="text-xl font-bold text-primary tracking-tight">Replicate Inventory To '{copyTargetCategory?.name}'</DialogTitle>
+                    <DialogDescription className="font-normal text-primary/70">Batch-Copy Checked Items From A Source Template To The Current Category.</DialogDescription>
                 </DialogHeader>
                 <div className="py-4 space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="source-category-copy">Copy items from</Label>
+                        <Label htmlFor="source-category-copy" className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Source Group</Label>
                         <Select onValueChange={id => { setCopySourceCategoryId(id); setSelectedItemsToCopy([]); }} value={copySourceCategoryId || ''}>
-                            <SelectTrigger id="source-category-copy">
-                                <SelectValue placeholder="Select a source category..." />
-                            </SelectTrigger>
-                            <SelectContent>
+                            <SelectTrigger id="source-category-copy" className="font-normal"><SelectValue placeholder="Select Source Template..." /></SelectTrigger>
+                            <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                 {sanitizedEditableItemCategories.filter(cat => cat.id !== copyTargetCategory?.id).map(cat => {
                                     const currentCatName = cat.name === 'Item Price List'
-                                    ? 'Item Price List'
+                                    ? 'Price Master List'
                                     : (editableCampaign?.category === 'Ration' && cat.minMembers !== undefined && cat.maxMembers !== undefined)
                                         ? `${cat.name} (${cat.minMembers}-${cat.maxMembers})`
                                         : cat.name;
-                                    return <SelectItem key={cat.id} value={cat.id}>{currentCatName}</SelectItem>
+                                    return <SelectItem key={cat.id} value={cat.id} className="font-normal">{currentCatName}</SelectItem>
                                 })}
                             </SelectContent>
                         </Select>
                     </div>
 
                     {sourceCategoryForCopy && (
-                        <div className="space-y-2 pt-2">
-                             <h4 className="font-medium text-sm">Select Items to Copy/Replace</h4>
-                            <ScrollArea className="h-64 border rounded-md p-2">
-                               <div className="p-2">
-                                     <div className="flex items-center space-x-2 mb-2 p-2">
-                                        <Checkbox
-                                            id="select-all-copy"
-                                            checked={sourceCategoryForCopy.items.length > 0 && selectedItemsToCopy.length === sourceCategoryForCopy.items.length}
-                                            onCheckedChange={(checked) => {
-                                                if (checked === true) {
-                                                    setSelectedItemsToCopy(sourceCategoryForCopy.items.map(item => item.id));
-                                                } else {
-                                                    setSelectedItemsToCopy([]);
-                                                }
-                                            }}
-                                        />
-                                        <Label htmlFor="select-all-copy" className="font-semibold">Select All</Label>
-                                    </div>
-                                    <Separator />
-                               </div>
-                                <div className="space-y-1 p-2">
-                                {sourceCategoryForCopy.items.length > 0 ? sourceCategoryForCopy.items.map(item => (
-                                    <div key={item.id} className="flex items-center space-x-2">
-                                        <Checkbox
-                                            id={`copy-item-${item.id}`}
-                                            checked={selectedItemsToCopy.includes(item.id)}
-                                            onCheckedChange={(checked) => {
-                                                setSelectedItemsToCopy(prev => 
-                                                    checked === true ? [...prev, item.id] : prev.filter(id => id !== item.id)
-                                                );
-                                            }}
-                                        />
-                                        <Label htmlFor={`copy-item-${item.id}`} className="font-normal flex-1 cursor-pointer">
-                                            <div className="flex justify-between items-center">
-                                                <span>{item.name}</span>
-                                                <span className="text-xs text-muted-foreground font-mono">
-                                                    {item.quantity} {item.quantityType} @ ₹{item.price.toFixed(2)}
-                                                </span>
+                        <div className="space-y-3 pt-2">
+                             <h4 className="font-bold text-sm text-primary tracking-tight flex items-center gap-2"><Plus className="h-4 w-4 opacity-40"/> Select Inventory To Replicate</h4>
+                            <div className="border border-primary/10 rounded-xl overflow-hidden bg-white shadow-inner">
+                                <ScrollArea className="h-64 w-full">
+                                    <div className="p-2 space-y-1">
+                                        <div className="flex items-center space-x-2 mb-2 p-2 bg-primary/5 rounded-lg">
+                                            <Checkbox
+                                                id="select-all-copy"
+                                                checked={sourceCategoryForCopy.items.length > 0 && selectedItemsToCopy.length === sourceCategoryForCopy.items.length}
+                                                onCheckedChange={(checked) => { if (checked === true) setSelectedItemsToCopy(sourceCategoryForCopy.items.map(item => item.id)); else setSelectedItemsToCopy([]); }}
+                                                className="border-primary/40 data-[state=checked]:bg-primary"
+                                            />
+                                            <Label htmlFor="select-all-copy" className="font-bold text-xs cursor-pointer text-primary uppercase tracking-tighter">Check All Items</Label>
+                                        </div>
+                                        {sourceCategoryForCopy.items.length > 0 ? sourceCategoryForCopy.items.map(item => (
+                                            <div key={item.id} className="flex items-center space-x-2 p-2 hover:bg-primary/[0.02] rounded-md transition-colors border-b border-primary/5 last:border-0">
+                                                <Checkbox
+                                                    id={`copy-item-${item.id}`}
+                                                    checked={selectedItemsToCopy.includes(item.id)}
+                                                    onCheckedChange={(checked) => { setSelectedItemsToCopy(prev => checked === true ? [...prev, item.id] : prev.filter(id => id !== item.id)); }}
+                                                    className="border-primary/40 data-[state=checked]:bg-primary"
+                                                />
+                                                <Label htmlFor={`copy-item-${item.id}`} className="font-normal flex-1 cursor-pointer">
+                                                    <div className="flex justify-between items-center pr-2">
+                                                        <span className="text-sm font-bold text-primary">{item.name}</span>
+                                                        <span className="text-[10px] font-mono opacity-60">
+                                                            {item.quantity} {item.quantityType} @ ₹{item.price.toLocaleString()}
+                                                        </span>
+                                                    </div>
+                                                </Label>
                                             </div>
-                                        </Label>
+                                        )) : <p className="text-xs text-muted-foreground text-center py-10 font-normal italic">Source Category Inventory Empty.</p>}
                                     </div>
-                                )) : <p className="text-sm text-muted-foreground text-center">No items in this category.</p>}
-                                </div>
-                            </ScrollArea>
+                                    <ScrollBar orientation="vertical" />
+                                </ScrollArea>
+                            </div>
                         </div>
                     )}
                 </div>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsCopyItemsOpen(false)}>Cancel</Button>
-                    <Button onClick={handleCopyItemsConfirm} disabled={!copySourceCategoryId || selectedItemsToCopy.length === 0}>
-                        <Copy className="mr-2 h-4 w-4" /> Copy ({selectedItemsToCopy.length}) Items
-                    </Button>
-                </DialogFooter>
+                <DialogFooter className="bg-primary/5 p-4 rounded-b-[16px] -mx-6 -mb-6 border-t"><Button variant="outline" onClick={() => setIsCopyItemsOpen(false)} className="font-bold border-primary/20 text-primary">Discard</Button><Button onClick={handleCopyItemsConfirm} disabled={!copySourceCategoryId || selectedItemsToCopy.length === 0} className="font-bold shadow-md px-8 transition-transform active:scale-95"><Copy className="mr-2 h-4 w-4" /> Replicate ({selectedItemsToCopy.length}) Items</Button></DialogFooter>
             </DialogContent>
         </Dialog>
     </>
