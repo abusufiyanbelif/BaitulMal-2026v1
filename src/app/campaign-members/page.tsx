@@ -390,9 +390,14 @@ export default function CampaignPage() {
   }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter, authenticityFilter, visibilityFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => {
+    const priorityItems = filteredCampaigns.filter(c => (c.priority === 'Urgent' || c.priority === 'High') && c.status !== 'Completed');
+    const ongoingItems = filteredCampaigns.filter(c => (c.status === 'Active' || c.status === 'Upcoming') && !priorityItems.find(p => p.id === c.id));
+    const completedItems = filteredCampaigns.filter(c => c.status === 'Completed');
+
     return [
-      { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Campaigns', icon: Clock, items: filteredCampaigns.filter(c => c.status === 'Active' || c.status === 'Upcoming') },
-      { id: 'completed', title: 'Completed Campaigns', icon: CheckCircle2, items: filteredCampaigns.filter(c => c.status === 'Completed') }
+      { id: 'priority', title: 'Critical Initiatives (Urgent & High Priority)', icon: AlertTriangle, items: priorityItems, color: 'text-red-600' },
+      { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Campaigns', icon: Clock, items: ongoingItems, color: 'text-primary' },
+      { id: 'completed', title: 'Project Archive (Completed)', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
     ].filter(s => s.items.length > 0);
   }, [filteredCampaigns]);
 
@@ -455,15 +460,15 @@ export default function CampaignPage() {
           </CardHeader>
           <CardContent className="p-4 sm:p-6 bg-card/30">
             {sections.length > 0 ? (
-              <Accordion type="multiple" defaultValue={['ongoing_upcoming']} className="space-y-6">
+              <Accordion type="multiple" defaultValue={['priority', 'ongoing_upcoming']} className="space-y-6">
                 {sections.map(section => (
                   <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-none overflow-hidden">
                     <AccordionTrigger className="hover:no-underline py-5 group font-bold">
                       <div className="flex items-center gap-4">
-                        <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
+                        <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'priority' ? 'bg-red-600' : 'bg-primary')} />
                         <div className="flex items-center gap-2">
-                            <section.icon className="h-5 w-5 text-primary" />
-                            <span className="text-lg font-bold tracking-tight text-primary">{section.title}</span>
+                            <section.icon className={cn("h-5 w-5", section.color || "text-primary")} />
+                            <span className={cn("text-lg font-bold tracking-tight", section.color || "text-primary")}>{section.title}</span>
                         </div>
                         <Badge variant="secondary" className="rounded-full h-5 text-[10px] font-bold bg-primary/10 text-primary">{section.items.length}</Badge>
                       </div>
@@ -471,7 +476,7 @@ export default function CampaignPage() {
                     <AccordionContent className="pt-2 pb-8 px-2 sm:px-10">
                       <Carousel
                         opts={{ align: "start", loop: true }}
-                        plugins={[Autoplay({ delay: 5000 })]}
+                        plugins={[Autoplay({ delay: 5000, stopOnInteraction: false })]}
                         className="w-full relative"
                       >
                         <CarouselContent className="-ml-4">

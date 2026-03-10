@@ -52,7 +52,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
     return (
         <Carousel
             opts={{ align: "start", loop: true }}
-            plugins={[Autoplay({ delay: 5000 })]}
+            plugins={[Autoplay({ delay: 5000, stopOnInteraction: false })]}
             className="w-full relative"
         >
             <CarouselContent className="-ml-4">
@@ -241,10 +241,17 @@ export function PublicCampaignsView() {
     return items.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
   }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter, dateRange, selectedYear, selectedMonth]);
 
-  const sections = [
-    { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Campaigns', icon: Clock, items: filteredCampaigns.filter(c => c.status === 'Active' || c.status === 'Upcoming') },
-    { id: 'completed', title: 'Completed Campaigns', icon: CheckCircle2, items: filteredCampaigns.filter(c => c.status === 'Completed') }
-  ].filter(s => s.items.length > 0);
+  const sections = useMemo(() => {
+    const priorityItems = filteredCampaigns.filter(c => (c.priority === 'Urgent' || c.priority === 'High') && c.status !== 'Completed');
+    const ongoingItems = filteredCampaigns.filter(c => (c.status === 'Active' || c.status === 'Upcoming') && !priorityItems.find(p => p.id === c.id));
+    const completedItems = filteredCampaigns.filter(c => c.status === 'Completed');
+
+    return [
+      { id: 'priority', title: 'Critical Initiatives (Urgent & High Priority)', icon: AlertTriangle, items: priorityItems, color: 'text-red-600' },
+      { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Campaigns', icon: Clock, items: ongoingItems, color: 'text-primary' },
+      { id: 'completed', title: 'Project Archive (Completed)', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
+    ].filter(s => s.items.length > 0);
+  }, [filteredCampaigns]);
 
   return (
     <div className="space-y-8">
@@ -275,15 +282,15 @@ export function PublicCampaignsView() {
           {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full rounded-xl" />)}
         </div>
       ) : sections.length > 0 ? (
-        <Accordion type="multiple" defaultValue={['ongoing_upcoming']} className="space-y-6">
+        <Accordion type="multiple" defaultValue={['priority', 'ongoing_upcoming']} className="space-y-6">
           {sections.map(section => (
             <AccordionItem key={section.id} value={section.id} className="border-none">
               <AccordionTrigger className="hover:no-underline group font-bold">
                 <div className="flex items-center gap-4">
-                  <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
+                  <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'priority' ? 'bg-red-600' : 'bg-primary')} />
                   <div className="flex items-center gap-2">
-                    <section.icon className="h-6 w-6 text-primary" />
-                    <span className="text-2xl font-bold tracking-tight text-primary">{section.title}</span>
+                    <section.icon className={cn("h-6 w-6", section.color || "text-primary")} />
+                    <span className={cn("text-2xl font-bold tracking-tight", section.color || "text-primary")}>{section.title}</span>
                   </div>
                   <Badge variant="secondary" className="rounded-full h-6 px-3 bg-primary/10 text-primary border-primary/20 font-bold">{section.items.length}</Badge>
                 </div>

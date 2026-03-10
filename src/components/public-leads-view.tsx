@@ -52,7 +52,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
     return (
         <Carousel
             opts={{ align: "start", loop: true }}
-            plugins={[Autoplay({ delay: 5000 })]}
+            plugins={[Autoplay({ delay: 5000, stopOnInteraction: false })]}
             className="w-full relative"
         >
             <CarouselContent className="-ml-4">
@@ -241,10 +241,17 @@ export function PublicLeadsView() {
     return items.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
   }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, dateRange, selectedYear]);
 
-  const sections = useMemo(() => [
-    { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Leads', icon: Clock, items: filteredLeads.filter(c => c.status === 'Active' || c.status === 'Upcoming') },
-    { id: 'completed', title: 'Closed Appeals', icon: CheckCircle2, items: filteredLeads.filter(c => c.status === 'Completed') }
-  ].filter(s => s.items.length > 0), [filteredLeads]);
+  const sections = useMemo(() => {
+    const priorityItems = filteredLeads.filter(l => (l.priority === 'Urgent' || l.priority === 'High') && l.status !== 'Completed');
+    const ongoingItems = filteredLeads.filter(l => (l.status === 'Active' || l.status === 'Upcoming') && !priorityItems.find(p => p.id === l.id));
+    const completedItems = filteredLeads.filter(l => l.status === 'Completed');
+
+    return [
+      { id: 'priority', title: 'Critical Appeals (Urgent & High Priority)', icon: AlertTriangle, items: priorityItems, color: 'text-red-600' },
+      { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Leads', icon: Clock, items: ongoingItems, color: 'text-primary' },
+      { id: 'completed', title: 'Closed Appeals (Archive)', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
+    ].filter(s => s.items.length > 0);
+  }, [filteredLeads]);
   
   return (
     <div className="space-y-8">
@@ -275,15 +282,15 @@ export function PublicLeadsView() {
           {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full rounded-xl" />)}
         </div>
       ) : (sections && sections.length > 0) ? (
-        <Accordion type="multiple" defaultValue={['ongoing_upcoming']} className="space-y-6">
+        <Accordion type="multiple" defaultValue={['priority', 'ongoing_upcoming']} className="space-y-6">
           {sections.map(section => (
             <AccordionItem key={section.id} value={section.id} className="border-none">
               <AccordionTrigger className="hover:no-underline group font-bold">
                 <div className="flex items-center gap-4">
-                  <div className="h-8 w-1 bg-primary rounded-full group-data-[state=closed]:opacity-50" />
+                  <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'priority' ? 'bg-red-600' : 'bg-primary')} />
                   <div className="flex items-center gap-2">
-                    <section.icon className="h-6 w-6 text-primary" />
-                    <span className="text-2xl font-bold tracking-tight text-primary">{section.title}</span>
+                    <section.icon className={cn("h-6 w-6", section.color || "text-primary")} />
+                    <span className={cn("text-2xl font-bold tracking-tight", section.color || "text-primary")}>{section.title}</span>
                   </div>
                   <span className="inline-flex items-center justify-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">{section.items.length}</span>
                 </div>

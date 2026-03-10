@@ -252,6 +252,12 @@ export default function LeadSummaryPage() {
         };
     }, [allDonations, lead, beneficiaries]);
 
+    const chartDataValues = useMemo(() => {
+        return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ 
+            name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` 
+        })) : [];
+    }, [fundingData]);
+
     const paymentTypeChartData = useMemo(() => {
         if (!fundingData?.paymentTypeStats) return [];
         return Object.entries(fundingData.paymentTypeStats).map(([name, stats]) => ({
@@ -260,12 +266,6 @@ export default function LeadSummaryPage() {
             count: stats.count,
             fill: `var(--color-${name.replace(/\s+/g, '')})`
         }));
-    }, [fundingData]);
-
-    const chartDataValues = useMemo(() => {
-        return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ 
-            name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` 
-        })) : [];
     }, [fundingData]);
 
     useEffect(() => {
@@ -353,7 +353,7 @@ export default function LeadSummaryPage() {
             imageUrl = '';
         } else if (imageFile) {
             try {
-                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(imageFile, 1024, 1024, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
+                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
                 const filePath = `leads/${leadId}/background.png`;
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);
