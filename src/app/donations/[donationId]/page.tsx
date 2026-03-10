@@ -51,7 +51,7 @@ export default function UnlinkedDonationDetailsPage() {
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
-    const [imageToView, setImageToView] = useState<string | null>(null);
+    const [imageToView, setImageToView] = useState<{ url: string; title: string } | null>(null);
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0);
 
@@ -69,7 +69,7 @@ export default function UnlinkedDonationDetailsPage() {
     const handleFormSubmit = async (data: DonationFormData) => {
         const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
         if (hasFilesToUpload && !auth?.currentUser) {
-            toast({ title: "Authentication Error", description: "Authorization session expired.", variant: "destructive" });
+            toast({ title: "Authentication Error", description: "Authorization Session Expired.", variant: "destructive" });
             return;
         }
 
@@ -121,7 +121,7 @@ export default function UnlinkedDonationDetailsPage() {
                 const source = linkType === 'campaign' ? allCampaigns : allLeads;
                 const linkedItem = source?.find((item: Campaign | Lead) => item.id === id);
 
-                return { linkId: id, linkName: linkedItem?.name || 'Unknown initiative', linkType: linkType, amount: split.amount };
+                return { linkId: id, linkName: linkedItem?.name || 'Unknown Initiative', linkType: linkType, amount: split.amount };
             }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
 
             finalData = {
@@ -136,12 +136,12 @@ export default function UnlinkedDonationDetailsPage() {
             };
 
             await setDoc(docRef, finalData, { merge: true });
-            toast({ title: 'Success', description: `Donation updated.`, variant: 'success' });
+            toast({ title: 'Success', description: `Donation Updated.`, variant: 'success' });
         } catch (error: any) {
             if (error.code === 'permission-denied') {
                 errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: finalData }));
             } else {
-                toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
+                toast({ title: 'Save Failed', description: error.message || 'An Unexpected Error Occurred.', variant: 'destructive' });
             }
         }
     };
@@ -152,8 +152,8 @@ export default function UnlinkedDonationDetailsPage() {
         download(format, { contentRef: summaryRef, documentTitle: 'Donation Receipt', documentName: `donation-receipt-${donationId}`, brandingSettings, paymentSettings });
     };
 
-    const handleViewImage = (url: string) => {
-        setImageToView(url);
+    const handleViewImage = (url: string, title: string = 'Evidence Artifact') => {
+        setImageToView({ url, title });
         setZoom(1);
         setRotation(0);
         setIsImageViewerOpen(true);
@@ -358,20 +358,20 @@ export default function UnlinkedDonationDetailsPage() {
             </Dialog>
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-                <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10 animate-fade-in-zoom">
-                    <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="text-sm font-bold text-primary uppercase tracking-widest">Evidence Artifact Viewer</DialogTitle></DialogHeader>
+                <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 rounded-[12px] border-primary/10 overflow-hidden">
+                    <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">{imageToView?.title || 'Evidence Viewer'}</DialogTitle></DialogHeader>
                     <ScrollArea className="flex-1 bg-secondary/20">
                         <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
                             {imageToView && (
-                                <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Evidence Document" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                                <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Evidence Document" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                             )}
                         </div>
                         <ScrollBar orientation="horizontal" />
                         <ScrollBar orientation="vertical" />
                     </ScrollArea>
                     <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">
-                        <Button variant="secondary" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
-                        <Button variant="secondary" size="sm" onClick={() => setZoom(z => z / 1.2) } className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
+                        <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
+                        <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5))} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
                         <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
                         <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
                     </DialogFooter>

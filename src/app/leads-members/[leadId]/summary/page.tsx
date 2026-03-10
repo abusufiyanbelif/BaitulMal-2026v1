@@ -345,7 +345,7 @@ export default function LeadSummaryPage() {
         if (!leadDocRef || !userProfile || !storage) return;
         const hasFileToUpload = !!imageFile || newDocuments.length > 0;
         if (hasFileToUpload && !auth?.currentUser) {
-            toast({ title: "Authentication Error", description: "User not authenticated yet.", variant: "destructive" });
+            toast({ title: "Authentication Error", description: "User Not Authenticated Yet.", variant: "destructive" });
             return;
         }
         let imageUrl = editableLead.imageUrl || '';
@@ -402,6 +402,8 @@ export default function LeadSummaryPage() {
     };
 
     const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.update', false);
+    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
+    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
     const FallbackIcon = lead?.purpose === 'Education' ? GraduationCap : lead?.purpose === 'Medical' ? HeartPulse : lead?.purpose === 'Relief' ? LifeBuoy : lead?.purpose === 'Other' ? Info : HandHelping;
 
     const isLoadingPage = isLeadLoading || isProfileLoading || areBeneficiariesLoading || isBrandingLoading || isPaymentLoading;

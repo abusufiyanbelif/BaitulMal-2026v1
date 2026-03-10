@@ -42,22 +42,22 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 
 const linkSplitSchema = z.array(z.object({
     linkId: z.string(),
-    amount: z.coerce.number().min(0, { message: "Allocation amount cannot be negative." }),
+    amount: z.coerce.number().min(0, { message: "Allocation Amount Cannot Be Negative." }),
 })).optional();
 
 const formSchema = z.object({
-  donorName: z.string().min(2, { message: "Name must be at least 2 characters." }),
+  donorName: z.string().min(2, { message: "Name Must Be At Least 2 Characters." }),
   donorPhone: z.string().optional().or(z.literal('')),
   receiverName: z.string().optional(),
   referral: z.string().optional(),
   amount: z.coerce.number(),
   typeSplit: z.array(z.object({
     category: z.enum(donationCategories),
-    amount: z.coerce.number().min(0, { message: 'Amount cannot be negative.' }),
+    amount: z.coerce.number().min(0, { message: 'Amount Cannot Be Negative.' }),
     forFundraising: z.boolean().optional(),
-  })).min(1, { message: 'At least one donation category is required.'}),
+  })).min(1, { message: 'At Least One Donation Category Is Required.'}),
   donationType: z.enum(['Cash', 'Online Payment', 'Check', 'Other']),
-  donationDate: z.string().min(1, { message: "Donation date is required."}),
+  donationDate: z.string().min(1, { message: "Donation Date Is Required."}),
   contributionFromDate: z.string().optional(),
   contributionToDate: z.string().optional(),
   status: z.enum(['Verified', 'Pending', 'Canceled']),
@@ -66,14 +66,14 @@ const formSchema = z.object({
   isTypeSplit: z.boolean().default(false),
   transactions: z.array(z.object({
       id: z.string(),
-      amount: z.coerce.number().min(0, "Transaction amount can't be negative."),
+      amount: z.coerce.number().min(0, "Transaction Amount Can't Be Negative."),
       transactionId: z.string().optional(),
       date: z.string().optional(),
       upiId: z.string().optional(),
       screenshotUrl: z.string().optional(),
       screenshotIsPublic: z.boolean().optional(),
       screenshotFile: z.any().optional(),
-  })).min(1, "At least one transaction is required."),
+  })).min(1, "At Least One Transaction Is Required."),
   isSplit: z.boolean().default(false),
   linkSplit: linkSplitSchema,
 });
@@ -123,11 +123,11 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
     const handleScanScreenshot = async () => {
         const fileList = getValues(`transactions.${index}.screenshotFile`);
         if (!fileList || fileList.length === 0) {
-            toast({ title: 'No screenshot', description: 'Please upload a screenshot to scan.', variant: 'destructive' });
+            toast({ title: 'No Screenshot', description: 'Please Upload A Screenshot To Scan.', variant: 'destructive' });
             return;
         }
         setIsScanning(true);
-        toast({ title: 'Scanning screenshot...', description: 'Please wait.' });
+        toast({ title: 'Scanning Screenshot...', description: 'Please Wait.' });
         const file = fileList[0];
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -142,9 +142,9 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                 if (response.date) setValue(`transactions.${index}.date`, response.date, { shouldDirty: true });
                 if (response.upiId) setValue(`transactions.${index}.upiId`, response.upiId, { shouldDirty: true });
                 if (response.receiverName && !getValues('receiverName')) setValue('receiverName', response.receiverName, { shouldDirty: true });
-                toast({ title: 'Scan complete', description: 'Transaction details have been populated.', variant: "success"});
+                toast({ title: 'Scan Complete', description: 'Transaction Details Have Been Populated.', variant: "success"});
             } catch (error: any) {
-                toast({ title: 'Scan failed', description: 'Could not read details from this image.', variant: 'destructive'});
+                toast({ title: 'Scan Failed', description: 'Could Not Read Details From This Image.', variant: 'destructive'});
             } finally { setIsScanning(false); }
         };
         reader.readAsDataURL(file);
@@ -243,6 +243,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   const auth = useAuth();
   const { toast } = useToast();
   const firestore = useFirestore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donation_config') : null, [firestore]);
   const { data: configSettings } = useDoc<any>(configRef);
@@ -271,7 +272,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     },
   });
 
-  const { control, watch, setValue, getValues, register, formState: { isDirty, errors } } = form;
+  const { control, watch, setValue, getValues, register, formState: { isDirty } } = form;
   const { fields: transactionFields, append: appendTransaction, remove: removeTransaction } = useFieldArray({ control, name: "transactions" });
   const { fields: typeSplitFields, append: appendTypeSplit, remove: removeTypeSplit, replace: replaceTypeSplit } = useFieldArray({ control, name: "typeSplit" });
   const { fields: linkSplitFields, append: appendLinkSplit, remove: removeLinkSplit, replace: replaceLinkSplit } = useFieldArray({ control, name: "linkSplit" });
@@ -305,7 +306,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     }
   }, [isLinkSplit, totalAmount, replaceTypeSplit, getValues, defaultLinkId]);
 
-  const onFormSubmit = (data: DonationFormData) => {
+  const onFormSubmit = async (data: DonationFormData) => {
     const missingFields: string[] = [];
     Object.entries(mandatoryFields).forEach(([field, isMandatory]) => {
         if (isMandatory) {
@@ -319,16 +320,22 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     });
 
     if (missingFields.length > 0) {
-        toast({ title: "Incomplete Record", description: `Required fields missing: ${missingFields.join(', ')}`, variant: "destructive" });
+        toast({ title: "Incomplete Record", description: `Required Fields Missing: ${missingFields.join(', ')}`, variant: "destructive" });
         return;
     }
 
     const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
     if (hasFilesToUpload && !auth?.currentUser) {
-        toast({ title: "Authentication Error", description: "Authorization session expired.", variant: "destructive" });
+        toast({ title: "Authentication Error", description: "Authorization Session Expired.", variant: "destructive" });
         return;
     }
-    onSubmit(data);
+    
+    setIsSubmitting(true);
+    try {
+        await onSubmit(data);
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   const renderLabel = (label: string, fieldName: string) => (
@@ -341,7 +348,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onFormSubmit)} className="space-y-6 pt-4 text-primary font-normal">
           <FormField control={control} name="amount" render={({ field }) => (
-              <FormItem><FormLabel className="font-bold text-primary tracking-tight">Total Amount Received (₹) *</FormLabel><FormControl><Input type="number" {...field} readOnly className="bg-primary/5 font-bold font-mono text-xl text-primary" /></FormControl><FormDescription className="font-normal text-[10px] opacity-70 italic">Aggregated sum of all verified transactions documented below.</FormDescription><FormMessage /></FormItem>
+              <FormItem><FormLabel className="font-bold text-primary tracking-tight">Total Amount Received (₹) *</FormLabel><FormControl><Input type="number" {...field} readOnly className="bg-primary/5 font-bold font-mono text-xl text-primary" /></FormControl><FormDescription className="font-normal text-[10px] opacity-70 italic">Aggregated Sum Of All Verified Transactions Documented Below.</FormDescription><FormMessage /></FormItem>
           )}/>
 
         <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm">
@@ -376,10 +383,10 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <FormField control={control} name="receiverName" render={({ field }) => (
-                <FormItem>{renderLabel('Receiver Name', 'receiverName')}<FormControl><Input placeholder="Institutional representative" {...field} disabled={isReadOnly} className="font-normal text-primary"/></FormControl><FormMessage /></FormItem>
+                <FormItem>{renderLabel('Receiver Name', 'receiverName')}<FormControl><Input placeholder="Institutional Representative" {...field} disabled={isReadOnly} className="font-normal text-primary"/></FormControl><FormMessage /></FormItem>
             )}/>
             <FormField control={control} name="referral" render={({ field }) => (
-                <FormItem>{renderLabel('Referral', 'referral')}<FormControl><Input placeholder="e.g. Local volunteer name" {...field} disabled={isReadOnly} className="font-normal text-primary"/></FormControl><FormMessage /></FormItem>
+                <FormItem>{renderLabel('Referral', 'referral')}<FormControl><Input placeholder="e.g. Local Volunteer Name" {...field} disabled={isReadOnly} className="font-normal text-primary"/></FormControl><FormMessage /></FormItem>
             )}/>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -478,15 +485,15 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
 
         <div className="space-y-6">
             <FormField control={control} name="comments" render={({ field }) => (
-                <FormItem>{renderLabel('Donor Verification Comments', 'comments')}<FormControl><Textarea placeholder="Verification notes provided by the donor..." {...field} disabled={isReadOnly} className="font-normal text-primary focus:shadow-md transition-shadow" /></FormControl></FormItem>
+                <FormItem>{renderLabel('Donor Verification Comments', 'comments')}<FormControl><Textarea placeholder="Verification Notes Provided By The Donor..." {...field} disabled={isReadOnly} className="font-normal text-primary focus:shadow-md transition-shadow" /></FormControl></FormItem>
             )}/>
             <FormField control={control} name="suggestions" render={({ field }) => (
-                <FormItem>{renderLabel('Internal Staff Vetting Suggestions', 'suggestions')}<FormControl><Textarea placeholder="Staff suggestions for future vetting improvements..." {...field} disabled={isReadOnly} className="font-normal text-primary focus:shadow-md transition-shadow" /></FormControl></FormItem>
+                <FormItem>{renderLabel('Internal Staff Vetting Suggestions', 'suggestions')}<FormControl><Textarea placeholder="Staff Suggestions For Future Vetting Improvements..." {...field} disabled={isReadOnly} className="font-normal text-primary focus:shadow-md transition-shadow" /></FormControl></FormItem>
             )}/>
         </div>
 
         {!isReadOnly && (
-            <div className="flex justify-end gap-3 pt-6 sticky bottom-0 bg-background/80 backdrop-blur-md p-4 border-t z-50">
+            <div className="flex justify-end gap-3 pt-6 sticky bottom-0 bg-background/80 backdrop-blur-sm p-4 border-t z-50">
                 <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="font-bold text-primary border-primary/20 transition-transform active:scale-95">Discard Changes</Button>
                 <Button type="submit" disabled={isSubmitting || (isEditing && !isDirty)} className="font-bold px-10 transition-transform active:scale-95 shadow-md">
                     {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}

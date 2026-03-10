@@ -1,0 +1,11 @@
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(677,200): error TS2304: Cannot find name 'Eye'.
+src/app/donations/[donationId]/page.tsx(319,253): error TS2554: Expected 1 arguments, but got 2.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(545,66): error TS2552: Cannot find name 'handleBulkStatusChange'. Did you mean 'handleStatusChange'?
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(546,66): error TS2552: Cannot find name 'handleBulkStatusChange'. Did you mean 'handleStatusChange'?
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(547,66): error TS2552: Cannot find name 'handleBulkStatusChange'. Did you mean 'handleStatusChange'?
+src/app/leads-members/[leadId]/summary/page.tsx(462,24): error TS2304: Cannot find name 'canReadBeneficiaries'.
+src/app/leads-members/[leadId]/summary/page.tsx(463,24): error TS2304: Cannot find name 'canReadDonations'.
+src/components/donation-form.tsx(490,86): error TS2304: Cannot find name 'isSubmitting'.
+src/components/donation-form.tsx(491,49): error TS2304: Cannot find name 'isSubmitting'.
+src/components/donation-form.tsx(492,22): error TS2304: Cannot find name 'isSubmitting'.
+src/components/donation-form.tsx(493,22): error TS2304: Cannot find name 'isSubmitting'.
