@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
@@ -7,7 +6,7 @@ import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollec
 import type { SecurityRuleContext } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { updateDoc, DocumentReference, writeBatch } from 'firebase/firestore';
-import type { Lead, RationItem, Beneficiary } from '@/lib/types';
+import type { Lead, RationItem, Beneficiary, ItemCategory } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -134,7 +133,7 @@ export default function LeadDetailsPage() {
   };
   
   const calculateTotal = (items: RationItem[]) => {
-    return items.reduce((sum, item: RationItem) => sum + Number(item.price || 0) * Number(item.quantity || 0), 0);
+    return items.reduce((sum, item: RationItem) => sum + (Number(item.price || 0) * Number(item.quantity || 0)), 0);
   };
 
   const handleSave = () => {

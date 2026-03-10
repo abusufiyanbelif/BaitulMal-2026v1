@@ -277,17 +277,21 @@ export default function CampaignDetailsPage() {
     (itemToUpdate as any)[field] = value;
     
     if (categoryToUpdate.name === 'Item Price List') {
-        // Renaming in master list propagates to all other categories
         if (field === 'name' && oldItemName) {
             const newName = (value as string).trim();
-            newitemCategories.forEach((cat: ItemCategory) => {
+            newitemCategories = newitemCategories.map((cat: ItemCategory) => {
                 if (cat.name !== 'Item Price List') {
-                    cat.items.forEach((item: RationItem) => {
-                        if (item.name.trim().toLowerCase() === oldItemName) {
-                            item.name = newName;
-                        }
-                    });
+                    return {
+                        ...cat,
+                        items: cat.items.map((item: RationItem) => {
+                            if (item.name.trim().toLowerCase() === oldItemName) {
+                                return { ...item, name: newName };
+                            }
+                            return item;
+                        })
+                    };
                 }
+                return cat;
             });
         }
         newitemCategories = syncAllCategoriesFromMaster(newitemCategories);

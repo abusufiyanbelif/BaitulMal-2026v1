@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import Image from 'next/image';
@@ -17,7 +17,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { Beneficiary, ItemCategory, RationItem } from '@/lib/types';
-import { Loader2, Edit, Trash2, FileIcon, Replace, ScanLine, Save, X } from 'lucide-center';
+import { Loader2, Edit, Trash2, FileIcon, Replace, ScanLine, Save, X } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -31,7 +31,6 @@ import {
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import Resizer from 'react-image-file-resizer';
-import { Timestamp } from 'firebase/firestore';
 import { useFirestore, useMemoFirebase, useDoc, doc } from '@/firebase';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
