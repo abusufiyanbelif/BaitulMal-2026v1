@@ -22,7 +22,7 @@ interface NewsTickerProps {
 }
 
 /**
- * Sequential news ticker with "Slide Down Fade" then "Slow Left Scroll".
+ * Sequential news ticker with "Slide Down Fade" then "Smooth Full Slide Left".
  * Optimized for readability on mobile devices.
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {
@@ -43,9 +43,10 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
   useEffect(() => {
     if (!sortedItems || sortedItems.length <= 1) return;
 
+    // Animation cycle matches the CSS keyframe duration (10s)
     const timer = setInterval(() => {
       handleNext();
-    }, 6000); // Slightly longer interval to allow for the scroll animation
+    }, 10000);
 
     return () => clearInterval(timer);
   }, [sortedItems]);
@@ -104,7 +105,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
           key={currentIndex}
           className={cn(
             "w-full flex items-center gap-2 sm:gap-3",
-            "animate-ticker-sequence" // Custom sequence: Slide Down/Fade -> Pause -> Scroll Left
+            "animate-ticker-sequence"
           )}
         >
           <span className={cn(

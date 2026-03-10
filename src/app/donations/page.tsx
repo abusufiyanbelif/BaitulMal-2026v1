@@ -44,8 +44,7 @@ import {
     Hourglass,
     XCircle,
     Smartphone,
-    Wallet,
-    Banknote
+    Wallet
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -385,8 +384,9 @@ export default function DonationsPage() {
     setIsSyncing(false);
   };
 
-  const toggleSelectAll = (checked: boolean) => {
-    if (checked) {
+  const toggleSelectAll = (checked: boolean | string) => {
+    const isChecked = checked === true;
+    if (isChecked) {
         setSelectedIds(paginatedDonations.map(d => d.id));
     } else {
         setSelectedIds([]);

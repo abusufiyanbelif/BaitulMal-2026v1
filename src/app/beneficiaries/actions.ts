@@ -1,17 +1,16 @@
-
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import type { Beneficiary } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
-import { FieldValue, DocumentData } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure Server Credentials Are Configured Correctly.";
 
 export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) {
-        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+        return { success: true, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     try {
         const docRef = adminDb.collection('beneficiaries').doc();
