@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -23,8 +22,8 @@ interface NewsTickerProps {
 }
 
 /**
- * Vertical news ticker with "Slide Down & Slide Left" entrance animation.
- * Optimized for mobile visibility and institutional aesthetics.
+ * Sequential news ticker with "Slide Down Fade" then "Slow Left Scroll".
+ * Optimized for readability on mobile devices.
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -46,7 +45,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
 
     const timer = setInterval(() => {
       handleNext();
-    }, 5000);
+    }, 6000); // Slightly longer interval to allow for the scroll animation
 
     return () => clearInterval(timer);
   }, [sortedItems]);
@@ -57,7 +56,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
     setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % sortedItems.length);
       setIsTransitioning(false);
-    }, 400); 
+    }, 500); 
   };
 
   const handlePrev = () => {
@@ -66,7 +65,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
     setTimeout(() => {
       setCurrentIndex((prev) => (prev - 1 + sortedItems.length) % sortedItems.length);
       setIsTransitioning(false);
-    }, 400);
+    }, 500);
   };
 
   if (!sortedItems || sortedItems.length === 0) return null;
@@ -82,7 +81,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
       !isCompleted && currentItem?.isUrgent && "border-red-500/50",
       !isCompleted && currentItem?.isHigh && "border-orange-500/50"
     )}>
-      {/* Responsive Label Section */}
+      {/* Label Section */}
       <div className={cn(
         "z-30 h-full px-2 sm:px-4 flex items-center border-r shrink-0 font-bold transition-colors duration-500",
         isCompleted ? "bg-muted text-muted-foreground" : "bg-primary text-primary-foreground"
@@ -94,19 +93,18 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         ) : (
           <Megaphone className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
         )}
-        <span className="text-[9px] sm:text-xs font-bold tracking-tight whitespace-nowrap">
+        <span className="text-[9px] sm:text-xs font-bold tracking-tight whitespace-nowrap uppercase">
           {label}
         </span>
       </div>
 
-      {/* Content Section with Slide Down & Left Animation */}
-      <div className="flex-1 flex items-center px-3 sm:px-4 relative overflow-hidden h-full">
+      {/* Sequential Animation Section */}
+      <div className="flex-1 flex items-center px-3 sm:px-4 relative overflow-hidden h-full bg-white">
         <div 
           key={currentIndex}
           className={cn(
             "w-full flex items-center gap-2 sm:gap-3",
-            "animate-in fade-in duration-1000 ease-out",
-            "slide-in-from-top-12 slide-in-from-right-12" // "Slide Down and Slide Left" pronounced effect
+            "animate-ticker-sequence" // Custom sequence: Slide Down/Fade -> Pause -> Scroll Left
           )}
         >
           <span className={cn(
@@ -115,7 +113,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
           )} />
           
           {currentItem.priorityIcon && (
-            <div className="shrink-0 flex items-center [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5 transition-transform duration-300 group-hover:scale-110">
+            <div className="shrink-0 flex items-center [&>svg]:h-4 [&>svg]:w-4 sm:[&>svg]:h-5 sm:[&>svg]:w-5">
               {currentItem.priorityIcon}
             </div>
           )}
@@ -123,7 +121,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
           <Link 
             href={currentItem.href} 
             className={cn(
-              "text-[11px] sm:text-sm font-bold transition-colors whitespace-nowrap hover:underline underline-offset-4 truncate",
+              "text-[11px] sm:text-sm font-bold transition-colors whitespace-nowrap hover:underline underline-offset-4",
               isCompleted ? "text-muted-foreground hover:text-foreground" : "text-primary hover:text-primary/80"
             )}
           >
@@ -132,7 +130,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         </div>
       </div>
 
-      {/* Vertical Controls */}
+      {/* Manual Controls */}
       <div className="z-30 flex flex-col border-l border-primary/5 h-full opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex">
         <Button
           variant="ghost"

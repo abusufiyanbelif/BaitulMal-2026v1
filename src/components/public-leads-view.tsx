@@ -117,14 +117,17 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                                         {priorityLabel} Priority
                                     </div>
                                     {(lead.targetAmount || 0) > 0 && (
-                                        <div className="space-y-1.5">
-                                            <div className="flex justify-between text-[10px] font-bold opacity-60 tracking-tight">
-                                                <span>Raised: ₹{lead.collected.toLocaleString('en-IN')}</span>
-                                                <span>Goal: ₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</span>
+                                        <div className="space-y-2 border-t border-primary/5 pt-3">
+                                            <div className="flex justify-between items-baseline text-[11px] font-bold text-primary tracking-tight">
+                                                <span className="opacity-60">Raised: ₹{lead.collected.toLocaleString('en-IN')}</span>
+                                                <span className="text-sm">Goal: ₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</span>
                                             </div>
-                                            <Progress value={lead.progress} className="h-1.5" />
-                                            <div className="text-right text-[9px] font-bold text-primary/60 tracking-tight">
-                                                {Math.round(lead.progress)}% Funded
+                                            <Progress value={lead.progress} className="h-2 bg-primary/10 shadow-inner" />
+                                            <div className="flex justify-between items-center">
+                                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Progress</span>
+                                                <span className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary/5 border border-primary/10">
+                                                    {Math.round(lead.progress)}% Funded
+                                                </span>
                                             </div>
                                         </div>
                                     )}
