@@ -12,7 +12,6 @@ import {
     doc, 
     getDoc,
     serverTimestamp, 
-    writeBatch, 
     updateDoc,
     deleteDoc,
     type DocumentReference 
@@ -32,7 +31,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { 
     ArrowLeft, 
     PlusCircle, 
-    Eye, 
     Search,
     CopyPlus,
     MoreHorizontal,
@@ -93,7 +91,7 @@ import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog'
 import { Input } from '@/components/ui/input';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
-import { updateMasterBeneficiaryAction, bulkImportBeneficiariesAction, bulkUpdateInitiativeBeneficiaryStatusAction, bulkUpdateBeneficiaryVettingAction, bulkUpdateMasterZakatAction } from '@/app/beneficiaries/actions';
+import { updateMasterBeneficiaryAction, bulkImportBeneficiariesAction, bulkUpdateInitiativeBeneficiaryStatusAction, bulkUpdateBeneficiaryVettingAction, bulkUpdateMasterZakatAction, upsertInitiativeBeneficiaryAction } from '@/app/beneficiaries/actions';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -311,44 +309,45 @@ export default function BeneficiariesPage() {
     
     try {
         const masterId = typeof masterIdOrEvent === 'string' ? masterIdOrEvent : editingBeneficiary?.id;
-        const batch = writeBatch(firestore);
-        const masterRef = masterId ? doc(firestore, 'beneficiaries', masterId) : doc(collection(firestore, 'beneficiaries'));
-        const campRef = doc(firestore, 'campaigns', campaignId, 'beneficiaries', masterRef.id);
-        
-        let masterVerificationStatus: any = 'Pending';
-        if (masterId) {
-            const masterSnap = await getDoc(masterRef);
-            if (masterSnap.exists()) masterVerificationStatus = masterSnap.data()?.status || 'Pending';
-        }
         
         let idProofUrl = editingBeneficiary?.idProofUrl || '';
         const fileList = data.idProofFile as FileList | undefined;
         if (fileList && fileList.length > 0) {
             const file = fileList[0];
             const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
-            const fRef = storageRef(storage, `beneficiaries/${masterRef.id}/id_proof.png`);
+            const tempId = masterId || doc(collection(firestore, 'beneficiaries')).id;
+            const fRef = storageRef(storage, `beneficiaries/${tempId}/id_proof.png`);
             await uploadBytes(fRef, resizedBlob);
             idProofUrl = await getDownloadURL(fRef);
         }
         
         const { idProofFile, idProofDeleted, ...rest } = data;
-        const fullData = { ...rest, id: masterRef.id, idProofUrl, verificationStatus: masterVerificationStatus, addedDate: editingBeneficiary?.addedDate || new Date().toISOString().split('T')[0], createdAt: editingBeneficiary ? (editingBeneficiary as any).createdAt : serverTimestamp(), createdById: editingBeneficiary ? (editingBeneficiary as any).createdById : userProfile.id, createdByName: editingBeneficiary ? (editingBeneficiary as any).createdByName : userProfile.name };
-        const { status, kitAmount, zakatAllocation, ...masterData } = fullData;
-        const masterStatusToSave = status === 'Given' ? 'Verified' : status;
+        const finalBeneficiaryId = masterId || doc(collection(firestore, 'beneficiaries')).id;
         
-        batch.set(masterRef, { ...masterData, status: masterStatusToSave }, { merge: true });
-        batch.set(campRef, fullData, { merge: true });
-        
-        if (!editingBeneficiary) {
-            batch.update(doc(firestore, 'campaigns', campaignId), { targetAmount: (campaign.targetAmount || 0) + (data.kitAmount || 0) });
+        const fullData = { 
+            ...rest, 
+            id: finalBeneficiaryId, 
+            idProofUrl, 
+            addedDate: editingBeneficiary?.addedDate || new Date().toISOString().split('T')[0],
+        };
+
+        // Use the server action to handle cross-collection synchronization safely
+        const result = await upsertInitiativeBeneficiaryAction(
+            'campaign', 
+            campaignId, 
+            fullData as any, 
+            { id: userProfile.id, name: userProfile.name }
+        );
+
+        if (result.success) {
+            toast({ title: 'Success', description: result.message, variant: 'success' });
+            setIsFormOpen(false);
+            setEditingBeneficiary(null);
+        } else {
+            toast({ title: 'Save Failed', description: result.message, variant: 'destructive' });
         }
-        
-        await batch.commit();
-        toast({ title: 'Success', description: 'Beneficiary Record Synchronized.', variant: 'success' });
-        setIsFormOpen(false);
-        setEditingBeneficiary(null);
     } catch (e: any) {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'campaign beneficiaries', operation: 'write' }));
+        toast({ title: 'Operation Error', description: e.message || 'An unexpected error occurred.', variant: 'destructive' });
     } finally {
         setIsSubmitting(false);
     }

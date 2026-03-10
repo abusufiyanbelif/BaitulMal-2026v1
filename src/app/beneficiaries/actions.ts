@@ -1,7 +1,7 @@
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
-import type { Beneficiary } from '@/lib/types';
+import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { FieldValue } from 'firebase-admin/firestore';
 
@@ -10,7 +10,7 @@ const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure 
 export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) {
-        return { success: true, message: ADMIN_SDK_ERROR_MESSAGE };
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     try {
         const docRef = adminDb.collection('beneficiaries').doc();
@@ -29,6 +29,70 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
     } catch (error: any) {
         console.error("Error Creating Beneficiary:", error);
         return { success: false, message: `Registration Failed: ${error.message}` };
+    }
+}
+
+/**
+ * Robust server-side action to upsert a beneficiary within an initiative context.
+ * This resolves permission errors by handling cross-collection updates on the server.
+ */
+export async function upsertInitiativeBeneficiaryAction(
+    initiativeType: 'campaign' | 'lead',
+    initiativeId: string,
+    beneficiaryData: Partial<Beneficiary> & { id: string },
+    updatedBy: { id: string, name: string }
+): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const collectionName = initiativeType === 'campaign' ? 'campaigns' : 'leads';
+        const masterRef = adminDb.collection('beneficiaries').doc(beneficiaryData.id);
+        const subRef = adminDb.doc(`${collectionName}/${initiativeId}/beneficiaries/${beneficiaryData.id}`);
+        const initiativeRef = adminDb.collection(collectionName).doc(initiativeId);
+
+        await adminDb.runTransaction(async (transaction) => {
+            const masterSnap = await transaction.get(masterRef);
+            const initiativeSnap = await transaction.get(initiativeRef);
+            const subSnap = await transaction.get(subRef);
+
+            if (!initiativeSnap.exists) throw new Error(`${initiativeType} not found.`);
+
+            const { status, kitAmount, zakatAllocation, itemCategoryId, itemCategoryName, verificationStatus, ...masterFields } = beneficiaryData;
+            
+            // 1. Update Master Profile
+            const masterStatusToSave = status === 'Given' ? 'Verified' : (status || 'Pending');
+            transaction.set(masterRef, {
+                ...masterFields,
+                status: masterStatusToSave,
+                updatedAt: FieldValue.serverTimestamp(),
+                updatedById: updatedBy.id,
+                updatedByName: updatedBy.name,
+            }, { merge: true });
+
+            // 2. Update Initiative-Specific Record
+            const initiativeBeneficiaryData = {
+                ...beneficiaryData,
+                verificationStatus: masterStatusToSave,
+                updatedAt: FieldValue.serverTimestamp(),
+            };
+            transaction.set(subRef, initiativeBeneficiaryData, { merge: true });
+
+            // 3. Adjust Initiative Total Goal if this is a new link
+            if (!subSnap.exists) {
+                const currentInitiative = initiativeSnap.data() as Campaign | Lead;
+                const newTarget = (currentInitiative.targetAmount || 0) + (kitAmount || 0);
+                transaction.update(initiativeRef, { targetAmount: newTarget });
+            }
+        });
+
+        revalidatePath(`/beneficiaries/${beneficiaryData.id}`);
+        revalidatePath(`/${collectionName}-members/${initiativeId}/beneficiaries`);
+        
+        return { success: true, message: 'Beneficiary Records Synchronized Successfully.' };
+    } catch (error: any) {
+        console.error("Upsert Initiative Beneficiary Failed:", error);
+        return { success: false, message: `Update Failed: ${error.message}` };
     }
 }
 
