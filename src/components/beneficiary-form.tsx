@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -336,7 +337,7 @@ export function BeneficiaryForm({
                                     </div>
                                     {watch('isEligibleForZakat') && !hideZakatAllocation && (
                                         <div className="animate-fade-in-zoom">
-                                            <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem>{renderLabel('Zakat Allocation (₹)', 'zakatAllocation')}<FormControl><Input type="number" placeholder="Reserved From Zakat" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl><FormDescription className="font-normal text-[10px] opacity-70 italic uppercase tracking-tighter">Amount Disbursed From Zakat Collections.</FormDescription></FormItem>)}/>
+                                            <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem>{renderLabel('Zakat Allocation (₹)', 'zakatAllocation')}<FormControl><Input type="number" placeholder="Reserved From Zakat" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl><FormDescription className="font-normal text-[10px] opacity-70 italic tracking-tighter">Amount Disbursed From Zakat Collections.</FormDescription></FormItem>)}/>
                                         </div>
                                     )}
                                 </div>

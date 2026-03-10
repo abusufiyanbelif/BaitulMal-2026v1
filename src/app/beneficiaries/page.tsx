@@ -66,7 +66,7 @@ import {
 } from "@/components/ui/command";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useToast } from '@/hooks/use-toast';
-import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction, updateMasterBeneficiaryAction, bulkImportBeneficiariesAction, bulkUpdateMasterBeneficiaryStatusAction, bulkUpdateMasterZakatAction } from './actions';
+import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction, updateMasterBeneficiaryAction, bulkImportBeneficiariesAction, bulkImportBeneficiariesAction as bulkImportAction, bulkUpdateMasterBeneficiaryStatusAction, bulkUpdateMasterZakatAction } from './actions';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn, getNestedValue } from '@/lib/utils';
@@ -96,7 +96,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay }: 
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: any, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2", className)} onClick={() => handleSort(sortKey)}>
+        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))]", className)} onClick={() => handleSort(sortKey)}>
             {children}
             <div className="flex flex-col opacity-40">
                 <ArrowUp className={cn("h-2.5 w-2.5 -mb-1", isSorted && sortConfig.direction === 'ascending' && "text-primary opacity-100")} />
@@ -320,33 +320,32 @@ export default function BeneficiariesPage() {
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative overflow-hidden">
-      <div className="flex items-center justify-between">
-        <Button variant="outline" asChild className="font-bold border-primary/10 text-primary transition-transform active:scale-95">
+      <div className="flex flex-col gap-2">
+        <Button variant="outline" asChild className="w-fit font-bold border-primary/10 text-primary transition-transform active:scale-95">
           <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Dashboard</Link>
         </Button>
-      </div>
-      
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div className="space-y-1">
-            <h1 className="text-3xl font-bold tracking-tight text-primary">Master Beneficiary Registry</h1>
-            <p className="text-sm font-medium text-muted-foreground opacity-70">Total Verified Profiles: {beneficiaries?.length || 0}</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button onClick={handleExport} variant="outline" size="sm" className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
-            <Download className="mr-2 h-4 w-4"/> Export Full CSV
-          </Button>
-          <Button onClick={() => setIsImportOpen(true)} variant="outline" size="sm" className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
-            <UploadCloud className="mr-2 h-4 w-4"/> Import Data
-          </Button>
-          <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync Complete' : 'Sync Failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="secondary" size="sm" className="font-bold border-primary/10 text-primary active:scale-95 transition-transform">
-            {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
-            Refresh Records
-          </Button>
-          {canCreate && (
-            <Button onClick={() => router.push('/beneficiaries/create')} size="sm" className="font-bold active:scale-95 transition-transform shadow-none rounded-[12px]">
-              <PlusCircle className="mr-2 h-4 w-4" /> Create Beneficiary
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div className="space-y-1">
+                <h1 className="text-3xl font-bold tracking-tight text-primary">Master Beneficiary Registry</h1>
+                <p className="text-sm font-medium text-muted-foreground opacity-70">Total Verified Profiles: {beneficiaries?.length || 0}</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+            <Button onClick={handleExport} variant="outline" size="sm" className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+                <Download className="mr-2 h-4 w-4"/> Export Full CSV
             </Button>
-          )}
+            <Button onClick={() => setIsImportOpen(true)} variant="outline" size="sm" className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+                <UploadCloud className="mr-2 h-4 w-4"/> Import Data
+            </Button>
+            <Button onClick={async () => { setIsSyncing(true); const res = await syncMasterBeneficiaryListAction(); toast({ title: res.success ? 'Sync Complete' : 'Sync Failed', description: res.message, variant: res.success ? 'success' : 'destructive'}); setIsSyncing(false); }} disabled={isSyncing} variant="secondary" size="sm" className="font-bold border-primary/10 text-primary active:scale-95 transition-transform">
+                {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
+                Refresh Records
+            </Button>
+            {canCreate && (
+                <Button onClick={() => router.push('/beneficiaries/create')} size="sm" className="font-bold active:scale-95 transition-transform shadow-none rounded-[12px]">
+                <PlusCircle className="mr-2 h-4 w-4" /> Create Beneficiary
+                </Button>
+            )}
+            </div>
         </div>
       </div>
 
@@ -484,7 +483,7 @@ export default function BeneficiariesPage() {
       <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
         <ScrollArea className="w-full">
             <div className="max-h-[70vh]">
-                <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-semibold tracking-tight text-[hsl(var(--table-header-fg))]", gridClass)}>
+                <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold tracking-tight text-[hsl(var(--table-header-fg))]", gridClass)}>
                     <div className="flex justify-center">
                         <Checkbox 
                             checked={paginatedBeneficiaries.length > 0 && selectedIds.length === paginatedBeneficiaries.length}
