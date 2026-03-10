@@ -218,6 +218,22 @@ export default function PublicLeadSummaryPage() {
         })) : [];
     }, [fundingData]);
 
+    const isLoading = isLeadLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
+
+    if (isLoading) return <BrandedLoader />;
+
+    if (!lead || lead.publicVisibility !== 'Published') {
+        return (
+            <main className="container mx-auto p-4 md:p-8 text-center text-primary font-bold">
+                <p className="text-lg text-primary/70 font-normal">This Lead Is Not Available For Public View.</p>
+                <Button asChild className="mt-4 active:scale-95 transition-transform font-bold border-primary/20 text-primary" variant="outline"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Public Leads</Link></Button>
+            </main>
+        );
+    }
+    
+    const publicDocuments = lead.documents?.filter(d => d.isPublic) || [];
+    const FallbackIcon = lead.purpose === 'Education' ? GraduationCap : lead.purpose === 'Medical' ? HeartPulse : lead.purpose === 'Relief' ? LifeBuoy : lead.purpose === 'Other' ? Info : HandHelping;
+
     const handleShare = async () => {
         if (!lead || !fundingData) return;
         const shareText = `Lead: ${lead.name}\n${lead.description}`;
@@ -235,22 +251,6 @@ export default function PublicLeadSummaryPage() {
     const isVisible = (key: string) => {
         return visibilitySettings?.[`public_${key}`] !== false;
     };
-
-    const isLoading = isLeadLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
-
-    if (isLoading) return <BrandedLoader />;
-
-    if (!lead || lead.publicVisibility !== 'Published') {
-        return (
-            <main className="container mx-auto p-4 md:p-8 text-center text-primary font-bold">
-                <p className="text-lg text-primary/70 font-normal">This Lead Is Not Available For Public View.</p>
-                <Button asChild className="mt-4 active:scale-95 transition-transform font-bold border-primary/20 text-primary" variant="outline"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Public Leads</Link></Button>
-            </main>
-        );
-    }
-    
-    const publicDocuments = lead.documents?.filter(d => d.isPublic) || [];
-    const FallbackIcon = lead.purpose === 'Education' ? GraduationCap : lead.purpose === 'Medical' ? HeartPulse : lead.purpose === 'Relief' ? LifeBuoy : lead.purpose === 'Other' ? Info : HandHelping;
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
@@ -304,12 +304,12 @@ export default function PublicLeadSummaryPage() {
                                                     </RadialBarChart>
                                                 </ChartContainer>
                                             ) : <Skeleton className="w-full h-full rounded-full" />}
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold tracking-tight">Funded</span></div>
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold tracking-tight">Funded</span></div>
                                         </div>
-                                        <div className="space-y-4 text-center md:text-left text-primary font-bold">
-                                            <div><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Raised For Goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                            <div><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                            <div><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Grand Total Received</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                        <div className="space-y-4 text-center md:text-left text-primary font-bold animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Raised For Goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Grand Total Received</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -531,7 +531,7 @@ export default function PublicLeadSummaryPage() {
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-                <DialogContent className="max-w-4xl animate-fade-in-zoom p-0 overflow-hidden text-primary font-normal">
+                <DialogContent className="max-w-4xl animate-fade-in-zoom p-0 overflow-hidden">
                     <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary tracking-tight text-sm">{imageToView?.name}</DialogTitle></DialogHeader>
                     <div className="p-4 bg-secondary/20">
                         {imageToView && (

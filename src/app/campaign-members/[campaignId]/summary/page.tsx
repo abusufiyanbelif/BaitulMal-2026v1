@@ -132,12 +132,6 @@ export default function CampaignSummaryPage() {
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
     const { download } = useDownloadAs();
 
-    // Permission Definitions
-    const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
-    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
-    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.read', false);
-    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.update', false) || !!getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
-
     const [editMode, setEditMode] = useState(false);
     const [editableCampaign, setEditableCampaign] = useState<Partial<Campaign>>({});
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -170,31 +164,6 @@ export default function CampaignSummaryPage() {
     const { data: visibilitySettings } = useDoc<any>(visibilityRef);
 
     useEffect(() => { setIsClient(true); }, []);
-
-    useEffect(() => {
-        if (campaign && !editMode) {
-             setEditableCampaign({
-                name: campaign.name || '',
-                description: campaign.description || '',
-                startDate: campaign.startDate || '',
-                endDate: campaign.endDate || '',
-                category: campaign.category || 'General',
-                status: campaign.status || 'Upcoming',
-                priority: campaign.priority || 'Low',
-                targetAmount: campaign.targetAmount || 0,
-                authenticityStatus: campaign.authenticityStatus || 'Pending Verification',
-                publicVisibility: campaign.publicVisibility || 'Hold',
-                allowedDonationTypes: campaign.allowedDonationTypes || [...donationCategories],
-                imageUrl: campaign.imageUrl || '',
-                imageUrlFilename: campaign.imageUrlFilename || '',
-            });
-            setExistingDocuments(campaign.documents || []);
-            setImagePreview(campaign.imageUrl || null);
-            setIsImageDeleted(false);
-            setImageFile(null);
-            setNewDocuments([]);
-        }
-    }, [campaign, editMode]);
 
     const isRationInitiative = useMemo(() => {
         return campaign?.category === 'Ration';
@@ -310,6 +279,42 @@ export default function CampaignSummaryPage() {
         })) : [];
     }, [fundingData]);
 
+    useEffect(() => {
+        if (campaign && !editMode) {
+             setEditableCampaign({
+                name: campaign.name || '',
+                description: campaign.description || '',
+                startDate: campaign.startDate || '',
+                endDate: campaign.endDate || '',
+                category: campaign.category || 'General',
+                status: campaign.status || 'Upcoming',
+                priority: campaign.priority || 'Low',
+                targetAmount: campaign.targetAmount || 0,
+                authenticityStatus: campaign.authenticityStatus || 'Pending Verification',
+                publicVisibility: campaign.publicVisibility || 'Hold',
+                allowedDonationTypes: campaign.allowedDonationTypes || [...donationCategories],
+                imageUrl: campaign.imageUrl || '',
+                imageUrlFilename: campaign.imageUrlFilename || '',
+            });
+            setExistingDocuments(campaign.documents || []);
+            setImagePreview(campaign.imageUrl || null);
+            setIsImageDeleted(false);
+            setImageFile(null);
+            setNewDocuments([]);
+        }
+    }, [campaign, editMode]);
+
+    const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
+    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
+    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.read', false);
+    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.update', false) || !!getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
+
+    const isLoadingPage = isCampaignLoading || isProfileLoading || areBeneficiariesLoading || isBrandingLoading || isPaymentLoading;
+
+    if (isLoadingPage) return <BrandedLoader />;
+
+    if (!campaign) return <p className="text-center mt-20 text-primary font-bold">Campaign Summary Not Found.</p>;
+
     const handleFieldChange = (field: keyof Campaign, value: any) => {
         setEditableCampaign(p => ({...p, [field]: value}));
     };
@@ -410,12 +415,6 @@ export default function CampaignSummaryPage() {
     };
 
     const FallbackIcon = campaign?.category === 'Ration' ? Utensils : campaign?.category === 'Relief' ? LifeBuoy : HandHelping;
-
-    const isLoadingPage = isCampaignLoading || isProfileLoading || areBeneficiariesLoading;
-
-    if (isLoadingPage) return <BrandedLoader />;
-
-    if (!campaign) return <p className="text-center mt-20 text-primary font-bold">Campaign Summary Not Found.</p>;
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">

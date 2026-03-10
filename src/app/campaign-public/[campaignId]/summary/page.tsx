@@ -231,6 +231,22 @@ export default function PublicCampaignSummaryPage() {
         })) : [];
     }, [fundingData]);
 
+    const isLoading = isCampaignLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
+
+    if (isLoading) return <BrandedLoader />;
+
+    if (!campaign || campaign.publicVisibility !== 'Published') {
+        return (
+            <main className="container mx-auto p-4 md:p-8 text-center text-primary font-bold">
+                <p className="text-lg text-primary/70 font-normal">This Campaign Is Not Publicly Available.</p>
+                <Button asChild className="mt-4 active:scale-95 transition-transform font-bold border-primary/20 text-primary" variant="outline"><Link href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button>
+            </main>
+        );
+    }
+    
+    const publicDocuments = campaign.documents?.filter(d => d.isPublic) || [];
+    const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
+
     const handleShare = async () => {
         if (!campaign) return;
         const shareText = `Campaign: ${campaign.name}\n${campaign.description}`;
@@ -248,22 +264,6 @@ export default function PublicCampaignSummaryPage() {
     const isVisible = (key: string) => {
         return visibilitySettings?.[`public_${key}`] !== false;
     };
-
-    const isLoading = isCampaignLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
-
-    if (isLoading) return <BrandedLoader />;
-
-    if (!campaign || campaign.publicVisibility !== 'Published') {
-        return (
-            <main className="container mx-auto p-4 md:p-8 text-center text-primary font-bold">
-                <p className="text-lg text-primary/70 font-normal">This Campaign Is Not Publicly Available.</p>
-                <Button asChild className="mt-4 active:scale-95 transition-transform font-bold border-primary/20 text-primary" variant="outline"><Link href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button>
-            </main>
-        );
-    }
-    
-    const publicDocuments = campaign.documents?.filter(d => d.isPublic) || [];
-    const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">

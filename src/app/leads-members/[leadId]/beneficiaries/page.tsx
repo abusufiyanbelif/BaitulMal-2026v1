@@ -542,9 +542,9 @@ export default function BeneficiariesPage() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" className="w-48 rounded-xl shadow-dropdown border-primary/10">
-                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Given')} className="font-normal">Mark Given</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Verified')} className="font-normal">Mark Secured</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleBulkDisbursementChange('Pending')} className="font-normal">Mark Pending</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkStatusChange('Given')} className="font-normal">Mark Given</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-normal">Mark Secured</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Mark Pending</DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
 
