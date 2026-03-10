@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -66,7 +65,7 @@ import {
 } from "@/components/ui/command";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useToast } from '@/hooks/use-toast';
-import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction, updateMasterBeneficiaryAction, bulkImportBeneficiariesAction, bulkImportBeneficiariesAction as bulkImportAction, bulkUpdateMasterBeneficiaryStatusAction, bulkUpdateMasterZakatAction } from './actions';
+import { deleteBeneficiaryAction, syncMasterBeneficiaryListAction, updateMasterBeneficiaryAction, bulkImportBeneficiariesAction, bulkUpdateMasterBeneficiaryStatusAction, bulkUpdateMasterZakatAction } from './actions';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn, getNestedValue } from '@/lib/utils';
@@ -81,7 +80,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay }: 
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">{count}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">
@@ -96,7 +95,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay }: 
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: any, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))]", className)} onClick={() => handleSort(sortKey)}>
+        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))] tracking-widest uppercase", className)} onClick={() => handleSort(sortKey)}>
             {children}
             <div className="flex flex-col opacity-40">
                 <ArrowUp className={cn("h-2.5 w-2.5 -mb-1", isSorted && sortConfig.direction === 'ascending' && "text-primary opacity-100")} />
@@ -264,7 +263,7 @@ export default function BeneficiariesPage() {
 
   const handleExport = () => {
     if (!filteredAndSortedBeneficiaries.length) return;
-    const headers = ['ID', 'Name', 'Phone', 'Address', 'Age', 'Occupation', 'TotalMembers', 'EarningMembers', 'Male', 'Female', 'IDType', 'IDNumber', 'ReferralBy', 'ZakatEligible', 'ZakatAllocation', 'VerificationStatus', 'Notes'];
+    const headers = ['ID', 'Name', 'Phone', 'Address', 'Age', 'Occupation', 'Total Members', 'Earning Members', 'Male', 'Female', 'ID Type', 'ID Number', 'Referral By', 'Zakat Eligible', 'Zakat Allocation', 'Verification Status', 'Notes'];
     const rows = filteredAndSortedBeneficiaries.map(b => [
         b.id,
         `"${b.name || ''}"`,
@@ -319,7 +318,7 @@ export default function BeneficiariesPage() {
   );
 
   return (
-    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative overflow-hidden">
+    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative">
       <div className="flex flex-col gap-2">
         <Button variant="outline" asChild className="w-fit font-bold border-primary/10 text-primary transition-transform active:scale-95">
           <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Dashboard</Link>
@@ -434,7 +433,6 @@ export default function BeneficiariesPage() {
         </ScrollArea>
       </div>
 
-      {/* Sticky Action Hub */}
       {selectedIds.length > 0 && (
         <div className="sticky top-[73px] z-40 animate-fade-in-up w-full">
             <div className="flex items-center justify-start gap-4 px-4 py-2 bg-primary/5 border border-primary/20 backdrop-blur-md rounded-xl shadow-sm mb-4">
@@ -483,7 +481,7 @@ export default function BeneficiariesPage() {
       <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
         <ScrollArea className="w-full">
             <div className="max-h-[70vh]">
-                <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold tracking-tight text-[hsl(var(--table-header-fg))]", gridClass)}>
+                <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold tracking-tight text-[hsl(var(--table-header-fg))] uppercase", gridClass)}>
                     <div className="flex justify-center">
                         <Checkbox 
                             checked={paginatedBeneficiaries.length > 0 && selectedIds.length === paginatedBeneficiaries.length}
@@ -496,17 +494,17 @@ export default function BeneficiariesPage() {
                     <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name</SortableHeader>
                     <SortableHeader sortKey="phone" sortConfig={sortConfig} handleSort={handleSort}>Phone</SortableHeader>
                     <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Verification Status</SortableHeader>
-                    <div className="text-center font-bold tracking-tight text-[10px]">Disbursement</div>
+                    <div className="text-center font-bold tracking-tight text-[10px] uppercase">Disbursement</div>
                     <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Zakat</SortableHeader>
                     <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">Referred By</SortableHeader>
-                    <div className="text-right pr-4">Actions</div>
+                    <div className="text-right pr-4 uppercase text-[10px]">Actions</div>
                 </div>
 
                 <Accordion type="single" collapsible className="w-full">
                 {paginatedBeneficiaries.map((b, idx) => (
                     <AccordionItem key={b.id} value={b.id} className="border-b border-primary/10 last:border-0 hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white">
                     <div className={cn("py-3 px-4", gridClass)}>
-                        <div className="flex justify-center">
+                        <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                             <Checkbox 
                                 checked={selectedIds.includes(b.id)}
                                 onCheckedChange={() => toggleSelect(b.id)}
@@ -532,7 +530,7 @@ export default function BeneficiariesPage() {
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                     <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
-                                        <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4" /> View Details</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4 opacity-60" /> View Details</DropdownMenuItem>
                                         
                                         {canUpdate && (
                                             <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="text-primary font-normal">

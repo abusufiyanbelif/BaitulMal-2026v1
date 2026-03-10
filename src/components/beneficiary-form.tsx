@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -18,7 +17,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { Beneficiary, ItemCategory, RationItem } from '@/lib/types';
-import { Loader2, Edit, Trash2, FileIcon, Replace, ScanLine, Save, X } from 'lucide-react';
+import { Loader2, Edit, Trash2, FileIcon, Replace, ScanLine, Save, X } from 'lucide-center';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -263,7 +262,7 @@ export function BeneficiaryForm({
         <Form {...form}>
             <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col h-full">
                 <ScrollArea className="flex-1 px-6 py-4">
-                    <div className="space-y-6 text-primary font-normal">
+                    <div className="space-y-6 text-primary font-normal pb-10">
                         <div className="space-y-4">
                             <h3 className="text-lg font-bold text-primary tracking-tight">Personal Information</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
