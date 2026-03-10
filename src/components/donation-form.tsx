@@ -214,7 +214,7 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                 )}
                  {!isReadOnly && fileList && fileList.length > 0 && (
                     <Button type="button" onClick={handleScanScreenshot} disabled={isScanning} className="w-full mt-2 font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-all active:scale-95 shadow-sm">
-                        {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ScanLine className="mr-2 h-4 w-4" />}
+                        {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />}
                         Scan Artifact With AI
                     </Button>
                 )}
@@ -290,7 +290,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
       const firstLink = currentLinks.length > 0 ? currentLinks[0].linkId : (defaultLinkId || 'unlinked');
       replaceLinkSplit([{ linkId: firstLink, amount: totalAmount }]);
     }
-  }, [isLinkSplit, totalAmount, replaceTypeSplit, getValues, defaultLinkId]);
+  }, [isLinkSplit, totalAmount, replaceLinkSplit, getValues, defaultLinkId]);
 
   const onFormSubmit = async (data: DonationFormData) => {
     const missingFields: string[] = [];

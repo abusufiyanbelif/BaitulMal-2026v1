@@ -104,7 +104,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay }: 
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">{count}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">
@@ -776,9 +776,9 @@ export default function BeneficiariesPage() {
         </Card>
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto rounded-[16px] border-primary/10 p-0 overflow-hidden">
-                <DialogHeader className="px-6 py-4 bg-primary/5 border-b border-primary/10"><DialogTitle className="text-xl font-bold text-primary tracking-tight">Modify Beneficiary Profile</DialogTitle></DialogHeader>
-                <div className="p-6">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden rounded-[16px] border-primary/10 p-0 flex flex-col">
+                <DialogHeader className="px-6 py-4 bg-primary/5 border-b border-primary/10 shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight">Modify Beneficiary Profile</DialogTitle></DialogHeader>
+                <div className="flex-1 overflow-hidden relative">
                     <BeneficiaryForm 
                         beneficiary={editingBeneficiary}
                         onSubmit={handleFormSubmit} 
