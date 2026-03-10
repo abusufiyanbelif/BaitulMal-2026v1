@@ -297,7 +297,7 @@ export function BeneficiaryForm({
                                     <FormField control={control} name="idProofFile" render={() => (<FormItem>{renderLabel('ID Proof Document', 'idProofFile')}<FormControl><Input id="beneficiary-id-proof" type="file" accept="image/png, image/jpeg, image/webp, application/pdf" {...register('idProofFile')} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                                 )}
                                 {preview && (
-                                    <div className="relative group w-full h-48 mt-2 rounded-xl overflow-hidden border bg-secondary/20 shadow-inner">
+                                    <div className="relative group w-full h-48 mt-2 rounded-xl border bg-white shadow-inner overflow-hidden">
                                         {preview.startsWith('data:application/pdf') || preview.endsWith('.pdf') ? (<div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4 text-center"><FileIcon className="w-12 h-12 mb-2" /><p className="text-sm font-bold">PDF Document Uploaded</p></div>) : (<Image src={preview} alt="Preview" fill sizes="100vw" className="object-contain" />)}
                                         {!isReadOnly && <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><Button type="button" size="icon" variant="outline" className="text-white border-white hover:bg-white/20" onClick={() => document.getElementById('beneficiary-id-proof')?.click()}><Replace className="h-5 w-5"/></Button><Button type="button" size="icon" variant="destructive" onClick={handleDeleteProof}><Trash2 className="h-5 w-5"/></Button></div>}
                                     </div>
@@ -331,28 +331,22 @@ export function BeneficiaryForm({
                                 <div className="space-y-4">
                                     <h3 className="text-lg font-bold text-primary tracking-tight">Zakat Information</h3>
                                     <div className="flex flex-row items-center justify-between rounded-lg border p-3 bg-muted/5">
-                                        <div className="space-y-0.5"><Label htmlFor="isEligibleForZakat" className="text-base font-bold">Eligible For Zakat</Label><p className="text-xs text-muted-foreground font-normal">Can This Recipient Receive Religious Zakat Funds?</p></div>
+                                        <div className="space-y-0.5"><Label htmlFor="isEligibleForZakat" className="text-base font-bold">Eligible For Zakat</Label><p className="text-xs text-muted-foreground font-normal">Can Recipient Receive Zakat Funds?</p></div>
                                         <FormField control={control} name="isEligibleForZakat" render={({ field }) => (<FormItem><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
                                     </div>
                                     {watch('isEligibleForZakat') && !hideZakatAllocation && (
                                         <div className="animate-fade-in-zoom">
-                                            <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem>{renderLabel('Zakat Allocation (₹)', 'zakatAllocation')}<FormControl><Input type="number" placeholder="Reserved From Zakat Funds" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl><FormDescription className="font-normal text-[10px] opacity-70 italic uppercase tracking-tighter">Amount To Be Disbursed Directly From Designated Zakat Collections.</FormDescription></FormItem>)}/>
+                                            <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem>{renderLabel('Zakat Allocation (₹)', 'zakatAllocation')}<FormControl><Input type="number" placeholder="Reserved From Zakat" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl><FormDescription className="font-normal text-[10px] opacity-70 italic uppercase tracking-tighter">Amount Disbursed From Zakat Collections.</FormDescription></FormItem>)}/>
                                         </div>
                                     )}
                                 </div>
                             </>
                         )}
                         <Separator />
-                        <div className="space-y-4">
+                        <div className="space-y-4 pb-10">
                             <h3 className="text-lg font-bold text-primary tracking-tight">Institutional Notes</h3>
                             <FormField control={control} name="notes" render={({ field }) => (<FormItem>{renderLabel('Internal Notes', 'notes')}<FormControl><Textarea placeholder="Vetting Details, Background Checks, Etc." {...field} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                         </div>
-                        {isEditing && beneficiary?.createdAt && beneficiary.createdAt instanceof Timestamp && (
-                            <div className="pt-4 text-[10px] uppercase font-bold text-muted-foreground space-y-1 opacity-60">
-                                <p>Created By {beneficiary.createdByName || 'N/A'} On {new Date(beneficiary.createdAt.seconds * 1000).toLocaleString()}</p>
-                                {beneficiary.updatedAt && beneficiary.updatedAt instanceof Timestamp && <p>Last Updated By {beneficiary.updatedByName || 'N/A'} On {new Date(beneficiary.updatedAt.seconds * 1000).toLocaleString()}</p>}
-                            </div>
-                        )}
                     </div>
                     <ScrollBar orientation="vertical" />
                 </ScrollArea>

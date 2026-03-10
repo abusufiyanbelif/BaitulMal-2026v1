@@ -332,7 +332,6 @@ export default function BeneficiariesPage() {
             addedDate: editingBeneficiary?.addedDate || new Date().toISOString().split('T')[0],
         };
 
-        // Use the server action to handle cross-collection synchronization safely
         const result = await upsertInitiativeBeneficiaryAction(
             'campaign', 
             campaignId, 
@@ -395,7 +394,9 @@ export default function BeneficiariesPage() {
     document.body.removeChild(link);
   };
 
-  if (isCampaignLoading || areBeneficiariesLoading || isProfileLoading) return <BrandedLoader />;
+  const isLoading = isCampaignLoading || areBeneficiariesLoading || isProfileLoading;
+  
+  if (isLoading && !campaign) return <BrandedLoader />;
   if (!campaign) return <p className="text-center mt-20 text-primary font-bold">Campaign Record Not Found.</p>;
 
   return (
@@ -522,7 +523,6 @@ export default function BeneficiariesPage() {
           </Select>
         </div>
 
-        {/* Sticky Action Hub */}
         {selectedIds.length > 0 && (
             <div className="sticky top-[73px] z-40 animate-fade-in-up w-full">
                 <div className="flex items-center justify-start gap-4 px-4 py-2 bg-primary/5 border border-primary/20 backdrop-blur-md rounded-xl shadow-sm mb-4">

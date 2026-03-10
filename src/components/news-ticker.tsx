@@ -22,8 +22,8 @@ interface NewsTickerProps {
 }
 
 /**
- * Sequential news ticker with "Drop Down" then "Smooth Full Slide Left".
- * Includes fade-pulse for priority cases.
+ * Sequential News Ticker with a "Drop Down then Smooth Full Scroll Left" animation.
+ * Optimized for mobile readability of long summary texts.
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -44,7 +44,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
 
     const timer = setInterval(() => {
       handleNext();
-    }, 10000);
+    }, 12000); // Increased duration to allow for full scroll
 
     return () => clearInterval(timer);
   }, [sortedItems]);

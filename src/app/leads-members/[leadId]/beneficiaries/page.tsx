@@ -525,7 +525,6 @@ export default function BeneficiariesPage() {
           </Select>
         </div>
 
-        {/* Sticky Action Hub */}
         {selectedIds.length > 0 && (
             <div className="sticky top-[73px] z-40 animate-fade-in-up w-full">
                 <div className="flex items-center justify-start gap-4 px-4 py-2 bg-primary/5 border border-primary/20 backdrop-blur-md rounded-xl shadow-sm mb-4">

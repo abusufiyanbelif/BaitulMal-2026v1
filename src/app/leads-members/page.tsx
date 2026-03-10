@@ -395,8 +395,8 @@ export default function LeadPage() {
     <>
       <main className="container mx-auto p-4 sm:p-6 space-y-6 text-primary font-normal">
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <Button variant="secondary" asChild size="sm" className="interactive-hover font-bold border-primary/20 transition-transform active:scale-95"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
-          {canCreate && !isLoading && <Button asChild size="sm" className="font-bold tracking-tight interactive-hover shadow-none active:scale-95 transition-transform"><Link href="/leads-members/create"><Plus className="mr-2 h-4 w-4" /> New Appeal</Link></Button>}
+          <Button variant="secondary" asChild size="sm" className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
+          {canCreate && !isLoading && <Button asChild size="sm" className="font-bold tracking-tight shadow-none active:scale-95 transition-transform"><Link href="/leads-members/create"><Plus className="mr-2 h-4 w-4" /> New Appeal</Link></Button>}
         </div>
 
         <div className="space-y-2">
@@ -451,7 +451,7 @@ export default function LeadPage() {
                         <CarouselContent className="-ml-4">
                           {section.items.map((lead, idx) => (
                             <CarouselItem key={lead.id} className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
-                              <LeadCard lead={lead} index={idx} router={router} canUpdate={canUpdate} canCreate={canCreate} canDelete={canDelete} handleStatusUpdate={handleStatusUpdate} handleCopyClick={setLeadToCopy} handleDeleteClick={setLeadToDelete}/>
+                              <LeadCard lead={lead} index={idx} router={router} canUpdate={canUpdate} canCreate={canCreate} canDelete={canDelete} handleStatusUpdate={lead, 'status', value} handleCopyClick={setLeadToCopy} handleDeleteClick={setLeadToDelete}/>
                             </CarouselItem>
                           ))}
                         </CarouselContent>

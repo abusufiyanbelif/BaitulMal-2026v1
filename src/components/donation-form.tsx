@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import type { Donation, DonationCategory, Campaign, Lead, TransactionDetail as TransactionDetailType, DonationLink } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
-import { Loader2, ScanLine, Replace, Trash2, Plus, IndianRupee, ZoomIn, ZoomOut, RotateCw, RefreshCw, ImageIcon, Save } from 'lucide-react';
+import { Loader2, ScanLine, Replace, Trash2, Plus, IndianRupee, ZoomIn, ZoomOut, RotateCw, RefreshCw, ImageIcon, Save, X } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -87,6 +87,7 @@ interface DonationFormProps {
   campaigns?: Campaign[];
   leads?: Lead[];
   defaultLinkId?: string;
+  isReadOnly?: boolean;
 }
 
 const TransactionItem = ({ control, index, remove, register, setValue, getValues, canRemove, isReadOnly, mandatoryFields }: { control: Control<DonationFormData>, index: number, remove: (index: number) => void, register: UseFormRegister<DonationFormData>, setValue: UseFormSetValue<DonationFormData>, getValues: UseFormGetValues<DonationFormData>, canRemove: boolean, isReadOnly: boolean, mandatoryFields: any }) => {
@@ -127,7 +128,6 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
             return;
         }
         setIsScanning(true);
-        toast({ title: 'Scanning Screenshot...', description: 'Please Wait.' });
         const file = fileList[0];
         const reader = new FileReader();
         reader.onload = async (e) => {
@@ -142,9 +142,9 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                 if (response.date) setValue(`transactions.${index}.date`, response.date, { shouldDirty: true });
                 if (response.upiId) setValue(`transactions.${index}.upiId`, response.upiId, { shouldDirty: true });
                 if (response.receiverName && !getValues('receiverName')) setValue('receiverName', response.receiverName, { shouldDirty: true });
-                toast({ title: 'Scan Complete', description: 'Transaction Details Have Been Populated.', variant: "success"});
+                toast({ title: 'Scan Complete', description: 'Transaction Details Populated.', variant: "success"});
             } catch (error: any) {
-                toast({ title: 'Scan Failed', description: 'Could Not Read Details From This Image.', variant: 'destructive'});
+                toast({ title: 'Scan Failed', variant: 'destructive'});
             } finally { setIsScanning(false); }
         };
         reader.readAsDataURL(file);
@@ -183,11 +183,9 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                     <div className="relative group w-full h-32 rounded-xl border border-primary/10 bg-white shadow-inner overflow-hidden">
                         <Image src={preview.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(preview)}` : preview} alt="Screenshot" fill sizes="(max-width: 768px) 100vw, 300px" className="object-contain" />
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
+                            <Dialog isViewerOpen={isViewerOpen} onOpenChange={setIsViewerOpen}>
                                 <DialogTrigger asChild>
-                                    <Button type="button" size="icon" variant="outline" className="h-8 w-8 text-white border-white hover:bg-white/20 transition-transform active:scale-95">
-                                        <ZoomIn className="h-4 w-4" />
-                                    </Button>
+                                    <Button type="button" size="icon" variant="outline" className="h-8 w-8 text-white border-white hover:bg-white/20 transition-transform active:scale-95"><ZoomIn className="h-4 w-4" /></Button>
                                 </DialogTrigger>
                                 <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
                                     <DialogHeader className="px-6 py-4 bg-primary/5 border-b"><DialogTitle className="font-bold text-primary uppercase tracking-widest text-sm">Transaction Artifact</DialogTitle></DialogHeader>
@@ -195,32 +193,20 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                                         <div className="relative min-h-[60vh] w-full flex items-center justify-center">
                                             <Image src={preview.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(preview)}` : preview} alt="Full Screenshot" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                                         </div>
-                                        <ScrollBar orientation="vertical" />
-                                        <ScrollBar orientation="horizontal" />
+                                        <ScrollBar orientation="vertical" /><ScrollBar orientation="horizontal" />
                                     </ScrollArea>
                                     <DialogFooter className="sm:justify-center p-4 bg-white border-t flex-wrap gap-2">
                                         <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-primary border-primary/20"><ZoomIn className="mr-2 h-4 w-4"/> In</Button>
                                         <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5))} className="font-bold text-primary border-primary/20"><ZoomOut className="mr-2 h-4 w-4"/> Out</Button>
                                         <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-primary border-primary/20"><RotateCw className="mr-2 h-4 w-4"/> Rotate</Button>
                                         <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-primary border-primary/20"><RefreshCw className="mr-2 h-4 w-4"/> Reset</Button>
-                                        {!isReadOnly && (
-                                            <>
-                                                <Separator orientation="vertical" className="h-8 hidden sm:block opacity-20"/>
-                                                <Button variant="outline" size="sm" onClick={() => document.getElementById(`tx-screenshot-upload-${index}`)?.click()} className="font-bold text-primary border-primary/20"><Replace className="mr-2 h-4 w-4"/> Replace</Button>
-                                                <Button variant="destructive" size="sm" onClick={handleRemoveImage} className="font-bold"><Trash2 className="mr-2 h-4 w-4"/> Remove</Button>
-                                            </>
-                                        )}
                                     </DialogFooter>
                                 </DialogContent>
                             </Dialog>
                             {!isReadOnly && (
                                 <>
-                                    <Button type="button" size="icon" variant="outline" onClick={() => document.getElementById(`tx-screenshot-upload-${index}`)?.click()} className="h-8 w-8 text-white border-white hover:bg-white/20 transition-transform active:scale-95">
-                                        <Replace className="h-4 w-4" />
-                                    </Button>
-                                    <Button type="button" size="icon" variant="destructive" onClick={handleRemoveImage} className="h-8 w-8 transition-transform active:scale-95">
-                                        <Trash2 className="h-4 w-4" />
-                                    </Button>
+                                    <Button type="button" size="icon" variant="outline" onClick={() => document.getElementById(`tx-screenshot-upload-${index}`)?.click()} className="h-8 w-8 text-white border-white hover:bg-white/20 transition-transform active:scale-95"><Replace className="h-4 w-4" /></Button>
+                                    <Button type="button" size="icon" variant="destructive" onClick={handleRemoveImage} className="h-8 w-8 transition-transform active:scale-95"><Trash2 className="h-4 w-4" /></Button>
                                 </>
                             )}
                         </div>
@@ -237,7 +223,7 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
     )
 }
 
-export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], leads = [], defaultLinkId, isReadOnly = false }: DonationFormProps & { isReadOnly?: boolean }) {
+export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], leads = [], defaultLinkId, isReadOnly = false }: DonationFormProps) {
   const isEditing = !!donation;
   const { userProfile } = useSession();
   const auth = useAuth();
@@ -348,7 +334,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onFormSubmit)} className="flex flex-col h-full">
         <ScrollArea className="flex-1 px-6 py-4">
-          <div className="space-y-6 text-primary font-normal">
+          <div className="space-y-6 text-primary font-normal pb-10">
             <FormField control={control} name="amount" render={({ field }) => (
                 <FormItem><FormLabel className="font-bold text-primary tracking-tight">Total Amount Received (₹) *</FormLabel><FormControl><Input type="number" {...field} readOnly className="bg-primary/5 font-bold font-mono text-xl text-primary" /></FormControl><FormDescription className="font-normal text-[10px] opacity-70 italic">Aggregated Sum Of All Verified Transactions Documented Below.</FormDescription><FormMessage /></FormItem>
             )}/>
@@ -397,7 +383,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
             
             <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm">
                  <FormField control={control} name="isTypeSplit" render={({ field }) => (
-                      <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Split Contribution By Designation (Zakat, Sadaqah, etc.)</FormLabel></FormItem>
+                      <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Split Contribution By Designation</FormLabel></FormItem>
                   )}/>
               {isTypeSplit ? (
                 <div className="space-y-4 pl-6 animate-fade-in-up">
@@ -408,7 +394,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                                 <TableBody>
                                     {typeSplitFields.map((field, index) => (
                                         <TableRow key={field.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
-                                            <TableCell><FormField control={control} name={`typeSplit.${index}.category`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none h-8"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select>)}/>{watch(`typeSplit.${index}.category`) === 'Zakat' && <FormField control={control} name={`typeSplit.${index}.forFundraising`} render={({ field: checkboxField }) => (<div className="flex items-center space-x-2 px-2 mt-1"><Checkbox checked={checkboxField.value} onCheckedChange={checkboxField.onChange} disabled={isReadOnly}/><Label className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter">Include In Goal</Label></div>)}/>}</TableCell>
+                                            <TableCell><FormField control={control} name={`typeSplit.${index}.category`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none h-8"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select>)}/>{watch(`typeSplit.${index}.category`) === 'Zakat' && <FormField control={control} name={`typeSplit.${index}.forFundraising`} render={({ field: checkboxField }) => (<div className="flex items-center space-x-2 px-2 mt-1"><Checkbox checked={checkboxField.value} onCheckedChange={checkboxField.onChange} disabled={isReadOnly}/><Label className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter">Goal Contribution</Label></div>)}/>}</TableCell>
                                             <TableCell><FormField control={control} name={`typeSplit.${index}.amount`} render={({ field }) => (<FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="border-none bg-transparent shadow-none font-bold font-mono h-8 text-primary"/></FormControl>)}/></TableCell>
                                             <TableCell className="text-right">{!isReadOnly && <Button type="button" variant="ghost" size="icon" onClick={() => removeTypeSplit(index)} disabled={typeSplitFields.length <= 1} className="h-8 w-8 text-destructive transition-transform hover:scale-110"><Trash2 className="h-4 w-4"/></Button>}</TableCell>
                                         </TableRow>
@@ -425,11 +411,6 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                     <FormField control={control} name={`typeSplit.0.category`} render={({ field }) => (
                         <FormItem>{renderLabel('Primary Designation', 'typeSplit.0.category')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                     )}/>
-                    {watch('typeSplit.0.category') === 'Zakat' && (
-                        <FormField control={control} name="typeSplit.0.forFundraising" render={({ field: checkboxField }) => (
-                            <FormItem className="flex flex-row items-center space-x-2 space-y-0 pt-2"><FormControl><Checkbox checked={checkboxField.value} onCheckedChange={checkboxField.onChange} disabled={isReadOnly}/></FormControl><FormLabel className="text-xs font-bold text-muted-foreground cursor-pointer tracking-tight">Include This In Fundraising Goal Metrics</FormLabel></FormItem>
-                        )}/>
-                    )}
                 </div>
               )}
             </div>
@@ -450,7 +431,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
 
             <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm">
                  <FormField control={control} name="isSplit" render={({ field }) => (
-                      <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Allocate Across Multiple Global Initiatives</FormLabel></FormItem>
+                      <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value} onCheckedChange={field.onChange} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Allocate Across Multiple Initiatives</FormLabel></FormItem>
                   )}/>
               {isLinkSplit ? (
                 <div className="space-y-4 pl-6 animate-fade-in-up">
@@ -482,10 +463,10 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
 
             <div className="space-y-6">
                 <FormField control={control} name="comments" render={({ field }) => (
-                    <FormItem>{renderLabel('Donor Verification Comments', 'comments')}<FormControl><Textarea placeholder="Verification Notes Provided By The Donor..." {...field} disabled={isReadOnly} className="font-normal text-primary focus:shadow-md transition-shadow" /></FormControl></FormItem>
+                    <FormItem>{renderLabel('Donor Verification Comments', 'comments')}<FormControl><Textarea placeholder="Verification Notes Provided By The Donor..." {...field} disabled={isReadOnly} className="font-normal text-primary" /></FormControl></FormItem>
                 )}/>
                 <FormField control={control} name="suggestions" render={({ field }) => (
-                    <FormItem>{renderLabel('Internal Staff Vetting Suggestions', 'suggestions')}<FormControl><Textarea placeholder="Staff Suggestions For Future Vetting Improvements..." {...field} disabled={isReadOnly} className="font-normal text-primary focus:shadow-md transition-shadow" /></FormControl></FormItem>
+                    <FormItem>{renderLabel('Internal Staff Vetting Suggestions', 'suggestions')}<FormControl><Textarea placeholder="Staff Suggestions For Future Vetting..." {...field} disabled={isReadOnly} className="font-normal text-primary" /></FormControl></FormItem>
                 )}/>
             </div>
           </div>
