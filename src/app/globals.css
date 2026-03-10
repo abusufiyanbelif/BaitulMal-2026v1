@@ -104,13 +104,13 @@
 @keyframes ticker-sequence {
   0% { transform: translateY(-100%); opacity: 0; }
   10% { transform: translateY(0); opacity: 1; }
-  30% { transform: translateX(0); opacity: 1; }
-  85% { transform: translateX(-100%); opacity: 1; }
-  100% { transform: translateX(-100%); opacity: 0; }
+  25% { transform: translateY(0) translateX(0); opacity: 1; }
+  85% { transform: translateY(0) translateX(-100%); opacity: 1; }
+  100% { transform: translateY(0) translateX(-100%); opacity: 0; }
 }
 
 .animate-ticker-sequence {
-  animation: ticker-sequence 10s linear infinite;
+  animation: ticker-sequence 12s linear infinite;
 }
 
 @keyframes ticker-fade-pulse {

@@ -167,7 +167,7 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
             </div>
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                  <FormField control={control} name={`transactions.${index}.transactionId`} render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Reference ID</FormLabel><FormControl><Input placeholder="UPI Ref, Check No., etc." {...field} disabled={isReadOnly} className="font-normal" /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Reference ID</FormLabel><FormControl><Input placeholder="Ref ID" {...field} disabled={isReadOnly} className="font-normal" /></FormControl><FormMessage /></FormItem>
                 )}/>
                  <FormField control={control} name={`transactions.${index}.upiId`} render={({ field }) => (
                     <FormItem><FormLabel className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Sender UPI ID</FormLabel><FormControl><Input placeholder="e.g. sender@upi" {...field} disabled={isReadOnly} className="font-normal" /></FormControl><FormMessage /></FormItem>
@@ -183,7 +183,7 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                     <div className="relative group w-full h-32 rounded-xl border border-primary/10 bg-white shadow-inner overflow-hidden">
                         <Image src={preview.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(preview)}` : preview} alt="Screenshot" fill sizes="(max-width: 768px) 100vw, 300px" className="object-contain" />
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <Dialog isViewerOpen={isViewerOpen} onOpenChange={setIsViewerOpen}>
+                            <Dialog open={isViewerOpen} onOpenChange={setIsViewerOpen}>
                                 <DialogTrigger asChild>
                                     <Button type="button" size="icon" variant="outline" className="h-8 w-8 text-white border-white hover:bg-white/20 transition-transform active:scale-95"><ZoomIn className="h-4 w-4" /></Button>
                                 </DialogTrigger>

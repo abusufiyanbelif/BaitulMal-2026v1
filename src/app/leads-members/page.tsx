@@ -451,7 +451,7 @@ export default function LeadPage() {
                         <CarouselContent className="-ml-4">
                           {section.items.map((lead, idx) => (
                             <CarouselItem key={lead.id} className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
-                              <LeadCard lead={lead} index={idx} router={router} canUpdate={canUpdate} canCreate={canCreate} canDelete={canDelete} handleStatusUpdate={lead, 'status', value} handleCopyClick={setLeadToCopy} handleDeleteClick={setLeadToDelete}/>
+                              <LeadCard lead={lead} index={idx} router={router} canUpdate={canUpdate} canCreate={canCreate} canDelete={canDelete} handleStatusUpdate={handleStatusUpdate} handleCopyClick={setLeadToCopy} handleDeleteClick={setLeadToDelete}/>
                             </CarouselItem>
                           ))}
                         </CarouselContent>

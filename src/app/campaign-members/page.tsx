@@ -163,7 +163,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                                             <DropdownMenuRadioGroup value={campaign.authenticityStatus} onValueChange={(value) => handleStatusUpdate(campaign, 'authenticityStatus', value as string)}>
                                                 <DropdownMenuRadioItem value="Pending Verification" className="font-normal">Pending Verification</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Verified" className="font-normal">Verified</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="On Hold" className="font-normal">On Hold</SelectItem>
+                                                <DropdownMenuRadioItem value="On Hold" className="font-normal">On Hold</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Rejected" className="text-destructive font-normal">Rejected</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Need More Details" className="font-normal">Need Details</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>

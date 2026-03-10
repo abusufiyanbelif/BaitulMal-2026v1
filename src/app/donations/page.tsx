@@ -658,7 +658,7 @@ export default function DonationsPage() {
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden p-0 rounded-[12px] border-primary/10">
-                <DialogHeader className="px-6 py-4 border-b bg-primary/5">
+                <DialogHeader className="px-6 py-4 bg-primary/5 border-b">
                     <DialogTitle className="text-xl font-bold text-primary tracking-tight">{editingDonation ? 'Edit' : 'Add New'} Donation Record</DialogTitle>
                 </DialogHeader>
                 <ScrollArea className="flex-1 px-6 py-4">
@@ -691,7 +691,7 @@ export default function DonationsPage() {
 
         <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
             <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 rounded-[12px] border-primary/10 overflow-hidden">
-                <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">Evidence Viewer</DialogTitle></DialogHeader>
+                <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">{imageToView ? 'Evidence Viewer' : 'No Artifact Selected'}</DialogTitle></DialogHeader>
                 <ScrollArea className="flex-1 bg-secondary/20">
                     <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
                         {imageToView && (

@@ -22,8 +22,8 @@ interface NewsTickerProps {
 }
 
 /**
- * Sequential News Ticker with a "Drop Down then Smooth Full Scroll Left" animation.
- * Optimized for mobile readability of long summary texts.
+ * Sequential News Ticker with "Drop Down then Smooth Full Scroll Left" animation.
+ * Optimized for mobile readability.
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -44,7 +44,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
 
     const timer = setInterval(() => {
       handleNext();
-    }, 12000); // Increased duration to allow for full scroll
+    }, 12000); 
 
     return () => clearInterval(timer);
   }, [sortedItems]);
