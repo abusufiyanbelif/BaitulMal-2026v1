@@ -214,6 +214,12 @@ export default function PublicLeadSummaryPage() {
         }));
     }, [fundingData]);
 
+    const chartData = useMemo(() => {
+        return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ 
+            name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` 
+        })) : [];
+    }, [fundingData]);
+
     const handleShare = async () => {
         if (!lead || !fundingData) return;
         const shareText = `Lead: ${lead.name}\n${lead.description}`;
@@ -322,7 +328,7 @@ export default function PublicLeadSummaryPage() {
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
                                 <CardHeader className="bg-primary/5 border-b">
                                     <CardTitle className="font-bold text-primary tracking-tight">
-                                        {isRationInitiative ? 'Beneficiary Groups' : 'Breakdown Of Requirements'}
+                                        {isRationInitiative ? 'Beneficiary Groups' : 'Required Financial Allocation'}
                                     </CardTitle>
                                     <CardDescription className="font-normal text-primary/70">
                                         {isRationInitiative 
@@ -530,7 +536,7 @@ export default function PublicLeadSummaryPage() {
                     <div className="p-4 bg-secondary/20">
                         {imageToView && (
                             <div className="relative h-[70vh] w-full overflow-auto border border-primary/10 rounded-md bg-white">
-                                Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                                <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                             </div>
                         )}
                     </div>

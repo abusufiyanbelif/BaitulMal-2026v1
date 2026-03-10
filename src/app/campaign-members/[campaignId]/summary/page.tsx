@@ -304,6 +304,12 @@ export default function CampaignSummaryPage() {
         }));
     }, [fundingData]);
 
+    const chartDataValues = useMemo(() => {
+        return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ 
+            name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` 
+        })) : [];
+    }, [fundingData]);
+
     const handleFieldChange = (field: keyof Campaign, value: any) => {
         setEditableCampaign(p => ({...p, [field]: value}));
     };
@@ -402,12 +408,6 @@ export default function CampaignSummaryPage() {
         setRotation(0);
         setIsImageViewerOpen(true);
     };
-
-    const chartDataValues = useMemo(() => {
-        return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ 
-            name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` 
-        })) : [];
-    }, [fundingData]);
 
     const FallbackIcon = campaign?.category === 'Ration' ? Utensils : campaign?.category === 'Relief' ? LifeBuoy : HandHelping;
 
@@ -819,7 +819,7 @@ export default function CampaignSummaryPage() {
                                                     <div className="block flex-grow">
                                                         <div className="relative aspect-square w-full bg-muted flex items-center justify-center overflow-hidden">
                                                             {isImg ? <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="(max-width: 768px) 100vw, 300px" className="object-cover transition-transform duration-500 group-hover:scale-110" /> : <File className="w-10 h-10 text-muted-foreground transition-transform duration-500 group-hover:scale-110" />}
-                                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                                         </div>
                                                         <div className="p-2 text-center text-[10px] font-bold text-primary tracking-tight truncate transition-colors group-hover:text-primary/80">{doc.name}</div>
                                                     </div>

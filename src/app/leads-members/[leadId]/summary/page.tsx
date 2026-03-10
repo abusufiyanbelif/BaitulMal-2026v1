@@ -300,6 +300,12 @@ export default function LeadSummaryPage() {
         }));
     }, [fundingData]);
 
+    const chartData = useMemo(() => {
+        return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ 
+            name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` 
+        })) : [];
+    }, [fundingData]);
+
     const handleFieldChange = (field: keyof Lead, value: any) => {
         setEditableLead(p => (p ? { ...p, [field]: value } : null));
     };
@@ -399,12 +405,6 @@ export default function LeadSummaryPage() {
         setRotation(0);
         setIsImageViewerOpen(true);
     };
-
-    const chartData = useMemo(() => {
-        return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ 
-            name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` 
-        })) : [];
-    }, [fundingData]);
 
     const FallbackIcon = lead?.purpose === 'Education' ? GraduationCap : lead?.purpose === 'Medical' ? HeartPulse : lead?.purpose === 'Relief' ? LifeBuoy : lead?.purpose === 'Other' ? Info : HandHelping;
 
@@ -864,7 +864,7 @@ export default function LeadSummaryPage() {
                                                     <div className="block flex-grow">
                                                         <div className="relative aspect-square w-full bg-muted flex items-center justify-center overflow-hidden">
                                                             {isImg ? <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="(max-width: 768px) 100vw, 300px" className="object-cover transition-transform duration-500 group-hover:scale-110" /> : <File className="w-10 h-10 text-muted-foreground transition-transform duration-500 group-hover:scale-110" />}
-                                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+                                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                                         </div>
                                                         <div className="p-2 text-center text-[10px] font-bold text-primary tracking-tight truncate transition-colors group-hover:text-primary/80">{doc.name}</div>
                                                     </div>
@@ -890,7 +890,7 @@ export default function LeadSummaryPage() {
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-                <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden text-primary font-normal animate-fade-in-zoom border-primary/10">
+                <DialogContent className="max-w-4xl animate-fade-in-zoom p-0 overflow-hidden text-primary font-normal">
                     <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary tracking-tight text-sm">{imageToView?.name}</DialogTitle></DialogHeader>
                     <ScrollArea className="flex-1 bg-secondary/20">
                         <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">

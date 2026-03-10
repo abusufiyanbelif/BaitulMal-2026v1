@@ -227,6 +227,12 @@ export default function PublicCampaignSummaryPage() {
         }));
     }, [fundingData]);
 
+    const chartDataValues = useMemo(() => {
+        return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ 
+            name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` 
+        })) : [];
+    }, [fundingData]);
+
     const handleShare = async () => {
         if (!campaign) return;
         const shareText = `Campaign: ${campaign.name}\n${campaign.description}`;
@@ -258,11 +264,6 @@ export default function PublicCampaignSummaryPage() {
     
     const publicDocuments = campaign.documents?.filter(d => d.isPublic) || [];
     const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
-    const chartDataValues = useMemo(() => {
-        return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ 
-            name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` 
-        })) : [];
-    }, [fundingData]);
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
