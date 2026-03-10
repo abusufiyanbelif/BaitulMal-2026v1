@@ -22,14 +22,13 @@ interface NewsTickerProps {
 }
 
 /**
- * Sequential news ticker with "Slide Down Fade" then "Smooth Full Slide Left".
- * Optimized for readability on mobile devices.
+ * Sequential news ticker with "Drop Down" then "Smooth Full Slide Left".
+ * Includes fade-pulse for priority cases.
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Prioritize sorting: Urgent > High > Others
   const sortedItems = React.useMemo(() => {
     if (variant === 'active') {
         return [...items].sort((a, b) => {
@@ -43,7 +42,6 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
   useEffect(() => {
     if (!sortedItems || sortedItems.length <= 1) return;
 
-    // Animation cycle matches the CSS keyframe duration (10s)
     const timer = setInterval(() => {
       handleNext();
     }, 10000);
@@ -74,15 +72,15 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
   const currentItem = sortedItems[currentIndex];
   const isCompleted = variant === 'completed';
   const isDonation = variant === 'donation';
+  const isPriority = currentItem?.isUrgent || currentItem?.isHigh;
 
   return (
     <div className={cn(
       "group border rounded-lg overflow-hidden relative flex items-center mb-2 h-12 bg-white transition-all shadow-none",
       isCompleted ? "border-muted" : "border-primary/10",
-      !isCompleted && currentItem?.isUrgent && "border-red-500/50",
-      !isCompleted && currentItem?.isHigh && "border-orange-500/50"
+      !isCompleted && currentItem?.isUrgent && "animate-urgent-pulse border-red-500/50",
+      !isCompleted && currentItem?.isHigh && "animate-high-pulse border-orange-500/50"
     )}>
-      {/* Label Section */}
       <div className={cn(
         "z-30 h-full px-2 sm:px-4 flex items-center border-r shrink-0 font-bold transition-colors duration-500",
         isCompleted ? "bg-muted text-muted-foreground" : "bg-primary text-primary-foreground"
@@ -99,12 +97,11 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         </span>
       </div>
 
-      {/* Sequential Animation Section */}
       <div className="flex-1 flex items-center px-3 sm:px-4 relative overflow-hidden h-full bg-white">
         <div 
           key={currentIndex}
           className={cn(
-            "w-full flex items-center gap-2 sm:gap-3",
+            "w-max min-w-full flex items-center gap-2 sm:gap-3",
             "animate-ticker-sequence"
           )}
         >
@@ -123,7 +120,8 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
             href={currentItem.href} 
             className={cn(
               "text-[11px] sm:text-sm font-bold transition-colors whitespace-nowrap hover:underline underline-offset-4",
-              isCompleted ? "text-muted-foreground hover:text-foreground" : "text-primary hover:text-primary/80"
+              isCompleted ? "text-muted-foreground hover:text-foreground" : "text-primary hover:text-primary/80",
+              isPriority && "animate-ticker-fade-pulse"
             )}
           >
             {currentItem.text}
@@ -131,7 +129,6 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         </div>
       </div>
 
-      {/* Manual Controls */}
       <div className="z-30 flex flex-col border-l border-primary/5 h-full opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex">
         <Button
           variant="ghost"

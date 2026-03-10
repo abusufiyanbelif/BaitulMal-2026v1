@@ -167,39 +167,6 @@ export default function LeadSummaryPage() {
 
     useEffect(() => { setIsClient(true); }, []);
 
-    useEffect(() => {
-        if (lead && !editMode) {
-             setEditableLead({
-                name: lead.name || '',
-                description: lead.description || '',
-                purpose: lead.purpose || 'General',
-                category: lead.category || '',
-                startDate: lead.startDate || '',
-                endDate: lead.endDate || '',
-                status: lead.status || 'Upcoming',
-                priority: lead.priority || 'Low',
-                requiredAmount: lead.requiredAmount || 0,
-                targetAmount: lead.targetAmount || 0,
-                authenticityStatus: lead.authenticityStatus || 'Pending Verification',
-                publicVisibility: lead.publicVisibility || 'Hold',
-                allowedDonationTypes: lead.allowedDonationTypes || [...donationCategories],
-                imageUrl: lead.imageUrl || '',
-                documents: lead.documents || [],
-                degree: lead.degree || '',
-                year: lead.year || '',
-                semester: lead.semester || '',
-                diseaseIdentified: lead.diseaseIdentified || '',
-                diseaseStage: lead.diseaseStage || '',
-                seriousness: lead.seriousness || null,
-            });
-            setExistingDocuments(lead.documents || []);
-            setImagePreview(lead.imageUrl || null);
-            setIsImageDeleted(false);
-            setImageFile(null);
-            setNewDocuments([]);
-        }
-    }, [lead, editMode]);
-
     const isRationInitiative = useMemo(() => {
         return lead?.purpose === 'Relief' && lead?.category === 'Ration Kit';
     }, [lead]);
@@ -295,11 +262,44 @@ export default function LeadSummaryPage() {
         }));
     }, [fundingData]);
 
-    const chartData = useMemo(() => {
+    const chartDataValues = useMemo(() => {
         return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ 
             name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` 
         })) : [];
     }, [fundingData]);
+
+    useEffect(() => {
+        if (lead && !editMode) {
+             setEditableLead({
+                name: lead.name || '',
+                description: lead.description || '',
+                purpose: lead.purpose || 'General',
+                category: lead.category || '',
+                startDate: lead.startDate || '',
+                endDate: lead.endDate || '',
+                status: lead.status || 'Upcoming',
+                priority: lead.priority || 'Low',
+                requiredAmount: lead.requiredAmount || 0,
+                targetAmount: lead.targetAmount || 0,
+                authenticityStatus: lead.authenticityStatus || 'Pending Verification',
+                publicVisibility: lead.publicVisibility || 'Hold',
+                allowedDonationTypes: lead.allowedDonationTypes || [...donationCategories],
+                imageUrl: lead.imageUrl || '',
+                documents: lead.documents || [],
+                degree: lead.degree || '',
+                year: lead.year || '',
+                semester: lead.semester || '',
+                diseaseIdentified: lead.diseaseIdentified || '',
+                diseaseStage: lead.diseaseStage || '',
+                seriousness: lead.seriousness || null,
+            });
+            setExistingDocuments(lead.documents || []);
+            setImagePreview(lead.imageUrl || null);
+            setIsImageDeleted(false);
+            setImageFile(null);
+            setNewDocuments([]);
+        }
+    }, [lead, editMode]);
 
     const handleFieldChange = (field: keyof Lead, value: any) => {
         setEditableLead(p => (p ? { ...p, [field]: value } : null));
@@ -327,7 +327,7 @@ export default function LeadSummaryPage() {
     };
 
     const quickToggleDocumentPublic = async (docToToggle: CampaignDocument) => {
-        if (!leadDocRef || !lead?.documents || !canUpdateSummary) return;
+        if (!leadDocRef || !lead?.documents) return;
         const newDocs = lead.documents.map(doc => doc.url === docToToggle.url ? { ...doc, isPublic: !doc.isPublic } : doc);
         try {
             await updateDoc(leadDocRef, { documents: newDocs, updatedAt: serverTimestamp() });
@@ -342,7 +342,7 @@ export default function LeadSummaryPage() {
     };
 
     const handleSave = async () => {
-        if (!leadDocRef || !userProfile || !canUpdateSummary || !storage) return;
+        if (!leadDocRef || !userProfile || !storage) return;
         const hasFileToUpload = !!imageFile || newDocuments.length > 0;
         if (hasFileToUpload && !auth?.currentUser) {
             toast({ title: "Authentication Error", description: "User Not Authenticated Yet.", variant: "destructive" });
@@ -401,6 +401,7 @@ export default function LeadSummaryPage() {
         setIsImageViewerOpen(true);
     };
 
+    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.update', false);
     const FallbackIcon = lead?.purpose === 'Education' ? GraduationCap : lead?.purpose === 'Medical' ? HeartPulse : lead?.purpose === 'Relief' ? LifeBuoy : lead?.purpose === 'Other' ? Info : HandHelping;
 
     const isLoadingPage = isLeadLoading || isProfileLoading || areBeneficiariesLoading;
@@ -780,8 +781,8 @@ export default function LeadSummaryPage() {
                                     <CardContent className="p-0 sm:p-6">
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                            <BarChart data={chartData} layout="vertical" margin={{ right: 20 }}>
-                                                <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartData.map((entry) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
+                                            <BarChart data={chartDataValues} layout="vertical" margin={{ right: 20 }}>
+                                                <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartDataValues.map((entry) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
                                             </BarChart>
                                         </ChartContainer>
                                         ) : <Skeleton className="h-[250px] w-full" />}

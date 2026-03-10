@@ -23,9 +23,9 @@ import {
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
+  DropdownMenuPortal,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -246,21 +246,19 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
             <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground pt-1">{campaign.startDate} To {campaign.endDate}</CardDescription>
           </CardHeader>
           <CardContent className="flex-grow space-y-3 p-4 pt-0 font-normal text-primary">
-            {(campaign.targetAmount || 0) > 0 && (
-                <div className="space-y-2 border-t border-primary/5 pt-3">
-                    <div className="flex justify-between items-baseline text-[11px] font-bold text-primary tracking-tight">
-                        <span className="opacity-60">Raised: ₹{campaign.collected.toLocaleString('en-IN')}</span>
-                        <span className="text-sm">Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</span>
-                    </div>
-                    <Progress value={campaign.progress} className="h-2 bg-primary/10 shadow-inner" />
-                    <div className="flex justify-between items-center">
-                        <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Progress</span>
-                        <span className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary/5 border border-primary/10">
-                            {Math.round(campaign.progress)}% Funded
-                        </span>
-                    </div>
+            <div className="space-y-2 border-t border-primary/5 pt-3">
+                <div className="flex justify-between items-baseline text-[11px] font-bold text-primary tracking-tight">
+                    <span className="opacity-60">Raised: ₹{campaign.collected.toLocaleString('en-IN')}</span>
+                    <span className="text-sm">Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</span>
                 </div>
-            )}
+                <Progress value={campaign.progress} className="h-2 bg-primary/10 shadow-inner" />
+                <div className="flex justify-between items-center">
+                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Progress</span>
+                    <span className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary/5 border border-primary/10">
+                        {Math.round(campaign.progress)}% Funded
+                    </span>
+                </div>
+            </div>
           </CardContent>
           <CardFooter className="p-2 border-t bg-primary/5">
             <Button asChild className="w-full text-xs font-bold tracking-tight shadow-none" size="sm" variant="ghost">
