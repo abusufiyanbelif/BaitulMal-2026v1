@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -55,6 +56,14 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { usePublicData } from '@/hooks/use-public-data';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 const getPriorityIcon = (priority?: string) => {
   const p = priority || 'Medium';
@@ -457,12 +466,24 @@ export default function CampaignPage() {
                         <Badge variant="secondary" className="rounded-full h-5 text-[10px] font-bold bg-primary/10 text-primary">{section.items.length}</Badge>
                       </div>
                     </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-8">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {section.items.map((campaign, idx) => (
-                          <CampaignCard key={campaign.id} campaign={campaign} index={idx} router={router} canUpdate={canUpdate} canCreate={canCreate} canDelete={canDelete} handleStatusUpdate={handleStatusUpdate} handleCopyClick={setCampaignToCopy} handleDeleteClick={setCampaignToDelete}/>
-                        ))}
-                      </div>
+                    <AccordionContent className="pt-2 pb-8 px-2 sm:px-10">
+                      <Carousel
+                        opts={{ align: "start", loop: true }}
+                        plugins={[Autoplay({ delay: 5000 })]}
+                        className="w-full relative"
+                      >
+                        <CarouselContent className="-ml-4">
+                          {section.items.map((campaign, idx) => (
+                            <CarouselItem key={campaign.id} className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
+                              <CampaignCard campaign={campaign} index={idx} router={router} canUpdate={canUpdate} canCreate={canCreate} canDelete={canDelete} handleStatusUpdate={handleStatusUpdate} handleCopyClick={setCampaignToCopy} handleDeleteClick={setCampaignToDelete}/>
+                            </CarouselItem>
+                          ))}
+                        </CarouselContent>
+                        <div className="flex items-center justify-center gap-4 mt-8">
+                            <CarouselPrevious className="static translate-y-0 h-10 w-10 border-primary/20 text-primary hover:bg-primary hover:text-white transition-all duration-300" />
+                            <CarouselNext className="static translate-y-0 h-10 w-10 border-primary/20 text-primary hover:bg-primary hover:text-white transition-all duration-300" />
+                        </div>
+                      </Carousel>
                     </AccordionContent>
                   </AccordionItem>
                 ))}

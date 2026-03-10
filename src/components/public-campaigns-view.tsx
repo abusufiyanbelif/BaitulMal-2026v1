@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -20,6 +21,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { NewsTicker } from './news-ticker';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 const getPriorityIcon = (priority?: string) => {
   const p = priority || 'Medium';
@@ -42,87 +51,98 @@ const priorityWeight: Record<string, number> = {
 const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: number; progress: number; })[] }) => {
     const router = useRouter();
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {campaigns.map((campaign, index) => {
-                const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
-                const priorityLabel = campaign.priority || 'Medium';
-                const isCompleted = campaign.status === 'Completed';
-                const isUrgent = priorityLabel === 'Urgent' && !isCompleted;
-                const isHigh = priorityLabel === 'High' && !isCompleted;
-                
-                return (
-                    <Card 
-                        key={campaign.id} 
-                        className={cn(
-                            "flex flex-col hover:shadow-xl transition-all duration-500 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20 bg-white shadow-sm",
-                            isUrgent && "animate-urgent-pulse border-red-500/50",
-                            isHigh && "animate-high-pulse border-orange-500/50",
-                            isCompleted && "hover:shadow-none hover:-translate-y-0"
-                        )}
-                        style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
-                        onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}
-                    >
-                        <div className="relative h-32 w-full bg-secondary flex items-center justify-center border-b border-primary/5">
-                            {campaign.imageUrl ? (
-                                <Image
-                                  src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`}
-                                  alt={campaign.name}
-                                  fill
-                                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                  className="object-cover"
-                                />
-                            ) : (
-                                <FallbackIcon className="h-16 w-16 text-primary/10" />
-                            )}
-                        </div>
-                        <CardHeader className="p-4">
-                            <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 text-primary">
-                                {campaign.campaignNumber && <span className="text-primary font-bold">#{campaign.campaignNumber} </span>}{campaign.name}
-                            </CardTitle>
-                            <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground">{campaign.startDate} To {campaign.endDate}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex-grow space-y-3 p-4 pt-0">
-                            <div className="flex flex-wrap gap-2 items-center text-xs">
-                                <Badge variant="outline" className="text-[10px] border-primary/20 text-primary font-bold">{campaign.category}</Badge>
-                                <Badge 
-                                  variant={campaign.status === 'Active' ? 'success' : 'outline'}
-                                  className={cn("text-[10px] font-bold", campaign.status === 'Active' && "animate-status-pulse")}
-                                >
-                                  {campaign.status}
-                                </Badge>
-                                <Badge variant="eligible" className="text-[10px] font-bold flex items-center gap-1">
-                                    <ShieldCheck className="h-3 w-3" />
-                                    {campaign.authenticityStatus === 'Verified' ? 'Verified' : campaign.authenticityStatus}
-                                </Badge>
-                            </div>
-                            <div className={cn(
-                                "text-[10px] font-bold tracking-tight flex items-center gap-1.5", 
-                                isUrgent ? 'text-red-600 animate-in fade-in slide-in-from-left' : isHigh ? 'text-orange-600' : 'text-primary'
-                            )}>
-                                {getPriorityIcon(priorityLabel)}
-                                {priorityLabel} Priority
-                            </div>
-                            {(campaign.targetAmount || 0) > 0 && (
-                                <div className="space-y-1.5">
-                                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground tracking-tight">
-                                        <span>Raised: ₹{campaign.collected.toLocaleString('en-IN')}</span>
-                                        <span>{Math.round(campaign.progress)}%</span>
-                                    </div>
-                                    <Progress value={campaign.progress} className="h-1.5" />
+        <Carousel
+            opts={{ align: "start", loop: true }}
+            plugins={[Autoplay({ delay: 5000 })]}
+            className="w-full relative"
+        >
+            <CarouselContent className="-ml-4">
+                {campaigns.map((campaign, index) => {
+                    const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
+                    const priorityLabel = campaign.priority || 'Medium';
+                    const isCompleted = campaign.status === 'Completed';
+                    const isUrgent = priorityLabel === 'Urgent' && !isCompleted;
+                    const isHigh = priorityLabel === 'High' && !isCompleted;
+                    
+                    return (
+                        <CarouselItem key={campaign.id} className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
+                            <Card 
+                                className={cn(
+                                    "flex flex-col hover:shadow-xl transition-all duration-500 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20 bg-white shadow-sm",
+                                    isUrgent && "animate-urgent-pulse border-red-500/50",
+                                    isHigh && "animate-high-pulse border-orange-500/50",
+                                    isCompleted && "hover:shadow-none hover:-translate-y-0"
+                                )}
+                                style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
+                                onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}
+                            >
+                                <div className="relative h-32 w-full bg-secondary flex items-center justify-center border-b border-primary/5">
+                                    {campaign.imageUrl ? (
+                                        <Image
+                                          src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`}
+                                          alt={campaign.name}
+                                          fill
+                                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                          className="object-cover"
+                                        />
+                                    ) : (
+                                        <FallbackIcon className="h-16 w-16 text-primary/10" />
+                                    )}
                                 </div>
-                            )}
-                        </CardContent>
-                        <CardFooter className="p-2 border-t bg-primary/5">
-                            <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold tracking-tight hover:bg-primary hover:text-white text-primary" size="sm" variant="ghost">
-                                <Link href={`/campaign-public/${campaign.id}/summary`}>
-                                    View Detailed Summary
-                                </Link>
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                );
-            })}
-        </div>
+                                <CardHeader className="p-4">
+                                    <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 text-primary">
+                                        {campaign.campaignNumber && <span className="text-primary font-bold">#{campaign.campaignNumber} </span>}{campaign.name}
+                                    </CardTitle>
+                                    <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground">{campaign.startDate} To {campaign.endDate}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex-grow space-y-3 p-4 pt-0">
+                                    <div className="flex flex-wrap gap-2 items-center text-xs">
+                                        <Badge variant="outline" className="text-[10px] border-primary/20 text-primary font-bold">{campaign.category}</Badge>
+                                        <Badge 
+                                          variant={campaign.status === 'Active' ? 'success' : 'outline'}
+                                          className={cn("text-[10px] font-bold", campaign.status === 'Active' && "animate-status-pulse")}
+                                        >
+                                          {campaign.status}
+                                        </Badge>
+                                        <Badge variant="eligible" className="text-[10px] font-bold flex items-center gap-1">
+                                            <ShieldCheck className="h-3 w-3" />
+                                            {campaign.authenticityStatus === 'Verified' ? 'Verified' : campaign.authenticityStatus}
+                                        </Badge>
+                                    </div>
+                                    <div className={cn(
+                                        "text-[10px] font-bold tracking-tight flex items-center gap-1.5", 
+                                        isUrgent ? 'text-red-600 animate-in fade-in slide-in-from-left' : isHigh ? 'text-orange-600' : 'text-primary'
+                                    )}>
+                                        {getPriorityIcon(priorityLabel)}
+                                        {priorityLabel} Priority
+                                    </div>
+                                    {(campaign.targetAmount || 0) > 0 && (
+                                        <div className="space-y-1.5">
+                                            <div className="flex justify-between text-[10px] font-bold text-muted-foreground tracking-tight">
+                                                <span>Raised: ₹{campaign.collected.toLocaleString('en-IN')}</span>
+                                                <span>{Math.round(campaign.progress)}%</span>
+                                            </div>
+                                            <Progress value={campaign.progress} className="h-1.5" />
+                                        </div>
+                                    )}
+                                </CardContent>
+                                <CardFooter className="p-2 border-t bg-primary/5">
+                                    <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold tracking-tight hover:bg-primary hover:text-white text-primary" size="sm" variant="ghost">
+                                        <Link href={`/campaign-public/${campaign.id}/summary`}>
+                                            View Detailed Summary
+                                        </Link>
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        </CarouselItem>
+                    );
+                })}
+            </CarouselContent>
+            <div className="flex items-center justify-center gap-4 mt-8">
+                <CarouselPrevious className="static translate-y-0 h-10 w-10 border-primary/20 text-primary hover:bg-primary hover:text-white transition-all duration-300" />
+                <CarouselNext className="static translate-y-0 h-10 w-10 border-primary/20 text-primary hover:bg-primary hover:text-white transition-all duration-300" />
+            </div>
+        </Carousel>
     );
 };
 
@@ -263,7 +283,7 @@ export function PublicCampaignsView() {
                   <Badge variant="secondary" className="rounded-full h-6 px-3 bg-primary/10 text-primary border-primary/20 font-bold">{section.items.length}</Badge>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="pt-6">
+              <AccordionContent className="pt-6 px-2 sm:px-10">
                 <CampaignGrid campaigns={section.items} />
               </AccordionContent>
             </AccordionItem>

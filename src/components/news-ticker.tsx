@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -104,8 +105,8 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
           key={currentIndex}
           className={cn(
             "w-full flex items-center gap-2 sm:gap-3",
-            "animate-in fade-in duration-700 ease-out",
-            "slide-in-from-top-8 slide-in-from-right-8" // "Slide Down and Slide Left" combined effect
+            "animate-in fade-in duration-1000 ease-out",
+            "slide-in-from-top-12 slide-in-from-right-12" // "Slide Down and Slide Left" pronounced effect
           )}
         >
           <span className={cn(

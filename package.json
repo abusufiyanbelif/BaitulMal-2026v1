@@ -1,3 +1,4 @@
+
 {
   "name": "docuextract",
   "version": "0.1.0",
@@ -46,6 +47,7 @@
     "cmdk": "1.0.0",
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",
+    "embla-carousel-autoplay": "^8.2.0",
     "embla-carousel-react": "^8.2.0",
     "firebase": "^10.13.1",
     "firebase-admin": "^12.4.0",

@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,6 +21,14 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { NewsTicker } from './news-ticker';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 const getPriorityIcon = (priority?: string) => {
   const p = priority || 'Medium';
@@ -42,88 +51,99 @@ const priorityWeight: Record<string, number> = {
 const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: number; })[] }) => {
     const router = useRouter();
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {leads.map((lead, index) => {
-                const FallbackIcon = lead.purpose === 'Education' ? GraduationCap : 
-                                     lead.purpose === 'Medical' ? HeartPulse : 
-                                     lead.purpose === 'Relief' ? LifeBuoy : 
-                                     lead.purpose === 'Other' ? Info : HandHelping;
-                const priorityLabel = lead.priority || 'Medium';
-                const isCompleted = lead.status === 'Completed';
-                const isUrgent = priorityLabel === 'Urgent' && !isCompleted;
-                const isHigh = priorityLabel === 'High' && !isCompleted;
+        <Carousel
+            opts={{ align: "start", loop: true }}
+            plugins={[Autoplay({ delay: 5000 })]}
+            className="w-full relative"
+        >
+            <CarouselContent className="-ml-4">
+                {leads.map((lead, index) => {
+                    const FallbackIcon = lead.purpose === 'Education' ? GraduationCap : 
+                                         lead.purpose === 'Medical' ? HeartPulse : 
+                                         lead.purpose === 'Relief' ? LifeBuoy : 
+                                         lead.purpose === 'Other' ? Info : HandHelping;
+                    const priorityLabel = lead.priority || 'Medium';
+                    const isCompleted = lead.status === 'Completed';
+                    const isUrgent = priorityLabel === 'Urgent' && !isCompleted;
+                    const isHigh = priorityLabel === 'High' && !isCompleted;
 
-                return (
-                    <Card 
-                        key={lead.id} 
-                        className={cn(
-                            "flex flex-col hover:shadow-xl transition-all duration-500 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20 bg-white shadow-sm",
-                            isUrgent && "animate-urgent-pulse border-red-500/50",
-                            isHigh && "animate-high-pulse border-orange-500/50",
-                            isCompleted && "hover:shadow-none hover:-translate-y-0"
-                        )}
-                        style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
-                        onClick={() => router.push(`/leads-public/${lead.id}/summary`)}
-                    >
-                        <div className="relative h-32 w-full bg-secondary flex items-center justify-center border-b border-primary/5">
-                            {lead.imageUrl ? (
-                                <Image
-                                  src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`}
-                                  alt={lead.name}
-                                  fill
-                                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                  className="object-cover"
-                                />
-                            ) : (
-                                <FallbackIcon className="h-16 w-16 text-primary/10" />
-                            )}
-                        </div>
-                        <CardHeader className="p-4">
-                            <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight text-primary">{lead.name}</CardTitle>
-                            <CardDescription className="text-[10px] font-bold text-muted-foreground">{lead.startDate} To {lead.endDate}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="flex-grow space-y-3 p-4 pt-0">
-                            <div className="flex flex-wrap gap-2 items-center text-xs">
-                                <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary">{lead.purpose}</Badge>
-                                <Badge 
-                                  variant={lead.status === 'Active' ? 'success' : lead.status === 'Completed' ? 'secondary' : 'outline'}
-                                  className={cn("text-[10px] font-bold", lead.status === 'Active' && "animate-status-pulse")}
-                                >
-                                  {lead.status}
-                                </Badge>
-                                <Badge variant="eligible" className="text-[10px] font-bold flex items-center gap-1">
-                                    <ShieldCheck className="h-3 w-3" />
-                                    {lead.authenticityStatus === 'Verified' ? 'Verified' : lead.authenticityStatus}
-                                </Badge>
-                            </div>
-                            <div className={cn(
-                                "text-[10px] font-bold tracking-tight flex items-center gap-1.5", 
-                                isUrgent ? 'text-red-600 animate-in fade-in slide-in-from-left' : isHigh ? 'text-orange-600' : 'text-primary'
-                            )}>
-                                {getPriorityIcon(priorityLabel)}
-                                {priorityLabel} Priority
-                            </div>
-                            {(lead.targetAmount || 0) > 0 && (
-                                <div className="space-y-1.5">
-                                    <div className="flex justify-between text-[10px] font-bold text-muted-foreground tracking-tight">
-                                        <span>Raised: ₹{lead.collected.toLocaleString('en-IN')}</span>
-                                        <span>{Math.round(lead.progress)}%</span>
-                                    </div>
-                                    <Progress value={lead.progress} className="h-1.5" />
+                    return (
+                        <CarouselItem key={lead.id} className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
+                            <Card 
+                                className={cn(
+                                    "flex flex-col hover:shadow-xl transition-all duration-500 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20 bg-white shadow-sm",
+                                    isUrgent && "animate-urgent-pulse border-red-500/50",
+                                    isHigh && "animate-high-pulse border-orange-500/50",
+                                    isCompleted && "hover:shadow-none hover:-translate-y-0"
+                                )}
+                                style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
+                                onClick={() => router.push(`/leads-public/${lead.id}/summary`)}
+                            >
+                                <div className="relative h-32 w-full bg-secondary flex items-center justify-center border-b border-primary/5">
+                                    {lead.imageUrl ? (
+                                        <Image
+                                          src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`}
+                                          alt={lead.name}
+                                          fill
+                                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                          className="object-cover"
+                                        />
+                                    ) : (
+                                        <FallbackIcon className="h-16 w-16 text-primary/10" />
+                                    )}
                                 </div>
-                            )}
-                        </CardContent>
-                         <CardFooter className="p-2 border-t bg-primary/5">
-                            <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold tracking-tight hover:bg-primary hover:text-white text-primary" size="sm" variant="ghost">
-                                <Link href={`/leads-public/${lead.id}/summary`}>
-                                    View Detailed Summary
-                                </Link>
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                );
-            })}
-        </div>
+                                <CardHeader className="p-4">
+                                    <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight text-primary">{lead.name}</CardTitle>
+                                    <CardDescription className="text-[10px] font-bold text-muted-foreground">{lead.startDate} To {lead.endDate}</CardDescription>
+                                </CardHeader>
+                                <CardContent className="flex-grow space-y-3 p-4 pt-0">
+                                    <div className="flex flex-wrap gap-2 items-center text-xs">
+                                        <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary">{lead.purpose}</Badge>
+                                        <Badge 
+                                          variant={lead.status === 'Active' ? 'success' : lead.status === 'Completed' ? 'secondary' : 'outline'}
+                                          className={cn("text-[10px] font-bold", lead.status === 'Active' && "animate-status-pulse")}
+                                        >
+                                          {lead.status}
+                                        </Badge>
+                                        <Badge variant="eligible" className="text-[10px] font-bold flex items-center gap-1">
+                                            <ShieldCheck className="h-3 w-3" />
+                                            {lead.authenticityStatus === 'Verified' ? 'Verified' : lead.authenticityStatus}
+                                        </Badge>
+                                    </div>
+                                    <div className={cn(
+                                        "text-[10px] font-bold tracking-tight flex items-center gap-1.5", 
+                                        isUrgent ? 'text-red-600 animate-in fade-in slide-in-from-left' : isHigh ? 'text-orange-600' : 'text-primary'
+                                    )}>
+                                        {getPriorityIcon(priorityLabel)}
+                                        {priorityLabel} Priority
+                                    </div>
+                                    {(lead.targetAmount || 0) > 0 && (
+                                        <div className="space-y-1.5">
+                                            <div className="flex justify-between text-[10px] font-bold opacity-60 tracking-tight">
+                                                <span>Raised: ₹{lead.collected.toLocaleString('en-IN')}</span>
+                                                <span>{Math.round(lead.progress)}%</span>
+                                            </div>
+                                            <Progress value={lead.progress} className="h-1.5" />
+                                        </div>
+                                    )}
+                                </CardContent>
+                                 <CardFooter className="p-2 border-t bg-primary/5">
+                                    <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold tracking-tight hover:bg-primary hover:text-white text-primary" size="sm" variant="ghost">
+                                        <Link href={`/leads-public/${lead.id}/summary`}>
+                                            View Detailed Summary
+                                        </Link>
+                                    </Button>
+                                </CardFooter>
+                            </Card>
+                        </CarouselItem>
+                    );
+                })}
+            </CarouselContent>
+            <div className="flex items-center justify-center gap-4 mt-8">
+                <CarouselPrevious className="static translate-y-0 h-10 w-10 border-primary/20 text-primary hover:bg-primary hover:text-white transition-all duration-300" />
+                <CarouselNext className="static translate-y-0 h-10 w-10 border-primary/20 text-primary hover:bg-primary hover:text-white transition-all duration-300" />
+            </div>
+        </Carousel>
     );
 };
 
@@ -263,14 +283,14 @@ export function PublicLeadsView() {
                   <span className="inline-flex items-center justify-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-bold text-primary">{section.items.length}</span>
                 </div>
               </AccordionTrigger>
-              <AccordionContent className="pt-6">
+              <AccordionContent className="pt-6 px-2 sm:px-10">
                 <LeadGrid leads={section.items} />
               </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
       ) : (
-        <div className="text-center py-20 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
+        <div className="text-center py-24 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
             <Lightbulb className="h-12 w-12 mx-auto text-primary/20 mb-4" />
             <p className="font-bold text-sm opacity-60 text-primary tracking-widest text-center">No Appeals Found Matching Criteria.</p>
         </div>
