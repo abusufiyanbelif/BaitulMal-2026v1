@@ -22,7 +22,8 @@ interface NewsTickerProps {
 }
 
 /**
- * Optimized vertical news ticker with responsive label stacking and text visibility.
+ * Vertical news ticker with "Slide Down & Slide Left" entrance animation.
+ * Optimized for mobile visibility and institutional aesthetics.
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -97,12 +98,16 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         </span>
       </div>
 
-      {/* Content Section with truncation protection */}
+      {/* Content Section with Slide Down & Left Animation */}
       <div className="flex-1 flex items-center px-3 sm:px-4 relative overflow-hidden h-full">
-        <div className={cn(
-          "w-full transition-all duration-500 ease-in-out flex items-center gap-2 sm:gap-3",
-          isTransitioning ? "opacity-0 -translate-y-4" : "opacity-100 translate-y-0"
-        )}>
+        <div 
+          key={currentIndex}
+          className={cn(
+            "w-full flex items-center gap-2 sm:gap-3",
+            "animate-in fade-in duration-700 ease-out",
+            "slide-in-from-top-8 slide-in-from-right-8" // "Slide Down and Slide Left" combined effect
+          )}
+        >
           <span className={cn(
             "h-1.5 w-1.5 rounded-full shrink-0 hidden xs:block",
             isCompleted ? "bg-muted-foreground" : "bg-primary"
@@ -126,7 +131,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         </div>
       </div>
 
-      {/* Vertical Controls (Hidden on mobile by default, visible on hover) */}
+      {/* Vertical Controls */}
       <div className="z-30 flex flex-col border-l border-primary/5 h-full opacity-0 group-hover:opacity-100 transition-opacity hidden sm:flex">
         <Button
           variant="ghost"

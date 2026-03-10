@@ -20,7 +20,8 @@ import {
   RadialBar,
   PolarAngleAxis,
   PieChart,
-  Pie
+  Pie,
+  ResponsiveContainer
 } from 'recharts';
 
 import type { Campaign, Beneficiary, Donation, DonationCategory } from '@/lib/types';
@@ -425,14 +426,19 @@ export default function PublicCampaignSummaryPage() {
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
                                     <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight">Fund Totals By Type</CardTitle></CardHeader>
                                     <CardContent className="space-y-2 pt-6">
-                                        {donationCategories.map(cat => (
-                                            <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
-                                                <span className="text-muted-foreground font-normal">{cat === 'Interest' ? 'Interest (For Disposal)' : cat === 'Loan' ? 'Loan (Qard-e-Hasana)' : cat}</span>
-                                                <span className="font-mono">₹{(fundingData.amountsByCategory[cat] || 0).toLocaleString('en-IN')}</span>
+                                        <ScrollArea className="w-full">
+                                            <div className="space-y-2">
+                                                {donationCategories.map(cat => (
+                                                    <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
+                                                        <span className="text-muted-foreground font-normal whitespace-nowrap">{cat === 'Interest' ? 'Interest (For Disposal)' : cat === 'Loan' ? 'Loan (Qard-e-Hasana)' : cat}</span>
+                                                        <span className="font-mono">₹{(fundingData.amountsByCategory[cat] || 0).toLocaleString('en-IN')}</span>
+                                                    </div>
+                                                ))}
+                                                <Separator className="bg-primary/10 my-2" />
+                                                <div className="flex justify-between items-center text-lg font-bold text-primary px-2"><span>Grand Total Received</span><span className="font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</span></div>
                                             </div>
-                                        ))}
-                                        <Separator className="bg-primary/10 my-2" />
-                                        <div className="flex justify-between items-center text-lg font-bold text-primary px-2"><span>Grand Total Received</span><span className="font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</span></div>
+                                            <ScrollBar orientation="horizontal" className="hidden" />
+                                        </ScrollArea>
                                     </CardContent>
                                 </Card>
                             )}
@@ -441,15 +447,20 @@ export default function PublicCampaignSummaryPage() {
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
                                     <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight">Zakat Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking Of Zakat Funds Collected Across All Initiatives.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 pt-6 font-bold text-primary">
-                                    <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData.amountsByCategory.Zakat || 0).toLocaleString('en-IN')}</span></div>
-                                        <Separator className="bg-primary/10" />
-                                        <div className="pl-4 border-l-2 border-dashed border-primary/20 space-y-2 py-2">
-                                            <div className="flex justify-between items-center text-sm transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter">Allocated As Cash-In-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
-                                            <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter">Given</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
-                                            <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter">Pending</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
-                                        </div>
-                                        <Separator className="bg-primary/10" />
-                                        <div className="flex justify-between items-center text-base text-primary font-bold transition-all hover:bg-primary/5 px-2 rounded"><span>Zakat Balance For Goal</span><span className="text-primary font-mono font-bold">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
+                                        <ScrollArea className="w-full">
+                                            <div className="space-y-3">
+                                                <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData.amountsByCategory.Zakat || 0).toLocaleString('en-IN')}</span></div>
+                                                <Separator className="bg-primary/10" />
+                                                <div className="pl-4 border-l-2 border-dashed border-primary/20 space-y-2 py-2">
+                                                    <div className="flex justify-between items-center text-sm transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Allocated As Cash-In-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
+                                                    <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Given</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
+                                                    <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Pending</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
+                                                </div>
+                                                <Separator className="bg-primary/10" />
+                                                <div className="flex justify-between items-center text-base text-primary font-bold transition-all hover:bg-primary/5 px-2 rounded"><span className="whitespace-nowrap">Zakat Balance For Goal</span><span className="text-primary font-mono font-bold">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
+                                            </div>
+                                            <ScrollBar orientation="horizontal" className="hidden" />
+                                        </ScrollArea>
                                     </CardContent>
                                 </Card>
                             )}
@@ -462,9 +473,11 @@ export default function PublicCampaignSummaryPage() {
                                     <CardContent className="pt-6">
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                            <BarChart data={chartDataValues} layout="vertical" margin={{ right: 20 }}>
-                                                <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartDataValues.map((entry) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
-                                            </BarChart>
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={chartDataValues} layout="vertical" margin={{ right: 20 }}>
+                                                    <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartDataValues.map((entry) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
+                                                </BarChart>
+                                            </ResponsiveContainer>
                                         </ChartContainer>
                                         ) : <Skeleton className="h-[250px] w-full"/>}
                                     </CardContent>
@@ -477,25 +490,27 @@ export default function PublicCampaignSummaryPage() {
                                     <CardContent className="pt-6">
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
-                                                <PieChart>
-                                                    <ChartTooltip 
-                                                        content={
-                                                            <ChartTooltipContent 
-                                                                nameKey="name" 
-                                                                formatter={(value, name, item) => (
-                                                                    <div className="flex flex-col">
-                                                                        <span className="font-bold">Total: ₹{Number(value).toLocaleString()}</span>
-                                                                        <span className="text-[10px] opacity-70">{(item as any).payload.count} Donations</span>
-                                                                    </div>
-                                                                )}
-                                                            />
-                                                        } 
-                                                    />
-                                                    <Pie data={paymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={5} className="transition-all duration-1000 ease-out focus:outline-none">
-                                                        {paymentTypeChartData.map((entry) => (<Cell key={`cell-pay-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />))}
-                                                    </Pie>
-                                                    <ChartLegend content={<ChartLegendContent />} />
-                                                </PieChart>
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <PieChart>
+                                                        <ChartTooltip 
+                                                            content={
+                                                                <ChartTooltipContent 
+                                                                    nameKey="name" 
+                                                                    formatter={(value, name, item) => (
+                                                                        <div className="flex flex-col">
+                                                                            <span className="font-bold">Total: ₹{Number(value).toLocaleString()}</span>
+                                                                            <span className="text-[10px] opacity-70">{(item as any).payload.count} Donations</span>
+                                                                        </div>
+                                                                    )}
+                                                                />
+                                                            } 
+                                                        />
+                                                        <Pie data={paymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={5} className="transition-all duration-1000 ease-out focus:outline-none">
+                                                            {paymentTypeChartData.map((entry) => (<Cell key={`cell-pay-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />))}
+                                                        </Pie>
+                                                        <ChartLegend content={<ChartLegendContent />} />
+                                                    </PieChart>
+                                                </ResponsiveContainer>
                                             </ChartContainer>
                                         ) : <Skeleton className="h-[250px] w-full"/>}
                                     </CardContent>

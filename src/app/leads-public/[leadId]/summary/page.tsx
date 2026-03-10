@@ -18,7 +18,8 @@ import {
   RadialBar,
   PolarAngleAxis,
   PieChart,
-  Pie
+  Pie,
+  ResponsiveContainer
 } from 'recharts';
 
 import type { Lead, Beneficiary, Donation, DonationCategory, CampaignDocument } from '@/lib/types';
@@ -288,12 +289,12 @@ export default function PublicLeadSummaryPage() {
                                 </CardHeader>
                                 <CardContent className="pt-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                                        <div className="relative h-48 sm:h-64 w-full">
+                                        <div className="relative h-48 sm:h-64 w-full transition-transform duration-500 hover:scale-105">
                                             {isClient ? (
                                                 <ChartContainer config={{ progress: { label: 'Progress', color: 'hsl(var(--primary))' } }} className="mx-auto aspect-square h-full">
                                                     <RadialBarChart data={[{ name: 'Progress', value: fundingData.fundingProgress || 0, fill: 'hsl(var(--primary))' }]} startAngle={-270} endAngle={90} innerRadius="75%" outerRadius="100%" barSize={20}>
                                                         <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                                                        <RadialBar dataKey="value" background={{ fill: 'hsl(var(--muted))' }} cornerRadius={10} />
+                                                        <RadialBar dataKey="value" background={{ fill: 'hsl(var(--muted))' }} cornerRadius={10} className="transition-all duration-1000 ease-out" />
                                                     </RadialBarChart>
                                                 </ChartContainer>
                                             ) : <Skeleton className="w-full h-full rounded-full" />}
@@ -400,14 +401,19 @@ export default function PublicLeadSummaryPage() {
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
                                     <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight">Fund Totals By Type</CardTitle></CardHeader>
                                     <CardContent className="space-y-2 pt-6 font-normal">
-                                        {donationCategories.map(cat => (
-                                            <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
-                                                <span className="text-muted-foreground font-normal">{cat === 'Interest' ? 'Interest (For Disposal)' : cat === 'Loan' ? 'Loan (Qard-e-Hasana)' : cat}</span>
-                                                <span className="font-mono">₹{(fundingData.amountsByCategory[cat] || 0).toLocaleString('en-IN')}</span>
+                                        <ScrollArea className="w-full">
+                                            <div className="space-y-2">
+                                                {donationCategories.map(cat => (
+                                                    <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
+                                                        <span className="text-muted-foreground font-normal whitespace-nowrap">{cat === 'Interest' ? 'Interest (For Disposal)' : cat === 'Loan' ? 'Loan (Qard-e-Hasana)' : cat}</span>
+                                                        <span className="font-mono">₹{(fundingData.amountsByCategory[cat] || 0).toLocaleString('en-IN')}</span>
+                                                    </div>
+                                                ))}
+                                                <Separator className="bg-primary/10 my-2" />
+                                                <div className="flex justify-between items-center text-lg font-bold text-primary px-2"><span>Grand Total Received</span><span className="font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</span></div>
                                             </div>
-                                        ))}
-                                        <Separator className="bg-primary/10 my-2" />
-                                        <div className="flex justify-between items-center text-lg font-bold text-primary px-2"><span>Grand Total Received</span><span className="font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</span></div>
+                                            <ScrollBar orientation="horizontal" className="hidden" />
+                                        </ScrollArea>
                                     </CardContent>
                                 </Card>
                             )}
@@ -416,15 +422,20 @@ export default function PublicLeadSummaryPage() {
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
                                     <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight">Zakat Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking Of Zakat Funds Collected Across All Initiatives.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 pt-6 font-bold text-primary">
-                                    <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData.amountsByCategory.Zakat || 0).toLocaleString('en-IN')}</span></div>
-                                        <Separator className="bg-primary/10" />
-                                        <div className="pl-4 border-l-2 border-dashed border-primary/20 space-y-2 py-2">
-                                            <div className="flex justify-between items-center text-sm transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter">Allocated As Cash-In-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
-                                            <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter">Given</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
-                                            <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter">Pending</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
-                                        </div>
-                                        <Separator className="bg-primary/10" />
-                                        <div className="flex justify-between items-center text-base text-primary font-bold transition-all hover:bg-primary/5 px-2 rounded"><span>Zakat Balance For Goal</span><span className="text-primary font-mono font-bold">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
+                                        <ScrollArea className="w-full">
+                                            <div className="space-y-3">
+                                                <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData.amountsByCategory.Zakat || 0).toLocaleString('en-IN')}</span></div>
+                                                <Separator className="bg-primary/10" />
+                                                <div className="pl-4 border-l-2 border-dashed border-primary/20 space-y-2 py-2">
+                                                    <div className="flex justify-between items-center text-sm transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Allocated As Cash-In-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
+                                                    <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Given</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
+                                                    <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Pending</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
+                                                </div>
+                                                <Separator className="bg-primary/10" />
+                                                <div className="flex justify-between items-center text-base text-primary font-bold transition-all hover:bg-primary/5 px-2 rounded"><span className="whitespace-nowrap">Zakat Balance For Goal</span><span className="text-primary font-mono font-bold">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
+                                            </div>
+                                            <ScrollBar orientation="horizontal" className="hidden" />
+                                        </ScrollArea>
                                     </CardContent>
                                 </Card>
                             )}
@@ -437,9 +448,11 @@ export default function PublicLeadSummaryPage() {
                                     <CardContent className="pt-6">
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                            <BarChart data={Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value }))} layout="vertical" margin={{ right: 20 }}>
-                                                <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{Object.keys(fundingData.amountsByCategory).map((name) => (<Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />))}</Bar>
-                                            </BarChart>
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ name, value }))} layout="vertical" margin={{ right: 20 }}>
+                                                    <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{Object.keys(fundingData.amountsByCategory).map((name) => (<Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />))}</Bar>
+                                                </BarChart>
+                                            </ResponsiveContainer>
                                         </ChartContainer>
                                         ) : <Skeleton className="h-[250px] w-full"/>}
                                     </CardContent>
@@ -452,25 +465,27 @@ export default function PublicLeadSummaryPage() {
                                     <CardContent className="pt-6">
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
-                                                <PieChart>
-                                                    <ChartTooltip 
-                                                        content={
-                                                            <ChartTooltipContent 
-                                                                nameKey="name" 
-                                                                formatter={(value, name, item) => (
-                                                                    <div className="flex flex-col">
-                                                                        <span className="font-bold">Total: ₹{Number(value).toLocaleString()}</span>
-                                                                        <span className="text-[10px] opacity-70">{item.payload.count} Donations</span>
-                                                                    </div>
-                                                                )}
-                                                            />
-                                                        } 
-                                                    />
-                                                    <Pie data={paymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={5} className="transition-all duration-1000 ease-out focus:outline-none">
-                                                        {paymentTypeChartData.map((entry) => (<Cell key={`cell-pay-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />))}
-                                                    </Pie>
-                                                    <ChartLegend content={<ChartLegendContent />} />
-                                                </PieChart>
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <PieChart>
+                                                        <ChartTooltip 
+                                                            content={
+                                                                <ChartTooltipContent 
+                                                                    nameKey="name" 
+                                                                    formatter={(value, name, item) => (
+                                                                        <div className="flex flex-col">
+                                                                            <span className="font-bold">Total: ₹{Number(value).toLocaleString()}</span>
+                                                                            <span className="text-[10px] opacity-70">{item.payload.count} Donations</span>
+                                                                        </div>
+                                                                    )}
+                                                                />
+                                                            } 
+                                                        />
+                                                        <Pie data={paymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={5} className="transition-all duration-1000 ease-out focus:outline-none">
+                                                            {paymentTypeChartData.map((entry) => (<Cell key={`cell-pay-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />))}
+                                                        </Pie>
+                                                        <ChartLegend content={<ChartLegendContent />} />
+                                                    </PieChart>
+                                                </ResponsiveContainer>
                                             </ChartContainer>
                                         ) : <Skeleton className="h-[250px] w-full"/>}
                                     </CardContent>
@@ -515,7 +530,7 @@ export default function PublicLeadSummaryPage() {
                     <div className="p-4 bg-secondary/20">
                         {imageToView && (
                             <div className="relative h-[70vh] w-full overflow-auto border border-primary/10 rounded-md bg-white">
-                                <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-all duration-300 origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                                Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                             </div>
                         )}
                     </div>
