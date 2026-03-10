@@ -106,7 +106,6 @@ export default function CampaignDetailsPage() {
   const [targetCategoryId, setTargetCategoryId] = useState<string | null>(null);
   const [isDeletingCategory, setIsDeletingCategory] = useState(false);
 
-  // Copy items state
   const [isCopyItemsOpen, setIsCopyItemsOpen] = useState(false);
   const [copyTargetCategory, setCopyTargetCategory] = useState<ItemCategory | null>(null);
   const [copySourceCategoryId, setCopySourceCategoryId] = useState<string | null>(null);
@@ -274,9 +273,24 @@ export default function CampaignDetailsPage() {
     const itemToUpdate = categoryToUpdate.items.find((item: RationItem) => item.id === itemId);
     if (!itemToUpdate) return;
 
+    const oldItemName = (itemToUpdate.name || '').trim().toLowerCase();
+
     (itemToUpdate as any)[field] = value;
     
     if (categoryToUpdate.name === 'Item Price List') {
+        // Renaming in master list propagates to all other categories
+        if (field === 'name' && oldItemName) {
+            const newName = (value as string).trim();
+            newitemCategories.forEach((cat: ItemCategory) => {
+                if (cat.name !== 'Item Price List') {
+                    cat.items.forEach((item: RationItem) => {
+                        if (item.name.trim().toLowerCase() === oldItemName) {
+                            item.name = newName;
+                        }
+                    });
+                }
+            });
+        }
         newitemCategories = syncAllCategoriesFromMaster(newitemCategories);
     } else {
         const masterList = newitemCategories.find((cat: ItemCategory) => cat.name === 'Item Price List');
@@ -783,7 +797,7 @@ export default function CampaignDetailsPage() {
             <ScrollArea className="w-full">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 w-full bg-transparent p-0 border-b border-primary/10 pb-4">
                     {canReadSummary && (
-                        <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
+                        <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
                     )}
                     <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item Lists</Link>
                     {canReadBeneficiaries && (
