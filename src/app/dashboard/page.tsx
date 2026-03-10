@@ -2,7 +2,7 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
 import { useSession } from '@/hooks/use-session';
-import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, Database, FlaskConical, IndianRupee, Eye, BarChart } from 'lucide-react';
+import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, Database, FlaskConical, IndianRupee, Eye, BarChart, BookOpen } from 'lucide-react';
 import { getNestedValue } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import React from 'react';
@@ -63,6 +63,13 @@ export default function Home() {
             href: "/public-summary",
             icon: Eye,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.read', false) || !!getNestedValue(userProfile, 'permissions.leads-members.read', false),
+        },
+        {
+            title: "Guidance Hub",
+            description: "Manage External Help Resources And Help Center.",
+            href: "/settings/guidance",
+            icon: BookOpen,
+            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.read', false),
         },
         {
             title: "Extractor",

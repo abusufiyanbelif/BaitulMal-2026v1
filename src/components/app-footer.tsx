@@ -17,7 +17,8 @@ import {
   Download,
   Landmark,
   CreditCard,
-  Copy
+  Copy,
+  BookOpen
 } from 'lucide-react';
 import { 
   Dialog, 
@@ -118,8 +119,8 @@ export function AppFooter() {
           </div>
 
           <div className="space-y-6 md:pl-10">
-            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight">
-              More Info
+            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight uppercase tracking-widest">
+              Resources & Info
             </h3>
             <nav className="flex flex-col gap-4">
               <Link href="/info/organization" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal">
@@ -130,11 +131,15 @@ export function AppFooter() {
                 <HeartHandshake className="h-4 w-4 opacity-30" />
                 Donation Types Explained
               </Link>
+              <Link href="/info/guidance" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal">
+                <BookOpen className="h-4 w-4 opacity-30" />
+                Guidance Directory
+              </Link>
             </nav>
           </div>
 
           <div className="flex flex-col md:items-end gap-6">
-            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight">
+            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight uppercase tracking-widest">
               Support Us
             </h3>
             <div className="w-full sm:w-auto">

@@ -44,6 +44,32 @@ export interface PaymentSettings extends DocumentData {
 export interface InfoSettings extends DocumentData {
   isDonationInfoPublic?: boolean;
   isGuidingPrinciplesPublic?: boolean;
+  isGuidanceDirectoryPublic?: boolean;
+}
+
+export interface ExternalResource {
+  id: string;
+  name: string;
+  subtitle?: string; // e.g. Doctor name, type of NGO
+  description?: string;
+  phone?: string;
+  address?: string;
+  link?: string;
+  isHidden?: boolean;
+}
+
+export interface ResourceCategory {
+  id: string;
+  name: string;
+  description?: string;
+  resources: ExternalResource[];
+}
+
+export interface GuidanceData extends DocumentData {
+  title: string;
+  description: string;
+  categories: ResourceCategory[];
+  isPublic?: boolean;
 }
 
 export interface UseCase {
