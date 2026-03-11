@@ -153,7 +153,7 @@ export default function LeadDetailsPage() {
             errorEmitter.emit('permission-error', permissionError);
         })
         .finally(() => {
-            toast({ title: 'Success', description: 'Lead Item List Synchronized Successfully.', variant: 'success' });
+            toast({ title: 'Success', description: 'Lead Item List Synchronized.', variant: 'success' });
             setEditMode(false);
         });
   };
@@ -169,17 +169,17 @@ export default function LeadDetailsPage() {
   
   const handleSyncKitAmounts = async () => {
     if (!firestore || !canUpdate || !beneficiaries || !editableLead) {
-        toast({ title: "Sync Error", description: "Missing Data Or Permissions For Batch Sync.", variant: 'destructive' });
+        toast({ title: "Sync Error", description: "Missing Data For Sync.", variant: 'destructive' });
         return;
     }
     
     if (editMode) {
-        toast({ title: "Save Required", description: "Please Secure Current Inventory Edits Before Batch Syncing.", variant: 'destructive' });
+        toast({ title: "Save Required", description: "Secure Inventory Edits First.", variant: 'destructive' });
         return;
     }
 
     setIsSyncing(true);
-    toast({ title: "Synchronization Triggered...", description: "Recalculating Allocations Across The Registry." });
+    toast({ title: "Syncing...", description: "Recalculating Allocations Across Registry." });
 
     const batch = writeBatch(firestore);
     let newTotalRequiredAmount = 0;
@@ -197,11 +197,10 @@ export default function LeadDetailsPage() {
 
     try {
         await batch.commit();
-        toast({ title: "Sync Complete!", description: `Successfully Updated ${beneficiaries.length} Recipients And Adjusted Project Goals.`, variant: 'success' });
+        toast({ title: "Sync Complete!", description: `Successfully Updated ${beneficiaries.length} Recipients.`, variant: 'success' });
         forceRefetchBeneficiaries();
         forceRefetchLead();
     } catch (e: any) {
-        console.error("Sync error:", e);
         errorEmitter.emit('permission-error', new FirestorePermissionError({
             path: `leads/${leadId}`,
             operation: 'write',
@@ -219,7 +218,7 @@ export default function LeadDetailsPage() {
   if (!lead) {
     return (
         <main className="container mx-auto p-4 md:p-8 text-center text-primary font-normal">
-            <p className="text-lg text-primary/60 font-bold">Lead Record Not Found In Registry.</p>
+            <p className="text-lg text-primary/60 font-bold">Lead Not Found.</p>
             <Button asChild className="mt-4 font-bold active:scale-95 transition-transform" variant="outline">
                 <Link href="/leads-members">
                     <ArrowLeft className="mr-2 h-4 w-4" />
@@ -301,10 +300,10 @@ export default function LeadDetailsPage() {
                 <TableHeader className="bg-primary/5">
                     <TableRow>
                     <TableHead className="w-[50px] font-bold text-primary text-[10px] uppercase tracking-widest">#</TableHead>
-                    <TableHead className="min-w-[180px] font-bold text-primary text-[10px] uppercase tracking-widest">Item / Requirement Description</TableHead>
+                    <TableHead className="min-w-[180px] font-bold text-primary text-[10px] uppercase tracking-widest">Description</TableHead>
                     <TableHead className="min-w-[100px] font-bold text-primary text-[10px] uppercase tracking-widest">Quantity</TableHead>
                     <TableHead className="min-w-[150px] font-bold text-primary text-[10px] uppercase tracking-widest">Unit Type</TableHead>
-                    <TableHead className="min-w-[120px] font-bold text-primary text-[10px] uppercase tracking-widest">Price per Unit (₹)</TableHead>
+                    <TableHead className="min-w-[120px] font-bold text-primary text-[10px] uppercase tracking-widest">Price / Unit (₹)</TableHead>
                     <TableHead className="text-right min-w-[150px] font-bold text-primary text-[10px] uppercase tracking-widest">Line Total (₹)</TableHead>
                     {canUpdate && editMode && <TableHead className="w-[50px] text-center font-bold text-primary text-[10px] uppercase tracking-widest">Action</TableHead>}
                     </TableRow>
@@ -345,7 +344,7 @@ export default function LeadDetailsPage() {
                     {itemList.length === 0 && (
                     <TableRow>
                         <TableCell colSpan={canUpdate && editMode ? 7 : 6} className="text-center h-32 text-muted-foreground italic font-normal opacity-60">
-                        No Items Added To This Requirement List.
+                        No Items Added.
                         </TableCell>
                     </TableRow>
                     )}
@@ -368,7 +367,7 @@ export default function LeadDetailsPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle className="font-bold text-destructive uppercase">Remove Line Item?</AlertDialogTitle>
                 <AlertDialogDescription className="font-normal text-primary/70">
-                    Permanently Erase "{itemToDelete?.itemName}" From This Requirement List? This Process Cannot Be Undone.
+                    Permanently Erase "{itemToDelete?.itemName}" From This List?
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

@@ -259,7 +259,7 @@ export function BeneficiaryForm({
   
     return (
         <Form {...form}>
-            <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col h-full">
+            <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col h-full overflow-hidden">
                 <ScrollArea className="flex-1 px-6 py-4">
                     <div className="space-y-6 text-primary font-normal pb-10">
                         <div className="space-y-4">
@@ -314,7 +314,7 @@ export function BeneficiaryForm({
                                             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                                 <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
                                                 {!isMasterForm && <SelectItem value="Given" className="font-normal">Given (Completed)</SelectItem>}
-                                                <SelectItem value="Verified" className="font-normal">Verified</SelectItem>
+                                                <SelectItem value="Verified" className="font-normal text-primary">Verified</SelectItem>
                                                 <SelectItem value="Hold" className="font-normal">Hold</SelectItem>
                                                 <SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem>
                                             </SelectContent>
@@ -350,7 +350,7 @@ export function BeneficiaryForm({
                     <ScrollBar orientation="vertical" />
                 </ScrollArea>
                 {!isReadOnly && (
-                    <div className="flex justify-end gap-2 pt-6 border-t mt-auto bg-background/80 backdrop-blur-sm p-4 z-50">
+                    <div className="flex justify-end gap-2 pt-6 border-t mt-auto bg-background/80 backdrop-blur-sm p-4 z-50 shrink-0">
                         <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Discard</Button>
                         <Button type="submit" disabled={isSubmitting || (isEditing && !isDirty)} className="font-bold shadow-md transition-transform active:scale-95 px-8">
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}

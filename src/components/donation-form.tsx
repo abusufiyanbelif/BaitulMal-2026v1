@@ -290,7 +290,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
       const firstLink = currentLinks.length > 0 ? currentLinks[0].linkId : (defaultLinkId || 'unlinked');
       replaceLinkSplit([{ linkId: firstLink, amount: totalAmount }]);
     }
-  }, [isLinkSplit, totalAmount, replaceLinkSplit, getValues, defaultLinkId]);
+  }, [isLinkSplit, totalAmount, replaceTypeSplit, getValues, defaultLinkId, replaceLinkSplit]);
 
   const onFormSubmit = async (data: DonationFormData) => {
     const missingFields: string[] = [];
@@ -319,14 +319,14 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   };
 
   const renderLabel = (label: string, fieldName: string) => (
-    <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-widest uppercase">
+    <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-widest">
         {label} {mandatoryFields[fieldName] ? '*' : ''}
     </FormLabel>
   );
   
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onFormSubmit)} className="flex flex-col h-full">
+      <form onSubmit={form.handleSubmit(onFormSubmit)} className="flex flex-col h-full overflow-hidden">
         <ScrollArea className="flex-1 px-6 py-4">
           <div className="space-y-6 text-primary font-normal pb-10">
             <FormField control={control} name="amount" render={({ field }) => (
@@ -468,7 +468,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
         </ScrollArea>
 
         {!isReadOnly && (
-            <div className="flex justify-end gap-3 pt-6 sticky bottom-0 bg-background/80 backdrop-blur-md p-4 border-t z-50">
+            <div className="flex justify-end gap-3 pt-6 sticky bottom-0 bg-background/80 backdrop-blur-md p-4 border-t z-50 shrink-0">
                 <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="font-bold text-primary border-primary/20 transition-transform active:scale-95">Discard Changes</Button>
                 <Button type="submit" disabled={isSubmitting || (isEditing && !isDirty)} className="font-bold px-10 transition-transform active:scale-95 shadow-md">
                     {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}

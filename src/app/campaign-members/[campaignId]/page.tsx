@@ -22,7 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, Copy, RefreshCw, ShieldAlert, Info, Database } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, Copy, RefreshCw, ShieldAlert, Info, Database, X } from 'lucide-react';
 import Link from 'next/link';
 import {
   Dialog,
@@ -243,7 +243,7 @@ export default function CampaignDetailsPage() {
             errorEmitter.emit('permission-error', permissionError);
         })
         .finally(() => {
-            toast({ title: 'Success', description: 'Campaign Details Successfully Secured.', variant: 'success' });
+            toast({ title: 'Success', description: 'Campaign Details Secured.', variant: 'success' });
             setEditMode(false);
         });
   };
@@ -384,7 +384,7 @@ export default function CampaignDetailsPage() {
         return;
     }
     if (editableCampaign.category === 'Ration' && (isNaN(min) || min < 1 || isNaN(max) || max < min)) {
-        toast({ title: 'Invalid Range', description: 'Please Enter Valid Positive Numbers For Min/Max Members, With Min <= Max.', variant: 'destructive' });
+        toast({ title: 'Invalid Range', description: 'Please Enter Valid Positive Numbers For Min/Max Members.', variant: 'destructive' });
         return;
     }
     
@@ -421,7 +421,7 @@ export default function CampaignDetailsPage() {
         return;
     }
      if (editableCampaign.category === 'Ration' && (isNaN(min) || min < 1 || isNaN(max) || max < min)) {
-        toast({ title: 'Invalid Range', description: 'Please Enter Valid Positive Numbers For Min/Max Members, With Min <= Max.', variant: 'destructive' });
+        toast({ title: 'Invalid Range', description: 'Please Enter Valid Positive Numbers For Min/Max Members.', variant: 'destructive' });
         return;
     }
 
@@ -569,7 +569,7 @@ export default function CampaignDetailsPage() {
     
     toast({ 
         title: 'Items Copied', 
-        description: `${addedCount} Items Added And ${updatedCount} Items Updated In '${copyTargetCategory.name}'.` 
+        description: `${addedCount} Items Added And ${updatedCount} Items Updated.` 
     });
     setIsCopyItemsOpen(false);
   };
@@ -581,12 +581,12 @@ export default function CampaignDetailsPage() {
     }
     
     if(editMode){
-        toast({ title: "Save Required", description: "Please Secure Current Edits Before Batch Syncing.", variant: 'destructive' });
+        toast({ title: "Save Required", description: "Please Secure Inventory Edits Before Batch Syncing.", variant: 'destructive' });
         return;
     }
 
     setIsSyncing(true);
-    toast({ title: "Synchronization Triggered...", description: "Recalculating Allocations Across The Registry." });
+    toast({ title: "Syncing...", description: "Recalculating Allocations Across Registry." });
 
     const batch = writeBatch(firestore);
     let newTotalRequiredAmount = 0;
@@ -645,11 +645,10 @@ export default function CampaignDetailsPage() {
 
     try {
         await batch.commit();
-        toast({ title: "Sync Complete!", description: `Successfully Updated ${beneficiaries.length} Recipients And Adjusted Project Goals.`, variant: 'success' });
+        toast({ title: "Sync Complete!", description: `Successfully Updated ${beneficiaries.length} Recipients.`, variant: 'success' });
         forceRefetchCampaign();
         forceRefetchBeneficiaries();
     } catch (e: any) {
-        console.error("Sync error:", e);
         errorEmitter.emit('permission-error', new FirestorePermissionError({
             path: `campaigns/${campaignId}`,
             operation: 'write',
@@ -680,7 +679,7 @@ export default function CampaignDetailsPage() {
                     </div>
                 )}
             </div>
-             {isPriceList && <CardDescription className="font-normal text-primary/70">Definitive Unit Prices Used To Calculate Totals For All Dependent Categories.</CardDescription>}
+             {isPriceList && <CardDescription className="font-normal text-primary/70">Definitive Unit Prices Used For All Category Calculations.</CardDescription>}
         </CardHeader>
         <CardContent className="pt-6">
           <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
@@ -748,7 +747,7 @@ export default function CampaignDetailsPage() {
                         {category.items.length === 0 && (
                             <TableRow>
                                 <TableCell colSpan={canUpdate && editMode ? 7 : 6} className="text-center h-32 text-muted-foreground italic font-normal opacity-60">
-                                    No Line Items Defined In This List.
+                                    No Line Items Defined.
                                 </TableCell>
                             </TableRow>
                         )}
@@ -770,7 +769,7 @@ export default function CampaignDetailsPage() {
   if (!campaign) {
     return (
         <main className="container mx-auto p-4 md:p-8 text-center text-primary">
-            <p className="text-lg font-bold opacity-60">Campaign Not Found In Registry.</p>
+            <p className="text-lg font-bold opacity-60">Campaign Not Found.</p>
             <Button asChild className="mt-4 font-bold active:scale-95 transition-transform" variant="outline">
                 <Link href="/campaign-members">
                     <ArrowLeft className="mr-2 h-4 w-4" />
@@ -819,7 +818,7 @@ export default function CampaignDetailsPage() {
               <Database className="h-4 w-4" />
               <AlertTitle className="font-bold">System Migration Required</AlertTitle>
               <AlertDescription className="font-normal text-xs opacity-80">
-                This Project Uses An Outdated Data Structure. To Enable Editing, Please Request A System Administrator To Run: <code className="font-mono bg-destructive/20 p-1 rounded-sm">npm run db:migrate-categories</code>
+                This Project Uses An Outdated Data Structure. Please Request A System Administrator To Run Data Migration.
               </AlertDescription>
             </Alert>
         )}
@@ -944,7 +943,7 @@ export default function CampaignDetailsPage() {
                                     <DialogContent className="sm:max-w-md rounded-[16px] border-primary/10">
                                         <DialogHeader>
                                             <DialogTitle className="text-xl font-bold text-primary tracking-tight">Create New Item Category</DialogTitle>
-                                            <DialogDescription className="font-normal text-primary/70">Define A Named Subset Of Items (e.g. "Family Size A" or "Standard Kit").</DialogDescription>
+                                            <DialogDescription className="font-normal text-primary/70">Define A Named Subset Of Items.</DialogDescription>
                                         </DialogHeader>
                                         <div className="grid gap-4 py-4">
                                             <div className="space-y-2">
@@ -978,8 +977,7 @@ export default function CampaignDetailsPage() {
                 ) : (
                     <div className="text-center py-20 bg-primary/[0.02] border-2 border-dashed border-primary/10 rounded-2xl">
                         <Info className="h-12 w-12 mx-auto text-primary/20 mb-4" />
-                        <p className="text-sm font-bold text-primary/60 tracking-widest">No Item Categories Configured.</p>
-                        {canUpdate && editMode && <p className="text-xs font-normal text-muted-foreground mt-2">Initialize Your Inventory By Adding A Category Above.</p>}
+                        <p className="text-sm font-bold text-primary/60 tracking-widest">No Categories Configured.</p>
                     </div>
                 )}
             </CardContent>
@@ -991,7 +989,7 @@ export default function CampaignDetailsPage() {
             <AlertDialogHeader>
                 <AlertDialogTitle className="font-bold text-destructive uppercase">Remove Line Item?</AlertDialogTitle>
                 <AlertDialogDescription className="font-normal text-primary/70">
-                    Permanently Erase "{itemToDelete?.itemName}" From This List? If Removed From The 'Price Master', It Will Be Invalidated Across ALL Categories.
+                    Permanently Erase "{itemToDelete?.itemName}" From This List?
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteItemConfirm} className="bg-destructive hover:bg-destructive/90 text-white font-bold transition-transform active:scale-95 rounded-[12px] shadow-md">Confirm Deletion</AlertDialogAction></AlertDialogFooter>
@@ -1001,8 +999,8 @@ export default function CampaignDetailsPage() {
       <Dialog open={isEditCategoryOpen} onOpenChange={setIsEditCategoryOpen}>
         <DialogContent className="sm:max-w-md rounded-[16px] border-primary/10">
             <DialogHeader>
-                <DialogTitle className="text-xl font-bold text-primary tracking-tight">Modify Category: {categoryToEdit?.name}</DialogTitle>
-                <DialogDescription className="font-normal text-primary/70">Update Labeling And Eligibility Logic For This Requirement Group.</DialogDescription>
+                <DialogTitle className="text-xl font-bold text-primary tracking-tight">Modify Category</DialogTitle>
+                <DialogDescription className="font-normal text-primary/70">Update Labeling And Eligibility Logic.</DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
                 <div className="space-y-2">
@@ -1012,11 +1010,11 @@ export default function CampaignDetailsPage() {
                  {editableCampaign?.category === 'Ration' && (
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="edit-min-members" className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Min Family size</Label>
+                            <Label htmlFor="edit-min-members" className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Min Family Size</Label>
                             <Input id="edit-min-members" type="number" value={categoryToEdit?.minMembers || ''} onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, minMembers: Number(e.target.value) || 0} : null)} className="font-normal" />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="edit-max-members" className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Max Family size</Label>
+                            <Label htmlFor="edit-max-members" className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Max Family Size</Label>
                             <Input id="edit-max-members" type="number" value={categoryToEdit?.maxMembers || ''} onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, maxMembers: Number(e.target.value) || 0} : null)} className="font-normal" />
                         </div>
                     </div>
@@ -1031,7 +1029,7 @@ export default function CampaignDetailsPage() {
               <AlertDialogHeader>
                   <AlertDialogTitle className="font-bold text-destructive uppercase">Delete Category: '{categoryToDelete?.name}'?</AlertDialogTitle>
                   <AlertDialogDescription className="font-normal text-primary/70">
-                      This Category Is Linked To {dependentBeneficiaries.length} Active Records. You MUST Select A Target Group To Re-Allocate These Individuals.
+                      This Category Is Linked To {dependentBeneficiaries.length} Active Records.
                   </AlertDialogDescription>
               </AlertDialogHeader>
               {dependentBeneficiaries.length > 0 && (
@@ -1054,8 +1052,8 @@ export default function CampaignDetailsPage() {
         <Dialog open={isCopyItemsOpen} onOpenChange={setIsCopyItemsOpen}>
             <DialogContent className="max-w-xl rounded-[16px] border-primary/10">
                 <DialogHeader>
-                    <DialogTitle className="text-xl font-bold text-primary tracking-tight">Replicate Inventory To '{copyTargetCategory?.name}'</DialogTitle>
-                    <DialogDescription className="font-normal text-primary/70">Batch-Copy Checked Items From A Source Template To The Current Category.</DialogDescription>
+                    <DialogTitle className="text-xl font-bold text-primary tracking-tight">Replicate Inventory</DialogTitle>
+                    <DialogDescription className="font-normal text-primary/70">Batch-Copy Checked Items.</DialogDescription>
                 </DialogHeader>
                 <div className="py-4 space-y-4">
                     <div className="space-y-2">
@@ -1064,11 +1062,7 @@ export default function CampaignDetailsPage() {
                             <SelectTrigger id="source-category-copy" className="font-normal"><SelectValue placeholder="Select Source Template..." /></SelectTrigger>
                             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                 {sanitizedEditableItemCategories.filter(cat => cat.id !== copyTargetCategory?.id).map(cat => {
-                                    const currentCatName = cat.name === 'Item Price List'
-                                    ? 'Price Master List'
-                                    : (editableCampaign?.category === 'Ration' && cat.minMembers !== undefined && cat.maxMembers !== undefined)
-                                        ? `${cat.name} (${cat.minMembers}-${cat.maxMembers})`
-                                        : cat.name;
+                                    const currentCatName = cat.name === 'Item Price List' ? 'Price Master' : cat.name;
                                     return <SelectItem key={cat.id} value={cat.id} className="font-normal">{currentCatName}</SelectItem>
                                 })}
                             </SelectContent>
@@ -1077,7 +1071,7 @@ export default function CampaignDetailsPage() {
 
                     {sourceCategoryForCopy && (
                         <div className="space-y-3 pt-2">
-                             <h4 className="font-bold text-sm text-primary tracking-tight flex items-center gap-2"><Plus className="h-4 w-4 opacity-40"/> Select Inventory To Replicate</h4>
+                             <h4 className="font-bold text-sm text-primary tracking-tight flex items-center gap-2"><Plus className="h-4 w-4 opacity-40"/> Select Inventory</h4>
                             <div className="border border-primary/10 rounded-xl overflow-hidden bg-white shadow-inner">
                                 <ScrollArea className="h-64 w-full">
                                     <div className="p-2 space-y-1">
@@ -1088,9 +1082,9 @@ export default function CampaignDetailsPage() {
                                                 onCheckedChange={(checked) => { if (checked === true) setSelectedItemsToCopy(sourceCategoryForCopy.items.map(item => item.id)); else setSelectedItemsToCopy([]); }}
                                                 className="border-primary/40 data-[state=checked]:bg-primary"
                                             />
-                                            <Label htmlFor="select-all-copy" className="font-bold text-xs cursor-pointer text-primary uppercase tracking-tighter">Check All Items</Label>
+                                            <Label htmlFor="select-all-copy" className="font-bold text-xs cursor-pointer text-primary uppercase tracking-tighter">Check All</Label>
                                         </div>
-                                        {sourceCategoryForCopy.items.length > 0 ? sourceCategoryForCopy.items.map(item => (
+                                        {sourceCategoryForCopy.items.map(item => (
                                             <div key={item.id} className="flex items-center space-x-2 p-2 hover:bg-primary/[0.02] rounded-md transition-colors border-b border-primary/5 last:border-0">
                                                 <Checkbox
                                                     id={`copy-item-${item.id}`}
@@ -1107,7 +1101,7 @@ export default function CampaignDetailsPage() {
                                                     </div>
                                                 </Label>
                                             </div>
-                                        )) : <p className="text-xs text-muted-foreground text-center py-10 font-normal italic">Source Category Inventory Empty.</p>}
+                                        ))}
                                     </div>
                                     <ScrollBar orientation="vertical" />
                                 </ScrollArea>
@@ -1115,7 +1109,7 @@ export default function CampaignDetailsPage() {
                         </div>
                     )}
                 </div>
-                <DialogFooter className="bg-primary/5 p-4 rounded-b-[16px] -mx-6 -mb-6 border-t"><Button variant="outline" onClick={() => setIsCopyItemsOpen(false)} className="font-bold border-primary/20 text-primary">Discard</Button><Button onClick={handleCopyItemsConfirm} disabled={!copySourceCategoryId || selectedItemsToCopy.length === 0} className="font-bold shadow-md px-8 transition-transform active:scale-95"><Copy className="mr-2 h-4 w-4" /> Replicate ({selectedItemsToCopy.length}) Items</Button></DialogFooter>
+                <DialogFooter className="bg-primary/5 p-4 rounded-b-[16px] -mx-6 -mb-6 border-t"><Button variant="outline" onClick={() => setIsCopyItemsOpen(false)} className="font-bold border-primary/20 text-primary">Discard</Button><Button onClick={handleCopyItemsConfirm} disabled={!copySourceCategoryId || selectedItemsToCopy.length === 0} className="font-bold shadow-md px-8 transition-transform active:scale-95"><Copy className="mr-2 h-4 w-4" /> Replicate Items</Button></DialogFooter>
             </DialogContent>
         </Dialog>
     </>

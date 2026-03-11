@@ -4,7 +4,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase, useAuth } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { collection, doc, serverTimestamp, setDoc, updateDoc, deleteField } from 'firebase/firestore';
 import type { Donation, Campaign, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
@@ -355,15 +355,10 @@ export default function DonationsPage() {
     if (sortConfig) {
         items.sort((a, b) => {
             if (sortConfig.key === 'srNo') return 0;
-            const aVal = (a as any)[sortConfig.key];
-            const bVal = (b as any)[sortConfig.key];
-            if (typeof aVal === 'number' && typeof bVal === 'number') {
-                return sortConfig.direction === 'ascending' ? aVal - bVal : bVal - aVal;
-            }
-            const aStr = String(aVal || '').toLowerCase();
-            const bStr = String(bVal || '').toLowerCase();
-            if (aStr < bStr) return sortConfig.direction === 'ascending' ? -1 : 1;
-            if (aStr > bStr) return sortConfig.direction === 'ascending' ? 1 : -1;
+            const aVal = (a[sortConfig.key as keyof Donation] ?? '').toString().toLowerCase();
+            const bVal = (b[sortConfig.key as keyof Donation] ?? '').toString().toLowerCase();
+            if (aVal < bVal) return sortConfig.direction === 'ascending' ? -1 : 1;
+            if (aVal > bVal) return sortConfig.direction === 'ascending' ? 1 : -1;
             return 0;
         });
     }
@@ -699,7 +694,7 @@ export default function DonationsPage() {
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
-                <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">Edit Donation Hub</DialogTitle></DialogHeader>
+                <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">{editingDonation ? 'Edit' : 'Add'} Donation Hub</DialogTitle></DialogHeader>
                 <div className="flex-1 overflow-hidden relative">
                     <DonationForm 
                         donation={editingDonation} 
@@ -716,7 +711,7 @@ export default function DonationsPage() {
         <DonationImportDialog open={isImportOpen} onOpenChange={setIsImportOpen} onImport={handleImport} />
 
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-            <AlertDialogContent className="rounded-[12px] border-primary/10">
+            <AlertDialogContent className="rounded-[12px] border-border shadow-dropdown">
                 <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Confirm Permanent Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Verification Evidence. This Action Is Irreversible.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel className="font-bold border-border">Cancel</AlertDialogCancel>
