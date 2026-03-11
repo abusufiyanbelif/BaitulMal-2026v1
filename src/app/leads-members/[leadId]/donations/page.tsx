@@ -170,6 +170,7 @@ export default function DonationsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
+  const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(15);
 
@@ -528,7 +529,7 @@ export default function DonationsPage() {
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
-                <DialogHeader className="p-6 bg-primary/5 border-b shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle></DialogHeader>
+                <DialogHeader className="p-6 bg-primary/5 border-b shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight">Modify Donation Profile</DialogTitle></DialogHeader>
                 <div className="flex-1 overflow-hidden relative">
                     <DonationForm 
                         donation={editingDonation} 

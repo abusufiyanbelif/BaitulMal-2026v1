@@ -627,7 +627,7 @@ export default function DonationsPage() {
       
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
-            <DialogHeader className="border-b bg-primary/5 p-6 shrink-0"><DialogTitle className="text-xl font-bold tracking-tight text-primary uppercase tracking-widest">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle></DialogHeader>
+            <DialogHeader className="border-b bg-primary/5 p-6 shrink-0"><DialogTitle className="text-xl font-bold tracking-tight text-primary">Modify Donation Profile</DialogTitle></DialogHeader>
             <div className="flex-1 overflow-hidden relative">
                 <DonationForm donation={editingDonation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} campaigns={allCampaigns || []} leads={allLeads || []} defaultLinkId={`campaign_${campaignId}`} />
             </div>

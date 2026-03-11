@@ -18,13 +18,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import {
-    Select,
-    SelectContent,
-    SelectGroup,
-    SelectItem,
-    SelectLabel,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import type { Donation, DonationCategory, Campaign, Lead, TransactionDetail as TransactionDetailType, DonationLink } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
@@ -34,7 +34,7 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { useSession } from '@/hooks/use-session';
 import { useAuth, useFirestore, useMemoFirebase, useDoc, doc } from '@/firebase';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -159,24 +159,24 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField control={control} name={`transactions.${index}.amount`} render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-widest uppercase">Amount (₹) *</FormLabel><FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="font-bold font-mono" /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-widest">Amount (₹) *</FormLabel><FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="font-bold font-mono" /></FormControl><FormMessage /></FormItem>
                 )}/>
                 <FormField control={control} name={`transactions.${index}.date`} render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-widest uppercase">Transaction Date</FormLabel><FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold" /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-widest">Transaction Date</FormLabel><FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold" /></FormControl><FormMessage /></FormItem>
                 )}/>
             </div>
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                  <FormField control={control} name={`transactions.${index}.transactionId`} render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-widest uppercase">Reference ID</FormLabel><FormControl><Input placeholder="Ref ID" {...field} disabled={isReadOnly} className="font-normal" /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-widest">Reference ID</FormLabel><FormControl><Input placeholder="Ref ID" {...field} disabled={isReadOnly} className="font-normal" /></FormControl><FormMessage /></FormItem>
                 )}/>
                  <FormField control={control} name={`transactions.${index}.upiId`} render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-widest uppercase">Sender UPI ID</FormLabel><FormControl><Input placeholder="e.g. sender@upi" {...field} disabled={isReadOnly} className="font-normal" /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-widest">Sender UPI ID</FormLabel><FormControl><Input placeholder="e.g. sender@upi" {...field} disabled={isReadOnly} className="font-normal" /></FormControl><FormMessage /></FormItem>
                 )}/>
             </div>
             <div className="space-y-2">
                 {!isReadOnly && (
                     <FormField control={control} name={`transactions.${index}.screenshotFile`} render={() => (
-                        <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-widest uppercase">Upload Evidence {mandatoryFields.screenshot ? '*' : ''}</FormLabel><FormControl><Input id={`tx-screenshot-upload-${index}`} type="file" accept="image/*" {...register(`transactions.${index}.screenshotFile`)} className="font-normal" /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-widest">Upload Evidence {mandatoryFields.screenshot ? '*' : ''}</FormLabel><FormControl><Input id={`tx-screenshot-upload-${index}`} type="file" accept="image/*" {...register(`transactions.${index}.screenshotFile`)} className="font-normal" /></FormControl><FormMessage /></FormItem>
                     )}/>
                 )}
                 {preview && (
@@ -188,7 +188,7 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                                     <Button type="button" size="icon" variant="outline" className="h-8 w-8 text-white border-white hover:bg-white/20 transition-transform active:scale-95"><ZoomIn className="h-4 w-4" /></Button>
                                 </DialogTrigger>
                                 <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
-                                    <DialogHeader className="px-6 py-4 bg-primary/5 border-b"><DialogTitle className="font-bold text-primary tracking-widest text-sm uppercase">Transaction Artifact</DialogTitle></DialogHeader>
+                                    <DialogHeader className="px-6 py-4 bg-primary/5 border-b"><DialogTitle className="font-bold text-primary tracking-widest text-sm">Transaction Artifact</DialogTitle></DialogHeader>
                                     <ScrollArea className="flex-1 bg-secondary/20 p-4">
                                         <div className="relative min-h-[60vh] w-full flex items-center justify-center">
                                             <Image src={preview.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(preview)}` : preview} alt="Full Screenshot" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />

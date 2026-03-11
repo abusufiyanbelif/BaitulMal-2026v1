@@ -150,7 +150,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                     />
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" disabled={!donation.transactions || donation.transactions.length === 0}>
                         {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     </Button>
                     <span className="font-mono text-xs opacity-60">{index}</span>
@@ -694,7 +694,7 @@ export default function DonationsPage() {
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
-                <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">{editingDonation ? 'Edit' : 'Add'} Donation Hub</DialogTitle></DialogHeader>
+                <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight">Modify Donation Profile</DialogTitle></DialogHeader>
                 <div className="flex-1 overflow-hidden relative">
                     <DonationForm 
                         donation={editingDonation} 
@@ -724,7 +724,7 @@ export default function DonationsPage() {
 
         <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
             <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 rounded-[12px] border-primary/10 overflow-hidden">
-                <DialogHeader className="px-6 py-4 bg-primary/5 border-b"><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">{imageToView ? 'Evidence Viewer' : 'No Artifact Selected'}</DialogTitle></DialogHeader>
+                <DialogHeader className="px-6 py-4 bg-primary/5 border-b"><DialogTitle className="text-xl font-bold text-primary tracking-tight">Evidence Artifact Viewer</DialogTitle></DialogHeader>
                 <ScrollArea className="flex-1 bg-secondary/20">
                     <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
                         {imageToView && (
