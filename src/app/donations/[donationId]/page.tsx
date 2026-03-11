@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo, useState, useRef, useEffect } from 'react';
@@ -351,12 +350,11 @@ export default function UnlinkedDonationDetailsPage() {
             </div>
 
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-                <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
-                    <DialogHeader className="px-6 py-4 bg-primary/5 border-b"><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">Edit Donation Hub</DialogTitle></DialogHeader>
+                <DialogContent className="max-w-2xl max-h-[90vh] h-full flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
+                    <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight">Edit Donation Hub</DialogTitle></DialogHeader>
                     <div className="flex-1 overflow-hidden relative">
                         <DonationForm donation={donation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} campaigns={allCampaigns || []} leads={allLeads || []} defaultLinkId={'unlinked'} />
                     </div>
-                    <DialogFooter className="px-6 py-4 border-t bg-muted/5"><Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary">Close Editor</Button></DialogFooter>
                 </DialogContent>
             </Dialog>
 
