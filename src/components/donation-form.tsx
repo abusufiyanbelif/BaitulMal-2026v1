@@ -151,7 +151,7 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
     };
 
     return (
-        <div className="space-y-4 rounded-xl border border-primary/5 bg-primary/[0.02] p-4 relative shadow-sm">
+        <div className="space-y-4 rounded-xl border border-primary/10 bg-primary/[0.02] p-4 relative shadow-sm">
             {!isReadOnly && (
                 <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7 text-destructive hover:bg-destructive/10" onClick={() => remove(index)} disabled={!canRemove}>
                     <Trash2 className="h-4 w-4"/>
@@ -187,7 +187,7 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                                 <DialogTrigger asChild>
                                     <Button type="button" size="icon" variant="outline" className="h-8 w-8 text-white border-white hover:bg-white/20 transition-transform active:scale-95"><ZoomIn className="h-4 w-4" /></Button>
                                 </DialogTrigger>
-                                <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
+                                <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
                                     <DialogHeader className="px-6 py-4 bg-primary/5 border-b"><DialogTitle className="font-bold text-primary tracking-tight text-sm">Transaction Artifact</DialogTitle></DialogHeader>
                                     <ScrollArea className="flex-1 bg-secondary/20 p-4">
                                         <div className="relative min-h-[60vh] w-full flex items-center justify-center">
@@ -224,7 +224,6 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
 }
 
 export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], leads = [], defaultLinkId, isReadOnly = false }: DonationFormProps) {
-  const isEditing = !!donation;
   const { userProfile } = useSession();
   const auth = useAuth();
   const { toast } = useToast();
@@ -258,7 +257,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     },
   });
 
-  const { control, watch, setValue, getValues, register, formState: { isDirty } } = form;
+  const { control, watch, setValue, getValues, register, handleSubmit, formState: { isDirty } } = form;
   const { fields: transactionFields, append: appendTransaction, remove: removeTransaction } = useFieldArray({ control, name: "transactions" });
   const { fields: typeSplitFields, append: appendTypeSplit, remove: removeTypeSplit, replace: replaceTypeSplit } = useFieldArray({ control, name: "typeSplit" });
   const { fields: linkSplitFields, append: appendLinkSplit, remove: removeLinkSplit, replace: replaceLinkSplit } = useFieldArray({ control, name: "linkSplit" });
@@ -326,9 +325,9 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onFormSubmit)} className="flex flex-col h-full overflow-hidden">
-        <ScrollArea className="flex-1 px-6 py-4">
-          <div className="space-y-6 text-primary font-normal pb-10">
+      <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col h-full overflow-hidden">
+        <ScrollArea className="flex-1 w-full">
+          <div className="px-6 py-4 space-y-6 text-primary font-normal pb-10">
             <FormField control={control} name="amount" render={({ field }) => (
                 <FormItem><FormLabel className="font-bold text-primary tracking-tight">Total Amount Received (₹) *</FormLabel><FormControl><Input type="number" {...field} readOnly className="bg-primary/5 font-bold font-mono text-xl text-primary" /></FormControl><FormDescription className="font-normal text-[10px] opacity-70 italic">Aggregated Sum Of All Verified Transactions Documented Below.</FormDescription><FormMessage /></FormItem>
             )}/>

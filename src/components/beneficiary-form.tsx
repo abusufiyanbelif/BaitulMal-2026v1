@@ -255,13 +255,13 @@ export function BeneficiaryForm({
     };
 
     const formIsDisabled = isReadOnly || isSubmitting || isLoading;
-    const renderLabel = (label: string, fieldName: string) => <FormLabel className="font-bold">{label} {mandatoryFields[fieldName] ? '*' : ''}</FormLabel>;
+    const renderLabel = (label: string, fieldName: string) => <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">{label} {mandatoryFields[fieldName] ? '*' : ''}</FormLabel>;
   
     return (
         <Form {...form}>
             <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col h-full overflow-hidden">
-                <ScrollArea className="flex-1 px-6 py-4">
-                    <div className="space-y-6 text-primary font-normal pb-10">
+                <ScrollArea className="flex-1 w-full">
+                    <div className="px-6 py-4 space-y-6 text-primary font-normal pb-10">
                         <div className="space-y-4">
                             <h3 className="text-lg font-bold text-primary tracking-tight">Personal Information</h3>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

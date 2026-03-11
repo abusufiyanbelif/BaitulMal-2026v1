@@ -102,7 +102,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -119,7 +119,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: { key: string; direction: 'ascending' | 'descending' } | null, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:bg-muted/50 text-[hsl(var(--table-header-fg))] font-bold text-[10px] tracking-tight flex items-center gap-2 uppercase", className)} onClick={() => handleSort(sortKey)}>
+        <div className={cn("cursor-pointer hover:bg-muted/50 text-[hsl(var(--table-header-fg))] font-bold text-[10px] tracking-tight flex items-center gap-2", className)} onClick={() => handleSort(sortKey)}>
             {children}
             <div className="flex flex-col opacity-40">
                 <ArrowUp className={cn("h-2.5 w-2.5 -mb-1", isSorted && sortConfig?.direction === 'ascending' && "text-primary opacity-100")} />
@@ -268,8 +268,6 @@ export default function DonationsPage() {
     if (!firestore || !storage || !userProfile || !allCampaigns || !allLeads) return;
     
     setIsFormOpen(false);
-    setEditingDonation(null);
-
     const docRef = editingDonation ? doc(firestore, 'donations', editingDonation.id) : doc(collection(firestore, 'donations'));
     
     try {
@@ -310,6 +308,8 @@ export default function DonationsPage() {
         toast({ title: 'Success', description: 'Donation Saved.', variant: 'success' });
     } catch (error: any) {
         errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: editingDonation ? 'update' : 'create', requestResourceData: data }));
+    } finally {
+        setEditingDonation(null);
     }
   };
   
@@ -395,7 +395,7 @@ export default function DonationsPage() {
 
   const handleExport = () => {
     if (!donations || donations.length === 0) return;
-    const headers = ['ID', 'DonorName', 'DonorPhone', 'ReceiverName', 'Referral', 'TotalAmount', 'DonationDate', 'Status', 'DonationType', 'Comments', 'Suggestions'];
+    const headers = ['ID', 'Donor Name', 'Donor Phone', 'Receiver Name', 'Referral', 'Total Amount', 'Donation Date', 'Status', 'Donation Type', 'Comments', 'Suggestions'];
     const rows = donations.map(d => [
         d.id,
         `"${d.donorName || ''}"`,
@@ -461,7 +461,6 @@ export default function DonationsPage() {
             <StatCard title="Canceled" count={stats.canceled} description="Voided records" icon={XCircle} delay="350ms" colorClass="bg-red-50/50" />
         </div>
 
-        {/* Sticky Action Hub */}
         {selectedIds.length > 0 && (
             <div className="sticky top-[73px] z-40 animate-fade-in-up w-full">
                 <div className="flex items-center justify-start gap-4 px-4 py-2 bg-primary/5 border border-primary/20 backdrop-blur-md rounded-xl shadow-sm mb-4">
@@ -625,7 +624,7 @@ export default function DonationsPage() {
             )}
         </Card>
       
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={isFormOpen} onOpenChange={(open) => { setIsFormOpen(open); if(!open) setEditingDonation(null); }}>
         <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
             <DialogHeader className="border-b bg-primary/5 p-6 shrink-0">
                 <DialogTitle className="text-xl font-bold tracking-tight text-primary">
@@ -660,7 +659,11 @@ export default function DonationsPage() {
             <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary text-sm tracking-widest uppercase">Evidence Artifact Viewer</DialogTitle></DialogHeader>
             <ScrollArea className="bg-secondary/20 h-[70vh]">
                 <div className="p-4 min-h-full flex items-center justify-center">
-                    {imageToView && (<div className="relative w-full h-full"><Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Vetting Evidence" fill sizes="100vw" className="object-contain transition-all duration-300 origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized /></div>)}
+                    {imageToView && (
+                        <div className="relative w-full h-full min-h-[60vh]">
+                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Vetting Evidence" fill sizes="100vw" className="object-contain transition-all duration-300 origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                        </div>
+                    )}
                 </div>
                 <ScrollBar orientation="horizontal" />
                 <ScrollBar orientation="vertical" />

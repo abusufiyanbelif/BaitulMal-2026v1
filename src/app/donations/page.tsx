@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase, useAuth } from '@/firebase';
@@ -103,7 +103,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -120,7 +120,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: { key: any; direction: 'ascending' | 'descending' } | null, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))] tracking-tight uppercase", className)} onClick={() => handleSort(sortKey)}>
+        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))] tracking-tight", className)} onClick={() => handleSort(sortKey)}>
             {children}
             <div className="flex flex-col opacity-40">
                 <ArrowUp className={cn("h-2.5 w-2.5 -mb-1", isSorted && sortConfig?.direction === 'ascending' && "text-primary opacity-100")} />
@@ -199,8 +199,8 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                         <Table>
                                             <TableHeader className="bg-primary/5">
                                                 <TableRow>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Category</TableHead>
-                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Value</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Category</TableHead>
+                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Value</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -223,8 +223,8 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                         <Table>
                                             <TableHeader className="bg-primary/5">
                                                 <TableRow>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Target Initiative</TableHead>
-                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Allocated Sum</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Target Initiative</TableHead>
+                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Allocated Sum</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -254,10 +254,10 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                     <Table>
                                         <TableHeader className="bg-primary/5">
                                             <TableRow>
-                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Amount</TableHead>
-                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Ref. ID</TableHead>
-                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Date</TableHead>
-                                                <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Evidence</TableHead>
+                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Amount</TableHead>
+                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Ref. ID</TableHead>
+                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Date</TableHead>
+                                                <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight pr-6">Evidence</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -266,7 +266,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                     <TableCell className="font-bold font-mono text-primary text-[11px] py-2">₹{tx.amount.toFixed(2)}</TableCell>
                                                     <TableCell className="font-mono text-[10px] py-2 text-primary/80 whitespace-nowrap">{tx.transactionId || 'N/A'}</TableCell>
                                                     <TableCell className="text-[10px] font-normal text-muted-foreground py-2 whitespace-nowrap">{tx.date || donation.donationDate}</TableCell>
-                                                    <TableCell className="text-right py-2">
+                                                    <TableCell className="text-right py-2 pr-6">
                                                         {tx.screenshotUrl ? (
                                                             <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/5 transition-transform active:scale-95 shadow-sm" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
                                                                 <ImageIcon className="mr-1 h-3 w-3" /> View Evidence
@@ -397,6 +397,11 @@ export default function DonationsPage() {
     setIsSyncing(false);
   };
 
+  const handleAdd = () => {
+    setEditingDonation(null);
+    setIsFormOpen(true);
+  };
+
   const toggleSelectAll = (checked: boolean | string) => {
     const isChecked = checked === true;
     if (isChecked) {
@@ -478,6 +483,8 @@ export default function DonationsPage() {
             operation: editingDonation ? 'update' : 'create',
             requestResourceData: data,
         }));
+    } finally {
+        setEditingDonation(null);
     }
   };
 
@@ -498,32 +505,6 @@ export default function DonationsPage() {
     setZoom(1);
     setRotation(0);
     setIsImageViewerOpen(true);
-  };
-
-  const handleExport = () => {
-    if (!filteredAndSortedDonations.length) return;
-    const headers = ['ID', 'Donor Name', 'Donor Phone', 'Receiver Name', 'Referral', 'Amount', 'Donation Date', 'Status', 'Donation Type', 'Comments', 'Suggestions'];
-    const rows = filteredAndSortedDonations.map(d => [
-        d.id,
-        `"${d.donorName || ''}"`,
-        d.donorPhone || '',
-        `"${d.receiverName || ''}"`,
-        `"${d.referral || ''}"`,
-        d.amount || 0,
-        d.donationDate || '',
-        d.status || 'Pending',
-        d.donationType || '',
-        `"${(d.comments || '').replace(/"/g, '""')}"`,
-        `"${(d.suggestions || '').replace(/"/g, '""')}"`
-    ]);
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", "master_donation_registry.csv");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
   };
 
   const handleImport = async (records: Partial<Donation>[]) => {
@@ -550,7 +531,7 @@ export default function DonationsPage() {
                 <h1 className="text-3xl font-bold tracking-tight text-primary">Master Donation Registry</h1>
             </div>
             <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                <Button variant="outline" size="sm" onClick={handleExport} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+                <Button variant="outline" size="sm" onClick={() => { if(!filteredAndSortedDonations.length) return; const headers = ['ID', 'Donor Name', 'Donor Phone', 'Receiver Name', 'Referral', 'Amount', 'Donation Date', 'Status', 'Donation Type', 'Comments', 'Suggestions']; const rows = filteredAndSortedDonations.map(d => [ d.id, `"${d.donorName || ''}"`, d.donorPhone || '', `"${d.receiverName || ''}"`, `"${d.referral || ''}"`, d.amount || 0, d.donationDate || '', d.status || 'Pending', d.donationType || '', `"${(d.comments || '').replace(/"/g, '""')}"`, `"${(d.suggestions || '').replace(/"/g, '""')}"` ]); const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); link.setAttribute("download", "master_donation_registry.csv"); document.body.appendChild(link); link.click(); document.body.removeChild(link); }} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
                     <Download className="mr-2 h-4 w-4" /> Export CSV
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
@@ -560,7 +541,7 @@ export default function DonationsPage() {
                   {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
                   Refresh Sync
                 </Button>
-                <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="bg-primary hover:bg-primary/90 text-white font-bold text-xs active:scale-95 transition-transform shadow-md rounded-[12px]">
+                <Button onClick={handleAdd} className="bg-primary hover:bg-primary/90 text-white font-bold text-xs active:scale-95 transition-transform shadow-md rounded-[12px]">
                   <PlusCircle className="mr-2 h-4 w-4" /> Add Record
                 </Button>
             </div>
@@ -627,8 +608,8 @@ export default function DonationsPage() {
             <CardHeader className="bg-primary/5 border-b">
                 <ScrollArea className="w-full">
                     <div className="flex flex-nowrap gap-2 pb-2">
-                        <Input placeholder="Search Donor, Phone, ID..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-[300px] h-9 text-xs border-primary/10 focus-visible:ring-primary text-primary font-normal bg-primary/[0.02] rounded-[10px] shrink-0"/>
-                        <Select value={statusFilter} onValueChange={setStatusFilter}>
+                        <Input placeholder="Search Donor, Phone, ID..." value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-[300px] h-9 text-xs border-primary/10 focus-visible:ring-primary text-primary font-normal bg-primary/[0.02] rounded-[10px] shrink-0"/>
+                        <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
                             <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-primary/[0.02] font-normal shrink-0"><SelectValue placeholder="All Statuses"/></SelectTrigger>
                             <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">
                                 <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
@@ -692,7 +673,7 @@ export default function DonationsPage() {
             )}
         </Card>
 
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <Dialog open={isFormOpen} onOpenChange={(open) => { setIsFormOpen(open); if(!open) setEditingDonation(null); }}>
             <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
                 <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0">
                     <DialogTitle className="text-xl font-bold text-primary tracking-tight">
