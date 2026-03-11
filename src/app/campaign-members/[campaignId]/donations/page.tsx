@@ -627,11 +627,10 @@ export default function DonationsPage() {
       
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
-            <DialogHeader className="border-b bg-primary/5 p-6"><DialogTitle className="text-xl font-bold tracking-tight text-primary uppercase tracking-widest">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle></DialogHeader>
-            <ScrollArea className="flex-1 p-6">
+            <DialogHeader className="border-b bg-primary/5 p-6 shrink-0"><DialogTitle className="text-xl font-bold tracking-tight text-primary uppercase tracking-widest">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle></DialogHeader>
+            <div className="flex-1 overflow-hidden relative">
                 <DonationForm donation={editingDonation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} campaigns={allCampaigns || []} leads={allLeads || []} defaultLinkId={`campaign_${campaignId}`} />
-            </ScrollArea>
-            <DialogFooter className="p-4 border-t bg-muted/5"><Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Close Editor</Button></DialogFooter>
+            </div>
         </DialogContent>
       </Dialog>
 

@@ -6,7 +6,7 @@ import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useD
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { collection, doc, serverTimestamp, setDoc, updateDoc, type DocumentReference } from 'firebase/firestore';
+import { collection, doc, serverTimestamp, setDoc, updateDoc, type DocumentReference, deleteField } from 'firebase/firestore';
 import type { Donation, Lead, Campaign } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
@@ -291,6 +291,12 @@ export default function DonationsPage() {
             return { linkId: id, linkName: linkedItem?.name || 'Unknown', linkType, amount: split.amount };
         }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
         const finalData = { ...donationData, transactions: finalTransactions, amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0), linkSplit: finalLinkSplit, uploadedBy: userProfile.name, uploadedById: userProfile.id, ...(!editingDonation && { createdAt: serverTimestamp() }) };
+        
+        if (editingDonation) {
+            (finalData as any).campaignId = deleteField();
+            (finalData as any).campaignName = deleteField();
+        }
+
         await setDoc(docRef, finalData, { merge: true });
         toast({ title: 'Success', description: 'Donation Saved Successfully.', variant: 'success' });
     } catch (error: any) {
@@ -446,7 +452,7 @@ export default function DonationsPage() {
                         <Button variant="outline" size="sm" onClick={handleExport} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><Download className="mr-2 h-4 w-4"/> Export CSV</Button>
                         <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><UploadCloud className="mr-2 h-4 w-4"/> Import Data</Button>
                         {canUpdate && <Button variant="outline" onClick={() => setIsSearchOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><LinkIcon className="mr-2 h-4 w-4"/> Select From Master</Button>}
-                        {canCreate && <Button onClick={() => setIsFormOpen(true)} className="font-bold shadow-md active:scale-95 transition-transform rounded-[12px]"><PlusCircle className="mr-2 h-4 w-4"/>Add Record</Button>}
+                        {canCreate && <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="font-bold shadow-md active:scale-95 transition-transform rounded-[12px]"><PlusCircle className="mr-2 h-4 w-4"/>Add Record</Button>}
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-4">
@@ -477,21 +483,21 @@ export default function DonationsPage() {
                     </div>
                     <div className="w-full max-h-[70vh]">
                         {paginatedDonations.map((donation, index) => (
-                            <TableRow key={donation.id} className={cn("hover:bg-[hsl(var(--table-row-hover))] transition-colors cursor-pointer border-b border-primary/10 bg-white items-center", donationGridClass)} onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)}>
-                                <TableCell className="pl-4 flex justify-center" onClick={(e) => e.stopPropagation()}>
+                            <div key={donation.id} className={cn("hover:bg-[hsl(var(--table-row-hover))] transition-colors cursor-pointer border-b border-primary/10 bg-white items-center", donationGridClass)} onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)}>
+                                <div className="pl-4 flex justify-center" onClick={(e) => e.stopPropagation()}>
                                     <Checkbox 
                                         checked={selectedIds.includes(donation.id)}
                                         onCheckedChange={() => toggleSelect(donation.id)}
                                         className="border-primary/40 data-[state=checked]:bg-primary"
                                     />
-                                </TableCell>
-                                <TableCell className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
-                                <TableCell className="min-w-0"><div className="font-bold text-sm text-primary truncate">{donation.donorName}</div><div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone}</div></TableCell>
-                                <TableCell className="text-right font-bold font-mono text-primary text-sm">₹{donation.amountForThisLead.toFixed(2)}</TableCell>
-                                <TableCell className="text-xs font-normal text-primary/80 text-center">{donation.donationDate}</TableCell>
-                                <TableCell className="text-center"><Badge variant="secondary" className="text-[9px] font-bold">{donation.donationType}</Badge></TableCell>
-                                <TableCell className="text-center"><Badge variant={donation.status === 'Verified' ? 'eligible' : 'outline'} className="text-[9px] font-bold">{donation.status}</Badge></TableCell>
-                                <TableCell className="text-right pr-4" onClick={e => e.stopPropagation()}>
+                                </div>
+                                <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</div>
+                                <div className="min-w-0"><div className="font-bold text-sm text-primary truncate">{donation.donorName}</div><div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone}</div></div>
+                                <div className="text-right font-bold font-mono text-primary text-sm">₹{donation.amountForThisLead.toFixed(2)}</div>
+                                <div className="text-xs font-normal text-primary/80 text-center">{donation.donationDate}</div>
+                                <div className="text-center"><Badge variant="secondary" className="text-[9px] font-bold">{donation.donationType}</Badge></div>
+                                <div className="text-center"><Badge variant={donation.status === 'Verified' ? 'eligible' : 'outline'} className="text-[9px] font-bold">{donation.status}</Badge></div>
+                                <div className="text-right pr-4" onClick={e => e.stopPropagation()}>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
                                         <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
@@ -500,8 +506,8 @@ export default function DonationsPage() {
                                             {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive font-normal"><Link2Off className="mr-2 h-4 w-4 opacity-60" /> Unlink From Project</DropdownMenuItem>}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                </TableCell>
-                            </TableRow>
+                                </div>
+                            </div>
                         ))}
                         {paginatedDonations.length === 0 && <div className="h-32 text-center text-muted-foreground font-normal italic bg-primary/[0.02] py-20 uppercase tracking-widest">No Donation Records Found.</div>}
                     </div>
@@ -522,8 +528,8 @@ export default function DonationsPage() {
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
-                <DialogHeader className="p-6 bg-primary/5 border-b"><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle></DialogHeader>
-                <ScrollArea className="flex-1 p-6">
+                <DialogHeader className="p-6 bg-primary/5 border-b shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">{editingDonation ? 'Edit' : 'Add'} Donation Record</DialogTitle></DialogHeader>
+                <div className="flex-1 overflow-hidden relative">
                     <DonationForm 
                         donation={editingDonation} 
                         onSubmit={handleFormSubmit} 
@@ -532,23 +538,22 @@ export default function DonationsPage() {
                         campaigns={allCampaigns || []} 
                         defaultLinkId={`lead_${leadId}`} 
                     />
-                </ScrollArea>
-                <DialogFooter className="p-4 border-t bg-muted/5">
-                    <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Close Editor</Button>
-                </DialogFooter>
+                </div>
             </DialogContent>
         </Dialog>
 
         <DonationImportDialog open={isImportOpen} onOpenChange={setIsImportOpen} onImport={handleImport} />
 
-        <DonationSearchDialog 
-            open={isSearchOpen} 
-            onOpenChange={setIsSearchOpen} 
-            targetId={leadId} 
-            targetName={lead.name} 
-            targetType="lead" 
-            allowedTypes={lead.allowedDonationTypes || [...donationCategories]} 
-        />
+        {lead && (
+            <DonationSearchDialog 
+                open={isSearchOpen} 
+                onOpenChange={setIsSearchOpen} 
+                targetId={leadId} 
+                targetName={lead.name} 
+                targetType="lead" 
+                allowedTypes={lead.allowedDonationTypes || [...donationCategories]} 
+            />
+        )}
 
         <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
             <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink From Project?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach This Record From The Current Lead Initiative? The Master Record Will Remain Verified.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 rounded-[12px] transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>

@@ -429,25 +429,61 @@ export default function DonationsPage() {
   };
 
   const handleFormSubmit = async (data: DonationFormData) => {
-    if (!firestore || !storage || !userProfile) return;
+    if (!firestore || !storage || !userProfile || !allCampaigns || !allLeads) return;
     setIsFormOpen(false);
     const docRef = editingDonation ? doc(firestore, 'donations', editingDonation.id) : doc(collection(firestore, 'donations'));
     
-    setDoc(docRef, { 
-        ...data, 
-        uploadedBy: userProfile.name, 
-        uploadedById: userProfile.id,
-        createdAt: editingDonation ? (editingDonation as any).createdAt : serverTimestamp()
-    }, { merge: true })
-    .catch(async (serverError: any) => {
-        const permissionError = new FirestorePermissionError({
+    try {
+        const transactionPromises = data.transactions.map(async (transaction) => {
+            let screenshotUrl = transaction.screenshotUrl || '';
+            const fileList = transaction.screenshotFile as FileList | undefined;
+            if (fileList && fileList.length > 0) {
+                const file = fileList[0];
+                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
+                const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
+                const fileRef = storageRef(storage, filePath);
+                await uploadBytes(fileRef, resizedBlob);
+                screenshotUrl = await getDownloadURL(fileRef);
+            }
+            return { id: transaction.id, amount: transaction.amount, transactionId: transaction.transactionId || '', screenshotUrl, screenshotIsPublic: transaction.screenshotIsPublic || false };
+        });
+
+        const finalTransactions = await Promise.all(transactionPromises);
+        const { transactions, ...donationData } = data;
+        
+        const finalLinkSplit = data.linkSplit?.map(split => {
+            if (!split.linkId || split.linkId === 'unlinked') return split.amount > 0 ? { linkId: 'unallocated', linkName: 'Unallocated', linkType: 'general' as const, amount: split.amount } : null;
+            const [type, id] = split.linkId.split('_');
+            const linkType = type as 'campaign' | 'lead';
+            const source = linkType === 'campaign' ? allCampaigns : allLeads;
+            const linkedItem = source?.find(item => item.id === id);
+            return { linkId: id, linkName: linkedItem?.name || 'Unknown', linkType, amount: split.amount };
+        }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
+        
+        const finalData = { 
+            ...donationData, 
+            transactions: finalTransactions, 
+            amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0), 
+            linkSplit: finalLinkSplit, 
+            uploadedBy: userProfile.name, 
+            uploadedById: userProfile.id, 
+            createdAt: editingDonation ? (editingDonation as any).createdAt : serverTimestamp() 
+        };
+
+        if (editingDonation) {
+            (finalData as any).campaignId = deleteField();
+            (finalData as any).campaignName = deleteField();
+        }
+
+        await setDoc(docRef, finalData, { merge: true });
+        toast({ title: "Donation Synchronized", description: "The Record Is Now Secured.", variant: 'success' });
+    } catch (error: any) {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
             path: docRef.path,
             operation: editingDonation ? 'update' : 'create',
             requestResourceData: data,
-        });
-        errorEmitter.emit('permission-error', permissionError);
-    });
-    toast({ title: "Donation Synchronized", description: "The Record Is Now Secured.", variant: 'success' });
+        }));
+    }
   };
 
   const handleDeleteConfirm = async () => {
@@ -662,10 +698,8 @@ export default function DonationsPage() {
         </Card>
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col overflow-hidden p-0 rounded-[12px] border-primary/10">
-                <DialogHeader className="px-6 py-4 bg-primary/5 border-b">
-                    <DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">Edit Donation Hub</DialogTitle>
-                </DialogHeader>
+            <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
+                <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">Edit Donation Hub</DialogTitle></DialogHeader>
                 <div className="flex-1 overflow-hidden relative">
                     <DonationForm 
                         donation={editingDonation} 
@@ -676,9 +710,6 @@ export default function DonationsPage() {
                         defaultLinkId={'unlinked'} 
                     />
                 </div>
-                <DialogFooter className="px-6 py-4 border-t bg-muted/5">
-                    <Button variant="secondary" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/10 text-primary transition-transform active:scale-95">Close Editor</Button>
-                </DialogFooter>
             </DialogContent>
         </Dialog>
 
@@ -688,8 +719,10 @@ export default function DonationsPage() {
             <AlertDialogContent className="rounded-[12px] border-primary/10">
                 <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Confirm Permanent Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Verification Evidence. This Action Is Irreversible.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter>
-                    <AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 rounded-[12px] shadow-md transition-transform active:scale-95">Confirm Deletion</AlertDialogAction>
+                    <AlertDialogCancel className="font-bold border-border">Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                        onClick={handleDeleteConfirm} 
+                        className="bg-destructive hover:bg-destructive/90 text-white font-bold rounded-[12px] shadow-md transition-transform active:scale-95">Confirm Deletion</AlertDialogAction>
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
@@ -707,8 +740,8 @@ export default function DonationsPage() {
                     <ScrollBar orientation="vertical" />
                 </ScrollArea>
                 <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">
-                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => z * 1.2)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
-                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => z / 1.2) } className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
+                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
+                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5)) } className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
                     <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
                     <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
                 </DialogFooter>
