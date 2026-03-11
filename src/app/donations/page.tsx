@@ -103,7 +103,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -120,7 +120,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: { key: any; direction: 'ascending' | 'descending' } | null, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))] tracking-widest", className)} onClick={() => handleSort(sortKey)}>
+        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))] tracking-tight uppercase", className)} onClick={() => handleSort(sortKey)}>
             {children}
             <div className="flex flex-col opacity-40">
                 <ArrowUp className={cn("h-2.5 w-2.5 -mb-1", isSorted && sortConfig?.direction === 'ascending' && "text-primary opacity-100")} />
@@ -193,14 +193,14 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                     <div className="space-y-6 max-w-5xl mx-auto">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="space-y-3">
-                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-widest uppercase"><IndianRupee className="h-3 w-3"/> Category Breakdown</h4>
+                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight uppercase"><IndianRupee className="h-3 w-3"/> Category Breakdown</h4>
                                 <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
                                     <ScrollArea className="w-full">
                                         <Table>
                                             <TableHeader className="bg-primary/5">
                                                 <TableRow>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tighter uppercase">Category</TableHead>
-                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tighter uppercase">Value</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Category</TableHead>
+                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Value</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -217,14 +217,14 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                 </div>
                             </div>
                             <div className="space-y-3">
-                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-widest uppercase"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
+                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight uppercase"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
                                 <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
                                     <ScrollArea className="w-full">
                                         <Table>
                                             <TableHeader className="bg-primary/5">
                                                 <TableRow>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tighter uppercase">Target Initiative</TableHead>
-                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tighter uppercase">Allocated Sum</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Target Initiative</TableHead>
+                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Allocated Sum</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -248,16 +248,16 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                             </div>
                         </div>
                         <div className="space-y-3">
-                            <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-widest uppercase"><ImageIcon className="h-3 w-3"/> Transaction Documents</h4>
+                            <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight uppercase"><ImageIcon className="h-3 w-3"/> Transaction Documents</h4>
                             <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
                                 <ScrollArea className="w-full">
                                     <Table>
                                         <TableHeader className="bg-primary/5">
                                             <TableRow>
-                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tighter uppercase">Amount</TableHead>
-                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tighter uppercase">Ref. ID</TableHead>
-                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tighter uppercase">Date</TableHead>
-                                                <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tighter uppercase">Evidence</TableHead>
+                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Amount</TableHead>
+                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Ref. ID</TableHead>
+                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Date</TableHead>
+                                                <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Evidence</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -271,7 +271,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                             <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/5 transition-transform active:scale-95 shadow-sm" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
                                                                 <ImageIcon className="mr-1 h-3 w-3" /> View Evidence
                                                             </Button>
-                                                        ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40 tracking-tighter">No Artifact</span>}
+                                                        ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40 tracking-tight">No Artifact</span>}
                                                     </TableCell>
                                                 </TableRow>
                                             ))}
@@ -547,14 +547,14 @@ export default function DonationsPage() {
                 <Button variant="outline" asChild className="w-fit font-bold border-primary/20 text-primary transition-transform active:scale-95">
                     <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Dashboard</Link>
                 </Button>
-                <h1 className="text-3xl font-bold tracking-tighter text-primary">Master Donation Registry</h1>
+                <h1 className="text-3xl font-bold tracking-tight text-primary">Master Donation Registry</h1>
             </div>
             <div className="flex flex-wrap gap-2 w-full sm:w-auto">
                 <Button variant="outline" size="sm" onClick={handleExport} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
-                    <Download className="mr-2 h-4 w-4"/> Export CSV
+                    <Download className="mr-2 h-4 w-4" /> Export CSV
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
-                    <UploadCloud className="mr-2 h-4 w-4"/> Import Data
+                    <UploadCloud className="mr-2 h-4 w-4" /> Import Data
                 </Button>
                 <Button variant="secondary" onClick={handleSync} disabled={isSyncing} className="font-bold text-[10px] border-primary/10 text-primary active:scale-95 transition-transform">
                   {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
@@ -632,9 +632,9 @@ export default function DonationsPage() {
                             <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-primary/[0.02] font-normal shrink-0"><SelectValue placeholder="All Statuses"/></SelectTrigger>
                             <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">
                                 <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
-                                <SelectItem value="Verified" className="font-normal">Verified</SelectItem>
+                                <SelectItem value="Verified" className="font-normal text-primary">Verified</SelectItem>
                                 <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
-                                <SelectItem value="Canceled" className="font-normal">Canceled</SelectItem>
+                                <SelectItem value="Canceled" className="font-normal text-destructive">Canceled</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>
@@ -643,7 +643,7 @@ export default function DonationsPage() {
             </CardHeader>
             <CardContent className="p-0">
                 <ScrollArea className="w-full">
-                    <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold text-[hsl(var(--table-header-fg))] tracking-widest", donationGridClass)}>
+                    <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold text-[hsl(var(--table-header-fg))] tracking-tight", donationGridClass)}>
                         <div className="flex justify-center">
                             <Checkbox 
                                 checked={paginatedDonations.length > 0 && selectedIds.length === paginatedDonations.length}
@@ -655,10 +655,10 @@ export default function DonationsPage() {
                         <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor Name</SortableHeader>
                         <SortableHeader sortKey="amount" sortConfig={sortConfig} handleSort={handleSort} className="text-right">Amount (₹)</SortableHeader>
                         <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Entry Date</SortableHeader>
-                        <div className="text-center font-bold text-[10px] tracking-tighter">Method</div>
+                        <div className="text-center font-bold text-[10px] tracking-tight">Method</div>
                         <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Verification Status</SortableHeader>
-                        <div className="font-bold text-[10px] tracking-tighter">Target Initiative</div>
-                        <div className="text-right pr-4 font-bold text-[10px] tracking-tighter">Actions</div>
+                        <div className="font-bold text-[10px] tracking-tight">Target Initiative</div>
+                        <div className="text-right pr-4 font-bold text-[10px] tracking-tight">Actions</div>
                     </div>
                     <div className="w-full max-h-[70vh]">
                         {paginatedDonations.map((d, i) => (
@@ -716,7 +716,7 @@ export default function DonationsPage() {
 
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent className="rounded-[12px] border-border shadow-dropdown">
-                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Confirm Permanent Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Verification Evidence. This Action Is Irreversible.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Confirm Permanent Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Verification Evidence. This Action Is Irreversible.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel className="font-bold border-border">Cancel</AlertDialogCancel>
                     <AlertDialogAction 

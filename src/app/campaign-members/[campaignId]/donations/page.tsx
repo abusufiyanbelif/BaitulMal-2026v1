@@ -102,7 +102,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -119,7 +119,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: { key: string; direction: 'ascending' | 'descending' } | null, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:bg-muted/50 text-[hsl(var(--table-header-fg))] font-bold text-[10px] tracking-widest flex items-center gap-2", className)} onClick={() => handleSort(sortKey)}>
+        <div className={cn("cursor-pointer hover:bg-muted/50 text-[hsl(var(--table-header-fg))] font-bold text-[10px] tracking-tight flex items-center gap-2 uppercase", className)} onClick={() => handleSort(sortKey)}>
             {children}
             <div className="flex flex-col opacity-40">
                 <ArrowUp className={cn("h-2.5 w-2.5 -mb-1", isSorted && sortConfig?.direction === 'ascending' && "text-primary opacity-100")} />
@@ -522,7 +522,7 @@ export default function DonationsPage() {
             </CardHeader>
             <CardContent className="p-0">
                 <ScrollArea className="w-full">
-                    <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold text-[hsl(var(--table-header-fg))] tracking-widest", donationGridClass)}>
+                    <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold text-[hsl(var(--table-header-fg))] tracking-tight", donationGridClass)}>
                         <div className="flex justify-center">
                             <Checkbox 
                                 checked={paginatedDonations.length > 0 && selectedIds.length === paginatedDonations.length}
@@ -534,9 +534,9 @@ export default function DonationsPage() {
                         <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
                         <SortableHeader sortKey="amountForThisCampaign" className="text-right" sortConfig={sortConfig} handleSort={handleSort}>Amount</SortableHeader>
                         <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort}>Date</SortableHeader>
-                        <div className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tighter">Method</div>
-                        <div className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tighter">Status</div>
-                        <div className="text-right pr-4 font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tighter">Actions</div>
+                        <div className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Method</div>
+                        <div className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Status</div>
+                        <div className="text-right pr-4 font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Actions</div>
                     </div>
                     <div className="w-full max-h-[70vh]">
                         {paginatedDonations.map((donation, index) => {
@@ -579,7 +579,7 @@ export default function DonationsPage() {
                                         <div className="bg-primary/[0.01] border-b border-primary/10 p-4 animate-fade-in-up">
                                             <div className="max-w-4xl mx-auto space-y-4">
                                                 <h4 className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-2"><IndianRupee className="h-3.5 w-3.5"/> Linked Transactions</h4>
-                                                <div className="border border-primary/10 rounded-xl bg-white overflow-hidden shadow-sm">
+                                                <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
                                                     <ScrollArea className="w-full">
                                                         <Table>
                                                             <TableHeader className="bg-primary/5">
@@ -594,7 +594,7 @@ export default function DonationsPage() {
                                                                     <TableRow key={tx.id} className="hover:bg-primary/[0.02]">
                                                                         <TableCell className="font-bold font-mono text-sm text-primary">₹{tx.amount.toFixed(2)}</TableCell>
                                                                         <TableCell className="font-mono text-xs opacity-70 text-primary">{tx.transactionId || 'N/A'}</TableCell>
-                                                                        <TableCell className="text-right pr-6">{tx.screenshotUrl ? (<Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }} className="font-bold text-[10px] h-7 border-primary/20 text-primary hover:bg-primary/5 transition-transform active:scale-95"><ImageIcon className="mr-1 h-3 w-3" /> View Artifact</Button>) : <span className="text-muted-foreground text-[10px] uppercase opacity-40">None</span>}</TableCell>
+                                                                        <TableCell className="text-right pr-6">{tx.screenshotUrl ? (<Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }} className="font-bold text-[10px] h-7 border-primary/20 text-primary hover:bg-primary/5 transition-transform active:scale-95 shadow-none"><ImageIcon className="mr-1 h-3 w-3" /> View Artifact</Button>) : <span className="text-muted-foreground text-[10px] uppercase opacity-40">None</span>}</TableCell>
                                                                     </TableRow>
                                                                 ))}
                                                             </TableBody>
