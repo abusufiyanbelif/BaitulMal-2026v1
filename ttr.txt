@@ -1,2 +1,2 @@
-src/components/donation-form.tsx(473,39): error TS2322: Type 'boolean | null | undefined' is not assignable to type 'boolean | undefined'.
+src/components/donation-form.tsx(475,39): error TS2322: Type 'boolean | null | undefined' is not assignable to type 'boolean | undefined'.
   Type 'null' is not assignable to type 'boolean | undefined'.
