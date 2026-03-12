@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase, useAuth } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, doc, serverTimestamp, setDoc, updateDoc, deleteField } from 'firebase/firestore';
-import type { Donation, Campaign, Lead } from '@/lib/types';
+import type { Donation, Campaign, Lead, UserProfile } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import Resizer from 'react-image-file-resizer';
@@ -696,7 +696,7 @@ export default function DonationsPage() {
         <DonationImportDialog open={isImportOpen} onOpenChange={setIsImportOpen} onImport={handleImport} />
 
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-            <AlertDialogContent className="rounded-[12px] border-border shadow-dropdown">
+            <AlertDialogContent className="rounded-[16px] border-border shadow-dropdown">
                 <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Confirm Permanent Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Verification Evidence. This Action Is Irreversible.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel className="font-bold border-border">Cancel</AlertDialogCancel>

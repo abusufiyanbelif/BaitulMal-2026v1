@@ -84,7 +84,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/components/ui/command";
+} from "@/command";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog';
@@ -777,7 +777,7 @@ export default function BeneficiariesPage() {
         </Card>
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <DialogContent className="max-w-2xl h-full max-h-[90vh] overflow-hidden rounded-[16px] border-primary/10 p-0 flex flex-col">
+            <DialogContent className="max-w-2xl h-[90vh] overflow-hidden rounded-[16px] border-primary/10 p-0 flex flex-col">
                 <DialogHeader className="px-6 py-4 bg-primary/5 border-b border-primary/10 shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight">Modify Beneficiary Profile</DialogTitle></DialogHeader>
                 <div className="flex-1 min-h-0 flex flex-col relative overflow-hidden">
                     <BeneficiaryForm 

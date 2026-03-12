@@ -332,7 +332,7 @@ export function BeneficiaryForm({
                                         <h3 className="text-lg font-bold text-primary tracking-tight">Zakat Information</h3>
                                         <div className="flex flex-row items-center justify-between rounded-lg border p-3 bg-muted/5">
                                             <div className="space-y-0.5"><Label htmlFor="isEligibleForZakat" className="text-base font-bold">Eligible For Zakat</Label><p className="text-xs text-muted-foreground font-normal">Can Recipient Receive Zakat Funds?</p></div>
-                                            <FormField control={control} name="isEligibleForZakat" render={({ field }) => (<FormItem><FormControl><Checkbox checked={field.value === true} onCheckedChange={(val) => field.onChange(val === true)} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
+                                            <FormField control={control} name="isEligibleForZakat" render={({ field }) => (<FormItem><FormControl><Checkbox checked={!!field.value} onCheckedChange={(val) => field.onChange(val === true)} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
                                         </div>
                                         {watch('isEligibleForZakat') && !hideZakatAllocation && (
                                             <div className="animate-fade-in-zoom">
