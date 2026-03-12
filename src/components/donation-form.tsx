@@ -55,7 +55,7 @@ const formSchema = z.object({
   typeSplit: z.array(z.object({
     category: z.enum(donationCategories),
     amount: z.coerce.number().min(0, { message: 'Amount Cannot Be Negative.' }),
-    forFundraising: z.boolean().default(true),
+    forFundraising: z.boolean().default(false),
   })).min(1, { message: 'At Least One Donation Category Is Required.'}),
   donationType: z.enum(['Cash', 'Online Payment', 'Check', 'Other']),
   donationDate: z.string().min(1, { message: "Donation Date Is Required."}),
@@ -251,7 +251,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
       comments: donation?.comments || '',
       suggestions: donation?.suggestions || '',
       isTypeSplit: (donation?.typeSplit?.length ?? 0) > 1,
-      typeSplit: donation?.typeSplit && donation.typeSplit.length > 0 ? donation.typeSplit.map(ts => ({...ts, forFundraising: ts.forFundraising ?? true})) : [{ category: 'Sadaqah', amount: donation?.amount || 0, forFundraising: true }],
+      typeSplit: donation?.typeSplit && donation.typeSplit.length > 0 ? donation.typeSplit.map(ts => ({...ts, forFundraising: ts.forFundraising ?? false})) : [{ category: 'Sadaqah', amount: donation?.amount || 0, forFundraising: false }],
       transactions: donation?.transactions && donation.transactions.length > 0 ? donation.transactions.map(tx => ({...tx, amount: Number(tx.amount), date: tx.date || (donation?.donationDate || new Date().toISOString().split('T')[0]) })) : [{ id: `tx_${Date.now()}`, amount: donation?.amount || 0, transactionId: (donation as any)?.transactionId, date: donation?.donationDate || new Date().toISOString().split('T')[0] }],
       isSplit: (donation?.linkSplit?.length ?? 0) > 1,
       linkSplit: donation?.linkSplit?.map(l => ({ linkId: `${l.linkType}_${l.linkId}`, amount: l.amount })) || (defaultLinkId ? [{linkId: defaultLinkId, amount: donation?.amount || 0}] : []),
@@ -280,7 +280,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     if (!isTypeSplit) {
       const currentSplits = getValues('typeSplit');
       const firstCategory = currentSplits.length > 0 ? currentSplits[0].category : 'Sadaqah';
-      replaceTypeSplit([{ category: firstCategory, amount: totalAmount, forFundraising: true }]);
+      replaceTypeSplit([{ category: firstCategory, amount: totalAmount, forFundraising: false }]);
     }
   }, [isTypeSplit, totalAmount, replaceTypeSplit, getValues]);
   
@@ -378,7 +378,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                     
                     <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm">
                         <FormField control={control} name="isTypeSplit" render={({ field }) => (
-                            <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={!!field.value} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Split Contribution By Designation</FormLabel></FormItem>
+                            <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value === true} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Split Contribution By Designation</FormLabel></FormItem>
                         )}/>
                     {isTypeSplit ? (
                         <div className="space-y-4 pl-6 animate-fade-in-up">
@@ -389,7 +389,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                                         <TableBody>
                                             {typeSplitFields.map((field, index) => (
                                                 <TableRow key={field.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
-                                                    <TableCell><FormField control={control} name={`typeSplit.${index}.category`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none h-8"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select>)}/>{watch(`typeSplit.${index}.category`) === 'Zakat' && <FormField control={control} name={`typeSplit.${index}.forFundraising`} render={({ field: checkboxField }) => (<div className="flex items-center space-x-2 px-2 mt-1"><Checkbox checked={!!checkboxField.value} onCheckedChange={(val) => checkboxField.onChange(val === true)} disabled={isReadOnly}/><Label className="text-[8px] font-bold text-muted-foreground tracking-tighter uppercase">Goal Contribution</Label></div>)}/>}</TableCell>
+                                                    <TableCell><FormField control={control} name={`typeSplit.${index}.category`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none h-8"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select>)}/>{watch(`typeSplit.${index}.category`) === 'Zakat' && <FormField control={control} name={`typeSplit.${index}.forFundraising`} render={({ field: checkboxField }) => (<div className="flex items-center space-x-2 px-2 mt-1"><Checkbox checked={checkboxField.value === true} onCheckedChange={(val) => checkboxField.onChange(val === true)} disabled={isReadOnly}/><Label className="text-[8px] font-bold text-muted-foreground tracking-tighter uppercase">Goal Contribution</Label></div>)}/>}</TableCell>
                                                     <TableCell><FormField control={control} name={`typeSplit.${index}.amount`} render={({ field }) => (<FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="border-none bg-transparent shadow-none font-bold font-mono h-8 text-primary"/></FormControl>)}/></TableCell>
                                                     <TableCell className="text-right">{!isReadOnly && <Button type="button" variant="ghost" size="icon" onClick={() => removeTypeSplit(index)} disabled={typeSplitFields.length <= 1} className="h-8 w-8 text-destructive transition-transform hover:scale-110"><Trash2 className="h-4 w-4"/></Button>}</TableCell>
                                                 </TableRow>
@@ -399,7 +399,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                                     <ScrollBar orientation="horizontal" />
                                 </ScrollArea>
                             </div>
-                            {!isReadOnly && <Button type="button" variant="outline" size="sm" onClick={() => appendTypeSplit({ category: 'Sadaqah', amount: 0, forFundraising: true })} className="font-bold text-primary border-primary/20 transition-transform active:scale-95 shadow-none w-full"><Plus className="mr-2 h-4 w-4"/> Add Split Designation</Button>}
+                            {!isReadOnly && <Button type="button" variant="outline" size="sm" onClick={() => appendTypeSplit({ category: 'Sadaqah', amount: 0, forFundraising: false })} className="font-bold text-primary border-primary/20 transition-transform active:scale-95 shadow-none w-full"><Plus className="mr-2 h-4 w-4"/> Add Split Designation</Button>}
                         </div>
                     ) : (
                         <div className="pl-6 space-y-4">
@@ -426,7 +426,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
 
                     <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm">
                         <FormField control={control} name="isSplit" render={({ field }) => (
-                            <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={!!field.value} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Allocate Across Multiple Initiatives</FormLabel></FormItem>
+                            <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value === true} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Allocate Across Multiple Initiatives</FormLabel></FormItem>
                         )}/>
                     {isLinkSplit ? (
                         <div className="space-y-4 pl-6 animate-fade-in-up">
