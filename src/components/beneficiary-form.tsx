@@ -260,95 +260,97 @@ export function BeneficiaryForm({
     return (
         <Form {...form}>
             <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col h-full overflow-hidden">
-                <ScrollArea className="flex-1 w-full">
-                    <div className="px-6 py-4 space-y-6 text-primary font-normal pb-10">
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-bold text-primary tracking-tight">Personal Information</h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <FormField control={control} name="name" render={({ field }) => (<FormItem>{renderLabel('Full Name', 'name')}<FormControl><Input placeholder="e.g. Saleem Khan" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
-                                <FormField control={control} name="age" render={({ field }) => (<FormItem>{renderLabel('Age', 'age')}<FormControl><Input type="number" placeholder="e.g. 35" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
+                <div className="flex-1 min-h-0 relative">
+                    <ScrollArea className="h-full w-full">
+                        <div className="px-6 py-4 space-y-6 text-primary font-normal pb-10">
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-bold text-primary tracking-tight">Personal Information</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <FormField control={control} name="name" render={({ field }) => (<FormItem>{renderLabel('Full Name', 'name')}<FormControl><Input placeholder="e.g. Saleem Khan" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
+                                    <FormField control={control} name="age" render={({ field }) => (<FormItem>{renderLabel('Age', 'age')}<FormControl><Input type="number" placeholder="e.g. 35" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <FormField control={control} name="phone" render={({ field }) => (<FormItem>{renderLabel('Phone Number', 'phone')}<FormControl><Input placeholder="10-digit mobile number" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
+                                    <FormField control={control} name="occupation" render={({ field }) => (<FormItem>{renderLabel('Occupation', 'occupation')}<FormControl><Input placeholder="e.g. Daily Wage Laborer" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                </div>
+                                <FormField control={control} name="address" render={({ field }) => (<FormItem>{renderLabel('Address', 'address')}<FormControl><Input placeholder="Full Residential Address" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <FormField control={control} name="phone" render={({ field }) => (<FormItem>{renderLabel('Phone Number', 'phone')}<FormControl><Input placeholder="10-digit mobile number" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
-                                <FormField control={control} name="occupation" render={({ field }) => (<FormItem>{renderLabel('Occupation', 'occupation')}<FormControl><Input placeholder="e.g. Daily Wage Laborer" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                            <Separator />
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-bold text-primary tracking-tight">Family Details</h3>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                    <FormField control={control} name="members" render={({ field }) => (<FormItem>{renderLabel('Total Members', 'members')}<FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)} />
+                                    <FormField control={control} name="earningMembers" render={({ field }) => (<FormItem>{renderLabel('Earning Members', 'earningMembers')}<FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)} />
+                                    <FormField control={control} name="male" render={({ field }) => (<FormItem>{renderLabel('Male Members', 'male')}<FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)} />
+                                    <FormField control={control} name="female" render={({ field }) => (<FormItem>{renderLabel('Female Members', 'female')}<FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)} />
+                                </div>
                             </div>
-                            <FormField control={control} name="address" render={({ field }) => (<FormItem>{renderLabel('Address', 'address')}<FormControl><Input placeholder="Full Residential Address" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
-                        </div>
-                        <Separator />
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-bold text-primary tracking-tight">Family Details</h3>
-                            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                <FormField control={control} name="members" render={({ field }) => (<FormItem>{renderLabel('Total Members', 'members')}<FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)} />
-                                <FormField control={control} name="earningMembers" render={({ field }) => (<FormItem>{renderLabel('Earning Members', 'earningMembers')}<FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)} />
-                                <FormField control={control} name="male" render={({ field }) => (<FormItem>{renderLabel('Male Members', 'male')}<FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)} />
-                                <FormField control={control} name="female" render={({ field }) => (<FormItem>{renderLabel('Female Members', 'female')}<FormControl><Input type="number" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)} />
-                            </div>
-                        </div>
-                        <Separator />
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-bold text-primary tracking-tight">Identification & Financials</h3>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <FormField control={control} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('ID Proof Type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
-                                <FormField control={control} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('ID Number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
-                            </div>
-                            <div className="space-y-2">
-                                {!isReadOnly && (
-                                    <FormField control={control} name="idProofFile" render={() => (<FormItem>{renderLabel('ID Proof Document', 'idProofFile')}<FormControl><Input id="beneficiary-id-proof" type="file" accept="image/png, image/jpeg, image/webp, application/pdf" {...register('idProofFile')} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
-                                )}
-                                {preview && (
-                                    <div className="relative group w-full h-48 mt-2 rounded-xl border bg-white shadow-inner overflow-hidden">
-                                        {preview.startsWith('data:application/pdf') || preview.endsWith('.pdf') ? (<div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4 text-center"><FileIcon className="w-12 h-12 mb-2" /><p className="text-sm font-bold">PDF Document Uploaded</p></div>) : (<Image src={preview} alt="Preview" fill sizes="100vw" className="object-contain" />)}
-                                        {!isReadOnly && <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><Button type="button" size="icon" variant="outline" className="text-white border-white hover:bg-white/20" onClick={() => document.getElementById('beneficiary-id-proof')?.click()}><Replace className="h-5 w-5"/></Button><Button type="button" size="icon" variant="destructive" onClick={handleDeleteProof}><Trash2 className="h-5 w-5"/></Button></div>}
-                                    </div>
-                                )}
-                                {idProofFile?.length > 0 && !isReadOnly && (<Button type="button" className="w-full mt-2 font-bold shadow-md transition-transform active:scale-95" onClick={handleScanIdProof} disabled={isScanning || formIsDisabled}>{isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />} Scan & Autofill Details</Button>)}
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <FormField control={control} name="referralBy" render={({ field }) => (<FormItem>{renderLabel('Referred By', 'referralBy')}<FormControl><Input placeholder="e.g. Local Volunteer" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage/></FormItem>)}/>
-                                {!hideKitAmount && (<FormField control={control} name="kitAmount" render={({ field }) => (<FormItem>{renderLabel(kitAmountLabel, 'kitAmount')}<FormControl><Input type="number" placeholder="0.00" {...field} disabled={formIsDisabled} className="bg-muted/30 font-normal" /></FormControl><FormMessage /></FormItem>)}/>)}
-                                <FormField control={control} name="status" render={({ field }) => (
-                                    <FormItem>
-                                        {renderLabel(isMasterForm ? 'Verification Status' : 'Disbursement Status', 'status')}
-                                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={formIsDisabled}>
-                                            <FormControl><SelectTrigger className="font-normal"><SelectValue/></SelectTrigger></FormControl>
-                                            <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                                                <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
-                                                {!isMasterForm && <SelectItem value="Given" className="font-normal">Given (Completed)</SelectItem>}
-                                                <SelectItem value="Verified" className="font-normal text-primary">Verified</SelectItem>
-                                                <SelectItem value="Hold" className="font-normal">Hold</SelectItem>
-                                                <SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <FormMessage/>
-                                    </FormItem>
-                                )}/>
-                            </div>
-                        </div>
-                        {!hideZakatInfo && (
-                            <>
-                                <Separator />
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-bold text-primary tracking-tight">Zakat Information</h3>
-                                    <div className="flex flex-row items-center justify-between rounded-lg border p-3 bg-muted/5">
-                                        <div className="space-y-0.5"><Label htmlFor="isEligibleForZakat" className="text-base font-bold">Eligible For Zakat</Label><p className="text-xs text-muted-foreground font-normal">Can Recipient Receive Zakat Funds?</p></div>
-                                        <FormField control={control} name="isEligibleForZakat" render={({ field }) => (<FormItem><FormControl><Checkbox checked={field.value === true} onCheckedChange={field.onChange} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
-                                    </div>
-                                    {watch('isEligibleForZakat') && !hideZakatAllocation && (
-                                        <div className="animate-fade-in-zoom">
-                                            <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem>{renderLabel('Zakat Allocation (₹)', 'zakatAllocation')}<FormControl><Input type="number" placeholder="Reserved From Zakat" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl><FormDescription className="font-normal text-[10px] opacity-70 italic tracking-tighter">Amount Disbursed From Zakat Collections.</FormDescription></FormItem>)}/>
+                            <Separator />
+                            <div className="space-y-4">
+                                <h3 className="text-lg font-bold text-primary tracking-tight">Identification & Financials</h3>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <FormField control={control} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('ID Proof Type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                    <FormField control={control} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('ID Number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                </div>
+                                <div className="space-y-2">
+                                    {!isReadOnly && (
+                                        <FormField control={control} name="idProofFile" render={() => (<FormItem>{renderLabel('ID Proof Document', 'idProofFile')}<FormControl><Input id="beneficiary-id-proof" type="file" accept="image/png, image/jpeg, image/webp, application/pdf" {...register('idProofFile')} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                    )}
+                                    {preview && (
+                                        <div className="relative group w-full h-48 mt-2 rounded-xl border bg-white shadow-inner overflow-hidden">
+                                            {preview.startsWith('data:application/pdf') || preview.endsWith('.pdf') ? (<div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4 text-center"><FileIcon className="w-12 h-12 mb-2" /><p className="text-sm font-bold">PDF Document Uploaded</p></div>) : (<Image src={preview} alt="Preview" fill sizes="100vw" className="object-contain" />)}
+                                            {!isReadOnly && <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity"><Button type="button" size="icon" variant="outline" className="text-white border-white hover:bg-white/20" onClick={() => document.getElementById('beneficiary-id-proof')?.click()}><Replace className="h-5 w-5"/></Button><Button type="button" size="icon" variant="destructive" onClick={handleDeleteProof}><Trash2 className="h-5 w-5"/></Button></div>}
                                         </div>
                                     )}
+                                    {idProofFile?.length > 0 && !isReadOnly && (<Button type="button" className="w-full mt-2 font-bold shadow-md transition-transform active:scale-95" onClick={handleScanIdProof} disabled={isScanning || formIsDisabled}>{isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />} Scan & Autofill Details</Button>)}
                                 </div>
-                            </>
-                        )}
-                        <Separator />
-                        <div className="space-y-4 pb-10">
-                            <h3 className="text-lg font-bold text-primary tracking-tight">Institutional Notes</h3>
-                            <FormField control={control} name="notes" render={({ field }) => (<FormItem>{renderLabel('Internal Notes', 'notes')}<FormControl><Textarea placeholder="Vetting Details, Background Checks, Etc." {...field} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <FormField control={control} name="referralBy" render={({ field }) => (<FormItem>{renderLabel('Referred By', 'referralBy')}<FormControl><Input placeholder="e.g. Local Volunteer" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage/></FormItem>)}/>
+                                    {!hideKitAmount && (<FormField control={control} name="kitAmount" render={({ field }) => (<FormItem>{renderLabel(kitAmountLabel, 'kitAmount')}<FormControl><Input type="number" placeholder="0.00" {...field} disabled={formIsDisabled} className="bg-muted/30 font-normal" /></FormControl><FormMessage /></FormItem>)}/>)}
+                                    <FormField control={control} name="status" render={({ field }) => (
+                                        <FormItem>
+                                            {renderLabel(isMasterForm ? 'Verification Status' : 'Disbursement Status', 'status')}
+                                            <Select onValueChange={field.onChange} defaultValue={field.value} disabled={formIsDisabled}>
+                                                <FormControl><SelectTrigger className="font-normal"><SelectValue/></SelectTrigger></FormControl>
+                                                <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                                                    <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
+                                                    {!isMasterForm && <SelectItem value="Given" className="font-normal">Given (Completed)</SelectItem>}
+                                                    <SelectItem value="Verified" className="font-normal text-primary">Verified</SelectItem>
+                                                    <SelectItem value="Hold" className="font-normal">Hold</SelectItem>
+                                                    <SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage/>
+                                        </FormItem>
+                                    )}/>
+                                </div>
+                            </div>
+                            {!hideZakatInfo && (
+                                <>
+                                    <Separator />
+                                    <div className="space-y-4">
+                                        <h3 className="text-lg font-bold text-primary tracking-tight">Zakat Information</h3>
+                                        <div className="flex flex-row items-center justify-between rounded-lg border p-3 bg-muted/5">
+                                            <div className="space-y-0.5"><Label htmlFor="isEligibleForZakat" className="text-base font-bold">Eligible For Zakat</Label><p className="text-xs text-muted-foreground font-normal">Can Recipient Receive Zakat Funds?</p></div>
+                                            <FormField control={control} name="isEligibleForZakat" render={({ field }) => (<FormItem><FormControl><Checkbox checked={field.value === true} onCheckedChange={(val) => field.onChange(val === true)} disabled={formIsDisabled} /></FormControl></FormItem>)}/>
+                                        </div>
+                                        {watch('isEligibleForZakat') && !hideZakatAllocation && (
+                                            <div className="animate-fade-in-zoom">
+                                                <FormField control={control} name="zakatAllocation" render={({ field }) => (<FormItem>{renderLabel('Zakat Allocation (₹)', 'zakatAllocation')}<FormControl><Input type="number" placeholder="Reserved From Zakat" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl><FormDescription className="font-normal text-[10px] opacity-70 italic tracking-tighter">Amount Disbursed From Zakat Collections.</FormDescription></FormItem>)}/>
+                                            </div>
+                                        )}
+                                    </div>
+                                </>
+                            )}
+                            <Separator />
+                            <div className="space-y-4 pb-10">
+                                <h3 className="text-lg font-bold text-primary tracking-tight">Institutional Notes</h3>
+                                <FormField control={control} name="notes" render={({ field }) => (<FormItem>{renderLabel('Internal Notes', 'notes')}<FormControl><Textarea placeholder="Vetting Details, Background Checks, Etc." {...field} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                            </div>
                         </div>
-                    </div>
-                    <ScrollBar orientation="vertical" />
-                </ScrollArea>
+                        <ScrollBar orientation="vertical" />
+                    </ScrollArea>
+                </div>
                 {!isReadOnly && (
                     <div className="flex justify-end gap-2 pt-6 border-t mt-auto bg-background/80 backdrop-blur-sm p-4 z-50 shrink-0">
                         <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Discard</Button>

@@ -172,7 +172,7 @@ export default function DonationsPage() {
   const { data: allCampaigns } = useCollection<Campaign>(allCampaignsCollectionRef);
 
   const allLeadsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'leads') : null), [firestore]);
-  const { data: allLeads } = useCollection<Lead>(leadsCollectionRef);
+  const { data: allLeads } = useCollection<Lead>(allLeadsCollectionRef);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);

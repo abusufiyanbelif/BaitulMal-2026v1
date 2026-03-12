@@ -94,7 +94,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
 import { DonationImportDialog } from '@/components/donation-import-dialog';
 
-type SortKey = keyof Donation | 'srNo';
+type SortKey = keyof UserProfile | 'srNo';
 
 const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1100px]";
 
@@ -566,7 +566,7 @@ export default function DonationsPage() {
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
             <StatCard title="Total Count" count={stats.total} description="All Records Logged" icon={Users} delay="100ms" />
             <StatCard title="Verified Sum" count={stats.totalAmount.toLocaleString('en-IN')} description="Confirmed Funds" icon={CheckCircle2} delay="150ms" isCurrency />
-            <StatCard title="Pending Sum" count={stats.pendingAmount.toLocaleString('en-IN')} description="Awaiting Vetting" icon={Hourglass} delay="200ms" isCurrency />
+            <StatCard title="Pending Sum" count={stats.pendingAmount.toLocaleString('en-IN')} description="Awaiting Vetting" icon={Hourglass} delay="150ms" isCurrency />
             <StatCard title="Online Pay" count={stats.online} description="Digital Transfers" icon={Smartphone} delay="250ms" />
             <StatCard title="Cash" count={stats.cash} description="Physical Collections" icon={Wallet} delay="300ms" />
             <StatCard title="Canceled" count={stats.canceled} description="Voided Records" icon={XCircle} delay="350ms" colorClass="bg-red-50/50" />
