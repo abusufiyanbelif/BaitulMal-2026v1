@@ -518,7 +518,7 @@ export default function DonationsPage() {
   };
 
   const isLoading = areDonationsLoading || isProfileLoading;
-
+  
   if (isLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Institutional Logs." />;
 
   return (
@@ -537,9 +537,8 @@ export default function DonationsPage() {
                 <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
                     <UploadCloud className="mr-2 h-4 w-4" /> Import Data
                 </Button>
-                <Button variant="secondary" onClick={handleSync} disabled={isSyncing} className="font-bold text-[10px] border-primary/10 text-primary active:scale-95 transition-transform">
-                  {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>}
-                  Refresh Sync
+                <Button variant="secondary" onClick={handleSort.bind(null, 'donationDate')} disabled={areDonationsLoading} className="font-bold text-[10px] border-primary/10 text-primary active:scale-95 transition-transform">
+                  <DatabaseZap className="mr-2 h-4 w-4"/> Refresh Sync
                 </Button>
                 <Button onClick={handleAdd} className="bg-primary hover:bg-primary/90 text-white font-bold text-xs active:scale-95 transition-transform shadow-md rounded-[12px]">
                   <PlusCircle className="mr-2 h-4 w-4" /> Add Record
