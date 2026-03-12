@@ -43,6 +43,7 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { BrandedLoader } from '@/components/branded-loader';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
 import type { ResourceCategory, ExternalResource, GuidanceData } from '@/lib/types';
 
 export default function GuidanceSettingsPage() {
@@ -283,7 +284,7 @@ export default function GuidanceSettingsPage() {
                                                                 <Checkbox 
                                                                     id={`hide-res-${res.id}`} 
                                                                     checked={res.isHidden} 
-                                                                    onCheckedChange={(val) => updateResource(cat.id, res.id, 'isHidden', !!val)} 
+                                                                    onCheckedChange={(val: boolean | 'indeterminate') => updateResource(cat.id, res.id, 'isHidden', val === true)} 
                                                                 />
                                                                 <Label htmlFor={`hide-res-${res.id}`} className="text-[10px] font-bold opacity-60">Hide</Label>
                                                             </div>

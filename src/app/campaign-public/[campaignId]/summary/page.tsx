@@ -276,7 +276,7 @@ export default function PublicCampaignSummaryPage() {
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
              <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform font-bold border-primary/20 text-primary"><Link href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button></div>
             
-            <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center cursor-pointer" onClick={() => lead.imageUrl && handleViewImage(lead.imageUrl, lead.name)}>
+            <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center cursor-pointer" onClick={() => campaign.imageUrl && handleViewImage(campaign.imageUrl, campaign.name)}>
                 {campaign.imageUrl ? (
                     <Image 
                         src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`} 
@@ -304,7 +304,7 @@ export default function PublicCampaignSummaryPage() {
                             <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed">{campaign.description || 'No description provided.'}</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 text-primary">
-                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Fundraising Goal</p><p className="mt-1 text-lg font-bold text-primary font-mono">₹{(fundingData.targetAmount ?? 0).toLocaleString('en-IN')}</p></div>
+                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Fundraising Goal</p><p className="mt-1 text-lg font-bold text-primary font-mono">₹{(fundingData?.targetAmount ?? 0).toLocaleString('en-IN')}</p></div>
                             <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Category</p><p className="mt-1 text-lg font-bold text-primary">{campaign.category}</p></div>
                              <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Start Date</p><p className="mt-1 text-lg font-bold text-primary">{campaign.startDate}</p></div>
                             <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">End Date</p><p className="mt-1 text-lg font-bold text-primary">{campaign.endDate}</p></div>
@@ -334,14 +334,14 @@ export default function PublicCampaignSummaryPage() {
                                             <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold tracking-tight">Funded</span></div>
                                         </div>
                                         <div className="space-y-4 text-center md:text-left text-primary font-bold">
-                                            <div><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Raised For Goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Raised For Goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData?.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
                                             <div>
                                                 <p className="text-[10px] font-bold text-muted-foreground tracking-tight">
                                                     {calculatedRequirementTotal > 0 ? "Target Goal (Synced)" : "Target Goal"}
                                                 </p>
-                                                <p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p>
+                                                <p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData?.targetAmount || 0).toLocaleString('en-IN')}</p>
                                             </div>
-                                            <div><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Grand Total Received</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Grand Total Received</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData?.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -444,11 +444,11 @@ export default function PublicCampaignSummaryPage() {
                                                 {donationCategories.map(cat => (
                                                     <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
                                                         <span className="text-muted-foreground font-normal whitespace-nowrap">{cat === 'Interest' ? 'Interest (For Disposal)' : cat === 'Loan' ? 'Loan (Qard-e-Hasana)' : cat}</span>
-                                                        <span className="font-mono">₹{(fundingData.amountsByCategory[cat] || 0).toLocaleString('en-IN')}</span>
+                                                        <span className="font-mono">₹{(fundingData?.amountsByCategory[cat] || 0).toLocaleString('en-IN')}</span>
                                                     </div>
                                                 ))}
                                                 <Separator className="bg-primary/10 my-2" />
-                                                <div className="flex justify-between items-center text-lg font-bold text-primary px-2"><span>Grand Total Received</span><span className="font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</span></div>
+                                                <div className="flex justify-between items-center text-lg font-bold text-primary px-2"><span>Grand Total Received</span><span className="font-mono">₹{(fundingData?.grandTotal || 0).toLocaleString('en-IN')}</span></div>
                                             </div>
                                             <ScrollBar orientation="horizontal" className="hidden" />
                                         </ScrollArea>
@@ -462,15 +462,15 @@ export default function PublicCampaignSummaryPage() {
                                     <CardContent className="space-y-3 pt-6 font-bold text-primary">
                                         <ScrollArea className="w-full">
                                             <div className="space-y-3">
-                                                <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData.amountsByCategory.Zakat || 0).toLocaleString('en-IN')}</span></div>
+                                                <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData?.amountsByCategory.Zakat || 0).toLocaleString('en-IN')}</span></div>
                                                 <Separator className="bg-primary/10" />
                                                 <div className="pl-4 border-l-2 border-dashed border-primary/20 space-y-2 py-2">
-                                                    <div className="flex justify-between items-center text-sm transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Allocated As Cash-In-Hand</span><span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span></div>
-                                                    <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Given</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span></div>
-                                                    <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Pending</span><span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span></div>
+                                                    <div className="flex justify-between items-center text-sm transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Allocated As Cash-In-Hand</span><span className="font-bold font-mono">₹{fundingData?.zakatAllocated.toLocaleString('en-IN')}</span></div>
+                                                    <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Given</span><span className="font-mono text-primary font-bold">₹{fundingData?.zakatGiven.toLocaleString('en-IN')}</span></div>
+                                                    <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Pending</span><span className="font-mono text-primary font-bold">₹{fundingData?.zakatPending.toLocaleString('en-IN')}</span></div>
                                                 </div>
                                                 <Separator className="bg-primary/10" />
-                                                <div className="flex justify-between items-center text-base text-primary font-bold transition-all hover:bg-primary/5 px-2 rounded"><span className="whitespace-nowrap">Zakat Balance For Goal</span><span className="text-primary font-mono font-bold">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
+                                                <div className="flex justify-between items-center text-base text-primary font-bold transition-all hover:bg-primary/5 px-2 rounded"><span className="whitespace-nowrap">Zakat Balance For Goal</span><span className="text-primary font-mono font-bold">₹{fundingData?.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
                                             </div>
                                             <ScrollBar orientation="horizontal" className="hidden" />
                                         </ScrollArea>
