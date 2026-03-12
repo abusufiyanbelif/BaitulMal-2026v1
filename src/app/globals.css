@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -79,7 +78,7 @@
   }
 }
 
-/* High-Contrast Institutional Scrollbars - Ultra High Visibility #11401d */
+/* Thicker Institutional Scrollbars - High Visibility #11401d */
 ::-webkit-scrollbar {
   width: 14px;
   height: 14px;
