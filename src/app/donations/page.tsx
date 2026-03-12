@@ -94,7 +94,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
 import { DonationImportDialog } from '@/components/donation-import-dialog';
 
-type SortKey = keyof UserProfile | 'srNo';
+type SortKey = keyof Donation | 'srNo';
 
 const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1100px]";
 
@@ -117,7 +117,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
     );
 }
 
-function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: { key: any; direction: 'ascending' | 'descending' } | null, handleSort: (key: any) => void }) {
+function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
         <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))] tracking-tight uppercase", className)} onClick={() => handleSort(sortKey)}>
@@ -255,7 +255,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                         <TableHeader className="bg-primary/5">
                                             <TableRow>
                                                 <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Amount</TableHead>
-                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Ref. ID</TableHead>
+                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Ref. Id</TableHead>
                                                 <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Date</TableHead>
                                                 <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight pr-6">Evidence</TableHead>
                                             </TableRow>
@@ -299,7 +299,7 @@ export default function DonationsPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [sortConfig, setSortConfig] = useState<{ key: any; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
+  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(15);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -608,7 +608,7 @@ export default function DonationsPage() {
             <CardHeader className="bg-primary/5 border-b">
                 <ScrollArea className="w-full">
                     <div className="flex flex-nowrap gap-2 pb-2">
-                        <Input placeholder="Search Donor, Phone, ID..." value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-[300px] h-9 text-xs border-primary/10 focus-visible:ring-primary text-primary font-normal bg-primary/[0.02] rounded-[10px] shrink-0"/>
+                        <Input placeholder="Search Donor, Phone, Id..." value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-[300px] h-9 text-xs border-primary/10 focus-visible:ring-primary text-primary font-normal bg-primary/[0.02] rounded-[10px] shrink-0"/>
                         <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
                             <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-primary/[0.02] font-normal shrink-0"><SelectValue placeholder="All Statuses"/></SelectTrigger>
                             <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">

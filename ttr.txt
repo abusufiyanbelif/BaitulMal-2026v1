@@ -1,3 +1,2 @@
-src/app/donations/page.tsx(97,22): error TS2304: Cannot find name 'UserProfile'.
 src/components/donation-form.tsx(473,39): error TS2322: Type 'boolean | null | undefined' is not assignable to type 'boolean | undefined'.
   Type 'null' is not assignable to type 'boolean | undefined'.
