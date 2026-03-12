@@ -84,7 +84,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/command";
+} from "@/components/ui/command";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { BeneficiarySearchDialog } from '@/components/beneficiary-search-dialog';
@@ -746,7 +746,7 @@ export default function BeneficiariesPage() {
                                                             <p className="text-sm font-normal">T: {b.members || 0}, E: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">ID Artifact</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Id Artifact</p>
                                                             <p className="text-sm font-normal">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">

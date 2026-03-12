@@ -6,7 +6,7 @@ import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useD
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { collection, doc, serverTimestamp, setDoc, DocumentReference, updateDoc, deleteField } from 'firebase/firestore';
+import { collection, doc, serverTimestamp, setDoc, updateDoc, type DocumentReference, deleteField } from 'firebase/firestore';
 import type { Donation, Campaign, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';

@@ -746,7 +746,7 @@ export default function BeneficiariesPage() {
                                                             <p className="text-sm font-normal">T: {b.members || 0}, E: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">ID Artifact</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Id Artifact</p>
                                                             <p className="text-sm font-normal">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
@@ -777,7 +777,7 @@ export default function BeneficiariesPage() {
         </Card>
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <DialogContent className="max-w-2xl h-full max-h-[90vh] overflow-hidden rounded-[16px] border-primary/10 p-0 flex flex-col">
+            <DialogContent className="max-w-2xl h-[90vh] overflow-hidden rounded-[16px] border-primary/10 p-0 flex flex-col">
                 <DialogHeader className="px-6 py-4 bg-primary/5 border-b border-primary/10 shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight">Modify Beneficiary Profile</DialogTitle></DialogHeader>
                 <div className="flex-1 min-h-0 flex flex-col relative overflow-hidden">
                     <BeneficiaryForm 

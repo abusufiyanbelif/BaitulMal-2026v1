@@ -289,12 +289,12 @@ export function BeneficiaryForm({
                             <div className="space-y-4">
                                 <h3 className="text-lg font-bold text-primary tracking-tight">Identification & Financials</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <FormField control={control} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('ID Proof Type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
-                                    <FormField control={control} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('ID Number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                    <FormField control={control} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('Id Proof Type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                    <FormField control={control} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('Id Number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                                 </div>
                                 <div className="space-y-2">
                                     {!isReadOnly && (
-                                        <FormField control={control} name="idProofFile" render={() => (<FormItem>{renderLabel('ID Proof Document', 'idProofFile')}<FormControl><Input id="beneficiary-id-proof" type="file" accept="image/png, image/jpeg, image/webp, application/pdf" {...register('idProofFile')} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                        <FormField control={control} name="idProofFile" render={() => (<FormItem>{renderLabel('Id Proof Document', 'idProofFile')}<FormControl><Input id="beneficiary-id-proof" type="file" accept="image/png, image/jpeg, image/webp, application/pdf" {...register('idProofFile')} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                                     )}
                                     {preview && (
                                         <div className="relative group w-full h-48 mt-2 rounded-xl border bg-white shadow-inner overflow-hidden">
