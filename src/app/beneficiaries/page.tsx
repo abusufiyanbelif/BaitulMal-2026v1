@@ -80,7 +80,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay }: 
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">{count}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">
@@ -95,7 +95,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay }: 
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: any, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))] tracking-widest uppercase", className)} onClick={() => handleSort(sortKey)}>
+        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))] tracking-tight", className)} onClick={() => handleSort(sortKey)}>
             {children}
             <div className="flex flex-col opacity-40">
                 <ArrowUp className={cn("h-2.5 w-2.5 -mb-1", isSorted && sortConfig.direction === 'ascending' && "text-primary opacity-100")} />
@@ -481,7 +481,7 @@ export default function BeneficiariesPage() {
       <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
         <ScrollArea className="w-full">
             <div className="max-h-[70vh]">
-                <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold tracking-tight text-[hsl(var(--table-header-fg))] uppercase", gridClass)}>
+                <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold tracking-tight text-[hsl(var(--table-header-fg))]", gridClass)}>
                     <div className="flex justify-center">
                         <Checkbox 
                             checked={paginatedBeneficiaries.length > 0 && selectedIds.length === paginatedBeneficiaries.length}
@@ -494,10 +494,10 @@ export default function BeneficiariesPage() {
                     <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name</SortableHeader>
                     <SortableHeader sortKey="phone" sortConfig={sortConfig} handleSort={handleSort}>Phone</SortableHeader>
                     <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Verification Status</SortableHeader>
-                    <div className="text-center font-bold tracking-tight text-[10px] uppercase">Disbursement</div>
+                    <div className="text-center font-bold tracking-tight text-[10px]">Disbursement Status</div>
                     <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Zakat</SortableHeader>
                     <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">Referred By</SortableHeader>
-                    <div className="text-right pr-4 uppercase text-[10px]">Actions</div>
+                    <div className="text-right pr-4">Actions</div>
                 </div>
 
                 <Accordion type="single" collapsible className="w-full">

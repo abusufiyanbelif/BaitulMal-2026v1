@@ -86,7 +86,7 @@ import {
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from "@/components/ui/select";
+} from "@/ui/select";
 import { cn, getNestedValue } from '@/lib/utils';
 import { syncDonationsAction, deleteDonationAction, bulkUpdateDonationStatusAction, bulkImportDonationsAction } from './actions';
 import { BrandedLoader } from '@/components/branded-loader';
@@ -674,13 +674,13 @@ export default function DonationsPage() {
         </Card>
 
         <Dialog open={isFormOpen} onOpenChange={(open) => { setIsFormOpen(open); if(!open) setEditingDonation(null); }}>
-            <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
+            <DialogContent className="max-w-2xl h-full max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
                 <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0">
                     <DialogTitle className="text-xl font-bold text-primary tracking-tight">
                         {editingDonation ? 'Modify Donation Profile' : 'Donation Details To Be Add'}
                     </DialogTitle>
                 </DialogHeader>
-                <div className="flex-1 overflow-hidden relative">
+                <div className="flex-1 min-h-0 flex flex-col relative overflow-hidden">
                     <DonationForm 
                         donation={editingDonation} 
                         onSubmit={handleFormSubmit} 

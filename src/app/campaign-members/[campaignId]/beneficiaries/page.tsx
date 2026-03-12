@@ -582,7 +582,7 @@ export default function BeneficiariesPage() {
 
         <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-none transition-all">
             <ScrollArea className="w-full">
-                <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold text-[hsl(var(--table-header-fg))] tracking-tight uppercase", gridClass)}>
+                <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold text-[hsl(var(--table-header-fg))] tracking-tight", gridClass)}>
                     <div className="flex justify-center">
                         <Checkbox 
                             checked={!!(beneficiaries && beneficiaries.length > 0 && selectedIds.length === beneficiaries.length)}
@@ -776,9 +776,9 @@ export default function BeneficiariesPage() {
         </Card>
 
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-hidden rounded-[16px] border-primary/10 p-0 flex flex-col">
-                <DialogHeader className="px-6 py-4 bg-primary/5 border-b border-primary/10 shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase">Modify Beneficiary Profile</DialogTitle></DialogHeader>
-                <div className="flex-1 overflow-hidden relative">
+            <DialogContent className="max-w-2xl h-full max-h-[90vh] overflow-hidden rounded-[16px] border-primary/10 p-0 flex flex-col">
+                <DialogHeader className="px-6 py-4 bg-primary/5 border-b border-primary/10 shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight">Modify Beneficiary Profile</DialogTitle></DialogHeader>
+                <div className="flex-1 min-h-0 flex flex-col relative overflow-hidden">
                     <BeneficiaryForm 
                         beneficiary={editingBeneficiary}
                         onSubmit={handleFormSubmit} 
