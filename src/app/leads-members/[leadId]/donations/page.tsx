@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -102,7 +103,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -528,7 +529,7 @@ export default function DonationsPage() {
         </Card>
 
         <Dialog open={isFormOpen} onOpenChange={(open) => { setIsFormOpen(open); if(!open) setEditingDonation(null); }}>
-            <DialogContent className="max-w-2xl max-h-[95vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
+            <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
                 <DialogHeader className="p-6 bg-primary/5 border-b shrink-0">
                     <DialogTitle className="text-xl font-bold text-primary tracking-tight">
                         {editingDonation ? 'Modify Donation Profile' : 'Donation Details To Be Add'}

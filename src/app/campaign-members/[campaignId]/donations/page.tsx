@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -625,7 +626,7 @@ export default function DonationsPage() {
         </Card>
       
       <Dialog open={isFormOpen} onOpenChange={(open) => { setIsFormOpen(open); if(!open) setEditingDonation(null); }}>
-        <DialogContent className="max-w-2xl max-h-[95vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
+        <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
             <DialogHeader className="border-b bg-primary/5 p-6 shrink-0">
                 <DialogTitle className="text-xl font-bold tracking-tight text-primary">
                     {editingDonation ? 'Modify Donation Profile' : 'Donation Details To Be Add'}

@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -680,7 +681,7 @@ export default function DonationsPage() {
                         {editingDonation ? 'Modify Donation Profile' : 'Donation Details To Be Add'}
                     </DialogTitle>
                 </DialogHeader>
-                <div className="flex-1 min-h-0 flex flex-col relative overflow-hidden">
+                <div className="flex-1 min-h-0 relative overflow-hidden">
                     <DonationForm 
                         donation={editingDonation} 
                         onSubmit={handleFormSubmit} 
