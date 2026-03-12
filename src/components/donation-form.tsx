@@ -155,7 +155,7 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
         <div className="space-y-4 rounded-xl border border-primary/10 bg-primary/[0.02] p-4 relative shadow-sm">
             {!isReadOnly && (
                 <Button type="button" variant="ghost" size="icon" className="absolute top-1 right-1 h-7 w-7 text-destructive hover:bg-destructive/10" onClick={() => remove(index)} disabled={!canRemove}>
-                    <Trash2 className="h-4 w-4"/>
+                    <Trash2 className="h-4 w-4" />
                 </Button>
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

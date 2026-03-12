@@ -2,7 +2,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // Force a fresh build to resolve bundle sync errors (ChunkLoadError).
-  // Build Timestamp: 2026-03-12-23-00
+  // Build Timestamp: 2026-03-12-23-10
   reactStrictMode: true,
   allowedDevOrigins: [
     "https://*.cloudworkstations.dev",
