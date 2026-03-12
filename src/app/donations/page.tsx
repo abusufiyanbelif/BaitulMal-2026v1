@@ -174,7 +174,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
-                            <DropdownMenuItem onClick={() => router.push(`/donations/${donation.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4 opacity-60"/> Details</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.push(`/donations/${donation.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4 opacity-60"/> View Details</DropdownMenuItem>
                             {canUpdate && <DropdownMenuItem onClick={handleEdit} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Record</DropdownMenuItem>}
                             {canDelete && (
                                 <>
@@ -708,7 +708,9 @@ export default function DonationsPage() {
 
         <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
             <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 rounded-[12px] border-primary/10 overflow-hidden">
-                <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="text-xl font-bold text-primary tracking-tight">Evidence Artifact Viewer</DialogTitle></DialogHeader>
+                <DialogHeader className="px-6 py-4 bg-primary/5 border-b">
+                    <DialogTitle className="text-xl font-bold text-primary tracking-tight">Evidence Artifact Viewer</DialogTitle>
+                </DialogHeader>
                 <ScrollArea className="flex-1 bg-secondary/20">
                     <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
                         {imageToView && (
