@@ -1,8 +1,2 @@
-src/app/campaign-public/[campaignId]/summary/page.tsx(279,167): error TS2304: Cannot find name 'lead'.
-src/app/campaign-public/[campaignId]/summary/page.tsx(279,200): error TS2304: Cannot find name 'lead'.
-src/app/campaign-public/[campaignId]/summary/page.tsx(279,215): error TS2304: Cannot find name 'lead'.
-src/app/campaign-public/[campaignId]/summary/page.tsx(307,214): error TS18047: 'fundingData' is possibly 'null'.
-src/app/settings/guidance/page.tsx(283,66): error TS2304: Cannot find name 'Checkbox'.
-src/app/settings/guidance/page.tsx(286,87): error TS7006: Parameter 'val' implicitly has an 'any' type.
 src/components/donation-form.tsx(472,39): error TS2322: Type 'boolean | null | undefined' is not assignable to type 'boolean | undefined'.
   Type 'null' is not assignable to type 'boolean | undefined'.
