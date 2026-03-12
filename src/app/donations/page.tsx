@@ -288,7 +288,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
     )
 }
 
-export function DonationsPage() {
+export default function DonationsPage() {
   const router = useRouter();
   const pathname = usePathname();
   const firestore = useFirestore();
