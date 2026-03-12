@@ -78,30 +78,32 @@
   }
 }
 
-/* Enhanced High-Visibility Scrollbars - Dark Institutional Tones */
+/* High-Visibility Institutional Scrollbars */
 ::-webkit-scrollbar {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(var(--background));
+  background: hsl(var(--primary) / 0.05);
+  border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--primary) / 0.8);
+  background: #166534; /* Very Dark Institutional Green */
   border-radius: 10px;
-  border: 3px solid hsl(var(--background));
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary));
+  background: #14532d;
 }
 
 /* Firefox Support */
 * {
-  scrollbar-width: auto;
-  scrollbar-color: hsl(var(--primary) / 0.8) transparent;
+  scrollbar-width: thin;
+  scrollbar-color: #166534 hsl(var(--primary) / 0.05);
 }
 
 .animate-fade-in-up { animation: fade-in-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
