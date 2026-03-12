@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -729,4 +728,162 @@ export default function DonationsPage() {
         </Dialog>
     </main>
   );
+}
+
+function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handleDeleteClick, handleViewImage }: { donation: Donation, index: number, isSelected: boolean, onToggle: () => void, handleEdit: () => void, handleDeleteClick: () => void, handleViewImage: (url: string) => void }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const router = useRouter();
+    const { userProfile } = useSession();
+    const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations.update', false);
+    const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations.delete', false);
+
+    const primaryInitiative = donation.linkSplit?.[0]?.linkName || (donation as any).campaignName || 'Unlinked';
+
+    return (
+        <>
+            <div onClick={() => setIsOpen(!isOpen)} className={cn("cursor-pointer bg-white hover:bg-[hsl(var(--table-row-hover))] group transition-colors border-b border-primary/10", donationGridClass)}>
+                <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox 
+                        checked={isSelected}
+                        onCheckedChange={onToggle}
+                        className="border-primary/40 data-[state=checked]:bg-primary"
+                    />
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" disabled={!donation.transactions || donation.transactions.length === 0}>
+                        {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                    </Button>
+                    <span className="font-mono text-xs opacity-60">{index}</span>
+                </div>
+                <div className="min-w-0">
+                    <div className="font-bold text-sm text-primary truncate">{donation.donorName}</div>
+                    <div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone || 'N/A'}</div>
+                </div>
+                <div className="text-right font-bold font-mono text-primary text-sm">₹{donation.amount.toFixed(2)}</div>
+                <div className="whitespace-nowrap text-xs font-normal text-primary/80 text-center">{donation.donationDate}</div>
+                <div className="text-center"><Badge variant="secondary" className="text-[9px] font-bold">{donation.donationType}</Badge></div>
+                <div className="text-center">
+                    <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'active'} className="text-[9px] font-bold">
+                        {donation.status}
+                    </Badge>
+                </div>
+                <div className="truncate text-[10px] font-normal text-muted-foreground">{primaryInitiative}</div>
+                <div className="text-right pr-4" onClick={e => e.stopPropagation()}>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
+                            <DropdownMenuItem onClick={() => router.push(`/donations/${donation.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4 opacity-60"/> Details</DropdownMenuItem>
+                            {canUpdate && <DropdownMenuItem onClick={handleEdit} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Record</DropdownMenuItem>}
+                            {canDelete && (
+                                <>
+                                    <DropdownMenuSeparator className="bg-primary/10" />
+                                    <DropdownMenuItem onClick={handleDeleteClick} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal">
+                                        <Trash2 className="mr-2 h-4 w-4"/> Delete Permanently
+                                    </DropdownMenuItem>
+                                </>
+                            )}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </div>
+            {isOpen && (
+                <div className="bg-primary/[0.02] border-b border-primary/10 p-4 animate-fade-in-up">
+                    <div className="space-y-6 max-w-5xl mx-auto">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div className="space-y-3">
+                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight uppercase"><IndianRupee className="h-3 w-3"/> Category Breakdown</h4>
+                                <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
+                                    <ScrollArea className="w-full">
+                                        <Table>
+                                            <TableHeader className="bg-primary/5">
+                                                <TableRow>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Category</TableHead>
+                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Value</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {(donation.typeSplit || []).map(split => (
+                                                    <TableRow key={split.category} className="h-8 hover:bg-[hsl(var(--table-row-hover))]">
+                                                        <TableCell className="py-1 text-[11px] font-normal text-primary/80 whitespace-nowrap">{split.category}</TableCell>
+                                                        <TableCell className="text-right font-bold font-mono text-primary py-1 text-[11px]">₹{split.amount.toFixed(2)}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                        <ScrollBar orientation="horizontal" />
+                                    </ScrollArea>
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight uppercase"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
+                                <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
+                                    <ScrollArea className="w-full">
+                                        <Table>
+                                            <TableHeader className="bg-primary/5">
+                                                <TableRow>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Target Initiative</TableHead>
+                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Allocated Sum</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {(donation.linkSplit || []).map(link => (
+                                                    <TableRow key={link.linkId} className="h-8 hover:bg-[hsl(var(--table-row-hover))]">
+                                                        <TableCell className="flex items-center gap-2 py-1">
+                                                            {link.linkType === 'campaign' ? <FolderKanban className="h-3.5 w-3.5 text-primary/40" /> : <Lightbulb className="h-3.5 w-3.5 text-primary/40" />}
+                                                            <span className="text-[10px] font-bold text-primary/80 whitespace-nowrap">{link.linkName}</span>
+                                                        </TableCell>
+                                                        <TableCell className="text-right font-bold font-mono text-primary py-1 text-[11px]">₹{link.amount.toFixed(2)}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                                {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
+                                                    <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated / General Institutional Fund</TableCell></TableRow>
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                        <ScrollBar orientation="horizontal" />
+                                    </ScrollArea>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="space-y-3">
+                            <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight uppercase"><ImageIcon className="h-3 w-3"/> Transaction Documents</h4>
+                            <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
+                                <ScrollArea className="w-full">
+                                    <Table>
+                                        <TableHeader className="bg-primary/5">
+                                            <TableRow>
+                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Amount</TableHead>
+                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Ref. Id</TableHead>
+                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Date</TableHead>
+                                                <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight pr-6">Evidence</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {(donation.transactions || []).map((tx) => (
+                                                <TableRow key={tx.id} className="hover:bg-[hsl(var(--table-row-hover))]">
+                                                    <TableCell className="font-bold font-mono text-primary text-[11px] py-2">₹{tx.amount.toFixed(2)}</TableCell>
+                                                    <TableCell className="font-mono text-[10px] py-2 text-primary/80 whitespace-nowrap">{tx.transactionId || 'N/A'}</TableCell>
+                                                    <TableCell className="text-[10px] font-normal text-muted-foreground py-2 whitespace-nowrap">{tx.date || donation.donationDate}</TableCell>
+                                                    <TableCell className="text-right py-2 pr-6">
+                                                        {tx.screenshotUrl ? (
+                                                            <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/5 transition-transform active:scale-95 shadow-sm" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
+                                                                <ImageIcon className="mr-1 h-3 w-3" /> View Evidence
+                                                            </Button>
+                                                        ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40 tracking-tight">No Artifact</span>}
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                    <ScrollBar orientation="horizontal" />
+                                </ScrollArea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    )
 }
