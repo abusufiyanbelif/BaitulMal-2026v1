@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase, useAuth } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, doc, serverTimestamp, setDoc, updateDoc, deleteField } from 'firebase/firestore';
-import type { Donation, Campaign, Lead, UserProfile } from '@/lib/types';
+import type { Donation, Campaign, Lead, UserProfile, DonationLink, TransactionDetail } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import Resizer from 'react-image-file-resizer';

@@ -78,22 +78,22 @@
   }
 }
 
-/* Max-Contrast Institutional Scrollbars - High Visibility #166534 */
+/* High-Contrast Institutional Scrollbars - Solid Green #166534 */
 ::-webkit-scrollbar {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
 }
 
 ::-webkit-scrollbar-track {
-  background: hsl(var(--primary) / 0.05);
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
   background: #166534; 
   border-radius: 10px;
-  border: 3px solid transparent;
-  background-clip: padding-box;
+  border: 2px solid transparent;
+  background-clip: content-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -103,7 +103,7 @@
 /* Firefox Support */
 * {
   scrollbar-width: thin;
-  scrollbar-color: #166534 hsl(var(--primary) / 0.05);
+  scrollbar-color: #166534 rgba(0, 0, 0, 0.05);
 }
 
 .animate-fade-in-up { animation: fade-in-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }

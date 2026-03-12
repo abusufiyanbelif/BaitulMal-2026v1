@@ -738,7 +738,7 @@ export default function BeneficiariesPage() {
                                                             <p className="text-sm font-normal">{b.age || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Occupation</p>
+                                                            <p className="text-[10px) font-bold opacity-60 tracking-tight uppercase">Occupation</p>
                                                             <p className="text-sm font-normal">{b.occupation || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
