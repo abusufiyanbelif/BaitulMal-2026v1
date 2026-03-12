@@ -10,7 +10,7 @@ const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure 
 export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) {
-        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+        return { success: boolean: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     try {
         const docRef = adminDb.collection('beneficiaries').doc();
