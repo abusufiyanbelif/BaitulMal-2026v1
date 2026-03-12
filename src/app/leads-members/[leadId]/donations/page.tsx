@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -103,7 +102,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -120,7 +119,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: { key: string; direction: 'ascending' | 'descending' } | null, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:bg-muted/50 transition-colors font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight flex items-center gap-2", className)} onClick={() => handleSort(sortKey)}>
+        <div className={cn("cursor-pointer hover:bg-muted/50 transition-colors font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight flex items-center gap-2 uppercase", className)} onClick={() => handleSort(sortKey)}>
             {children}
             {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
         </div>

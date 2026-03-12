@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useParams, useRouter, usePathname } from 'next/navigation';
@@ -120,7 +119,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: { key: string; direction: 'ascending' | 'descending' } | null, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:bg-muted/50 text-[hsl(var(--table-header-fg))] font-bold text-[10px] tracking-tight flex items-center gap-2", className)} onClick={() => handleSort(sortKey)}>
+        <div className={cn("cursor-pointer hover:bg-muted/50 text-[hsl(var(--table-header-fg))] font-bold text-[10px] tracking-tight flex items-center gap-2 uppercase", className)} onClick={() => handleSort(sortKey)}>
             {children}
             <div className="flex flex-col opacity-40">
                 <ArrowUp className={cn("h-2.5 w-2.5 -mb-1", isSorted && sortConfig?.direction === 'ascending' && "text-primary opacity-100")} />
@@ -173,7 +172,7 @@ export default function DonationsPage() {
   const { data: allCampaigns } = useCollection<Campaign>(allCampaignsCollectionRef);
 
   const allLeadsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'leads') : null), [firestore]);
-  const { data: allLeads } = useCollection<Lead>(allLeadsCollectionRef);
+  const { data: allLeads } = useCollection<Lead>(leadsCollectionRef);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -534,9 +533,9 @@ export default function DonationsPage() {
                         <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor</SortableHeader>
                         <SortableHeader sortKey="amountForThisCampaign" className="text-right" sortConfig={sortConfig} handleSort={handleSort}>Amount</SortableHeader>
                         <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort}>Date</SortableHeader>
-                        <div className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Method</div>
-                        <div className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Status</div>
-                        <div className="text-right pr-4 font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Actions</div>
+                        <div className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Method</div>
+                        <div className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Status</div>
+                        <div className="text-right pr-4 font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Actions</div>
                     </div>
                     <div className="w-full max-h-[70vh]">
                         {paginatedDonations.map((donation, index) => {
@@ -584,9 +583,9 @@ export default function DonationsPage() {
                                                         <Table>
                                                             <TableHeader className="bg-primary/5">
                                                                 <TableRow>
-                                                                    <TableHead className="text-[9px] font-bold text-primary tracking-tight">Value (₹)</TableHead>
-                                                                    <TableHead className="text-[9px] font-bold text-primary tracking-tight">Reference</TableHead>
-                                                                    <TableHead className="text-right text-[9px] font-bold text-primary tracking-tight pr-6">Proof</TableHead>
+                                                                    <TableHead className="text-[9px] font-bold text-primary tracking-tight uppercase">Value (₹)</TableHead>
+                                                                    <TableHead className="text-[9px] font-bold text-primary tracking-tight uppercase">Reference</TableHead>
+                                                                    <TableHead className="text-right text-[9px] font-bold text-primary tracking-tight pr-6 uppercase">Proof</TableHead>
                                                                 </TableRow>
                                                             </TableHeader>
                                                             <TableBody>
@@ -608,7 +607,7 @@ export default function DonationsPage() {
                                 </React.Fragment>
                             );
                         })}
-                        {paginatedDonations.length === 0 && <div className="text-center py-20 text-muted-foreground italic font-normal bg-primary/[0.02] tracking-widest">No Donation Records Linked.</div>}
+                        {paginatedDonations.length === 0 && <div className="text-center py-20 text-muted-foreground italic font-normal bg-primary/[0.02] tracking-widest uppercase">No Donation Records Linked.</div>}
                     </div>
                     <ScrollBar orientation="horizontal" />
                     <ScrollBar orientation="vertical" />
@@ -652,7 +651,7 @@ export default function DonationsPage() {
       )}
       
       <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
-        <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Unlink From Project?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach This Record From The Current Campaign? The Record Remains Secured In The Master Registry.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive hover:bg-destructive/90 text-white font-bold rounded-[12px] transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink From Project?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach This Record From The Current Campaign? The Record Remains Secured In The Master Registry.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive hover:bg-destructive/90 text-white font-bold rounded-[12px] transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
 
       <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>

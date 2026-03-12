@@ -78,10 +78,10 @@
   }
 }
 
-/* High-Visibility Institutional Scrollbars */
+/* High-Visibility Institutional Scrollbars - Solid Dark Green */
 ::-webkit-scrollbar {
-  width: 12px;
-  height: 12px;
+  width: 14px;
+  height: 14px;
 }
 
 ::-webkit-scrollbar-track {
@@ -92,8 +92,8 @@
 ::-webkit-scrollbar-thumb {
   background: #166534; /* Very Dark Institutional Green */
   border-radius: 10px;
-  border: 2px solid transparent;
-  background-clip: content-box;
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
