@@ -102,7 +102,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -485,7 +485,7 @@ export default function DonationsPage() {
                     <div className="w-full max-h-[70vh]">
                         {paginatedDonations.map((donation, index) => (
                             <div key={donation.id} className={cn("hover:bg-[hsl(var(--table-row-hover))] transition-colors cursor-pointer border-b border-primary/10 bg-white items-center", donationGridClass)} onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)}>
-                                <div className="pl-4 flex justify-center" onClick={(e) => e.stopPropagation()}>
+                                <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                                     <Checkbox 
                                         checked={selectedIds.includes(donation.id)}
                                         onCheckedChange={() => toggleSelect(donation.id)}
@@ -534,7 +534,7 @@ export default function DonationsPage() {
                         {editingDonation ? 'Modify Donation Profile' : 'Donation Details To Be Add'}
                     </DialogTitle>
                 </DialogHeader>
-                <div className="flex-1 overflow-hidden relative">
+                <div className="flex-1 min-h-0 relative overflow-hidden">
                     <DonationForm 
                         donation={editingDonation} 
                         onSubmit={handleFormSubmit} 
