@@ -48,9 +48,10 @@ import { Separator } from '@/components/ui/separator';
 interface UnlinkedDonationResolverProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    initialDonationId?: string | null;
 }
 
-export function UnlinkedDonationResolver({ open, onOpenChange }: UnlinkedDonationResolverProps) {
+export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId }: UnlinkedDonationResolverProps) {
     const firestore = useFirestore();
     const { userProfile } = useSession();
     const { toast } = useToast();
@@ -61,11 +62,25 @@ export function UnlinkedDonationResolver({ open, onOpenChange }: UnlinkedDonatio
     const [isSearching, setIsSearching] = useState(false);
     const [searchResults, setSearchResults] = useState<Donor[]>([]);
 
-    // 1. Fetch unlinked donations
-    const unlinkedQuery = useMemoFirebase(() => 
-        firestore ? query(collection(firestore, 'donations'), where('donorId', '==', null)) : null, 
-    [firestore]);
-    const { data: unlinkedDonations, isLoading: isLoadingDonations } = useCollection<Donation>(unlinkedQuery);
+    // 1. Fetch unlinked donations - now fetching all and filtering in memory to ensure legacy record detection
+    const donationsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
+    const { data: allDonations, isLoading: isLoadingDonations } = useCollection<Donation>(donationsRef);
+
+    const unlinkedDonations = useMemo(() => {
+        if (!allDonations) return [];
+        return allDonations.filter(d => !d.donorId);
+    }, [allDonations]);
+
+    // Handle initial donation pre-selection
+    useEffect(() => {
+        if (open && initialDonationId && unlinkedDonations.length > 0) {
+            const found = unlinkedDonations.find(d => d.id === initialDonationId);
+            if (found) {
+                setSelectedDonation(found);
+                setSearchTerm(found.donorPhone || found.donorName);
+            }
+        }
+    }, [open, initialDonationId, unlinkedDonations]);
 
     // 2. Search for existing donors
     useEffect(() => {
@@ -82,7 +97,10 @@ export function UnlinkedDonationResolver({ open, onOpenChange }: UnlinkedDonatio
                 const term = searchTerm.toLowerCase();
                 snap.forEach(docSnap => {
                     const d = { id: docSnap.id, ...docSnap.data() } as Donor;
-                    if (d.name.toLowerCase().includes(term) || d.phone.includes(searchTerm)) {
+                    const nameMatch = d.name.toLowerCase().includes(term);
+                    const phoneMatch = d.phone.includes(searchTerm);
+                    const upiMatch = d.upiIds?.some(u => u.toLowerCase().includes(term));
+                    if (nameMatch || phoneMatch || upiMatch) {
                         donors.push(d);
                     }
                 });
@@ -101,7 +119,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange }: UnlinkedDonatio
         setIsResolving(selectedDonation.id);
         const res = await linkDonationToDonorAction(selectedDonation.id, donor.id, { id: userProfile.id, name: userProfile.name });
         if (res.success) {
-            toast({ title: 'Identity Mapped', description: `Linked to ${donor.name}.`, variant: 'success' });
+            toast({ title: 'Identity Mapped', description: `Successfully consolidated records for ${donor.name}.`, variant: 'success' });
             setSelectedDonation(null);
         } else {
             toast({ title: 'Mapping Failed', description: res.message, variant: 'destructive' });
@@ -112,17 +130,22 @@ export function UnlinkedDonationResolver({ open, onOpenChange }: UnlinkedDonatio
     const handleCreateNewProfile = async () => {
         if (!selectedDonation || !userProfile) return;
         setIsResolving(selectedDonation.id);
+        
+        // Extract potential identifiers from the donation
+        const donorUpis = selectedDonation.transactions?.map(t => t.upiId).filter(Boolean) as string[];
+
         const res = await createDonorAction({
             name: selectedDonation.donorName,
-            phone: selectedDonation.donorPhone,
+            phone: selectedDonation.donorPhone || '',
+            upiIds: Array.from(new Set(donorUpis)),
             status: 'Active',
-            notes: `Auto-generated during identity resolution hub for donation ${selectedDonation.id}.`
+            notes: `Profile established via Identity Resolution Hub for contribution entry.`
         }, { id: userProfile.id, name: userProfile.name });
 
         if (res.success && res.id) {
             const linkRes = await linkDonationToDonorAction(selectedDonation.id, res.id, { id: userProfile.id, name: userProfile.name });
             if (linkRes.success) {
-                toast({ title: 'New Profile Registered', description: 'Identity verified and linked.', variant: 'success' });
+                toast({ title: 'New Profile Registered', description: 'Institutional identity secured and linked.', variant: 'success' });
                 setSelectedDonation(null);
             }
         } else {
@@ -137,7 +160,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange }: UnlinkedDonatio
                 <DialogHeader className="bg-primary/5 px-6 py-6 border-b">
                     <DialogTitle className="text-2xl font-bold text-primary tracking-tight">Identity Resolver Hub</DialogTitle>
                     <DialogDescription className="font-normal text-primary/70">
-                        Resolve "dummy" donor records by mapping them to verified organizational profiles.
+                        Map unlinked "dummy" contributions to verified institutional donor profiles.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -146,19 +169,19 @@ export function UnlinkedDonationResolver({ open, onOpenChange }: UnlinkedDonatio
                     <div className="w-full md:w-1/2 border-r border-primary/5 flex flex-col bg-muted/5">
                         <div className="p-4 bg-white border-b flex items-center justify-between">
                             <h3 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Awaiting Resolution</h3>
-                            <Badge variant="secondary" className="h-5 text-[9px] font-bold">{unlinkedDonations?.length || 0} Records</Badge>
+                            <Badge variant="secondary" className="h-5 text-[9px] font-bold">{unlinkedDonations.length} Records</Badge>
                         </div>
                         <ScrollArea className="flex-1">
                             <div className="p-2 space-y-1">
                                 {isLoadingDonations ? (
                                     <div className="flex items-center justify-center p-10"><Loader2 className="h-6 w-6 animate-spin text-primary/20"/></div>
-                                ) : unlinkedDonations?.length === 0 ? (
+                                ) : unlinkedDonations.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-20 text-center opacity-30">
                                         <CheckCircle2 className="h-10 w-10 mb-2"/>
                                         <p className="text-xs font-bold uppercase tracking-widest">Registry Secure</p>
                                     </div>
                                 ) : (
-                                    unlinkedDonations?.map(d => (
+                                    unlinkedDonations.map(d => (
                                         <div 
                                             key={d.id}
                                             onClick={() => { setSelectedDonation(d); setSearchTerm(d.donorPhone || d.donorName); }}
@@ -173,7 +196,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange }: UnlinkedDonatio
                                             </div>
                                             <div className="flex items-center justify-between text-[10px]">
                                                 <span className="opacity-60">{d.donationDate}</span>
-                                                <span className="font-mono opacity-40 uppercase">ID: {d.id.slice(-6)}</span>
+                                                <span className="font-mono opacity-40 uppercase truncate max-w-[100px]">ID: {d.id.slice(-6)}</span>
                                             </div>
                                         </div>
                                     ))
@@ -188,13 +211,13 @@ export function UnlinkedDonationResolver({ open, onOpenChange }: UnlinkedDonatio
                             <ScrollArea className="flex-1">
                                 <div className="p-6 space-y-8 animate-fade-in-up">
                                     <div className="space-y-4">
-                                        <h3 className="text-lg font-bold text-primary tracking-tight">Resolution Logic</h3>
+                                        <h3 className="text-lg font-bold text-primary tracking-tight">Resolving Contribution</h3>
                                         <Card className="p-4 bg-primary/5 border-primary/10 shadow-none">
                                             <div className="flex items-center gap-4">
                                                 <div className="p-3 rounded-full bg-white text-primary shadow-sm"><IndianRupee className="h-6 w-6"/></div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-bold text-primary">{selectedDonation.donorName}</p>
-                                                    <p className="text-xs font-mono text-muted-foreground">{selectedDonation.donorPhone}</p>
+                                                    <p className="text-sm font-bold text-primary truncate">{selectedDonation.donorName}</p>
+                                                    <p className="text-xs font-mono text-muted-foreground">{selectedDonation.donorPhone || 'No phone number provided'}</p>
                                                 </div>
                                                 <Button variant="ghost" size="icon" asChild className="h-8 w-8"><Link href={`/donations/${selectedDonation.id}`} target="_blank"><Edit className="h-4 w-4"/></Link></Button>
                                             </div>
@@ -203,15 +226,15 @@ export function UnlinkedDonationResolver({ open, onOpenChange }: UnlinkedDonatio
 
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <h4 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Suggested Action</h4>
-                                            <Badge variant="outline" className="text-[9px] font-bold">Best Match Discovery</Badge>
+                                            <h4 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Identify Profile</h4>
+                                            <Badge variant="outline" className="text-[9px] font-bold">Heuristic Search</Badge>
                                         </div>
                                         
                                         <div className="grid gap-3">
                                             <Button onClick={handleCreateNewProfile} disabled={!!isResolving} className="h-12 font-bold justify-between px-6 rounded-xl shadow-md transition-transform active:scale-95 group">
                                                 <div className="flex items-center gap-3">
                                                     <UserPlus className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                                                    Register New Profile
+                                                    Establish New Profile
                                                 </div>
                                                 <ArrowRight className="h-4 w-4 opacity-40" />
                                             </Button>
@@ -219,7 +242,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange }: UnlinkedDonatio
                                             <div className="relative pt-4">
                                                 <Search className="absolute left-3 bottom-3 h-4 w-4 text-primary/40" />
                                                 <Input 
-                                                    placeholder="Search Existing Profile..." 
+                                                    placeholder="Search by Name, Phone, or UPI..." 
                                                     value={searchTerm}
                                                     onChange={e => setSearchTerm(e.target.value)}
                                                     className="pl-10 h-10 rounded-xl border-primary/10 text-sm font-normal"
@@ -244,7 +267,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange }: UnlinkedDonatio
                                                         </div>
                                                     ))
                                                 ) : searchTerm.length > 2 && (
-                                                    <p className="text-center text-[10px] text-muted-foreground font-normal italic py-4">No matching profile found. Try another search or create new.</p>
+                                                    <p className="text-center text-[10px] text-muted-foreground font-normal italic py-4">No matching profiles discovered.</p>
                                                 )}
                                             </div>
                                         </div>
@@ -262,7 +285,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange }: UnlinkedDonatio
 
                 <DialogFooter className="px-6 py-4 bg-primary/5 border-t">
                     <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-primary/20 text-primary px-10 rounded-xl">
-                        Close Resolver
+                        Close Hub
                     </Button>
                 </DialogFooter>
             </DialogContent>

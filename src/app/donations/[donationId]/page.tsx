@@ -19,26 +19,29 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ArrowLeft, Edit, Download, Loader2, Image as ImageIcon, FileText, Share2, ZoomIn, ZoomOut, RotateCw, RefreshCw, FolderKanban, Lightbulb, AlertCircle, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Edit, Download, Loader2, Image as ImageIcon, FileText, Share2, ZoomIn, ZoomOut, RotateCw, RefreshCw, FolderKanban, Lightbulb, AlertCircle, ShieldCheck, DatabaseZap } from 'lucide-react';
+import { ShareDialog } from '@/components/share-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { BrandedLoader } from '@/components/branded-loader';
-import { ShareDialog } from '@/components/share-dialog';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { BrandedLoader } from '@/components/branded-loader';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { upsertDonationWithDonorAction } from '../actions';
+import { UnlinkedDonationResolver } from '@/components/unlinked-donation-resolver';
 
 const DetailItem = ({ label, value, isMono = false }: { label: string; value: React.ReactNode; isMono?: boolean }) => (
     <div className="space-y-1">
         <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</p>
-        <div className={`text-sm font-bold text-primary ${isMono ? 'font-mono' : ''}`}>{value || <span className="italic opacity-30">N/A</span>}</div>
+        <div className={`text-sm font-bold text-primary ${isMono ? 'font-mono' : ''}`}>{value || <span className="italic opacity-30 font-normal">N/A</span>}</div>
     </div>
 );
 
 export default function UnlinkedDonationDetailsPage() {
     const params = useParams();
+    const router = useRouter();
     const donationId = params.donationId as string;
+    
     const firestore = useFirestore();
     const storage = useStorage();
     const { toast } = useToast();
@@ -51,6 +54,7 @@ export default function UnlinkedDonationDetailsPage() {
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
 
     const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isResolverOpen, setIsResolverOpen] = useState(false);
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
     const [imageToView, setImageToView] = useState<{ url: string; title: string } | null>(null);
@@ -221,10 +225,10 @@ export default function UnlinkedDonationDetailsPage() {
                     <Alert className="bg-amber-50 border-amber-200 text-amber-800">
                         <AlertCircle className="h-4 w-4 text-amber-600" />
                         <AlertTitle className="font-bold">Identity Mapping Required</AlertTitle>
-                        <AlertDescription className="font-normal text-sm flex items-center justify-between">
+                        <AlertDescription className="font-normal text-sm flex items-center justify-between gap-4">
                             This donation is currently an unlinked "dummy" record. Please map it to a verified Donor Profile.
-                            <Button variant="link" asChild className="font-bold text-amber-800 p-0 h-auto underline tracking-tighter">
-                                <Link href="/donors">Open Resolver Hub</Link>
+                            <Button onClick={() => setIsResolverOpen(true)} variant="secondary" size="sm" className="font-bold bg-amber-600 text-white hover:bg-amber-700 active:scale-95 transition-transform shrink-0 shadow-sm">
+                                <DatabaseZap className="mr-2 h-4 w-4"/> Resolve Now
                             </Button>
                         </AlertDescription>
                     </Alert>
@@ -414,6 +418,7 @@ export default function UnlinkedDonationDetailsPage() {
                     url: typeof window !== 'undefined' ? window.location.href : '',
                 }} 
             />
+            <UnlinkedDonationResolver open={isResolverOpen} onOpenChange={setIsResolverOpen} initialDonationId={donationId} />
         </main>
     );
 }

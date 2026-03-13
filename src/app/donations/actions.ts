@@ -22,7 +22,7 @@ export async function upsertDonationWithDonorAction(
         let finalDonorId = donationData.donorId;
         const donorPhone = donationData.donorPhone;
 
-        // --- 1. Identity Resolution Logic ---
+        // --- 1. Identity Resolution Logic (Auto-Discovery) ---
         // If we don't have an ID but have a phone, try to find an existing donor
         if (!finalDonorId && donorPhone && donorPhone.length >= 10) {
             const donorsCol = adminDb.collection('donors');
@@ -99,6 +99,7 @@ export async function upsertDonationWithDonorAction(
 
 /**
  * Specifically used by the Resolver Hub to map a donation to a donor.
+ * Handles the "Stitching" of a dummy record to a verified profile.
  */
 export async function linkDonationToDonorAction(
     donationId: string,
@@ -119,7 +120,7 @@ export async function linkDonationToDonorAction(
 
         const donationData = donationSnap.data() as Donation;
 
-        // 1. Link this donation
+        // 1. Link this specific donation
         await donationRef.update({
             donorId: donorId,
             updatedAt: FieldValue.serverTimestamp(),
@@ -128,27 +129,33 @@ export async function linkDonationToDonorAction(
         });
 
         // 2. Ripple Effect: Link all other matching donations by phone or name
+        // This is the "Intelligent Sync" part
         const identifier = donationData.donorPhone || donationData.donorName;
         const field = donationData.donorPhone ? 'donorPhone' : 'donorName';
 
-        const unlinkedQuery = adminDb.collection('donations')
-            .where(field, '==', identifier)
-            .where('donorId', '==', null);
-        
-        const unlinkedSnap = await unlinkedQuery.get();
-        if (!unlinkedSnap.empty) {
-            const batch = adminDb.batch();
-            unlinkedSnap.docs.forEach(d => {
-                batch.update(d.ref, { donorId: donorId, updatedAt: FieldValue.serverTimestamp() });
-            });
-            await batch.commit();
+        if (identifier) {
+            const unlinkedQuery = adminDb.collection('donations')
+                .where(field, '==', identifier)
+                .where('donorId', '==', null);
+            
+            const unlinkedSnap = await unlinkedQuery.get();
+            if (!unlinkedSnap.empty) {
+                const batch = adminDb.batch();
+                unlinkedSnap.docs.forEach(d => {
+                    // Only update if it's actually unlinked
+                    if (!d.data().donorId) {
+                        batch.update(d.ref, { donorId: donorId, updatedAt: FieldValue.serverTimestamp() });
+                    }
+                });
+                await batch.commit();
+            }
         }
 
         revalidatePath('/donations');
         revalidatePath(`/donors/${donorId}`);
         revalidatePath('/donors');
         
-        return { success: true, message: "Identities successfully consolidated." };
+        return { success: true, message: "Identities successfully consolidated across the registry." };
     } catch (error: any) {
         return { success: false, message: error.message };
     }
@@ -208,6 +215,7 @@ export async function bulkImportDonationsAction(
                 uploadedById: uploadedBy.id,
                 createdAt: record.createdAt || FieldValue.serverTimestamp(),
                 updatedAt: FieldValue.serverTimestamp(),
+                donorId: record.donorId || null, // Ensure field exists for Hub detection
             };
 
             if (initiativeContext) {
@@ -248,6 +256,10 @@ export async function deleteDonationAction(donationId: string): Promise<{ succes
     }
 }
 
+/**
+ * Migration utility to ensure all historical donations are detectable by the Hub.
+ * It sets 'donorId: null' on records where the field is missing.
+ */
 export async function syncAllDonationsToDonorsAction(): Promise<{ success: boolean; message: string; count: number }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, count: 0 };
@@ -255,38 +267,44 @@ export async function syncAllDonationsToDonorsAction(): Promise<{ success: boole
     try {
         const donationsSnap = await adminDb.collection('donations').get();
         let count = 0;
+        let preparedCount = 0;
+        const batch = adminDb.batch();
 
         for (const docSnap of donationsSnap.docs) {
             const donation = docSnap.data() as Donation;
+            
+            // Logic 1: Prepare missing field for Hub detection
+            if (donation.donorId === undefined) {
+                batch.update(docSnap.ref, { donorId: null });
+                preparedCount++;
+            }
+
+            // Logic 2: Auto-link by Phone if possible
             if (!donation.donorId && donation.donorPhone) {
                 const donorQuery = await adminDb.collection('donors')
                     .where('phone', '==', donation.donorPhone)
                     .limit(1)
                     .get();
 
-                let donorId: string;
                 if (!donorQuery.empty) {
-                    donorId = donorQuery.docs[0].id;
-                } else {
-                    const newDonorRef = adminDb.collection('donors').doc();
-                    await newDonorRef.set({
-                        id: newDonorRef.id,
-                        name: donation.donorName,
-                        phone: donation.donorPhone,
-                        status: 'Active',
-                        createdAt: FieldValue.serverTimestamp(),
-                        createdById: 'migration',
-                        createdByName: 'Institutional Sync Logic',
-                    });
-                    donorId = newDonorRef.id;
+                    const donorId = donorQuery.docs[0].id;
+                    batch.update(docSnap.ref, { donorId });
+                    count++;
                 }
-                await docSnap.ref.update({ donorId });
-                count++;
             }
         }
+
+        if (count > 0 || preparedCount > 0) {
+            await batch.commit();
+        }
+
         revalidatePath('/donations');
         revalidatePath('/donors');
-        return { success: true, message: `Synchronized ${count} legacy records.`, count };
+        return { 
+            success: true, 
+            message: `Registry prepared. Linked ${count} matching records and initialized ${preparedCount} legacy entries for manual resolution.`, 
+            count 
+        };
     } catch (error: any) {
         return { success: false, message: error.message, count: 0 };
     }
