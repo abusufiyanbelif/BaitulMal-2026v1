@@ -1,3 +1,4 @@
+
 import type { DocumentData, Timestamp, FieldValue } from 'firebase/firestore';
 import type { UserPermissions, GroupId, PriorityLevel } from './modules';
 import { donationCategories } from './modules';
@@ -271,6 +272,10 @@ export interface Donor extends DocumentData {
   phone: string;
   email?: string;
   address?: string;
+  bankName?: string;
+  accountNumber?: string;
+  ifscCode?: string;
+  upiId?: string;
   status: 'Active' | 'Inactive';
   notes?: string;
   createdAt?: Timestamp | FieldValue;

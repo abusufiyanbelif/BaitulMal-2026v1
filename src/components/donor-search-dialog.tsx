@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
@@ -8,7 +9,7 @@ import { useFirestore, useMemoFirebase, useCollection, collection, query, getDoc
 import type { Donor } from '@/lib/types';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Search, Users, Phone, Mail, CheckCircle2, UserPlus, X } from 'lucide-react';
+import { Loader2, Search, Users, Phone, Mail, CheckCircle2, UserPlus, X, Landmark, CreditCard, Smartphone } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -127,6 +128,12 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor }: DonorSe
                                             <span className="flex items-center gap-1.5 font-mono"><Phone className="h-3 w-3 opacity-40"/> {donor.phone}</span>
                                             {donor.email && <span className="flex items-center gap-1.5"><Mail className="h-3 w-3 opacity-40"/> {donor.email}</span>}
                                         </div>
+                                        {donor.bankName && (
+                                            <div className="flex flex-wrap gap-x-3 pt-1">
+                                                <span className="flex items-center gap-1 text-[9px] font-bold text-primary/50"><Landmark className="h-2.5 w-2.5"/> {donor.bankName}</span>
+                                                {donor.upiId && <span className="flex items-center gap-1 text-[9px] font-bold text-primary/50"><Smartphone className="h-2.5 w-2.5"/> {donor.upiId}</span>}
+                                            </div>
+                                        )}
                                     </div>
                                     <Button size="sm" className="mt-2 sm:mt-0 font-bold bg-primary hover:bg-primary/90 text-white rounded-[10px] h-8 px-4 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow-sm">
                                         Load Profile

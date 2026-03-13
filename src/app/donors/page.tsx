@@ -30,7 +30,10 @@ import {
     TrendingUp,
     CalendarIcon,
     Edit,
-    Save
+    Save,
+    Landmark,
+    CreditCard,
+    Smartphone
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -119,6 +122,10 @@ export default function DonorRegistryPage() {
         phone: formData.get('phone') as string,
         email: formData.get('email') as string,
         address: formData.get('address') as string,
+        bankName: formData.get('bankName') as string,
+        accountNumber: formData.get('accountNumber') as string,
+        ifscCode: formData.get('ifscCode') as string,
+        upiId: formData.get('upiId') as string,
         status: formData.get('status') as any || 'Active',
         notes: formData.get('notes') as string,
     };
@@ -269,45 +276,76 @@ export default function DonorRegistryPage() {
       </Card>
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-xl rounded-[16px] border-primary/10 p-0 overflow-hidden flex flex-col max-h-[90vh]">
+        <DialogContent className="max-w-2xl rounded-[16px] border-primary/10 p-0 overflow-hidden flex flex-col max-h-[90vh]">
             <DialogHeader className="px-6 py-4 bg-primary/5 border-b">
-                <DialogTitle className="text-xl font-bold text-primary tracking-tight">Register New Donor Profile</DialogTitle>
+                <DialogTitle className="text-xl font-bold text-primary tracking-tight">Register Institutional Donor Profile</DialogTitle>
                 <DialogDescription className="font-normal text-primary/70">Establish a verifiable record for institutional contributors.</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSaveDonor} className="flex flex-col h-full overflow-hidden">
                 <ScrollArea className="flex-1">
-                    <div className="p-6 space-y-4">
-                        <div className="space-y-2">
-                            <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Full Name *</Label>
-                            <Input name="name" required placeholder="e.g. Abdullah Khan" className="font-bold h-10" />
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="p-6 space-y-8">
+                        <div className="space-y-4">
+                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Core Identity</h4>
                             <div className="space-y-2">
-                                <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Phone Number *</Label>
-                                <Input name="phone" required placeholder="10-digit mobile" className="font-mono h-10" />
+                                <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Full Name *</Label>
+                                <Input name="name" required placeholder="e.g. Abdullah Khan" className="font-bold h-10" />
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Phone Number *</Label>
+                                    <Input name="phone" required placeholder="10-digit mobile" className="font-mono h-10" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Email Address</Label>
+                                    <Input name="email" type="email" placeholder="donor@example.com" className="font-normal h-10" />
+                                </div>
                             </div>
                             <div className="space-y-2">
-                                <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Email Address</Label>
-                                <Input name="email" type="email" placeholder="donor@example.com" className="font-normal h-10" />
+                                <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Residential Address</Label>
+                                <Input name="address" placeholder="Full Address" className="font-normal h-10" />
                             </div>
                         </div>
-                        <div className="space-y-2">
-                            <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Residential Address</Label>
-                            <Input name="address" placeholder="Full Address" className="font-normal h-10" />
+
+                        <div className="space-y-4">
+                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Financial Records</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Bank Name</Label>
+                                    <Input name="bankName" placeholder="e.g. ICICI Bank" className="font-normal h-10" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Account Number</Label>
+                                    <Input name="accountNumber" placeholder="Primary donation account" className="font-mono h-10" />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">IFSC Code</Label>
+                                    <Input name="ifscCode" placeholder="11-digit code" className="font-mono h-10" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">UPI Identifier</Label>
+                                    <Input name="upiId" placeholder="e.g. name@okhdfcbank" className="font-mono h-10" />
+                                </div>
+                            </div>
                         </div>
-                        <div className="space-y-2">
-                            <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Account Status</Label>
-                            <Select name="status" defaultValue="Active">
-                                <SelectTrigger className="font-bold h-10"><SelectValue/></SelectTrigger>
-                                <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                                    <SelectItem value="Active" className="font-normal text-primary">Active</SelectItem>
-                                    <SelectItem value="Inactive" className="font-normal text-destructive">Inactive</SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
-                        <div className="space-y-2">
-                            <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Institutional Notes</Label>
-                            <Textarea name="notes" placeholder="Donor preferences, historical context, etc." rows={3} className="font-normal" />
+
+                        <div className="space-y-4">
+                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Administrative Control</h4>
+                            <div className="space-y-2">
+                                <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Account Status</Label>
+                                <Select name="status" defaultValue="Active">
+                                    <SelectTrigger className="font-bold h-10"><SelectValue/></SelectTrigger>
+                                    <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                                        <SelectItem value="Active" className="font-normal text-primary">Active</SelectItem>
+                                        <SelectItem value="Inactive" className="font-normal text-destructive">Inactive</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Institutional Notes</Label>
+                                <Textarea name="notes" placeholder="Donor preferences, historical context, etc." rows={3} className="font-normal" />
+                            </div>
                         </div>
                     </div>
                     <ScrollBar />
@@ -317,7 +355,7 @@ export default function DonorRegistryPage() {
                         <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Discard</Button>
                         <Button type="submit" disabled={isSubmitting} className="font-bold shadow-md transition-transform active:scale-95 px-8">
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                            Register Donor
+                            Register Profile
                         </Button>
                     </div>
                 </DialogFooter>

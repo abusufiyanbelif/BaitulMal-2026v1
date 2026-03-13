@@ -1,3 +1,4 @@
+
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
@@ -59,9 +60,6 @@ export async function deleteDonorAction(donorId: string): Promise<{ success: boo
     try {
         await adminDb.collection('donors').doc(donorId).delete();
         
-        // Note: We don't delete donations linked to this donor to maintain financial integrity.
-        // Instead, we just remove the link in those donations if needed, but usually we keep them as 'Archived' donor data.
-
         revalidatePath('/donors');
         return { success: true, message: 'Donor Profile Permanently Removed.' };
     } catch (error: any) {

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -23,7 +24,10 @@ import {
     FolderKanban,
     Lightbulb,
     ExternalLink,
-    Clock
+    Clock,
+    Landmark,
+    CreditCard,
+    Smartphone
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
@@ -38,6 +42,22 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Link from 'next/link';
 import { cn, getNestedValue } from '@/lib/utils';
+
+function DetailItem({ icon: Icon, label, value, isMono = false }: { icon: any, label: string, value?: string, isMono?: boolean }) {
+    return (
+        <div className="flex items-start gap-4 p-4 rounded-xl bg-primary/[0.02] border border-primary/5 transition-all hover:bg-white hover:shadow-sm">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <Icon className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</p>
+                <p className={cn("text-base font-bold text-primary truncate", isMono && "font-mono")}>
+                    {value || <span className="italic opacity-30 font-normal">Not Provided</span>}
+                </p>
+            </div>
+        </div>
+    );
+}
 
 export default function DonorProfilePage() {
     const params = useParams();
@@ -84,6 +104,10 @@ export default function DonorProfilePage() {
             phone: formData.get('phone') as string,
             email: formData.get('email') as string,
             address: formData.get('address') as string,
+            bankName: formData.get('bankName') as string,
+            accountNumber: formData.get('accountNumber') as string,
+            ifscCode: formData.get('ifscCode') as string,
+            upiId: formData.get('upiId') as string,
             status: formData.get('status') as any,
             notes: formData.get('notes') as string,
         };
@@ -157,21 +181,41 @@ export default function DonorProfilePage() {
                 <TabsContent value="profile" className="animate-fade-in-up mt-0">
                     <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                         <CardHeader className="bg-primary/5 border-b px-6 py-4">
-                            <CardTitle className="text-lg font-bold">Contact & Institutional Record</CardTitle>
+                            <CardTitle className="text-lg font-bold">Institutional Record & Financials</CardTitle>
                         </CardHeader>
                         <CardContent className="p-6">
                             {isEditMode ? (
-                                <form onSubmit={handleUpdate} className="space-y-6 font-normal">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                        <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Full Name</Label><Input name="name" defaultValue={donor.name} required className="font-bold"/></div>
-                                        <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Account Status</Label><Select name="status" defaultValue={donor.status}><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger><SelectContent className="rounded-[12px]"><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem></SelectContent></Select></div>
+                                <form onSubmit={handleUpdate} className="space-y-8 font-normal">
+                                    <div className="space-y-4">
+                                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Core Identity</h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Full Name</Label><Input name="name" defaultValue={donor.name} required className="font-bold"/></div>
+                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Account Status</Label><Select name="status" defaultValue={donor.status}><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger><SelectContent className="rounded-[12px]"><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem></SelectContent></Select></div>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Phone Number</Label><Input name="phone" defaultValue={donor.phone} required className="font-mono"/></div>
+                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Email Address</Label><Input name="email" type="email" defaultValue={donor.email} className="font-normal"/></div>
+                                        </div>
+                                        <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Residential Address</Label><Input name="address" defaultValue={donor.address} className="font-normal"/></div>
                                     </div>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                        <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Phone Number</Label><Input name="phone" defaultValue={donor.phone} required className="font-mono"/></div>
-                                        <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Email Address</Label><Input name="email" type="email" defaultValue={donor.email} className="font-normal"/></div>
+
+                                    <div className="space-y-4">
+                                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Verified Financial Handles</h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Preferred Bank Name</Label><Input name="bankName" defaultValue={donor.bankName} placeholder="e.g. HDFC Bank" className="font-bold"/></div>
+                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Account Number</Label><Input name="accountNumber" defaultValue={donor.accountNumber} placeholder="Primary contribution account" className="font-mono"/></div>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">IFSC Code</Label><Input name="ifscCode" defaultValue={donor.ifscCode} placeholder="11-digit bank code" className="font-mono"/></div>
+                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Personal UPI Identifier</Label><Input name="upiId" defaultValue={donor.upiId} placeholder="e.g. name@upi" className="font-mono"/></div>
+                                        </div>
                                     </div>
-                                    <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Residential Address</Label><Input name="address" defaultValue={donor.address} className="font-normal"/></div>
-                                    <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Institutional Notes</Label><Textarea name="notes" defaultValue={donor.notes} rows={4} className="font-normal"/></div>
+
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Institutional Observations</Label>
+                                        <Textarea name="notes" defaultValue={donor.notes} rows={4} className="font-normal" placeholder="Donor preferences, historical notes, etc."/>
+                                    </div>
+
                                     <div className="flex justify-end gap-3 pt-6 border-t">
                                         <Button type="button" variant="outline" onClick={() => setIsEditMode(false)} className="font-bold border-primary/20">Cancel</Button>
                                         <Button type="submit" disabled={isSubmitting} className="font-bold shadow-md px-10">
@@ -180,28 +224,28 @@ export default function DonorProfilePage() {
                                     </div>
                                 </form>
                             ) : (
-                                <div className="grid gap-8 md:grid-cols-2">
-                                    <div className="space-y-6">
-                                        <div className="flex items-start gap-4 p-4 rounded-xl bg-primary/[0.02] border border-primary/5 transition-all hover:bg-white hover:shadow-sm">
-                                            <div className="p-2 rounded-lg bg-primary/10 text-primary"><Phone className="h-5 w-5"/></div>
-                                            <div><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Primary Contact</p><p className="font-mono text-lg font-bold text-primary">{donor.phone || 'N/A'}</p></div>
-                                        </div>
-                                        <div className="flex items-start gap-4 p-4 rounded-xl bg-primary/[0.02] border border-primary/5 transition-all hover:bg-white hover:shadow-sm">
-                                            <div className="p-2 rounded-lg bg-primary/10 text-primary"><Mail className="h-5 w-5"/></div>
-                                            <div><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Email Identity</p><p className="font-normal text-primary">{donor.email || 'N/A'}</p></div>
-                                        </div>
-                                        <div className="flex items-start gap-4 p-4 rounded-xl bg-primary/[0.02] border border-primary/5 transition-all hover:bg-white hover:shadow-sm">
-                                            <div className="p-2 rounded-lg bg-primary/10 text-primary"><MapPin className="h-5 w-5"/></div>
-                                            <div><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Residential Location</p><p className="font-normal text-primary leading-relaxed">{donor.address || 'Address Not Configured'}</p></div>
+                                <div className="space-y-10">
+                                    <div className="grid gap-4 md:grid-cols-3">
+                                        <DetailItem icon={Phone} label="Primary Contact" value={donor.phone} isMono />
+                                        <DetailItem icon={Mail} label="Email Identity" value={donor.email} />
+                                        <DetailItem icon={MapPin} label="Residential Hub" value={donor.address} />
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Financial Identifiers</h4>
+                                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                                            <DetailItem icon={Landmark} label="Verified Bank" value={donor.bankName} />
+                                            <DetailItem icon={CreditCard} label="Account Mapping" value={donor.accountNumber} isMono />
+                                            <DetailItem icon={ShieldCheck} label="Branch Identifier" value={donor.ifscCode} isMono />
+                                            <DetailItem icon={Smartphone} label="Digital UPI Handle" value={donor.upiId} isMono />
                                         </div>
                                     </div>
-                                    <div className="space-y-6">
-                                        <div className="p-6 rounded-2xl border border-dashed border-primary/20 bg-muted/5 h-full flex flex-col justify-center">
-                                            <div className="flex items-center gap-2 text-primary font-bold mb-3"><History className="h-4 w-4 opacity-40"/> Institutional Observations</div>
-                                            <p className="text-sm italic font-normal text-primary/80 whitespace-pre-wrap leading-relaxed">
-                                                {donor.notes || 'No vetting observations recorded for this profile.'}
-                                            </p>
-                                        </div>
+
+                                    <div className="p-6 rounded-2xl border border-dashed border-primary/20 bg-muted/5">
+                                        <div className="flex items-center gap-2 text-primary font-bold mb-3"><History className="h-4 w-4 opacity-40"/> Institutional Observations</div>
+                                        <p className="text-sm italic font-normal text-primary/80 whitespace-pre-wrap leading-relaxed">
+                                            {donor.notes || 'No vetted observations recorded for this profile.'}
+                                        </p>
                                     </div>
                                 </div>
                             )}
