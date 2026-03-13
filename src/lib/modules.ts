@@ -103,6 +103,7 @@ export const modules = [
   },
   { id: 'beneficiaries', name: 'Beneficiaries', permissions: crudPermissions },
   { id: 'donations', name: 'Donations', permissions: crudPermissions },
+  { id: 'guidance', name: 'Guidance Hub', permissions: crudPermissions },
   { id: 'extractor', name: 'Extractor', permissions: simpleReadPermission },
   { id: 'storyCreator', name: 'Story Creator', permissions: simpleReadPermission },
   { id: 'diagnostics', name: 'Diagnostics', permissions: simpleReadPermission },
@@ -135,6 +136,7 @@ export type UserPermissions = Partial<
   campaigns?: CampaignPermissions;
   'leads-members'?: LeadPermissions;
   beneficiaries?: Partial<Record<Permission, boolean>>;
+  guidance?: Partial<Record<Permission, boolean>>;
   settings?: SettingsPermissions;
 };
 

@@ -26,7 +26,6 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
 
   /**
    * Renders a single row in the permissions table.
-   * Supports indentation for sub-modules and conditional checkbox rendering.
    */
   const renderRow = (label: string, path: string, level: number = 0, allowedPerms: Permission[]) => {
     return (
@@ -82,7 +81,7 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
               {modules.map((mod) => (
                 <React.Fragment key={mod.id}>
                   {renderRow(mod.name, mod.id, 0, mod.permissions as unknown as Permission[])}
-                  {'subModules' in mod && mod.subModules && (mod.subModules as any).map((subMod: any) => (
+                  {('subModules' in mod && mod.subModules) && (mod.subModules as any).map((subMod: any) => (
                     renderRow(subMod.name, `${mod.id}.${subMod.id}`, 1, subMod.permissions as unknown as Permission[])
                   ))}
                 </React.Fragment>

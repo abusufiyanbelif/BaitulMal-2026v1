@@ -57,19 +57,19 @@ export default function Home() {
             icon: IndianRupee,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations.read', false),
         },
+        {
+            title: "Guidance Hub",
+            description: "Manage External Help Resources And Regional Schemes.",
+            href: "/guidance",
+            icon: BookOpen,
+            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.guidance.read', false),
+        },
          {
             title: "Public Preview",
             description: "Review Public-Facing Pages And Summaries.",
             href: "/public-summary",
             icon: Eye,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.read', false) || !!getNestedValue(userProfile, 'permissions.leads-members.read', false),
-        },
-        {
-            title: "Guidance Hub",
-            description: "Manage External Help Resources And Help Center.",
-            href: "/settings/guidance",
-            icon: BookOpen,
-            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.read', false),
         },
         {
             title: "Extractor",
