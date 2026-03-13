@@ -35,6 +35,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/use-session';
 import { useAuth, useFirestore, useMemoFirebase, useDoc, doc } from '@/firebase';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';

@@ -11,7 +11,8 @@ import {
     CardContent, 
     CardHeader, 
     CardTitle, 
-    CardDescription 
+    CardDescription,
+    CardFooter
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -22,7 +23,8 @@ import {
     Eye, 
     Monitor,
     BookOpen,
-    ShieldAlert
+    ShieldAlert,
+    ArrowLeft
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -30,6 +32,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Separator } from '@/components/ui/separator';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { cn, getNestedValue } from '@/lib/utils';
 import { BrandedLoader } from '@/components/branded-loader';
 import Link from 'next/link';

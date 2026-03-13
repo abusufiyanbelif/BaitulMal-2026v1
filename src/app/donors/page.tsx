@@ -27,7 +27,9 @@ import {
     UserPlus,
     Users,
     TrendingUp,
-    CalendarIcon
+    CalendarIcon,
+    Edit,
+    Save
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -53,7 +55,7 @@ function StatCard({ title, count, description, icon: Icon, delay }: { title: str
         <Card className="flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md" style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">{count}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">

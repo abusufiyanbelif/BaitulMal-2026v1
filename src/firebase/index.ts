@@ -40,6 +40,45 @@ export function getSdks(firebaseApp: FirebaseApp) {
   };
 }
 
+// Export common Firestore functions
+export { 
+  collection, 
+  doc, 
+  getDoc, 
+  getDocs, 
+  setDoc, 
+  updateDoc, 
+  deleteDoc, 
+  query, 
+  where, 
+  orderBy, 
+  limit, 
+  serverTimestamp,
+  onSnapshot,
+  Timestamp,
+  increment,
+  writeBatch,
+  deleteField
+} from 'firebase/firestore';
+
+// Export common Auth functions
+export {
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+} from 'firebase/auth';
+
+// Export common Storage functions
+export {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+  uploadString
+} from 'firebase/storage';
+
 export * from './provider';
 export * from './client-provider';
 export * from './firestore/use-collection';
