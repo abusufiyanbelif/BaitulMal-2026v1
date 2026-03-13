@@ -15,7 +15,7 @@ import { THEME_SUGGESTIONS } from '@/lib/themes';
 
 /**
  * ThemeSync - Local Component
- * Ensures 'dark' class matches the selected data-theme.
+ * Ensures 'dark' class matches the selected data-theme metadata.
  */
 function ThemeSync() {
   const { theme, resolvedTheme } = useTheme();

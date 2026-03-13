@@ -25,7 +25,7 @@ import { NotificationBell } from './notification-bell';
 
 /**
  * Main Header - Fully theme-reactive.
- * Respects dynamic logo dimensions from branding settings with transparent containers.
+ * Respects dynamic logo dimensions with transparent containers.
  */
 export function DocuExtractHeader() {
   const session = useSession();
@@ -54,7 +54,7 @@ export function DocuExtractHeader() {
       <div className="container mx-auto flex justify-between items-center px-4 gap-4">
         <Link href={homeHref} className="flex items-center gap-4 group transition-all hover:scale-[1.01]">
           <div 
-            className="relative flex-shrink-0 flex items-center justify-center overflow-hidden bg-transparent border-0 shadow-none p-0"
+            className="relative flex-shrink-0 flex items-center justify-center overflow-hidden bg-transparent"
             style={{ 
                 width: brandingSettings?.logoWidth ? `${brandingSettings.logoWidth}px` : '64px',
                 height: brandingSettings?.logoHeight ? `${brandingSettings.logoHeight}px` : '64px',

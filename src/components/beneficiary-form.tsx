@@ -260,10 +260,10 @@ export function BeneficiaryForm({
   
     return (
         <Form {...form}>
-            <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col h-full overflow-hidden">
-                <div className="flex-1 min-h-0 relative">
-                    <ScrollArea className="h-full w-full">
-                        <div className="px-6 py-4 space-y-6 text-primary font-normal pb-10">
+            <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col h-full overflow-hidden bg-white">
+                <div className="flex-1 min-h-0 relative flex flex-col">
+                    <ScrollArea className="flex-1 w-full">
+                        <div className="px-6 py-4 space-y-6 text-primary font-normal pb-24">
                             <div className="space-y-4">
                                 <h3 className="text-lg font-bold text-primary tracking-tight">Personal Information</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 @layer base {
-  :root, [data-theme='light'], [data-theme='bms3-a'] {
+  /* Default Institutional Theme: BMS3 A */
+  :root, [data-theme='bms3-a'], [data-theme='light'] {
     --background: 140 33% 97%;
     --foreground: 144 27% 23%;
     --card: 0 0% 100%;
@@ -46,7 +47,57 @@
     --chart-8: 24 95% 53%;
   }
 
-  [data-theme='dark'], [data-theme='midnight-dark'] {
+  /* BMS3 Official Deep Green */
+  [data-theme='bms3'] {
+    --primary: 144 61% 20%;
+    --ring: 144 61% 20%;
+    --background: 140 20% 98%;
+  }
+
+  /* Green Warm */
+  [data-theme='green-warm'] {
+    --primary: 142 76% 25%;
+    --background: 40 33% 98%;
+    --secondary: 40 33% 95%;
+  }
+
+  /* Warm Orange */
+  [data-theme='bmss-brand-warm'] {
+    --primary: 24 95% 45%;
+    --ring: 24 95% 45%;
+    --background: 30 33% 98%;
+  }
+
+  /* Ocean Blue */
+  [data-theme='ocean-blue'] {
+    --primary: 221 83% 45%;
+    --ring: 221 83% 45%;
+    --background: 210 40% 98%;
+  }
+
+  /* Sky Blue */
+  [data-theme='sky-blue'] {
+    --primary: 199 89% 48%;
+    --ring: 199 89% 48%;
+    --background: 199 40% 98%;
+  }
+
+  /* Sunset Orange */
+  [data-theme='sunset-orange'] {
+    --primary: 12 76% 50%;
+    --ring: 12 76% 50%;
+    --background: 12 30% 98%;
+  }
+
+  /* Lavender Mint */
+  [data-theme='lavender-mint'] {
+    --primary: 262 50% 50%;
+    --ring: 262 50% 50%;
+    --background: 262 30% 98%;
+  }
+
+  /* Midnight Dark Base */
+  [data-theme='midnight-dark'], .dark {
     --background: 240 10% 4%;
     --foreground: 0 0% 98%;
     --card: 240 10% 6%;
@@ -67,6 +118,21 @@
     --table-header-bg: 240 10% 10%;
     --table-header-fg: 0 0% 90%;
     --table-row-hover: 240 10% 8%;
+  }
+
+  /* Midnight Ramadan (Gold Accents) */
+  [data-theme='midnight-ramadan'] {
+    --primary: 47 95% 55%;
+    --ring: 47 95% 55%;
+    --background: 240 10% 4%;
+    --foreground: 47 30% 95%;
+  }
+
+  /* Midnight Emerald */
+  [data-theme='midnight-emerald'] {
+    --primary: 160 84% 39%;
+    --ring: 160 84% 39%;
+    --background: 160 20% 4%;
   }
 }
 
