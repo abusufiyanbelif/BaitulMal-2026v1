@@ -3,7 +3,7 @@ const nextConfig = {
   // Standalone output is required for many App Hosting environments
   output: 'standalone',
   // Force a fresh build to resolve bundle sync errors (ChunkLoadError).
-  // Build Timestamp: 2026-03-12-23-45
+  // Build Timestamp: 2026-03-13-16-30
   reactStrictMode: true,
   allowedDevOrigins: [
     "https://*.cloudworkstations.dev",
