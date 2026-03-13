@@ -44,6 +44,7 @@ import type { Donation, Donor } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
 interface UnlinkedDonationResolverProps {
     open: boolean;
