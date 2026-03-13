@@ -1,37 +1,32 @@
+
 {
   "entities": {
-    "UserProfile": {
-      "title": "User Profile",
-      "description": "Organizational member account with granular permissions.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "email": { "type": "string" },
-        "role": { "type": "string", "enum": ["Admin", "User"] },
-        "status": { "type": "string", "enum": ["Active", "Inactive"] },
-        "permissions": { "type": "object" }
-      }
-    },
     "Donor": {
       "title": "Donor Profile",
-      "description": "Master identity for community contributors.",
+      "description": "An individual or entity providing financial support to the organization.",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "phone": { "type": "string" },
-        "status": { "type": "string", "enum": ["Active", "Inactive"] }
-      }
+        "id": { "type": "string", "description": "The unique Firestore document ID." },
+        "name": { "type": "string", "description": "Full name of the donor." },
+        "phone": { "type": "string", "description": "Primary contact number." },
+        "email": { "type": "string", "format": "email", "description": "Verified email address." },
+        "address": { "type": "string", "description": "Residential or business address." },
+        "status": { "type": "string", "enum": ["Active", "Inactive"] },
+        "notes": { "type": "string", "description": "Institutional observations and context." },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "phone"]
     },
     "Donation": {
       "title": "Donation Record",
-      "description": "Verified financial contribution logged in the registry.",
+      "description": "A verified financial contribution linked to a cause.",
       "type": "object",
       "properties": {
+        "donorId": { "type": "string", "description": "Reference to the Donor Profile ID." },
         "amount": { "type": "number" },
-        "status": { "type": "string", "enum": ["Verified", "Pending", "Canceled"] },
-        "donorId": { "type": "string" }
+        "donationDate": { "type": "string", "format": "date" },
+        "status": { "type": "string", "enum": ["Verified", "Pending", "Canceled"] }
       }
     }
   },
@@ -39,10 +34,13 @@
     "providers": ["password"]
   },
   "firestore": {
-    "/users/{userId}": { "schema": "UserProfile", "description": "Member accounts." },
-    "/donors/{donorId}": { "schema": "Donor", "description": "Master donor registry." },
-    "/donations/{donationId}": { "schema": "Donation", "description": "Verified contribution logs." },
-    "/settings/branding": { "schema": "object", "description": "App visual identity." },
-    "/settings/payment": { "schema": "object", "description": "Bank and UPI configuration." }
+    "/donors/{donorId}": {
+      "schema": { "$ref": "#/backend/entities/Donor" },
+      "description": "Master registry of institutional contributors."
+    },
+    "/donations/{donationId}": {
+      "schema": { "$ref": "#/backend/entities/Donation" },
+      "description": "Verified financial transaction logs."
+    }
   }
 }

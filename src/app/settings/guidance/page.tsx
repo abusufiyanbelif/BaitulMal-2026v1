@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -31,7 +32,6 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { cn, getNestedValue } from '@/lib/utils';
 import { BrandedLoader } from '@/components/branded-loader';
@@ -170,7 +170,7 @@ export default function GuidanceSettingsPage() {
                         <CardFooter className="bg-muted/5 border-t p-4 flex justify-between items-center">
                             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Operation Workspace:</p>
                             <Button variant="ghost" size="sm" asChild className="font-bold text-primary hover:bg-primary/5">
-                                <Link href="/guidance">Go To Guidance Hub <ArrowLeft className="ml-2 h-3 w-3 rotate-180" /></Link>
+                                <Link href="/guidance" className="flex items-center">Go To Guidance Hub <ArrowLeft className="ml-2 h-3 w-3 rotate-180" /></Link>
                             </Button>
                         </CardFooter>
                     </Card>
