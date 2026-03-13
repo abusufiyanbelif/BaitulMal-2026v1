@@ -1,88 +1,47 @@
-
 {
   "entities": {
-    "UserProfile": {
-      "title": "UserProfile",
-      "description": "The profile information for an organization member or administrator.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "phone": { "type": "string" },
-        "loginId": { "type": "string" },
-        "userKey": { "type": "string" },
-        "role": { "type": "string", "enum": ["Admin", "User"] },
-        "status": { "type": "string", "enum": ["Active", "Inactive"] },
-        "permissions": { "type": "object" },
-        "organizationGroup": { "type": "string" },
-        "organizationRole": { "type": "string" },
-        "idProofUrl": { "type": "string" },
-        "idProofType": { "type": "string" },
-        "idNumber": { "type": "string" }
-      },
-      "required": ["id", "name", "email", "role", "status"]
-    },
     "Donor": {
-      "title": "Donor",
-      "description": "A profile for a community contributor or donor.",
+      "title": "Donor Profile",
+      "description": "Institutional record for a community contributor, including financial handles.",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "phone": { "type": "string" },
+        "name": { "type": "string", "description": "Full legal name of the donor." },
+        "phone": { "type": "string", "description": "Primary 10-digit mobile number." },
         "email": { "type": "string", "format": "email" },
         "address": { "type": "string" },
-        "bankName": { "type": "string" },
+        "bankName": { "type": "string", "description": "Preferred bank for transfers." },
         "accountNumber": { "type": "string" },
         "ifscCode": { "type": "string" },
-        "upiId": { "type": "string" },
+        "upiId": { "type": "string", "description": "Personal UPI handle." },
         "status": { "type": "string", "enum": ["Active", "Inactive"] },
-        "notes": { "type": "string" },
-        "createdAt": { "type": "object" },
-        "updatedAt": { "type": "object" }
+        "notes": { "type": "string" }
       },
-      "required": ["id", "name", "phone", "status"]
+      "required": ["name", "phone"]
     },
     "Donation": {
-      "title": "Donation",
-      "description": "A record of a financial contribution received by the organization.",
+      "title": "Donation Record",
+      "description": "Financial contribution log linked to donors and initiatives.",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
+        "donorId": { "type": "string", "description": "ID of the linked Donor Profile." },
         "donorName": { "type": "string" },
-        "donorPhone": { "type": "string" },
-        "donorId": { "type": "string" },
         "amount": { "type": "number" },
-        "donationDate": { "type": "string" },
-        "status": { "type": "string", "enum": ["Verified", "Pending", "Canceled"] },
-        "donationType": { "type": "string" },
-        "typeSplit": { "type": "array" },
-        "linkSplit": { "type": "array" },
-        "transactions": { "type": "array" }
-      },
-      "required": ["id", "donorName", "amount", "donationDate", "status"]
+        "donationDate": { "type": "string", "format": "date" },
+        "status": { "type": "string", "enum": ["Verified", "Pending", "Canceled"] }
+      }
     }
   },
   "auth": {
-    "providers": ["password"]
+    "providers": ["email/password"]
   },
   "firestore": {
-    "/users/{userId}": {
-      "schema": { "$ref": "#/entities/UserProfile" },
-      "description": "User profiles for organization members."
-    },
     "/donors/{donorId}": {
-      "schema": { "$ref": "#/entities/Donor" },
-      "description": "Profiles for verified institutional donors."
+      "schema": "#/entities/Donor",
+      "description": "Master registry of verified donor profiles."
     },
     "/donations/{donationId}": {
-      "schema": { "$ref": "#/entities/Donation" },
-      "description": "Financial donation records."
-    },
-    "/user_lookups/{lookupId}": {
-      "schema": "object",
-      "description": "Internal mapping for Login IDs and Phone numbers to emails."
+      "schema": "#/entities/Donation",
+      "description": "Verifiable contribution logs."
     }
   }
 }

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -245,21 +244,23 @@ export default function DonorRegistryPage() {
                                     </Badge>
                                 </TableCell>
                                 <TableCell className="text-right pr-6" onClick={e => e.stopPropagation()}>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
-                                            <DropdownMenuItem onClick={() => router.push(`/donors/${donor.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4 opacity-60"/> View Profile</DropdownMenuItem>
-                                            {canUpdate && <DropdownMenuItem onClick={() => { setEditingDonor(donor); setIsFormOpen(true); }} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Profile</DropdownMenuItem>}
-                                            {canDelete && (
-                                                <>
-                                                    <DropdownMenuSeparator className="bg-primary/10" />
-                                                    <DropdownMenuItem onClick={() => handleDelete(donor)} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal"><Trash2 className="mr-2 h-4 w-4"/> Remove Profile</DropdownMenuItem>
-                                                </>
-                                            )}
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
+                                    <div className="flex items-center justify-end gap-1">
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
+                                                <DropdownMenuItem onClick={() => router.push(`/donors/${donor.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4 opacity-60"/> View Profile</DropdownMenuItem>
+                                                {canUpdate && <DropdownMenuItem onClick={() => { setEditingDonor(donor); setIsFormOpen(true); }} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Profile</DropdownMenuItem>}
+                                                {canDelete && (
+                                                    <>
+                                                        <DropdownMenuSeparator className="bg-primary/10" />
+                                                        <DropdownMenuItem onClick={() => handleDelete(donor)} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal"><Trash2 className="mr-2 h-4 w-4"/> Remove Profile</DropdownMenuItem>
+                                                    </>
+                                                )}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
                                 </TableCell>
                             </TableRow>
                         ))}

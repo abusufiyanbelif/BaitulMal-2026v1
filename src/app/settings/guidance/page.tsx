@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -123,7 +122,7 @@ export default function GuidanceSettingsPage() {
                                     <h3 className="font-bold text-primary text-sm tracking-tight">Public Directory Availability</h3>
                                     <p className="text-xs text-muted-foreground font-normal">When enabled, the guidance directory will be accessible to anonymous public visitors.</p>
                                     <Button variant="link" size="sm" asChild className="p-0 h-auto font-bold text-primary mt-2">
-                                        <Link href="/info/guidance" target="_blank"><Eye className="mr-2 h-4 w-4" /> View Public Page</Link>
+                                        <Link href="/info/guidance" target="_blank"><Eye className="mr-2 h-4 w-4" /> Preview public page</Link>
                                     </Button>
                                 </div>
                                 <div className="flex items-center space-x-2">
