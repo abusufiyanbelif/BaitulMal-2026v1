@@ -21,6 +21,7 @@ import {
     DialogFooter
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -45,6 +46,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 interface UnlinkedDonationResolverProps {
     open: boolean;
@@ -63,7 +65,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
     const [isSearching, setIsSearching] = useState(false);
     const [searchResults, setSearchResults] = useState<Donor[]>([]);
 
-    // 1. Fetch unlinked donations - now fetching all and filtering in memory to ensure legacy record detection
+    // 1. Fetch unlinked donations - fetching all and filtering in memory to ensure legacy record detection
     const donationsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
     const { data: allDonations, isLoading: isLoadingDonations } = useCollection<Donation>(donationsRef);
 
