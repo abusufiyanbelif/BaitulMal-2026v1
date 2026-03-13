@@ -3,54 +3,134 @@
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
-import type { Donation, DonationCategory } from '@/lib/types';
+import type { Donation, DonationCategory, Donor } from '@/lib/types';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually means the server is missing credentials. Please ensure your 'serviceAccountKey.json' is correctly placed in the project root or that Application Default Credentials are configured.";
 
-export async function syncDonationsAction(): Promise<{ success: boolean; message: string; updatedCount: number; }> {
+/**
+ * Robust action to save a donation and ensure a corresponding Donor Profile exists.
+ * If no donorId is provided, it searches by phone and creates a profile if missing.
+ */
+export async function upsertDonationWithDonorAction(
+    donationId: string | null,
+    donationData: Partial<Donation>,
+    uploadedBy: { id: string, name: string }
+): Promise<{ success: boolean; message: string; id?: string }> {
     const { adminDb } = getAdminServices();
-    if (!adminDb) {
-        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, updatedCount: 0 };
-    }
-    
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
     try {
-        const batch = adminDb.batch();
-        let updatedCount = 0;
-        
-        const donationsRef = adminDb.collection('donations');
-        const donationsSnap = await donationsRef.get();
-        
-        for (const docSnap of donationsSnap.docs) {
-            const donation = docSnap.data() as any; 
-            
-            if (donation.campaignId && (!donation.linkSplit || donation.linkSplit.length === 0)) {
-                
-                const newLinkSplit = [{
-                    linkId: donation.campaignId,
-                    linkName: donation.campaignName || 'Unknown Campaign',
-                    linkType: 'campaign' as const,
-                    amount: donation.amount
-                }];
-                
-                batch.update(docSnap.ref, { 
-                    linkSplit: newLinkSplit,
-                    campaignId: FieldValue.delete(),
-                    campaignName: FieldValue.delete()
-                });
-                updatedCount++;
+        let finalDonorId = donationData.donorId;
+
+        // 1. If no donorId, try to find or create a donor profile by phone
+        if (!finalDonorId && donationData.donorPhone) {
+            const donorQuery = await adminDb.collection('donors')
+                .where('phone', '==', donationData.donorPhone)
+                .limit(1)
+                .get();
+
+            if (!donorQuery.empty) {
+                finalDonorId = donorQuery.docs[0].id;
+            } else {
+                // Create a new Donor Profile automatically
+                const newDonorRef = adminDb.collection('donors').doc();
+                const newDonor: Partial<Donor> = {
+                    id: newDonorRef.id,
+                    name: donationData.donorName || 'Anonymous Donor',
+                    phone: donationData.donorPhone,
+                    status: 'Active',
+                    createdAt: FieldValue.serverTimestamp(),
+                    createdById: uploadedBy.id,
+                    createdByName: uploadedBy.name,
+                };
+                await newDonorRef.set(newDonor);
+                finalDonorId = newDonorRef.id;
             }
         }
+
+        // 2. Prepare Donation Object
+        const docRef = donationId ? adminDb.collection('donations').doc(donationId) : adminDb.collection('donations').doc();
+        const id = docRef.id;
+
+        const finalDonationData = {
+            ...donationData,
+            id,
+            donorId: finalDonorId || null,
+            uploadedBy: uploadedBy.name,
+            uploadedById: uploadedBy.id,
+            updatedAt: FieldValue.serverTimestamp(),
+            ...( !donationId && { createdAt: FieldValue.serverTimestamp() } ),
+        };
+
+        // Remove legacy fields if they exist
+        if ((finalDonationData as any).campaignId) delete (finalDonationData as any).campaignId;
+        if ((finalDonationData as any).campaignName) delete (finalDonationData as any).campaignName;
+
+        await docRef.set(finalDonationData, { merge: true });
+
+        revalidatePath('/donations');
+        if (finalDonorId) revalidatePath(`/donors/${finalDonorId}`);
         
-        if (updatedCount > 0) {
-            await batch.commit();
+        return { success: true, message: 'Donation record and donor profile synchronized.', id };
+    } catch (error: any) {
+        console.error("Upsert Donation Failed:", error);
+        return { success: false, message: `Operation Failed: ${error.message}` };
+    }
+}
+
+/**
+ * Migration utility to link all existing donations to (newly created) donor profiles.
+ * Matches by phone number to consolidate historical data.
+ */
+export async function syncAllDonationsToDonorsAction(): Promise<{ success: boolean; message: string; count: number }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, count: 0 };
+
+    try {
+        const donationsSnap = await adminDb.collection('donations').get();
+        let count = 0;
+
+        for (const docSnap of donationsSnap.docs) {
+            const donation = docSnap.data() as Donation;
+            
+            // Only process if donorId is missing but phone is present
+            if (!donation.donorId && donation.donorPhone) {
+                // Check if donor profile exists
+                const donorQuery = await adminDb.collection('donors')
+                    .where('phone', '==', donation.donorPhone)
+                    .limit(1)
+                    .get();
+
+                let donorId: string;
+                if (!donorQuery.empty) {
+                    donorId = donorQuery.docs[0].id;
+                } else {
+                    // Create new profile for this historical donor
+                    const newDonorRef = adminDb.collection('donors').doc();
+                    await newDonorRef.set({
+                        id: newDonorRef.id,
+                        name: donation.donorName,
+                        phone: donation.donorPhone,
+                        status: 'Active',
+                        createdAt: FieldValue.serverTimestamp(),
+                        createdById: 'migration',
+                        createdByName: 'System Link Logic',
+                    });
+                    donorId = newDonorRef.id;
+                }
+
+                // Link the donation
+                await docSnap.ref.update({ donorId });
+                count++;
+            }
         }
 
         revalidatePath('/donations');
-        return { success: true, message: `Sync Complete. Updated ${updatedCount} Legacy Records.`, updatedCount };
-
+        revalidatePath('/donors');
+        return { success: true, message: `Successfully synchronized ${count} legacy records.`, count };
     } catch (error: any) {
-        console.error("Error syncing donations:", error);
-        return { success: false, message: `Sync Failed: ${error.message}`, updatedCount: 0 };
+        console.error("Historical Sync Failed:", error);
+        return { success: false, message: `Sync Failed: ${error.message}`, count: 0 };
     }
 }
 
@@ -73,8 +153,6 @@ export async function bulkUpdateDonationStatusAction(
             await batch.commit();
         }
         revalidatePath('/donations');
-        revalidatePath('/campaign-members', 'layout');
-        revalidatePath('/leads-members', 'layout');
         return { success: true, message: `Successfully Updated ${ids.length} Donations To ${newStatus}.` };
     } catch (error: any) {
         console.error("Bulk Donation Update Failed:", error);
@@ -114,7 +192,6 @@ export async function bulkImportDonationsAction(
                 updatedAt: FieldValue.serverTimestamp(),
             };
 
-            // If initiative context is provided, ensure it's in the linkSplit
             if (initiativeContext) {
                 const currentLinks = (record.linkSplit || []) as any[];
                 const exists = currentLinks.some(l => l.linkId === initiativeContext.id);
@@ -136,11 +213,6 @@ export async function bulkImportDonationsAction(
 
         await batch.commit();
         revalidatePath('/donations');
-        if (initiativeContext) {
-            const basePath = initiativeContext.type === 'campaign' ? 'campaign-members' : 'leads-members';
-            revalidatePath(`/${basePath}/${initiativeContext.id}/donations`);
-        }
-        
         return { success: true, message: `Successfully Synchronized ${count} Donation Records.`, count };
     } catch (error: any) {
         console.error("Bulk Donation Import Failed:", error);

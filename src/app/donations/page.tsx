@@ -1,11 +1,11 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase, useAuth } from '@/firebase';
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase, useAuth, storageRef, uploadBytes, getDownloadURL } from '@/firebase';
 import { collection, doc, serverTimestamp, setDoc, updateDoc, deleteField } from 'firebase/firestore';
-import type { Donation, Campaign, Lead, UserProfile, DonationLink, TransactionDetail } from '@/lib/types';
+import type { Donation, Campaign, Lead, UserProfile, DonationLink, TransactionDetail, Donor } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import Resizer from 'react-image-file-resizer';
@@ -89,7 +89,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn, getNestedValue } from '@/lib/utils';
-import { syncDonationsAction, deleteDonationAction, bulkUpdateDonationStatusAction, bulkImportDonationsAction } from './actions';
+import { bulkUpdateDonationStatusAction, bulkImportDonationsAction, upsertDonationWithDonorAction } from './actions';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
@@ -98,6 +98,7 @@ import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
+import { donationCategories } from '@/lib/modules';
 
 type SortKey = keyof Donation | 'srNo';
 
@@ -108,7 +109,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -448,9 +449,8 @@ export default function DonationsPage() {
   };
 
   const handleFormSubmit = async (data: DonationFormData) => {
-    if (!firestore || !storage || !userProfile || !allCampaigns || !allLeads) return;
+    if (!userProfile) return;
     setIsFormOpen(false);
-    const docRef = editingDonation ? doc(firestore, 'donations', editingDonation.id) : doc(collection(firestore, 'donations'));
     
     try {
         const transactionPromises = data.transactions.map(async (transaction) => {
@@ -459,8 +459,9 @@ export default function DonationsPage() {
             if (fileList && fileList.length > 0) {
                 const file = fileList[0];
                 const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
-                const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
-                const fileRef = storageRef(storage, filePath);
+                const tempId = editingDonation?.id || `new_${Date.now()}`;
+                const filePath = `donations/${tempId}/${data.donationDate}_${transaction.id}.png`;
+                const fileRef = storageRef(storage!, filePath);
                 await uploadBytes(fileRef, resizedBlob);
                 screenshotUrl = await getDownloadURL(fileRef);
             }
@@ -479,29 +480,26 @@ export default function DonationsPage() {
             return { linkId: id, linkName: linkedItem?.name || 'Unknown', linkType, amount: split.amount };
         }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
         
-        const finalData = { 
+        const processedDonationData = { 
             ...donationData, 
             transactions: finalTransactions, 
             amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0), 
-            linkSplit: finalLinkSplit, 
-            uploadedBy: userProfile.name, 
-            uploadedById: userProfile.id, 
-            createdAt: editingDonation ? (editingDonation as any).createdAt : serverTimestamp() 
+            linkSplit: finalLinkSplit,
         };
 
-        if (editingDonation) {
-            (finalData as any).campaignId = deleteField();
-            (finalData as any).campaignName = deleteField();
-        }
+        const result = await upsertDonationWithDonorAction(
+            editingDonation?.id || null,
+            processedDonationData as any,
+            { id: userProfile.id, name: userProfile.name }
+        );
 
-        await setDoc(docRef, finalData, { merge: true });
-        toast({ title: "Donation Synchronized", description: "The Record Is Now Secured.", variant: 'success' });
+        if (result.success) {
+            toast({ title: "Success", description: result.message, variant: 'success' });
+        } else {
+            toast({ title: "Error", description: result.message, variant: 'destructive' });
+        }
     } catch (error: any) {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: docRef.path,
-            operation: editingDonation ? 'update' : 'create',
-            requestResourceData: data,
-        }));
+        toast({ title: "Failed", description: error.message, variant: 'destructive' });
     } finally {
         setEditingDonation(null);
     }

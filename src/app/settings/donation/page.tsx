@@ -1,14 +1,16 @@
+
 'use client';
 import { useState, useEffect, useMemo } from 'react';
 import { useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Settings, Save, Loader2, CheckSquare, Edit, X } from 'lucide-react';
+import { Settings, Save, Loader2, CheckSquare, Edit, X, RefreshCw, DatabaseZap } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Button } from '@/components/ui/button';
+import { syncAllDonationsToDonorsAction } from '@/app/donations/actions';
 
 const VISIBILITY_OPTIONS = [
     { id: 'yearly_summary', name: 'Yearly financial summary' },
@@ -39,6 +41,7 @@ export default function DonationSettingsPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
 
   const visRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donation_visibility') : null, [firestore]);
@@ -87,6 +90,17 @@ export default function DonationSettingsPage() {
     }
   };
 
+  const handleSyncHistorical = async () => {
+    setIsSyncing(true);
+    const res = await syncAllDonationsToDonorsAction();
+    if (res.success) {
+        toast({ title: "Sync Complete", description: `Successfully linked ${res.count} historical donations to the donor registry.`, variant: "success" });
+    } else {
+        toast({ title: "Sync Failed", description: res.message, variant: "destructive" });
+    }
+    setIsSyncing(false);
+  };
+
   const handleCancel = () => {
     if (visibilitySettings) setLocalVis(visibilitySettings);
     if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
@@ -96,14 +110,14 @@ export default function DonationSettingsPage() {
   if (isVisLoading || isConfigLoading) return <BrandedLoader />;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 text-primary font-normal">
         <div className="flex justify-between items-center">
             <div className="space-y-1">
-                <h2 className="text-2xl font-bold text-primary">Donation settings</h2>
+                <h2 className="text-2xl font-bold">Donation Settings</h2>
                 <p className="text-sm text-muted-foreground font-normal">Configure financial reporting and data requirements for donations.</p>
             </div>
             {!isEditMode ? (
-                <Button onClick={() => setIsEditMode(true)} className="font-bold">
+                <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md">
                     <Edit className="mr-2 h-4 w-4" /> Edit Settings
                 </Button>
             ) : (
@@ -111,7 +125,7 @@ export default function DonationSettingsPage() {
                     <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="font-bold border-primary/20 text-primary">
                         <X className="mr-2 h-4 w-4" /> Cancel
                     </Button>
-                    <Button onClick={handleSave} disabled={isSubmitting || !isDirty} className="font-bold">
+                    <Button onClick={handleSave} disabled={isSubmitting || !isDirty} className="font-bold shadow-md">
                         {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
                         Save Changes
                     </Button>
@@ -119,45 +133,62 @@ export default function DonationSettingsPage() {
             )}
         </div>
 
-        <Card className="animate-fade-in-zoom border-primary/10">
+        <Card className="animate-fade-in-zoom border-primary/10 bg-primary/5">
             <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-bold text-primary">
-                    <Settings className="h-5 w-5" /> Visibility settings
+                <CardTitle className="flex items-center gap-2 font-bold">
+                    <DatabaseZap className="h-5 w-5" /> Historical Data Sync
+                </CardTitle>
+                <CardDescription className="font-normal text-primary/70">
+                    Scan all pre-existing donations and automatically create/link Donor Profiles based on phone numbers.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <Button onClick={handleSyncHistorical} disabled={isSyncing} variant="secondary" className="font-bold border-primary/10 text-primary active:scale-95 transition-transform">
+                    {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                    Synchronize Historical Donations to Donor Registry
+                </Button>
+            </CardContent>
+        </Card>
+
+        <Card className="animate-fade-in-up border-primary/10 bg-white shadow-sm overflow-hidden">
+            <CardHeader className="bg-primary/5 border-b">
+                <CardTitle className="flex items-center gap-2 font-bold">
+                    <Settings className="h-5 w-5" /> Summary Visibility
                 </CardTitle>
                 <CardDescription className="font-normal">
                     Control the visibility of financial components in the primary donation summary pages.
                 </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-8">
+            <CardContent className="space-y-8 pt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-4">
-                        <h3 className="font-bold text-primary text-xs tracking-widest uppercase">Public view</h3>
+                        <h3 className="font-bold text-primary text-[10px] tracking-widest uppercase">Public View</h3>
                         <div className="space-y-3">
                             {VISIBILITY_OPTIONS.map(opt => (
-                                <div key={`public_don_${opt.id}`} className="flex items-center space-x-2">
+                                <div key={`public_don_${opt.id}`} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-primary/5 transition-colors">
                                     <Checkbox 
                                         id={`public_don_${opt.id}`} 
                                         checked={localVis[`public_${opt.id}`] !== false} 
                                         onCheckedChange={() => handleVisToggle(opt.id, 'public')} 
                                         disabled={!isEditMode}
                                     />
-                                    <Label htmlFor={`public_don_${opt.id}`} className="cursor-pointer font-normal">{opt.name}</Label>
+                                    <Label htmlFor={`public_don_${opt.id}`} className="cursor-pointer font-bold text-sm tracking-tight">{opt.name}</Label>
                                 </div>
                             ))}
                         </div>
                     </div>
                     <div className="space-y-4">
-                        <h3 className="font-bold text-primary text-xs tracking-widest uppercase">Member view</h3>
+                        <h3 className="font-bold text-primary text-[10px] tracking-widest uppercase">Member View</h3>
                         <div className="space-y-3">
                             {VISIBILITY_OPTIONS.map(opt => (
-                                <div key={`member_don_${opt.id}`} className="flex items-center space-x-2">
+                                <div key={`member_don_${opt.id}`} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-primary/5 transition-colors">
                                     <Checkbox 
                                         id={`member_don_${opt.id}`} 
                                         checked={localVis[`member_${opt.id}`] !== false} 
                                         onCheckedChange={() => handleVisToggle(opt.id, 'member')} 
                                         disabled={!isEditMode}
                                     />
-                                    <Label htmlFor={`member_don_${opt.id}`} className="cursor-pointer font-normal">{opt.name}</Label>
+                                    <Label htmlFor={`member_don_${opt.id}`} className="cursor-pointer font-bold text-sm tracking-tight">{opt.name}</Label>
                                 </div>
                             ))}
                         </div>
@@ -166,26 +197,26 @@ export default function DonationSettingsPage() {
             </CardContent>
         </Card>
 
-        <Card className="animate-fade-in-up border-primary/10">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-bold text-primary">
-                    <CheckSquare className="h-5 w-5" /> Mandatory fields
+        <Card className="animate-fade-in-up border-primary/10 bg-white shadow-sm overflow-hidden">
+            <CardHeader className="bg-primary/5 border-b">
+                <CardTitle className="flex items-center gap-2 font-bold">
+                    <CheckSquare className="h-5 w-5" /> Mandatory Fields
                 </CardTitle>
                 <CardDescription className="font-normal">
-                    Define which information must be captured for every donation.
+                    Define which information must be captured for every donation entry.
                 </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="pt-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {MANDATORY_FIELDS.map(field => (
-                        <div key={field.id} className="flex items-center space-x-2">
+                        <div key={field.id} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-primary/5 transition-colors">
                             <Checkbox 
                                 id={`mandatory_don_${field.id}`} 
                                 checked={localMandatory[field.id] === true} 
                                 onCheckedChange={() => handleMandatoryToggle(field.id)} 
                                 disabled={!isEditMode}
                             />
-                            <Label htmlFor={`mandatory_don_${field.id}`} className="cursor-pointer font-normal">{field.name}</Label>
+                            <Label htmlFor={`mandatory_don_${field.id}`} className="cursor-pointer font-bold text-sm tracking-tight">{field.name}</Label>
                         </div>
                     ))}
                 </div>
