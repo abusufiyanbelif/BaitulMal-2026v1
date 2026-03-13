@@ -19,13 +19,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
-import { ArrowLeft, Edit, Download, Loader2, Image as ImageIcon, FileText, Share2, ZoomIn, ZoomOut, RotateCw, RefreshCw, FolderKanban, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Edit, Download, Loader2, Image as ImageIcon, FileText, Share2, ZoomIn, ZoomOut, RotateCw, RefreshCw, FolderKanban, Lightbulb, AlertCircle, ShieldCheck } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ShareDialog } from '@/components/share-dialog';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const DetailItem = ({ label, value, isMono = false }: { label: string; value: React.ReactNode; isMono?: boolean }) => (
     <div className="space-y-1">
@@ -217,6 +218,26 @@ export default function UnlinkedDonationDetailsPage() {
             </div>
 
             <div className="space-y-6 bg-background font-normal animate-fade-in-up">
+                {!donation.donorId && (
+                    <Alert className="bg-amber-50 border-amber-200 text-amber-800">
+                        <AlertCircle className="h-4 w-4 text-amber-600" />
+                        <AlertTitle className="font-bold">Identity Mapping Required</AlertTitle>
+                        <AlertDescription className="font-normal text-sm flex items-center justify-between">
+                            This donation is currently an unlinked "dummy" record. Please map it to a verified Donor Profile.
+                            <Button variant="link" asChild className="font-bold text-amber-800 p-0 h-auto underline tracking-tighter">
+                                <Link href="/donors">Open Resolver Hub</Link>
+                            </Button>
+                        </AlertDescription>
+                    </Alert>
+                )}
+
+                {donation.donorId && (
+                    <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-100 rounded-xl text-green-800 text-xs font-bold animate-fade-in-down">
+                        <ShieldCheck className="h-4 w-4 text-green-600" />
+                        Institutional Identity Securely Mapped To Registry
+                    </div>
+                )}
+
                 <div ref={summaryRef} className="space-y-6">
                     <div className="grid gap-6 lg:grid-cols-2">
                         <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
@@ -234,7 +255,14 @@ export default function UnlinkedDonationDetailsPage() {
                         <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                             <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Donor & Receiver</CardTitle></CardHeader>
                             <CardContent className="space-y-4 pt-6">
-                                <DetailItem label="Donor Name" value={donation.donorName} />
+                                <DetailItem 
+                                    label="Donor Name" 
+                                    value={donation.donorId ? (
+                                        <Link href={`/donors/${donation.donorId}`} className="text-primary hover:underline flex items-center gap-2">
+                                            {donation.donorName} <ShieldCheck className="h-3 w-3 text-green-600"/>
+                                        </Link>
+                                    ) : donation.donorName} 
+                                />
                                 <DetailItem label="Donor Phone" value={donation.donorPhone} isMono />
                                 <DetailItem label="Receiver Name" value={donation.receiverName} />
                                 <DetailItem label="Referred By" value={donation.referral} />

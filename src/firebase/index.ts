@@ -74,7 +74,7 @@ export {
   uploadString
 } from 'firebase/storage';
 
-// Explicitly export provider hooks to resolve Next.js import errors
+// Explicitly export provider hooks
 export {
   FirebaseProvider,
   FirebaseClientProvider,

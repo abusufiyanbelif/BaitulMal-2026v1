@@ -2,13 +2,12 @@
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
-import type { Donation, DonationCategory, Donor } from '@/lib/types';
+import type { Donation, DonationCategory, Donor, BankDetail } from '@/lib/types';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. Please ensure server credentials are configured.";
 
 /**
- * Enhanced action to save a donation with multi-attribute donor verification.
- * Checks for existing donors by Phone, UPI, or Bank Account.
+ * Robust action to save or update a donation while handling donor identity linking.
  */
 export async function upsertDonationWithDonorAction(
     donationId: string | null,
@@ -21,48 +20,25 @@ export async function upsertDonationWithDonorAction(
     try {
         let finalDonorId = donationData.donorId;
 
-        // --- Multi-Attribute Identity Matching Logic ---
-        if (!finalDonorId) {
+        // --- Identity Resolution Logic ---
+        if (!finalDonorId && donationData.donorPhone) {
             const donorsCol = adminDb.collection('donors');
-            const upiIdsFromDonation = (donationData.transactions || []).map(t => t.upiId).filter(Boolean) as string[];
-            
-            // Search strategy: Phone, then UPI handles, then Account Numbers
-            const queries = [];
-            
-            if (donationData.donorPhone) {
-                queries.push(donorsCol.where('phone', '==', donationData.donorPhone).limit(1).get());
-            }
-            
-            if (upiIdsFromDonation.length > 0) {
-                queries.push(donorsCol.where('upiIds', 'array-contains-any', upiIdsFromDonation.slice(0, 10)).limit(1).get());
-            }
+            const foundDonorSnap = await donorsCol.where('phone', '==', donationData.donorPhone).limit(1).get();
 
-            const results = await Promise.all(queries);
-            const foundDonorDoc = results.find(snap => !snap.empty)?.docs[0];
-
-            if (foundDonorDoc) {
-                finalDonorId = foundDonorDoc.id;
-                // Merge new UPI handles into existing donor if not present
-                const existingDonor = foundDonorDoc.data() as Donor;
-                const newUpis = upiIdsFromDonation.filter(id => !(existingDonor.upiIds || []).includes(id));
-                if (newUpis.length > 0) {
-                    await foundDonorDoc.ref.update({
-                        upiIds: FieldValue.arrayUnion(...newUpis)
-                    });
-                }
+            if (!foundDonorSnap.empty) {
+                finalDonorId = foundDonorSnap.docs[0].id;
             } else {
-                // Auto-create enriched profile
+                // Auto-create donor profile from donation details
                 const newDonorRef = donorsCol.doc();
                 const newDonor: Partial<Donor> = {
                     id: newDonorRef.id,
                     name: donationData.donorName || 'Anonymous Donor',
-                    phone: donationData.donorPhone || '',
-                    upiIds: upiIdsFromDonation,
+                    phone: donationData.donorPhone,
                     status: 'Active',
                     createdAt: FieldValue.serverTimestamp(),
                     createdById: uploadedBy.id,
                     createdByName: uploadedBy.name,
-                    notes: `Auto-generated from donation entry.`,
+                    notes: `Profile automatically established from donation entry.`,
                 };
                 await newDonorRef.set(newDonor);
                 finalDonorId = newDonorRef.id;
@@ -82,18 +58,56 @@ export async function upsertDonationWithDonorAction(
             ...( !donationId && { createdAt: FieldValue.serverTimestamp() } ),
         };
 
+        // Clean legacy fields
         if ((finalDonationData as any).campaignId) delete (finalDonationData as any).campaignId;
         if ((finalDonationData as any).campaignName) delete (finalDonationData as any).campaignName;
 
         await docRef.set(finalDonationData, { merge: true });
 
         revalidatePath('/donations');
-        revalidatePath(`/donors/${finalDonorId}`);
+        revalidatePath('/donors');
+        if (finalDonorId) revalidatePath(`/donors/${finalDonorId}`);
         
-        return { success: true, message: 'Identity verified and record secured.', id };
+        return { success: true, message: 'Identity resolved and record secured.', id };
     } catch (error: any) {
         console.error("Upsert Donation Failed:", error);
-        return { success: false, message: `Operation Failed: ${error.message}` };
+        return { success: false, message: `Operation failed: ${error.message}` };
+    }
+}
+
+/**
+ * Specifically used by the Resolver to map a donation to a donor.
+ */
+export async function linkDonationToDonorAction(
+    donationId: string,
+    donorId: string,
+    updatedBy: { id: string, name: string }
+): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const donationRef = adminDb.collection('donations').doc(donationId);
+        const donorRef = adminDb.collection('donors').doc(donorId);
+        
+        const [donationSnap, donorSnap] = await Promise.all([donationRef.get(), donorRef.get()]);
+        
+        if (!donationSnap.exists) throw new Error("Donation record not found.");
+        if (!donorSnap.exists) throw new Error("Donor profile not found.");
+
+        await donationRef.update({
+            donorId: donorId,
+            updatedAt: FieldValue.serverTimestamp(),
+            updatedBy: updatedBy.name,
+            updatedById: updatedBy.id
+        });
+
+        revalidatePath('/donations');
+        revalidatePath(`/donors/${donorId}`);
+        
+        return { success: true, message: "Identity successfully mapped." };
+    } catch (error: any) {
+        return { success: false, message: error.message };
     }
 }
 

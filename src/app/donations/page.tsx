@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -46,7 +45,8 @@ import {
     Smartphone,
     Wallet,
     ArrowLeft,
-    CalendarIcon
+    CalendarIcon,
+    AlertCircle
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -162,7 +162,10 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                     <span className="font-mono text-xs opacity-60">{index}</span>
                 </div>
                 <div className="min-w-0">
-                    <div className="font-bold text-sm text-primary truncate">{donation.donorName}</div>
+                    <div className="flex items-center gap-2">
+                        <div className="font-bold text-sm text-primary truncate">{donation.donorName}</div>
+                        {!donation.donorId && <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" title="Unlinked Identity" />}
+                    </div>
                     <div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone || 'N/A'}</div>
                 </div>
                 <div className="text-right font-bold font-mono text-primary text-sm">₹{donation.amount.toFixed(2)}</div>
@@ -305,6 +308,7 @@ export default function DonationsPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [identityFilter, setIdentityFilter] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [currentPage, setCurrentPage] = useState(1);
@@ -349,6 +353,13 @@ export default function DonationsPage() {
     if (statusFilter !== 'All') {
         items = items.filter(d => d.status === statusFilter);
     }
+    
+    if (identityFilter === 'Unlinked') {
+        items = items.filter(d => !d.donorId);
+    } else if (identityFilter === 'Linked') {
+        items = items.filter(d => !!d.donorId);
+    }
+
     if (searchTerm) {
         const lower = searchTerm.toLowerCase();
         items = items.filter(d => 
@@ -383,7 +394,7 @@ export default function DonationsPage() {
         });
     }
     return items;
-  }, [donations, searchTerm, statusFilter, dateRange, sortConfig]);
+  }, [donations, searchTerm, statusFilter, identityFilter, dateRange, sortConfig]);
 
   const stats = useMemo(() => {
       const data = filteredAndSortedDonations;
@@ -391,9 +402,7 @@ export default function DonationsPage() {
           total: data.length,
           verified: data.filter(d => d.status === 'Verified').length,
           pending: data.filter(d => d.status === 'Pending').length,
-          canceled: data.filter(d => d.status === 'Canceled').length,
-          online: data.filter(d => d.donationType === 'Online Payment').length,
-          cash: data.filter(d => d.donationType === 'Cash').length,
+          unlinked: data.filter(d => !d.donorId).length,
           totalAmount: data.filter(d => d.status === 'Verified').reduce((sum, d) => sum + d.amount, 0),
           pendingAmount: data.filter(d => d.status === 'Pending').reduce((sum, d) => sum + d.amount, 0),
       };
@@ -408,6 +417,7 @@ export default function DonationsPage() {
 
   const handleSync = async () => {
     setIsSyncing(true);
+    // @ts-ignore
     const res = await syncDonationsAction();
     if (res && res.success) {
         toast({ title: 'Success', description: res.message, variant: 'success' });
@@ -554,9 +564,6 @@ export default function DonationsPage() {
                 <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
                     <UploadCloud className="mr-2 h-4 w-4" /> Import Data
                 </Button>
-                <Button variant="secondary" onClick={handleSync} disabled={isSyncing} className="font-bold text-[10px] border-primary/10 text-primary active:scale-95 transition-transform">
-                  {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <DatabaseZap className="mr-2 h-4 w-4"/>} Refresh Sync
-                </Button>
                 <Button onClick={handleAdd} className="bg-primary hover:bg-primary/90 text-white font-bold text-xs active:scale-95 transition-transform shadow-md rounded-[12px]">
                   <PlusCircle className="mr-2 h-4 w-4" /> Add Record
                 </Button>
@@ -583,9 +590,9 @@ export default function DonationsPage() {
             <StatCard title="Total Count" count={stats.total} description="All Records Logged" icon={Users} delay="100ms" />
             <StatCard title="Verified Sum" count={stats.totalAmount.toLocaleString('en-IN')} description="Confirmed Funds" icon={CheckCircle2} delay="150ms" isCurrency />
             <StatCard title="Pending Sum" count={stats.pendingAmount.toLocaleString('en-IN')} description="Awaiting Vetting" icon={Hourglass} delay="150ms" isCurrency />
+            <StatCard title="Unlinked" count={stats.unlinked} description="Needs Profile Mapping" icon={AlertCircle} delay="200ms" colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} />
             <StatCard title="Online Pay" count={stats.online} description="Digital Transfers" icon={Smartphone} delay="250ms" />
             <StatCard title="Cash" count={stats.cash} description="Physical Collections" icon={Wallet} delay="300ms" />
-            <StatCard title="Canceled" count={stats.canceled} description="Voided Records" icon={XCircle} delay="350ms" colorClass="bg-red-50/50" />
         </div>
 
         {selectedIds.length > 0 && (
@@ -641,11 +648,20 @@ export default function DonationsPage() {
 
                         <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
                             <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-primary/[0.02] font-normal shrink-0"><SelectValue placeholder="All Statuses"/></SelectTrigger>
-                            <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">
+                            <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                 <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
                                 <SelectItem value="Verified" className="font-normal text-primary">Verified</SelectItem>
                                 <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
                                 <SelectItem value="Canceled" className="font-normal text-destructive">Canceled</SelectItem>
+                            </SelectContent>
+                        </Select>
+
+                        <Select value={identityFilter} onValueChange={v => { setIdentityFilter(v); setCurrentPage(1); }}>
+                            <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-primary/[0.02] font-normal shrink-0"><SelectValue placeholder="Identity Linkage"/></SelectTrigger>
+                            <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                                <SelectItem value="All" className="font-normal">All Identifies</SelectItem>
+                                <SelectItem value="Linked" className="font-normal text-primary">Fully Linked</SelectItem>
+                                <SelectItem value="Unlinked" className="font-normal text-amber-600 font-bold">Needs Resolution</SelectItem>
                             </SelectContent>
                         </Select>
                     </div>

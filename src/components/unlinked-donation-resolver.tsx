@@ -1,0 +1,271 @@
+'use client';
+
+import { useState, useMemo, useEffect } from 'react';
+import { 
+    useFirestore, 
+    useCollection, 
+    useMemoFirebase, 
+    collection, 
+    query, 
+    where,
+    doc,
+    getDocs
+} from '@/firebase';
+import { useSession } from '@/hooks/use-session';
+import { 
+    Dialog, 
+    DialogContent, 
+    DialogHeader, 
+    DialogTitle, 
+    DialogDescription,
+    DialogFooter
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { 
+    Loader2, 
+    Search, 
+    UserPlus, 
+    ShieldCheck, 
+    IndianRupee, 
+    CheckCircle2, 
+    X, 
+    AlertCircle, 
+    ArrowRight,
+    Edit,
+    Smartphone
+} from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
+import { linkDonationToDonorAction } from '@/app/donations/actions';
+import { createDonorAction } from '@/app/donors/actions';
+import type { Donation, Donor } from '@/lib/types';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+
+interface UnlinkedDonationResolverProps {
+    open: boolean;
+    onOpenChange: (open: boolean) => void;
+}
+
+export function UnlinkedDonationResolver({ open, onOpenChange }: UnlinkedDonationResolverProps) {
+    const firestore = useFirestore();
+    const { userProfile } = useSession();
+    const { toast } = useToast();
+
+    const [isResolving, setIsResolving] = useState<string | null>(null);
+    const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [isSearching, setIsSearching] = useState(false);
+    const [searchResults, setSearchResults] = useState<Donor[]>([]);
+
+    // 1. Fetch unlinked donations
+    const unlinkedQuery = useMemoFirebase(() => 
+        firestore ? query(collection(firestore, 'donations'), where('donorId', '==', null)) : null, 
+    [firestore]);
+    const { data: unlinkedDonations, isLoading: isLoadingDonations } = useCollection<Donation>(unlinkedQuery);
+
+    // 2. Search for existing donors
+    useEffect(() => {
+        const fetchMatches = async () => {
+            if (!firestore || !searchTerm.trim()) {
+                setSearchResults([]);
+                return;
+            }
+            setIsSearching(true);
+            try {
+                const q = query(collection(firestore, 'donors'));
+                const snap = await getDocs(q);
+                const donors: Donor[] = [];
+                const term = searchTerm.toLowerCase();
+                snap.forEach(docSnap => {
+                    const d = { id: docSnap.id, ...docSnap.data() } as Donor;
+                    if (d.name.toLowerCase().includes(term) || d.phone.includes(searchTerm)) {
+                        donors.push(d);
+                    }
+                });
+                setSearchResults(donors);
+            } finally {
+                setIsSearching(false);
+            }
+        };
+
+        const timer = setTimeout(fetchMatches, 300);
+        return () => clearTimeout(timer);
+    }, [searchTerm, firestore]);
+
+    const handleLinkToExisting = async (donor: Donor) => {
+        if (!selectedDonation || !userProfile) return;
+        setIsResolving(selectedDonation.id);
+        const res = await linkDonationToDonorAction(selectedDonation.id, donor.id, { id: userProfile.id, name: userProfile.name });
+        if (res.success) {
+            toast({ title: 'Identity Mapped', description: `Linked to ${donor.name}.`, variant: 'success' });
+            setSelectedDonation(null);
+        } else {
+            toast({ title: 'Mapping Failed', description: res.message, variant: 'destructive' });
+        }
+        setIsResolving(null);
+    };
+
+    const handleCreateNewProfile = async () => {
+        if (!selectedDonation || !userProfile) return;
+        setIsResolving(selectedDonation.id);
+        const res = await createDonorAction({
+            name: selectedDonation.donorName,
+            phone: selectedDonation.donorPhone,
+            status: 'Active',
+            notes: `Auto-generated during identity resolution hub for donation ${selectedDonation.id}.`
+        }, { id: userProfile.id, name: userProfile.name });
+
+        if (res.success && res.id) {
+            const linkRes = await linkDonationToDonorAction(selectedDonation.id, res.id, { id: userProfile.id, name: userProfile.name });
+            if (linkRes.success) {
+                toast({ title: 'New Profile Registered', description: 'Identity verified and linked.', variant: 'success' });
+                setSelectedDonation(null);
+            }
+        } else {
+            toast({ title: 'Creation Failed', description: res.message, variant: 'destructive' });
+        }
+        setIsResolving(null);
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 overflow-hidden rounded-[24px] border-primary/10">
+                <DialogHeader className="bg-primary/5 px-6 py-6 border-b">
+                    <DialogTitle className="text-2xl font-bold text-primary tracking-tight">Identity Resolver Hub</DialogTitle>
+                    <DialogDescription className="font-normal text-primary/70">
+                        Resolve "dummy" donor records by mapping them to verified organizational profiles.
+                    </DialogDescription>
+                </DialogHeader>
+
+                <div className="flex-1 min-h-0 flex flex-col md:flex-row">
+                    {/* Left Panel: Unlinked Donations List */}
+                    <div className="w-full md:w-1/2 border-r border-primary/5 flex flex-col bg-muted/5">
+                        <div className="p-4 bg-white border-b flex items-center justify-between">
+                            <h3 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Awaiting Resolution</h3>
+                            <Badge variant="secondary" className="h-5 text-[9px] font-bold">{unlinkedDonations?.length || 0} Records</Badge>
+                        </div>
+                        <ScrollArea className="flex-1">
+                            <div className="p-2 space-y-1">
+                                {isLoadingDonations ? (
+                                    <div className="flex items-center justify-center p-10"><Loader2 className="h-6 w-6 animate-spin text-primary/20"/></div>
+                                ) : unlinkedDonations?.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center py-20 text-center opacity-30">
+                                        <CheckCircle2 className="h-10 w-10 mb-2"/>
+                                        <p className="text-xs font-bold uppercase tracking-widest">Registry Secure</p>
+                                    </div>
+                                ) : (
+                                    unlinkedDonations?.map(d => (
+                                        <div 
+                                            key={d.id}
+                                            onClick={() => { setSelectedDonation(d); setSearchTerm(d.donorPhone || d.donorName); }}
+                                            className={cn(
+                                                "p-4 rounded-xl border transition-all cursor-pointer group",
+                                                selectedDonation?.id === d.id ? "bg-primary border-primary text-white shadow-lg scale-[1.02]" : "bg-white border-transparent hover:border-primary/20 hover:shadow-sm"
+                                            )}
+                                        >
+                                            <div className="flex justify-between items-start mb-1">
+                                                <p className="font-bold text-sm truncate">{d.donorName}</p>
+                                                <p className="font-mono text-[10px] font-bold opacity-60">₹{d.amount.toLocaleString()}</p>
+                                            </div>
+                                            <div className="flex items-center justify-between text-[10px]">
+                                                <span className="opacity-60">{d.donationDate}</span>
+                                                <span className="font-mono opacity-40 uppercase">ID: {d.id.slice(-6)}</span>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </ScrollArea>
+                    </div>
+
+                    {/* Right Panel: Resolution Options */}
+                    <div className="flex-1 flex flex-col bg-white">
+                        {selectedDonation ? (
+                            <ScrollArea className="flex-1">
+                                <div className="p-6 space-y-8 animate-fade-in-up">
+                                    <div className="space-y-4">
+                                        <h3 className="text-lg font-bold text-primary tracking-tight">Resolution Logic</h3>
+                                        <Card className="p-4 bg-primary/5 border-primary/10 shadow-none">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-3 rounded-full bg-white text-primary shadow-sm"><IndianRupee className="h-6 w-6"/></div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-bold text-primary">{selectedDonation.donorName}</p>
+                                                    <p className="text-xs font-mono text-muted-foreground">{selectedDonation.donorPhone}</p>
+                                                </div>
+                                                <Button variant="ghost" size="icon" asChild className="h-8 w-8"><Link href={`/donations/${selectedDonation.id}`} target="_blank"><Edit className="h-4 w-4"/></Link></Button>
+                                            </div>
+                                        </Card>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <h4 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Suggested Action</h4>
+                                            <Badge variant="outline" className="text-[9px] font-bold">Best Match Discovery</Badge>
+                                        </div>
+                                        
+                                        <div className="grid gap-3">
+                                            <Button onClick={handleCreateNewProfile} disabled={!!isResolving} className="h-12 font-bold justify-between px-6 rounded-xl shadow-md transition-transform active:scale-95 group">
+                                                <div className="flex items-center gap-3">
+                                                    <UserPlus className="h-5 w-5 group-hover:scale-110 transition-transform" />
+                                                    Register New Profile
+                                                </div>
+                                                <ArrowRight className="h-4 w-4 opacity-40" />
+                                            </Button>
+
+                                            <div className="relative pt-4">
+                                                <Search className="absolute left-3 bottom-3 h-4 w-4 text-primary/40" />
+                                                <Input 
+                                                    placeholder="Search Existing Profile..." 
+                                                    value={searchTerm}
+                                                    onChange={e => setSearchTerm(e.target.value)}
+                                                    className="pl-10 h-10 rounded-xl border-primary/10 text-sm font-normal"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-2 mt-2">
+                                                {isSearching ? (
+                                                    <div className="flex justify-center p-4"><Loader2 className="h-5 w-5 animate-spin text-primary/20"/></div>
+                                                ) : searchResults.length > 0 ? (
+                                                    searchResults.map(donor => (
+                                                        <div 
+                                                            key={donor.id}
+                                                            onClick={() => handleLinkToExisting(donor)}
+                                                            className="flex items-center justify-between p-3 rounded-xl border border-primary/5 hover:border-primary/30 hover:bg-primary/[0.02] cursor-pointer group transition-all"
+                                                        >
+                                                            <div className="min-w-0">
+                                                                <p className="font-bold text-sm text-primary">{donor.name}</p>
+                                                                <p className="text-[10px] font-mono text-muted-foreground">{donor.phone}</p>
+                                                            </div>
+                                                            <ShieldCheck className="h-4 w-4 text-green-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                        </div>
+                                                    ))
+                                                ) : searchTerm.length > 2 && (
+                                                    <p className="text-center text-[10px] text-muted-foreground font-normal italic py-4">No matching profile found. Try another search or create new.</p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </ScrollArea>
+                        ) : (
+                            <div className="flex-1 flex flex-col items-center justify-center p-10 text-center opacity-30 grayscale">
+                                <AlertCircle className="h-16 w-16 mb-4"/>
+                                <p className="text-sm font-bold uppercase tracking-widest">Select A Record To Resolve</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <DialogFooter className="px-6 py-4 bg-primary/5 border-t">
+                    <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-primary/20 text-primary px-10 rounded-xl">
+                        Close Resolver
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+}

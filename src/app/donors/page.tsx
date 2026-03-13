@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useFirestore, useMemoFirebase, useCollection, collection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import type { Donor, BankDetail } from '@/lib/types';
+import type { Donor, BankDetail, Donation } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -13,27 +13,23 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { 
     ArrowLeft, 
     PlusCircle, 
-    Eye, 
     Search,
     MoreHorizontal,
     ShieldAlert,
     Trash2,
     Loader2,
     HeartHandshake,
-    Filter,
     Download,
     UploadCloud,
     X,
     UserPlus,
     Users,
     TrendingUp,
-    CalendarIcon,
     Edit,
     Save,
-    Landmark,
-    CreditCard,
-    Smartphone,
-    Plus
+    Plus,
+    DatabaseZap,
+    AlertCircle
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -53,6 +49,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { UnlinkedDonationResolver } from '@/components/unlinked-donation-resolver';
 
 function StatCard({ title, count, description, icon: Icon, delay }: { title: string, count: number, description: string, icon: any, delay: string }) {
     return (
@@ -80,15 +77,23 @@ export default function DonorRegistryPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isResolverOpen, setIsResolverOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingDonor, setEditingDonor] = useState<Donor | null>(null);
 
-  // Dynamic Array States for Form
   const [bankDetails, setBankDetails] = useState<BankDetail[]>([{ bankName: '', accountNumber: '', ifscCode: '' }]);
   const [upiIds, setUpiIds] = useState<string[]>(['']);
 
   const donorsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donors') : null, [firestore]);
   const { data: donors, isLoading: areDonorsLoading } = useCollection<Donor>(donorsRef);
+
+  const donationsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
+  const { data: allDonations } = useCollection<Donation>(donationsRef);
+
+  const unlinkedDonationsCount = useMemo(() => {
+    if (!allDonations) return 0;
+    return allDonations.filter(d => !d.donorId).length;
+  }, [allDonations]);
 
   const canRead = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donors.read', false);
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donors.update', false);
@@ -121,8 +126,6 @@ export default function DonorRegistryPage() {
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
-    
-    // Process arrays: Filter out empty entries
     const validBanks = bankDetails.filter(b => b.bankName || b.accountNumber);
     const validUpis = upiIds.filter(u => u.trim() !== '');
 
@@ -183,6 +186,11 @@ export default function DonorRegistryPage() {
                 <p className="text-sm font-medium text-muted-foreground opacity-70">Total Registered Profiles: {donors?.length || 0}</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
+                {unlinkedDonationsCount > 0 && (
+                    <Button onClick={() => setIsResolverOpen(true)} variant="secondary" size="sm" className="font-bold bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 active:scale-95 transition-transform animate-pulse">
+                        <DatabaseZap className="mr-2 h-4 w-4"/> Resolve {unlinkedDonationsCount} Unlinked
+                    </Button>
+                )}
                 <Button variant="outline" size="sm" asChild className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
                     <Link href="/donors/summary"><TrendingUp className="mr-2 h-4 w-4"/> Impact Summary</Link>
                 </Button>
@@ -194,6 +202,17 @@ export default function DonorRegistryPage() {
             </div>
         </div>
       </div>
+
+      {unlinkedDonationsCount > 0 && (
+          <Alert className="bg-amber-50 border-amber-200 text-amber-800 animate-fade-in-down">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertTitle className="font-bold">Fragmented Identities Detected</AlertTitle>
+              <AlertDescription className="font-normal text-xs flex items-center justify-between gap-4">
+                  There are {unlinkedDonationsCount} contributions that are not yet mapped to a verified Donor Profile.
+                  <Button onClick={() => setIsResolverOpen(true)} size="sm" variant="link" className="font-bold text-amber-800 p-0 underline h-auto uppercase tracking-tighter">Start Resolver Hub</Button>
+              </AlertDescription>
+          </Alert>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard title="Total Profiles" count={stats.total} description="All Registered Donors" icon={Users} delay="100ms" />
@@ -384,6 +403,8 @@ export default function DonorRegistryPage() {
             </form>
         </DialogContent>
       </Dialog>
+
+      <UnlinkedDonationResolver open={isResolverOpen} onOpenChange={setIsResolverOpen} />
     </main>
   );
 }
