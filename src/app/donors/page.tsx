@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -155,10 +156,25 @@ export default function DonorRegistryPage() {
   };
 
   const handleDelete = async (donor: Donor) => {
-    if (!canDelete || !confirm(`Permanently Remove Profile For ${donor.name}?`)) return;
-    const res = await deleteDonorAction(donor.id);
-    if (res.success) toast({ title: 'Profile Removed', variant: 'success' });
-    else toast({ title: 'Removal Failed', description: res.message, variant: 'destructive' });
+    if (!canDelete) {
+        toast({ title: 'Permission Denied', description: 'You do not have permission to delete profiles.', variant: 'destructive' });
+        return;
+    }
+    if (!confirm(`Permanently Remove Profile For ${donor.name}? Financial records will be preserved as unlinked entries.`)) return;
+    
+    setIsSubmitting(true);
+    try {
+        const res = await deleteDonorAction(donor.id);
+        if (res.success) {
+            toast({ title: 'Profile Removed', description: res.message, variant: 'success' });
+        } else {
+            toast({ title: 'Removal Failed', description: res.message, variant: 'destructive' });
+        }
+    } catch (e: any) {
+        toast({ title: 'System Error', description: e.message || 'An unexpected error occurred.', variant: 'destructive' });
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   const isLoading = areDonorsLoading || isProfileLoading;
@@ -267,7 +283,7 @@ export default function DonorRegistryPage() {
                             <TableRow key={donor.id} onClick={() => router.push(`/donors/${donor.id}`)} className="cursor-pointer hover:bg-primary/[0.02] transition-colors border-b border-primary/5 last:border-0 bg-white">
                                 <TableCell className="pl-6 font-mono text-xs opacity-60">{idx + 1}</TableCell>
                                 <TableCell className="font-bold text-sm text-primary">{donor.name}</TableCell>
-                                <TableCell className="font-mono text-xs opacity-70">{donor.phone}</TableCell>
+                                <TableCell className="font-mono text-xs opacity-70">{donor.phone || '---'}</TableCell>
                                 <TableCell className="text-xs font-normal text-muted-foreground">{donor.email || '---'}</TableCell>
                                 <TableCell className="text-center">
                                     <Badge variant={donor.status === 'Active' ? 'active' : 'outline'} className="text-[10px] font-bold">
@@ -286,7 +302,9 @@ export default function DonorRegistryPage() {
                                                 {canDelete && (
                                                     <>
                                                         <DropdownMenuSeparator className="bg-primary/10" />
-                                                        <DropdownMenuItem onClick={() => handleDelete(donor)} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal"><Trash2 className="mr-2 h-4 w-4"/> Remove Profile</DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleDelete(donor)} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal">
+                                                            <Trash2 className="mr-2 h-4 w-4"/> Remove Profile
+                                                        </DropdownMenuItem>
                                                     </>
                                                 )}
                                             </DropdownMenuContent>
