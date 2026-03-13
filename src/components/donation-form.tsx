@@ -26,9 +26,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Donation, DonationCategory, Campaign, Lead, TransactionDetail as TransactionDetailType, DonationLink } from '@/lib/types';
+import type { Donation, DonationCategory, Campaign, Lead, TransactionDetail as TransactionDetailType, DonationLink, Donor } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
-import { Loader2, ScanLine, Replace, Trash2, Plus, IndianRupee, ZoomIn, ZoomOut, RotateCw, RefreshCw, ImageIcon, Save, X } from 'lucide-react';
+import { Loader2, ScanLine, Replace, Trash2, Plus, IndianRupee, ZoomIn, ZoomOut, RotateCw, RefreshCw, ImageIcon, Save, X, UserSearch, UserCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -40,6 +40,7 @@ import { useAuth, useFirestore, useMemoFirebase, useDoc, doc } from '@/firebase'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
+import { DonorSearchDialog } from './donor-search-dialog';
 
 const linkSplitSchema = z.array(z.object({
     linkId: z.string(),
@@ -49,6 +50,7 @@ const linkSplitSchema = z.array(z.object({
 const formSchema = z.object({
   donorName: z.string().min(2, { message: "Name Must Be At Least 2 Characters." }),
   donorPhone: z.string().optional().or(z.literal('')),
+  donorId: z.string().optional(),
   receiverName: z.string().optional(),
   referral: z.string().optional(),
   amount: z.coerce.number(),
@@ -230,6 +232,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   const { toast } = useToast();
   const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDonorSearchOpen, setIsDonorSearchOpen] = useState(false);
 
   const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donation_config') : null, [firestore]);
   const { data: configSettings } = useDoc<any>(configRef);
@@ -240,6 +243,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     defaultValues: {
       donorName: donation?.donorName || '',
       donorPhone: donation?.donorPhone || '',
+      donorId: donation?.donorId || '',
       receiverName: donation?.receiverName || '',
       referral: donation?.referral || '',
       amount: donation?.amount || 0,
@@ -268,6 +272,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   const watchedTypeSplit = watch('typeSplit');
   const isMonthlyContribution = useMemo(() => watchedTypeSplit?.some(s => s.category === 'Monthly Contribution'), [watchedTypeSplit]);
   const isLinkSplit = watch('isSplit');
+  const donorId = watch('donorId');
 
   useEffect(() => {
     const total = watchedTransactions.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
@@ -318,6 +323,13 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     }
   };
 
+  const handleSelectDonorProfile = (donor: Donor) => {
+    setValue('donorName', donor.name, { shouldDirty: true, shouldValidate: true });
+    setValue('donorPhone', donor.phone, { shouldDirty: true, shouldValidate: true });
+    setValue('donorId', donor.id, { shouldDirty: true });
+    toast({ title: 'Donor Profile Loaded', variant: 'success' });
+  };
+
   const renderLabel = (label: string, fieldName: string) => (
     <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">
         {label} {mandatoryFields[fieldName] ? '*' : ''}
@@ -335,7 +347,14 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                     )}/>
 
                     <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm">
-                        <h3 className="text-sm font-bold text-primary tracking-tight">Institutional Vetting</h3>
+                        <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-bold text-primary tracking-tight">Institutional Vetting</h3>
+                            {!isReadOnly && (
+                                <Button type="button" variant="outline" size="sm" onClick={() => setIsDonorSearchOpen(true)} className="h-8 font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+                                    <UserSearch className="mr-2 h-3.5 w-3.5"/> Search Donor Profile
+                                </Button>
+                            )}
+                        </div>
                         <FormField control={control} name="donationType" render={({ field }) => (
                             <FormItem>{renderLabel('Payment Method', 'donationType')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Method" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="Online Payment" className="font-normal">Online Payment</SelectItem><SelectItem value="Cash" className="font-normal">Cash</SelectItem><SelectItem value="Check" className="font-normal">Check</SelectItem><SelectItem value="Other" className="font-normal">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                         )}/>
@@ -353,7 +372,14 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                     
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <FormField control={control} name="donorName" render={({ field }) => (
-                            <FormItem>{renderLabel('Donor Name', 'donorName')}<FormControl><Input placeholder="e.g. Saleem Khan" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl><FormMessage /></FormItem>
+                            <FormItem>
+                                <div className="flex items-center justify-between">
+                                    {renderLabel('Donor Name', 'donorName')}
+                                    {donorId && <Badge variant="eligible" className="h-4 text-[8px] font-black uppercase"><UserCheck className="h-2 w-2 mr-1"/> Linked</Badge>}
+                                </div>
+                                <FormControl><Input placeholder="e.g. Saleem Khan" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl>
+                                <FormMessage />
+                            </FormItem>
                         )}/>
                         <FormField control={control} name="donorPhone" render={({ field }) => (
                             <FormItem>{renderLabel('Donor Phone', 'donorPhone')}<FormControl><Input placeholder="10-digit mobile" {...field} disabled={isReadOnly} className="font-mono text-primary"/></FormControl><FormMessage /></FormItem>
@@ -479,6 +505,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
             </div>
         )}
       </form>
+      <DonorSearchDialog open={isDonorSearchOpen} onOpenChange={setIsDonorSearchOpen} onSelectDonor={handleSelectDonorProfile} />
     </Form>
   );
 }

@@ -265,6 +265,20 @@ export interface Beneficiary extends DocumentData {
     updatedByName?: string;
 }
 
+export interface Donor extends DocumentData {
+  id: string;
+  name: string;
+  phone: string;
+  email?: string;
+  address?: string;
+  status: 'Active' | 'Inactive';
+  notes?: string;
+  createdAt?: Timestamp | FieldValue;
+  updatedAt?: Timestamp | FieldValue;
+  createdById?: string;
+  createdByName?: string;
+}
+
 export interface DonationLink {
   linkId: string;
   linkName: string;
@@ -287,6 +301,7 @@ export interface Donation extends DocumentData {
   id: string;
   donorName: string;
   donorPhone: string;
+  donorId?: string; // Linked Donor Profile ID
   receiverName: string;
   amount: number;
   type?: DonationCategory;

@@ -2,7 +2,7 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
 import { useSession } from '@/hooks/use-session';
-import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, Database, FlaskConical, IndianRupee, Eye, BarChart, BookOpen } from 'lucide-react';
+import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, Database, FlaskConical, IndianRupee, Eye, BarChart, BookOpen, HeartHandshake } from 'lucide-react';
 import { getNestedValue } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import React from 'react';
@@ -49,6 +49,13 @@ export default function Home() {
             href: "/beneficiaries",
             icon: Users,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.beneficiaries.read', false),
+        },
+        {
+            title: "Donors",
+            description: "Manage Contributor Profiles And Donation History.",
+            href: "/donors",
+            icon: HeartHandshake,
+            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donors.read', false),
         },
         {
             title: "Donations",

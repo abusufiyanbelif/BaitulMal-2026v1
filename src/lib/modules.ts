@@ -46,6 +46,7 @@ export const settingsSubModules = [
     { id: 'lead', name: 'Lead Settings', permissions: crudPermissions },
     { id: 'donation', name: 'Donation Settings', permissions: crudPermissions },
     { id: 'beneficiary', name: 'Beneficiary Settings', permissions: crudPermissions },
+    { id: 'donor', name: 'Donor Settings', permissions: crudPermissions },
     { id: 'user', name: 'User Settings', permissions: crudPermissions },
 ] as const;
 
@@ -103,6 +104,7 @@ export const modules = [
   },
   { id: 'beneficiaries', name: 'Beneficiaries', permissions: crudPermissions },
   { id: 'donations', name: 'Donations', permissions: crudPermissions },
+  { id: 'donors', name: 'Donors', permissions: crudPermissions },
   { id: 'guidance', name: 'Guidance Hub', permissions: crudPermissions },
   { id: 'extractor', name: 'Extractor', permissions: simpleReadPermission },
   { id: 'storyCreator', name: 'Story Creator', permissions: simpleReadPermission },
@@ -136,6 +138,7 @@ export type UserPermissions = Partial<
   campaigns?: CampaignPermissions;
   'leads-members'?: LeadPermissions;
   beneficiaries?: Partial<Record<Permission, boolean>>;
+  donors?: Partial<Record<Permission, boolean>>;
   guidance?: Partial<Record<Permission, boolean>>;
   settings?: SettingsPermissions;
 };
