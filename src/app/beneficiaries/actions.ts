@@ -28,7 +28,7 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
         return { success: true, message: 'Beneficiary Record Registered Successfully.', id: docRef.id };
     } catch (error: any) {
         console.error("Error Creating Beneficiary:", error);
-        return { success: true, message: `Registration Failed: ${error.message}` };
+        return { success: false, message: `Registration Failed: ${error.message}` };
     }
 }
 
