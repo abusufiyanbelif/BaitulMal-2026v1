@@ -46,20 +46,21 @@ import {
     Hourglass,
     XCircle,
     Smartphone,
-    Wallet
+    Wallet,
+    CalendarIcon
 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
   DropdownMenuPortal,
   DropdownMenuSub,
   DropdownMenuSubTrigger,
   DropdownMenuSubContent,
   DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
-  DropdownMenuSeparator
+  DropdownMenuRadioItem
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -94,6 +95,10 @@ import { bulkUpdateDonationStatusAction, bulkImportDonationsAction } from '@/app
 import { donationCategories } from '@/lib/modules';
 import { BrandedLoader } from '@/components/branded-loader';
 import { DonationImportDialog } from '@/components/donation-import-dialog';
+import { DateRange } from "react-day-picker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1100px]";
 
@@ -169,6 +174,7 @@ export default function DonationsPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
   const [currentPage, setCurrentPage] = useState(1);
@@ -199,6 +205,17 @@ export default function DonationsPage() {
       const term = searchTerm.toLowerCase();
       items = items.filter(d => d.donorName.toLowerCase().includes(term) || d.receiverName.toLowerCase().includes(term) || d.donorPhone.includes(term));
     }
+    if (dateRange?.from) {
+        const from = startOfDay(dateRange.from);
+        const to = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+        items = items.filter(d => {
+            if (!d.donationDate) return false;
+            try {
+                const dDate = parseISO(d.donationDate);
+                return dDate >= from && dDate <= to;
+            } catch (e) { return false; }
+        });
+    }
     if (sortConfig !== null) {
       items.sort((a, b) => {
         if (sortConfig.key === 'srNo') return 0;
@@ -209,7 +226,7 @@ export default function DonationsPage() {
       });
     }
     return items;
-  }, [donations, searchTerm, statusFilter, sortConfig]);
+  }, [donations, searchTerm, statusFilter, dateRange, sortConfig]);
 
   const stats = useMemo(() => {
       const data = filteredAndSortedDonations;
@@ -457,7 +474,21 @@ export default function DonationsPage() {
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-4">
-                    <Input placeholder="Search Donor..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-xs h-9 text-xs font-normal" />
+                    <Input placeholder="Search Donor..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-[200px] h-9 text-xs font-normal" />
+                    
+                    <Popover>
+                        <PopoverTrigger asChild>
+                            <Button variant="outline" className={cn("w-[220px] shrink-0 justify-start h-9 text-xs border-primary/10 text-primary font-bold rounded-[10px] bg-white transition-all hover:border-primary/30", !dateRange && "text-muted-foreground")}>
+                                <CalendarIcon className="mr-2 h-3 w-3 opacity-40" />
+                                {dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd, y")) : "Select Date Range"}
+                            </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); setCurrentPage(1); }} numberOfMonths={2} />
+                        </PopoverContent>
+                    </Popover>
+                    {dateRange && <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/40 hover:text-primary shrink-0" onClick={() => { setDateRange(undefined); setCurrentPage(1); }}><X className="h-4 w-4"/></Button>}
+
                     <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}>
                         <SelectTrigger className="w-[140px] h-9 text-xs text-primary font-bold border-primary/20"><SelectValue placeholder="Status"/></SelectTrigger>
                         <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Verified" className="font-bold">Verified</SelectItem><SelectItem value="Pending" className="font-bold">Pending</SelectItem><SelectItem value="Canceled" className="font-bold">Canceled</SelectItem></SelectContent>

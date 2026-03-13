@@ -45,7 +45,8 @@ import {
     XCircle,
     Smartphone,
     Wallet,
-    ArrowLeft
+    ArrowLeft,
+    CalendarIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -76,6 +77,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogFooter,
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { Input } from '@/components/ui/input';
@@ -92,6 +94,10 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
 import { DonationImportDialog } from '@/components/donation-import-dialog';
+import { DateRange } from "react-day-picker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 type SortKey = keyof Donation | 'srNo';
 
@@ -298,6 +304,7 @@ export default function DonationsPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(15);
@@ -351,6 +358,18 @@ export default function DonationsPage() {
         );
     }
 
+    if (dateRange?.from) {
+        const from = startOfDay(dateRange.from);
+        const to = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+        items = items.filter(d => {
+            if (!d.donationDate) return false;
+            try {
+                const dDate = parseISO(d.donationDate);
+                return dDate >= from && dDate <= to;
+            } catch (e) { return false; }
+        });
+    }
+
     if (sortConfig) {
         items.sort((a, b) => {
             if (sortConfig.key === 'srNo') return 0;
@@ -363,7 +382,7 @@ export default function DonationsPage() {
         });
     }
     return items;
-  }, [donations, searchTerm, statusFilter, sortConfig]);
+  }, [donations, searchTerm, statusFilter, dateRange, sortConfig]);
 
   const stats = useMemo(() => {
       const data = filteredAndSortedDonations;
@@ -607,7 +626,21 @@ export default function DonationsPage() {
             <CardHeader className="bg-primary/5 border-b">
                 <ScrollArea className="w-full">
                     <div className="flex flex-nowrap gap-2 pb-2">
-                        <Input placeholder="Search Donor, Phone, Id..." value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-[300px] h-9 text-xs border-primary/10 focus-visible:ring-primary text-primary font-normal bg-primary/[0.02] rounded-[10px] shrink-0"/>
+                        <Input placeholder="Search Donor, Phone, Id..." value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-[250px] h-9 text-xs border-primary/10 focus-visible:ring-primary text-primary font-normal bg-primary/[0.02] rounded-[10px] shrink-0"/>
+                        
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button variant="outline" className={cn("w-[220px] shrink-0 justify-start h-9 text-xs border-primary/10 text-primary font-bold rounded-[10px] bg-white transition-all hover:border-primary/30", !dateRange && "text-muted-foreground")}>
+                                    <CalendarIcon className="mr-2 h-3 w-3 opacity-40" />
+                                    {dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd, y")) : "Select Date Range"}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="start">
+                                <Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); setCurrentPage(1); }} numberOfMonths={2} />
+                            </PopoverContent>
+                        </Popover>
+                        {dateRange && <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/40 hover:text-primary shrink-0" onClick={() => { setDateRange(undefined); setCurrentPage(1); }}><X className="h-4 w-4"/></Button>}
+
                         <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
                             <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-primary/[0.02] font-normal shrink-0"><SelectValue placeholder="All Statuses"/></SelectTrigger>
                             <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">
@@ -720,12 +753,12 @@ export default function DonationsPage() {
                     <ScrollBar orientation="horizontal" />
                     <ScrollBar orientation="vertical" />
                 </ScrollArea>
-                <div className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white flex">
+                <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white flex">
                     <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
                     <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5)) } className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
                     <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
                     <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
-                </div>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     </main>

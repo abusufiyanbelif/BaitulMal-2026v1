@@ -35,7 +35,8 @@ import {
     Info,
     CheckSquare,
     X,
-    ChevronsUpDown
+    ChevronsUpDown,
+    CalendarIcon
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -72,6 +73,9 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { SectionLoader } from '@/components/section-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { BeneficiaryImportDialog } from '@/components/beneficiary-import-dialog';
+import { DateRange } from "react-day-picker";
+import { Calendar } from "@/components/ui/calendar";
+import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 const gridClass = "grid grid-cols-[40px_40px_50px_200px_120px_140px_140px_100px_200px_60px] items-center gap-4 px-4 py-3 min-w-[1150px]";
 
@@ -114,6 +118,7 @@ export default function BeneficiariesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [zakatFilter, setZakatFilter] = useState('All');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [selectedReferrals, setSelectedReferrals] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
@@ -152,7 +157,20 @@ export default function BeneficiariesPage() {
         const matchesZakat = zakatFilter === 'All' || (zakatFilter === 'Eligible' ? b.isEligibleForZakat : !b.isEligibleForZakat);
         const matchesReferral = selectedReferrals.length === 0 || (b.referralBy && selectedReferrals.includes(b.referralBy.trim()));
         
-        return matchesSearch && matchesStatus && matchesZakat && matchesReferral;
+        let matchesDate = true;
+        if (dateRange?.from) {
+            const from = startOfDay(dateRange.from);
+            const to = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+            if (!b.addedDate) matchesDate = false;
+            else {
+                try {
+                    const bDate = parseISO(b.addedDate);
+                    matchesDate = bDate >= from && bDate <= to;
+                } catch(e) { matchesDate = false; }
+            }
+        }
+
+        return matchesSearch && matchesStatus && matchesZakat && matchesReferral && matchesDate;
     });
 
     if (sortConfig !== null) {
@@ -170,7 +188,7 @@ export default function BeneficiariesPage() {
     }
 
     return items;
-  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, selectedReferrals, sortConfig]);
+  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, selectedReferrals, dateRange, sortConfig]);
 
   const stats = useMemo(() => {
       const data = filteredAndSortedBeneficiaries;
@@ -372,6 +390,19 @@ export default function BeneficiariesPage() {
                     </div>
                 </div>
                 
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="outline" className={cn("w-[220px] shrink-0 justify-start h-10 text-sm border-primary/10 text-primary font-bold rounded-[12px] bg-white transition-all hover:border-primary/30", !dateRange && "text-muted-foreground")}>
+                            <CalendarIcon className="mr-2 h-4 w-4 opacity-40" />
+                            {dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd, y")) : "Select Date Range"}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); setCurrentPage(1); }} numberOfMonths={2} />
+                    </PopoverContent>
+                </Popover>
+                {dateRange && <Button variant="ghost" size="icon" className="h-10 w-10 text-primary/40 hover:text-primary shrink-0" onClick={() => { setDateRange(undefined); setCurrentPage(1); }}><X className="h-4 w-4"/></Button>}
+
                 <Popover>
                     <PopoverTrigger asChild>
                         <Button variant="outline" className="w-[220px] shrink-0 justify-between h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white">

@@ -52,7 +52,8 @@ import {
     X,
     Info,
     CheckSquare,
-    ClipboardCheck
+    ClipboardCheck,
+    CalendarIcon
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -72,6 +73,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogFooter
 } from "@/components/ui/dialog";
 import {
   Popover,
@@ -98,6 +100,9 @@ import { SectionLoader } from '@/components/section-loader';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { BeneficiaryImportDialog } from '@/components/beneficiary-import-dialog';
+import { DateRange } from "react-day-picker";
+import { Calendar } from "@/components/ui/calendar";
+import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 const gridClass = "grid grid-cols-[40px_40px_50px_200px_120px_140px_140px_100px_120px_120px_150px_60px] items-center gap-4 px-4 py-3 min-w-[1300px]";
 
@@ -140,6 +145,7 @@ export default function BeneficiariesPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
   const [zakatFilter, setZakatFilter] = useState('All');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [selectedReferrals, setSelectedReferrals] = useState<string[]>([]);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [editingBeneficiary, setEditingBeneficiary] = useState<Beneficiary | null>(null);
@@ -178,9 +184,22 @@ export default function BeneficiariesPage() {
         const matchesZakat = zakatFilter === 'All' || (zakatFilter === 'Eligible' ? b.isEligibleForZakat : !b.isEligibleForZakat);
         const matchesReferral = selectedReferrals.length === 0 || (b.referralBy && selectedReferrals.includes(b.referralBy.trim()));
         
-        return matchesSearch && matchesStatus && matchesZakat && matchesReferral;
+        let matchesDate = true;
+        if (dateRange?.from) {
+            const from = startOfDay(dateRange.from);
+            const to = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+            if (!b.addedDate) matchesDate = false;
+            else {
+                try {
+                    const bDate = parseISO(b.addedDate);
+                    matchesDate = bDate >= from && bDate <= to;
+                } catch(e) { matchesDate = false; }
+            }
+        }
+
+        return matchesSearch && matchesStatus && matchesZakat && matchesReferral && matchesDate;
     });
-  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, selectedReferrals]);
+  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, selectedReferrals, dateRange]);
 
   const stats = useMemo(() => {
       const data = filteredBeneficiaries;
@@ -455,9 +474,9 @@ export default function BeneficiariesPage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3 bg-primary/5 p-4 rounded-xl border border-primary/10 shadow-sm">
-          <div className="relative flex-1 min-w-[300px]">
+          <div className="relative flex-1 min-w-[250px]">
             <Input 
-                placeholder="Search Name, Phone, Address..." 
+                placeholder="Search Name, Phone..." 
                 value={searchTerm} 
                 onChange={(e) => setSearchTerm(e.target.value)} 
                 className="pl-10 pr-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary rounded-[12px]" 
@@ -466,6 +485,19 @@ export default function BeneficiariesPage() {
                 <Search className="h-4 w-4" />
             </div>
           </div>
+
+          <Popover>
+                <PopoverTrigger asChild>
+                    <Button variant="outline" className={cn("w-[220px] justify-start h-10 text-sm border-primary/10 text-primary font-bold rounded-[12px] bg-white transition-all hover:border-primary/30", !dateRange && "text-muted-foreground")}>
+                        <CalendarIcon className="mr-2 h-4 w-4 opacity-40" />
+                        {dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd, y")) : "Select Date Range"}
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); setCurrentPages({}); }} numberOfMonths={2} />
+                </PopoverContent>
+            </Popover>
+            {dateRange && <Button variant="ghost" size="icon" className="h-10 w-10 text-primary/40 hover:text-primary shrink-0" onClick={() => { setDateRange(undefined); setCurrentPages({}); }}><X className="h-4 w-4"/></Button>}
 
           <Popover>
                 <PopoverTrigger asChild>
