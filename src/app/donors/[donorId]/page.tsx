@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -209,15 +208,22 @@ export default function DonorProfilePage() {
 
     const handleDelete = async () => {
         if (!userProfile || !donor) return;
-        if (!confirm(`Permanently Remove Profile For ${donor.name}? Financial records will be preserved as unlinked entries.`)) return;
+        const confirmMessage = `Permanently Remove Profile For ${donor.name}? Institutional financial history will be preserved as unlinked "dummy" records. This action cannot be undone.`;
+        
+        if (!confirm(confirmMessage)) return;
         
         setIsSubmitting(true);
-        const res = await deleteDonorAction(donorId);
-        if (res.success) {
-            toast({ title: 'Profile Removed', description: res.message, variant: 'success' });
-            router.push('/donors');
-        } else {
-            toast({ title: 'Removal Failed', description: res.message, variant: 'destructive' });
+        try {
+            const res = await deleteDonorAction(donorId);
+            if (res.success) {
+                toast({ title: 'Profile Removed', description: res.message, variant: 'success' });
+                router.push('/donors');
+            } else {
+                toast({ title: 'Removal Failed', description: res.message, variant: 'destructive' });
+                setIsSubmitting(false);
+            }
+        } catch (e: any) {
+            toast({ title: 'System Error', description: e.message || 'Purge failed.', variant: 'destructive' });
             setIsSubmitting(false);
         }
     };

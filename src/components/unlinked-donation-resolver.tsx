@@ -151,6 +151,13 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                 toast({ title: 'New Profile Registered', description: 'Institutional identity secured and linked.', variant: 'success' });
                 setSelectedDonation(null);
             }
+        } else if (!res.success && res.id) {
+            // Profile already exists by phone, link to it
+            const linkRes = await linkDonationToDonorAction(selectedDonation.id, res.id, { id: userProfile.id, name: userProfile.name });
+            if (linkRes.success) {
+                toast({ title: 'Identity Resolved', description: 'Donation linked to existing verified profile.', variant: 'success' });
+                setSelectedDonation(null);
+            }
         } else {
             toast({ title: 'Creation Failed', description: res.message, variant: 'destructive' });
         }

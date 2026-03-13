@@ -7,11 +7,29 @@ import { FieldValue } from 'firebase-admin/firestore';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure Server Credentials Are Configured Correctly.";
 
+/**
+ * Creates a new donor profile. 
+ * Includes a duplicate check by phone number to prevent registry fragmentation.
+ */
 export async function createDonorAction(data: Partial<Donor>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
+        // 1. Prevent duplicate profiles by phone number
+        if (data.phone && data.phone.trim().length >= 10) {
+            const existingQuery = await adminDb.collection('donors').where('phone', '==', data.phone.trim()).limit(1).get();
+            if (!existingQuery.empty) {
+                const existingDonor = existingQuery.docs[0];
+                return { 
+                    success: false, 
+                    message: `A verified profile for '${existingDonor.data().name}' already exists with this phone number. Please link this contribution to the existing profile instead.`,
+                    id: existingDonor.id
+                };
+            }
+        }
+
+        // 2. Register New Identity
         const docRef = adminDb.collection('donors').doc();
         await docRef.set({
             ...data,
@@ -23,6 +41,7 @@ export async function createDonorAction(data: Partial<Donor>, createdBy: {id: st
         });
 
         revalidatePath('/donors');
+        revalidatePath('/donations');
         return { success: true, message: 'Donor Profile Registered Successfully.', id: docRef.id };
     } catch (error: any) {
         console.error("Error Creating Donor:", error);
@@ -52,14 +71,25 @@ export async function updateDonorAction(donorId: string, data: Partial<Donor>, u
     }
 }
 
+/**
+ * Removes a donor profile after safely unlinking all associated donations.
+ */
 export async function deleteDonorAction(donorId: string): Promise<{ success: boolean; message: string }> {
-    const { adminDb } = getAdminServices();
-    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    const { adminDb, adminStorage } = getAdminServices();
+    if (!adminDb || !adminStorage) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
+        const donorRef = adminDb.collection('donors').doc(donorId);
+        const donorSnap = await donorRef.get();
+        
+        if (!donorSnap.exists) {
+            return { success: true, message: 'Record already purged from registry.' };
+        }
+
         const batch = adminDb.batch();
         
-        // 1. Identify and Unlink all associated donations to preserve the financial audit trail
+        // 1. Identification & Unlinking: Preserve financial audit trail
+        // We find every donation specifically linked to this donor ID
         const donationsSnap = await adminDb.collection('donations').where('donorId', '==', donorId).get();
         
         donationsSnap.forEach(docSnap => {
@@ -69,17 +99,20 @@ export async function deleteDonorAction(donorId: string): Promise<{ success: boo
             });
         });
 
-        // 2. Delete the actual Donor Profile document
-        batch.delete(adminDb.collection('donors').doc(donorId));
+        // 2. Delete the actual identity profile
+        batch.delete(donorRef);
         
         await batch.commit();
         
+        // Ensure all analytical and registry views refresh
         revalidatePath('/donors');
         revalidatePath('/donations');
-        return { success: true, message: 'Donor Profile Removed. Associated contributions have been preserved as unlinked records.' };
+        revalidatePath('/dashboard');
+        
+        return { success: true, message: 'Donor Profile Purged. Associated donations have been preserved as unlinked "dummy" records.' };
     } catch (error: any) {
-        console.error("Error Deleting Donor:", error);
-        return { success: false, message: `Removal Failed: ${error.message}` };
+        console.error("Error Deleting Donor Record:", error);
+        return { success: false, message: `Removal operation failed: ${error.message}` };
     }
 }
 

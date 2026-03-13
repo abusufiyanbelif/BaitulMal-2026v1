@@ -32,6 +32,7 @@ export async function upsertDonationWithDonorAction(
                 finalDonorId = foundDonorSnap.docs[0].id;
             } else {
                 // Auto-create donor profile if phone is provided but no profile exists
+                // Note: Identity Resolver Hub also uses this path
                 const newDonorRef = donorsCol.doc();
                 const newDonor: Partial<Donor> = {
                     id: newDonorRef.id,

@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -160,7 +159,10 @@ export default function DonorRegistryPage() {
         toast({ title: 'Permission Denied', description: 'You do not have permission to delete profiles.', variant: 'destructive' });
         return;
     }
-    if (!confirm(`Permanently Remove Profile For ${donor.name}? Financial records will be preserved as unlinked entries.`)) return;
+    
+    const confirmMessage = `Permanently Remove Profile For ${donor.name}? Institutional financial history will be preserved as unlinked "dummy" records. This action cannot be undone.`;
+    
+    if (!confirm(confirmMessage)) return;
     
     setIsSubmitting(true);
     try {
@@ -171,7 +173,7 @@ export default function DonorRegistryPage() {
             toast({ title: 'Removal Failed', description: res.message, variant: 'destructive' });
         }
     } catch (e: any) {
-        toast({ title: 'System Error', description: e.message || 'An unexpected error occurred.', variant: 'destructive' });
+        toast({ title: 'System Error', description: e.message || 'An unexpected error occurred during the purge.', variant: 'destructive' });
     } finally {
         setIsSubmitting(false);
     }
