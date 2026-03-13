@@ -721,12 +721,12 @@ export default function DonationsPage() {
                     <ScrollBar orientation="horizontal" />
                     <ScrollBar orientation="vertical" />
                 </ScrollArea>
-                <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">
+                <div className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white flex">
                     <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
                     <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5)) } className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
                     <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
                     <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
-                </DialogFooter>
+                </div>
             </DialogContent>
         </Dialog>
     </main>

@@ -1,6 +1,6 @@
 'use client';
 
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { AuthProvider } from '@/app/auth-provider';
 import { FirebaseClientProvider } from '@/firebase/client-provider';

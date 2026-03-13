@@ -35,7 +35,8 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
 
 /**
- * App Footer - Supports dynamic logo sizing with transparent containers.
+ * App Footer - Fully reactive to logo settings.
+ * Removed background boxes to allow pure scaling.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
@@ -96,7 +97,7 @@ export function AppFooter() {
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                     alt="Logo"
                     fill
-                    sizes="(max-width: 512px) 100vw, 512px"
+                    sizes="512px"
                     className="object-contain"
                   />
                 </div>
