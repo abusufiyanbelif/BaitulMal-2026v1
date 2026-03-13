@@ -2,29 +2,31 @@
   "entities": {
     "Donor": {
       "title": "Donor Profile",
-      "description": "Institutional record for a community contributor, including financial handles.",
+      "description": "Institutional record of a regular or one-time contributor.",
       "type": "object",
       "properties": {
-        "name": { "type": "string", "description": "Full legal name of the donor." },
-        "phone": { "type": "string", "description": "Primary 10-digit mobile number." },
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "phone": { "type": "string" },
         "email": { "type": "string", "format": "email" },
         "address": { "type": "string" },
-        "bankName": { "type": "string", "description": "Preferred bank for transfers." },
+        "bankName": { "type": "string" },
         "accountNumber": { "type": "string" },
         "ifscCode": { "type": "string" },
-        "upiId": { "type": "string", "description": "Personal UPI handle." },
+        "upiId": { "type": "string" },
         "status": { "type": "string", "enum": ["Active", "Inactive"] },
         "notes": { "type": "string" }
       },
-      "required": ["name", "phone"]
+      "required": ["id", "name", "phone"]
     },
     "Donation": {
       "title": "Donation Record",
-      "description": "Financial contribution log linked to donors and initiatives.",
+      "description": "Financial entry for a verified contribution.",
       "type": "object",
       "properties": {
-        "donorId": { "type": "string", "description": "ID of the linked Donor Profile." },
+        "donorId": { "type": "string", "description": "Linked Donor Profile ID" },
         "donorName": { "type": "string" },
+        "donorPhone": { "type": "string" },
         "amount": { "type": "number" },
         "donationDate": { "type": "string", "format": "date" },
         "status": { "type": "string", "enum": ["Verified", "Pending", "Canceled"] }
@@ -32,16 +34,16 @@
     }
   },
   "auth": {
-    "providers": ["email/password"]
+    "providers": ["password"]
   },
   "firestore": {
     "/donors/{donorId}": {
-      "schema": "#/entities/Donor",
-      "description": "Master registry of verified donor profiles."
+      "schema": { "$ref": "#/backend/entities/Donor" },
+      "description": "Master registry of institutional contributors."
     },
     "/donations/{donationId}": {
-      "schema": "#/entities/Donation",
-      "description": "Verifiable contribution logs."
+      "schema": { "$ref": "#/backend/entities/Donation" },
+      "description": "Verified and pending donation records."
     }
   }
 }

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { z } from 'zod';
@@ -43,7 +42,6 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { DonorSearchDialog } from './donor-search-dialog';
-import { upsertDonationWithDonorAction } from '@/app/donations/actions';
 
 const linkSplitSchema = z.array(z.object({
     linkId: z.string(),
@@ -322,28 +320,6 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
 
     setIsSubmitting(true);
     try {
-        // Handle file uploads client-side before calling the server action
-        const transactionPromises = data.transactions.map(async (transaction) => {
-            let screenshotUrl = transaction.screenshotUrl || '';
-            const fileList = transaction.screenshotFile as FileList | undefined;
-            if (fileList && fileList.length > 0) {
-                const file = fileList[0];
-                const resizedBlob = await new Promise<Blob>((resolve) => {
-                    (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
-                });
-                const tempId = donation?.id || `new_${Date.now()}`;
-                const filePath = `donations/${tempId}/${data.donationDate}_${transaction.id}.png`;
-                const fileRef = storageRef(useFirestore(), filePath); // Correctly get storage ref
-                // Note: In a real app we'd use the provided storage hook, but for this snippet:
-                // await uploadBytes(fileRef, resizedBlob);
-                // screenshotUrl = await getDownloadURL(fileRef);
-            }
-            return { ...transaction, screenshotUrl };
-        });
-
-        // Normally we'd handle the uploads here, but since we're using a server action 
-        // for the logic, we'll let the onSubmit prop handle the final coordination.
-        // The onSubmit prop in the parent is already configured to call the server action.
         await onSubmit(data);
     } finally {
         setIsSubmitting(false);
