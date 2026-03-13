@@ -47,7 +47,8 @@ import {
     ShieldCheck, 
     Search, 
     CheckCircle2, 
-    AlertCircle 
+    AlertCircle,
+    Eye
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
@@ -192,10 +193,14 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
             </div>
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                  <FormField control={control} name={`transactions.${index}.transactionId`} render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Reference Id</FormLabel><FormControl><Input placeholder="Ref Id" {...field} disabled={isReadOnly} className="font-normal" /></FormControl><FormMessage /></FormItem>
+                    <FormItem>
+                        <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Reference ID (e.g. UPI ID / UTR)</FormLabel>
+                        <FormControl><Input placeholder="Unique Transaction Ref" {...field} disabled={isReadOnly} className="font-normal" /></FormControl>
+                        <FormMessage />
+                    </FormItem>
                 )}/>
                  <FormField control={control} name={`transactions.${index}.upiId`} render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Sender Upi Id</FormLabel><FormControl><Input placeholder="e.g. sender@upi" {...field} disabled={isReadOnly} className="font-normal" /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Sender UPI ID</FormLabel><FormControl><Input placeholder="e.g. sender@upi" {...field} disabled={isReadOnly} className="font-normal" /></FormControl><FormMessage /></FormItem>
                 )}/>
             </div>
             <div className="space-y-2">
@@ -240,7 +245,7 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                  {!isReadOnly && fileList && fileList.length > 0 && (
                     <Button type="button" onClick={handleScanScreenshot} disabled={isScanning} className="w-full mt-2 font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-all active:scale-95 shadow-sm">
                         {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />}
-                        Scan Artifact With Ai
+                        Scan Artifact With AI
                     </Button>
                 )}
             </div>
@@ -376,7 +381,6 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     if (!userProfile) return;
     setIsSubmitting(true);
     
-    // Gather all IDs from current transactions
     const currentUpis = watchedTransactions.map(tx => tx.upiId).filter(Boolean) as string[];
     
     const res = await createDonorAction({

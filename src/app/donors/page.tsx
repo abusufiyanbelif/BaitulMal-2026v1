@@ -36,8 +36,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { deleteDonorAction, createDonorAction } from './actions';
@@ -138,7 +138,7 @@ export default function DonorRegistryPage() {
         bankDetails: validBanks,
         accountNumbers: validBanks.map(b => b.accountNumber).filter(Boolean),
         upiIds: validUpis,
-        status: formData.get('status') as any || 'Active',
+        status: (formData.get('status') as any) || 'Active',
         notes: formData.get('notes') as string,
     };
 
@@ -170,7 +170,7 @@ export default function DonorRegistryPage() {
         <Alert variant="destructive">
             <ShieldAlert className="h-4 w-4"/>
             <AlertTitle className="font-bold">Access Denied</AlertTitle>
-            <AlertDescription className="font-normal">Missing Permissions To View Donor Profiles.</AlertDescription>
+            <AlertDescription className="font-normal text-primary/70">Missing Permissions To View Donor Profiles.</AlertDescription>
         </Alert>
     </main>
   );
@@ -254,12 +254,12 @@ export default function DonorRegistryPage() {
                 <Table>
                     <TableHeader>
                         <TableRow className="hover:bg-transparent border-b border-primary/10">
-                            <TableHead className="w-[60px] pl-6">#</TableHead>
-                            <TableHead>Donor Name</TableHead>
-                            <TableHead>Phone Number</TableHead>
-                            <TableHead>Email Address</TableHead>
-                            <TableHead className="text-center">Status</TableHead>
-                            <TableHead className="text-right pr-6">Actions</TableHead>
+                            <TableHead className="w-[60px] pl-6 text-[10px] uppercase font-bold tracking-tight">#</TableHead>
+                            <TableHead className="text-[10px] uppercase font-bold tracking-tight">Donor Name</TableHead>
+                            <TableHead className="text-[10px] uppercase font-bold tracking-tight">Phone Number</TableHead>
+                            <TableHead className="text-[10px] uppercase font-bold tracking-tight">Email Address</TableHead>
+                            <TableHead className="text-center text-[10px] uppercase font-bold tracking-tight">Status</TableHead>
+                            <TableHead className="text-right pr-6 text-[10px] uppercase font-bold tracking-tight">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
