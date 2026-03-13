@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
@@ -181,7 +180,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
                                         <div className="flex-1 min-w-0 space-y-1">
                                             <div className="flex items-center gap-2">
                                                 <p className="font-bold text-sm text-primary truncate">{donor.name}</p>
-                                                <Badge variant={donor.status === 'Active' ? 'active' : 'outline'} className="text-[9px] font-bold">
+                                                <Badge variant={donor.status === 'Active' ? 'eligible' : 'outline'} className="text-[9px] font-bold">
                                                     {donor.status}
                                                 </Badge>
                                             </div>

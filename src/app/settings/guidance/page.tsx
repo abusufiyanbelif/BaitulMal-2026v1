@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -75,13 +74,15 @@ export default function GuidanceSettingsPage() {
 
     if (!canUpdate && !isSessionLoading) {
         return (
-            <Alert variant="destructive">
-                <ShieldAlert className="h-4 w-4" />
-                <AlertTitle className="font-bold">Access Denied</AlertTitle>
-                <AlertDescription className="font-normal">
-                    Missing Permissions To Manage Guidance Configuration.
-                </AlertDescription>
-            </Alert>
+            <div className="container mx-auto p-4 md:p-8">
+                <Alert variant="destructive">
+                    <ShieldAlert className="h-4 w-4" />
+                    <AlertTitle className="font-bold">Access Denied</AlertTitle>
+                    <AlertDescription className="font-normal">
+                        Missing Permissions To Manage Guidance Configuration.
+                    </AlertDescription>
+                </Alert>
+            </div>
         );
     }
 

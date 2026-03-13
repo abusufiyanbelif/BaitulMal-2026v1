@@ -25,7 +25,7 @@ import {
     UserPlus,
     Users,
     TrendingUp,
-    Edit,
+    Pencil,
     Save,
     Plus,
     DatabaseZap,
@@ -242,15 +242,13 @@ export default function DonorRegistryPage() {
       <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">
         <div className="flex flex-wrap items-center gap-3">
             <div className="relative flex-1 min-w-[250px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
                 <Input 
                     placeholder="Search Name, Phone, Email..." 
                     value={searchTerm} 
                     onChange={(e) => setSearchTerm(e.target.value)} 
                     className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary rounded-[12px]" 
                 />
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50">
-                    <Search className="h-4 w-4" />
-                </div>
             </div>
             
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -299,12 +297,18 @@ export default function DonorRegistryPage() {
                                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button>
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
-                                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/donors/${donor.id}`); }} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4 opacity-60"/> View Profile</DropdownMenuItem>
-                                                {canUpdate && <DropdownMenuItem onClick={(e) => { e.stopPropagation(); router.push(`/donors/${donor.id}?edit=true`); }} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Profile</DropdownMenuItem>}
+                                                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); router.push(`/donors/${donor.id}`); }} className="text-primary font-normal cursor-pointer">
+                                                    <Eye className="mr-2 h-4 w-4 opacity-60"/> View Profile
+                                                </DropdownMenuItem>
+                                                {canUpdate && (
+                                                    <DropdownMenuItem onSelect={(e) => { e.preventDefault(); router.push(`/donors/${donor.id}?edit=true`); }} className="text-primary font-normal cursor-pointer">
+                                                        <Pencil className="mr-2 h-4 w-4 opacity-60"/> Edit Profile
+                                                    </DropdownMenuItem>
+                                                )}
                                                 {canDelete && (
                                                     <>
                                                         <DropdownMenuSeparator className="bg-primary/10" />
-                                                        <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDelete(donor); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal">
+                                                        <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleDelete(donor); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal cursor-pointer">
                                                             <Trash2 className="mr-2 h-4 w-4"/> Remove Profile
                                                         </DropdownMenuItem>
                                                     </>

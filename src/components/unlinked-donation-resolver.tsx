@@ -65,7 +65,6 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
     const [isSearching, setIsSearching] = useState(false);
     const [searchResults, setSearchResults] = useState<Donor[]>([]);
 
-    // 1. Fetch unlinked donations - fetching all and filtering in memory to ensure legacy record detection
     const donationsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
     const { data: allDonations, isLoading: isLoadingDonations } = useCollection<Donation>(donationsRef);
 
@@ -74,7 +73,6 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
         return allDonations.filter(d => !d.donorId);
     }, [allDonations]);
 
-    // Handle initial donation pre-selection
     useEffect(() => {
         if (open && initialDonationId && unlinkedDonations.length > 0) {
             const found = unlinkedDonations.find(d => d.id === initialDonationId);
@@ -85,7 +83,6 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
         }
     }, [open, initialDonationId, unlinkedDonations]);
 
-    // 2. Search for existing donors
     useEffect(() => {
         const fetchMatches = async () => {
             if (!firestore || !searchTerm.trim()) {
@@ -134,7 +131,6 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
         if (!selectedDonation || !userProfile) return;
         setIsResolving(selectedDonation.id);
         
-        // Extract potential identifiers from the donation
         const donorUpis = selectedDonation.transactions?.map(t => t.upiId).filter(Boolean) as string[];
 
         const res = await createDonorAction({
@@ -152,7 +148,6 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                 setSelectedDonation(null);
             }
         } else if (!res.success && res.id) {
-            // Profile already exists by phone, link to it
             const linkRes = await linkDonationToDonorAction(selectedDonation.id, res.id, { id: userProfile.id, name: userProfile.name });
             if (linkRes.success) {
                 toast({ title: 'Identity Resolved', description: 'Donation linked to existing verified profile.', variant: 'success' });
@@ -175,7 +170,6 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                 </DialogHeader>
 
                 <div className="flex-1 min-h-0 flex flex-col md:flex-row">
-                    {/* Left Panel: Unlinked Donations List */}
                     <div className="w-full md:w-1/2 border-r border-primary/5 flex flex-col bg-muted/5">
                         <div className="p-4 bg-white border-b flex items-center justify-between">
                             <h3 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Awaiting Resolution</h3>
@@ -215,7 +209,6 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                         </ScrollArea>
                     </div>
 
-                    {/* Right Panel: Resolution Options */}
                     <div className="flex-1 flex flex-col bg-white">
                         {selectedDonation ? (
                             <ScrollArea className="flex-1">
