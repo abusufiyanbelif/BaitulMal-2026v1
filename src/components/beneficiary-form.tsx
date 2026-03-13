@@ -33,6 +33,7 @@ import { useToast } from '@/hooks/use-toast';
 import Resizer from 'react-image-file-resizer';
 import { useFirestore, useMemoFirebase, useDoc, doc } from '@/firebase';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 const numericOptional = z.preprocess(
   (val) => (val === "" || val === null || val === undefined ? undefined : val),

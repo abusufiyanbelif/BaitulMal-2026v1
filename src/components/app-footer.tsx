@@ -34,6 +34,9 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
 
+/**
+ * App Footer - Supports dynamic logo sizing from organizational settings.
+ */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
   const { paymentSettings } = usePaymentSettings();
@@ -82,12 +85,18 @@ export function AppFooter() {
           <div className="space-y-6">
             <Link href="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
               {validLogoUrl && (
-                <div className="relative w-12 h-12 bg-white rounded-xl p-1 border border-border shadow-sm">
+                <div 
+                    className="relative bg-white rounded-xl p-1 border border-border shadow-sm overflow-hidden"
+                    style={{ 
+                        width: brandingSettings?.logoWidth ? `${Math.min(Number(brandingSettings.logoWidth), 100)}px` : '48px',
+                        height: brandingSettings?.logoHeight ? `${Math.min(Number(brandingSettings.logoHeight), 100)}px` : '48px'
+                    }}
+                >
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                     alt="Logo"
                     fill
-                    sizes="48px"
+                    sizes="128px"
                     className="object-contain p-1.5"
                   />
                 </div>

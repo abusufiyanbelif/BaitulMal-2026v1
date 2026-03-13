@@ -25,7 +25,7 @@ import { NotificationBell } from './notification-bell';
 
 /**
  * Main Header - Fully theme-reactive.
- * Uses semantic background and border classes to adapt to all themes.
+ * Respects dynamic logo dimensions from branding settings.
  */
 export function DocuExtractHeader() {
   const session = useSession();
@@ -53,16 +53,24 @@ export function DocuExtractHeader() {
     <header className="bg-background/95 backdrop-blur-md border-b border-border sticky top-0 z-50 w-full py-4 flex items-center transition-all duration-500 shadow-sm">
       <div className="container mx-auto flex justify-between items-center px-4 gap-4">
         <Link href={homeHref} className="flex items-center gap-4 group transition-all hover:scale-[1.01]">
-          <div className="relative flex-shrink-0 flex items-center justify-center h-16 w-16 bg-primary/5 rounded-xl border border-primary/10 overflow-hidden shadow-inner">
+          <div 
+            className="relative flex-shrink-0 flex items-center justify-center bg-primary/5 rounded-xl border border-primary/10 overflow-hidden shadow-inner"
+            style={{ 
+                width: brandingSettings?.logoWidth ? `${brandingSettings.logoWidth}px` : '64px',
+                height: brandingSettings?.logoHeight ? `${brandingSettings.logoHeight}px` : '64px',
+                maxWidth: '120px',
+                maxHeight: '80px'
+            }}
+          >
             {isLoading ? (
-                <Skeleton className="h-12 w-12 rounded-lg" />
+                <Skeleton className="h-full w-full rounded-lg" />
             ) : (
                 validLogoUrl && (
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                     alt="Logo"
                     fill
-                    sizes="64px"
+                    sizes="128px"
                     className="object-contain p-1.5"
                     priority
                   />
