@@ -268,7 +268,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                     <TableCell className="text-[10px] font-normal text-muted-foreground py-2 whitespace-nowrap">{tx.date || donation.donationDate}</TableCell>
                                                     <TableCell className="text-right py-2 pr-6">
                                                         {tx.screenshotUrl ? (
-                                                            <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/5 transition-transform active:scale-95 shadow-sm" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
+                                                            <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/5 transition-all active:scale-95 shadow-sm" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
                                                                 <ImageIcon className="mr-1" /> View Evidence
                                                             </Button>
                                                         ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40 tracking-tight">No Artifact</span>}
@@ -357,6 +357,7 @@ export default function DonationsPage() {
             if (sortConfig.key === 'srNo') return 0;
             const aVal = (a[sortConfig.key as keyof Donation] ?? '').toString().toLowerCase();
             const bVal = (b[sortConfig.key as keyof Donation] ?? '').toString().toLowerCase();
+            
             if (aVal < bVal) return sortConfig.direction === 'ascending' ? -1 : 1;
             if (aVal > bVal) return sortConfig.direction === 'ascending' ? 1 : -1;
             return 0;

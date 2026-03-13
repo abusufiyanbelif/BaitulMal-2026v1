@@ -35,7 +35,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
 
 /**
- * App Footer - Supports dynamic logo sizing from organizational settings.
+ * App Footer - Supports dynamic logo sizing with transparent containers.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
@@ -53,7 +53,7 @@ export function AppFooter() {
     navigator.clipboard.writeText(text);
     toast({
       title: `${label} Copied`,
-      description: "The information has been copied to your clipboard.",
+      description: "The Information Has Been Copied To Your Clipboard.",
       variant: "success",
     });
   };
@@ -73,7 +73,7 @@ export function AppFooter() {
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
     } catch (error) {
-      console.error("QR download failed:", error);
+      console.error("QR Download Failed:", error);
     }
   };
 
@@ -86,18 +86,18 @@ export function AppFooter() {
             <Link href="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
               {validLogoUrl && (
                 <div 
-                    className="relative bg-white rounded-xl p-1 border border-border shadow-sm overflow-hidden"
+                    className="relative overflow-hidden bg-transparent border-0 shadow-none p-0"
                     style={{ 
-                        width: brandingSettings?.logoWidth ? `${Math.min(Number(brandingSettings.logoWidth), 100)}px` : '48px',
-                        height: brandingSettings?.logoHeight ? `${Math.min(Number(brandingSettings.logoHeight), 100)}px` : '48px'
+                        width: brandingSettings?.logoWidth ? `${brandingSettings.logoWidth}px` : '48px',
+                        height: brandingSettings?.logoHeight ? `${brandingSettings.logoHeight}px` : '48px'
                     }}
                 >
                   <Image
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                     alt="Logo"
                     fill
-                    sizes="128px"
-                    className="object-contain p-1.5"
+                    sizes="(max-width: 512px) 100vw, 512px"
+                    className="object-contain"
                   />
                 </div>
               )}
@@ -155,7 +155,7 @@ export function AppFooter() {
                 <Button 
                     variant="outline" 
                     onClick={() => setIsDonationDialogOpen(true)}
-                    className="font-semibold border-primary/20 text-primary h-12 px-10 rounded-xl hover:bg-primary hover:text-white transition-all active:scale-95 shadow-md group w-full"
+                    className="font-bold border-primary/20 text-primary h-12 px-10 rounded-xl hover:bg-primary hover:text-white transition-all active:scale-95 shadow-md group w-full"
                 >
                     <HeartHandshake className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
                     How To Give
