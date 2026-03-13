@@ -29,7 +29,8 @@ import {
     Save,
     Plus,
     DatabaseZap,
-    AlertCircle
+    AlertCircle,
+    Eye
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -251,7 +252,7 @@ export default function DonorRegistryPage() {
         <ScrollArea className="w-full">
             <div className="min-w-[900px]">
                 <Table>
-                    <TableHeader className="bg-primary/5">
+                    <TableHeader>
                         <TableRow className="hover:bg-transparent border-b border-primary/10">
                             <TableHead className="w-[60px] pl-6">#</TableHead>
                             <TableHead>Donor Name</TableHead>

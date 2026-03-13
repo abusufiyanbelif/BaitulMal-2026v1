@@ -318,7 +318,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
       const firstLink = currentLinks.length > 0 ? currentLinks[0].linkId : (defaultLinkId || 'unlinked');
       replaceLinkSplit([{ linkId: firstLink, amount: totalAmount }]);
     }
-  }, [isLinkSplit, totalAmount, replaceLinkSplit, getValues, defaultLinkId]);
+  }, [isLinkSplit, totalAmount, replaceTypeSplit, getValues, defaultLinkId]);
 
   const onFormSubmit = async (data: DonationFormData) => {
     const missingFields: string[] = [];
