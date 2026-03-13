@@ -1,9 +1,11 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useFirestore, useMemoFirebase, useDoc, useCollection, collection, doc, type DocumentReference } from '@/firebase';
-import type { Donor, Donation, BankDetail } from '@/lib/types';
+import type { Donor, Donation, BankDetail, DonationCategory } from '@/lib/types';
+import { donationCategories } from '@/lib/modules';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -29,7 +31,9 @@ import {
     Smartphone,
     Plus,
     Trash2,
-    ShieldCheck
+    ShieldCheck,
+    PieChart as PieChartIcon,
+    TrendingUp
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
@@ -44,6 +48,37 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import Link from 'next/link';
 import { cn, getNestedValue } from '@/lib/utils';
+import { 
+    Bar, 
+    BarChart, 
+    CartesianGrid, 
+    XAxis, 
+    YAxis, 
+    Cell,
+    Pie,
+    PieChart
+} from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
+import type { ChartConfig } from '@/components/ui/chart';
+import { format, parseISO } from 'date-fns';
+
+const donationCategoryChartConfig = {
+    Fitra: { label: "Fitra", color: "hsl(var(--chart-3))" },
+    Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
+    Sadaqah: { label: "Sadaqah", color: "hsl(var(--chart-2))" },
+    Fidiya: { label: "Fidiya", color: "hsl(var(--chart-7))" },
+    Lillah: { label: "Lillah", color: "hsl(var(--chart-4))" },
+    Interest: { label: "Interest", color: "hsl(var(--chart-5))" },
+    Loan: { label: "Loan", color: "hsl(var(--chart-6))" },
+    'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-8))" },
+} satisfies ChartConfig;
+
+const monthlyTrendChartConfig = {
+  total: {
+    label: "Amount (₹)",
+    color: "hsl(var(--chart-1))",
+  },
+} satisfies ChartConfig;
 
 function DetailItem({ icon: Icon, label, value, isMono = false }: { icon: any, label: string, value?: string, isMono?: boolean }) {
     return (
@@ -51,7 +86,7 @@ function DetailItem({ icon: Icon, label, value, isMono = false }: { icon: any, l
             <div className="p-2 rounded-lg bg-primary/10 text-primary">
                 <Icon className="h-5 w-5" />
             </div>
-            <div className="flex-1 min-w-0">
+            <div className="flex-1 min-w-0 space-y-0.5">
                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</p>
                 <p className={cn("text-base font-bold text-primary truncate", isMono && "font-mono")}>
                     {value || <span className="italic opacity-30 font-normal">Not Provided</span>}
@@ -71,8 +106,10 @@ export default function DonorProfilePage() {
 
     const [isEditMode, setIsEditMode] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isClient, setIsClient] = useState(false);
 
-    // Dynamic Form State for arrays
+    useEffect(() => { setIsClient(true); }, []);
+
     const [bankDetails, setBankDetails] = useState<BankDetail[]>([]);
     const [upiIds, setUpiIds] = useState<string[]>([]);
 
@@ -97,13 +134,46 @@ export default function DonorProfilePage() {
         ).sort((a, b) => new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime());
     }, [allDonations, donor]);
 
-    const stats = useMemo(() => {
+    const analytics = useMemo(() => {
         const verified = donorDonations.filter(d => d.status === 'Verified');
+        
+        const catTotals: Record<string, number> = {};
+        const monthlyTotals: Record<string, number> = {};
+
+        verified.forEach(d => {
+            // Process Designation Splits
+            const splits = d.typeSplit || (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
+            splits.forEach(s => {
+                const cat = (s.category as any) === 'General' || (s.category as any) === 'Sadqa' ? 'Sadaqah' : s.category;
+                catTotals[cat] = (catTotals[cat] || 0) + s.amount;
+
+                // Track Monthly Contributions specifically for trends
+                if (cat === 'Monthly Contribution' && d.donationDate) {
+                    try {
+                        const month = format(parseISO(d.donationDate), 'yyyy-MM');
+                        monthlyTotals[month] = (monthlyTotals[month] || 0) + s.amount;
+                    } catch(e) {}
+                }
+            });
+        });
+
+        const categoryData = Object.entries(catTotals).map(([name, value]) => ({
+            name,
+            value,
+            fill: `var(--color-${name.replace(/\s+/g, '')})`
+        }));
+
+        const monthlyTrends = Object.entries(monthlyTotals)
+            .map(([month, total]) => ({ month, total }))
+            .sort((a, b) => a.month.localeCompare(b.month));
+
         return {
             totalCount: donorDonations.length,
             verifiedSum: verified.reduce((sum, d) => sum + d.amount, 0),
             pendingSum: donorDonations.filter(d => d.status === 'Pending').reduce((sum, d) => sum + d.amount, 0),
-            latestDate: verified[0]?.donationDate || 'No Recorded Donation'
+            latestDate: verified[0]?.donationDate || 'No Recorded Donation',
+            categoryData,
+            monthlyTrends
         };
     }, [donorDonations]);
 
@@ -113,7 +183,6 @@ export default function DonorProfilePage() {
         setIsSubmitting(true);
         const formData = new FormData(e.currentTarget);
         
-        // Process arrays
         const validBanks = bankDetails.filter(b => b.bankName || b.accountNumber);
         const validUpis = upiIds.filter(u => u.trim() !== '');
 
@@ -170,19 +239,19 @@ export default function DonorProfilePage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 <Card className="p-4 bg-white border-primary/5 shadow-sm">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Lifetime Impact</p>
-                    <p className="text-2xl font-black text-primary font-mono mt-1">₹{stats.verifiedSum.toLocaleString('en-IN')}</p>
+                    <p className="text-2xl font-black text-primary font-mono mt-1">₹{analytics.verifiedSum.toLocaleString('en-IN')}</p>
                 </Card>
                 <Card className="p-4 bg-white border-primary/5 shadow-sm">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total Contributions</p>
-                    <p className="text-2xl font-black text-primary font-mono mt-1">{stats.totalCount}</p>
+                    <p className="text-2xl font-black text-primary font-mono mt-1">{analytics.totalCount}</p>
                 </Card>
                 <Card className="p-4 bg-white border-primary/5 shadow-sm">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Recent Activity</p>
-                    <p className="text-sm font-bold text-primary mt-2 flex items-center gap-2"><Clock className="h-3 w-3 opacity-40"/> {stats.latestDate}</p>
+                    <p className="text-sm font-bold text-primary mt-2 flex items-center gap-2"><Clock className="h-3 w-3 opacity-40"/> {analytics.latestDate}</p>
                 </Card>
                 <Card className="p-4 bg-white border-primary/5 shadow-sm">
                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Pending Vetting</p>
-                    <p className="text-lg font-bold text-amber-600 font-mono mt-1">₹{stats.pendingSum.toLocaleString('en-IN')}</p>
+                    <p className="text-lg font-bold text-amber-600 font-mono mt-1">₹{analytics.pendingSum.toLocaleString('en-IN')}</p>
                 </Card>
             </div>
 
@@ -195,121 +264,178 @@ export default function DonorProfilePage() {
                     <ScrollBar orientation="horizontal" className="hidden" />
                 </ScrollArea>
 
-                <TabsContent value="profile" className="animate-fade-in-up mt-0">
-                    <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
-                        <CardHeader className="bg-primary/5 border-b px-6 py-4">
-                            <CardTitle className="text-lg font-bold">Institutional Record & Financials</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-6">
-                            {isEditMode ? (
-                                <form onSubmit={handleUpdate} className="space-y-8 font-normal">
-                                    <div className="space-y-4">
-                                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Core Identity</h4>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Full Name</Label><Input name="name" defaultValue={donor.name} required className="font-bold"/></div>
-                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Account Status</Label><Select name="status" defaultValue={donor.status}><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger><SelectContent className="rounded-[12px]"><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem></SelectContent></Select></div>
-                                        </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Phone Number</Label><Input name="phone" defaultValue={donor.phone} required className="font-mono"/></div>
-                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Email Address</Label><Input name="email" type="email" defaultValue={donor.email} className="font-normal"/></div>
-                                        </div>
-                                        <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Residential Address</Label><Input name="address" defaultValue={donor.address} className="font-normal"/></div>
-                                    </div>
+                <TabsContent value="profile" className="animate-fade-in-up mt-0 space-y-6">
+                    <div className="grid gap-6 grid-cols-1 lg:grid-cols-12">
+                        {/* Left column - Charts */}
+                        <div className="lg:col-span-4 space-y-6">
+                            <Card className="border-primary/10 bg-white overflow-hidden shadow-sm">
+                                <CardHeader className="bg-primary/5 border-b pb-3">
+                                    <CardTitle className="text-sm font-bold text-primary flex items-center gap-2">
+                                        <PieChartIcon className="h-4 w-4 opacity-40"/> Impact by Designation
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-6">
+                                    {isClient ? (
+                                        <ChartContainer config={donationCategoryChartConfig} className="h-[200px] w-full">
+                                            <PieChart>
+                                                <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                                <Pie data={analytics.categoryData} dataKey="value" nameKey="name" innerRadius={40} outerRadius={60} strokeWidth={2} paddingAngle={5}>
+                                                    {analytics.categoryData.map((entry) => (
+                                                        <Cell key={`cell-profile-${entry.name}`} fill={entry.fill} />
+                                                    ))}
+                                                </Pie>
+                                                <ChartLegend content={<ChartLegendContent />} />
+                                            </PieChart>
+                                        </ChartContainer>
+                                    ) : <Skeleton className="h-[200px] w-full" />}
+                                </CardContent>
+                            </Card>
 
-                                    <div className="space-y-6">
-                                        <div className="flex items-center justify-between border-b pb-2">
-                                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Verified Bank Accounts</h4>
-                                            <Button type="button" variant="outline" size="sm" onClick={() => setBankDetails([...bankDetails, { bankName: '', accountNumber: '', ifscCode: '' }])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add Account</Button>
-                                        </div>
-                                        {bankDetails.map((bank, idx) => (
-                                            <div key={idx} className="relative p-4 rounded-xl border border-dashed border-primary/20 bg-primary/[0.01] grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                                {bankDetails.length > 1 && (
-                                                    <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-6 w-6 text-destructive" onClick={() => setBankDetails(bankDetails.filter((_, i) => i !== idx))}><Trash2 className="h-3 w-3"/></Button>
-                                                )}
-                                                <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">Bank Name</Label><Input value={bank.bankName} onChange={(e) => { const newB = [...bankDetails]; newB[idx].bankName = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-bold"/></div>
-                                                <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">Account No.</Label><Input value={bank.accountNumber} onChange={(e) => { const newB = [...bankDetails]; newB[idx].accountNumber = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
-                                                <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">IFSC Code</Label><Input value={bank.ifscCode} onChange={(e) => { const newB = [...bankDetails]; newB[idx].ifscCode = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
+                            <Card className="border-primary/10 bg-white overflow-hidden shadow-sm">
+                                <CardHeader className="bg-primary/5 border-b pb-3">
+                                    <CardTitle className="text-sm font-bold text-primary flex items-center gap-2">
+                                        <TrendingUp className="h-4 w-4 opacity-40"/> Monthly Contribution Trends
+                                    </CardTitle>
+                                </CardHeader>
+                                <CardContent className="pt-6">
+                                    {isClient ? (
+                                        <ChartContainer config={monthlyTrendChartConfig} className="h-[200px] w-full">
+                                            <BarChart data={analytics.monthlyTrends}>
+                                                <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.1} />
+                                                <XAxis 
+                                                    dataKey="month" 
+                                                    tickLine={false} 
+                                                    axisLine={false} 
+                                                    tickMargin={8} 
+                                                    tickFormatter={(v) => format(parseISO(v + '-01'), 'MMM yy')}
+                                                    tick={{ fontSize: 10, fontWeight: 'bold' }}
+                                                />
+                                                <YAxis hide />
+                                                <ChartTooltip content={<ChartTooltipContent />} />
+                                                <Bar dataKey="total" fill="var(--color-total)" radius={[4, 4, 0, 0]} />
+                                            </BarChart>
+                                        </ChartContainer>
+                                    ) : <Skeleton className="h-[200px] w-full" />}
+                                </CardContent>
+                            </Card>
+                        </div>
+
+                        {/* Right column - Profile Form/Details */}
+                        <Card className="lg:col-span-8 border-primary/10 shadow-sm bg-white overflow-hidden">
+                            <CardHeader className="bg-primary/5 border-b px-6 py-4">
+                                <CardTitle className="text-lg font-bold">Institutional Record & Identity</CardTitle>
+                            </CardHeader>
+                            <CardContent className="p-6">
+                                {isEditMode ? (
+                                    <form onSubmit={handleUpdate} className="space-y-8 font-normal">
+                                        <div className="space-y-4">
+                                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Core Identity</h4>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                                <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Full Name</Label><Input name="name" defaultValue={donor.name} required className="font-bold"/></div>
+                                                <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Account Status</Label><Select name="status" defaultValue={donor.status}><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger><SelectContent className="rounded-[12px]"><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem></SelectContent></Select></div>
                                             </div>
-                                        ))}
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between border-b pb-2">
-                                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Digital UPI Handles</h4>
-                                            <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ''])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add UPI</Button>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                                <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Phone Number</Label><Input name="phone" defaultValue={donor.phone} required className="font-mono"/></div>
+                                                <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Email Address</Label><Input name="email" type="email" defaultValue={donor.email} className="font-normal"/></div>
+                                            </div>
+                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Residential Address</Label><Input name="address" defaultValue={donor.address} className="font-normal"/></div>
                                         </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            {upiIds.map((upi, idx) => (
-                                                <div key={idx} className="flex gap-2 items-center">
-                                                    <Input value={upi} onChange={(e) => { const newU = [...upiIds]; newU[idx] = e.target.value; setUpiIds(newU); }} placeholder="name@upi" className="font-mono text-xs h-9" />
-                                                    {upiIds.length > 1 && (
-                                                        <Button type="button" variant="ghost" size="icon" onClick={() => setUpiIds(upiIds.filter((_, i) => i !== idx))}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+
+                                        <div className="space-y-6">
+                                            <div className="flex items-center justify-between border-b pb-2">
+                                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Verified Bank Accounts</h4>
+                                                <Button type="button" variant="outline" size="sm" onClick={() => setBankDetails([...bankDetails, { bankName: '', accountNumber: '', ifscCode: '' }])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add Account</Button>
+                                            </div>
+                                            {bankDetails.map((bank, idx) => (
+                                                <div key={idx} className="relative p-4 rounded-xl border border-dashed border-primary/20 bg-primary/[0.01] grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                                    {bankDetails.length > 1 && (
+                                                        <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-6 w-6 text-destructive" onClick={() => setBankDetails(bankDetails.filter((_, i) => i !== idx))}><Trash2 className="h-3 w-3"/></Button>
                                                     )}
+                                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">Bank Name</Label><Input value={bank.bankName} onChange={(e) => { const newB = [...bankDetails]; newB[idx].bankName = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-bold"/></div>
+                                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">Account No.</Label><Input value={bank.accountNumber} onChange={(e) => { const newB = [...bankDetails]; newB[idx].accountNumber = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
+                                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">IFSC Code</Label><Input value={bank.ifscCode} onChange={(e) => { const newB = [...bankDetails]; newB[idx].ifscCode = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
                                                 </div>
                                             ))}
                                         </div>
-                                    </div>
 
-                                    <div className="space-y-2">
-                                        <Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Institutional Observations</Label>
-                                        <Textarea name="notes" defaultValue={donor.notes} rows={4} className="font-normal" placeholder="Donor preferences, historical notes, etc."/>
-                                    </div>
-
-                                    <div className="flex justify-end gap-3 pt-6 border-t">
-                                        <Button type="button" variant="outline" onClick={() => setIsEditMode(false)} className="font-bold border-primary/20">Cancel</Button>
-                                        <Button type="submit" disabled={isSubmitting} className="font-bold shadow-md px-10">
-                                            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>} Secure Profile
-                                        </Button>
-                                    </div>
-                                </form>
-                            ) : (
-                                <div className="space-y-10">
-                                    <div className="grid gap-4 md:grid-cols-3">
-                                        <DetailItem icon={Phone} label="Primary Contact" value={donor.phone} isMono />
-                                        <DetailItem icon={Mail} label="Email Identity" value={donor.email} />
-                                        <DetailItem icon={MapPin} label="Residential Hub" value={donor.address} />
-                                    </div>
-
-                                    <div className="space-y-6">
-                                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Verified Financial Handles</h4>
-                                        <div className="grid gap-6 md:grid-cols-2">
-                                            <div className="space-y-3">
-                                                <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest flex items-center gap-2"><Landmark className="h-3 w-3"/> Bank Accounts</p>
-                                                <div className="space-y-2">
-                                                    {(donor.bankDetails || []).map((bank, idx) => (
-                                                        <div key={idx} className="p-3 rounded-lg border border-primary/5 bg-primary/[0.01]">
-                                                            <p className="font-bold text-sm text-primary">{bank.bankName}</p>
-                                                            <div className="flex justify-between mt-1 text-[11px] font-mono opacity-60">
-                                                                <span>A/C: {bank.accountNumber}</span>
-                                                                <span>IFSC: {bank.ifscCode}</span>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-                                                    {(!donor.bankDetails || donor.bankDetails.length === 0) && <p className="text-xs italic opacity-30">No bank accounts registered.</p>}
-                                                </div>
+                                        <div className="space-y-4">
+                                            <div className="flex items-center justify-between border-b pb-2">
+                                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Digital UPI Handles</h4>
+                                                <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ''])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add UPI</Button>
                                             </div>
-                                            <div className="space-y-3">
-                                                <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest flex items-center gap-2"><Smartphone className="h-3 w-3"/> UPI Identifiers</p>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {(donor.upiIds || []).map((upi, idx) => (
-                                                        <Badge key={idx} variant="outline" className="font-mono text-xs py-1 border-primary/10 text-primary/80">{upi}</Badge>
-                                                    ))}
-                                                    {(!donor.upiIds || donor.upiIds.length === 0) && <p className="text-xs italic opacity-30">No UPI handles registered.</p>}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                {upiIds.map((upi, idx) => (
+                                                    <div key={idx} className="flex gap-2 items-center">
+                                                        <Input value={upi} onChange={(e) => { const newU = [...upiIds]; newU[idx] = e.target.value; setUpiIds(newU); }} placeholder="name@upi" className="font-mono text-xs h-9" />
+                                                        {upiIds.length > 1 && (
+                                                            <Button type="button" variant="ghost" size="icon" onClick={() => setUpiIds(upiIds.filter((_, i) => i !== idx))}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Institutional Observations</Label>
+                                            <Textarea name="notes" defaultValue={donor.notes} rows={4} className="font-normal" placeholder="Donor preferences, historical notes, etc."/>
+                                        </div>
+
+                                        <div className="flex justify-end gap-3 pt-6 border-t">
+                                            <Button type="button" variant="outline" onClick={() => setIsEditMode(false)} className="font-bold border-primary/20 text-primary">Cancel</Button>
+                                            <Button type="submit" disabled={isSubmitting} className="font-bold shadow-md px-10">
+                                                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>} Secure Profile
+                                            </Button>
+                                        </div>
+                                    </form>
+                                ) : (
+                                    <div className="space-y-10">
+                                        <div className="grid gap-4 md:grid-cols-3">
+                                            <DetailItem icon={Phone} label="Primary Contact" value={donor.phone} isMono />
+                                            <DetailItem icon={Mail} label="Email Identity" value={donor.email} />
+                                            <DetailItem icon={MapPin} label="Residential Hub" value={donor.address} />
+                                        </div>
+
+                                        <div className="space-y-6">
+                                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Verified Financial Handles</h4>
+                                            <div className="grid gap-6 md:grid-cols-2">
+                                                <div className="space-y-3">
+                                                    <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest flex items-center gap-2"><Landmark className="h-3 w-3"/> Bank Accounts</p>
+                                                    <div className="space-y-2">
+                                                        {(donor.bankDetails || []).map((bank, idx) => (
+                                                            <div key={idx} className="p-3 rounded-lg border border-primary/5 bg-primary/[0.01]">
+                                                                <p className="font-bold text-sm text-primary">{bank.bankName}</p>
+                                                                <div className="flex justify-between mt-1 text-[11px] font-mono opacity-60">
+                                                                    <span>A/C: {bank.accountNumber}</span>
+                                                                    <span>IFSC: {bank.ifscCode}</span>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                        {(!donor.bankDetails || donor.bankDetails.length === 0) && <p className="text-xs italic opacity-30 font-normal">No bank accounts registered.</p>}
+                                                    </div>
+                                                </div>
+                                                <div className="space-y-3">
+                                                    <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest flex items-center gap-2"><Smartphone className="h-3 w-3"/> UPI Identifiers</p>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {(donor.upiIds || []).map((upi, idx) => (
+                                                            <Badge key={idx} variant="outline" className="font-mono text-xs py-1 border-primary/10 text-primary/80 bg-white">{upi}</Badge>
+                                                        ))}
+                                                        {(!donor.upiIds || donor.upiIds.length === 0) && <p className="text-xs italic opacity-30 font-normal">No UPI handles registered.</p>}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div className="p-6 rounded-2xl border border-dashed border-primary/20 bg-muted/5">
-                                        <div className="flex items-center gap-2 text-primary font-bold mb-3"><History className="h-4 w-4 opacity-40"/> Institutional Observations</div>
-                                        <p className="text-sm italic font-normal text-primary/80 whitespace-pre-wrap leading-relaxed">
-                                            {donor.notes || 'No vetted observations recorded for this profile.'}
-                                        </p>
+                                        <div className="p-6 rounded-2xl border border-dashed border-primary/20 bg-muted/5">
+                                            <div className="flex items-center gap-2 text-primary font-bold mb-3"><History className="h-4 w-4 opacity-40"/> Institutional Observations</div>
+                                            <p className="text-sm italic font-normal text-primary/80 whitespace-pre-wrap leading-relaxed">
+                                                {donor.notes || 'No vetted observations recorded for this profile.'}
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            )}
-                        </CardContent>
-                    </Card>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
                 </TabsContent>
 
                 <TabsContent value="donations" className="animate-fade-in-up mt-0">
@@ -322,14 +448,14 @@ export default function DonorProfilePage() {
                             <ScrollArea className="w-full">
                                 <div className="min-w-[1000px]">
                                     <Table>
-                                        <TableHeader className="bg-primary/5">
-                                            <TableRow>
-                                                <TableHead className="pl-6 font-bold text-[10px] tracking-tight uppercase">Initiative / Project</TableHead>
-                                                <TableHead className="font-bold text-[10px] tracking-tight uppercase">Donation Value (₹)</TableHead>
-                                                <TableHead className="font-bold text-[10px] tracking-tight uppercase">Designation</TableHead>
-                                                <TableHead className="font-bold text-[10px] tracking-tight uppercase">Date Record</TableHead>
-                                                <TableHead className="text-center font-bold text-[10px] tracking-tight uppercase">Vetting Status</TableHead>
-                                                <TableHead className="text-right pr-6 font-bold text-[10px] tracking-tight uppercase">Action</TableHead>
+                                        <TableHeader>
+                                            <TableRow className="hover:bg-transparent">
+                                                <TableHead className="pl-6 font-bold text-[10px] tracking-tight uppercase text-primary/60">Initiative / Project</TableHead>
+                                                <TableHead className="font-bold text-[10px] tracking-tight uppercase text-primary/60">Donation Value (₹)</TableHead>
+                                                <TableHead className="font-bold text-[10px] tracking-tight uppercase text-primary/60">Designation</TableHead>
+                                                <TableHead className="font-bold text-[10px] tracking-tight uppercase text-primary/60">Date Record</TableHead>
+                                                <TableHead className="text-center font-bold text-[10px] tracking-tight uppercase text-primary/60">Vetting Status</TableHead>
+                                                <TableHead className="text-right pr-6 font-bold text-[10px] tracking-tight uppercase text-primary/60">Action</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
