@@ -3,8 +3,8 @@
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore'
-import { getStorage } from 'firebase/storage'
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
@@ -73,7 +73,19 @@ export {
   uploadString
 } from 'firebase/storage';
 
-export * from './provider';
+// Explicitly export provider hooks to resolve Next.js import errors
+export {
+  FirebaseProvider,
+  FirebaseClientProvider,
+  useFirebase,
+  useAuth,
+  useFirestore,
+  useStorage,
+  useFirebaseApp,
+  useMemoFirebase,
+  useUser
+} from './provider';
+
 export * from './client-provider';
 export * from './firestore/use-collection';
 export * from './firestore/use-doc';

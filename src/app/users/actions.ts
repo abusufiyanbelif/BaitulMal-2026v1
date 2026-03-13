@@ -1,11 +1,11 @@
-
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { revalidatePath } from 'next/cache';
 import type { UserFormData } from '@/lib/schemas';
-import type { UserProfile } from '@/lib/types';
+import type { UserProfile, Donor } from '@/lib/types';
 import { GROUP_IDS } from '@/lib/modules';
+import { FieldValue } from 'firebase-admin/firestore';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually means the server is missing credentials. Please ensure your 'serviceAccountKey.json' is correctly placed in the project root or that Application Default Credentials are configured.";
 
@@ -41,13 +41,12 @@ export async function deleteUserAction(uidToDelete: string): Promise<{ success: 
         const userSnap = await userRef.get();
         const userData = userSnap.data() as UserProfile | undefined;
 
-        // Delete the ID proof file from storage using a predictable path
+        // Delete the ID proof file from storage
         const filePath = `users/${uidToDelete}/id_proof.png`;
         const fileRef = adminStorage.bucket().file(filePath);
         await fileRef.delete().catch((storageError: any) => {
-            // We only log a warning if the file doesn't exist, as it might not have been uploaded.
-            if (storageError.code !== 'storage/object-not-found') {
-                 console.warn(`Could not delete user ID proof from storage: ${storageError.message}`);
+            if (storageError.code !== 'storage/object-not-found' && storageError.code !== 404) {
+                 console.warn(`Could not delete user ID proof: ${storageError.message}`);
             }
         });
         
@@ -58,21 +57,19 @@ export async function deleteUserAction(uidToDelete: string): Promise<{ success: 
         // Delete main user document
         batch.delete(userRef);
         
+        // Delete mirrored donor profile
+        batch.delete(adminDb.collection('donors').doc(uidToDelete));
+        
         // Delete all associated lookup documents
-        if (userData?.loginId) {
-            batch.delete(adminDb.collection('user_lookups').doc(userData.loginId));
-        }
-        if (userData?.phone) {
-            batch.delete(adminDb.collection('user_lookups').doc(userData.phone));
-        }
-        if (userData?.userKey) {
-            batch.delete(adminDb.collection('user_lookups').doc(userData.userKey));
-        }
+        if (userData?.loginId) batch.delete(adminDb.collection('user_lookups').doc(userData.loginId));
+        if (userData?.phone) batch.delete(adminDb.collection('user_lookups').doc(userData.phone));
+        if (userData?.userKey) batch.delete(adminDb.collection('user_lookups').doc(userData.userKey));
 
         await batch.commit();
         
         revalidatePath('/users');
-        return { success: true, message: 'User permanently deleted from Auth, Firestore, and Storage.' };
+        revalidatePath('/donors');
+        return { success: true, message: 'Member and linked Donor Profile permanently removed.' };
     } catch (error: any) {
         console.error("Error deleting user:", error);
         return { success: false, message: `Failed to delete user: ${error.message}` };
@@ -98,17 +95,12 @@ export async function updateUserAuthAction(uid: string, updates: { email?: strin
 
 export async function getPublicMembersAction(): Promise<Partial<UserProfile>[]> {
     const { adminDb } = getAdminServices();
-    if (!adminDb) {
-        console.error("Admin SDK not available for getPublicMembersAction");
-        return [];
-    }
+    if (!adminDb) return [];
 
     try {
         const membersQuery = adminDb.collection('users').where('organizationGroup', 'in', GROUP_IDS).where('status', '==', 'Active');
         const snapshot = await membersQuery.get();
-        if (snapshot.empty) {
-            return [];
-        }
+        if (snapshot.empty) return [];
 
         const members: Partial<UserProfile>[] = [];
         snapshot.forEach(doc => {
@@ -125,5 +117,51 @@ export async function getPublicMembersAction(): Promise<Partial<UserProfile>[]> 
     } catch (error) {
         console.error("Error fetching public members:", error);
         return [];
+    }
+}
+
+/**
+ * Migration utility to ensure all institutional members have mirrored Donor Profiles.
+ */
+export async function syncAllUsersToDonorsAction(adminUserId: string, adminUserName: string): Promise<{ success: boolean; message: string; count: number }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, count: 0 };
+
+    try {
+        const usersSnap = await adminDb.collection('users').get();
+        let count = 0;
+        const batch = adminDb.batch();
+
+        for (const userDoc of usersSnap.docs) {
+            const user = userDoc.data() as UserProfile;
+            const donorRef = adminDb.collection('donors').doc(userDoc.id);
+            const donorSnap = await donorRef.get();
+
+            if (!donorSnap.exists) {
+                const newDonor: Partial<Donor> = {
+                    id: userDoc.id,
+                    name: user.name,
+                    phone: user.phone || '',
+                    email: user.email || '',
+                    status: user.status === 'Active' ? 'Active' : 'Inactive',
+                    createdAt: FieldValue.serverTimestamp(),
+                    createdById: adminUserId,
+                    createdByName: adminUserName,
+                    notes: `Institutional Member (Auto-mirrored during sync)`,
+                };
+                batch.set(donorRef, newDonor);
+                count++;
+            }
+        }
+
+        if (count > 0) {
+            await batch.commit();
+        }
+
+        revalidatePath('/donors');
+        return { success: true, message: `Successfully mirrored ${count} members to the donor registry.`, count };
+    } catch (error: any) {
+        console.error("Member-Donor Sync Failed:", error);
+        return { success: false, message: `Sync Failed: ${error.message}`, count: 0 };
     }
 }

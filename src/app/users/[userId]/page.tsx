@@ -1,15 +1,21 @@
-
-
 'use client';
+
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useAuth, useMemoFirebase } from '@/firebase/provider';
-import { useDoc } from '@/firebase/firestore/use-doc';
-import { errorEmitter } from '@/firebase/error-emitter';
-import { FirestorePermissionError } from '@/firebase/errors';
+import { 
+    useFirestore, 
+    useStorage, 
+    useAuth, 
+    useMemoFirebase,
+    useDoc,
+    doc,
+    writeBatch,
+    DocumentReference,
+    errorEmitter,
+    FirestorePermissionError,
+} from '@/firebase';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
-import { updateDoc, doc, writeBatch, DocumentReference } from 'firebase/firestore';
 import type { UserProfile } from '@/lib/types';
 import { createAdminPermissions } from '@/lib/modules';
 import Resizer from 'react-image-file-resizer';
@@ -74,7 +80,7 @@ export default function UserDetailsPage() {
                 variant: 'destructive',
             });
             setIsSubmitting(false);
-            return; // Stop if auth update fails
+            return;
         }
     }
     
@@ -107,7 +113,6 @@ export default function UserDetailsPage() {
         if (hasFileToUpload) {
             const file = fileList[0];
             let fileToUpload: Blob | File = file;
-            let fileExtension = file.name.split('.').pop()?.toLowerCase() || 'bin';
             
             if (idProofUrl) {
                 const fileRefToDelete = storageRef(storage, idProofUrl);
@@ -116,38 +121,32 @@ export default function UserDetailsPage() {
                 });
             }
 
-            await new Promise<void>((resolve) => {
-                Resizer.imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
-                    fileToUpload = blob as Blob;
-                    resolve();
+            fileToUpload = await new Promise<Blob>((resolve) => {
+                (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
+                    resolve(blob as Blob);
                 }, 'blob');
             });
-            fileExtension = 'png';
             
-            const filePath = `users/${userId}/id_proof.${fileExtension}`;
+            const filePath = `users/${userId}/id_proof.png`;
             const fileRef = storageRef(storage, filePath);
             const uploadResult = await uploadBytes(fileRef, fileToUpload);
             idProofUrl = await getDownloadURL(uploadResult.ref);
         }
     } catch (uploadError: any) {
          console.error("Error during file upload:", uploadError);
-         let description = `Could not upload ID proof file: ${uploadError.message}. Other details were not saved.`;
-         if (uploadError.code === 'storage/unauthorized') {
-            description += "\n\nThis is a permission error. The security rule for this action is: `allow write: if isOwner(userId) || isAdmin();`. Please ensure you are logged in as an administrator or the correct user.";
-         }
          toast({ 
              title: 'File Upload Error', 
-             description: description, 
+             description: `Could not upload identification artifact: ${uploadError.message}.`, 
              variant: 'destructive',
-             duration: 9000
         });
          setIsSubmitting(false);
          return;
     }
 
-    // Step 3: Update Firestore documents in a batch
+    // Step 3: Update Firestore documents in a batch (User + Linked Donor Profile)
     const batch = writeBatch(firestore);
     const docRef = doc(firestore, 'users', userId);
+    const donorDocRef = doc(firestore, 'donors', userId);
     
     const permissionsToSave = data.role === 'Admin' ? createAdminPermissions() : data.permissions;
     const updateData: Partial<UserProfile> = {
@@ -161,6 +160,15 @@ export default function UserDetailsPage() {
         idProofUrl,
         organizationGroup: data.organizationGroup === 'none' ? null : data.organizationGroup,
         organizationRole: data.organizationRole,
+    };
+
+    // Mirror updates to Linked Donor Profile
+    const donorUpdateData = {
+        name: data.name,
+        phone: data.phone || '',
+        email: data.email || '',
+        status: data.status === 'Active' ? 'Active' : 'Inactive',
+        updatedAt: serverTimestamp(),
     };
     
     let newEmail = user.email;
@@ -178,8 +186,9 @@ export default function UserDetailsPage() {
     }
     
     batch.update(docRef, updateData as any);
+    batch.set(donorDocRef, donorUpdateData, { merge: true });
 
-    // --- Handle lookup table updates ---
+    // Handle lookup table updates
     if (user.loginId !== newLoginId) {
         if (user.loginId) batch.delete(doc(firestore, 'user_lookups', user.loginId));
         if (newLoginId) batch.set(doc(firestore, 'user_lookups', newLoginId), { email: newEmail, userKey: user.userKey });
@@ -200,23 +209,15 @@ export default function UserDetailsPage() {
 
     try {
         await batch.commit();
-        toast({ title: 'Success', description: 'User details have been successfully updated.', variant: 'success' });
+        toast({ title: 'Success', description: 'Member profile and linked donor record synchronized.', variant: 'success' });
         forceRefetch();
         setIsEditMode(false);
     } catch (serverError: any) {
-        if (serverError.code === 'permission-denied') {
-             errorEmitter.emit('permission-error', new FirestorePermissionError({
-                path: `users/${userId} or associated lookups`,
-                operation: 'update',
-                requestResourceData: updateData,
-            }));
-        } else {
-            toast({
-                title: 'Update Failed',
-                description: `An unexpected error occurred: ${serverError.message}`,
-                variant: 'destructive',
-            });
-        }
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
+            path: `users/${userId} and donors/${userId}`,
+            operation: 'update',
+            requestResourceData: updateData,
+        }));
     } finally {
         setIsSubmitting(false);
     }
@@ -230,54 +231,26 @@ export default function UserDetailsPage() {
 
   if (isLoading) {
     return (
-        <main className="container mx-auto p-4 md:p-8">
-            <div className="mb-4">
-                <Skeleton className="h-10 w-32" />
-            </div>
-            <Card className="max-w-4xl mx-auto">
-                <CardHeader>
-                    <Skeleton className="h-8 w-48" />
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-6 pt-4">
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-10 w-full" />
-                        <Skeleton className="h-40 w-full" />
-                    </div>
-                </CardContent>
-            </Card>
+        <main className="container mx-auto p-4 md:p-8 text-primary">
+            <Skeleton className="h-10 w-32 mb-4" />
+            <Card className="max-w-4xl mx-auto"><CardHeader><Skeleton className="h-8 w-48" /></CardHeader><CardContent><Skeleton className="h-64 w-full pt-4" /></CardContent></Card>
         </main>
     )
   }
 
   if (!user) {
      return (
-        <main className="container mx-auto p-4 md:p-8">
-            <div className="mb-4">
-                <Button variant="outline" asChild>
-                    <Link href="/users">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Users
-                    </Link>
-                </Button>
-            </div>
-             <Card className="max-w-4xl mx-auto">
-                <CardHeader>
-                    <CardTitle>User Not Found</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p>The user you are trying to edit does not exist.</p>
-                </CardContent>
-            </Card>
+        <main className="container mx-auto p-4 md:p-8 text-center">
+            <Button variant="outline" asChild className="mb-4"><Link href="/users"><ArrowLeft className="mr-2 h-4 w-4" /> Back to Users</Link></Button>
+            <p className="font-bold opacity-60">User Record Not Found.</p>
         </main>
      )
   }
 
   return (
-    <main className="container mx-auto p-4 md:p-8">
+    <main className="container mx-auto p-4 md:p-8 text-primary">
       <div className="mb-4">
-        <Button variant="outline" asChild>
+        <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
           <Link href="/users">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Users
@@ -285,29 +258,23 @@ export default function UserDetailsPage() {
         </Button>
       </div>
 
-      <Card className="max-w-4xl mx-auto animate-fade-in-zoom">
-        <CardHeader>
+      <Card className="max-w-4xl mx-auto animate-fade-in-zoom border-primary/10 bg-white shadow-sm overflow-hidden">
+        <CardHeader className="bg-primary/5 border-b">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                  <CardTitle>User: {user.name}</CardTitle>
-                  <CardDescription>View user details or switch to edit mode.</CardDescription>
+                  <CardTitle className="text-xl font-bold tracking-tight">Member: {user.name}</CardTitle>
+                  <CardDescription className="font-normal text-primary/70">Maintain organizational profile and linked donor identity.</CardDescription>
               </div>
               {canUpdate && !isEditMode && (
-                  <Button onClick={() => setIsEditMode(true)}>
-                      <Edit className="mr-2 h-4 w-4" /> Edit
+                  <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md active:scale-95 transition-transform">
+                      <Edit className="mr-2 h-4 w-4" /> Modify Profile
                   </Button>
               )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
           {!canUpdate && (
-              <Alert>
-                  <ShieldAlert className="h-4 w-4" />
-                  <AlertTitle>Read-Only</AlertTitle>
-                  <AlertDescription>
-                      You have permission to view this user, but not to edit.
-                  </AlertDescription>
-              </Alert>
+              <Alert variant="destructive" className="mb-6"><ShieldAlert className="h-4 w-4" /><AlertTitle className="font-bold">Read-Only Mode</AlertTitle><AlertDescription className="font-normal opacity-80">Insufficient Permissions To Update This Account.</AlertDescription></Alert>
           )}
           <UserForm
               user={user}

@@ -2,9 +2,18 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useFirestore, errorEmitter, FirestorePermissionError, useStorage, useAuth, useMemoFirebase } from '@/firebase';
+import { 
+    useFirestore, 
+    useStorage, 
+    useAuth, 
+    collection, 
+    doc, 
+    writeBatch, 
+    serverTimestamp,
+    errorEmitter,
+    FirestorePermissionError
+} from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { collection, doc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Image from 'next/image';
@@ -18,7 +27,6 @@ import type { UserFormData } from '@/lib/schemas';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { UserForm } from '@/components/user-form';
 import { createUserAuthAction } from '../actions';
-import { useCollection } from '@/firebase';
 import { BrandedLoader } from '@/components/branded-loader';
 
 export default function CreateUserPage() {
@@ -108,9 +116,10 @@ export default function CreateUserPage() {
     setProgress(85);
     setLoadingMessage('Synchronizing permissions & lookup maps...');
 
-    // Step 3: Create documents in Firestore
+    // Step 3: Create documents in Firestore (User + Linked Donor Profile)
     const batch = writeBatch(firestore);
     const userDocRef = doc(firestore, 'users', newUserUid);
+    const donorDocRef = doc(firestore, 'donors', newUserUid);
 
     const newUserProfile = {
         id: newUserUid,
@@ -131,8 +140,22 @@ export default function CreateUserPage() {
         createdById: userProfile?.id || 'system',
         createdByName: userProfile?.name || 'System',
     };
+
+    // Donor Mirror Profile
+    const newDonorProfile = {
+        id: newUserUid,
+        name: data.name,
+        phone: data.phone || '',
+        email: data.email || '',
+        status: data.status === 'Active' ? 'Active' : 'Inactive',
+        createdAt: serverTimestamp(),
+        createdById: userProfile?.id || 'system',
+        createdByName: userProfile?.name || 'System',
+        notes: `Institutional Member Profile (Linked to User ${data.userKey})`,
+    };
     
     batch.set(userDocRef, newUserProfile);
+    batch.set(donorDocRef, newDonorProfile);
 
     // Create lookup documents
     if (data.loginId) batch.set(doc(firestore, 'user_lookups', data.loginId), { email: data.email, userKey: data.userKey });
@@ -142,20 +165,20 @@ export default function CreateUserPage() {
     try {
         await batch.commit();
         setProgress(100);
-        setLoadingMessage('Member registration finalized.');
-        toast({ title: 'Success', description: 'User created successfully.', variant: 'success' });
+        setLoadingMessage('Member & Donor registration finalized.');
+        toast({ title: 'Success', description: 'Member and linked Donor Profile created.', variant: 'success' });
         router.push(`/users`);
     } catch (dbError: any) {
-        console.error("Firestore batch failed after Auth user creation:", dbError);
+        console.error("Firestore batch failed:", dbError);
         const serializableData = { ...newUserProfile, createdAt: 'FieldValue.serverTimestamp()' };
         errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: `users/${newUserUid} and lookups`,
+            path: `users/${newUserUid} and donors/${newUserUid}`,
             operation: 'create',
             requestResourceData: serializableData,
         }));
         toast({
             title: "Database Error",
-            description: "Auth user was created, but database records failed.",
+            description: "User account was created, but database records failed.",
             variant: 'destructive',
             duration: 10000,
         });
@@ -199,19 +222,19 @@ export default function CreateUserPage() {
       {isSubmitting && <BrandedLoader message={loadingMessage} progress={progress} />}
       <main className="container mx-auto p-4 md:p-8">
         <div className="mb-4">
-          <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
+          <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
             <Link href="/users">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Users
             </Link>
           </Button>
         </div>
-        <Card className="max-w-4xl mx-auto animate-fade-in-zoom border-primary/10 bg-white">
-          <CardHeader>
-            <CardTitle className="font-bold text-primary">Create new user</CardTitle>
-            <CardDescription className="font-normal">Assign organizational roles and module-level permissions.</CardDescription>
+        <Card className="max-w-4xl mx-auto animate-fade-in-zoom border-primary/10 bg-white shadow-sm">
+          <CardHeader className="bg-primary/5 border-b">
+            <CardTitle className="font-bold text-primary tracking-tight">Register New Member</CardTitle>
+            <CardDescription className="font-normal text-primary/70">Assign organizational roles and automatically establish a linked Donor Profile.</CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="pt-6">
             <UserForm 
                 onSubmit={handleCreateUser}
                 onCancel={() => router.push('/users')}
