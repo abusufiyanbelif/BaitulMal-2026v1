@@ -1,4 +1,3 @@
-
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
@@ -58,10 +57,26 @@ export async function deleteDonorAction(donorId: string): Promise<{ success: boo
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        await adminDb.collection('donors').doc(donorId).delete();
+        const batch = adminDb.batch();
+        
+        // 1. Identify and Unlink all associated donations to preserve the financial audit trail
+        const donationsSnap = await adminDb.collection('donations').where('donorId', '==', donorId).get();
+        
+        donationsSnap.forEach(docSnap => {
+            batch.update(docSnap.ref, { 
+                donorId: null, 
+                updatedAt: FieldValue.serverTimestamp() 
+            });
+        });
+
+        // 2. Delete the actual Donor Profile document
+        batch.delete(adminDb.collection('donors').doc(donorId));
+        
+        await batch.commit();
         
         revalidatePath('/donors');
-        return { success: true, message: 'Donor Profile Permanently Removed.' };
+        revalidatePath('/donations');
+        return { success: true, message: 'Donor Profile Removed. Associated contributions have been preserved as unlinked records.' };
     } catch (error: any) {
         console.error("Error Deleting Donor:", error);
         return { success: false, message: `Removal Failed: ${error.message}` };

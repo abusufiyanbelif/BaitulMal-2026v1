@@ -36,12 +36,10 @@ export async function deleteUserAction(uidToDelete: string): Promise<{ success: 
         return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     try {
-        // Fetch user doc first to get all identifiers for lookup deletion
         const userRef = adminDb.collection('users').doc(uidToDelete);
         const userSnap = await userRef.get();
         const userData = userSnap.data() as UserProfile | undefined;
 
-        // Delete the ID proof file from storage
         const filePath = `users/${uidToDelete}/id_proof.png`;
         const fileRef = adminStorage.bucket().file(filePath);
         await fileRef.delete().catch((storageError: any) => {
@@ -50,17 +48,23 @@ export async function deleteUserAction(uidToDelete: string): Promise<{ success: 
             }
         });
         
-        // Delete the authentication user
         await adminAuth.deleteUser(uidToDelete);
         
         const batch = adminDb.batch();
-        // Delete main user document
         batch.delete(userRef);
         
+        // UNLINK associated donations to keep contributions intact as "dummy" records
+        const donationsSnap = await adminDb.collection('donations').where('donorId', '==', uidToDelete).get();
+        donationsSnap.forEach(docSnap => {
+            batch.update(docSnap.ref, { 
+                donorId: null, 
+                updatedAt: FieldValue.serverTimestamp() 
+            });
+        });
+
         // Delete mirrored donor profile
         batch.delete(adminDb.collection('donors').doc(uidToDelete));
         
-        // Delete all associated lookup documents
         if (userData?.loginId) batch.delete(adminDb.collection('user_lookups').doc(userData.loginId));
         if (userData?.phone) batch.delete(adminDb.collection('user_lookups').doc(userData.phone));
         if (userData?.userKey) batch.delete(adminDb.collection('user_lookups').doc(userData.userKey));
@@ -69,7 +73,8 @@ export async function deleteUserAction(uidToDelete: string): Promise<{ success: 
         
         revalidatePath('/users');
         revalidatePath('/donors');
-        return { success: true, message: 'Member and linked Donor Profile permanently removed.' };
+        revalidatePath('/donations');
+        return { success: true, message: 'Member account removed. Financial contributions have been preserved as unlinked records.' };
     } catch (error: any) {
         console.error("Error deleting user:", error);
         return { success: false, message: `Failed to delete user: ${error.message}` };
