@@ -404,38 +404,43 @@ export default function DonationsSummaryPage() {
                         {isLoading ? (
                             <Skeleton className="h-48 w-full" />
                         ) : (
-                            <Table>
-                                <TableHeader className="bg-[hsl(var(--table-header-bg))]">
-                                    <TableRow>
-                                        <TableHead className="font-bold text-[hsl(var(--table-header-fg))]">Initiative</TableHead>
-                                        <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))]">Donation Count</TableHead>
-                                        <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))]">Total Amount</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {summaryData?.sortedInitiatives.map((initiative) => (
-                                        <TableRow key={`${initiative.type}_${initiative.name}`} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5 bg-white">
-                                            <TableCell className="font-bold text-sm flex items-center gap-2 text-primary">
-                                                {initiative.type === 'campaign' ? <FolderKanban className="h-4 w-4 opacity-40" /> : initiative.type === 'lead' ? <Lightbulb className="h-4 w-4 opacity-40" /> : <Wallet className="h-4 w-4 opacity-40" />}
-                                                {initiative.name}
-                                            </TableCell>
-                                            <TableCell className="text-right font-normal">{initiative.count}</TableCell>
-                                            <TableCell className="text-right font-bold font-mono text-primary">₹{initiative.amount.toLocaleString('en-IN')}</TableCell>
-                                        </TableRow>
-                                    ))}
-                                    {summaryData?.sortedInitiatives.length === 0 && (
-                                        <TableRow>
-                                            <TableCell colSpan={3} className="text-center h-24 text-muted-foreground font-normal italic opacity-60">
-                                                No Specific Initiative Allocations In This Period.
-                                            </TableCell>
-                                        </TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
+                            <ScrollArea className="w-full">
+                                <div className="min-w-[500px]">
+                                    <Table>
+                                        <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                                            <TableRow>
+                                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))]">Initiative</TableHead>
+                                                <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))]">Donation Count</TableHead>
+                                                <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))]">Total Amount</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {summaryData?.sortedInitiatives.map((initiative) => (
+                                                <TableRow key={`${initiative.type}_${initiative.name}`} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5 bg-white">
+                                                    <TableCell className="font-bold text-sm flex items-center gap-2 text-primary">
+                                                        {initiative.type === 'campaign' ? <FolderKanban className="h-4 w-4 opacity-40" /> : initiative.type === 'lead' ? <Lightbulb className="h-4 w-4 opacity-40" /> : <Wallet className="h-4 w-4 opacity-40" />}
+                                                        <span className="truncate max-w-[200px]">{initiative.name}</span>
+                                                    </TableCell>
+                                                    <TableCell className="text-right font-normal">{initiative.count}</TableCell>
+                                                    <TableCell className="text-right font-bold font-mono text-primary">₹{initiative.amount.toLocaleString('en-IN')}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                            {summaryData?.sortedInitiatives.length === 0 && (
+                                                <TableRow>
+                                                    <TableCell colSpan={3} className="text-center h-24 text-muted-foreground font-normal italic opacity-60">
+                                                        No Specific Initiative Allocations In This Period.
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                                <ScrollBar orientation="horizontal" className="h-1.5" />
+                            </ScrollArea>
                         )}
                     </CardContent>
                 </Card>
-                <div className="grid gap-6 lg:grid-cols-2">
+                <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
                     <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                         <CardHeader className="bg-primary/5 border-b">
                             <CardTitle className="font-bold text-primary">Fund Totals By Type</CardTitle>
@@ -474,14 +479,14 @@ export default function DonationsSummaryPage() {
                         </CardContent>
                     </Card>
                 </div>
-                <div className="grid gap-6 lg:grid-cols-2">
+                <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
                     <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                         <CardHeader className="bg-primary/5 border-b">
                             <CardTitle className="font-bold text-primary">Donations By Category</CardTitle>
                         </CardHeader>
                         <CardContent className="pt-6">
                           {isClient ? (
-                            <ChartContainer config={donationCategoryChartConfig} className="h-[300px] w-full">
+                            <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
                                 <PieChart>
                                     <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
                                     <Pie data={summaryData?.donationCategoryChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} strokeWidth={5} paddingAngle={2} className="transition-all duration-1000 ease-out focus:outline-none">
@@ -502,7 +507,7 @@ export default function DonationsSummaryPage() {
                         </CardHeader>
                         <CardContent className="pt-6">
                           {isClient ? (
-                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[300px] w-full">
+                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
                                 <PieChart>
                                     <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
                                     <Pie data={summaryData?.donationPaymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} strokeWidth={5} paddingAngle={2} className="transition-all duration-1000 ease-out focus:outline-none">

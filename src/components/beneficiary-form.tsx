@@ -352,9 +352,9 @@ export function BeneficiaryForm({
                     </ScrollArea>
                 </div>
                 {!isReadOnly && (
-                    <div className="flex justify-end gap-2 pt-6 border-t mt-auto bg-background/80 backdrop-blur-sm p-4 z-50 shrink-0">
-                        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Discard</Button>
-                        <Button type="submit" disabled={isSubmitting || (isEditing && !isDirty)} className="font-bold shadow-md transition-transform active:scale-95 px-8">
+                    <div className="flex flex-col sm:flex-row justify-end gap-2 pt-6 border-t mt-auto bg-background/80 backdrop-blur-sm p-4 z-50 shrink-0">
+                        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="w-full sm:w-auto font-bold border-primary/20 text-primary transition-transform active:scale-95">Discard</Button>
+                        <Button type="submit" disabled={isSubmitting || (isEditing && !isDirty)} className="w-full sm:w-auto font-bold shadow-md transition-transform active:scale-95 px-8">
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                             {isSubmitting ? 'Securing...' : 'Save Beneficiary Record'}
                         </Button>

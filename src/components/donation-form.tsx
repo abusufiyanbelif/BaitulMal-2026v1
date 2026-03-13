@@ -470,9 +470,9 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
         </div>
 
         {!isReadOnly && (
-            <div className="flex justify-end gap-3 pt-6 sticky bottom-0 bg-background/95 backdrop-blur-sm p-4 border-t z-50 shrink-0">
-                <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="font-bold text-primary border-primary/20 transition-transform active:scale-95">Discard Changes</Button>
-                <Button type="submit" disabled={isSubmitting || (!!donation && !isDirty)} className="font-bold px-10 transition-transform active:scale-95 shadow-md">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 sticky bottom-0 bg-background/95 backdrop-blur-sm p-4 border-t z-50 shrink-0">
+                <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="w-full sm:w-auto font-bold text-primary border-primary/20 transition-transform active:scale-95">Discard Changes</Button>
+                <Button type="submit" disabled={isSubmitting || (!!donation && !isDirty)} className="w-full sm:w-auto font-bold px-10 transition-transform active:scale-95 shadow-md">
                     {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                     {isSubmitting ? 'Securing Data...' : 'Confirm & Secure Record'}
                 </Button>
