@@ -1,5 +1,3 @@
-
-
 'use client';
     
 import { useState, useEffect } from 'react';
@@ -9,11 +7,12 @@ import {
   DocumentData,
   FirestoreError,
   DocumentSnapshot,
-} from '@/firebase';
+} from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 /** Utility type to add an 'id' field to a given type T. */
-export type WithId<T> = T & { id: string };
+type WithId<T> = T & { id: string };
 
 /**
  * Interface for the return value of the useDoc hook.
@@ -23,7 +22,6 @@ export interface UseDocResult<T> {
   data: WithId<T> | null; // Document data with ID, or null.
   isLoading: boolean;       // True if loading.
   error: FirestoreError | Error | null; // Error object, or null.
-  forceRefetch: () => void;
 }
 
 /**
@@ -48,11 +46,6 @@ export function useDoc<T = any>(
   const [data, setData] = useState<StateDataType>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
-  const [refetchToggle, setRefetchToggle] = useState(false);
-  
-  const forceRefetch = () => {
-    setRefetchToggle(prev => !prev);
-  };
 
   useEffect(() => {
     if (!memoizedDocRef) {
@@ -78,7 +71,7 @@ export function useDoc<T = any>(
         setError(null); // Clear any previous error on successful snapshot (even if doc doesn't exist)
         setIsLoading(false);
       },
-      (err: FirestoreError) => {
+      (error: FirestoreError) => {
         const contextualError = new FirestorePermissionError({
           operation: 'get',
           path: memoizedDocRef.path,
@@ -87,11 +80,14 @@ export function useDoc<T = any>(
         setError(contextualError)
         setData(null)
         setIsLoading(false)
+
+        // trigger global error propagation
+        errorEmitter.emit('permission-error', contextualError);
       }
     );
 
     return () => unsubscribe();
-  }, [memoizedDocRef, refetchToggle]); // Re-run if the memoizedDocRef or refetchToggle changes.
+  }, [memoizedDocRef]); // Re-run if the memoizedDocRef changes.
 
-  return { data, isLoading, error, forceRefetch };
+  return { data, isLoading, error };
 }

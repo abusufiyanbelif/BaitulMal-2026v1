@@ -1,3 +1,5 @@
+src/app/donors/page.tsx(244,180): error TS2304: Cannot find name 'Edit'.
+src/app/donors/page.tsx(316,98): error TS2304: Cannot find name 'Save'.
 src/app/settings/guidance/page.tsx(75,14): error TS2552: Cannot find name 'Alert'. Did you mean 'alert'?
 src/app/settings/guidance/page.tsx(77,18): error TS2304: Cannot find name 'AlertTitle'.
 src/app/settings/guidance/page.tsx(77,66): error TS2304: Cannot find name 'AlertTitle'.
@@ -7,3 +9,5 @@ src/app/settings/guidance/page.tsx(81,15): error TS2552: Cannot find name 'Alert
 src/app/settings/guidance/page.tsx(167,26): error TS2304: Cannot find name 'CardFooter'.
 src/app/settings/guidance/page.tsx(170,76): error TS2304: Cannot find name 'ArrowLeft'.
 src/app/settings/guidance/page.tsx(172,27): error TS2304: Cannot find name 'CardFooter'.
+src/components/donation-form.tsx(378,50): error TS2304: Cannot find name 'Badge'.
+src/components/donation-form.tsx(378,169): error TS2304: Cannot find name 'Badge'.

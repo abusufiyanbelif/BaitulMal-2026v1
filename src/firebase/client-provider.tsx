@@ -1,39 +1,26 @@
-
-
 'use client';
-import React, { useState, useEffect } from 'react';
-import { initializeFirebase } from './init';
-import { FirebaseProvider } from './provider';
-import { BrandedLoader } from '@/components/branded-loader';
-import type { FirebaseApp } from 'firebase/app';
-import type { Auth } from 'firebase/auth';
-import type { Firestore } from 'firebase/firestore';
-import type { FirebaseStorage } from 'firebase/storage';
 
-interface FirebaseServices {
-    firebaseApp: FirebaseApp;
-    auth: Auth;
-    firestore: Firestore | null;
-    storage: FirebaseStorage | null;
+import React, { useMemo, type ReactNode } from 'react';
+import { FirebaseProvider } from '@/firebase/provider';
+import { initializeFirebase } from '@/firebase';
+
+interface FirebaseClientProviderProps {
+  children: ReactNode;
 }
 
-export function FirebaseClientProvider({ children }: { children: React.ReactNode }) {
-    const [services, setServices] = useState<FirebaseServices | null>(null);
+export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
+  const firebaseServices = useMemo(() => {
+    // Initialize Firebase on the client side, once per component mount.
+    return initializeFirebase();
+  }, []); // Empty dependency array ensures this runs only once on mount
 
-    useEffect(() => {
-        // This effect will only run on the client side, where `window` is available.
-        setServices(initializeFirebase());
-    }, []); // Empty dependency array ensures this runs only once on mount.
-
-    if (!services) {
-        // While services are being initialized, show a simple loader.
-        // This prevents children from trying to access Firebase context before it's ready.
-        return <BrandedLoader />;
-    }
-
-    return (
-        <FirebaseProvider services={services}>
-            {children}
-        </FirebaseProvider>
-    );
+  return (
+    <FirebaseProvider
+      firebaseApp={firebaseServices.firebaseApp}
+      auth={firebaseServices.auth}
+      firestore={firebaseServices.firestore}
+    >
+      {children}
+    </FirebaseProvider>
+  );
 }

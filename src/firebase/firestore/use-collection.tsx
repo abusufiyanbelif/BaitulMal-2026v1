@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,7 +8,8 @@ import {
   FirestoreError,
   QuerySnapshot,
   CollectionReference,
-} from '@/firebase';
+} from 'firebase/firestore';
+import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 
 /** Utility type to add an 'id' field to a given type T. */
@@ -24,7 +23,6 @@ export interface UseCollectionResult<T> {
   data: WithId<T>[] | null; // Document data with ID, or null.
   isLoading: boolean;       // True if loading.
   error: FirestoreError | Error | null; // Error object, or null.
-  forceRefetch: () => void;
 }
 
 /* Internal implementation of Query:
@@ -62,11 +60,6 @@ export function useCollection<T = any>(
   const [data, setData] = useState<StateDataType>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
-  const [refetchToggle, setRefetchToggle] = useState(false);
-
-  const forceRefetch = () => {
-    setRefetchToggle(prev => !prev);
-  };
 
   useEffect(() => {
     if (!memoizedTargetRefOrQuery) {
@@ -91,7 +84,7 @@ export function useCollection<T = any>(
         setError(null);
         setIsLoading(false);
       },
-      (err: FirestoreError) => {
+      (error: FirestoreError) => {
         // This logic extracts the path from either a ref or a query
         const path: string =
           memoizedTargetRefOrQuery.type === 'collection'
@@ -106,11 +99,16 @@ export function useCollection<T = any>(
         setError(contextualError)
         setData(null)
         setIsLoading(false)
+
+        // trigger global error propagation
+        errorEmitter.emit('permission-error', contextualError);
       }
     );
 
     return () => unsubscribe();
-  }, [memoizedTargetRefOrQuery, refetchToggle]); // Re-run if the target query/reference changes.
-  
-  return { data, isLoading, error, forceRefetch };
+  }, [memoizedTargetRefOrQuery]); // Re-run if the target query/reference changes.
+  if(memoizedTargetRefOrQuery && !memoizedTargetRefOrQuery.__memo) {
+    throw new Error(memoizedTargetRefOrQuery + ' was not properly memoized using useMemoFirebase');
+  }
+  return { data, isLoading, error };
 }

@@ -1,68 +1,50 @@
-
-
 'use client';
 
-export { initializeFirebase } from './init';
-export { FirebaseProvider, useFirebase, useAuth, useFirestore, useStorage, useFirebaseApp, useMemoFirebase } from './provider';
-export { FirebaseClientProvider } from './client-provider';
-export { useUser } from './auth/use-user';
-export { useCollection } from './firestore/use-collection';
-export { useDoc } from './firestore/use-doc';
+import { firebaseConfig } from '@/firebase/config';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore'
+
+// IMPORTANT: DO NOT MODIFY THIS FUNCTION
+export function initializeFirebase() {
+  if (!getApps().length) {
+    // Important! initializeApp() is called without any arguments because Firebase App Hosting
+    // integrates with the initializeApp() function to provide the environment variables needed to
+    // populate the FirebaseOptions in production. It is critical that we attempt to call initializeApp()
+    // without arguments.
+    let firebaseApp;
+    try {
+      // Attempt to initialize via Firebase App Hosting environment variables
+      firebaseApp = initializeApp();
+    } catch (e) {
+      // Only warn in production because it's normal to use the firebaseConfig to initialize
+      // during development
+      if (process.env.NODE_ENV === "production") {
+        console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
+      }
+      firebaseApp = initializeApp(firebaseConfig);
+    }
+
+    return getSdks(firebaseApp);
+  }
+
+  // If already initialized, return the SDKs with the already initialized App
+  return getSdks(getApp());
+}
+
+export function getSdks(firebaseApp: FirebaseApp) {
+  return {
+    firebaseApp,
+    auth: getAuth(firebaseApp),
+    firestore: getFirestore(firebaseApp)
+  };
+}
+
+export * from './provider';
+export * from './client-provider';
+export * from './firestore/use-collection';
+export * from './firestore/use-doc';
+export * from './non-blocking-updates';
+export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';
-
-// Re-export core firebase services to ensure consistent imports
-export {
-    collection,
-    doc,
-    getDoc,
-    getDocs,
-    onSnapshot,
-    query,
-    where,
-    writeBatch,
-    serverTimestamp,
-    updateDoc,
-    deleteDoc,
-    setDoc,
-    limit,
-    deleteField,
-    type DocumentData,
-    type DocumentReference,
-    type Query,
-    type QuerySnapshot,
-    type QueryDocumentSnapshot,
-    type CollectionReference,
-    type Timestamp,
-    type FieldValue,
-    type FirestoreError,
-    type DocumentSnapshot,
-} from 'firebase/firestore';
-
-export {
-    getAuth,
-    onAuthStateChanged,
-    signInWithEmailAndPassword,
-    signOut,
-    sendPasswordResetEmail,
-    type User,
-    type UserInfo,
-    type Auth,
-} from 'firebase/auth';
-
-export {
-    getStorage,
-    ref as storageRef,
-    uploadBytes,
-    getDownloadURL,
-    deleteObject,
-    getMetadata,
-    type FirebaseStorage,
-} from 'firebase/storage';
-
-export {
-    initializeApp,
-    getApp,
-    getApps,
-    type FirebaseApp,
-} from 'firebase/app';
