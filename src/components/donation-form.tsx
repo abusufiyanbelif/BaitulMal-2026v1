@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import type { Donation, DonationCategory, Campaign, Lead, TransactionDetail as TransactionDetailType, DonationLink, Donor } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
-import { Loader2, ScanLine, Replace, Trash2, Plus, IndianRupee, ZoomIn, ZoomOut, RotateCw, RefreshCw, ImageIcon, Save, X, UserSearch, UserCheck, ShieldCheck, Search } from 'lucide-react';
+import { Loader2, ScanLine, Replace, Trash2, Plus, IndianRupee, ZoomIn, ZoomOut, RotateCw, RefreshCw, ImageIcon, Save, X, UserSearch, UserCheck, ShieldCheck, Search, CheckCircle2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -37,7 +37,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/use-session';
-import { useAuth, useFirestore, useMemoFirebase, useDoc, doc, collection, getDocs, query, where } from '@/firebase';
+import { useAuth, useFirestore, useMemoFirebase, useDoc, doc, collection, getDocs, query, where, limit } from '@/firebase';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
@@ -271,7 +271,6 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
 
   const watchedTransactions = useWatch({ control, name: 'transactions' });
   const isTypeSplit = watch('isTypeSplit');
-  const watchedTypeSplit = watch('typeSplit');
   const isLinkSplit = watch('isSplit');
   const donorId = watch('donorId');
   const donorPhone = watch('donorPhone');
@@ -297,7 +296,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
       const firstLink = currentLinks.length > 0 ? currentLinks[0].linkId : (defaultLinkId || 'unlinked');
       replaceLinkSplit([{ linkId: firstLink, amount: totalAmount }]);
     }
-  }, [isLinkSplit, totalAmount, replaceTypeSplit, getValues, defaultLinkId, replaceLinkSplit]);
+  }, [isLinkSplit, totalAmount, replaceLinkSplit, getValues, defaultLinkId]);
 
   const onFormSubmit = async (data: DonationFormData) => {
     const missingFields: string[] = [];
