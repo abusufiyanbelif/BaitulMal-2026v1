@@ -20,9 +20,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuSub,
-  DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuPortal,
+  DropdownMenuSubContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
@@ -149,7 +149,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                                         <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={campaign.status} onValueChange={(value) => handleStatusUpdate(campaign, 'status', value)}>
                                                 <DropdownMenuRadioItem value="Upcoming" className="font-normal">Upcoming</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Active" className="font-normal">Active</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Active" className="font-normal text-primary">Active</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Completed" className="font-normal">Completed</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
@@ -161,7 +161,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                                         <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={campaign.authenticityStatus} onValueChange={(value) => handleStatusUpdate(campaign, 'authenticityStatus', value as string)}>
                                                 <DropdownMenuRadioItem value="Pending Verification" className="font-normal">Pending Verification</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Verified" className="font-normal">Verified</DropdownMenuRadioItem>
+                                                <DropdownMenuRadioItem value="Verified" className="font-normal text-primary">Verified</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="On Hold" className="font-normal">On Hold</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Rejected" className="text-destructive font-normal">Rejected</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Need More Details" className="font-normal">Need Details</DropdownMenuRadioItem>
