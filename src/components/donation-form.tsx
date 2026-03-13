@@ -378,7 +378,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                     
                     <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm">
                         <FormField control={control} name="isTypeSplit" render={({ field }) => (
-                            <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={!!field.value} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Split Contribution By Designation</FormLabel></FormItem>
+                            <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value === true} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Split Contribution By Designation</FormLabel></FormItem>
                         )}/>
                     {isTypeSplit ? (
                         <div className="space-y-4 pl-6 animate-fade-in-up">
@@ -426,7 +426,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
 
                     <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm">
                         <FormField control={control} name="isSplit" render={({ field }) => (
-                            <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={!!field.value} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Allocate Across Multiple Initiatives</FormLabel></FormItem>
+                            <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value === true} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Allocate Across Multiple Initiatives</FormLabel></FormItem>
                         )}/>
                     {isLinkSplit ? (
                         <div className="space-y-4 pl-6 animate-fade-in-up">

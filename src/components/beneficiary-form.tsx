@@ -57,7 +57,7 @@ const formSchema = z.object({
   kitAmount: z.coerce.number().optional(),
   status: z.enum(['Given', 'Pending', 'Hold', 'Need More Details', 'Verified']).default('Pending'),
   notes: z.string().optional(),
-  isEligibleForZakat: z.boolean().optional(),
+  isEligibleForZakat: z.boolean().default(false),
   zakatAllocation: numericOptional,
 });
 

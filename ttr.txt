@@ -1,0 +1,2 @@
+src/app/beneficiaries/actions.ts(13,34): error TS1005: ',' expected.
+src/app/beneficiaries/actions.ts(13,41): error TS1005: ':' expected.
