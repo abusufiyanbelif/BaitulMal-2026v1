@@ -2,12 +2,13 @@
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
-import type { Donation, DonationCategory, Donor, BankDetail } from '@/lib/types';
+import type { Donation, Donor } from '@/lib/types';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. Please ensure server credentials are configured.";
 
 /**
  * Robust action to save or update a donation while handling donor identity linking.
+ * Handles auto-syncing of historical donations for the same donor identity.
  */
 export async function upsertDonationWithDonorAction(
     donationId: string | null,
@@ -19,21 +20,23 @@ export async function upsertDonationWithDonorAction(
 
     try {
         let finalDonorId = donationData.donorId;
+        const donorPhone = donationData.donorPhone;
 
-        // --- Identity Resolution Logic ---
-        if (!finalDonorId && donationData.donorPhone) {
+        // --- 1. Identity Resolution Logic ---
+        // If we don't have an ID but have a phone, try to find an existing donor
+        if (!finalDonorId && donorPhone && donorPhone.length >= 10) {
             const donorsCol = adminDb.collection('donors');
-            const foundDonorSnap = await donorsCol.where('phone', '==', donationData.donorPhone).limit(1).get();
+            const foundDonorSnap = await donorsCol.where('phone', '==', donorPhone).limit(1).get();
 
             if (!foundDonorSnap.empty) {
                 finalDonorId = foundDonorSnap.docs[0].id;
             } else {
-                // Auto-create donor profile from donation details
+                // Auto-create donor profile if phone is provided but no profile exists
                 const newDonorRef = donorsCol.doc();
                 const newDonor: Partial<Donor> = {
                     id: newDonorRef.id,
                     name: donationData.donorName || 'Anonymous Donor',
-                    phone: donationData.donorPhone,
+                    phone: donorPhone,
                     status: 'Active',
                     createdAt: FieldValue.serverTimestamp(),
                     createdById: uploadedBy.id,
@@ -45,6 +48,7 @@ export async function upsertDonationWithDonorAction(
             }
         }
 
+        // --- 2. Save Current Donation ---
         const docRef = donationId ? adminDb.collection('donations').doc(donationId) : adminDb.collection('donations').doc();
         const id = docRef.id;
 
@@ -58,17 +62,35 @@ export async function upsertDonationWithDonorAction(
             ...( !donationId && { createdAt: FieldValue.serverTimestamp() } ),
         };
 
-        // Clean legacy fields
+        // Remove legacy fields if they exist
         if ((finalDonationData as any).campaignId) delete (finalDonationData as any).campaignId;
         if ((finalDonationData as any).campaignName) delete (finalDonationData as any).campaignName;
 
         await docRef.set(finalDonationData, { merge: true });
 
+        // --- 3. Ripple Effect: Sync other donations for this donor ---
+        // If we identified a donor, find all other unlinked donations with this phone number and link them
+        if (finalDonorId && donorPhone) {
+            const unlinkedQuery = adminDb.collection('donations')
+                .where('donorPhone', '==', donorPhone)
+                .where('donorId', '==', null);
+            
+            const unlinkedSnap = await unlinkedQuery.get();
+            if (!unlinkedSnap.empty) {
+                const batch = adminDb.batch();
+                unlinkedSnap.docs.forEach(d => {
+                    batch.update(d.ref, { donorId: finalDonorId, updatedAt: FieldValue.serverTimestamp() });
+                });
+                await batch.commit();
+            }
+        }
+
         revalidatePath('/donations');
         revalidatePath('/donors');
         if (finalDonorId) revalidatePath(`/donors/${finalDonorId}`);
+        revalidatePath('/', 'layout');
         
-        return { success: true, message: 'Identity resolved and record secured.', id };
+        return { success: true, message: 'Identity resolved and contribution secured.', id };
     } catch (error: any) {
         console.error("Upsert Donation Failed:", error);
         return { success: false, message: `Operation failed: ${error.message}` };
@@ -76,7 +98,7 @@ export async function upsertDonationWithDonorAction(
 }
 
 /**
- * Specifically used by the Resolver to map a donation to a donor.
+ * Specifically used by the Resolver Hub to map a donation to a donor.
  */
 export async function linkDonationToDonorAction(
     donationId: string,
@@ -95,6 +117,9 @@ export async function linkDonationToDonorAction(
         if (!donationSnap.exists) throw new Error("Donation record not found.");
         if (!donorSnap.exists) throw new Error("Donor profile not found.");
 
+        const donationData = donationSnap.data() as Donation;
+
+        // 1. Link this donation
         await donationRef.update({
             donorId: donorId,
             updatedAt: FieldValue.serverTimestamp(),
@@ -102,10 +127,28 @@ export async function linkDonationToDonorAction(
             updatedById: updatedBy.id
         });
 
+        // 2. Ripple Effect: Link all other matching donations by phone or name
+        const identifier = donationData.donorPhone || donationData.donorName;
+        const field = donationData.donorPhone ? 'donorPhone' : 'donorName';
+
+        const unlinkedQuery = adminDb.collection('donations')
+            .where(field, '==', identifier)
+            .where('donorId', '==', null);
+        
+        const unlinkedSnap = await unlinkedQuery.get();
+        if (!unlinkedSnap.empty) {
+            const batch = adminDb.batch();
+            unlinkedSnap.docs.forEach(d => {
+                batch.update(d.ref, { donorId: donorId, updatedAt: FieldValue.serverTimestamp() });
+            });
+            await batch.commit();
+        }
+
         revalidatePath('/donations');
         revalidatePath(`/donors/${donorId}`);
+        revalidatePath('/donors');
         
-        return { success: true, message: "Identity successfully mapped." };
+        return { success: true, message: "Identities successfully consolidated." };
     } catch (error: any) {
         return { success: false, message: error.message };
     }

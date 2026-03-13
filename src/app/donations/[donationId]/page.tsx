@@ -27,6 +27,7 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { ShareDialog } from '@/components/share-dialog';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { upsertDonationWithDonorAction } from '../actions';
 
 const DetailItem = ({ label, value, isMono = false }: { label: string; value: React.ReactNode; isMono?: boolean }) => (
     <div className="space-y-1">
@@ -77,9 +78,6 @@ export default function UnlinkedDonationDetailsPage() {
         if (!firestore || !storage || !userProfile || !canUpdate || !donation || !allCampaigns || !allLeads) return;
 
         setIsFormOpen(false);
-        const docRef = doc(firestore, 'donations', donation.id);
-        
-        let finalData: any;
 
         try {
             const transactionPromises = data.transactions.map(async (transaction) => {
@@ -90,7 +88,7 @@ export default function UnlinkedDonationDetailsPage() {
                         const resizedBlob = await new Promise<Blob>((resolve) => {
                             (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
                         });
-                        const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
+                        const filePath = `donations/${donation.id}/${data.donationDate}_${transaction.id}.png`;
                         const fileRef = storageRef(storage, filePath);
                         const uploadResult = await uploadBytes(fileRef, resizedBlob);
                         screenshotUrl = await getDownloadURL(fileRef);
@@ -108,7 +106,7 @@ export default function UnlinkedDonationDetailsPage() {
             });
 
             const finalTransactions = await Promise.all(transactionPromises);
-            const { transactions, ...donationData } = data;
+            const { transactions, ...donationCoreData } = data;
 
             const finalLinkSplit = data.linkSplit?.map(split => {
                 if (!split.linkId || split.linkId === 'unlinked') {
@@ -125,25 +123,26 @@ export default function UnlinkedDonationDetailsPage() {
                 return { linkId: id, linkName: linkedItem?.name || 'Unknown Initiative', linkType: linkType, amount: split.amount };
             }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
 
-            finalData = {
-                ...donationData,
+            const processedDonationData = {
+                ...donationCoreData,
                 transactions: finalTransactions,
                 amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0),
                 linkSplit: finalLinkSplit,
-                uploadedBy: userProfile.name,
-                uploadedById: userProfile.id,
-                campaignId: deleteField(),
-                campaignName: deleteField(),
             };
 
-            await setDoc(docRef, finalData, { merge: true });
-            toast({ title: 'Success', description: `Donation Updated.`, variant: 'success' });
-        } catch (error: any) {
-            if (error.code === 'permission-denied') {
-                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: finalData }));
+            const result = await upsertDonationWithDonorAction(
+                donation.id,
+                processedDonationData as any,
+                { id: userProfile.id, name: userProfile.name }
+            );
+
+            if (result.success) {
+                toast({ title: 'Success', description: result.message, variant: 'success' });
             } else {
-                toast({ title: 'Save Failed', description: error.message || 'An Unexpected Error Occurred.', variant: 'destructive' });
+                toast({ title: 'Save Failed', description: result.message, variant: 'destructive' });
             }
+        } catch (error: any) {
+            toast({ title: 'Operation Error', description: error.message || 'An Unexpected Error Occurred.', variant: 'destructive' });
         }
     };
     
@@ -378,7 +377,7 @@ export default function UnlinkedDonationDetailsPage() {
             </div>
 
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-                <DialogContent className="max-w-2xl max-h-[90vh] h-full flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
+                <DialogContent className="max-w-2xl h-[90vh] h-full flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
                     <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight">Edit Donation Hub</DialogTitle></DialogHeader>
                     <div className="flex-1 overflow-hidden relative">
                         <DonationForm donation={donation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} campaigns={allCampaigns || []} leads={allLeads || []} defaultLinkId={'unlinked'} />
@@ -398,7 +397,7 @@ export default function UnlinkedDonationDetailsPage() {
                         <ScrollBar orientation="horizontal" />
                         <ScrollBar orientation="vertical" />
                     </ScrollArea>
-                    <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">
+                    <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white flex">
                         <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
                         <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5)) } className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
                         <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
