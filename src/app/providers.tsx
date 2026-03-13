@@ -8,13 +8,14 @@ import { AppFooter } from '@/components/app-footer';
 import { Toaster } from '@/components/ui/toaster';
 import { DocuExtractHeader } from '@/components/docu-extract-header';
 import { Watermark } from '@/components/watermark';
+import { PWABadgeHandler } from '@/components/pwa-badge-handler';
 import { cn } from '@/lib/utils';
 import { ThemeProvider, useTheme } from 'next-themes';
 import { THEME_SUGGESTIONS } from '@/lib/themes';
 
 /**
- * Internal component to synchronize the 'dark' class with the selected data-theme.
- * This ensures Tailwind's dark: utilities work even when using custom institutional themes.
+ * ThemeSync - Local Component
+ * Ensures 'dark' class matches the selected data-theme.
  */
 function ThemeSync() {
   const { theme, resolvedTheme } = useTheme();
@@ -34,14 +35,12 @@ function ThemeSync() {
 }
 
 /**
- * Enhanced Providers Component
- * Switched to data-theme attribute to resolve classList.remove errors with spaces.
+ * Providers - Core Application Wrapper
+ * Configures Themes, Firebase, Auth, and PWA logic.
  */
 export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
-
-  // Extract all valid theme IDs
   const allThemes = THEME_SUGGESTIONS.map(t => t.id);
 
   useEffect(() => {
@@ -77,6 +76,8 @@ export function Providers({ children }: { children: ReactNode }) {
         disableTransitionOnChange
       >
         <ThemeSync />
+        <PWABadgeHandler />
+        
         <div className="relative min-h-screen w-full overflow-x-hidden flex flex-col">
           <div className="fixed inset-0 -z-10 flex items-center justify-center pointer-events-none opacity-[0.03] mix-blend-multiply overflow-hidden">
             <Watermark />
