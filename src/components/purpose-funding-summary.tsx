@@ -6,6 +6,7 @@ import { Skeleton } from './ui/skeleton';
 import { IndianRupee, Target } from 'lucide-react';
 import { useMemo } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 /**
  * A branded component that displays verified donation totals aggregated by purpose.
@@ -62,27 +63,32 @@ export function PurposeFundingSummary() {
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="pl-6 tracking-tight">Purpose Type</TableHead>
-              <TableHead className="text-right tracking-tight pr-6">Amount Received</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {purposeData.map((item) => (
-              <TableRow key={item.name} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5">
-                <TableCell className="font-bold text-primary text-sm pl-6">{item.name}</TableCell>
-                <TableCell className="text-right font-bold font-mono text-primary text-sm pr-6">
-                  <div className="flex items-center justify-end gap-1">
-                    <IndianRupee className="h-3 w-3" />
-                    {item.amount.toLocaleString('en-IN')}
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <ScrollArea className="w-full">
+            <div className="min-w-[400px]">
+                <Table>
+                    <TableHeader>
+                        <TableRow>
+                        <TableHead className="pl-6 tracking-tight">Purpose Type</TableHead>
+                        <TableHead className="text-right tracking-tight pr-6">Amount Received</TableHead>
+                        </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                        {purposeData.map((item) => (
+                        <TableRow key={item.name} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5">
+                            <TableCell className="font-bold text-primary text-sm pl-6">{item.name}</TableCell>
+                            <TableCell className="text-right font-bold font-mono text-primary text-sm pr-6">
+                            <div className="flex items-center justify-end gap-1">
+                                <IndianRupee className="h-3 w-3" />
+                                {item.amount.toLocaleString('en-IN')}
+                            </div>
+                            </TableCell>
+                        </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </div>
+            <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </CardContent>
     </Card>
   );

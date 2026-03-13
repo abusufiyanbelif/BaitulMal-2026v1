@@ -1,5 +1,3 @@
-
-
 'use client';
 
 import { usePublicData } from '@/hooks/use-public-data';
@@ -15,6 +13,7 @@ import {
 } from '@/components/ui/table';
 import { Skeleton } from './ui/skeleton';
 import { useMemo } from 'react';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 export function LeadAndCampaignSummary() {
   const { isLoading, campaignsWithProgress, leadsWithProgress } = usePublicData();
@@ -56,66 +55,76 @@ export function LeadAndCampaignSummary() {
 
   return (
     <div className="grid gap-6 md:grid-cols-2">
-      <Card className="animate-fade-in-up" style={{ animationDelay: '1000ms', animationFillMode: 'backwards' }}>
-        <CardHeader>
+      <Card className="animate-fade-in-up border-primary/10 bg-white" style={{ animationDelay: '1000ms', animationFillMode: 'backwards' }}>
+        <CardHeader className="bg-primary/5 border-b">
           <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 font-bold text-primary">
                 <FolderKanban className="h-6 w-6 text-primary" />
                 Campaigns
               </CardTitle>
-              <span className="text-2xl font-bold">{campaignSummary?.total || 0}</span>
+              <span className="text-2xl font-bold text-primary">{campaignSummary?.total || 0}</span>
           </div>
-          <CardDescription>Total public campaigns by category.</CardDescription>
+          <CardDescription className="font-normal">Total Public Campaigns By Category.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Category</TableHead>
-                <TableHead className="text-right">Count</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {campaignSummary?.chartData.map((entry) => (
-                <TableRow key={entry.name}>
-                  <TableCell className="font-medium">{entry.name}</TableCell>
-                  <TableCell className="text-right">{entry.value}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <CardContent className="p-0 pt-4">
+          <ScrollArea className="w-full">
+            <div className="min-w-[300px]">
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead className="pl-6">Category</TableHead>
+                        <TableHead className="text-right pr-6">Count</TableHead>
+                    </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    {campaignSummary?.chartData.map((entry) => (
+                        <TableRow key={entry.name} className="hover:bg-primary/5 transition-colors">
+                        <TableCell className="font-bold text-primary text-sm pl-6">{entry.name}</TableCell>
+                        <TableCell className="text-right font-normal pr-6">{entry.value}</TableCell>
+                        </TableRow>
+                    ))}
+                    </TableBody>
+                </Table>
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
         </CardContent>
       </Card>
-      <Card className="animate-fade-in-up" style={{ animationDelay: '1100ms', animationFillMode: 'backwards' }}>
-        <CardHeader>
+      <Card className="animate-fade-in-up border-primary/10 bg-white" style={{ animationDelay: '1100ms', animationFillMode: 'backwards' }}>
+        <CardHeader className="bg-primary/5 border-b">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 font-bold text-primary">
               <Lightbulb className="h-6 w-6 text-primary" />
               Leads
             </CardTitle>
-            <span className="text-2xl font-bold">{leadSummary?.total || 0}</span>
+            <span className="text-2xl font-bold text-primary">{leadSummary?.total || 0}</span>
           </div>
-          <CardDescription>
-            Total public leads by purpose.
+          <CardDescription className="font-normal">
+            Total Public Leads By Purpose.
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Purpose</TableHead>
-                <TableHead className="text-right">Count</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {leadSummary?.chartData.map((entry) => (
-                <TableRow key={entry.name}>
-                  <TableCell className="font-medium">{entry.name}</TableCell>
-                  <TableCell className="text-right">{entry.value}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <CardContent className="p-0 pt-4">
+          <ScrollArea className="w-full">
+            <div className="min-w-[300px]">
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead className="pl-6">Purpose</TableHead>
+                        <TableHead className="text-right pr-6">Count</TableHead>
+                    </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    {leadSummary?.chartData.map((entry) => (
+                        <TableRow key={entry.name} className="hover:bg-primary/5 transition-colors">
+                        <TableCell className="font-bold text-primary text-sm pl-6">{entry.name}</TableCell>
+                        <TableCell className="text-right font-normal pr-6">{entry.value}</TableCell>
+                        </TableRow>
+                    ))}
+                    </TableBody>
+                </Table>
+            </div>
+            <ScrollBar orientation="horizontal" />
+          </ScrollArea>
         </CardContent>
       </Card>
     </div>

@@ -27,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 const donationCategoryChartConfig = {
   Fitra: { label: "Fitra", color: "hsl(var(--chart-2))" },
@@ -69,33 +70,38 @@ export function DonationSummary() {
           <CardDescription className="font-normal text-primary/70">A Year-By-Year Breakdown Of Funds Received Against Fundraising Goals.</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
-            <Table>
-                <TableHeader className="bg-primary/5">
-                    <TableRow>
-                        <TableHead className="font-bold text-primary">Year</TableHead>
-                        <TableHead className="font-bold text-primary">Goal</TableHead>
-                        <TableHead className="font-bold text-primary">Raised For Goal</TableHead>
-                        <TableHead className="font-bold text-primary">Total Received</TableHead>
-                        <TableHead className="text-right font-bold text-primary">Progress</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {yearlySummary.map(({ year, totalTarget, totalGoalReceived, overallTotalReceived, progress }) => (
-                        <TableRow key={year} className="hover:bg-primary/5">
-                            <TableCell className="font-bold text-primary">{year}</TableCell>
-                            <TableCell className="font-normal text-primary/80">₹{totalTarget.toLocaleString('en-IN')}</TableCell>
-                            <TableCell className="font-normal text-primary">₹{totalGoalReceived.toLocaleString('en-IN')}</TableCell>
-                            <TableCell className="font-normal text-primary/60">₹{overallTotalReceived.toLocaleString('en-IN')}</TableCell>
-                            <TableCell className="text-right w-[150px]">
-                                <div className="flex items-center gap-2">
-                                    <Progress value={progress} className="h-2 flex-1" />
-                                    <span className="text-xs font-normal text-primary">{Math.round(progress)}%</span>
-                                </div>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
+            <ScrollArea className="w-full">
+                <div className="min-w-[600px]">
+                    <Table>
+                        <TableHeader className="bg-primary/5">
+                            <TableRow>
+                                <TableHead className="font-bold text-primary">Year</TableHead>
+                                <TableHead className="font-bold text-primary">Goal</TableHead>
+                                <TableHead className="font-bold text-primary">Raised For Goal</TableHead>
+                                <TableHead className="font-bold text-primary">Total Received</TableHead>
+                                <TableHead className="text-right font-bold text-primary">Progress</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {yearlySummary.map(({ year, totalTarget, totalGoalReceived, overallTotalReceived, progress }) => (
+                                <TableRow key={year} className="hover:bg-primary/5">
+                                    <TableCell className="font-bold text-primary">{year}</TableCell>
+                                    <TableCell className="font-normal text-primary/80">₹{totalTarget.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell className="font-normal text-primary">₹{totalGoalReceived.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell className="font-normal text-primary/60">₹{overallTotalReceived.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell className="text-right w-[150px]">
+                                        <div className="flex items-center gap-2">
+                                            <Progress value={progress} className="h-2 flex-1" />
+                                            <span className="text-xs font-normal text-primary">{Math.round(progress)}%</span>
+                                        </div>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+                <ScrollBar orientation="horizontal" />
+            </ScrollArea>
         </CardContent>
       </Card>
       

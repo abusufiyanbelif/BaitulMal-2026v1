@@ -269,7 +269,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                     <TableCell className="text-right py-2 pr-6">
                                                         {tx.screenshotUrl ? (
                                                             <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/5 transition-transform active:scale-95 shadow-sm" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
-                                                                <ImageIcon className="mr-1 h-3 w-3" /> View Evidence
+                                                                <ImageIcon className="mr-1" /> View Evidence
                                                             </Button>
                                                         ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40 tracking-tight">No Artifact</span>}
                                                     </TableCell>

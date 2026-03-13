@@ -1,2 +1,0 @@
-src/app/donations/page.tsx(722,18): error TS2304: Cannot find name 'DialogFooter'.
-src/app/donations/page.tsx(727,19): error TS2304: Cannot find name 'DialogFooter'.
