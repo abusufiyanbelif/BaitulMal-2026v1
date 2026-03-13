@@ -1,44 +1,89 @@
 {
   "entities": {
-    "Donor": {
-      "title": "Donor Profile",
-      "description": "Institutional record of a charitable contributor.",
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Organizational member account details including role and permissions.",
       "type": "object",
       "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "phone": { "type": "string" },
+        "loginId": { "type": "string" },
+        "userKey": { "type": "string" },
+        "role": { "type": "string", "enum": ["Admin", "User"] },
+        "status": { "type": "string", "enum": ["Active", "Inactive"] },
+        "organizationGroup": { "type": "string", "enum": ["founder", "co-founder", "finance", "member"] },
+        "organizationRole": { "type": "string" },
+        "idProofUrl": { "type": "string" }
+      }
+    },
+    "Donor": {
+      "title": "Donor Profile",
+      "description": "Identity and verified financial handles for organizational contributors.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
         "name": { "type": "string" },
         "phone": { "type": "string" },
         "email": { "type": "string" },
-        "bankName": { "type": "string" },
-        "accountNumber": { "type": "string" },
-        "ifscCode": { "type": "string" },
-        "upiId": { "type": "string" },
-        "status": { "type": "string", "enum": ["Active", "Inactive"] }
-      },
-      "required": ["name", "phone"]
+        "bankDetails": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "bankName": { "type": "string" },
+              "accountNumber": { "type": "string" },
+              "ifscCode": { "type": "string" }
+            }
+          }
+        },
+        "upiIds": { "type": "array", "items": { "type": "string" } },
+        "accountNumbers": { "type": "array", "items": { "type": "string" }, "description": "Flattened account numbers for fast querying." },
+        "status": { "type": "string", "enum": ["Active", "Inactive"] },
+        "notes": { "type": "string" }
+      }
     },
     "Donation": {
       "title": "Donation Record",
-      "description": "Financial entry for a verified contribution.",
+      "description": "Financial contribution log linked to donors and initiatives.",
       "type": "object",
       "properties": {
-        "donorId": { "type": "string" },
+        "id": { "type": "string" },
+        "donorId": { "type": "string", "description": "Foreign key to Donor Profile." },
+        "donorName": { "type": "string" },
         "amount": { "type": "number" },
         "donationDate": { "type": "string", "format": "date" },
-        "status": { "type": "string", "enum": ["Verified", "Pending", "Canceled"] }
+        "status": { "type": "string", "enum": ["Verified", "Pending", "Canceled"] },
+        "linkSplit": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "linkId": { "type": "string" },
+              "linkType": { "type": "string", "enum": ["campaign", "lead", "general"] },
+              "amount": { "type": "number" }
+            }
+          }
+        }
       }
     }
   },
   "auth": {
-    "providers": ["password"]
+    "providers": ["email/password"]
   },
   "firestore": {
+    "/users/{userId}": {
+      "schema": "#/entities/UserProfile",
+      "description": "Core institutional member data."
+    },
     "/donors/{donorId}": {
       "schema": "#/entities/Donor",
-      "description": "Verified contributor profiles."
+      "description": "Central contributor registry."
     },
     "/donations/{donationId}": {
       "schema": "#/entities/Donation",
-      "description": "Global financial logs."
+      "description": "Global financial audit log."
     }
   }
 }

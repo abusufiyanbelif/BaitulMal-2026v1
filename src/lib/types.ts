@@ -265,16 +265,21 @@ export interface Beneficiary extends DocumentData {
     updatedByName?: string;
 }
 
+export interface BankDetail {
+  bankName: string;
+  accountNumber: string;
+  ifscCode: string;
+}
+
 export interface Donor extends DocumentData {
   id: string;
   name: string;
   phone: string;
   email?: string;
   address?: string;
-  bankName?: string;
-  accountNumber?: string;
-  ifscCode?: string;
-  upiId?: string;
+  bankDetails?: BankDetail[];
+  accountNumbers?: string[]; // Flattened for querying
+  upiIds?: string[]; // Flattened for querying
   status: 'Active' | 'Inactive';
   notes?: string;
   createdAt?: Timestamp | FieldValue;

@@ -1,10 +1,9 @@
-
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useFirestore, useMemoFirebase, useDoc, useCollection, collection, doc, type DocumentReference } from '@/firebase';
-import type { Donor, Donation } from '@/lib/types';
+import type { Donor, Donation, BankDetail } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -27,7 +26,10 @@ import {
     Clock,
     Landmark,
     CreditCard,
-    Smartphone
+    Smartphone,
+    Plus,
+    Trash2,
+    ShieldCheck
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
@@ -70,11 +72,22 @@ export default function DonorProfilePage() {
     const [isEditMode, setIsEditMode] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    // Dynamic Form State for arrays
+    const [bankDetails, setBankDetails] = useState<BankDetail[]>([]);
+    const [upiIds, setUpiIds] = useState<string[]>([]);
+
     const donorDocRef = useMemoFirebase(() => donorId && firestore ? doc(firestore, 'donors', donorId) as DocumentReference<Donor> : null, [donorId, firestore]);
     const { data: donor, isLoading: donorLoading, forceRefetch } = useDoc<Donor>(donorDocRef);
 
     const donationsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
     const { data: allDonations, isLoading: donationsLoading } = useCollection<Donation>(donationsRef);
+
+    useEffect(() => {
+        if (donor) {
+            setBankDetails(donor.bankDetails || [{ bankName: '', accountNumber: '', ifscCode: '' }]);
+            setUpiIds(donor.upiIds || ['']);
+        }
+    }, [donor]);
 
     const donorDonations = useMemo(() => {
         if (!allDonations || !donor) return [];
@@ -99,15 +112,19 @@ export default function DonorProfilePage() {
         if (!userProfile) return;
         setIsSubmitting(true);
         const formData = new FormData(e.currentTarget);
+        
+        // Process arrays
+        const validBanks = bankDetails.filter(b => b.bankName || b.accountNumber);
+        const validUpis = upiIds.filter(u => u.trim() !== '');
+
         const updates: Partial<Donor> = {
             name: formData.get('name') as string,
             phone: formData.get('phone') as string,
             email: formData.get('email') as string,
             address: formData.get('address') as string,
-            bankName: formData.get('bankName') as string,
-            accountNumber: formData.get('accountNumber') as string,
-            ifscCode: formData.get('ifscCode') as string,
-            upiId: formData.get('upiId') as string,
+            bankDetails: validBanks,
+            accountNumbers: validBanks.map(b => b.accountNumber).filter(Boolean),
+            upiIds: validUpis,
             status: formData.get('status') as any,
             notes: formData.get('notes') as string,
         };
@@ -199,15 +216,37 @@ export default function DonorProfilePage() {
                                         <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Residential Address</Label><Input name="address" defaultValue={donor.address} className="font-normal"/></div>
                                     </div>
 
-                                    <div className="space-y-4">
-                                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Verified Financial Handles</h4>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Preferred Bank Name</Label><Input name="bankName" defaultValue={donor.bankName} placeholder="e.g. HDFC Bank" className="font-bold"/></div>
-                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Account Number</Label><Input name="accountNumber" defaultValue={donor.accountNumber} placeholder="Primary contribution account" className="font-mono"/></div>
+                                    <div className="space-y-6">
+                                        <div className="flex items-center justify-between border-b pb-2">
+                                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Verified Bank Accounts</h4>
+                                            <Button type="button" variant="outline" size="sm" onClick={() => setBankDetails([...bankDetails, { bankName: '', accountNumber: '', ifscCode: '' }])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add Account</Button>
                                         </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">IFSC Code</Label><Input name="ifscCode" defaultValue={donor.ifscCode} placeholder="11-digit bank code" className="font-mono"/></div>
-                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Personal UPI Identifier</Label><Input name="upiId" defaultValue={donor.upiId} placeholder="e.g. name@upi" className="font-mono"/></div>
+                                        {bankDetails.map((bank, idx) => (
+                                            <div key={idx} className="relative p-4 rounded-xl border border-dashed border-primary/20 bg-primary/[0.01] grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                                {bankDetails.length > 1 && (
+                                                    <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-6 w-6 text-destructive" onClick={() => setBankDetails(bankDetails.filter((_, i) => i !== idx))}><Trash2 className="h-3 w-3"/></Button>
+                                                )}
+                                                <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">Bank Name</Label><Input value={bank.bankName} onChange={(e) => { const newB = [...bankDetails]; newB[idx].bankName = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-bold"/></div>
+                                                <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">Account No.</Label><Input value={bank.accountNumber} onChange={(e) => { const newB = [...bankDetails]; newB[idx].accountNumber = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
+                                                <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">IFSC Code</Label><Input value={bank.ifscCode} onChange={(e) => { const newB = [...bankDetails]; newB[idx].ifscCode = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between border-b pb-2">
+                                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Digital UPI Handles</h4>
+                                            <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ''])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add UPI</Button>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {upiIds.map((upi, idx) => (
+                                                <div key={idx} className="flex gap-2 items-center">
+                                                    <Input value={upi} onChange={(e) => { const newU = [...upiIds]; newU[idx] = e.target.value; setUpiIds(newU); }} placeholder="name@upi" className="font-mono text-xs h-9" />
+                                                    {upiIds.length > 1 && (
+                                                        <Button type="button" variant="ghost" size="icon" onClick={() => setUpiIds(upiIds.filter((_, i) => i !== idx))}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                                                    )}
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
 
@@ -231,13 +270,33 @@ export default function DonorProfilePage() {
                                         <DetailItem icon={MapPin} label="Residential Hub" value={donor.address} />
                                     </div>
 
-                                    <div className="space-y-4">
-                                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Financial Identifiers</h4>
-                                        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                                            <DetailItem icon={Landmark} label="Verified Bank" value={donor.bankName} />
-                                            <DetailItem icon={CreditCard} label="Account Mapping" value={donor.accountNumber} isMono />
-                                            <DetailItem icon={ShieldCheck} label="Branch Identifier" value={donor.ifscCode} isMono />
-                                            <DetailItem icon={Smartphone} label="Digital UPI Handle" value={donor.upiId} isMono />
+                                    <div className="space-y-6">
+                                        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Verified Financial Handles</h4>
+                                        <div className="grid gap-6 md:grid-cols-2">
+                                            <div className="space-y-3">
+                                                <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest flex items-center gap-2"><Landmark className="h-3 w-3"/> Bank Accounts</p>
+                                                <div className="space-y-2">
+                                                    {(donor.bankDetails || []).map((bank, idx) => (
+                                                        <div key={idx} className="p-3 rounded-lg border border-primary/5 bg-primary/[0.01]">
+                                                            <p className="font-bold text-sm text-primary">{bank.bankName}</p>
+                                                            <div className="flex justify-between mt-1 text-[11px] font-mono opacity-60">
+                                                                <span>A/C: {bank.accountNumber}</span>
+                                                                <span>IFSC: {bank.ifscCode}</span>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                    {(!donor.bankDetails || donor.bankDetails.length === 0) && <p className="text-xs italic opacity-30">No bank accounts registered.</p>}
+                                                </div>
+                                            </div>
+                                            <div className="space-y-3">
+                                                <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest flex items-center gap-2"><Smartphone className="h-3 w-3"/> UPI Identifiers</p>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {(donor.upiIds || []).map((upi, idx) => (
+                                                        <Badge key={idx} variant="outline" className="font-mono text-xs py-1 border-primary/10 text-primary/80">{upi}</Badge>
+                                                    ))}
+                                                    {(!donor.upiIds || donor.upiIds.length === 0) && <p className="text-xs italic opacity-30">No UPI handles registered.</p>}
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
 

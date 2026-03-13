@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useFirestore, useMemoFirebase, useCollection, collection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import type { Donor } from '@/lib/types';
+import type { Donor, BankDetail } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -32,7 +32,8 @@ import {
     Save,
     Landmark,
     CreditCard,
-    Smartphone
+    Smartphone,
+    Plus
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -82,6 +83,10 @@ export default function DonorRegistryPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingDonor, setEditingDonor] = useState<Donor | null>(null);
 
+  // Dynamic Array States for Form
+  const [bankDetails, setBankDetails] = useState<BankDetail[]>([{ bankName: '', accountNumber: '', ifscCode: '' }]);
+  const [upiIds, setUpiIds] = useState<string[]>(['']);
+
   const donorsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donors') : null, [firestore]);
   const { data: donors, isLoading: areDonorsLoading } = useCollection<Donor>(donorsRef);
 
@@ -116,15 +121,19 @@ export default function DonorRegistryPage() {
     setIsSubmitting(true);
 
     const formData = new FormData(e.currentTarget);
+    
+    // Process arrays: Filter out empty entries
+    const validBanks = bankDetails.filter(b => b.bankName || b.accountNumber);
+    const validUpis = upiIds.filter(u => u.trim() !== '');
+
     const data: Partial<Donor> = {
         name: formData.get('name') as string,
         phone: formData.get('phone') as string,
         email: formData.get('email') as string,
         address: formData.get('address') as string,
-        bankName: formData.get('bankName') as string,
-        accountNumber: formData.get('accountNumber') as string,
-        ifscCode: formData.get('ifscCode') as string,
-        upiId: formData.get('upiId') as string,
+        bankDetails: validBanks,
+        accountNumbers: validBanks.map(b => b.accountNumber).filter(Boolean),
+        upiIds: validUpis,
         status: formData.get('status') as any || 'Active',
         notes: formData.get('notes') as string,
     };
@@ -133,6 +142,8 @@ export default function DonorRegistryPage() {
     if (res.success) {
         toast({ title: 'Donor Registered', description: res.message, variant: 'success' });
         setIsFormOpen(false);
+        setBankDetails([{ bankName: '', accountNumber: '', ifscCode: '' }]);
+        setUpiIds(['']);
     } else {
         toast({ title: 'Registration Failed', description: res.message, variant: 'destructive' });
     }
@@ -251,7 +262,7 @@ export default function DonorRegistryPage() {
                                             </DropdownMenuTrigger>
                                             <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
                                                 <DropdownMenuItem onClick={() => router.push(`/donors/${donor.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4 opacity-60"/> View Profile</DropdownMenuItem>
-                                                {canUpdate && <DropdownMenuItem onClick={() => { setEditingDonor(donor); setIsFormOpen(true); }} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Profile</DropdownMenuItem>}
+                                                {canUpdate && <DropdownMenuItem onClick={() => router.push(`/donors/${donor.id}?edit=true`)} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Profile</DropdownMenuItem>}
                                                 {canDelete && (
                                                     <>
                                                         <DropdownMenuSeparator className="bg-primary/10" />
@@ -307,27 +318,37 @@ export default function DonorRegistryPage() {
                             </div>
                         </div>
 
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between border-b pb-2">
+                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Bank Records</h4>
+                                <Button type="button" variant="outline" size="sm" onClick={() => setBankDetails([...bankDetails, { bankName: '', accountNumber: '', ifscCode: '' }])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add Account</Button>
+                            </div>
+                            {bankDetails.map((bank, idx) => (
+                                <div key={idx} className="relative p-4 rounded-xl border border-dashed border-primary/20 bg-primary/[0.01] grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    {bankDetails.length > 1 && (
+                                        <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-6 w-6 text-destructive" onClick={() => setBankDetails(bankDetails.filter((_, i) => i !== idx))}><Trash2 className="h-3 w-3"/></Button>
+                                    )}
+                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">Bank Name</Label><Input value={bank.bankName} onChange={(e) => { const newB = [...bankDetails]; newB[idx].bankName = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-bold"/></div>
+                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">Account No.</Label><Input value={bank.accountNumber} onChange={(e) => { const newB = [...bankDetails]; newB[idx].accountNumber = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
+                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">IFSC Code</Label><Input value={bank.ifscCode} onChange={(e) => { const newB = [...bankDetails]; newB[idx].ifscCode = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
+                                </div>
+                            ))}
+                        </div>
+
                         <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Financial Records</h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Bank Name</Label>
-                                    <Input name="bankName" placeholder="e.g. ICICI Bank" className="font-normal h-10" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Account Number</Label>
-                                    <Input name="accountNumber" placeholder="Primary donation account" className="font-mono h-10" />
-                                </div>
+                            <div className="flex items-center justify-between border-b pb-2">
+                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">UPI Identifiers</h4>
+                                <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ''])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add UPI</Button>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">IFSC Code</Label>
-                                    <Input name="ifscCode" placeholder="11-digit code" className="font-mono h-10" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">UPI Identifier</Label>
-                                    <Input name="upiId" placeholder="e.g. name@okhdfcbank" className="font-mono h-10" />
-                                </div>
+                                {upiIds.map((upi, idx) => (
+                                    <div key={idx} className="flex gap-2 items-center">
+                                        <Input value={upi} onChange={(e) => { const newU = [...upiIds]; newU[idx] = e.target.value; setUpiIds(newU); }} placeholder="name@upi" className="font-mono text-xs h-9" />
+                                        {upiIds.length > 1 && (
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => setUpiIds(upiIds.filter((_, i) => i !== idx))}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
                         </div>
 

@@ -24,28 +24,32 @@ export async function upsertDonationWithDonorAction(
         // --- Multi-Attribute Identity Matching Logic ---
         if (!finalDonorId) {
             const donorsCol = adminDb.collection('donors');
+            const upiIdsFromDonation = (donationData.transactions || []).map(t => t.upiId).filter(Boolean) as string[];
+            
+            // Search strategy: Phone, then UPI handles, then Account Numbers
             const queries = [];
-
-            // 1. Match by Phone (Primary)
+            
             if (donationData.donorPhone) {
                 queries.push(donorsCol.where('phone', '==', donationData.donorPhone).limit(1).get());
             }
-
-            // 2. Match by UPI ID (if provided)
-            const upiIds = (donationData.transactions || []).map(t => t.upiId).filter(Boolean);
-            if (upiIds.length > 0) {
-                queries.push(donorsCol.where('upiId', 'in', upiIds.slice(0, 10)).limit(1).get());
+            
+            if (upiIdsFromDonation.length > 0) {
+                queries.push(donorsCol.where('upiIds', 'array-contains-any', upiIdsFromDonation.slice(0, 10)).limit(1).get());
             }
 
-            // 3. Match by Account Number
-            const donorBankAcc = donationData.transactions?.[0]?.transactionId; // Fallback or explicit bank field if added
-            // Assuming we added bank details to donationData in future, but for now we rely on explicit fields
-            
             const results = await Promise.all(queries);
-            const foundDonor = results.find(snap => !snap.empty)?.docs[0];
+            const foundDonorDoc = results.find(snap => !snap.empty)?.docs[0];
 
-            if (foundDonor) {
-                finalDonorId = foundDonor.id;
+            if (foundDonorDoc) {
+                finalDonorId = foundDonorDoc.id;
+                // Merge new UPI handles into existing donor if not present
+                const existingDonor = foundDonorDoc.data() as Donor;
+                const newUpis = upiIdsFromDonation.filter(id => !(existingDonor.upiIds || []).includes(id));
+                if (newUpis.length > 0) {
+                    await foundDonorDoc.ref.update({
+                        upiIds: FieldValue.arrayUnion(...newUpis)
+                    });
+                }
             } else {
                 // Auto-create enriched profile
                 const newDonorRef = donorsCol.doc();
@@ -53,7 +57,7 @@ export async function upsertDonationWithDonorAction(
                     id: newDonorRef.id,
                     name: donationData.donorName || 'Anonymous Donor',
                     phone: donationData.donorPhone || '',
-                    upiId: upiIds[0] || '',
+                    upiIds: upiIdsFromDonation,
                     status: 'Active',
                     createdAt: FieldValue.serverTimestamp(),
                     createdById: uploadedBy.id,
