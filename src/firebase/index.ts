@@ -52,7 +52,8 @@ export {
   Timestamp,
   increment,
   writeBatch,
-  deleteField
+  deleteField,
+  addDoc
 } from 'firebase/firestore';
 
 // Export common Auth functions

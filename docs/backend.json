@@ -2,31 +2,26 @@
   "entities": {
     "Donor": {
       "title": "Donor Profile",
-      "description": "Institutional record of a regular or one-time contributor.",
+      "description": "Institutional record of a charitable contributor.",
       "type": "object",
       "properties": {
-        "id": { "type": "string" },
         "name": { "type": "string" },
         "phone": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "address": { "type": "string" },
+        "email": { "type": "string" },
         "bankName": { "type": "string" },
         "accountNumber": { "type": "string" },
         "ifscCode": { "type": "string" },
         "upiId": { "type": "string" },
-        "status": { "type": "string", "enum": ["Active", "Inactive"] },
-        "notes": { "type": "string" }
+        "status": { "type": "string", "enum": ["Active", "Inactive"] }
       },
-      "required": ["id", "name", "phone"]
+      "required": ["name", "phone"]
     },
     "Donation": {
       "title": "Donation Record",
       "description": "Financial entry for a verified contribution.",
       "type": "object",
       "properties": {
-        "donorId": { "type": "string", "description": "Linked Donor Profile ID" },
-        "donorName": { "type": "string" },
-        "donorPhone": { "type": "string" },
+        "donorId": { "type": "string" },
         "amount": { "type": "number" },
         "donationDate": { "type": "string", "format": "date" },
         "status": { "type": "string", "enum": ["Verified", "Pending", "Canceled"] }
@@ -38,12 +33,12 @@
   },
   "firestore": {
     "/donors/{donorId}": {
-      "schema": { "$ref": "#/backend/entities/Donor" },
-      "description": "Master registry of institutional contributors."
+      "schema": "#/entities/Donor",
+      "description": "Verified contributor profiles."
     },
     "/donations/{donationId}": {
-      "schema": { "$ref": "#/backend/entities/Donation" },
-      "description": "Verified and pending donation records."
+      "schema": "#/entities/Donation",
+      "description": "Global financial logs."
     }
   }
 }

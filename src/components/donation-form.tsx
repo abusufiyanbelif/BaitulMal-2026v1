@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { useForm, useFieldArray, useWatch, type Control, type UseFormRegister, type UseFormSetValue, type UseFormGetValues } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import Resizer from 'react-image-file-resizer';
 import {
@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/select";
 import type { Donation, DonationCategory, Campaign, Lead, TransactionDetail as TransactionDetailType, DonationLink, Donor } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
-import { Loader2, ScanLine, Replace, Trash2, Plus, IndianRupee, ZoomIn, ZoomOut, RotateCw, RefreshCw, ImageIcon, Save, X, UserSearch, UserCheck } from 'lucide-react';
+import { Loader2, ScanLine, Replace, Trash2, Plus, IndianRupee, ZoomIn, ZoomOut, RotateCw, RefreshCw, ImageIcon, Save, X, UserSearch, UserCheck, ShieldCheck, Search } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -37,7 +37,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/use-session';
-import { useAuth, useFirestore, useMemoFirebase, useDoc, doc, storageRef, uploadBytes, getDownloadURL } from '@/firebase';
+import { useAuth, useFirestore, useMemoFirebase, useDoc, doc, collection, getDocs, query, where } from '@/firebase';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
@@ -234,6 +234,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDonorSearchOpen, setIsDonorSearchOpen] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
 
   const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donation_config') : null, [firestore]);
   const { data: configSettings } = useDoc<any>(configRef);
@@ -271,9 +272,9 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   const watchedTransactions = useWatch({ control, name: 'transactions' });
   const isTypeSplit = watch('isTypeSplit');
   const watchedTypeSplit = watch('typeSplit');
-  const isMonthlyContribution = useMemo(() => watchedTypeSplit?.some(s => s.category === 'Monthly Contribution'), [watchedTypeSplit]);
   const isLinkSplit = watch('isSplit');
   const donorId = watch('donorId');
+  const donorPhone = watch('donorPhone');
 
   useEffect(() => {
     const total = watchedTransactions.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
@@ -330,8 +331,25 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     setValue('donorName', donor.name, { shouldDirty: true, shouldValidate: true });
     setValue('donorPhone', donor.phone, { shouldDirty: true, shouldValidate: true });
     setValue('donorId', donor.id, { shouldDirty: true });
-    toast({ title: 'Donor Profile Loaded', variant: 'success' });
+    toast({ title: 'Identity Verified', variant: 'success' });
   };
+
+  const verifyDonorByPhone = useCallback(async () => {
+    if (!firestore || !donorPhone || donorPhone.length < 10) return;
+    setIsVerifying(true);
+    try {
+        const q = query(collection(firestore, 'donors'), where('phone', '==', donorPhone), limit(1));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+            const donor = { id: snap.docs[0].id, ...snap.docs[0].data() } as Donor;
+            handleSelectDonorProfile(donor);
+        } else {
+            toast({ title: 'New Contributor', description: 'No matching profile found. A new one will be created.', variant: 'info' });
+        }
+    } finally {
+        setIsVerifying(false);
+    }
+  }, [firestore, donorPhone, handleSelectDonorProfile, toast]);
 
   const renderLabel = (label: string, fieldName: string) => (
     <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">
@@ -351,11 +369,13 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
 
                     <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-bold text-primary tracking-tight">Institutional Vetting</h3>
+                            <h3 className="text-sm font-bold text-primary tracking-tight">Verification Hub</h3>
                             {!isReadOnly && (
-                                <Button type="button" variant="outline" size="sm" onClick={() => setIsDonorSearchOpen(true)} className="h-8 font-bold border-primary/20 text-primary active:scale-95 transition-transform">
-                                    <UserSearch className="mr-2 h-3.5 w-3.5"/> Search Donor Profile
-                                </Button>
+                                <div className="flex gap-2">
+                                    <Button type="button" variant="outline" size="sm" onClick={() => setIsDonorSearchOpen(true)} className="h-8 font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+                                        <Search className="mr-2 h-3.5 w-3.5"/> Manual Search
+                                    </Button>
+                                </div>
                             )}
                         </div>
                         <FormField control={control} name="donationType" render={({ field }) => (
@@ -378,14 +398,25 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                             <FormItem>
                                 <div className="flex items-center justify-between">
                                     {renderLabel('Donor Name', 'donorName')}
-                                    {donorId && <Badge variant="eligible" className="h-4 text-[8px] font-black uppercase"><UserCheck className="h-2 w-2 mr-1"/> Linked</Badge>}
+                                    {donorId && <Badge variant="eligible" className="h-4 text-[8px] font-black uppercase"><ShieldCheck className="h-2.5 w-2.5 mr-1"/> Identified Profile</Badge>}
                                 </div>
                                 <FormControl><Input placeholder="e.g. Saleem Khan" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}/>
                         <FormField control={control} name="donorPhone" render={({ field }) => (
-                            <FormItem>{renderLabel('Donor Phone', 'donorPhone')}<FormControl><Input placeholder="10-digit mobile" {...field} disabled={isReadOnly} className="font-mono text-primary"/></FormControl><FormMessage /></FormItem>
+                            <FormItem>
+                                {renderLabel('Donor Phone', 'donorPhone')}
+                                <div className="flex gap-2">
+                                    <FormControl><Input placeholder="10-digit mobile" {...field} disabled={isReadOnly} className="font-mono text-primary flex-1"/></FormControl>
+                                    {!isReadOnly && !donorId && donorPhone?.length === 10 && (
+                                        <Button type="button" variant="secondary" size="sm" onClick={verifyDonorByPhone} disabled={isVerifying} className="h-10 font-bold px-3">
+                                            {isVerifying ? <Loader2 className="h-4 w-4 animate-spin"/> : <CheckCircle2 className="h-4 w-4"/>}
+                                        </Button>
+                                    )}
+                                </div>
+                                <FormMessage />
+                            </FormItem>
                         )}/>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -439,7 +470,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                     )}
                     </div>
                     
-                    {isMonthlyContribution && (
+                    {watch(`typeSplit.0.category`) === 'Monthly Contribution' && (
                     <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm animate-fade-in-zoom">
                         <h3 className="text-sm font-bold text-primary tracking-tight">Contribution Cycle</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">

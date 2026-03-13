@@ -4,74 +4,58 @@ service cloud.firestore {
     // Helper Functions
     function isSignedIn() { return request.auth != null; }
     function isAdmin() { return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin'; }
-    function hasPermission(module, perm) {
+    function hasPermission(module, action) {
       let user = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
-      return user.role == 'Admin' || (user.permissions != null && user.permissions[module][perm] == true);
+      return isAdmin() || (user.permissions != null && user.permissions[module][action] == true);
     }
 
-    // Settings (Branding, Info, Guidance)
+    // Public Institutional Settings
     match /settings/{docId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // Users & Lookups
+    // Donor & User Identity
     match /users/{userId} {
       allow read: if isSignedIn();
-      allow write: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+      allow write: if isAdmin() || (request.auth.uid == userId);
     }
     match /user_lookups/{lookupId} {
       allow read: if true;
       allow write: if isSignedIn();
     }
-
-    // Donors
     match /donors/{donorId} {
-      allow read: if hasPermission('donors', 'read');
-      allow write: if hasPermission('donors', 'create') || hasPermission('donors', 'update');
-      allow delete: if hasPermission('donors', 'delete');
+      allow read: if isSignedIn();
+      allow write: if hasPermission('donors', 'update') || hasPermission('donors', 'create');
     }
 
-    // Donations
-    match /donations/{donationId} {
+    // Operational Modules
+    match /campaigns/{campId} {
       allow read: if true;
-      allow write: if isSignedIn();
-      allow delete: if hasPermission('donations', 'delete');
-    }
-
-    // Campaigns & Leads
-    match /campaigns/{id} {
-      allow read: if true;
-      allow write: if hasPermission('campaigns', 'create') || hasPermission('campaigns', 'update');
-      allow delete: if hasPermission('campaigns', 'delete');
-      
+      allow write: if hasPermission('campaigns', 'update');
       match /beneficiaries/{benId} {
-        allow read: if true;
-        allow write: if isSignedIn();
+        allow read: if isSignedIn();
+        allow write: if hasPermission('campaigns', 'update');
       }
     }
-    match /leads/{id} {
+    match /leads/{leadId} {
       allow read: if true;
-      allow write: if hasPermission('leads-members', 'create') || hasPermission('leads-members', 'update');
-      allow delete: if hasPermission('leads-members', 'delete');
-      
+      allow write: if hasPermission('leads-members', 'update');
       match /beneficiaries/{benId} {
-        allow read: if true;
-        allow write: if isSignedIn();
+        allow read: if isSignedIn();
+        allow write: if hasPermission('leads-members', 'update');
       }
     }
-
-    // Master Beneficiaries
-    match /beneficiaries/{id} {
-      allow read: if true;
-      allow write: if isSignedIn();
-      allow delete: if hasPermission('beneficiaries', 'delete');
+    match /donations/{donId} {
+      allow read: if isSignedIn();
+      allow write: if hasPermission('donations', 'create') || hasPermission('donations', 'update');
     }
-    
-    // Page Analytics
+    match /beneficiaries/{benId} {
+      allow read: if isSignedIn();
+      allow write: if hasPermission('beneficiaries', 'create') || hasPermission('beneficiaries', 'update');
+    }
     match /page_hits/{pageId} {
-      allow read: if true;
-      allow write: if true;
+      allow read, write: if true;
     }
   }
 }
