@@ -5,8 +5,6 @@ import { cn } from '@/lib/utils';
 export function Watermark() {
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
     
-    // We want the watermark to be part of the DOM even while loading 
-    // to ensure transitions are smooth, but it only renders the image once the URL is available.
     const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
 
     if (!validLogoUrl && !isBrandingLoading) {
@@ -14,13 +12,13 @@ export function Watermark() {
     }
 
     return (
-        <div className="fixed inset-0 -z-10 flex items-center justify-center pointer-events-none opacity-[0.10] mix-blend-multiply overflow-hidden">
+        <div className="fixed inset-0 -z-10 flex items-center justify-center pointer-events-none mix-blend-multiply overflow-hidden select-none">
             {validLogoUrl && (
                 <img
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                     alt="Branding Watermark"
                     className={cn(
-                        "w-auto h-auto max-w-[80vw] max-h-[80vh] object-contain transition-opacity duration-700 ease-in-out",
+                        "w-auto h-auto max-w-[85vw] max-h-[85vh] object-contain transition-opacity duration-1000 ease-in-out pointer-events-none",
                         validLogoUrl ? "opacity-100" : "opacity-0"
                     )}
                 />
