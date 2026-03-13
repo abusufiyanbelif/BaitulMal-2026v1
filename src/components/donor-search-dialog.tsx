@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
@@ -81,7 +82,6 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
         return;
     }
 
-    // Proactive Duplicate Check
     const existing = masterDonors.find(d => 
         (currentFormData.phone && d.phone === currentFormData.phone) || 
         (currentFormData.upiIds?.some(u => d.upiIds?.includes(u)))

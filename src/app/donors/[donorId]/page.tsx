@@ -37,7 +37,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
-import { updateDonorAction } from '../actions';
+import { updateDonorAction, deleteDonorAction } from '../actions';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -141,13 +141,11 @@ export default function DonorProfilePage() {
         const monthlyTotals: Record<string, number> = {};
 
         verified.forEach(d => {
-            // Process Designation Splits
             const splits = d.typeSplit || (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
             splits.forEach(s => {
                 const cat = (s.category as any) === 'General' || (s.category as any) === 'Sadqa' ? 'Sadaqah' : s.category;
                 catTotals[cat] = (catTotals[cat] || 0) + s.amount;
 
-                // Track Monthly Contributions specifically for trends
                 if (cat === 'Monthly Contribution' && d.donationDate) {
                     try {
                         const month = format(parseISO(d.donationDate), 'yyyy-MM');
@@ -209,8 +207,24 @@ export default function DonorProfilePage() {
         setIsSubmitting(false);
     };
 
+    const handleDelete = async () => {
+        if (!userProfile || !donor) return;
+        if (!confirm(`Permanently Remove Profile For ${donor.name}? Financial records will be preserved as unlinked entries.`)) return;
+        
+        setIsSubmitting(true);
+        const res = await deleteDonorAction(donorId);
+        if (res.success) {
+            toast({ title: 'Profile Removed', description: res.message, variant: 'success' });
+            router.push('/donors');
+        } else {
+            toast({ title: 'Removal Failed', description: res.message, variant: 'destructive' });
+            setIsSubmitting(false);
+        }
+    };
+
     const isLoading = donorLoading || sessionLoading || donationsLoading;
     const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donors.update', false);
+    const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donors.delete', false);
 
     if (isLoading && !donor) return <BrandedLoader />;
     if (!donor) return <div className="p-20 text-center font-bold text-primary">Donor Profile Not Found.</div>;
@@ -223,11 +237,18 @@ export default function DonorProfilePage() {
                 </Button>
                 <div className="flex items-center gap-2">
                     <Badge variant={donor.status === 'Active' ? 'active' : 'outline'} className="font-bold text-[10px]">{donor.status}</Badge>
-                    {canUpdate && !isEditMode && (
-                        <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-sm active:scale-95 transition-transform h-9">
-                            <Edit className="mr-2 h-4 w-4"/> Edit Profile
-                        </Button>
-                    )}
+                    <div className="flex gap-2">
+                        {canUpdate && !isEditMode && (
+                            <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-sm active:scale-95 transition-transform h-9">
+                                <Edit className="mr-2 h-4 w-4"/> Edit Profile
+                            </Button>
+                        )}
+                        {canDelete && !isEditMode && (
+                            <Button onClick={handleDelete} variant="ghost" className="font-bold text-destructive hover:bg-destructive/10 active:scale-95 transition-transform h-9 px-3">
+                                <Trash2 className="h-4 w-4"/>
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -266,7 +287,6 @@ export default function DonorProfilePage() {
 
                 <TabsContent value="profile" className="animate-fade-in-up mt-0 space-y-6">
                     <div className="grid gap-6 grid-cols-1 lg:grid-cols-12">
-                        {/* Left column - Charts */}
                         <div className="lg:col-span-4 space-y-6">
                             <Card className="border-primary/10 bg-white overflow-hidden shadow-sm">
                                 <CardHeader className="bg-primary/5 border-b pb-3">
@@ -320,7 +340,6 @@ export default function DonorProfilePage() {
                             </Card>
                         </div>
 
-                        {/* Right column - Profile Form/Details */}
                         <Card className="lg:col-span-8 border-primary/10 shadow-sm bg-white overflow-hidden">
                             <CardHeader className="bg-primary/5 border-b px-6 py-4">
                                 <CardTitle className="text-lg font-bold">Institutional Record & Identity</CardTitle>
