@@ -340,7 +340,7 @@ export default function DonorRegistryPage() {
                         <div className="space-y-6">
                             <div className="flex items-center justify-between border-b pb-2">
                                 <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Bank Records</h4>
-                                <Button type="button" variant="outline" size="sm" onClick={() => setBankDetails([...bankDetails, { bankName: '', accountNumber: '', ifscCode: '' }])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add Account</Button>
+                                <Button type="button" variant="outline" size="sm" onClick={() => setBankDetails([...bankDetails, { bankName: '', accountNumber: '', ifscCode: '' }])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1" /> Add Account</Button>
                             </div>
                             {bankDetails.map((bank, idx) => (
                                 <div key={idx} className="relative p-4 rounded-xl border border-dashed border-primary/20 bg-primary/[0.01] grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -357,7 +357,7 @@ export default function DonorRegistryPage() {
                         <div className="space-y-4">
                             <div className="flex items-center justify-between border-b pb-2">
                                 <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">UPI Identifiers</h4>
-                                <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ''])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add UPI</Button>
+                                <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ''])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1" /> Add UPI</Button>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 {upiIds.map((upi, idx) => (

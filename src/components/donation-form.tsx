@@ -28,7 +28,27 @@ import {
 } from "@/components/ui/select";
 import type { Donation, DonationCategory, Campaign, Lead, TransactionDetail as TransactionDetailType, DonationLink, Donor } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
-import { Loader2, ScanLine, Replace, Trash2, Plus, IndianRupee, ZoomIn, ZoomOut, RotateCw, RefreshCw, ImageIcon, Save, X, UserSearch, UserCheck, ShieldCheck, Search, CheckCircle2 } from 'lucide-react';
+import { 
+    Loader2, 
+    ScanLine, 
+    Replace, 
+    Trash2, 
+    Plus, 
+    IndianRupee, 
+    ZoomIn, 
+    ZoomOut, 
+    RotateCw, 
+    RefreshCw, 
+    ImageIcon, 
+    Save, 
+    X, 
+    UserSearch, 
+    UserCheck, 
+    ShieldCheck, 
+    Search, 
+    CheckCircle2, 
+    AlertCircle 
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -42,6 +62,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
 import { DonorSearchDialog } from './donor-search-dialog';
+import { createDonorAction } from '@/app/donors/actions';
 
 const linkSplitSchema = z.array(z.object({
     linkId: z.string(),
@@ -274,6 +295,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   const isLinkSplit = watch('isSplit');
   const donorId = watch('donorId');
   const donorPhone = watch('donorPhone');
+  const donorName = watch('donorName');
 
   useEffect(() => {
     const total = watchedTransactions.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
@@ -350,6 +372,30 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     }
   }, [firestore, donorPhone, handleSelectDonorProfile, toast]);
 
+  const handleRegisterDonorProfile = async () => {
+    if (!userProfile) return;
+    setIsSubmitting(true);
+    
+    // Gather all IDs from current transactions
+    const currentUpis = watchedTransactions.map(tx => tx.upiId).filter(Boolean) as string[];
+    
+    const res = await createDonorAction({
+        name: donorName,
+        phone: donorPhone || '',
+        status: 'Active',
+        upiIds: Array.from(new Set(currentUpis)),
+        notes: `Profile registered directly from donation hub for verification.`
+    }, { id: userProfile.id, name: userProfile.name });
+
+    if (res.success && res.id) {
+        setValue('donorId', res.id, { shouldDirty: true });
+        toast({ title: 'Profile Secured', description: 'Identity now linked to institutional registry.', variant: 'success' });
+    } else {
+        toast({ title: 'Registration Failed', description: res.message, variant: 'destructive' });
+    }
+    setIsSubmitting(false);
+  };
+
   const renderLabel = (label: string, fieldName: string) => (
     <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">
         {label} {mandatoryFields[fieldName] ? '*' : ''}
@@ -397,7 +443,11 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                             <FormItem>
                                 <div className="flex items-center justify-between">
                                     {renderLabel('Donor Name', 'donorName')}
-                                    {donorId && <Badge variant="eligible" className="h-4 text-[8px] font-black uppercase"><ShieldCheck className="h-2.5 w-2.5 mr-1"/> Identified Profile</Badge>}
+                                    {donorId ? (
+                                        <Badge variant="eligible" className="h-4 text-[8px] font-black uppercase"><ShieldCheck className="h-2.5 w-2.5 mr-1"/> Identified Profile</Badge>
+                                    ) : !isReadOnly && donorName.length > 2 && (
+                                        <Button type="button" variant="link" onClick={handleRegisterDonorProfile} className="h-4 text-[8px] font-black uppercase p-0 text-primary underline">Create Donor Profile</Button>
+                                    )}
                                 </div>
                                 <FormControl><Input placeholder="e.g. Saleem Khan" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl>
                                 <FormMessage />
@@ -538,7 +588,16 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
             </div>
         )}
       </form>
-      <DonorSearchDialog open={isDonorSearchOpen} onOpenChange={setIsDonorSearchOpen} onSelectDonor={handleSelectDonorProfile} />
+      <DonorSearchDialog 
+        open={isDonorSearchOpen} 
+        onOpenChange={setIsDonorSearchOpen} 
+        onSelectDonor={handleSelectDonorProfile} 
+        currentFormData={{
+            name: donorName,
+            phone: donorPhone,
+            upiIds: watchedTransactions.map(t => t.upiId).filter(Boolean) as string[]
+        }}
+      />
     </Form>
   );
 }
