@@ -380,13 +380,7 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Top-level collection for all user profiles. Documents are identified by the Firebase Authentication UID. This path forms the root for all user-specific data, ensuring clear ownership and segregation. The 'id' field in the User entity corresponds to the {userId} path parameter.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user, corresponding to Firebase Authentication UID."
-            }
-          ]
+          "description": "Top-level collection storing user profiles. Access is restricted to the user matching the {userId} wildcard. This path uses the user's UID as the document ID."
         }
       },
       {
@@ -396,15 +390,15 @@
           "schema": {
             "$ref": "#/backend/entities/Document"
           },
-          "description": "A subcollection holding all documents uploaded by a specific user. Each document's 'userId' field must match the parent {userId} in the path for authorization independence and simplified security rules. The 'id' field in the Document entity corresponds to the {documentId} path parameter.",
+          "description": "Subcollection storing documents uploaded by a specific user. Authorization is path-based, meaning only the owner (`{userId}`) can access their documents.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the user who owns this document."
+              "description": "The unique ID of the user who owns this document."
             },
             {
               "name": "documentId",
-              "description": "The unique identifier for the uploaded document."
+              "description": "The unique ID of the document."
             }
           ]
         }
@@ -416,19 +410,19 @@
           "schema": {
             "$ref": "#/backend/entities/ExtractedText"
           },
-          "description": "A subcollection storing the raw text extracted from a specific document. Each ExtractedText document must include denormalized 'userId' and 'documentId' fields for authorization independence, allowing direct security rule evaluation without parent lookups. The 'id' field corresponds to {extractedTextId}.",
+          "description": "Subcollection storing the raw extracted text for a specific document. Authorization is inherited from the parent document and user.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the user who owns the parent document."
+              "description": "The unique ID of the user who owns the parent document."
             },
             {
               "name": "documentId",
-              "description": "The unique identifier of the parent document."
+              "description": "The unique ID of the parent document."
             },
             {
               "name": "extractedTextId",
-              "description": "The unique identifier for the extracted text."
+              "description": "The unique ID of the extracted text record."
             }
           ]
         }
@@ -440,19 +434,19 @@
           "schema": {
             "$ref": "#/backend/entities/IdentityProofExtraction"
           },
-          "description": "A subcollection for structured data extracted from identity proof documents. Each IdentityProofExtraction document must include denormalized 'userId' and 'documentId' fields for authorization independence. The 'id' field corresponds to {identityProofExtractionId}.",
+          "description": "Subcollection storing structured data extracted from identity proof documents. Authorization is inherited from the parent document and user.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the user who owns the parent document."
+              "description": "The unique ID of the user who owns the parent document."
             },
             {
               "name": "documentId",
-              "description": "The unique identifier of the parent document."
+              "description": "The unique ID of the parent document."
             },
             {
               "name": "identityProofExtractionId",
-              "description": "The unique identifier for the identity proof extraction."
+              "description": "The unique ID of the identity proof extraction record."
             }
           ]
         }
@@ -464,47 +458,47 @@
           "schema": {
             "$ref": "#/backend/entities/BillingStatementExtraction"
           },
-          "description": "A subcollection for structured data extracted from billing statements. Each BillingStatementExtraction document must include denormalized 'userId' and 'documentId' fields for authorization independence. The 'id' field corresponds to {billingStatementExtractionId}.",
+          "description": "Subcollection storing structured data extracted from billing statements. Authorization is inherited from the parent document and user.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the user who owns the parent document."
+              "description": "The unique ID of the user who owns the parent document."
             },
             {
               "name": "documentId",
-              "description": "The unique identifier of the parent document."
+              "description": "The unique ID of the parent document."
             },
             {
               "name": "billingStatementExtractionId",
-              "description": "The unique identifier for the billing statement extraction."
+              "description": "The unique ID of the billing statement extraction record."
             }
           ]
         }
       },
       {
-        "path": "/users/{userId}/documents/{documentId}/billingStatementExtractions/{billingStatementExtractionId}/lineItems/{lineItemId}",
+        "path": "/users/{userId}/documents/{documentId}/billingStatementExtractions/{billingStatementExtractionId}/lineItems/{billingLineItemId}",
         "definition": {
           "entityName": "BillingLineItem",
           "schema": {
             "$ref": "#/backend/entities/BillingLineItem"
           },
-          "description": "A subcollection containing individual line items for a specific billing statement extraction. Each BillingLineItem document must include denormalized 'userId', 'documentId', and 'billingStatementExtractionId' fields for authorization independence. The 'id' field corresponds to {lineItemId}.",
+          "description": "Subcollection storing individual line items for a specific billing statement extraction. Authorization is inherited from the parent billing statement, document, and user.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the user who owns the top-level document."
+              "description": "The unique ID of the user who owns the parent document."
             },
             {
               "name": "documentId",
-              "description": "The unique identifier of the parent document."
+              "description": "The unique ID of the parent document."
             },
             {
               "name": "billingStatementExtractionId",
-              "description": "The unique identifier of the parent billing statement extraction."
+              "description": "The unique ID of the parent billing statement extraction."
             },
             {
-              "name": "lineItemId",
-              "description": "The unique identifier for the billing line item."
+              "name": "billingLineItemId",
+              "description": "The unique ID of the billing line item record."
             }
           ]
         }
@@ -516,24 +510,24 @@
           "schema": {
             "$ref": "#/backend/entities/MedicalReportExtraction"
           },
-          "description": "A subcollection for structured data extracted from medical reports. Each MedicalReportExtraction document must include denormalized 'userId' and 'documentId' fields for authorization independence. The 'id' field corresponds to {medicalReportExtractionId}.",
+          "description": "Subcollection storing structured data extracted from medical reports. Authorization is inherited from the parent document and user.",
           "params": [
             {
               "name": "userId",
-              "description": "The unique identifier of the user who owns the parent document."
+              "description": "The unique ID of the user who owns the parent document."
             },
             {
               "name": "documentId",
-              "description": "The unique identifier of the parent document."
+              "description": "The unique ID of the parent document."
             },
             {
               "name": "medicalReportExtractionId",
-              "description": "The unique identifier for the medical report extraction."
+              "description": "The unique ID of the medical report extraction record."
             }
           ]
         }
       }
     ],
-    "reasoning": "The recommended Firestore structure for DocuExtract prioritizes user data segregation and authorization independence, crucial for a personal document management system. All user-specific data is organized under a top-level `/users/{userId}` collection. This immediately establishes clear ownership, making security rules simple and efficient by allowing direct comparison of `request.auth.uid` with the `{userId}` wildcard in the path. Documents uploaded by a user are stored in a subcollection at `/users/{userId}/documents/{documentId}`. Each `Document` document itself contains the `userId` field, which is consistent with the path, ensuring that any authorization check can happen directly on the `Document`'s data without requiring a `get()` call to a parent `User` document.\n\nFor the various extraction entities (`ExtractedText`, `IdentityProofExtraction`, `BillingStatementExtraction`, `MedicalReportExtraction`), they are designed as subcollections under their respective `Document`s. To achieve **Authorization Independence (CRITICAL)**, each extraction document (e.g., `ExtractedText`) will have the `userId` (and `documentId` for `BillingLineItem`) explicitly denormalized within its own data. For example, a document at `/users/{userId}/documents/{documentId}/extractedTexts/{extractedTextId}` will contain a `userId` field matching the path's `userId` and a `documentId` field matching the path's `documentId`. This denormalization eliminates the need for expensive and complex `get()` calls in Firestore Security Rules to check parent document ownership or attributes. Rules can simply evaluate `request.auth.uid == resource.data.userId` and `resource.data.documentId == {documentId}` directly on the document being accessed, enabling atomic operations and simplifying debugging.\n\nThis structure directly supports **Query Against Path Segments (QAPs)** by enforcing **Structural Segregation (Homogeneous Security Posture)**. Since all data under `/users/{userId}` belongs exclusively to that user, `list` queries (e.g., to retrieve all documents for a user or all extractions for a document) are inherently secured. The Firestore rules engine can validate the `userId` in the path against `request.auth.uid` for all reads, writes, and lists within these user-scoped collections without needing to filter results at the database level. Each subcollection (e.g., `/extractedTexts`, `/identityProofExtractions`) holds documents of a single type with a consistent security posture, further simplifying rule logic. The use of explicit state modeling (e.g., `processingStatus` in `Document`) and descriptive wildcards (`{userId}`, `{documentId}`) enhances data clarity and predictability, adhering to all core design principles and strategy mandates."
+    "reasoning": "The Firestore structure for DocuExtract is designed with a strong emphasis on Authorization Independence and Query-Ability for Security Rules (QAPs). All user-specific data is strictly segregated under a hierarchical path model, directly leveraging Firebase Authentication's `request.auth.uid` for robust, easily auditable security.\n\n1.  **Authorization Independence (CRITICAL):** This structure achieves authorization independence by deeply nesting all user-owned documents and their related extractions under the respective user's path: `/users/{userId}/documents/{documentId}/...`. The `userId` parameter in the path directly corresponds to `request.auth.uid`. This design eliminates the need for expensive and complex `get()` calls in security rules to check ownership or relationships. For example, to access a document, the rule simply verifies `match /users/{userId}/documents/{documentId} { allow read, write: if request.auth.uid == userId; }`. This makes authorization checks atomic, performant, and simple to debug, as all required authorization context (`userId`) is present in the request path.\n\n2.  **Query-Ability for Security Rules (QAPs):** By organizing data primarily under `/users/{userId}`, we inherently solve the QAPs problem. When a user queries for their documents (e.g., `db.collection('users').doc(request.auth.uid).collection('documents').get()`), the query path itself (`/users/{request.auth.uid}/documents`) acts as the security filter. The security rules can then grant access based on `request.auth.uid == userId`, ensuring that users can only ever list or access documents directly belonging to them. There are no 'global' collections that would require `where` clauses in rules (which Firestore rules cannot enforce as filters), thus preventing accidental data exposure.\n\n3.  **Structural Segregation:** Each collection (`users`, `documents`, `extractedTexts`, `identityProofExtractions`, `billingStatementExtractions`, `lineItems`, `medicalReportExtractions`) has a homogeneous security posture: all documents within these nested paths are owned by the `userId` in the path segment. This avoids mixing data with different access requirements and keeps rules concise and focused.\n\n4.  **Data Clarity and Predictability:** Wildcard names (`{userId}`, `{documentId}`) are descriptive. Entities like `Document` use an explicit `processingStatus` field for state management, adhering to predictable schema principles. Denormalization for authorization context is achieved purely through the hierarchical path, meaning no redundant `ownerId` fields are strictly necessary within the nested documents themselves, although including `userId` for indexing or easier client-side querying might be beneficial if not made part of the path, but in this case, the path itself provides it.\n\nGiven the user's specific question \"do we have donor collection?\", based on the provided entities and application requirements for DocuExtract, there is no entity or functionality related to 'donors'. Therefore, no 'donor' collection is included in this design."
   }
 }
