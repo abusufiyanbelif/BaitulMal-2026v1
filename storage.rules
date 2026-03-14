@@ -1,47 +1,47 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    
     function isSignedIn() {
       return request.auth != null;
     }
     
     function isAdmin() {
-      return isSignedIn() && 
-        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+      return isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin';
     }
 
-    function hasPermission(module, action) {
-      let data = firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
-      return data.role == 'Admin' || (data.permissions[module] != null && data.permissions[module][action] == true);
-    }
-
+    // Public branding & payment artifacts
     match /settings/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    match /users/{userId}/{allPaths=**} {
-      allow read: if request.auth.uid == userId || isAdmin();
-      allow write: if request.auth.uid == userId || isAdmin();
-    }
-
+    // Campaign artifacts (Publicly readable if initiative is Published)
     match /campaigns/{campaignId}/{allPaths=**} {
-      allow read: if firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published' || (isSignedIn() && hasPermission('campaigns', 'read'));
-      allow write: if isAdmin() || hasPermission('campaigns', 'write');
+      allow read: if firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published' || isAdmin();
+      allow write: if isAdmin();
     }
 
+    // Lead artifacts (Publicly readable if initiative is Published)
     match /leads/{leadId}/{allPaths=**} {
-      allow read: if firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published' || (isSignedIn() && hasPermission('leads-members', 'read'));
-      allow write: if isAdmin() || hasPermission('leads-members', 'write');
+      allow read: if firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published' || isAdmin();
+      allow write: if isAdmin();
     }
 
-    match /beneficiaries/{benId}/{allPaths=**} {
-      allow read: if isSignedIn() && hasPermission('beneficiaries', 'read');
+    // User private artifacts (ID Proofs)
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth.uid == userId || isAdmin();
+    }
+
+    // Beneficiary private artifacts (Strictly Admin or Registration Upload)
+    match /beneficiaries/{beneficiaryId}/{allPaths=**} {
+      allow read: if isAdmin();
       allow write: if isSignedIn();
     }
-
-    match /donations/{donId}/{allPaths=**} {
-      allow read: if isSignedIn() && hasPermission('donations', 'read');
+    
+    // Donation screenshots (High-privacy financial evidence)
+    match /donations/{donationId}/{allPaths=**} {
+      allow read: if isAdmin();
       allow write: if isSignedIn();
     }
   }

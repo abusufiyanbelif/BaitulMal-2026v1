@@ -377,9 +377,9 @@ export default function PublicLeadSummaryPage() {
                                                         ))}
                                                     </TableBody>
                                                     {beneficiaryGroups.length > 0 && (
-                                                        <TableFooter className="bg-primary/5 border-t">
+                                                        <tfoot className="bg-primary/5 border-t">
                                                             <TableRow><TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Total Requirement</TableCell><TableCell className="text-right font-mono font-bold text-primary text-lg">₹{calculatedRequirementTotal.toLocaleString('en-IN')}</TableCell></TableRow>
-                                                        </TableFooter>
+                                                        </tfoot>
                                                     )}
                                                 </Table>
                                             ) : (
