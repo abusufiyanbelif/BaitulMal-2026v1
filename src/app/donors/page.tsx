@@ -241,6 +241,9 @@ export default function DonorRegistryPage() {
     </main>
   );
 
+  const totalPages = Math.ceil(filteredDonors.length / itemsPerPage);
+  const paginatedDonors = filteredDonors.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative">
       <div className="flex flex-col gap-2">
@@ -308,7 +311,7 @@ export default function DonorRegistryPage() {
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar initialFocus mode="range" selected={dateRange} onSelect={setDate} numberOfMonths={2} />
+                        <Calendar initialFocus mode="range" selected={dateRange} onSelect={setDateRange} numberOfMonths={2} />
                     </PopoverContent>
                 </Popover>
                 {dateRange && <Button variant="ghost" size="icon" className="h-10 w-10 text-primary/40 hover:text-primary shrink-0" onClick={() => setDateRange(undefined)}><X className="h-4 w-4"/></Button>}
@@ -358,9 +361,9 @@ export default function DonorRegistryPage() {
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredDonors.map((donor, idx) => (
+                        {paginatedDonors.map((donor, idx) => (
                             <TableRow key={donor.id} onClick={() => router.push(`/donors/${donor.id}`)} className="cursor-pointer hover:bg-primary/[0.02] transition-colors border-b border-primary/5 last:border-0 bg-white">
-                                <TableCell className="pl-6 font-mono text-xs opacity-60">{idx + 1}</TableCell>
+                                <TableCell className="pl-6 font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</TableCell>
                                 <TableCell className="py-4">
                                     <div className="flex items-center gap-2">
                                         <div className="font-bold text-sm text-primary">{donor.name}</div>
