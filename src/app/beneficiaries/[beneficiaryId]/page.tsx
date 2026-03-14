@@ -332,36 +332,38 @@ export default function BeneficiaryDetailsPage() {
                                                     {link.zakatAllocation > 0 && <p className="text-[9px] font-bold text-primary/60 tracking-tight">Zakat: ₹{link.zakatAllocation.toLocaleString('en-IN')}</p>}
                                                 </TableCell>
                                                 <TableCell className="text-right pr-6">
-                                                    <DropdownMenu>
-                                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                                        <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
-                                                            <DropdownMenuSub>
-                                                                <DropdownMenuSubTrigger className="font-normal text-primary">Disbursement status</DropdownMenuSubTrigger>
-                                                                <DropdownMenuPortal>
-                                                                    <DropdownMenuSubContent>
-                                                                        <DropdownMenuRadioGroup value={link.beneficiaryStatus} onValueChange={(s) => handleInitiativeStatusChange(link, s as any)}>
-                                                                            <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
-                                                                            <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</DropdownMenuRadioItem>
-                                                                            <DropdownMenuRadioItem value="Given" className="text-xs font-normal">Given (Completed)</DropdownMenuRadioItem>
-                                                                        </DropdownMenuRadioGroup>
-                                                                    </DropdownMenuSubContent>
-                                                                </DropdownMenuPortal>
-                                                            </DropdownMenuSub>
-                                                            <DropdownMenuSeparator />
-                                                            <DropdownMenuItem asChild className="text-primary font-normal">
-                                                                <Link href={link.type === 'Campaign' ? `/campaign-members/${link.id}/beneficiaries` : `/leads-members/${link.id}/beneficiaries`}>
-                                                                    <ArrowLeft className="mr-2 h-4 w-4" /> View In Context
-                                                                </Link>
-                                                            </DropdownMenuItem>
-                                                        </DropdownMenuContent>
-                                                    </DropdownMenu>
+                                                    <div onClick={e => e.stopPropagation()}>
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/10"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
+                                                                <DropdownMenuSub>
+                                                                    <DropdownMenuSubTrigger className="font-normal text-primary">Disbursement status</DropdownMenuSubTrigger>
+                                                                    <DropdownMenuPortal>
+                                                                        <DropdownMenuSubContent>
+                                                                            <DropdownMenuRadioGroup value={link.beneficiaryStatus} onValueChange={(s) => handleInitiativeStatusChange(link, s as any)}>
+                                                                                <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
+                                                                                <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</DropdownMenuRadioItem>
+                                                                                <DropdownMenuRadioItem value="Given" className="text-xs font-normal">Given (Completed)</DropdownMenuRadioItem>
+                                                                            </DropdownMenuRadioGroup>
+                                                                        </DropdownMenuSubContent>
+                                                                    </DropdownMenuPortal>
+                                                                </DropdownMenuSub>
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem asChild className="text-primary font-normal">
+                                                                    <Link href={link.type === 'Campaign' ? `/campaign-members/${link.id}/beneficiaries` : `/leads-members/${link.id}/beneficiaries`}>
+                                                                        <ArrowLeft className="mr-2 h-4 w-4" /> View In Context
+                                                                    </Link>
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </div>
                                                 </TableCell>
                                             </TableRow>
                                         ))}
                                     </TableBody>
                                 </Table>
                             </div>
-                            <ScrollBar orientation="horizontal" />
+                            <ScrollBar orientation="horizontal" className="h-1.5" />
                         </ScrollArea>
                     ) : ( 
                         <div className="flex flex-col items-center justify-center py-20 opacity-40">
@@ -377,7 +379,7 @@ export default function BeneficiaryDetailsPage() {
             <div className="grid gap-6 md:grid-cols-3">
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
                     <CardHeader className="p-4 flex-row items-center justify-between space-y-0">
-                        <CardTitle className="text-[10px] font-bold tracking-tight text-primary">Total Assistance Value</CardTitle>
+                        <CardTitle className="text-[10px] font-bold tracking-tight text-primary uppercase">Total Assistance Value</CardTitle>
                         <Target className="h-4 w-4 text-primary opacity-40" />
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
@@ -387,7 +389,7 @@ export default function BeneficiaryDetailsPage() {
                 </Card>
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
                     <CardHeader className="p-4 flex-row items-center justify-between space-y-0">
-                        <CardTitle className="text-[10px] font-bold tracking-tight text-primary">Verified (Secured)</CardTitle>
+                        <CardTitle className="text-[10px] font-bold tracking-tight text-primary uppercase">Verified (Secured)</CardTitle>
                         <CheckCircle2 className="h-4 w-4 text-primary opacity-40" />
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
@@ -397,7 +399,7 @@ export default function BeneficiaryDetailsPage() {
                 </Card>
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
                     <CardHeader className="p-4 flex-row items-center justify-between space-y-0">
-                        <CardTitle className="text-[10px] font-bold tracking-tight text-primary">Disbursed (Given)</CardTitle>
+                        <CardTitle className="text-[10px] font-bold tracking-tight text-primary uppercase">Disbursed (Given)</CardTitle>
                         <HeartHandshake className="h-4 w-4 text-primary opacity-40" />
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
@@ -409,7 +411,7 @@ export default function BeneficiaryDetailsPage() {
                 <Card className="md:col-span-3 border-primary/10 bg-white shadow-sm overflow-hidden">
                     <CardHeader className="bg-primary/5 border-b px-6 py-4">
                         <CardTitle className="text-lg font-bold text-primary tracking-tight">Allocation Breakdown</CardTitle>
-                        <CardDescription className="text-xs font-normal">Detailed split of aid across initiatives, identifying source funds and current disbursement status.</CardDescription>
+                        <CardDescription className="text-xs font-normal text-primary/60">Detailed split of aid across initiatives, identifying source funds and current disbursement status.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
                         <ScrollArea className="w-full">
@@ -417,12 +419,12 @@ export default function BeneficiaryDetailsPage() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead className="pl-6">Initiative Source</TableHead>
-                                            <TableHead className="text-right">Requirement (₹)</TableHead>
-                                            <TableHead className="text-right">Zakat Allocation (₹)</TableHead>
-                                            <TableHead className="text-right">Community Fund (₹)</TableHead>
-                                            <TableHead className="text-center">Financial Status</TableHead>
-                                            <TableHead className="text-right pr-6">Net Provision (₹)</TableHead>
+                                            <TableHead className="pl-6 font-bold text-[10px] tracking-tight uppercase">Initiative Source</TableHead>
+                                            <TableHead className="text-right font-bold text-[10px] tracking-tight uppercase">Requirement (₹)</TableHead>
+                                            <TableHead className="text-right font-bold text-[10px] tracking-tight uppercase">Zakat Allocation (₹)</TableHead>
+                                            <TableHead className="text-right font-bold text-[10px] tracking-tight uppercase">Community Fund (₹)</TableHead>
+                                            <TableHead className="text-center font-bold text-[10px] tracking-tight uppercase">Financial Status</TableHead>
+                                            <TableHead className="text-right pr-6 font-bold text-[10px] tracking-tight uppercase">Net Provision (₹)</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -441,11 +443,11 @@ export default function BeneficiaryDetailsPage() {
                                                     <TableCell className="text-right font-mono text-xs opacity-60">₹{link.kitAmount.toLocaleString('en-IN')}</TableCell>
                                                     <TableCell className="text-right">
                                                         <p className="font-bold font-mono text-sm text-primary">₹{link.zakatAllocation.toLocaleString('en-IN')}</p>
-                                                        <p className="text-[8px] font-bold text-muted-foreground tracking-tight">Reserved</p>
+                                                        <p className="text-[8px] font-bold text-muted-foreground tracking-tight uppercase">Reserved</p>
                                                     </TableCell>
                                                     <TableCell className="text-right">
                                                         <p className="font-bold font-mono text-sm text-primary">₹{communityFund.toLocaleString('en-IN')}</p>
-                                                        <p className="text-[8px] font-bold text-muted-foreground tracking-tight">Lillah / Sadaqah</p>
+                                                        <p className="text-[8px] font-bold text-muted-foreground tracking-tight uppercase">Lillah / Sadaqah</p>
                                                     </TableCell>
                                                     <TableCell className="text-center">
                                                         <Badge 
@@ -460,7 +462,7 @@ export default function BeneficiaryDetailsPage() {
                                                             <span className={cn("font-bold font-mono text-sm text-primary")}>
                                                                 ₹{link.kitAmount.toLocaleString('en-IN')}
                                                             </span>
-                                                            <span className="text-[8px] font-bold text-muted-foreground tracking-tight">Net Value</span>
+                                                            <span className="text-[8px] font-bold text-muted-foreground tracking-tight uppercase">Net Value</span>
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>
@@ -472,7 +474,7 @@ export default function BeneficiaryDetailsPage() {
                                     </TableBody>
                                     <TableFooter className="bg-primary/5 border-t">
                                         <TableRow>
-                                            <TableCell className="pl-6 py-4 font-bold text-primary text-xs tracking-tight">Aggregate Totals</TableCell>
+                                            <TableCell className="pl-6 py-4 font-bold text-primary text-xs tracking-tight uppercase">Aggregate Totals</TableCell>
                                             <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{financialSummary.requested.toLocaleString('en-IN')}</TableCell>
                                             <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{(financialSummary.zakatDisbursed + financialSummary.zakatVerified).toLocaleString('en-IN')}</TableCell>
                                             <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{(financialSummary.requested - (financialSummary.zakatDisbursed + financialSummary.zakatVerified)).toLocaleString('en-IN')}</TableCell>
@@ -483,7 +485,7 @@ export default function BeneficiaryDetailsPage() {
                                     </TableFooter>
                                 </Table>
                             </div>
-                            <ScrollBar orientation="horizontal" />
+                            <ScrollBar orientation="horizontal" className="h-1.5" />
                         </ScrollArea>
                     </CardContent>
                 </Card>
@@ -496,17 +498,17 @@ export default function BeneficiaryDetailsPage() {
                         <CardContent className="p-6 sm:p-10 space-y-8">
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 p-6 rounded-2xl bg-primary/[0.02] border border-primary/10">
                                 <div className="space-y-2">
-                                    <h4 className="text-xs font-bold text-primary tracking-tight">Religious Compliance Tracking</h4>
+                                    <h4 className="text-xs font-bold text-primary tracking-tight uppercase">Religious Compliance Tracking</h4>
                                     <div className="flex flex-wrap gap-4 items-center">
                                         <div className="space-y-0.5">
-                                            <p className="text-[9px] font-bold text-muted-foreground tracking-tight">Zakat Eligible</p>
+                                            <p className="text-[9px] font-bold text-muted-foreground tracking-tight uppercase">Zakat Eligible</p>
                                             <Badge variant={beneficiary.isEligibleForZakat ? 'eligible' : 'outline'} className="font-bold">
                                                 {beneficiary.isEligibleForZakat ? 'Confirmed' : 'Not Eligible'}
                                             </Badge>
                                         </div>
                                         <Separator orientation="vertical" className="h-8 hidden sm:block opacity-20" />
                                         <div className="space-y-0.5">
-                                            <p className="text-[9px] font-bold text-muted-foreground tracking-tight">Total Zakat Provision</p>
+                                            <p className="text-[9px] font-bold text-muted-foreground tracking-tight uppercase">Total Zakat Provision</p>
                                             <p className="text-sm font-bold text-primary font-mono">₹{(financialSummary.zakatDisbursed + financialSummary.zakatVerified).toLocaleString('en-IN')}</p>
                                         </div>
                                     </div>
@@ -521,7 +523,7 @@ export default function BeneficiaryDetailsPage() {
                                 <h4 className="text-sm font-bold text-primary tracking-tight flex items-center gap-2">
                                     <span className="font-normal"><Info className="h-4 w-4"/></span> Impact Analysis
                                 </h4>
-                                <p className="text-sm leading-relaxed text-foreground font-normal">
+                                <p className="text-sm leading-relaxed text-muted-foreground font-normal">
                                     This recipient has been supported across <span className="font-bold text-primary">{linkedInitiatives.length} initiative(s)</span>. 
                                     Out of the total requirement of <span className="font-bold text-primary font-mono">₹{financialSummary.requested.toLocaleString('en-IN')}</span>, 
                                     the organization has successfully disbursed <span className="font-bold text-primary font-mono">₹{financialSummary.disbursed.toLocaleString('en-IN')}</span>. 

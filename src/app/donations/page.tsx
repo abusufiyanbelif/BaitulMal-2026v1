@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -221,7 +222,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                 ))}
                                             </TableBody>
                                         </Table>
-                                        <ScrollBar orientation="horizontal" />
+                                        <ScrollBar orientation="horizontal" className="h-1.5" />
                                     </ScrollArea>
                                 </div>
                             </div>
@@ -229,29 +230,31 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                 <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight uppercase"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
                                 <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
                                     <ScrollArea className="w-full">
-                                        <Table>
-                                            <TableHeader className="bg-primary/5">
-                                                <TableRow>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Target Initiative</TableHead>
-                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Allocated Sum</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {(donation.linkSplit || []).map(link => (
-                                                    <TableRow key={link.linkId} className="h-8 hover:bg-[hsl(var(--table-row-hover))]">
-                                                        <TableCell className="flex items-center gap-2 py-1">
-                                                            {link.linkType === 'campaign' ? <FolderKanban className="h-3.5 w-3.5 text-primary/40" /> : <Lightbulb className="h-3.5 w-3.5 text-primary/40" />}
-                                                            <span className="text-[10px] font-bold text-primary/80 whitespace-nowrap">{link.linkName}</span>
-                                                        </TableCell>
-                                                        <TableCell className="text-right font-bold font-mono text-primary py-1 text-[11px]">₹{link.amount.toFixed(2)}</TableCell>
+                                        <div className="min-w-[300px]">
+                                            <Table>
+                                                <TableHeader className="bg-primary/5">
+                                                    <TableRow>
+                                                        <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Target Initiative</TableHead>
+                                                        <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Allocated Sum</TableHead>
                                                     </TableRow>
-                                                ))}
-                                                {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
-                                                    <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated / General Institutional Fund</TableCell></TableRow>
-                                                )}
-                                            </TableBody>
-                                        </Table>
-                                        <ScrollBar orientation="horizontal" />
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {(donation.linkSplit || []).map(link => (
+                                                        <TableRow key={link.linkId} className="h-8 hover:bg-[hsl(var(--table-row-hover))]">
+                                                            <TableCell className="flex items-center gap-2 py-1">
+                                                                {link.linkType === 'campaign' ? <FolderKanban className="h-3.5 w-3.5 text-primary/40" /> : <Lightbulb className="h-3.5 w-3.5 text-primary/40" />}
+                                                                <span className="text-[10px] font-bold text-primary/80 whitespace-nowrap">{link.linkName}</span>
+                                                            </TableCell>
+                                                            <TableCell className="text-right font-bold font-mono text-primary py-1 text-[11px]">₹{link.amount.toFixed(2)}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                    {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
+                                                        <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated / General Institutional Fund</TableCell></TableRow>
+                                                    )}
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                        <ScrollBar orientation="horizontal" className="h-1.5" />
                                     </ScrollArea>
                                 </div>
                             </div>
@@ -260,33 +263,35 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                             <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight uppercase"><ImageIcon className="h-3 w-3"/> Transaction Documents</h4>
                             <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
                                 <ScrollArea className="w-full">
-                                    <Table>
-                                        <TableHeader className="bg-primary/5">
-                                            <TableRow>
-                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Amount</TableHead>
-                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Ref. Id</TableHead>
-                                                <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Date</TableHead>
-                                                <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight pr-6">Evidence</TableHead>
-                                            </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
-                                            {(donation.transactions || []).map((tx) => (
-                                                <TableRow key={tx.id} className="hover:bg-[hsl(var(--table-row-hover))]">
-                                                    <TableCell className="font-bold font-mono text-primary text-[11px] py-2">₹{tx.amount.toFixed(2)}</TableCell>
-                                                    <TableCell className="font-mono text-[10px] py-2 text-primary/80 whitespace-nowrap">{tx.transactionId || 'N/A'}</TableCell>
-                                                    <TableCell className="text-[10px] font-normal text-muted-foreground py-2 whitespace-nowrap">{tx.date || donation.donationDate}</TableCell>
-                                                    <TableCell className="text-right py-2 pr-6">
-                                                        {tx.screenshotUrl ? (
-                                                            <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/5 transition-all active:scale-95 shadow-sm" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
-                                                                <ImageIcon className="mr-1 h-3 w-3" /> View Evidence
-                                                            </Button>
-                                                        ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40 tracking-tight">No Artifact</span>}
-                                                    </TableCell>
+                                    <div className="min-w-[600px]">
+                                        <Table>
+                                            <TableHeader className="bg-primary/5">
+                                                <TableRow>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Amount</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Ref. Id</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Date</TableHead>
+                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight pr-6">Evidence</TableHead>
                                                 </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                    <ScrollBar orientation="horizontal" />
+                                            </TableHeader>
+                                            <TableBody>
+                                                {(donation.transactions || []).map((tx) => (
+                                                    <TableRow key={tx.id} className="hover:bg-[hsl(var(--table-row-hover))]">
+                                                        <TableCell className="font-bold font-mono text-primary text-[11px] py-2">₹{tx.amount.toFixed(2)}</TableCell>
+                                                        <TableCell className="font-mono text-[10px] py-2 text-primary/80 whitespace-nowrap">{tx.transactionId || 'N/A'}</TableCell>
+                                                        <TableCell className="text-[10px] font-normal text-muted-foreground py-2 whitespace-nowrap">{tx.date || donation.donationDate}</TableCell>
+                                                        <TableCell className="text-right py-2 pr-6">
+                                                            {tx.screenshotUrl ? (
+                                                                <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/5 transition-all active:scale-95 shadow-sm" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
+                                                                    <ImageIcon className="mr-1.5 h-3 w-3" /> View Evidence
+                                                                </Button>
+                                                            ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40 tracking-tight">No Artifact</span>}
+                                                        </TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                    <ScrollBar orientation="horizontal" className="h-1.5" />
                                 </ScrollArea>
                             </div>
                         </div>
@@ -658,7 +663,7 @@ export default function DonationsPage() {
                             </SelectContent>
                         </Select>
                     </div>
-                    <ScrollBar orientation="horizontal" />
+                    <ScrollBar orientation="horizontal" className="h-1.5" />
                 </ScrollArea>
             </CardHeader>
             <CardContent className="p-0">

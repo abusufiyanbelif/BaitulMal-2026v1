@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -49,6 +50,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { parseISO, startOfDay, endOfDay } from 'date-fns';
 import { NewsTicker } from '@/components/news-ticker';
+import { RecentVerificationTicker } from '@/components/recent-verification-ticker';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { usePublicData } from '@/hooks/use-public-data';
@@ -441,7 +443,7 @@ export default function CampaignPage() {
 
         <Card className="animate-fade-in-zoom shadow-none border-primary/10 bg-white/30 overflow-hidden">
           <CardHeader className="p-4 sm:p-6 border-b bg-primary/5">
-            <ScrollArea className="w-full whitespace-nowrap">
+            <ScrollArea className="w-full">
                 <div className="flex flex-nowrap items-center gap-3 pb-2">
                     <Input placeholder="Search Initiatives..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-normal" disabled={isLoading}/>
                     <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Statuses</SelectItem><SelectItem value="Active" className="font-normal">Active</SelectItem><SelectItem value="Completed" className="font-normal">Completed</SelectItem><SelectItem value="Upcoming" className="font-normal">Upcoming</SelectItem></SelectContent></Select>
@@ -454,7 +456,7 @@ export default function CampaignPage() {
                         {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
                     </div>
                 </div>
-                <ScrollBar orientation="horizontal" className="hidden" />
+                <ScrollBar orientation="horizontal" className="h-1.5" />
             </ScrollArea>
           </CardHeader>
           <CardContent className="p-4 sm:p-6 bg-card/30">

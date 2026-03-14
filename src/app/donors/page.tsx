@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -292,11 +293,11 @@ export default function DonorRegistryPage() {
                     </SelectContent>
                 </Select>
             </div>
-            <ScrollBar orientation="horizontal" />
+            <ScrollBar orientation="horizontal" className="h-1.5" />
         </ScrollArea>
       </div>
 
-      <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden">
+      <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm">
         <ScrollArea className="w-full">
             <div className="min-w-[1000px]">
                 <Table>
@@ -312,7 +313,7 @@ export default function DonorRegistryPage() {
                     </TableHeader>
                     <TableBody>
                         {paginatedDonors.map((donor, idx) => (
-                            <TableRow key={donor.id} onClick={() => router.push(`/donors/${donor.id}`)} className="cursor-pointer hover:bg-primary/[0.02] border-b border-primary/5 last:border-0 bg-white">
+                            <TableRow key={donor.id} onClick={() => router.push(`/donors/${donor.id}`)} className="cursor-pointer bg-white border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors group">
                                 <TableCell className="pl-4 font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</TableCell>
                                 <TableCell className="py-4">
                                     <div className="font-bold text-sm text-primary">{donor.name}</div>
@@ -346,7 +347,7 @@ export default function DonorRegistryPage() {
                     </TableBody>
                 </Table>
             </div>
-            <ScrollBar orientation="horizontal" />
+            <ScrollBar orientation="horizontal" className="h-1.5" />
         </ScrollArea>
       </Card>
 
@@ -364,15 +365,18 @@ export default function DonorRegistryPage() {
         <DialogContent className="max-w-2xl rounded-[16px] border-primary/10 p-0 flex flex-col max-h-[90vh]">
             <DialogHeader className="px-6 py-4 bg-primary/5 border-b"><DialogTitle className="text-xl font-bold">Register Donor Profile</DialogTitle></DialogHeader>
             <form onSubmit={handleSaveDonor} className="flex flex-col h-full overflow-hidden">
-                <ScrollArea className="flex-1"><div className="p-6 space-y-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-2"><Label className="font-bold text-xs uppercase">Full Name *</Label><Input name="name" required className="font-bold h-10" /></div>
-                        <div className="space-y-2"><Label className="font-bold text-xs uppercase">Phone Number *</Label><Input name="phone" required className="font-mono h-10" /></div>
+                <ScrollArea className="flex-1">
+                    <div className="p-6 space-y-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="space-y-2"><Label className="font-bold text-xs uppercase">Full Name *</Label><Input name="name" required className="font-bold h-10" /></div>
+                            <div className="space-y-2"><Label className="font-bold text-xs uppercase">Phone Number *</Label><Input name="phone" required className="font-mono h-10" /></div>
+                        </div>
+                        <div className="space-y-2"><Label className="font-bold text-xs uppercase">Email</Label><Input name="email" type="email" className="font-normal h-10" /></div>
+                        <div className="space-y-2"><Label className="font-bold text-xs uppercase">Address</Label><Input name="address" className="font-normal h-10" /></div>
+                        <div className="space-y-2"><Label className="font-bold text-xs uppercase">Notes</Label><Textarea name="notes" rows={3} className="font-normal" /></div>
                     </div>
-                    <div className="space-y-2"><Label className="font-bold text-xs uppercase">Email</Label><Input name="email" type="email" className="font-normal h-10" /></div>
-                    <div className="space-y-2"><Label className="font-bold text-xs uppercase">Address</Label><Input name="address" className="font-normal h-10" /></div>
-                    <div className="space-y-2"><Label className="font-bold text-xs uppercase">Notes</Label><Textarea name="notes" rows={3} className="font-normal" /></div>
-                </div></ScrollArea>
+                    <ScrollBar orientation="vertical" />
+                </ScrollArea>
                 <DialogFooter className="px-6 py-4 bg-primary/5 border-t"><Button type="submit" disabled={isSubmitting} className="font-bold">{isSubmitting ? <Loader2 className="mr-2 animate-spin"/> : <Save className="mr-2"/>} Secure Profile</Button></DialogFooter>
             </form>
         </DialogContent>

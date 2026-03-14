@@ -461,7 +461,7 @@ export default function BeneficiariesPage() {
                     </SelectContent>
                 </Select>
             </div>
-            <ScrollBar orientation="horizontal" />
+            <ScrollBar orientation="horizontal" className="h-1.5" />
         </ScrollArea>
       </div>
 
@@ -633,7 +633,7 @@ export default function BeneficiariesPage() {
                 <div className="text-center py-20 bg-primary/[0.02] opacity-40 italic font-bold">No Beneficiaries Found Matching Criteria.</div>
                 )}
             </div>
-            <ScrollBar orientation="horizontal" />
+            <ScrollBar orientation="horizontal" className="h-1.5" />
             <ScrollBar orientation="vertical" />
         </ScrollArea>
       </Card>

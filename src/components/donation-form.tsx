@@ -495,22 +495,24 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                             <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value === true} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Split Contribution By Designation</FormLabel></FormItem>
                         )}/>
                     {isTypeSplit ? (
-                        <div className="space-y-4 pl-6 animate-fade-in-up">
+                        <div className="space-y-4 animate-fade-in-up">
                             <div className="border border-primary/5 rounded-xl overflow-hidden bg-primary/[0.01]">
                                 <ScrollArea className="w-full">
-                                    <Table>
-                                        <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Designation</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Allocation (₹)</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight uppercase">Action</TableHead></TableRow></TableHeader>
-                                        <TableBody>
-                                            {typeSplitFields.map((field, index) => (
-                                                <TableRow key={field.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
-                                                    <TableCell><FormField control={control} name={`typeSplit.${index}.category`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none h-8"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select>)}/>{watch(`typeSplit.${index}.category`) === 'Zakat' && <FormField control={control} name={`typeSplit.${index}.forFundraising`} render={({ field: checkboxField }) => (<div className="flex items-center space-x-2 px-2 mt-1"><Checkbox checked={checkboxField.value === true} onCheckedChange={(val) => checkboxField.onChange(val === true)} disabled={isReadOnly}/><Label className="text-[8px] font-bold text-muted-foreground tracking-tighter uppercase">Goal Contribution</Label></div>)}/>}</TableCell>
-                                                    <TableCell><FormField control={control} name={`typeSplit.${index}.amount`} render={({ field }) => (<FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="border-none bg-transparent shadow-none font-bold font-mono h-8 text-primary"/></FormControl>)}/></TableCell>
-                                                    <TableCell className="text-right">{!isReadOnly && <Button type="button" variant="ghost" size="icon" onClick={() => removeTypeSplit(index)} disabled={typeSplitFields.length <= 1} className="h-8 w-8 text-destructive transition-transform hover:scale-110"><Trash2 className="h-4 w-4"/></Button>}</TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                    <ScrollBar orientation="horizontal" />
+                                    <div className="min-w-[450px]">
+                                        <Table>
+                                            <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Designation</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Allocation (₹)</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight uppercase pr-4">Action</TableHead></TableRow></TableHeader>
+                                            <TableBody>
+                                                {typeSplitFields.map((field, index) => (
+                                                    <TableRow key={field.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
+                                                        <TableCell><FormField control={control} name={`typeSplit.${index}.category`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none h-8"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select>)}/>{watch(`typeSplit.${index}.category`) === 'Zakat' && <FormField control={control} name={`typeSplit.${index}.forFundraising`} render={({ field: checkboxField }) => (<div className="flex items-center space-x-2 px-2 mt-1"><Checkbox checked={checkboxField.value === true} onCheckedChange={(val) => checkboxField.onChange(val === true)} disabled={isReadOnly}/><Label className="text-[8px] font-bold text-muted-foreground tracking-tighter uppercase">Goal Contribution</Label></div>)}/>}</TableCell>
+                                                        <TableCell><FormField control={control} name={`typeSplit.${index}.amount`} render={({ field }) => (<FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="border-none bg-transparent shadow-none font-bold font-mono h-8 text-primary"/></FormControl>)}/></TableCell>
+                                                        <TableCell className="text-right pr-4">{!isReadOnly && <Button type="button" variant="ghost" size="icon" onClick={() => removeTypeSplit(index)} disabled={typeSplitFields.length <= 1} className="h-8 w-8 text-destructive transition-transform hover:scale-110"><Trash2 className="h-4 w-4"/></Button>}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                    <ScrollBar orientation="horizontal" className="h-1.5" />
                                 </ScrollArea>
                             </div>
                             {!isReadOnly && <Button type="button" variant="outline" size="sm" onClick={() => appendTypeSplit({ category: 'Sadaqah', amount: 0, forFundraising: false })} className="font-bold text-primary border-primary/20 transition-transform active:scale-95 shadow-none w-full"><Plus className="mr-2 h-4 w-4"/> Add Split Designation</Button>}
@@ -543,22 +545,24 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                             <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value === true} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Allocate Across Multiple Initiatives</FormLabel></FormItem>
                         )}/>
                     {isLinkSplit ? (
-                        <div className="space-y-4 pl-6 animate-fade-in-up">
+                        <div className="space-y-4 animate-fade-in-up">
                             <div className="border border-primary/5 rounded-xl overflow-hidden bg-primary/[0.01]">
                                 <ScrollArea className="w-full">
-                                    <Table>
-                                        <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Target Initiative</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Value (₹)</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight uppercase">Action</TableHead></TableRow></TableHeader>
-                                        <TableBody>
-                                            {linkSplitFields.map((field, index) => (
-                                                <TableRow key={field.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
-                                                    <TableCell><FormField control={control} name={`linkSplit.${index}.linkId`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none min-w-[200px] h-8"><SelectValue placeholder="Select Target..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectGroup><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 uppercase">Campaigns</SelectLabel>{campaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`} className="font-normal">{c.name}</SelectItem>)}</SelectGroup><SelectGroup><Separator className="my-1 opacity-10"/><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 uppercase">Individual Appeals</SelectLabel>{leads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`} className="font-normal">{l.name}</SelectItem>)}</SelectGroup></SelectContent></Select>)}/></TableCell>
-                                                    <TableCell><FormField control={control} name={`linkSplit.${index}.amount`} render={({ field }) => (<FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="border-none bg-transparent shadow-none font-bold font-mono h-8 text-primary"/></FormControl>)}/></TableCell>
-                                                    <TableCell className="text-right">{!isReadOnly && <Button type="button" variant="ghost" size="icon" onClick={() => removeLinkSplit(index)} disabled={linkSplitFields.length <= 1} className="h-8 w-8 text-destructive transition-transform hover:scale-110"><Trash2 className="h-4 w-4"/></Button>}</TableCell>
-                                                </TableRow>
-                                            ))}
-                                        </TableBody>
-                                    </Table>
-                                    <ScrollBar orientation="horizontal" />
+                                    <div className="min-w-[500px]">
+                                        <Table>
+                                            <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Target Initiative</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Value (₹)</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight uppercase pr-4">Action</TableHead></TableRow></TableHeader>
+                                            <TableBody>
+                                                {linkSplitFields.map((field, index) => (
+                                                    <TableRow key={field.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
+                                                        <TableCell><FormField control={control} name={`linkSplit.${index}.linkId`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none min-w-[200px] h-8"><SelectValue placeholder="Select Target..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectGroup><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 uppercase">Campaigns</SelectLabel>{campaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`} className="font-normal">{c.name}</SelectItem>)}</SelectGroup><SelectGroup><Separator className="my-1 opacity-10"/><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 uppercase">Individual Appeals</SelectLabel>{leads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`} className="font-normal">{l.name}</SelectItem>)}</SelectGroup></SelectContent></Select>)}/></TableCell>
+                                                        <TableCell><FormField control={control} name={`linkSplit.${index}.amount`} render={({ field }) => (<FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="border-none bg-transparent shadow-none font-bold font-mono h-8 text-primary"/></FormControl>)}/></TableCell>
+                                                        <TableCell className="text-right pr-4">{!isReadOnly && <Button type="button" variant="ghost" size="icon" onClick={() => removeLinkSplit(index)} disabled={linkSplitFields.length <= 1} className="h-8 w-8 text-destructive transition-transform hover:scale-110"><Trash2 className="h-4 w-4"/></Button>}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                    <ScrollBar orientation="horizontal" className="h-1.5" />
                                 </ScrollArea>
                             </div>
                             {!isReadOnly && <Button type="button" variant="outline" size="sm" onClick={() => appendLinkSplit({ linkId: 'unlinked', amount: 0 })} className="font-bold text-primary border-primary/20 transition-transform active:scale-95 shadow-none w-full"><Plus className="mr-2 h-4 w-4"/> Allocate Another Initiative</Button>}

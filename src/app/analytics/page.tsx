@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemoFirebase, useFirestore } from '@/firebase/provider';
@@ -339,23 +340,25 @@ export default function AnalyticsPage() {
                                         <CardContent>
                                             {isClient ? (
                                             <ScrollArea className="w-full">
-                                                <Table>
-                                                    <TableHeader>
-                                                        <TableRow>
-                                                            <TableHead className="font-bold text-primary">Campaign Name</TableHead>
-                                                            <TableHead className="text-right font-bold text-primary">Amount Collected</TableHead>
-                                                        </TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
-                                                        {topCampaigns.map(campaign => (
-                                                            <TableRow key={campaign.name}>
-                                                                <TableCell className="font-medium text-foreground">{campaign.name}</TableCell>
-                                                                <TableCell className="text-right font-mono text-primary font-bold">₹{campaign.collected.toLocaleString('en-IN')}</TableCell>
+                                                <div className="min-w-[300px]">
+                                                    <Table>
+                                                        <TableHeader>
+                                                            <TableRow>
+                                                                <TableHead className="font-bold text-primary">Campaign Name</TableHead>
+                                                                <TableHead className="text-right font-bold text-primary">Amount Collected</TableHead>
                                                             </TableRow>
-                                                        ))}
-                                                    </TableBody>
-                                                </Table>
-                                                <ScrollBar orientation="horizontal" />
+                                                        </TableHeader>
+                                                        <TableBody>
+                                                            {topCampaigns.map(campaign => (
+                                                                <TableRow key={campaign.name}>
+                                                                    <TableCell className="font-medium text-foreground">{campaign.name}</TableCell>
+                                                                    <TableCell className="text-right font-mono text-primary font-bold">₹{campaign.collected.toLocaleString('en-IN')}</TableCell>
+                                                                </TableRow>
+                                                            ))}
+                                                        </TableBody>
+                                                    </Table>
+                                                </div>
+                                                <ScrollBar orientation="horizontal" className="h-1.5" />
                                             </ScrollArea>
                                             ) : <Skeleton className="h-[300px] w-full" />}
                                         </CardContent>
@@ -368,23 +371,25 @@ export default function AnalyticsPage() {
                                         <CardContent>
                                             {hitsLoading ? <Skeleton className="h-40 w-full"/> : (
                                                 <ScrollArea className="w-full">
-                                                    <Table>
-                                                        <TableHeader>
-                                                            <TableRow>
-                                                                <TableHead className="font-bold text-primary">Page Name</TableHead>
-                                                                <TableHead className="text-right font-bold text-primary">Hit Count</TableHead>
-                                                            </TableRow>
-                                                        </TableHeader>
-                                                        <TableBody>
-                                                            {pageHits?.sort((a, b) => b.hits - a.hits).map(hit => (
-                                                                <TableRow key={hit.id}>
-                                                                    <TableCell className="font-medium capitalize text-foreground">{hit.id.replace(/_/g, ' ')}</TableCell>
-                                                                    <TableCell className="text-right font-mono text-primary font-bold">{hit.hits.toLocaleString()}</TableCell>
+                                                    <div className="min-w-[250px]">
+                                                        <Table>
+                                                            <TableHeader>
+                                                                <TableRow>
+                                                                    <TableHead className="font-bold text-primary">Page Name</TableHead>
+                                                                    <TableHead className="text-right font-bold text-primary">Hit Count</TableHead>
                                                                 </TableRow>
-                                                            ))}
-                                                        </TableBody>
-                                                    </Table>
-                                                    <ScrollBar orientation="horizontal" />
+                                                            </TableHeader>
+                                                            <TableBody>
+                                                                {pageHits?.sort((a, b) => b.hits - a.hits).map(hit => (
+                                                                    <TableRow key={hit.id}>
+                                                                        <TableCell className="font-medium capitalize text-foreground">{hit.id.replace(/_/g, ' ')}</TableCell>
+                                                                        <TableCell className="text-right font-mono text-primary font-bold">{hit.hits.toLocaleString()}</TableCell>
+                                                                    </TableRow>
+                                                                ))}
+                                                            </TableBody>
+                                                        </Table>
+                                                    </div>
+                                                    <ScrollBar orientation="horizontal" className="h-1.5" />
                                                 </ScrollArea>
                                             )}
                                         </CardContent>

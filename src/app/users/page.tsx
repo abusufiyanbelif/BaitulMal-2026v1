@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -19,12 +20,12 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuPortal,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-  DropdownMenuPortal,
 } from '@/components/ui/dropdown-menu';
 import {
     AlertDialog,
@@ -458,7 +459,7 @@ export default function UsersPage() {
                       </TableBody>
                   </Table>
               </div>
-              <ScrollBar orientation="horizontal" />
+              <ScrollBar orientation="horizontal" className="h-1.5" />
           </ScrollArea>
         </CardContent>
         {totalPages > 1 && (
