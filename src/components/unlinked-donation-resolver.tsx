@@ -35,7 +35,9 @@ import {
     AlertCircle, 
     ArrowRight,
     Edit,
-    Smartphone
+    Smartphone,
+    ChevronLeft,
+    ChevronRight
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { linkDonationToDonorAction } from '@/app/donations/actions';
@@ -64,13 +66,23 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
     const [isSearching, setIsSearching] = useState(false);
     const [searchResults, setSearchResults] = useState<Donor[]>([]);
 
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
+
     const donationsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
     const { data: allDonations, isLoading: isLoadingDonations } = useCollection<Donation>(donationsRef);
 
     const unlinkedDonations = useMemo(() => {
         if (!allDonations) return [];
-        return allDonations.filter(d => !d.donorId);
+        return allDonations.filter(d => !d.donorId).sort((a, b) => new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime());
     }, [allDonations]);
+
+    const totalPages = Math.ceil(unlinkedDonations.length / itemsPerPage);
+    const paginatedDonations = useMemo(() => {
+        const start = (currentPage - 1) * itemsPerPage;
+        return unlinkedDonations.slice(start, start + itemsPerPage);
+    }, [unlinkedDonations, currentPage]);
 
     useEffect(() => {
         if (open && initialDonationId && unlinkedDonations.length > 0) {
@@ -81,6 +93,11 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
             }
         }
     }, [open, initialDonationId, unlinkedDonations]);
+
+    // Reset pagination when data changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [unlinkedDonations.length]);
 
     useEffect(() => {
         const fetchMatches = async () => {
@@ -118,7 +135,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
         setIsResolving(selectedDonation.id);
         const res = await linkDonationToDonorAction(selectedDonation.id, donor.id, { id: userProfile.id, name: userProfile.name });
         if (res.success) {
-            toast({ title: 'Identity Mapped', description: `Successfully consolidated records for ${donor.name}.`, variant: 'success' });
+            toast({ title: 'Identity Mapped', description: `Successfully Consolidated Records For ${donor.name}.`, variant: 'success' });
             setSelectedDonation(null);
         } else {
             toast({ title: 'Mapping Failed', description: res.message, variant: 'destructive' });
@@ -137,19 +154,19 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
             phone: selectedDonation.donorPhone || '',
             upiIds: Array.from(new Set(donorUpis)),
             status: 'Active',
-            notes: `Profile established via Identity Resolution Hub for contribution entry.`
+            notes: `Profile Established Via Identity Resolution Hub For Contribution Entry.`
         }, { id: userProfile.id, name: userProfile.name });
 
         if (res.success && res.id) {
             const linkRes = await linkDonationToDonorAction(selectedDonation.id, res.id, { id: userProfile.id, name: userProfile.name });
             if (linkRes.success) {
-                toast({ title: 'New Profile Registered', description: 'Institutional identity secured and linked.', variant: 'success' });
+                toast({ title: 'New Profile Registered', description: 'Institutional Identity Secured And Linked.', variant: 'success' });
                 setSelectedDonation(null);
             }
         } else if (!res.success && res.id) {
             const linkRes = await linkDonationToDonorAction(selectedDonation.id, res.id, { id: userProfile.id, name: userProfile.name });
             if (linkRes.success) {
-                toast({ title: 'Identity Resolved', description: 'Donation linked to existing verified profile.', variant: 'success' });
+                toast({ title: 'Identity Resolved', description: 'Donation Linked To Existing Verified Profile.', variant: 'success' });
                 setSelectedDonation(null);
             }
         } else {
@@ -160,11 +177,11 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0 overflow-hidden rounded-[24px] border-primary/10">
+            <DialogContent className="max-w-5xl h-[85vh] flex flex-col p-0 overflow-hidden rounded-[24px] border-primary/10">
                 <DialogHeader className="bg-primary/5 px-6 py-6 border-b">
                     <DialogTitle className="text-2xl font-bold text-primary tracking-tight">Identity Resolver Hub</DialogTitle>
                     <DialogDescription className="font-normal text-primary/70">
-                        Map unlinked "dummy" contributions to verified institutional donor profiles.
+                        Map Unlinked "Dummy" Contributions To Verified Institutional Donor Profiles.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -184,7 +201,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                         <p className="text-xs font-bold uppercase tracking-widest">Registry Secure</p>
                                     </div>
                                 ) : (
-                                    unlinkedDonations.map(d => (
+                                    paginatedDonations.map(d => (
                                         <div 
                                             key={d.id}
                                             onClick={() => { setSelectedDonation(d); setSearchTerm(d.donorPhone || d.donorName); }}
@@ -205,7 +222,35 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                     ))
                                 )}
                             </div>
+                            <ScrollBar orientation="vertical" />
                         </ScrollArea>
+                        
+                        {/* Sidebar Pagination */}
+                        {totalPages > 1 && (
+                            <div className="p-3 bg-white border-t flex items-center justify-between">
+                                <p className="text-[10px] font-bold text-muted-foreground">Page {currentPage} Of {totalPages}</p>
+                                <div className="flex gap-1">
+                                    <Button 
+                                        variant="outline" 
+                                        size="icon" 
+                                        className="h-7 w-7 border-primary/10 text-primary" 
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                    >
+                                        <ChevronLeft className="h-3 w-3" />
+                                    </Button>
+                                    <Button 
+                                        variant="outline" 
+                                        size="icon" 
+                                        className="h-7 w-7 border-primary/10 text-primary" 
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        <ChevronRight className="h-3 w-3" />
+                                    </Button>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex-1 flex flex-col bg-white">
@@ -219,7 +264,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                                 <div className="p-3 rounded-full bg-white text-primary shadow-sm"><IndianRupee className="h-6 w-6"/></div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm font-bold text-primary truncate">{selectedDonation.donorName}</p>
-                                                    <p className="text-xs font-mono text-muted-foreground">{selectedDonation.donorPhone || 'No phone number provided'}</p>
+                                                    <p className="text-xs font-mono text-muted-foreground">{selectedDonation.donorPhone || 'No Phone Number Provided'}</p>
                                                 </div>
                                                 <Button variant="ghost" size="icon" asChild className="h-8 w-8"><Link href={`/donations/${selectedDonation.id}`} target="_blank"><Edit className="h-4 w-4"/></Link></Button>
                                             </div>
@@ -244,7 +289,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                             <div className="relative pt-4">
                                                 <Search className="absolute left-3 bottom-3 h-4 w-4 text-primary/40" />
                                                 <Input 
-                                                    placeholder="Search by Name, Phone, or UPI..." 
+                                                    placeholder="Search By Name, Phone, Or UPI..." 
                                                     value={searchTerm}
                                                     onChange={e => setSearchTerm(e.target.value)}
                                                     className="pl-10 h-10 rounded-xl border-primary/10 text-sm font-normal"
@@ -269,12 +314,13 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                                         </div>
                                                     ))
                                                 ) : searchTerm.length > 2 && (
-                                                    <p className="text-center text-[10px] text-muted-foreground font-normal italic py-4">No matching profiles discovered.</p>
+                                                    <p className="text-center text-[10px] text-muted-foreground font-normal italic py-4">No Matching Profiles Discovered.</p>
                                                 )}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
+                                <ScrollBar orientation="vertical" />
                             </ScrollArea>
                         ) : (
                             <div className="flex-1 flex flex-col items-center justify-center p-10 text-center opacity-30 grayscale">
