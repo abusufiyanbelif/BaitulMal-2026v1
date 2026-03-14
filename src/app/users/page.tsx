@@ -61,9 +61,9 @@ function SortableHeader({ sortKey, children, className, sortConfig, handleSort }
 };
 
 export default function UsersPage() {
+  const router = useRouter();
   const firestore = useFirestore();
   const { toast } = useToast();
-  const router = useRouter();
   usePageHit('user_management');
 
   const { userProfile, isLoading: isProfileLoading } = useSession();
@@ -89,10 +89,10 @@ export default function UsersPage() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
   
-  const canCreate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.users.create', false);
-  const canUpdate = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.users.update', false);
-  const canDelete = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.users.delete', false);
-  const canRead = userProfile?.role === 'Admin' || getNestedValue(userProfile, 'permissions.users.read', false);
+  const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.users.create', false);
+  const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.users.update', false);
+  const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.users.delete', false);
+  const canRead = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.users.read', false);
 
   const handleAdd = () => {
     if (!canCreate) return;

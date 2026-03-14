@@ -385,10 +385,10 @@ export default function DonationsPage() {
         items.sort((a, b) => {
             if (sortConfig.key === 'srNo') return 0;
             const aVal = (a[sortConfig.key as keyof Donation] ?? '').toString().toLowerCase();
-            const bVal = (b[sortConfig.key as keyof Donation] ?? '').toString().toLowerCase();
+            const bValue = (b[sortConfig.key as keyof Donation] ?? '').toString().toLowerCase();
             
-            if (aVal < bVal) return sortConfig.direction === 'ascending' ? -1 : 1;
-            if (aVal > bVal) return sortConfig.direction === 'ascending' ? 1 : -1;
+            if (aVal < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
+            if (aVal > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
             return 0;
         });
     }

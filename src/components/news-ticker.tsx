@@ -22,8 +22,10 @@ interface NewsTickerProps {
 }
 
 /**
- * Sequential News Ticker with "Drop Down then Smooth Full Scroll Left" animation.
- * Optimized for mobile readability.
+ * Sequential News Ticker with theme-managed variant colors.
+ * - Active: Institutional Primary
+ * - Donation: Financial Blue (Chart 2)
+ * - Completed: Neutral Muted
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -72,18 +74,41 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
   const currentItem = sortedItems[currentIndex];
   const isCompleted = variant === 'completed';
   const isDonation = variant === 'donation';
+  const isActive = variant === 'active';
   const isPriority = currentItem?.isUrgent || currentItem?.isHigh;
+
+  // Theme-managed variant styles
+  const styleConfig = {
+    active: {
+      container: "border-primary/10",
+      label: "bg-primary text-primary-foreground",
+      dot: "bg-primary",
+      link: "text-primary hover:text-primary/80"
+    },
+    donation: {
+      container: "border-blue-600/20 dark:border-blue-400/20",
+      label: "bg-blue-600 text-white dark:bg-blue-500",
+      dot: "bg-blue-600 dark:bg-blue-400",
+      link: "text-blue-700 dark:text-blue-300 hover:opacity-80"
+    },
+    completed: {
+      container: "border-muted",
+      label: "bg-muted text-muted-foreground",
+      dot: "bg-muted-foreground",
+      link: "text-muted-foreground hover:text-foreground"
+    }
+  }[variant];
 
   return (
     <div className={cn(
       "group border rounded-lg overflow-hidden relative flex items-center mb-2 h-12 bg-white transition-all shadow-none",
-      isCompleted ? "border-muted" : "border-primary/10",
-      !isCompleted && currentItem?.isUrgent && "animate-urgent-pulse border-red-500/50",
-      !isCompleted && currentItem?.isHigh && "animate-high-pulse border-orange-500/50"
+      styleConfig.container,
+      isActive && currentItem?.isUrgent && "animate-urgent-pulse border-red-500/50",
+      isActive && currentItem?.isHigh && "animate-high-pulse border-orange-500/50"
     )}>
       <div className={cn(
         "z-30 h-full px-2 sm:px-4 flex items-center border-r shrink-0 font-bold transition-colors duration-500",
-        isCompleted ? "bg-muted text-muted-foreground" : "bg-primary text-primary-foreground"
+        styleConfig.label
       )}>
         {isCompleted ? (
           <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
@@ -107,7 +132,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         >
           <span className={cn(
             "h-1.5 w-1.5 rounded-full shrink-0 hidden xs:block",
-            isCompleted ? "bg-muted-foreground" : "bg-primary"
+            styleConfig.dot
           )} />
           
           {currentItem.priorityIcon && (
@@ -120,8 +145,8 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
             href={currentItem.href} 
             className={cn(
               "text-[11px] sm:text-sm font-bold transition-colors whitespace-nowrap hover:underline underline-offset-4",
-              isCompleted ? "text-muted-foreground hover:text-foreground" : "text-primary hover:text-primary/80",
-              isPriority && "animate-ticker-fade-pulse"
+              styleConfig.link,
+              isActive && isPriority && "animate-ticker-fade-pulse"
             )}
           >
             {currentItem.text}
