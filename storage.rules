@@ -1,14 +1,50 @@
 rules_version = '2';
-service border.storage {
+service firebase.storage {
   match /b/{bucket}/o {
     function isSignedIn() {
       return request.auth != null;
     }
+    
+    function isAdmin() {
+      return isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+    }
 
-    match /{allPaths=**} {
+    // --- 1. Settings (Logo, QR) ---
+    match /settings/{allPaths=**} {
       allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // --- 2. Campaigns ---
+    match /campaigns/{campaignId}/{allPaths=**} {
+      // Allow read if campaign is public or user is staff
+      allow read: if firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published' || isSignedIn();
+      allow write: if isSignedIn(); // Gated by app logic and firestore permissions
+    }
+
+    // --- 3. Leads ---
+    match /leads/{leadId}/{allPaths=**} {
+      allow read: if firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published' || isSignedIn();
       allow write: if isSignedIn();
-      allow delete: if isSignedIn();
+    }
+
+    // --- 4. Users (Private ID Proofs) ---
+    match /users/{userId}/{allPaths=**} {
+      // Only owner or admin can see sensitive ID artifacts
+      allow read: if request.auth.uid == userId || isAdmin();
+      allow write: if request.auth.uid == userId || isAdmin();
+    }
+
+    // --- 5. Beneficiaries (Private Documents) ---
+    match /beneficiaries/{beneficiaryId}/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    // --- 6. Donations (Evidence) ---
+    match /donations/{donationId}/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
     }
   }
 }

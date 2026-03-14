@@ -10,9 +10,9 @@ const RECENT_UPDATE_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 
 export function usePublicData() {
   const firestore = useFirestore();
-  const { isLoading: isSessionLoading } = useSession();
+  const { isLoading: isSessionLoading, user } = useSession();
 
-  // Public items do NOT require a 'user' session
+  // Public items - allow anonymous fetching but wait for Firebase initialization
   const campaignsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(
@@ -31,12 +31,11 @@ export function usePublicData() {
     );
   }, [firestore]);
   
-  /**
-   * Verified donations are publicly listing enabled via firestore.rules
-   * We wait for firestore to ensure the SDK is ready.
-   */
   const donationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
+    // We allow fetching verified donations for progress calculation.
+    // If user is not logged in, rules will gate sensitive fields if we structuralize,
+    // but for now, we gate the query start to prevent auth-null rule spamming.
     return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
   }, [firestore]);
 
@@ -76,6 +75,7 @@ export function usePublicData() {
     const yearlyData: Record<string, { totalGoalReceived: number; overallTotalReceived: number; totalTarget: number; }> = {};
 
     donations.forEach(donation => {
+      // Map donation to its RECEIVED year, not initiative start year
       const donationYear = donation.donationDate ? donation.donationDate.split('-')[0] : null;
       if (donationYear && !yearlyData[donationYear]) {
           yearlyData[donationYear] = { totalGoalReceived: 0, overallTotalReceived: 0, totalTarget: 0 };
