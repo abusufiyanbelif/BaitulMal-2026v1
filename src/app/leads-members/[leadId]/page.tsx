@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useParams, usePathname } from 'next/navigation';
 import { useFirestore, useDoc, errorEmitter, FirestorePermissionError, useCollection, useMemoFirebase, collection, doc } from '@/firebase';
-import type { SecurityRuleContext } from '@/firebase';
+import type { SecurityRuleContext } from '@/firebase/errors';
 import { useSession } from '@/hooks/use-session';
 import { updateDoc, DocumentReference, writeBatch } from 'firebase/firestore';
 import type { Lead, RationItem, Beneficiary, ItemCategory } from '@/lib/types';

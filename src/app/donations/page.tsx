@@ -104,12 +104,12 @@ type SortKey = keyof Donation | 'srNo';
 
 const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1100px]";
 
-function StatCard({ title, count, description, icon: Icon, colorClass, delay, isCurrency = false }: { title: string, count: number | string, description: string, icon: any, colorClass?: string, delay: string, isCurrency?: boolean }) {
+function StatCard({ title, count, description, icon: Icon, colorClass, delay, isCurrency = false }: { title: string, count: number | string, description: string, icon: React.ComponentType<{ className?: string }>, colorClass?: string, delay: string, isCurrency?: boolean }) {
     return (
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -313,7 +313,6 @@ export default function DonationsPage() {
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(15);
-  const [isSyncing, setIsSyncing] = useState(false);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);

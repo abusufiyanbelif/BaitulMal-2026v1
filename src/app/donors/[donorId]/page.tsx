@@ -314,7 +314,9 @@ export default function DonorProfilePage() {
                                                 <ChartLegend content={<ChartLegendContent />} />
                                             </PieChart>
                                         </ChartContainer>
-                                    ) : <Skeleton className="h-[200px] w-full" />}
+                                    ) : (
+                                        <Skeleton className="h-[200px] w-full" />
+                                    )}
                                 </CardContent>
                             </Card>
 
@@ -342,7 +344,9 @@ export default function DonorProfilePage() {
                                                 <Bar dataKey="total" fill="var(--color-total)" radius={[4, 4, 0, 0]} />
                                             </BarChart>
                                         </ChartContainer>
-                                    ) : <Skeleton className="h-[200px] w-full" />}
+                                    ) : (
+                                        <Skeleton className="h-[200px] w-full" />
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>

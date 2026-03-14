@@ -12,7 +12,7 @@ import {
     collection, 
     doc 
 } from '@/firebase';
-import type { SecurityRuleContext } from '@/firebase';
+import type { SecurityRuleContext } from '@/firebase/errors';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { updateDoc, DocumentReference, writeBatch } from 'firebase/firestore';

@@ -73,7 +73,15 @@ export function usePublicData() {
     const itemsById = new Map(allPublicItems.map(item => [item.id, item]));
 
     const collectedAmounts = new Map<string, number>();
+    const yearlyData: Record<string, { totalGoalReceived: number; overallTotalReceived: number; totalTarget: number; }> = {};
+
     donations.forEach(donation => {
+      const donationYear = donation.donationDate ? donation.donationDate.split('-')[0] : null;
+      if (donationYear && !yearlyData[donationYear]) {
+          yearlyData[donationYear] = { totalGoalReceived: 0, overallTotalReceived: 0, totalTarget: 0 };
+      }
+      if (donationYear) yearlyData[donationYear].overallTotalReceived += donation.amount;
+
       const links = (donation.linkSplit && donation.linkSplit.length > 0)
         ? donation.linkSplit
         : (donation as any).campaignId 
@@ -102,8 +110,14 @@ export function usePublicData() {
           return acc;
         }, 0);
         
+        const itemContribution = applicableAmountInDonation * proportionForThisItem;
+        
         const currentCollected = collectedAmounts.get(link.linkId) || 0;
-        collectedAmounts.set(link.linkId, currentCollected + (applicableAmountInDonation * proportionForThisItem));
+        collectedAmounts.set(link.linkId, currentCollected + itemContribution);
+
+        if (donationYear) {
+            yearlyData[donationYear].totalGoalReceived += itemContribution;
+        }
       });
     });
 
@@ -134,7 +148,6 @@ export function usePublicData() {
     const grandTotalRaised = donations.reduce((sum, d) => sum + d.amount, 0);
     const overallProgress = totalTarget > 0 ? Math.min((totalCollectedForGoals / totalTarget) * 100, 100) : 0;
 
-    const yearlyData: Record<string, { totalGoalReceived: number; overallTotalReceived: number; totalTarget: number; }> = {};
     const amountsByCategory = donations.reduce((acc, d) => {
       const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
       splits.forEach(split => {
@@ -146,40 +159,13 @@ export function usePublicData() {
       return acc;
     }, {} as Record<DonationCategory, number>);
 
-    donations.forEach(donation => {
-        if (donation.donationDate) {
-            try {
-                const year = new Date(donation.donationDate).getFullYear().toString();
-                if (!yearlyData[year]) {
-                    yearlyData[year] = { totalGoalReceived: 0, overallTotalReceived: 0, totalTarget: 0 };
-                }
-                yearlyData[year].overallTotalReceived += donation.amount;
-            } catch (e: any) { /* ignore */ }
-        }
-    });
-    
     allPublicItems.forEach(item => {
         if (item.startDate && item.targetAmount) {
-            try {
-                const year = new Date(item.startDate).getFullYear().toString();
-                 if (!yearlyData[year]) {
-                    yearlyData[year] = { totalGoalReceived: 0, overallTotalReceived: 0, totalTarget: 0 };
-                }
-                yearlyData[year].totalTarget += item.targetAmount;
-            } catch(e: any) { /* ignore */ }
-        }
-    });
-
-    collectedAmounts.forEach((amount, itemId) => {
-        const item = itemsById.get(itemId);
-        if (item && item.startDate) {
-            try {
-                const year = new Date(item.startDate).getFullYear().toString();
-                 if (!yearlyData[year]) {
-                    yearlyData[year] = { totalGoalReceived: 0, overallTotalReceived: 0, totalTarget: 0 };
-                }
-                yearlyData[year].totalGoalReceived += amount;
-            } catch(e: any) { /* ignore */ }
+            const year = item.startDate.split('-')[0];
+            if (!yearlyData[year]) {
+                yearlyData[year] = { totalGoalReceived: 0, overallTotalReceived: 0, totalTarget: 0 };
+            }
+            yearlyData[year].totalTarget += item.targetAmount;
         }
     });
     
