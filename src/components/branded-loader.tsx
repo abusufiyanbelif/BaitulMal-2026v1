@@ -52,7 +52,7 @@ export function BrandedLoader({ message = "Synchronizing...", progress }: { mess
         {/* Dynamic Status Feedback */}
         <div className="flex flex-col items-center gap-5 w-full text-center">
           <div className="space-y-1.5">
-            <p className="text-sm font-bold text-primary tracking-tight uppercase">
+            <p className="text-sm font-bold text-primary tracking-tight">
               {message}
             </p>
             {progress !== undefined && (

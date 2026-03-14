@@ -17,7 +17,7 @@ export default function ExtractorPage() {
   const { isLoading } = useSession();
 
   if (isLoading) {
-    return <SectionLoader label="Initializing extractor..." description="Preparing AI models and document processing environment." />;
+    return <SectionLoader label="Initializing Extractor..." description="Preparing AI models and document processing environment." />;
   }
 
   return (
@@ -26,7 +26,7 @@ export default function ExtractorPage() {
         <Button variant="outline" asChild className="active:scale-95 transition-transform border-primary/20 text-primary font-bold">
           <Link href="/dashboard">
             <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to dashboard
+            Back To Dashboard
           </Link>
         </Button>
       </div>
@@ -35,7 +35,7 @@ export default function ExtractorPage() {
             <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 h-auto w-full bg-transparent p-0">
                 <TabsTrigger value="text" className="h-12 data-[state=active]:bg-primary data-[state=active]:text-white border border-primary/10 shadow-sm font-bold">
                     <FileText className="mr-2 h-4 w-4" />
-                    General text
+                    General Text
                 </TabsTrigger>
                 <TabsTrigger value="identity" className="h-12 data-[state=active]:bg-primary data-[state=active]:text-white border border-primary/10 shadow-sm font-bold">
                     <User className="mr-2 h-4 w-4" />

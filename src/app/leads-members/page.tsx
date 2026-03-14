@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -46,11 +45,11 @@ import Autoplay from "embla-carousel-autoplay";
 const getPriorityIcon = (priority?: string) => {
   const p = priority || 'Medium';
   switch (p) {
-    case 'Urgent': return <AlertTriangle className="h-4 w-4 text-red-600" />;
-    case 'High': return <ArrowUpCircle className="h-4 w-4 text-orange-500" />;
-    case 'Medium': return <MinusCircle className="h-4 w-4 text-yellow-500" />;
+    case 'Urgent': return <AlertTriangle className="h-5 w-5 text-red-600" />;
+    case 'High': return <ArrowUpCircle className="h-5 w-5 text-orange-500" />;
+    case 'Medium': return <MinusCircle className="h-5 w-5 text-yellow-500" />;
     case 'Low': return <ArrowDownCircle className="h-4 w-4 text-blue-500" />;
-    default: return <MinusCircle className="h-4 w-4 text-yellow-500" />;
+    default: return null;
   }
 };
 
@@ -156,7 +155,7 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
                                         <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={lead.publicVisibility} onValueChange={(value) => handleStatusUpdate(lead, 'publicVisibility', value as string)}>
                                                 <DropdownMenuRadioItem value="Hold" className="font-normal">Hold (Private)</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Ready to Publish" className="font-normal">Ready To Publish</SelectItem>
+                                                <DropdownMenuRadioItem value="Ready to Publish" className="font-normal">Ready To Publish</DropdownMenuRadioItem>
                                                 <DropdownMenuRadioItem value="Published" className="text-primary font-normal">Published</DropdownMenuRadioItem>
                                             </DropdownMenuRadioGroup>
                                         </DropdownMenuSubContent>
@@ -186,7 +185,7 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
                         {canDelete && (
                             <>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(lead); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer font-normal">
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(lead); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal cursor-pointer">
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Delete
                                 </DropdownMenuItem>

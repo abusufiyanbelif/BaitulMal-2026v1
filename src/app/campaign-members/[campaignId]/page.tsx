@@ -782,7 +782,7 @@ export default function CampaignDetailsPage() {
 
   return (
     <>
-      {isSyncing && <BrandedLoader message="Synchronizing registry amounts..." />}
+      {isSyncing && <BrandedLoader message="Synchronizing Registry Amounts..." />}
       <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative">
         <div className="mb-4">
             <Button variant="outline" asChild className="font-bold border-primary/10 text-primary transition-transform active:scale-95">

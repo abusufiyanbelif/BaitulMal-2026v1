@@ -63,7 +63,7 @@ export default function CreateUserPage() {
 
     setIsSubmitting(true);
     setProgress(10);
-    setLoadingMessage('Registering authentication account...');
+    setLoadingMessage('Registering Authentication Account...');
     
     // Step 1: Create user in Firebase Auth
     const authResult = await createUserAuthAction(data);
@@ -75,7 +75,7 @@ export default function CreateUserPage() {
 
     const newUserUid = authResult.uid;
     setProgress(40);
-    setLoadingMessage('Optimizing identification artifacts...');
+    setLoadingMessage('Optimizing Identification Artifacts...');
     
     // Step 2: Handle File Upload
     let idProofUrl = '';
@@ -93,7 +93,7 @@ export default function CreateUserPage() {
             }
             
             setProgress(65);
-            setLoadingMessage('Securing proof in institutional storage...');
+            setLoadingMessage('Securing Proof In Institutional Storage...');
             if (file.type.startsWith('image/') || file.type === 'application/pdf') {
                 const filePath = `users/${newUserUid}/id_proof.${fileExtension}`;
                 const fileRef = storageRef(storage, filePath);
@@ -114,7 +114,7 @@ export default function CreateUserPage() {
     }
 
     setProgress(85);
-    setLoadingMessage('Synchronizing permissions & lookup maps...');
+    setLoadingMessage('Synchronizing Permissions & Lookup Maps...');
 
     // Step 3: Create documents in Firestore (User + Linked Donor Profile)
     const batch = writeBatch(firestore);
@@ -165,7 +165,7 @@ export default function CreateUserPage() {
     try {
         await batch.commit();
         setProgress(100);
-        setLoadingMessage('Member & Donor registration finalized.');
+        setLoadingMessage('Member & Donor Registration Finalized.');
         toast({ title: 'Success', description: 'Member and linked Donor Profile created.', variant: 'success' });
         router.push(`/users`);
     } catch (dbError: any) {
@@ -190,7 +190,7 @@ export default function CreateUserPage() {
   if (isProfileLoading) {
     return (
       <main className="container mx-auto p-4 md:p-8">
-          <BrandedLoader message="Syncing with authorization server..." />
+          <BrandedLoader message="Syncing With Authorization Server..." />
       </main>
     );
   }

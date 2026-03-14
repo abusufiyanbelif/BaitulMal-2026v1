@@ -19,7 +19,6 @@ import {
     MoreHorizontal,
     ShieldAlert,
     Trash2,
-    ChevronDown,
     Loader2,
     ArrowUp,
     ArrowDown,
@@ -205,8 +204,8 @@ export default function BeneficiariesPage() {
   const totalPages = Math.ceil(filteredAndSortedBeneficiaries.length / itemsPerPage);
   const paginatedBeneficiaries = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
-    return filteredAndSortedDonations.slice(start, start + itemsPerPage);
-  }, [filteredAndSortedBeneficiaries, currentPage]);
+    return filteredAndSortedBeneficiaries.slice(start, start + itemsPerPage);
+  }, [filteredAndSortedBeneficiaries, currentPage, itemsPerPage]);
 
   const handleSort = (key: string) => {
     let direction: 'ascending' | 'descending' = 'ascending';

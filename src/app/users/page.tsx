@@ -1,4 +1,3 @@
-
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -22,8 +21,8 @@ import {
   DropdownMenuTrigger,
   DropdownMenuPortal,
   DropdownMenuSub,
-  DropdownMenuSubContent,
   DropdownMenuSubTrigger,
+  DropdownMenuSubContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
@@ -416,7 +415,7 @@ export default function UsersPage() {
                                                     className="text-primary font-normal cursor-pointer"
                                                   >
                                                       {isMirroring === user.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ShieldCheck className="mr-2 h-4 w-4 opacity-60"/>}
-                                                      Mirror to Donor Registry
+                                                      Mirror To Donor Registry
                                                   </DropdownMenuItem>
                                               )}
 
