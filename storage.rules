@@ -1,48 +1,50 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    
+    // Helper: Is signed in
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
+    // Helper: Is Admin (Requires Firestore lookup - expensive but accurate for sensitive files)
     function isAdmin() {
-      return isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+      return isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == "Admin";
     }
 
-    // Settings
+    // Institutional Branding (Publicly Readable)
     match /settings/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // User Artifacts
+    // Member Identity Artifacts (Private)
     match /users/{userId}/{allPaths=**} {
-      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-      allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow read, write: if request.auth.uid == userId || isAdmin();
     }
 
     // Campaign Artifacts
     match /campaigns/{campaignId}/{allPaths=**} {
+      // Allow read if the campaign is published in Firestore
       allow read: if firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published' || isSignedIn();
-      allow write: if isAdmin();
+      allow write: if isAdmin() || (isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions.campaigns.update == true);
     }
 
     // Lead Artifacts
     match /leads/{leadId}/{allPaths=**} {
+      // Allow read if the lead is published in Firestore
       allow read: if firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published' || isSignedIn();
-      allow write: if isAdmin();
+      allow write: if isAdmin() || (isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions['leads-members'].update == true);
     }
 
-    // Beneficiary Artifacts
-    match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-      allow read: if isSignedIn();
+    // Beneficiary ID Proofs (Restricted)
+    match /beneficiaries/{benId}/{allPaths=**} {
+      allow read: if isAdmin() || (isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions.beneficiaries.read == true);
       allow write: if isSignedIn();
     }
 
-    // Donation Artifacts
+    // Donation Evidence (Restricted)
     match /donations/{donationId}/{allPaths=**} {
-      allow read: if isSignedIn();
+      allow read: if isAdmin() || (isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions.donations.read == true);
       allow write: if isSignedIn();
     }
   }

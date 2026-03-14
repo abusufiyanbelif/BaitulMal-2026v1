@@ -16,8 +16,7 @@ interface VerificationItem {
 
 /**
  * A specialized vertical ticker for Recent Verifications.
- * Displays 5 items at a time with a slide-up and fade animation.
- * Enhanced for mobile with flexible grids.
+ * Labels follow the professional Title Case standard.
  */
 export function RecentVerificationTicker({ items }: { items: VerificationItem[] }) {
   const [startIndex, setStartIndex] = useState(0);
@@ -67,18 +66,18 @@ export function RecentVerificationTicker({ items }: { items: VerificationItem[] 
             <ScrollArea className="w-full">
                 <div className="min-w-[350px]">
                     <div className="grid grid-cols-[1.5fr_1fr_auto] gap-4 px-6 py-3 bg-[hsl(var(--table-header-bg))] border-b text-[10px] font-bold text-[hsl(var(--table-header-fg))] tracking-tight">
-                        <span>Reference Information</span>
-                        <span>Allocation Target</span>
-                        <span className="text-right pr-2">Status</span>
+                        <span className="font-bold">Reference Information</span>
+                        <span className="font-bold">Allocation Target</span>
+                        <span className="text-right pr-2 font-bold">Status</span>
                     </div>
                     
                     <div className="relative overflow-hidden h-[300px]">
                         <div className={cn(
                             "flex flex-col transition-all duration-500 ease-in-out h-full",
-                            isTransitioning ? "opacity-0 -translate-y-4 scale-98" : "opacity-100 translate-y-0 scale-100"
+                            isTransitioning ? "opacity-0 -translate-y-4 scale-[0.98]" : "opacity-100 translate-y-0 scale-100"
                         )}>
                             {visibleItems.map((item, idx) => {
-                                const parts = item.text.split(' for ');
+                                const parts = item.text.split(' For ');
                                 const reference = parts[0] || 'N/A';
                                 const allocation = parts[1] || 'General Fund';
                                 

@@ -10,7 +10,7 @@ import type { BrandingSettings } from '@/lib/types';
 
 /**
  * Branded Loader - Displays the organizational logo with premium high-fidelity animations.
- * Provides synchronized visual feedback for both startup and long-running buffer actions.
+ * Status messages follow the professional Title Case standard.
  */
 export function BrandedLoader({ message = "Synchronizing...", progress }: { message?: string, progress?: number }) {
   const firebase = useFirebase();

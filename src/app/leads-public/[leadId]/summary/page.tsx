@@ -378,9 +378,9 @@ export default function PublicLeadSummaryPage() {
                                                         ))}
                                                     </TableBody>
                                                     {beneficiaryGroups.length > 0 && (
-                                                        <tfoot className="bg-primary/5 border-t">
+                                                        <TableFooter className="bg-primary/5 border-t">
                                                             <TableRow><TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Total Requirement</TableCell><TableCell className="text-right font-mono font-bold text-primary text-lg">₹{calculatedRequirementTotal.toLocaleString('en-IN')}</TableCell></TableRow>
-                                                        </tfoot>
+                                                        </TableFooter>
                                                     )}
                                                 </Table>
                                             ) : (
@@ -403,14 +403,14 @@ export default function PublicLeadSummaryPage() {
                                                             </TableRow>
                                                         ))}
                                                     </TableBody>
-                                                    <tfoot className="bg-primary/5 border-t">
+                                                    <TableFooter className="bg-primary/5 border-t">
                                                         <TableRow>
                                                             <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Single Beneficiary Total</TableCell>
                                                             <TableCell className="text-right font-mono font-bold text-primary text-lg">
                                                                 ₹{calculatedRequirementTotal.toLocaleString('en-IN')}
                                                             </TableCell>
                                                         </TableRow>
-                                                    </tfoot>
+                                                    </TableFooter>
                                                 </Table>
                                             )}
                                         </div>
@@ -490,7 +490,7 @@ export default function PublicLeadSummaryPage() {
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
                                             <ResponsiveContainer width="100%" height="100%">
                                                 <BarChart data={chartDataValues} layout="vertical" margin={{ right: 20 }}>
-                                                    <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartDataValues.map((entry: any) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
+                                                    <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartDataValues.map((entry) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
                                                 </BarChart>
                                             </ResponsiveContainer>
                                         </ChartContainer>
@@ -521,7 +521,7 @@ export default function PublicLeadSummaryPage() {
                                                             } 
                                                         />
                                                         <Pie data={paymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={5} className="transition-all duration-1000 ease-out focus:outline-none">
-                                                            {paymentTypeChartData.map((entry: any) => (<Cell key={`cell-pay-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />))}
+                                                            {paymentTypeChartData.map((entry) => (<Cell key={`cell-pay-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />))}
                                                         </Pie>
                                                         <ChartLegend content={<ChartLegendContent />} />
                                                     </PieChart>

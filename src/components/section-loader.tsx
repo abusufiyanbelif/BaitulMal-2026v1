@@ -11,7 +11,7 @@ interface SectionLoaderProps {
 
 /**
  * A branded section-level loader that identifies exactly what component is being loaded.
- * Now supports an optional progress percentage for deterministic feedback.
+ * Labels follow the professional Title Case typography standard.
  */
 export function SectionLoader({ label, description, progress }: SectionLoaderProps) {
   return (

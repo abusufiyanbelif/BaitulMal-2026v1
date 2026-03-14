@@ -10,6 +10,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 /**
  * A branded component that displays verified donation totals aggregated by purpose.
+ * All labels follow the professional Title Case standard.
  */
 export function PurposeFundingSummary() {
   const { isLoading, campaignsWithProgress, leadsWithProgress } = usePublicData();

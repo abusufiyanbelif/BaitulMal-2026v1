@@ -15,6 +15,10 @@ import { Skeleton } from './ui/skeleton';
 import { useMemo } from 'react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
+/**
+ * Lead And Campaign Summary - Displays combined counts.
+ * Labels follow the professional Title Case typography standard.
+ */
 export function LeadAndCampaignSummary() {
   const { isLoading, campaignsWithProgress, leadsWithProgress } = usePublicData();
 
@@ -72,8 +76,8 @@ export function LeadAndCampaignSummary() {
                 <Table>
                     <TableHeader>
                     <TableRow>
-                        <TableHead className="pl-6">Category</TableHead>
-                        <TableHead className="text-right pr-6">Count</TableHead>
+                        <TableHead className="pl-6 font-bold tracking-tight">Category</TableHead>
+                        <TableHead className="text-right pr-6 font-bold tracking-tight">Count</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -109,8 +113,8 @@ export function LeadAndCampaignSummary() {
                 <Table>
                     <TableHeader>
                     <TableRow>
-                        <TableHead className="pl-6">Purpose</TableHead>
-                        <TableHead className="text-right pr-6">Count</TableHead>
+                        <TableHead className="pl-6 font-bold tracking-tight">Purpose</TableHead>
+                        <TableHead className="text-right pr-6 font-bold tracking-tight">Count</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
