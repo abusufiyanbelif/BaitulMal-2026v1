@@ -2,6 +2,9 @@
 import { useBranding } from '@/hooks/use-branding';
 import { cn } from '@/lib/utils';
 
+/**
+ * Watermark - Subtle background branding that "blooms" into view.
+ */
 export function Watermark() {
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
     
@@ -16,10 +19,10 @@ export function Watermark() {
             {validLogoUrl && (
                 <img
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
-                    alt="Branding Watermark"
+                    alt="Institutional Branding"
                     className={cn(
-                        "w-auto h-auto max-w-[85vw] max-h-[85vh] object-contain transition-opacity duration-1000 ease-in-out pointer-events-none",
-                        validLogoUrl ? "opacity-100" : "opacity-0"
+                        "w-auto h-auto max-w-[85vw] max-h-[85vh] object-contain transition-all duration-1000 ease-in-out pointer-events-none",
+                        validLogoUrl ? "opacity-100 scale-100" : "opacity-0 scale-95"
                     )}
                 />
             )}

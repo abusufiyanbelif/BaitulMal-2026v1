@@ -144,7 +144,32 @@
   }
 }
 
-/* Dynamic Institutional Scrollbars - Now reactive to theme color variable */
+/* Global Animation Gating */
+[data-animations='disabled'] *,
+[data-animations='disabled'] ::before,
+[data-animations='disabled'] ::after {
+  animation-duration: 0s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0s !important;
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+[data-motion-reduced='enabled'] * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Dynamic Institutional Scrollbars */
 ::-webkit-scrollbar {
   width: 14px;
   height: 14px;
@@ -173,8 +198,8 @@
   scrollbar-color: hsl(var(--primary)) rgba(0, 0, 0, 0.05);
 }
 
-.animate-fade-in-up { animation: fade-in-up 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
-.animate-fade-in-zoom { animation: fade-in-zoom 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.animate-fade-in-up { animation: fade-in-up 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.animate-fade-in-zoom { animation: fade-in-zoom 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards; }
 
 @keyframes fade-in-up {
   from { opacity: 0; transform: translateY(15px); }

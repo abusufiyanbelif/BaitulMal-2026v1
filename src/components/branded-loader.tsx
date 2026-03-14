@@ -9,8 +9,8 @@ import { doc, getDoc } from 'firebase/firestore';
 import type { BrandingSettings } from '@/lib/types';
 
 /**
- * Branded Loader - Displays the organizational logo.
- * Safely handles null context during initialization.
+ * Branded Loader - Displays the organizational logo with premium animations.
+ * Provides feedback for both startup and long-running actions.
  */
 export function BrandedLoader({ message = "Loading...", progress }: { message?: string, progress?: number }) {
   const firebase = useFirebase();
@@ -28,17 +28,17 @@ export function BrandedLoader({ message = "Loading...", progress }: { message?: 
   const validLogoUrl = branding?.logoUrl?.trim() ? branding.logoUrl : null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-md">
-      <div className="relative z-10 flex flex-col items-center gap-8 w-full max-w-sm px-6">
-        {/* Logo Container */}
-        <div className="relative w-28 h-28 flex items-center justify-center">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-md transition-all duration-500 animate-in fade-in">
+      <div className="relative z-10 flex flex-col items-center gap-8 w-full max-w-sm px-6 animate-fade-in-zoom">
+        {/* Logo Container with Zoom-In-Out pulse */}
+        <div className="relative w-32 h-32 flex items-center justify-center">
           {validLogoUrl ? (
             <div className="relative w-full h-full animate-zoom-in-out">
               <Image
                 src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
                 alt="Loading..."
                 fill
-                sizes="112px"
+                sizes="128px"
                 className="object-contain"
                 priority
               />
@@ -60,8 +60,14 @@ export function BrandedLoader({ message = "Loading...", progress }: { message?: 
               </p>
             )}
           </div>
-          <div className="w-full h-1.5 rounded-full bg-primary/10 overflow-hidden border border-primary/5">
-            <Progress value={progress} className="h-full bg-primary transition-all duration-500 ease-out" />
+          <div className="w-full h-1.5 rounded-full bg-primary/10 overflow-hidden border border-primary/5 shadow-inner">
+            <Progress 
+                value={progress ?? 33} 
+                className={cn(
+                    "h-full bg-primary transition-all duration-500 ease-out",
+                    progress === undefined && "animate-pulse"
+                )} 
+            />
           </div>
         </div>
       </div>

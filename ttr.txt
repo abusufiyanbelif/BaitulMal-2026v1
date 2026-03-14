@@ -1,1 +1,0 @@
-src/app/settings/app/page.tsx(948,131): error TS2304: Cannot find name 'ListChecks'.
