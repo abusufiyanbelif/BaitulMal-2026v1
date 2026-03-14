@@ -314,10 +314,12 @@ export default function PublicLeadSummaryPage() {
                                         <div className="relative h-48 sm:h-64 w-full">
                                             {isClient ? (
                                                 <ChartContainer config={{ progress: { label: 'Progress', color: 'hsl(var(--primary))' } }} className="mx-auto aspect-square h-full">
-                                                    <RadialBarChart data={[{ name: 'Progress', value: fundingData.fundingProgress || 0, fill: 'hsl(var(--primary))' }]} startAngle={-270} endAngle={90} innerRadius="75%" outerRadius="100%" barSize={20}>
-                                                        <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                                                        <RadialBar dataKey="value" background={{ fill: 'hsl(var(--muted))' }} cornerRadius={10} className="transition-all duration-1000 ease-out" />
-                                                    </RadialBarChart>
+                                                    <ResponsiveContainer>
+                                                        <RadialBarChart data={[{ name: 'Progress', value: fundingData.fundingProgress || 0, fill: 'hsl(var(--primary))' }]} startAngle={-270} endAngle={90} innerRadius="75%" outerRadius="100%" barSize={20}>
+                                                            <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                                            <RadialBar dataKey="value" background={{ fill: 'hsl(var(--muted))' }} cornerRadius={10} className="transition-all duration-1000 ease-out" />
+                                                        </RadialBarChart>
+                                                    </ResponsiveContainer>
                                                 </ChartContainer>
                                             ) : <Skeleton className="w-full h-full rounded-full" />}
                                             <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold tracking-tight uppercase">Funded</span></div>

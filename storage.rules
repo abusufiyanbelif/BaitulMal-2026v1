@@ -1,40 +1,48 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    
     function isSignedIn() {
       return request.auth != null;
     }
     
-    // Public Branding
+    function isAdmin() {
+      return isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+    }
+
+    // Settings
     match /settings/{allPaths=**} {
       allow read: if true;
-      allow write: if isSignedIn();
+      allow write: if isAdmin();
     }
 
-    // Initiative Assets - Accessible if published
-    match /campaigns/{id}/{allPaths=**} {
-      allow read: if true;
-      allow write: if isSignedIn();
-    }
-    
-    match /leads/{id}/{allPaths=**} {
-      allow read: if true;
-      allow write: if isSignedIn();
+    // User Artifacts
+    match /users/{userId}/{allPaths=**} {
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
     }
 
-    // Protected Registry Artifacts
-    match /beneficiaries/{id}/{allPaths=**} {
+    // Campaign Artifacts
+    match /campaigns/{campaignId}/{allPaths=**} {
+      allow read: if firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published' || isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Lead Artifacts
+    match /leads/{leadId}/{allPaths=**} {
+      allow read: if firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published' || isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // Beneficiary Artifacts
+    match /beneficiaries/{beneficiaryId}/{allPaths=**} {
       allow read: if isSignedIn();
       allow write: if isSignedIn();
     }
-    
-    match /users/{id}/{allPaths=**} {
+
+    // Donation Artifacts
+    match /donations/{donationId}/{allPaths=**} {
       allow read: if isSignedIn();
-      allow write: if isSignedIn() && (request.auth.uid == id);
-    }
-    
-    match /donations/{id}/{allPaths=**} {
-      allow read: if true;
       allow write: if isSignedIn();
     }
   }
