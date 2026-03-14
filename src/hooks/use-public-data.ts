@@ -13,6 +13,7 @@ export function usePublicData() {
   const firestore = useFirestore();
   const { user } = useSession();
 
+  // Public items do NOT require a 'user' session
   const campaignsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(
@@ -31,10 +32,11 @@ export function usePublicData() {
     );
   }, [firestore]);
   
+  // We only fetch 'Verified' donations. Most security rules allow this for public progress tracking.
   const donationsCollectionRef = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
+    if (!firestore) return null;
     return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
-  }, [firestore, user]);
+  }, [firestore]);
 
   const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
   const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
@@ -129,20 +131,8 @@ export function usePublicData() {
     const totalTarget = allPublicItems.reduce((sum, item) => sum + (item.targetAmount || 0), 0);
     const totalCollectedForGoals = Array.from(collectedAmounts.values()).reduce((sum, amount) => sum + amount, 0);
     
-    // Calculate total verified funds, but exclude those explicitly linked to non-public items
-    const grandTotalRaised = donations.reduce((sum, d) => {
-      const links = d.linkSplit || [];
-      if (links.length === 0) return sum + d.amount; // Unlinked counts as General Impact
-      
-      const publicPortion = links.reduce((linkSum, link) => {
-        // Include if linked to a public item or a general link
-        if (itemsById.has(link.linkId) || link.linkType === 'general') {
-          return linkSum + link.amount;
-        }
-        return linkSum;
-      }, 0);
-      return sum + publicPortion;
-    }, 0);
+    // Calculate total verified funds
+    const grandTotalRaised = donations.reduce((sum, d) => sum + d.amount, 0);
 
     const overallProgress = totalTarget > 0 ? Math.min((totalCollectedForGoals / totalTarget) * 100, 100) : 0;
 

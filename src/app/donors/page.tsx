@@ -305,12 +305,12 @@ export default function DonorRegistryPage() {
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar initialFocus mode="range" selected={dateRange} onSelect={setDateRange} numberOfMonths={2} />
+                        <Calendar initialFocus mode="range" selected={dateRange} onSelect={(val) => { setDateRange(val); setCurrentPage(1); }} numberOfMonths={2} />
                     </PopoverContent>
                 </Popover>
-                {dateRange && <Button variant="ghost" size="icon" className="h-10 w-10 text-primary/40 hover:text-primary shrink-0" onClick={() => setDateRange(undefined)}><X className="h-4 w-4"/></Button>}
+                {dateRange && <Button variant="ghost" size="icon" className="h-10 w-10 text-primary/40 hover:text-primary shrink-0" onClick={() => { setDateRange(undefined); setCurrentPage(1); }}><X className="h-4 w-4"/></Button>}
                 
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); setCurrentPage(1); }}>
                     <SelectTrigger className="w-[180px] shrink-0 h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white">
                         <SelectValue placeholder="Account Status" />
                     </SelectTrigger>
@@ -321,7 +321,7 @@ export default function DonorRegistryPage() {
                     </SelectContent>
                 </Select>
 
-                <Select value={designationFilter} onValueChange={setDesignationFilter}>
+                <Select value={designationFilter} onValueChange={(val) => { setDesignationFilter(val); setCurrentPage(1); }}>
                     <SelectTrigger className="w-[200px] shrink-0 h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white">
                         <div className="flex items-center gap-2 truncate">
                             <Filter className="h-3.5 w-3.5 opacity-40" />
