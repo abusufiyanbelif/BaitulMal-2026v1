@@ -124,7 +124,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                                             </div>
                                             <Progress value={lead.progress} className="h-2 bg-primary/10 shadow-inner" />
                                             <div className="flex justify-between items-center">
-                                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Progress</span>
+                                                <span className="text-[9px] font-bold text-muted-foreground tracking-tight">Progress</span>
                                                 <span className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary/5 border border-primary/10">
                                                     {Math.round(lead.progress)}% Funded
                                                 </span>
@@ -257,7 +257,7 @@ export function PublicLeadsView() {
     <div className="space-y-8">
       <div className="space-y-4">
           <h1 className="text-4xl font-bold tracking-tight text-primary">Public Leads</h1>
-          <p className="text-lg font-bold text-primary">Verified community appeals requiring your support.</p>
+          <p className="text-lg font-bold text-primary">Verified Community Appeals Requiring Your Support.</p>
           
           <div className="space-y-2">
             <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />

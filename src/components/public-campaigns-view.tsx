@@ -123,7 +123,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                                             </div>
                                             <Progress value={campaign.progress} className="h-2 bg-primary/10 shadow-inner" />
                                             <div className="flex justify-between items-center">
-                                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Progress</span>
+                                                <span className="text-[9px] font-bold text-muted-foreground tracking-tight">Progress</span>
                                                 <span className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary/5 border border-primary/10">
                                                     {Math.round(campaign.progress)}% Funded
                                                 </span>
@@ -257,7 +257,7 @@ export function PublicCampaignsView() {
     <div className="space-y-8">
        <div className="space-y-4">
           <h1 className="text-4xl font-bold tracking-tighter text-primary">Our Campaigns</h1>
-          <p className="text-primary text-lg font-bold">Transparent tracking of our community support projects.</p>
+          <p className="text-primary text-lg font-bold">Transparent Tracking Of Our Community Support Projects.</p>
           
           <div className="space-y-2">
             <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
