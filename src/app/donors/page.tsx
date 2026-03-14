@@ -196,25 +196,18 @@ export default function DonorRegistryPage() {
   };
 
   const handleDelete = async (donor: Donor) => {
-    if (!canDelete) {
-        toast({ title: 'Permission Denied', description: 'You do not have permission to delete profiles.', variant: 'destructive' });
-        return;
-    }
-    
-    const confirmMessage = `Permanently Remove Profile For ${donor.name}? Institutional financial history will be preserved as unlinked "dummy" records. This action cannot be undone.`;
-    
+    if (!canDelete) return;
+    const confirmMessage = `Permanently remove profile for ${donor.name}? Institutional financial history will be preserved as unlinked records.`;
     if (!confirm(confirmMessage)) return;
     
     setIsSubmitting(true);
     try {
         const res = await deleteDonorAction(donor.id);
         if (res.success) {
-            toast({ title: 'Profile Removed', description: res.message, variant: 'success' });
+            toast({ title: 'Profile Removed', variant: 'success' });
         } else {
             toast({ title: 'Removal Failed', description: res.message, variant: 'destructive' });
         }
-    } catch (e: any) {
-        toast({ title: 'System Error', description: e.message || 'An unexpected error occurred.', variant: 'destructive' });
     } finally {
         setIsSubmitting(false);
     }
@@ -226,11 +219,7 @@ export default function DonorRegistryPage() {
   
   if (!canRead) return (
     <main className="container mx-auto p-8">
-        <Alert variant="destructive">
-            <ShieldAlert className="h-4 w-4"/>
-            <AlertTitle className="font-bold">Access Denied</AlertTitle>
-            <AlertDescription className="font-normal text-primary/70">Missing Permissions To View Donor Profiles.</AlertDescription>
-        </Alert>
+        <Alert variant="destructive"><ShieldAlert className="h-4 w-4"/><AlertTitle className="font-bold">Access Denied</AlertTitle><AlertDescription className="font-normal text-primary/70">Missing Permissions.</AlertDescription></Alert>
     </main>
   );
 
@@ -246,36 +235,22 @@ export default function DonorRegistryPage() {
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="space-y-1">
                 <h1 className="text-3xl font-bold tracking-tight text-primary">Donor Registry</h1>
-                <p className="text-sm font-medium text-muted-foreground opacity-70">Total Registered Profiles: {donors?.length || 0}</p>
+                <p className="text-sm font-medium text-muted-foreground opacity-70">Profiles: {donors?.length || 0}</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
                 {unlinkedDonationsCount > 0 && (
-                    <Button onClick={() => setIsResolverOpen(true)} variant="secondary" size="sm" className="font-bold bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100 active:scale-95 transition-transform animate-pulse">
+                    <Button onClick={() => setIsResolverOpen(true)} variant="secondary" size="sm" className="font-bold bg-amber-50 text-amber-700 border-amber-200 animate-pulse">
                         <DatabaseZap className="mr-2 h-4 w-4"/> Resolve {unlinkedDonationsCount} Unlinked
                     </Button>
                 )}
-                <Button variant="outline" size="sm" asChild className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
-                    <Link href="/donors/summary"><TrendingUp className="mr-2 h-4 w-4"/> Impact Summary</Link>
-                </Button>
                 {canCreate && (
-                    <Button onClick={() => { setEditingDonor(null); setIsFormOpen(true); }} size="sm" className="font-bold active:scale-95 transition-transform shadow-none rounded-[12px]">
-                        <UserPlus className="mr-2 h-4 w-4" /> Add Donor Profile
+                    <Button onClick={() => { setEditingDonor(null); setIsFormOpen(true); }} size="sm" className="font-bold active:scale-95 transition-transform rounded-[12px]">
+                        <UserPlus className="mr-2 h-4 w-4" /> Add Donor
                     </Button>
                 )}
             </div>
         </div>
       </div>
-
-      {unlinkedDonationsCount > 0 && (
-          <Alert className="bg-amber-50 border-amber-200 text-amber-800 animate-fade-in-down">
-              <AlertCircle className="h-4 w-4 text-amber-600" />
-              <AlertTitle className="font-bold">Fragmented Identities Detected</AlertTitle>
-              <AlertDescription className="font-normal text-xs flex items-center justify-between gap-4">
-                  There are {unlinkedDonationsCount} contributions that are not yet mapped to a verified Donor Profile.
-                  <Button onClick={() => setIsResolverOpen(true)} size="sm" variant="link" className="font-bold text-amber-800 p-0 underline h-auto uppercase tracking-tighter">Start Resolver Hub</Button>
-              </AlertDescription>
-          </Alert>
-      )}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <StatCard title="Total Profiles" count={stats.total} description="All Registered Donors" icon={Users} delay="100ms" />
@@ -292,7 +267,7 @@ export default function DonorRegistryPage() {
                         placeholder="Search Name, Phone, UPI, Acc..." 
                         value={searchTerm} 
                         onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
-                        className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary rounded-[12px] bg-white" 
+                        className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary rounded-[12px] bg-white" 
                     />
                 </div>
 
@@ -307,31 +282,13 @@ export default function DonorRegistryPage() {
                         <Calendar initialFocus mode="range" selected={dateRange} onSelect={(val) => { setDateRange(val); setCurrentPage(1); }} numberOfMonths={2} />
                     </PopoverContent>
                 </Popover>
-                {dateRange && <Button variant="ghost" size="icon" className="h-10 w-10 text-primary/40 hover:text-primary shrink-0" onClick={() => { setDateRange(undefined); setCurrentPage(1); }}><X className="h-4 w-4"/></Button>}
                 
                 <Select value={statusFilter} onValueChange={(val) => { setStatusFilter(val); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[180px] shrink-0 h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white">
-                        <SelectValue placeholder="Account Status" />
-                    </SelectTrigger>
-                    <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                        <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
-                        <SelectItem value="Active" className="font-normal text-primary">Active</SelectItem>
-                        <SelectItem value="Inactive" className="font-normal text-destructive">Inactive</SelectItem>
-                    </SelectContent>
-                </Select>
-
-                <Select value={designationFilter} onValueChange={(val) => { setDesignationFilter(val); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[200px] shrink-0 h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white">
-                        <div className="flex items-center gap-2 truncate">
-                            <Filter className="h-3.5 w-3.5 opacity-40" />
-                            <SelectValue placeholder="Has Given Designation" />
-                        </div>
-                    </SelectTrigger>
-                    <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                        <SelectItem value="All" className="font-normal">Any Designation</SelectItem>
-                        {donationCategories.map(cat => (
-                            <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>
-                        ))}
+                    <SelectTrigger className="w-[180px] shrink-0 h-10 text-sm border-primary/10 rounded-[12px] bg-white"><SelectValue placeholder="Status" /></SelectTrigger>
+                    <SelectContent className="rounded-[12px] shadow-dropdown">
+                        <SelectItem value="All">All Statuses</SelectItem>
+                        <SelectItem value="Active">Active</SelectItem>
+                        <SelectItem value="Inactive">Inactive</SelectItem>
                     </SelectContent>
                 </Select>
             </div>
@@ -339,12 +296,12 @@ export default function DonorRegistryPage() {
         </ScrollArea>
       </div>
 
-      <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm">
+      <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden">
         <ScrollArea className="w-full">
             <div className="min-w-[1000px]">
                 <Table>
                     <TableHeader>
-                        <TableRow className="hover:bg-transparent border-b border-primary/10">
+                        <TableRow className="bg-primary/5">
                             <TableHead className="w-[60px] pl-6 text-[10px] uppercase font-bold tracking-tight">#</TableHead>
                             <TableHead className="text-[10px] uppercase font-bold tracking-tight">Donor Identity</TableHead>
                             <TableHead className="text-[10px] uppercase font-bold tracking-tight">Primary Contact</TableHead>
@@ -355,71 +312,37 @@ export default function DonorRegistryPage() {
                     </TableHeader>
                     <TableBody>
                         {paginatedDonors.map((donor, idx) => (
-                            <TableRow key={donor.id} onClick={() => router.push(`/donors/${donor.id}`)} className="cursor-pointer hover:bg-primary/[0.02] transition-colors border-b border-primary/5 last:border-0 bg-white">
+                            <TableRow key={donor.id} onClick={() => router.push(`/donors/${donor.id}`)} className="cursor-pointer hover:bg-primary/[0.02] border-b border-primary/5 last:border-0 bg-white">
                                 <TableCell className="pl-6 font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</TableCell>
                                 <TableCell className="py-4">
-                                    <div className="flex items-center gap-2">
-                                        <div className="font-bold text-sm text-primary">{donor.name}</div>
-                                        {!donor.donorId && <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0 opacity-40" title="System Linked Profile" />}
-                                    </div>
-                                    <div className="text-[10px] text-muted-foreground font-normal truncate max-w-[200px]">{donor.email || 'No email registered'}</div>
+                                    <div className="font-bold text-sm text-primary">{donor.name}</div>
+                                    <div className="text-[10px] text-muted-foreground truncate max-w-[200px]">{donor.email || 'No email'}</div>
                                 </TableCell>
                                 <TableCell>
-                                    <div className="flex flex-col gap-0.5">
-                                        <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-primary">
-                                            <Smartphone className="h-3 w-3 opacity-40"/> {donor.phone}
-                                        </div>
-                                        {donor.address && <div className="text-[9px] text-muted-foreground truncate max-w-[150px] italic">{donor.address}</div>}
-                                    </div>
+                                    <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-primary"><Smartphone className="h-3 w-3 opacity-40"/> {donor.phone}</div>
                                 </TableCell>
                                 <TableCell>
                                     <div className="flex flex-wrap gap-1">
                                         {(donor.upiIds || []).slice(0, 2).map((upi, i) => (
-                                            <Badge key={i} variant="outline" className="text-[8px] font-mono border-primary/10 text-primary/60">{upi}</Badge>
+                                            <Badge key={i} variant="outline" className="text-[8px] font-mono border-primary/10">{upi}</Badge>
                                         ))}
-                                        {(donor.accountNumbers || []).length > 0 && <Badge variant="secondary" className="text-[8px] font-bold"><Landmark className="h-2 w-2 mr-1"/> {(donor.accountNumbers || []).length} Acc</Badge>}
-                                        {!(donor.upiIds?.length) && !(donor.accountNumbers?.length) && <span className="text-[9px] text-muted-foreground italic font-normal">None Verified</span>}
                                     </div>
                                 </TableCell>
-                                <TableCell className="text-center">
-                                    <Badge variant={donor.status === 'Active' ? 'eligible' : 'outline'} className="text-[10px] font-bold">
-                                        {donor.status}
-                                    </Badge>
-                                </TableCell>
+                                <TableCell className="text-center"><Badge variant={donor.status === 'Active' ? 'eligible' : 'outline'} className="text-[10px] font-bold">{donor.status}</Badge></TableCell>
                                 <TableCell className="text-right pr-6" onClick={e => e.stopPropagation()}>
-                                    <div className="flex items-center justify-end gap-1">
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild onClick={e => e.stopPropagation()}>
-                                                <Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
-                                                <DropdownMenuItem onSelect={(e) => { e.preventDefault(); router.push(`/donors/${donor.id}`); }} className="text-primary font-normal cursor-pointer">
-                                                    <Eye className="mr-2 h-4 w-4 opacity-60"/> View Profile
-                                                </DropdownMenuItem>
-                                                {canUpdate && (
-                                                    <DropdownMenuItem onSelect={(e) => { e.preventDefault(); router.push(`/donors/${donor.id}?edit=true`); }} className="text-primary font-normal cursor-pointer">
-                                                        <Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Profile
-                                                    </DropdownMenuItem>
-                                                )}
-                                                {canDelete && (
-                                                    <>
-                                                        <DropdownMenuSeparator className="bg-primary/5" />
-                                                        <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleDelete(donor); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal cursor-pointer">
-                                                            <Trash2 className="mr-2 h-4 w-4"/> Remove Profile
-                                                        </DropdownMenuItem>
-                                                    </>
-                                                )}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                    </div>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
+                                            <DropdownMenuItem onSelect={() => router.push(`/donors/${donor.id}`)} className="text-primary font-normal cursor-pointer"><Eye className="mr-2 h-4 w-4 opacity-60"/> View Details</DropdownMenuItem>
+                                            {canUpdate && <DropdownMenuItem onSelect={() => router.push(`/donors/${donor.id}?edit=true`)} className="text-primary font-normal cursor-pointer"><Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Profile</DropdownMenuItem>}
+                                            {canDelete && (
+                                                <DropdownMenuItem onSelect={() => handleDelete(donor)} className="text-destructive font-normal cursor-pointer"><Trash2 className="mr-2 h-4 w-4"/> Delete Profile</DropdownMenuItem>
+                                            )}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </TableCell>
                             </TableRow>
                         ))}
-                        {filteredDonors.length === 0 && (
-                            <TableRow>
-                                <TableCell colSpan={6} className="text-center py-24 text-primary/40 font-bold italic bg-primary/[0.01]">No Donor Profiles Found Matching Criteria.</TableCell>
-                            </TableRow>
-                        )}
                     </TableBody>
                 </Table>
             </div>
@@ -428,109 +351,29 @@ export default function DonorRegistryPage() {
       </Card>
 
       {totalPages > 1 && (
-        <div className="flex items-center justify-between border-t pt-4 bg-primary/5 p-4 rounded-b-[16px]">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Registry Page {currentPage} Of {totalPages}</p>
-          <div className="flex items-center gap-2">
-            <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/10 h-8 rounded-[10px] transition-transform active:scale-95">Previous</Button>
-            <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/10 h-8 rounded-[10px] transition-transform active:scale-95">Next</Button>
+        <div className="flex items-center justify-between border-t pt-4">
+          <p className="text-[10px] font-bold text-muted-foreground uppercase">Page {currentPage} Of {totalPages}</p>
+          <div className="flex gap-2">
+            <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</Button>
+            <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</Button>
           </div>
         </div>
       )}
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="max-w-2xl rounded-[16px] border-primary/10 p-0 overflow-hidden flex flex-col max-h-[90vh]">
-            <DialogHeader className="px-6 py-4 bg-primary/5 border-b">
-                <DialogTitle className="text-xl font-bold text-primary tracking-tight">Register Institutional Donor Profile</DialogTitle>
-                <DialogDescription className="font-normal text-primary/70">Establish a verifiable record for institutional contributors.</DialogDescription>
-            </DialogHeader>
+        <DialogContent className="max-w-2xl rounded-[16px] border-primary/10 p-0 flex flex-col max-h-[90vh]">
+            <DialogHeader className="px-6 py-4 bg-primary/5 border-b"><DialogTitle className="text-xl font-bold">Register Donor Profile</DialogTitle></DialogHeader>
             <form onSubmit={handleSaveDonor} className="flex flex-col h-full overflow-hidden">
-                <ScrollArea className="flex-1">
-                    <div className="p-6 space-y-8">
-                        <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Core Identity</h4>
-                            <div className="space-y-2">
-                                <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Full Name *</Label>
-                                <Input name="name" required placeholder="e.g. Abdullah Khan" className="font-bold h-10" />
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Phone Number *</Label>
-                                    <Input name="phone" required placeholder="10-digit mobile" className="font-mono h-10" />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Email Address</Label>
-                                    <Input name="email" type="email" placeholder="donor@example.com" className="font-normal h-10" />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Residential Address</Label>
-                                <Input name="address" placeholder="Full Address" className="font-normal h-10" />
-                            </div>
-                        </div>
-
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between border-b pb-2">
-                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Bank Records</h4>
-                                <Button type="button" variant="outline" size="sm" onClick={() => setBankDetails([...bankDetails, { bankName: '', accountNumber: '', ifscCode: '' }])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1" /> Add Account</Button>
-                            </div>
-                            {bankDetails.map((bank, idx) => (
-                                <div key={idx} className="relative p-4 rounded-xl border border-dashed border-primary/20 bg-primary/[0.01] grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    {bankDetails.length > 1 && (
-                                        <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-6 w-6 text-destructive" onClick={() => setBankDetails(bankDetails.filter((_, i) => i !== idx))}><Trash2 className="h-3 w-3"/></Button>
-                                    )}
-                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">Bank Name</Label><Input value={bank.bankName} onChange={(e) => { const newB = [...bankDetails]; newB[idx].bankName = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-bold"/></div>
-                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">Account No.</Label><Input value={bank.accountNumber} onChange={(e) => { const newB = [...bankDetails]; newB[idx].accountNumber = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
-                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">IFSC Code</Label><Input value={bank.ifscCode} onChange={(e) => { const newB = [...bankDetails]; newB[idx].ifscCode = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between border-b pb-2">
-                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">UPI Identifiers</h4>
-                                <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ''])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1" /> Add UPI</Button>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                {upiIds.map((upi, idx) => (
-                                    <div key={idx} className="flex gap-2 items-center">
-                                        <Input value={upi} onChange={(e) => { const newU = [...upiIds]; newU[idx] = e.target.value; setUpiIds(newU); }} placeholder="name@upi" className="font-mono text-xs h-9" />
-                                        {upiIds.length > 1 && (
-                                            <Button type="button" variant="ghost" size="icon" onClick={() => setUpiIds(upiIds.filter((_, i) => i !== idx))}><Trash2 className="h-4 w-4 text-destructive"/></Button>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Administrative Control</h4>
-                            <div className="space-y-2">
-                                <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Account Status</Label>
-                                <Select name="status" defaultValue="Active">
-                                    <SelectTrigger className="font-bold h-10"><SelectValue/></SelectTrigger>
-                                    <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                                        <SelectItem value="Active" className="font-normal text-primary">Active</SelectItem>
-                                        <SelectItem value="Inactive" className="font-normal text-destructive">Inactive</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Institutional Notes</Label>
-                                <Textarea name="notes" placeholder="Donor preferences, historical context, etc." rows={3} className="font-normal" />
-                            </div>
-                        </div>
+                <ScrollArea className="flex-1"><div className="p-6 space-y-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2"><Label className="font-bold text-xs uppercase">Full Name *</Label><Input name="name" required className="font-bold h-10" /></div>
+                        <div className="space-y-2"><Label className="font-bold text-xs uppercase">Phone Number *</Label><Input name="phone" required className="font-mono h-10" /></div>
                     </div>
-                    <ScrollBar />
-                </ScrollArea>
-                <DialogFooter className="px-6 py-4 bg-primary/5 border-t">
-                    <div className="flex flex-col sm:flex-row gap-2 w-full justify-end">
-                        <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)} className="w-full sm:w-auto font-bold border-primary/20 text-primary transition-transform active:scale-95">Discard</Button>
-                        <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto font-bold shadow-md transition-transform active:scale-95 px-8">
-                            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                            Register Profile
-                        </Button>
-                    </div>
-                </DialogFooter>
+                    <div className="space-y-2"><Label className="font-bold text-xs uppercase">Email</Label><Input name="email" type="email" className="font-normal h-10" /></div>
+                    <div className="space-y-2"><Label className="font-bold text-xs uppercase">Address</Label><Input name="address" className="font-normal h-10" /></div>
+                    <div className="space-y-2"><Label className="font-bold text-xs uppercase">Notes</Label><Textarea name="notes" rows={3} className="font-normal" /></div>
+                </div></ScrollArea>
+                <DialogFooter className="px-6 py-4 bg-primary/5 border-t"><Button type="submit" disabled={isSubmitting} className="font-bold">{isSubmitting ? <Loader2 className="mr-2 animate-spin"/> : <Save className="mr-2"/>} Secure Profile</Button></DialogFooter>
             </form>
         </DialogContent>
       </Dialog>

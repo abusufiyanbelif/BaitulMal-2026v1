@@ -24,7 +24,12 @@ export {
   increment,
   writeBatch,
   deleteField,
-  addDoc
+  addDoc,
+  type DocumentReference,
+  type DocumentData,
+  type QueryDocumentSnapshot,
+  type Query,
+  type CollectionReference
 } from 'firebase/firestore';
 
 export {

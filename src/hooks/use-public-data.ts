@@ -10,7 +10,7 @@ const RECENT_UPDATE_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 
 export function usePublicData() {
   const firestore = useFirestore();
-  const { user, isLoading: isSessionLoading } = useSession();
+  const { isLoading: isSessionLoading } = useSession();
 
   // Public items do NOT require a 'user' session
   const campaignsCollectionRef = useMemoFirebase(() => {
@@ -32,14 +32,13 @@ export function usePublicData() {
   }, [firestore]);
   
   /**
-   * We gate the donations fetch by the session loading state.
-   * This ensures we only attempt the query once the auth context is determined.
-   * NOTE: For guests, the query will fire if the rules allow public 'list' on Verified docs.
+   * Verified donations are publicly listing enabled via firestore.rules
+   * We only gate by firestore initialization.
    */
   const donationsCollectionRef = useMemoFirebase(() => {
-    if (!firestore || isSessionLoading) return null;
+    if (!firestore) return null;
     return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
-  }, [firestore, isSessionLoading]);
+  }, [firestore]);
 
   const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
   const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
@@ -130,13 +129,9 @@ export function usePublicData() {
       };
     });
 
-    // Overall metrics calculation only considering public items
     const totalTarget = allPublicItems.reduce((sum, item) => sum + (item.targetAmount || 0), 0);
     const totalCollectedForGoals = Array.from(collectedAmounts.values()).reduce((sum, amount) => sum + amount, 0);
-    
-    // Calculate total verified funds
     const grandTotalRaised = donations.reduce((sum, d) => sum + d.amount, 0);
-
     const overallProgress = totalTarget > 0 ? Math.min((totalCollectedForGoals / totalTarget) * 100, 100) : 0;
 
     const yearlyData: Record<string, { totalGoalReceived: number; overallTotalReceived: number; totalTarget: number; }> = {};
