@@ -65,5 +65,5 @@ export { initializeFirebase } from './init';
 export { FirebaseClientProvider } from './client-provider';
 export * from './non-blocking-updates';
 export * from './non-blocking-login';
-export * from './errors';
+export { type SecurityRuleContext, FirestorePermissionError } from './errors';
 export * from './error-emitter';

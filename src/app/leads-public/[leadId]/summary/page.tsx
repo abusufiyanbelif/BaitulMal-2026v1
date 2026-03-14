@@ -443,7 +443,7 @@ export default function PublicLeadSummaryPage() {
                             )}
 
                             {isVisible('zakat_utilization') && (
-                                <Card className="shadow-sm border-primary/5 bg-white transition-all duration-300 hover:shadow-lg">
+                                <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-lg">
                                     <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Zakat Fund Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking of designated Zakat resources.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 pt-6 font-normal text-foreground">
                                         <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded">

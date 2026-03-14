@@ -14,14 +14,14 @@ import { RecentVerificationTicker } from '@/components/recent-verification-ticke
 import { usePublicData } from '@/hooks/use-public-data';
 import { useBranding } from '@/hooks/use-branding';
 import { cn } from '@/lib/utils';
-import { FolderKanban, Lightbulb, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle, HandHelping, Utensils, LifeBuoy } from 'lucide-react';
+import { FolderKanban, Lightbulb, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle, HandHelping, Utensils, LifeBuoy, GraduationCap, HeartPulse, HeartHandshake } from 'lucide-react';
 
 const getPriorityIcon = (priority?: string) => {
   switch (priority) {
     case 'Urgent': return <AlertTriangle className="h-5 w-5 text-red-600" />;
     case 'High': return <ArrowUpCircle className="h-5 w-5 text-orange-500" />;
     case 'Medium': return <MinusCircle className="h-5 w-5 text-yellow-500" />;
-    case 'Low': return <ArrowDownCircle className="h-5 w-5 text-blue-500" />;
+    case 'Low': return <ArrowDownCircle className="h-4 w-4 text-blue-500" />;
     default: return null;
   }
 };
@@ -34,7 +34,7 @@ const priorityWeight: Record<string, number> = {
 };
 
 export default function Home() {
-    const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted } = usePublicData();
+    const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted, isLoading } = usePublicData();
     const { brandingSettings } = useBranding();
 
     const activeTickerItems = useMemo(() => {
@@ -101,25 +101,27 @@ export default function Home() {
     const isInitiativeSummaryVisible = brandingSettings?.isInitiativeSummaryVisible !== false;
     const isRecentVerificationVisible = brandingSettings?.isRecentVerificationVisible !== false;
 
+    const showTickers = isNewsTickerVisible && !isLoading && (activeTickerItems.length > 0 || recentDonationsFormatted.length > 0 || completedTickerItems.length > 0);
+
     return (
-        <div className="container mx-auto p-4 md:p-8 space-y-10 text-primary transition-colors duration-500">
+        <div className="container mx-auto p-4 md:p-8 space-y-10 text-primary transition-colors duration-500 pb-20">
             {/* Hero Section */}
             {isHeroVisible && (
                 <section className="text-center py-12 md:py-20 animate-fade-in-zoom">
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter text-primary max-w-5xl mx-auto drop-shadow-sm">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter text-primary max-w-5xl mx-auto drop-shadow-sm leading-tight">
                         {heroTitle}
                     </h1>
                     <p className="mt-6 max-w-3xl mx-auto text-lg text-primary font-normal leading-relaxed opacity-80">
                         {heroDescription}
                     </p>
                     <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button asChild size="lg" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md px-8 h-12">
+                        <Button asChild size="lg" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md px-8 h-12 rounded-xl">
                             <Link href="/campaign-public">
                                 <FolderKanban className="mr-2 h-5 w-5" />
                                 Our Campaigns
                             </Link>
                         </Button>
-                        <Button asChild size="lg" variant="secondary" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md px-8 h-12">
+                        <Button asChild size="lg" variant="secondary" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md px-8 h-12 rounded-xl border border-primary/10">
                             <Link href="/leads-public">
                                 <Lightbulb className="mr-2 h-5 w-5" />
                                 Public Appeals
@@ -130,11 +132,11 @@ export default function Home() {
             )}
 
             {/* News & Updates */}
-            {isNewsTickerVisible && (
+            {showTickers && (
                 <div className="space-y-2 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                    <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
-                    <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
-                    <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />
+                    {activeTickerItems.length > 0 && <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />}
+                    {recentDonationsFormatted.length > 0 && <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />}
+                    {completedTickerItems.length > 0 && <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />}
                 </div>
             )}
 
@@ -143,6 +145,43 @@ export default function Home() {
                     <WisdomAndReflection />
                 </div>
             )}
+
+            {/* Institutional Focus Section */}
+            <section className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-up" style={{ animationDelay: '500ms' }}>
+                <Card className="bg-white border-primary/10 shadow-sm transition-all hover:shadow-md">
+                    <CardHeader className="p-6">
+                        <div className="p-3 rounded-xl bg-primary/10 text-primary w-fit mb-4">
+                            <GraduationCap className="h-6 w-6" />
+                        </div>
+                        <CardTitle className="text-xl font-bold tracking-tight">Education</CardTitle>
+                        <CardDescription className="font-normal text-primary/70 leading-relaxed pt-2">
+                            Empowering students through verified fee assistance and academic support to secure a brighter future.
+                        </CardDescription>
+                    </CardHeader>
+                </Card>
+                <Card className="bg-white border-primary/10 shadow-sm transition-all hover:shadow-md">
+                    <CardHeader className="p-6">
+                        <div className="p-3 rounded-xl bg-primary/10 text-primary w-fit mb-4">
+                            <HeartPulse className="h-6 w-6" />
+                        </div>
+                        <CardTitle className="text-xl font-bold tracking-tight">Healthcare</CardTitle>
+                        <CardDescription className="font-normal text-primary/70 leading-relaxed pt-2">
+                            Vetting critical medical cases to provide timely financial aid for surgeries and life-saving treatments.
+                        </CardDescription>
+                    </CardHeader>
+                </Card>
+                <Card className="bg-white border-primary/10 shadow-sm transition-all hover:shadow-md">
+                    <CardHeader className="p-6">
+                        <div className="p-3 rounded-xl bg-primary/10 text-primary w-fit mb-4">
+                            <Utensils className="h-6 w-6" />
+                        </div>
+                        <CardTitle className="text-xl font-bold tracking-tight">Relief Hub</CardTitle>
+                        <CardDescription className="font-normal text-primary/70 leading-relaxed pt-2">
+                            Coordinating monthly ration distributions and emergency relief kits for the most deserving families.
+                        </CardDescription>
+                    </CardHeader>
+                </Card>
+            </section>
 
             <div className="space-y-10 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
                 {isOverallSummaryVisible && <OverallFundingSummary />}
@@ -154,10 +193,30 @@ export default function Home() {
                 
                 {isInitiativeSummaryVisible && <LeadAndCampaignSummary />}
                 
-                {isRecentVerificationVisible && (
+                {isRecentVerificationVisible && recentDonationsFormatted.length > 0 && (
                     <RecentVerificationTicker items={recentDonationsFormatted} />
                 )}
             </div>
+
+            {/* Support CTA Section */}
+            <section className="max-w-4xl mx-auto pt-10 animate-fade-in-up" style={{ animationDelay: '800ms' }}>
+                <Card className="bg-primary/[0.02] border-primary/20 border-2 border-dashed shadow-none">
+                    <CardContent className="p-8 flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
+                        <div className="p-4 rounded-full bg-primary/10 text-primary">
+                            <HeartHandshake className="h-10 w-10" />
+                        </div>
+                        <div className="space-y-2 flex-1">
+                            <h3 className="text-2xl font-bold tracking-tight">Contribute To Institutional Impact</h3>
+                            <p className="text-sm font-normal text-muted-foreground leading-relaxed">
+                                Every donation is verified and precisely allocated to your selected cause. Join us in making a difference.
+                            </p>
+                        </div>
+                        <Button asChild size="lg" className="font-bold shadow-md h-12 px-10 rounded-xl active:scale-95 transition-transform shrink-0">
+                            <Link href="/info/members">View Donation Channels</Link>
+                        </Button>
+                    </CardContent>
+                </Card>
+            </section>
         </div>
     );
 }
