@@ -10,5 +10,28 @@ export const defaultGuidingPrinciples: GuidingPrinciplesData = {
     { id: 'gp4', text: "Providing ration to the most deserving (Mustahik) in the last week of each month, depending on available funds.", isHidden: false },
     { id: 'gp5', text: "A return agreement will be secured from educational beneficiaries if the amount exceeds ₹25,000.", isHidden: false },
     { id: 'gp6', text: "The maximum capital credited will be ₹40,000, but this can be raised in exceptional cases.", isHidden: false },
+  ],
+  focusAreas: [
+    { 
+        id: 'focus_edu', 
+        title: "Education", 
+        description: "Empowering students through verified fee assistance and academic support to secure a brighter future.",
+        icon: 'Education',
+        isHidden: false
+    },
+    { 
+        id: 'focus_health', 
+        title: "Healthcare", 
+        description: "Vetting critical medical cases to provide timely financial aid for surgeries and life-saving treatments.",
+        icon: 'Healthcare',
+        isHidden: false
+    },
+    { 
+        id: 'focus_relief', 
+        title: "Relief Hub", 
+        description: "Coordinating monthly ration distributions and emergency relief kits for the most deserving families.",
+        icon: 'Relief',
+        isHidden: false
+    }
   ]
 };

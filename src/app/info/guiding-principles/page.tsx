@@ -5,9 +5,20 @@ import { useInfoSettings } from '@/hooks/use-info-settings';
 import { defaultGuidingPrinciples } from '@/lib/guiding-principles-default';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Award, CheckCircle2, ShieldCheck, Loader2 } from 'lucide-react';
+import { ArrowLeft, Award, CheckCircle2, ShieldCheck, Loader2, GraduationCap, HeartPulse, Utensils, HelpCircle } from 'lucide-react';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
+import type { FocusArea } from '@/lib/types';
+
+const FocusAreaIcon = ({ type }: { type: FocusArea['icon'] }) => {
+    switch (type) {
+        case 'Education': return <GraduationCap className="h-5 w-5" />;
+        case 'Healthcare': return <HeartPulse className="h-5 w-5" />;
+        case 'Relief': return <Utensils className="h-5 w-5" />;
+        default: return <HelpCircle className="h-5 w-5" />;
+    }
+};
 
 export default function GuidingPrinciplesPage() {
     const { guidingPrinciplesData, isLoading: isContentLoading } = useGuidingPrinciples();
@@ -16,6 +27,7 @@ export default function GuidingPrinciplesPage() {
     const isLoading = isContentLoading || isInfoLoading;
     const data = guidingPrinciplesData || defaultGuidingPrinciples;
     const visiblePrinciples = data.principles?.filter(p => !p.isHidden && p.text?.trim()) || [];
+    const visibleFocusAreas = data.focusAreas?.filter(f => !f.isHidden) || [];
 
     if (isLoading) {
         return (
@@ -73,6 +85,23 @@ export default function GuidingPrinciplesPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="p-8 md:p-12">
+                        {/* Dynamic Focus Areas / Core Pillars */}
+                        {visibleFocusAreas.length > 0 && (
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+                                {visibleFocusAreas.map((area) => (
+                                    <div key={area.id} className="p-4 rounded-xl bg-primary/[0.02] border border-primary/5 space-y-3 transition-all hover:bg-white hover:shadow-md">
+                                        <div className="p-2 rounded-lg bg-primary/10 text-primary w-fit">
+                                            <FocusAreaIcon type={area.icon} />
+                                        </div>
+                                        <h4 className="font-bold text-sm">{area.title}</h4>
+                                        <p className="text-xs text-muted-foreground leading-relaxed font-normal">{area.description}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+
+                        {visibleFocusAreas.length > 0 && <Separator className="mb-12 opacity-10" />}
+
                         <div className="grid gap-8">
                             {visiblePrinciples.map((principle, index) => (
                                 <div key={principle.id} className="flex gap-6 group">

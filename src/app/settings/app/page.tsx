@@ -14,10 +14,9 @@ import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, UploadCloud, ShieldAlert, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, ChevronDown, Monitor, FileText, Smartphone, CheckCircle2, Megaphone, Quote, Target, PieChart, Info, HeartHandshake } from 'lucide-react';
+import { Loader2, UploadCloud, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, ChevronDown, Monitor, Megaphone, Quote, Target, PieChart, Info, HeartHandshake, Smartphone, CheckCircle2, GraduationCap, HeartPulse, Utensils, HelpCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Label } from '@/components/ui/label';
 import { cn, getNestedValue } from '@/lib/utils';
 import { Separator } from '@/components/ui/separator';
@@ -26,7 +25,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
-import type { GuidingPrinciple } from '@/lib/types';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import type { GuidingPrinciple, FocusArea } from '@/lib/types';
 import { BrandedLoader } from '@/components/branded-loader';
 
 interface FormDataType {
@@ -64,6 +64,7 @@ interface FormDataType {
     gpTitle: string;
     gpDescription: string;
     principles: GuidingPrinciple[];
+    focusAreas: FocusArea[];
 }
 
 function VerifiableItem({ icon: Icon, label, value, isEditing, id, onChange, placeholder }: { 
@@ -172,6 +173,15 @@ function SettingsSection({ title, description, icon: Icon, children, defaultOpen
     );
 }
 
+const FocusAreaIcon = ({ type }: { type: FocusArea['icon'] }) => {
+    switch (type) {
+        case 'Education': return <GraduationCap className="h-4 w-4" />;
+        case 'Healthcare': return <HeartPulse className="h-4 w-4" />;
+        case 'Relief': return <Utensils className="h-4 w-4" />;
+        default: return <HelpCircle className="h-4 w-4" />;
+    }
+};
+
 export default function AppSettingsPage() {
     const { userProfile, isLoading: isSessionLoading } = useSession();
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
@@ -233,6 +243,7 @@ export default function AppSettingsPage() {
                 gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
                 gpDescription: guidingPrinciplesData?.description || 'To ensure our operations are transparent, fair, and impactful, we adhere to a clear set of guiding principles. These rules govern how we identify beneficiaries, allocate funds, and manage our resources to best serve the community.',
                 principles: guidingPrinciplesData?.principles || [],
+                focusAreas: guidingPrinciplesData?.focusAreas || [],
             });
         } else {
             setEditableData(null);
@@ -287,6 +298,28 @@ export default function AppSettingsPage() {
         const newPrinciples = [...editableData.principles];
         newPrinciples[index] = { ...newPrinciples[index], [field]: value };
         handleFieldChange('principles', newPrinciples);
+    };
+
+    const handleAddFocusArea = () => {
+        if (!editableData) return;
+        const newAreas = [
+            ...editableData.focusAreas,
+            { id: `focus_${Date.now()}`, title: 'New Pillar', description: '', icon: 'Other' as const, isHidden: false }
+        ];
+        handleFieldChange('focusAreas', newAreas);
+    };
+
+    const handleRemoveFocusArea = (index: number) => {
+        if (!editableData) return;
+        const newAreas = editableData.focusAreas.filter((_, i) => i !== index);
+        handleFieldChange('focusAreas', newAreas);
+    };
+
+    const handleFocusAreaChange = (index: number, field: keyof FocusArea, value: any) => {
+        if (!editableData) return;
+        const newAreas = [...editableData.focusAreas];
+        newAreas[index] = { ...newAreas[index], [field]: value };
+        handleFieldChange('focusAreas', newAreas);
     };
 
     const handleSave = async () => {
@@ -369,6 +402,7 @@ export default function AppSettingsPage() {
                 title: editableData.gpTitle,
                 description: editableData.gpDescription,
                 principles: editableData.principles.filter(p => p.text?.trim() !== ''),
+                focusAreas: editableData.focusAreas.filter(f => f.title?.trim() !== ''),
             };
             batch.set(doc(firestore, 'settings', 'guidingPrinciples'), gpData);
 
@@ -425,6 +459,7 @@ export default function AppSettingsPage() {
         gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
         gpDescription: guidingPrinciplesData?.description || '',
         principles: guidingPrinciplesData?.principles || [],
+        focusAreas: guidingPrinciplesData?.focusAreas || [],
     };
 
     if (isLoading) {
@@ -799,14 +834,14 @@ export default function AppSettingsPage() {
                 {/* Guiding Principles Manager Section */}
                 <SettingsSection 
                     title="Guiding Principles Manager" 
-                    description="Define core values and operational standards displayed on the about page."
+                    description="Define core values, pillars of focus, and operational standards."
                     icon={Shield}
                 >
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-muted/5 gap-4 transition-all hover:border-primary/20">
                             <div className="space-y-1 flex-1">
-                                <h3 className="font-bold text-primary text-sm tracking-tight">Our Guiding Principles Section</h3>
-                                <p className="text-xs text-muted-foreground font-normal">Controls the visibility of this section on the public about page.</p>
+                                <h3 className="font-bold text-primary text-sm tracking-tight">Public Principles Section</h3>
+                                <p className="text-xs text-muted-foreground font-normal">Controls the visibility of this section on public informational pages.</p>
                             </div>
                             <div className="flex items-center space-x-2">
                                 <Label htmlFor="gp-visibility" className="font-bold text-xs opacity-60">Visible</Label>
@@ -821,7 +856,16 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-4">
                             <div className="space-y-1.5">
-                                <Label className="font-bold text-[10px] text-muted-foreground">Commitment Section Description</Label>
+                                <Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Section Heading</Label>
+                                <Input 
+                                    value={displayData.gpTitle} 
+                                    onChange={(e) => handleFieldChange('gpTitle', e.target.value)} 
+                                    disabled={isFormDisabled}
+                                    className="font-bold text-primary"
+                                />
+                            </div>
+                            <div className="space-y-1.5">
+                                <Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Mission Description</Label>
                                 <Textarea 
                                     rows={3} 
                                     value={displayData.gpDescription} 
@@ -836,51 +880,114 @@ export default function AppSettingsPage() {
                         <Separator className="bg-primary/10" />
 
                         <div className="space-y-6">
-                            {(displayData.principles || []).map((principle, index) => (
-                                <div key={principle.id || index} className="relative group p-4 border rounded-md bg-muted/5 space-y-3 shadow-sm">
-                                    <div className="flex items-center justify-between">
-                                        <p className="font-bold text-primary text-xs tracking-tight">Principle #{index + 1}</p>
+                            <div className="flex items-center justify-between">
+                                <h4 className="text-xs font-bold text-primary uppercase tracking-widest flex items-center gap-2"><Target className="h-4 w-4"/> Core Pillars (Focus Areas)</h4>
+                                {isEditMode && (
+                                    <Button type="button" variant="outline" size="sm" onClick={handleAddFocusArea} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add Pillar</Button>
+                                )}
+                            </div>
+                            <div className="grid gap-4">
+                                {(displayData.focusAreas || []).map((area, index) => (
+                                    <div key={area.id || index} className="relative p-4 border rounded-xl bg-primary/[0.01] space-y-4 border-primary/5">
                                         {isEditMode && (
-                                            <div className="flex items-center gap-3">
-                                                <div className="flex items-center space-x-1.5">
+                                            <div className="absolute top-2 right-2 flex items-center gap-2">
+                                                <div className="flex items-center space-x-1.5 mr-2">
                                                     <Checkbox 
-                                                        id={`gp-hide-${index}`}
-                                                        checked={principle.isHidden} 
-                                                        onCheckedChange={(checked) => handlePrincipleChange(index, 'isHidden', !!checked)} 
+                                                        id={`focus-hide-${index}`}
+                                                        checked={area.isHidden} 
+                                                        onCheckedChange={(checked) => handleFocusAreaChange(index, 'isHidden', !!checked)} 
                                                     />
-                                                    <Label htmlFor={`gp-hide-${index}`} className="text-[10px] font-bold opacity-60 cursor-pointer">Hide</Label>
+                                                    <Label htmlFor={`focus-hide-${index}`} className="text-[10px] font-bold opacity-60">Hide</Label>
                                                 </div>
-                                                <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleRemovePrinciple(index)}>
+                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleRemoveFocusArea(index)}>
                                                     <Trash2 className="h-4 w-4"/>
                                                 </Button>
                                             </div>
                                         )}
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <Label className="text-[9px] font-bold text-muted-foreground uppercase">Icon & Title</Label>
+                                                <div className="flex gap-2">
+                                                    <Select value={area.icon} onValueChange={(val) => handleFocusAreaChange(index, 'icon', val)} disabled={isFormDisabled}>
+                                                        <SelectTrigger className="w-12 h-9 p-0 justify-center"><FocusAreaIcon type={area.icon}/></SelectTrigger>
+                                                        <SelectContent>
+                                                            <SelectItem value="Education"><GraduationCap className="h-4 w-4"/></SelectItem>
+                                                            <SelectItem value="Healthcare"><HeartPulse className="h-4 w-4"/></SelectItem>
+                                                            <SelectItem value="Relief"><Utensils className="h-4 w-4"/></SelectItem>
+                                                            <SelectItem value="Other"><HelpCircle className="h-4 w-4"/></SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <Input 
+                                                        value={area.title} 
+                                                        onChange={(e) => handleFocusAreaChange(index, 'title', e.target.value)} 
+                                                        disabled={isFormDisabled}
+                                                        className="font-bold h-9"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <Label className="text-[9px] font-bold text-muted-foreground uppercase">Description</Label>
+                                                <Textarea 
+                                                    value={area.description} 
+                                                    onChange={(e) => handleFocusAreaChange(index, 'description', e.target.value)} 
+                                                    disabled={isFormDisabled}
+                                                    rows={2}
+                                                    className="text-xs font-normal min-h-[36px]"
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                    {isEditMode ? (
-                                        <Textarea 
-                                            value={principle.text} 
-                                            onChange={(e) => handlePrincipleChange(index, 'text', e.target.value)} 
-                                            placeholder="Enter organizational principle..." 
-                                            className="font-normal min-h-[80px] text-sm" 
-                                        />
-                                    ) : (
-                                        <p className="text-sm font-normal text-foreground leading-relaxed">
-                                            {principle.text || <span className="italic opacity-50">Empty Principle Text</span>}
-                                            {principle.isHidden && <Badge variant="outline" className="ml-2 text-[8px]">Hidden</Badge>}
-                                        </p>
-                                    )}
-                                </div>
-                            ))}
-                            {(displayData.principles || []).length === 0 && !isEditMode && <p className="text-center text-xs text-muted-foreground py-8 border border-dashed rounded-md italic font-normal">No Principles Defined Yet.</p>}
+                                ))}
+                            </div>
                         </div>
 
-                        {isEditMode && (
-                            <div className="flex justify-center pt-2">
-                                <Button type="button" variant="outline" size="sm" onClick={handleAddPrinciple} className="font-bold border-primary/20 text-primary">
-                                    <Plus className="h-4 w-4 mr-2"/> Add New Principle
-                                </Button>
+                        <Separator className="bg-primary/10" />
+
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between">
+                                <h4 className="text-xs font-bold text-primary uppercase tracking-widest flex items-center gap-2"><ListChecks className="h-4 w-4"/> Procedural Rules</h4>
+                                {isEditMode && (
+                                    <Button type="button" variant="outline" size="sm" onClick={handleAddPrinciple} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add Rule</Button>
+                                )}
                             </div>
-                        )}
+                            <div className="space-y-4">
+                                {(displayData.principles || []).map((principle, index) => (
+                                    <div key={principle.id || index} className="relative group p-4 border rounded-md bg-muted/5 space-y-3 shadow-sm">
+                                        <div className="flex items-center justify-between">
+                                            <p className="font-bold text-primary text-xs tracking-tight">Rule #{index + 1}</p>
+                                            {isEditMode && (
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex items-center space-x-1.5">
+                                                        <Checkbox 
+                                                            id={`gp-hide-${index}`}
+                                                            checked={principle.isHidden} 
+                                                            onCheckedChange={(checked) => handlePrincipleChange(index, 'isHidden', !!checked)} 
+                                                        />
+                                                        <Label htmlFor={`gp-hide-${index}`} className="text-[10px] font-bold opacity-60 cursor-pointer">Hide</Label>
+                                                    </div>
+                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleRemovePrinciple(index)}>
+                                                        <Trash2 className="h-4 w-4"/>
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </div>
+                                        {isEditMode ? (
+                                            <Textarea 
+                                                value={principle.text} 
+                                                onChange={(e) => handlePrincipleChange(index, 'text', e.target.value)} 
+                                                placeholder="Enter organizational rule or principle..." 
+                                                className="font-normal min-h-[80px] text-sm" 
+                                            />
+                                        ) : (
+                                            <p className="text-sm font-normal text-foreground leading-relaxed">
+                                                {principle.text || <span className="italic opacity-50">Empty Rule Text</span>}
+                                                {principle.isHidden && <Badge variant="outline" className="ml-2 text-[8px]">Hidden</Badge>}
+                                            </p>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </SettingsSection>
 

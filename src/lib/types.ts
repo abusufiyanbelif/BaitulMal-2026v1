@@ -124,10 +124,19 @@ export interface GuidingPrinciple {
   isHidden?: boolean;
 }
 
+export interface FocusArea {
+  id: string;
+  title: string;
+  description: string;
+  icon: 'Education' | 'Healthcare' | 'Relief' | 'Other';
+  isHidden?: boolean;
+}
+
 export interface GuidingPrinciplesData extends DocumentData {
   title: string;
   description: string;
   principles: GuidingPrinciple[];
+  focusAreas?: FocusArea[];
   isGuidingPrinciplesPublic?: boolean;
 }
 

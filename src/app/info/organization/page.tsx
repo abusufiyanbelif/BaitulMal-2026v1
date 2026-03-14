@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect, useMemo } from 'react';
-import type { UserProfile } from '@/lib/types';
+import type { UserProfile, FocusArea } from '@/lib/types';
 import { GROUPS, type GroupId } from '@/lib/modules';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, ArrowLeft, Users, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, QrCode, Shield, GraduationCap, HeartPulse, Utensils } from 'lucide-react';
+import { Loader2, ArrowLeft, Users, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, QrCode, Shield, GraduationCap, HeartPulse, Utensils, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -37,6 +37,15 @@ function DetailItem({ icon: Icon, label, value, isMono = false }: { icon: any, l
         </div>
     );
 }
+
+const FocusAreaIcon = ({ type }: { type: FocusArea['icon'] }) => {
+    switch (type) {
+        case 'Education': return <GraduationCap className="h-5 w-5" />;
+        case 'Healthcare': return <HeartPulse className="h-5 w-5" />;
+        case 'Relief': return <Utensils className="h-5 w-5" />;
+        default: return <HelpCircle className="h-5 w-5" />;
+    }
+};
 
 export default function AboutOrganizationPage() {
     const [members, setMembers] = useState<Partial<UserProfile>[] | null>(null);
@@ -71,6 +80,7 @@ export default function AboutOrganizationPage() {
     const gpData = guidingPrinciplesData || defaultGuidingPrinciples;
     const isGPVisible = guidingPrinciplesData?.isGuidingPrinciplesPublic ?? true;
     const visiblePrinciples = gpData.principles?.filter(p => !p.isHidden && p.text?.trim()) || [];
+    const visibleFocusAreas = gpData.focusAreas?.filter(f => !f.isHidden) || [];
 
     if (isLoading) {
         return (
@@ -168,26 +178,22 @@ export default function AboutOrganizationPage() {
                             </div>
                         </AccordionTrigger>
                         <AccordionContent className="px-6 pt-8 pb-10">
-                            {/* Institutional Areas of Focus */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
-                                <div className="p-4 rounded-xl bg-primary/[0.02] border border-primary/5 space-y-3">
-                                    <div className="p-2 rounded-lg bg-primary/10 text-primary w-fit"><GraduationCap className="h-5 w-5" /></div>
-                                    <h4 className="font-bold text-sm">Education</h4>
-                                    <p className="text-xs text-muted-foreground leading-relaxed font-normal">Empowering students through verified fee assistance and academic support to secure a brighter future.</p>
+                            {/* Institutional Areas of Focus - Now Dynamic */}
+                            {visibleFocusAreas.length > 0 && (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+                                    {visibleFocusAreas.map((area) => (
+                                        <div key={area.id} className="p-4 rounded-xl bg-primary/[0.02] border border-primary/5 space-y-3 transition-all hover:bg-white hover:shadow-md">
+                                            <div className="p-2 rounded-lg bg-primary/10 text-primary w-fit">
+                                                <FocusAreaIcon type={area.icon} />
+                                            </div>
+                                            <h4 className="font-bold text-sm">{area.title}</h4>
+                                            <p className="text-xs text-muted-foreground leading-relaxed font-normal">{area.description}</p>
+                                        </div>
+                                    ))}
                                 </div>
-                                <div className="p-4 rounded-xl bg-primary/[0.02] border border-primary/5 space-y-3">
-                                    <div className="p-2 rounded-lg bg-primary/10 text-primary w-fit"><HeartPulse className="h-5 w-5" /></div>
-                                    <h4 className="font-bold text-sm">Healthcare</h4>
-                                    <p className="text-xs text-muted-foreground leading-relaxed font-normal">Vetting critical medical cases to provide timely financial aid for surgeries and life-saving treatments.</p>
-                                </div>
-                                <div className="p-4 rounded-xl bg-primary/[0.02] border border-primary/5 space-y-3">
-                                    <div className="p-2 rounded-lg bg-primary/10 text-primary w-fit"><Utensils className="h-5 w-5" /></div>
-                                    <h4 className="font-bold text-sm">Relief Hub</h4>
-                                    <p className="text-xs text-muted-foreground leading-relaxed font-normal">Coordinating monthly ration distributions and emergency relief kits for the most deserving families.</p>
-                                </div>
-                            </div>
+                            )}
                             
-                            <Separator className="mb-8 opacity-10" />
+                            {visibleFocusAreas.length > 0 && <Separator className="mb-8 opacity-10" />}
 
                             <p className="text-sm text-primary/70 mb-8 max-w-3xl font-normal leading-relaxed">{gpData.description}</p>
                             
