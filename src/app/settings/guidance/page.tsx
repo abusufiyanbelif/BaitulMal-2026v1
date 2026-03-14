@@ -78,7 +78,7 @@ export default function GuidanceSettingsPage() {
                 <Alert variant="destructive">
                     <ShieldAlert className="h-4 w-4" />
                     <AlertTitle className="font-bold">Access Denied</AlertTitle>
-                    <AlertDescription className="font-normal">
+                    <AlertDescription className="font-normal text-primary/70">
                         Missing Permissions To Manage Guidance Configuration.
                     </AlertDescription>
                 </Alert>
@@ -99,7 +99,7 @@ export default function GuidanceSettingsPage() {
                     </Button>
                 ) : (
                     <div className="flex gap-2">
-                        <Button variant="outline" onClick={() => setIsEditMode(false)} disabled={isSubmitting} className="font-bold border-primary/20 text-primary transition-transform active:scale-95"><X className="mr-2 h-4 w-4" /> Cancel</Button>
+                        <Button variant="outline" onClick={() => setIsEditMode(false)} className="font-bold border-primary/20 text-primary transition-transform active:scale-95"><X className="mr-2 h-4 w-4" /> Cancel</Button>
                         <Button onClick={handleSave} disabled={isSubmitting} className="font-bold shadow-md bg-primary text-white">
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>} 
                             Save Config

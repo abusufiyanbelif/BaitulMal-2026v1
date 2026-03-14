@@ -7,9 +7,8 @@ import {
     useMemoFirebase, 
     collection, 
     query, 
-    where,
-    doc,
-    getDocs
+    getDocs,
+    doc
 } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { 
