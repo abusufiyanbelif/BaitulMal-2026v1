@@ -242,8 +242,8 @@ export default function PublicCampaignSummaryPage() {
     if (!campaign || campaign.publicVisibility !== 'Published') {
         return (
             <main className="container mx-auto p-4 md:p-8 text-center text-primary font-bold">
-                <p className="text-lg text-primary/70 font-normal">This Campaign Is Not Publicly Available.</p>
-                <Button asChild className="mt-4 active:scale-95 transition-transform font-bold border-primary/20 text-primary" variant="outline"><Link href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button>
+                <p className="text-lg text-primary/70 font-normal">This Campaign Is Not Available For Public View.</p>
+                <Button asChild className="mt-4 active:scale-95 transition-transform font-bold border-primary/20 text-primary" variant="outline"><Link href="/campaign-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Public Campaigns</Link></Button>
             </main>
         );
     }
@@ -322,10 +322,12 @@ export default function PublicCampaignSummaryPage() {
                                         <div className="relative h-48 sm:h-64 w-full">
                                             {isClient ? (
                                                 <ChartContainer config={{ progress: { label: 'Progress', color: 'hsl(var(--primary))' } }} className="mx-auto aspect-square h-full">
-                                                    <RadialBarChart data={[{ name: 'Progress', value: fundingData.fundingProgress || 0, fill: 'hsl(var(--primary))' }]} startAngle={-270} endAngle={90} innerRadius="75%" outerRadius="100%" barSize={20}>
-                                                        <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                                                        <RadialBar dataKey="value" background={{ fill: 'hsl(var(--muted))' }} cornerRadius={10} />
-                                                    </RadialBarChart>
+                                                    <ResponsiveContainer>
+                                                        <RadialBarChart data={[{ name: 'Progress', value: fundingData.fundingProgress || 0, fill: 'hsl(var(--primary))' }]} startAngle={-270} endAngle={90} innerRadius="75%" outerRadius="100%" barSize={20}>
+                                                            <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                                            <RadialBar dataKey="value" background={{ fill: 'hsl(var(--muted))' }} cornerRadius={10} />
+                                                        </RadialBarChart>
+                                                    </ResponsiveContainer>
                                                 </ChartContainer>
                                             ) : <Skeleton className="w-full h-full rounded-full" />}
                                             <div className="absolute inset-0 flex flex-col items-center justify-center"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold tracking-tight uppercase">Funded</span></div>

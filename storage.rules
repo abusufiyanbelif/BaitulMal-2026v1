@@ -4,37 +4,37 @@ service firebase.storage {
     function isSignedIn() {
       return request.auth != null;
     }
-    function isAdmin() {
-      return isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == "Admin";
-    }
-
+    
+    // Public Branding
     match /settings/{allPaths=**} {
       allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /users/{userId}/{allPaths=**} {
-      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-      allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-    }
-
-    match /campaigns/{campaignId}/{allPaths=**} {
-      allow read: if firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == "Published" || isSignedIn();
-      allow write: if isAdmin();
-    }
-
-    match /leads/{leadId}/{allPaths=**} {
-      allow read: if firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == "Published" || isSignedIn();
-      allow write: if isAdmin();
-    }
-
-    match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-      allow read: if isSignedIn();
       allow write: if isSignedIn();
     }
 
-    match /donations/{donationId}/{allPaths=**} {
+    // Initiative Assets - Accessible if published
+    match /campaigns/{id}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+    
+    match /leads/{id}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isSignedIn();
+    }
+
+    // Protected Registry Artifacts
+    match /beneficiaries/{id}/{allPaths=**} {
       allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+    
+    match /users/{id}/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && (request.auth.uid == id);
+    }
+    
+    match /donations/{id}/{allPaths=**} {
+      allow read: if true;
       allow write: if isSignedIn();
     }
   }

@@ -405,7 +405,7 @@ export default function BeneficiariesPage() {
 
                 <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-[220px] shrink-0 justify-between h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white">
+                        <Button variant="outline" className="w-[220px] shrink-0 justify-between h-10 text-sm border-primary/10 text-primary font-bold rounded-[12px] bg-white transition-all hover:border-primary/30">
                             <div className="flex items-center gap-2 truncate">
                                 <Filter className="h-3.5 w-3.5 opacity-40 shrink-0" />
                                 <span className="truncate">
