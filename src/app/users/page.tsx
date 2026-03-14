@@ -361,7 +361,7 @@ export default function UsersPage() {
                               <SortableHeader sortKey="userKey" sortConfig={sortConfig} handleSort={handleSort}>User Key</SortableHeader>
                               <SortableHeader sortKey="role" sortConfig={sortConfig} handleSort={handleSort}>Access Role</SortableHeader>
                               <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Account Status</SortableHeader>
-                                {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right pr-4">Actions</TableHead>}
+                                {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right pr-4 font-bold">Actions</TableHead>}
                           </TableRow>
                       </TableHeader>
                       <TableBody className="font-normal text-primary">
@@ -463,7 +463,7 @@ export default function UsersPage() {
         </CardContent>
         {totalPages > 1 && (
             <CardFooter className="flex items-center justify-between border-t bg-primary/5 p-4">
-              <p className="text-xs font-bold text-muted-foreground uppercase">
+              <p className="text-xs font-bold text-muted-foreground">
                   Showing {paginatedUsers.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} To {Math.min(currentPage * itemsPerPage, filteredAndSortedUsers.length)} Of {filteredAndSortedUsers.length} Members
               </p>
               <div className="flex items-center gap-2">
@@ -477,7 +477,7 @@ export default function UsersPage() {
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent className="rounded-[16px] border-border shadow-dropdown">
             <AlertDialogHeader>
-                <AlertDialogTitle className="font-bold text-destructive uppercase">Confirm Permanent Deletion?</AlertDialogTitle>
+                <AlertDialogTitle className="font-bold text-destructive">Confirm Permanent Deletion?</AlertDialogTitle>
                 <AlertDialogDescription className="font-normal text-primary/70">
                     This Action Will Permanently Erase The Member's Account, Institutional Profile, And All Verification Artifacts. This Process Cannot Be Undone.
                 </AlertDialogDescription>

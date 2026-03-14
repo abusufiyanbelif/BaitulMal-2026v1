@@ -471,7 +471,7 @@ export default function AppSettingsPage() {
             <div className="flex items-center justify-between">
                 <div className="space-y-1">
                     <h2 className="text-2xl font-bold tracking-tight">App Settings</h2>
-                    <p className="text-sm text-muted-foreground">Manage organization profile, branding, and core standards.</p>
+                    <p className="text-sm text-muted-foreground">Manage Organization Profile, Branding, And Core Standards.</p>
                 </div>
                 {!isEditMode ? (
                     <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md">

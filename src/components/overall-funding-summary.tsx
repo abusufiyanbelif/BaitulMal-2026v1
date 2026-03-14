@@ -86,19 +86,19 @@ export function OverallFundingSummary() {
             </div>
              <div className="space-y-4 text-center md:text-left font-bold text-primary">
                 <div>
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Total Raised For Goals</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Total Raised For Goals</p>
                     <p className="text-3xl font-bold font-mono">
                     ₹{(overallSummary.totalCollectedForGoals || 0).toLocaleString('en-IN')}
                     </p>
                 </div>
                 <div>
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Combined Target</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Combined Target</p>
                     <p className="text-3xl font-bold font-mono opacity-70">
                     ₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}
                     </p>
                 </div>
                 <div>
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Grand Total Received (All Types)</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Grand Total Received (All Types)</p>
                     <p className="text-3xl font-bold font-mono">
                     ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}
                     </p>

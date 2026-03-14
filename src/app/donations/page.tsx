@@ -675,7 +675,7 @@ export default function DonationsPage() {
                                 className="border-primary/40 data-[state=checked]:bg-primary"
                             />
                         </div>
-                        <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
+                        <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort}>Sr. No.</SortableHeader>
                         <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor Name</SortableHeader>
                         <SortableHeader sortKey="amount" sortConfig={sortConfig} handleSort={handleSort} className="text-right">Amount (₹)</SortableHeader>
                         <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Entry Date</SortableHeader>
