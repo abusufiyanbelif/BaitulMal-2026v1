@@ -1,7 +1,9 @@
+
 'use client';
 import { useMemo } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
 import { useFirestore, useMemoFirebase, collection, query, where } from '@/firebase';
+import { useSession } from '@/hooks/use-session';
 import type { Campaign, Lead, Donation, DonationCategory } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 
@@ -9,6 +11,7 @@ const RECENT_UPDATE_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 
 export function usePublicData() {
   const firestore = useFirestore();
+  const { user } = useSession();
 
   const campaignsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -29,9 +32,9 @@ export function usePublicData() {
   }, [firestore]);
   
   const donationsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
+    if (!firestore || !user) return null;
     return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
-  }, [firestore]);
+  }, [firestore, user]);
 
   const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
   const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);

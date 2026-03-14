@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -303,7 +304,7 @@ export default function DonationsPage() {
   const firestore = useFirestore();
   const storage = useStorage();
   const { toast } = useToast();
-  const { userProfile, isLoading: isProfileLoading } = useSession();
+  const { user, userProfile, isLoading: isProfileLoading } = useSession();
   const auth = useAuth();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -328,13 +329,13 @@ export default function DonationsPage() {
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
 
-  const donationsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
+  const donationsCollectionRef = useMemoFirebase(() => (firestore && user) ? collection(firestore, 'donations') : null, [firestore, user]);
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
 
-  const campaignsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'campaigns') : null, [firestore]);
+  const campaignsCollectionRef = useMemoFirebase(() => (firestore && user) ? collection(firestore, 'campaigns') : null, [firestore, user]);
   const { data: allCampaigns } = useCollection<Campaign>(campaignsCollectionRef);
 
-  const leadsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'leads') : null, [firestore]);
+  const leadsCollectionRef = useMemoFirebase(() => (firestore && user) ? collection(firestore, 'leads') : null, [firestore, user]);
   const { data: allLeads } = useCollection<Lead>(leadsCollectionRef);
 
   const handleSort = (key: SortKey) => {
@@ -414,18 +415,6 @@ export default function DonationsPage() {
   }, [filteredAndSortedDonations, currentPage, itemsPerPage]);
 
   const totalPages = Math.ceil(filteredAndSortedDonations.length / itemsPerPage);
-
-  const handleSync = async () => {
-    setIsSyncing(true);
-    // @ts-ignore
-    const res = await syncDonationsAction();
-    if (res && res.success) {
-        toast({ title: 'Success', description: res.message, variant: 'success' });
-    } else {
-        toast({ title: 'Error', description: res?.message || 'Sync Failed.', variant: 'destructive' });
-    }
-    setIsSyncing(false);
-  };
 
   const handleAdd = () => {
     setEditingDonation(null);

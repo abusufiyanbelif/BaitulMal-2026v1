@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -82,44 +83,44 @@ export function NotificationBell() {
 
     // 1. Unverified Beneficiaries
     const unverifiedBeneficiariesQuery = useMemoFirebase(() => 
-        firestore ? query(collection(firestore, 'beneficiaries'), where('status', '!=', 'Verified')) : null, 
-    [firestore]);
+        (firestore && user) ? query(collection(firestore, 'beneficiaries'), where('status', '!=', 'Verified')) : null, 
+    [firestore, user]);
     const { data: unverifiedBeneficiaries } = useCollection<Beneficiary>(unverifiedBeneficiariesQuery);
 
     // 2. Unverified Donations (Pending)
     const unverifiedDonationsQuery = useMemoFirebase(() => 
-        firestore ? query(collection(firestore, 'donations'), where('status', '==', 'Pending')) : null, 
-    [firestore]);
+        (firestore && user) ? query(collection(firestore, 'donations'), where('status', '==', 'Pending')) : null, 
+    [firestore, user]);
     const { data: unverifiedDonations } = useCollection<Donation>(unverifiedDonationsQuery);
 
     // 3. Unallocated Donations (Verified with Balance)
     const verifiedDonationsQuery = useMemoFirebase(() => 
-        firestore ? query(collection(firestore, 'donations'), where('status', '==', 'Verified')) : null, 
-    [firestore]);
+        (firestore && user) ? query(collection(firestore, 'donations'), where('status', '==', 'Verified')) : null, 
+    [firestore, user]);
     const { data: verifiedDonations } = useCollection<Donation>(verifiedDonationsQuery);
 
-    const unallocatedDonations = useMemo(() => {
-        if (!verifiedDonations) return [];
+    const unallocatedCount = useMemo(() => {
+        if (!verifiedDonations) return 0;
         return verifiedDonations.filter(d => {
             const allocatedSum = d.linkSplit?.reduce((sum, link) => sum + link.amount, 0) || 0;
             return (d.amount - allocatedSum) > 0.01;
-        });
+        }).length;
     }, [verifiedDonations]);
 
     // 4. Unverified Initiatives (Leads & Campaigns)
     const unverifiedLeadsQuery = useMemoFirebase(() => 
-        firestore ? query(collection(firestore, 'leads'), where('authenticityStatus', '!=', 'Verified')) : null, 
-    [firestore]);
+        (firestore && user) ? query(collection(firestore, 'leads'), where('authenticityStatus', '!=', 'Verified')) : null, 
+    [firestore, user]);
     const { data: unverifiedLeads } = useCollection<Lead>(unverifiedLeadsQuery);
 
     const unverifiedCampaignsQuery = useMemoFirebase(() => 
-        firestore ? query(collection(firestore, 'campaigns'), where('authenticityStatus', '!=', 'Verified')) : null, 
-    [firestore]);
+        (firestore && user) ? query(collection(firestore, 'campaigns'), where('authenticityStatus', '!=', 'Verified')) : null, 
+    [firestore, user]);
     const { data: unverifiedCampaigns } = useCollection<Campaign>(unverifiedCampaignsQuery);
 
     const totalAlerts = (unverifiedBeneficiaries?.length || 0) + 
                         (unverifiedDonations?.length || 0) + 
-                        (unallocatedDonations.length) + 
+                        (unallocatedCount) + 
                         (unverifiedLeads?.length || 0) + 
                         (unverifiedCampaigns?.length || 0);
 
@@ -211,11 +212,14 @@ export function NotificationBell() {
                                 )}
 
                                 {/* Unallocated Funds Section */}
-                                {unallocatedDonations.length > 0 && (
+                                {unallocatedCount > 0 && (
                                     <div className="space-y-1">
-                                        <SectionHeader title="Allocate Funds" count={unallocatedDonations.length} icon={Wallet} />
+                                        <SectionHeader title="Allocate Funds" count={unallocatedCount} icon={Wallet} />
                                         <div className="space-y-1">
-                                            {unallocatedDonations.slice(0, 5).map(d => {
+                                            {verifiedDonations?.filter(d => {
+                                                const allocated = d.linkSplit?.reduce((s, l) => s + l.amount, 0) || 0;
+                                                return (d.amount - allocated) > 0.01;
+                                            }).slice(0, 5).map(d => {
                                                 const allocated = d.linkSplit?.reduce((s, l) => s + l.amount, 0) || 0;
                                                 const balance = d.amount - allocated;
                                                 return (
@@ -229,7 +233,7 @@ export function NotificationBell() {
                                                     />
                                                 );
                                             })}
-                                            {unallocatedDonations.length > 5 && (
+                                            {unallocatedCount > 5 && (
                                                 <Link href="/donations" className="block text-[9px] font-bold text-center text-primary py-2 hover:underline">Complete Fund Allocations</Link>
                                             )}
                                         </div>

@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -113,7 +114,7 @@ export default function BeneficiariesPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
-  const { userProfile, isLoading: isProfileLoading } = useSession();
+  const { user, userProfile, isLoading: isProfileLoading } = useSession();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -129,7 +130,7 @@ export default function BeneficiariesPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
-  const beneficiariesRef = useMemoFirebase(() => firestore ? collection(firestore, 'beneficiaries') : null, [firestore]);
+  const beneficiariesRef = useMemoFirebase(() => (firestore && user) ? collection(firestore, 'beneficiaries') : null, [firestore, user]);
   const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesRef);
 
   const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.beneficiaries.create', false);

@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -84,7 +85,7 @@ export default function DonorRegistryPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
-  const { userProfile, isLoading: isProfileLoading } = useSession();
+  const { user, userProfile, isLoading: isProfileLoading } = useSession();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -102,10 +103,10 @@ export default function DonorRegistryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
 
-  const donorsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donors') : null, [firestore]);
+  const donorsRef = useMemoFirebase(() => (firestore && user) ? collection(firestore, 'donors') : null, [firestore, user]);
   const { data: donors, isLoading: areDonorsLoading } = useCollection<Donor>(donorsRef);
 
-  const donationsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
+  const donationsRef = useMemoFirebase(() => (firestore && user) ? collection(firestore, 'donations') : null, [firestore, user]);
   const { data: allDonations } = useCollection<Donation>(donationsRef);
 
   const unlinkedDonationsCount = useMemo(() => {
