@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useFirestore, useMemoFirebase, useCollection, collection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import type { Donor, BankDetail, Donation, DonationCategory } from '@/lib/types';
+import type { Donor, BankDetail, Donation } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -44,12 +44,6 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubTrigger,
-  DropdownMenuPortal,
-  DropdownMenuSubContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { deleteDonorAction, createDonorAction } from './actions';
@@ -105,6 +99,9 @@ export default function DonorRegistryPage() {
   const [bankDetails, setBankDetails] = useState<BankDetail[]>([{ bankName: '', accountNumber: '', ifscCode: '' }]);
   const [upiIds, setUpiIds] = useState<string[]>(['']);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+
   const donorsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donors') : null, [firestore]);
   const { data: donors, isLoading: areDonorsLoading } = useCollection<Donor>(donorsRef);
 
@@ -125,7 +122,6 @@ export default function DonorRegistryPage() {
     if (!donors) return [];
     
     return donors.filter(d => {
-        // 1. Unified Search (Name, Phone, Email, UPI, Bank Acc)
         const lowerSearch = searchTerm.toLowerCase();
         const matchesSearch = !searchTerm || (
             (d.name || '').toLowerCase().includes(lowerSearch) || 
@@ -135,10 +131,8 @@ export default function DonorRegistryPage() {
             (d.accountNumbers || []).some(a => a.includes(searchTerm))
         );
 
-        // 2. Status Filter
         const matchesStatus = statusFilter === 'All' || d.status === statusFilter;
 
-        // 3. Designation Filter (Find donors who have given specific categories)
         let matchesDesignation = true;
         if (designationFilter !== 'All' && allDonations) {
             const donorDonations = allDonations.filter(don => don.donorId === d.id);
@@ -147,7 +141,6 @@ export default function DonorRegistryPage() {
             );
         }
 
-        // 4. Date Filter (By profile creation)
         let matchesDate = true;
         if (dateRange?.from && d.createdAt) {
             const createdAtDate = (d.createdAt as any).toDate ? (d.createdAt as any).toDate() : new Date(d.createdAt as any);
