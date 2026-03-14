@@ -1,4 +1,3 @@
-
 'use client';
 import { useMemo } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
@@ -11,7 +10,7 @@ const RECENT_UPDATE_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 
 export function usePublicData() {
   const firestore = useFirestore();
-  const { user } = useSession();
+  const { user, isLoading: isSessionLoading } = useSession();
 
   // Public items do NOT require a 'user' session
   const campaignsCollectionRef = useMemoFirebase(() => {
@@ -32,17 +31,18 @@ export function usePublicData() {
     );
   }, [firestore]);
   
-  // We only fetch 'Verified' donations. Most security rules allow this for public progress tracking.
+  // We gate the donations fetch by the session loading state.
+  // This ensures we only attempt the query once the auth context is determined.
   const donationsCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
+    if (!firestore || isSessionLoading) return null;
     return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
-  }, [firestore]);
+  }, [firestore, isSessionLoading]);
 
   const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
   const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
 
-  const isLoading = areCampaignsLoading || areLeadsLoading || areDonationsLoading;
+  const isLoading = areCampaignsLoading || areLeadsLoading || areDonationsLoading || isSessionLoading;
 
   const isRecentlyUpdated = (updatedAt: any) => {
     if (!updatedAt) return false;

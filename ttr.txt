@@ -1,13 +1,48 @@
-src/app/donors/page.tsx(244,180): error TS2304: Cannot find name 'Edit'.
-src/app/donors/page.tsx(316,98): error TS2304: Cannot find name 'Save'.
-src/app/settings/guidance/page.tsx(75,14): error TS2552: Cannot find name 'Alert'. Did you mean 'alert'?
-src/app/settings/guidance/page.tsx(77,18): error TS2304: Cannot find name 'AlertTitle'.
-src/app/settings/guidance/page.tsx(77,66): error TS2304: Cannot find name 'AlertTitle'.
-src/app/settings/guidance/page.tsx(78,18): error TS2552: Cannot find name 'AlertDescription'. Did you mean 'CardDescription'?
-src/app/settings/guidance/page.tsx(80,19): error TS2552: Cannot find name 'AlertDescription'. Did you mean 'CardDescription'?
-src/app/settings/guidance/page.tsx(81,15): error TS2552: Cannot find name 'Alert'. Did you mean 'alert'?
-src/app/settings/guidance/page.tsx(167,26): error TS2304: Cannot find name 'CardFooter'.
-src/app/settings/guidance/page.tsx(170,76): error TS2304: Cannot find name 'ArrowLeft'.
-src/app/settings/guidance/page.tsx(172,27): error TS2304: Cannot find name 'CardFooter'.
-src/components/donation-form.tsx(378,50): error TS2304: Cannot find name 'Badge'.
-src/components/donation-form.tsx(378,169): error TS2304: Cannot find name 'Badge'.
+src/app/analytics/page.tsx(5,33): error TS2305: Module '"@/firebase"' has no exported member 'DocumentData'.
+src/app/analytics/page.tsx(5,47): error TS2305: Module '"@/firebase"' has no exported member 'QueryDocumentSnapshot'.
+src/app/beneficiaries/[beneficiaryId]/page.tsx(5,88): error TS2305: Module '"@/firebase"' has no exported member 'DocumentReference'.
+src/app/beneficiaries/[beneficiaryId]/page.tsx(91,63): error TS2339: Property 'forceRefetch' does not exist on type 'UseDocResult<Beneficiary>'.
+src/app/campaign-members/[campaignId]/beneficiaries/page.tsx(16,10): error TS2305: Module '"@/firebase"' has no exported member 'DocumentReference'.
+src/app/campaign-members/[campaignId]/page.tsx(15,15): error TS2305: Module '"@/firebase"' has no exported member 'SecurityRuleContext'.
+src/app/campaign-members/[campaignId]/page.tsx(86,57): error TS2339: Property 'forceRefetch' does not exist on type 'UseDocResult<Campaign>'.
+src/app/campaign-members/[campaignId]/page.tsx(92,68): error TS2339: Property 'forceRefetch' does not exist on type 'UseCollectionResult<Beneficiary>'.
+src/app/campaign-members/[campaignId]/summary/page.tsx(17,10): error TS2305: Module '"@/firebase"' has no exported member 'DocumentReference'.
+src/app/donations/page.tsx(168,108): error TS2322: Type '{ className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>'.
+src/app/donations/page.tsx(510,23): error TS2304: Cannot find name 'deleteDonationAction'.
+src/app/donations/page.tsx(583,55): error TS2339: Property 'online' does not exist on type '{ total: number; verified: number; pending: number; unlinked: number; totalAmount: number; pendingAmount: number; }'.
+src/app/donations/page.tsx(584,49): error TS2339: Property 'cash' does not exist on type '{ total: number; verified: number; pending: number; unlinked: number; totalAmount: number; pendingAmount: number; }'.
+src/app/donors/[donorId]/page.tsx(5,86): error TS2305: Module '"@/firebase"' has no exported member 'DocumentReference'.
+src/app/donors/[donorId]/page.tsx(116,51): error TS2339: Property 'forceRefetch' does not exist on type 'UseDocResult<Donor>'.
+src/app/donors/[donorId]/page.tsx(316,42): error TS2552: Cannot find name 'Skeleton'. Did you mean 'Selection'?
+src/app/donors/[donorId]/page.tsx(344,42): error TS2552: Cannot find name 'Skeleton'. Did you mean 'Selection'?
+src/app/donors/page.tsx(364,132): error TS2322: Type '{ className: string; title: string; }' is not assignable to type 'IntrinsicAttributes & Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>'.
+  Property 'title' does not exist on type 'IntrinsicAttributes & Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>'.
+src/app/leads-members/[leadId]/beneficiaries/page.tsx(17,10): error TS2305: Module '"@/firebase"' has no exported member 'DocumentReference'.
+src/app/leads-members/[leadId]/page.tsx(6,15): error TS2305: Module '"@/firebase"' has no exported member 'SecurityRuleContext'.
+src/app/leads-members/[leadId]/page.tsx(56,49): error TS2339: Property 'forceRefetch' does not exist on type 'UseDocResult<Lead>'.
+src/app/leads-members/[leadId]/page.tsx(62,68): error TS2339: Property 'forceRefetch' does not exist on type 'UseCollectionResult<Beneficiary>'.
+src/app/leads-members/[leadId]/summary/page.tsx(18,10): error TS2305: Module '"@/firebase"' has no exported member 'DocumentReference'.
+src/app/leads-public/[leadId]/summary/page.tsx(477,65): error TS2304: Cannot find name 'chartData'.
+src/app/leads-public/[leadId]/summary/page.tsx(478,524): error TS2304: Cannot find name 'chartData'.
+src/app/leads-public/[leadId]/summary/page.tsx(478,539): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+src/app/leads-public/[leadId]/summary/page.tsx(508,68): error TS2304: Cannot find name 'paymentTypeChartData'.
+src/app/leads-public/[leadId]/summary/page.tsx(509,62): error TS2304: Cannot find name 'paymentTypeChartData'.
+src/app/leads-public/[leadId]/summary/page.tsx(509,88): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+src/app/users/[userId]/page.tsx(14,5): error TS2305: Module '"@/firebase"' has no exported member 'DocumentReference'.
+src/app/users/[userId]/page.tsx(54,49): error TS2339: Property 'forceRefetch' does not exist on type 'UseDocResult<UserProfile>'.
+src/app/users/[userId]/page.tsx(171,20): error TS2304: Cannot find name 'serverTimestamp'.
+src/app/users/page.tsx(417,83): error TS2304: Cannot find name 'Loader2'.
+src/components/beneficiary-search-dialog.tsx(7,89): error TS2305: Module '"@/firebase"' has no exported member 'QueryDocumentSnapshot'.
+src/components/donation-search-dialog.tsx(7,103): error TS2305: Module '"@/firebase"' has no exported member 'QueryDocumentSnapshot'.
+src/components/donor-search-dialog.tsx(8,74): error TS2305: Module '"@/firebase"' has no exported member 'QueryDocumentSnapshot'.
+src/components/session-provider.tsx(6,59): error TS2305: Module '"@/firebase"' has no exported member 'DocumentReference'.
+src/hooks/use-branding.ts(4,59): error TS2305: Module '"@/firebase"' has no exported member 'DocumentReference'.
+src/hooks/use-donation-info.ts(4,59): error TS2305: Module '"@/firebase"' has no exported member 'DocumentReference'.
+src/hooks/use-donation-info.ts(15,35): error TS2339: Property 'forceRefetch' does not exist on type 'UseDocResult<DonationInfoData>'.
+src/hooks/use-guidance.ts(2,59): error TS2305: Module '"@/firebase"' has no exported member 'DocumentReference'.
+src/hooks/use-guidance.ts(13,35): error TS2339: Property 'forceRefetch' does not exist on type 'UseDocResult<GuidanceData>'.
+src/hooks/use-guiding-principles.ts(2,59): error TS2305: Module '"@/firebase"' has no exported member 'DocumentReference'.
+src/hooks/use-guiding-principles.ts(13,35): error TS2339: Property 'forceRefetch' does not exist on type 'UseDocResult<GuidingPrinciplesData>'.
+src/hooks/use-info-settings.ts(4,59): error TS2305: Module '"@/firebase"' has no exported member 'DocumentReference'.
+src/hooks/use-payment-settings.ts(4,59): error TS2305: Module '"@/firebase"' has no exported member 'DocumentReference'.
