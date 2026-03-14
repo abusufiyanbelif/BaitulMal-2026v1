@@ -606,7 +606,7 @@ export default function LeadSummaryPage() {
                                     </div>
                                     <div className="space-y-2 font-normal text-foreground">
                                         <Label className="text-muted-foreground text-[10px] font-bold tracking-tight">Lead Description</Label>
-                                        <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-primary">{lead?.description || 'No Description Provided.'}</p>
+                                        <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{lead?.description || 'No Description Provided.'}</p>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                                         <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Purpose</p><p className="font-bold tracking-tight text-primary text-sm">{lead?.purpose} {lead?.category && `(${lead.category})`}</p></div>

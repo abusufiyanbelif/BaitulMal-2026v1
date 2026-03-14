@@ -578,7 +578,7 @@ export default function CampaignSummaryPage() {
                                 </div>
                                 <div className="space-y-2 font-normal text-foreground">
                                     <Label className="text-muted-foreground text-[10px] font-bold tracking-tight">Campaign Description</Label>
-                                    <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed">{campaign?.description || 'No description provided.'}</p>
+                                    <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{campaign?.description || 'No description provided.'}</p>
                                 </div>
                             </>
                         )}

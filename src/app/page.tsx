@@ -111,7 +111,7 @@ export default function Home() {
                     <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter text-primary max-w-5xl mx-auto drop-shadow-sm leading-tight">
                         {heroTitle}
                     </h1>
-                    <p className="mt-6 max-w-3xl mx-auto text-lg text-primary font-normal leading-relaxed opacity-80">
+                    <p className="mt-6 max-w-3xl mx-auto text-lg text-muted-foreground font-normal leading-relaxed">
                         {heroDescription}
                     </p>
                     <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">

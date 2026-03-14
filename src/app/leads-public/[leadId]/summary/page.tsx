@@ -215,7 +215,7 @@ export default function PublicLeadSummaryPage() {
         };
     }, [allDonations, lead, beneficiaries, calculatedRequirementTotal]);
 
-    const chartData = useMemo(() => {
+    const chartDataValues = useMemo(() => {
         return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ 
             name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` 
         })) : [];
@@ -287,7 +287,7 @@ export default function PublicLeadSummaryPage() {
                     <CardContent className="space-y-4 pt-6 text-foreground font-normal">
                         <div className="space-y-2">
                             <Label className="text-muted-foreground text-[10px] font-bold tracking-tight">Description</Label>
-                            <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-primary">{lead.description || 'No Description Provided.'}</p>
+                            <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{lead.description || 'No Description Provided.'}</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 text-primary">
                             <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Required Amount</p><p className="mt-1 text-lg font-bold text-primary font-mono">₹{(lead.requiredAmount ?? 0).toLocaleString('en-IN')}</p></div>
@@ -489,8 +489,8 @@ export default function PublicLeadSummaryPage() {
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
                                             <ResponsiveContainer width="100%" height="100%">
-                                                <BarChart data={chartData} layout="vertical" margin={{ right: 20 }}>
-                                                    <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartData.map((entry: any) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
+                                                <BarChart data={chartDataValues} layout="vertical" margin={{ right: 20 }}>
+                                                    <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartDataValues.map((entry: any) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
                                                 </BarChart>
                                             </ResponsiveContainer>
                                         </ChartContainer>

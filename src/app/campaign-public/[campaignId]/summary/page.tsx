@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -302,7 +301,7 @@ export default function PublicCampaignSummaryPage() {
                     <CardContent className="space-y-4 pt-6 text-foreground font-normal">
                         <div className="space-y-2 text-primary">
                             <Label className="text-muted-foreground text-[10px] font-bold tracking-tight">Description</Label>
-                            <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed">{campaign.description || 'No description provided.'}</p>
+                            <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{campaign.description || 'No description provided.'}</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 text-primary">
                             <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Fundraising Goal</p><p className="mt-1 text-lg font-bold text-primary font-mono">₹{(fundingData?.targetAmount ?? 0).toLocaleString('en-IN')}</p></div>

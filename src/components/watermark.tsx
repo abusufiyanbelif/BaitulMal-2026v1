@@ -1,13 +1,23 @@
 'use client';
 import { useBranding } from '@/hooks/use-branding';
 import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
 
 /**
- * Watermark - Subtle background branding that "blooms" into view.
+ * Watermark - Subtle background branding that "blooms" into view on page load.
+ * Features synchronized scaling and opacity transitions for a premium feel.
  */
 export function Watermark() {
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
+    const [isLoaded, setIsLoaded] = useState(false);
     
+    useEffect(() => {
+        if (!isBrandingLoading && brandingSettings?.logoUrl) {
+            const timer = setTimeout(() => setIsLoaded(true), 100);
+            return () => clearTimeout(timer);
+        }
+    }, [isBrandingLoading, brandingSettings?.logoUrl]);
+
     const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
 
     if (!validLogoUrl && !isBrandingLoading) {
@@ -22,7 +32,7 @@ export function Watermark() {
                     alt="Institutional Branding"
                     className={cn(
                         "w-auto h-auto max-w-[85vw] max-h-[85vh] object-contain transition-all duration-1000 ease-in-out pointer-events-none",
-                        validLogoUrl ? "opacity-100 scale-100" : "opacity-0 scale-95"
+                        isLoaded ? "opacity-[0.08] scale-100" : "opacity-0 scale-95 translate-y-4"
                     )}
                 />
             )}
