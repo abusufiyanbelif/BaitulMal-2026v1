@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -199,6 +200,7 @@ export default function PublicCampaignSummaryPage() {
         const zakatGiven = beneficiaries.filter(b => b.isEligibleForZakat && b.zakatAllocation && b.status === 'Given').reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
         const zakatPending = zakatAllocated - zakatGiven;
         const zakatAvailableForGoal = Math.max(0, zakatForGoalAmount - zakatAllocated);
+        const totalZakatBalance = (amountsByCategory.Zakat || 0) - zakatAllocated;
 
         const totalCollectedForGoal = Object.entries(amountsByCategory)
             .filter(([category]) => campaign.allowedDonationTypes?.includes(category as DonationCategory))
@@ -207,7 +209,6 @@ export default function PublicCampaignSummaryPage() {
                 return sum + amount;
             }, 0);
 
-        // UI Target Goal should match calculated requirement if available
         const targetAmount = calculatedRequirementTotal > 0 ? calculatedRequirementTotal : (campaign.targetAmount || 0);
 
         return { 
@@ -217,7 +218,7 @@ export default function PublicCampaignSummaryPage() {
             totalBeneficiaries: beneficiaries.length, 
             beneficiariesGiven: beneficiaries.filter(b => b.status === 'Given').length, 
             beneficiariesPending: beneficiaries.length - beneficiaries.filter(b => b.status === 'Given').length, 
-            zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, amountsByCategory, paymentTypeStats,
+            zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, totalZakatBalance, amountsByCategory, paymentTypeStats,
             grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
         };
     }, [allDonations, campaign, beneficiaries, calculatedRequirementTotal]);
@@ -457,23 +458,39 @@ export default function PublicCampaignSummaryPage() {
                             )}
 
                             {isVisible('zakat_utilization') && (
-                                <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight">Zakat Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking Of Zakat Funds Collected Across All Initiatives.</CardDescription></CardHeader>
-                                    <CardContent className="space-y-3 pt-6 font-bold text-primary">
-                                        <ScrollArea className="w-full">
-                                            <div className="space-y-3">
-                                                <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Total Zakat Collected</span><span className="font-bold font-mono">₹{(fundingData?.amountsByCategory.Zakat || 0).toLocaleString('en-IN')}</span></div>
-                                                <Separator className="bg-primary/10" />
-                                                <div className="pl-4 border-l-2 border-dashed border-primary/20 space-y-2 py-2">
-                                                    <div className="flex justify-between items-center text-sm transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Allocated As Cash-In-Hand</span><span className="font-bold font-mono">₹{fundingData?.zakatAllocated.toLocaleString('en-IN')}</span></div>
-                                                    <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Given</span><span className="font-mono text-primary font-bold">₹{fundingData?.zakatGiven.toLocaleString('en-IN')}</span></div>
-                                                    <div className="flex justify-between items-center text-xs pl-4 transition-all hover:bg-primary/5 px-2 rounded"><span className="text-muted-foreground font-normal tracking-tighter whitespace-nowrap">Pending</span><span className="font-mono text-primary font-bold">₹{fundingData?.zakatPending.toLocaleString('en-IN')}</span></div>
-                                                </div>
-                                                <Separator className="bg-primary/10" />
-                                                <div className="flex justify-between items-center text-base text-primary font-bold transition-all hover:bg-primary/5 px-2 rounded"><span className="whitespace-nowrap">Zakat Balance For Goal</span><span className="text-primary font-mono font-bold">₹{fundingData?.zakatAvailableForGoal.toLocaleString('en-IN')}</span></div>
+                                <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-lg">
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Zakat Fund Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking of designated Zakat resources.</CardDescription></CardHeader>
+                                    <CardContent className="space-y-3 pt-6 font-normal text-foreground">
+                                        <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded">
+                                            <span className="text-muted-foreground tracking-tight font-normal">Total Zakat Collected</span>
+                                            <span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span>
+                                        </div>
+                                        <Separator className="bg-primary/10" />
+                                        <div className="pl-4 border-l-2 border-dashed border-primary/20 space-y-2 py-2 font-bold">
+                                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
+                                                <span className="text-muted-foreground tracking-tight font-normal">Allocated As Assistance</span>
+                                                <span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span>
                                             </div>
-                                            <ScrollBar orientation="horizontal" className="hidden" />
-                                        </ScrollArea>
+                                            <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
+                                                <span className="font-normal opacity-60">Disbursed (Given)</span>
+                                                <span className="font-mono text-primary font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
+                                                <span className="font-normal opacity-60">Reserved (Verified)</span>
+                                                <span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span>
+                                            </div>
+                                        </div>
+                                        <Separator className="bg-primary/10" />
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded">
+                                                <span className="text-muted-foreground tracking-tight font-normal">Net Registry Balance</span>
+                                                <span className="font-bold text-primary font-mono">₹{fundingData.totalZakatBalance.toLocaleString('en-IN')}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-[10px] font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded italic opacity-60">
+                                                <span>Contribution to Goal</span>
+                                                <span className="font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span>
+                                            </div>
+                                        </div>
                                     </CardContent>
                                 </Card>
                             )}
