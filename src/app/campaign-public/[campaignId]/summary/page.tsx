@@ -105,8 +105,6 @@ export default function PublicCampaignSummaryPage() {
 
     const campaignDocRef = useMemoFirebase(() => (firestore && campaignId) ? doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign> : null, [firestore, campaignId]);
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && campaignId) ? collection(firestore, `campaigns/${campaignId}/beneficiaries`) : null, [firestore, campaignId]);
-    
-    // Explicitly filter for Verified status to satisfy security rules for guest users
     const allDonationsCollectionRef = useMemoFirebase(() => (firestore) ? query(collection(firestore, 'donations'), where('status', '==', 'Verified')) : null, [firestore]);
 
     const { data: campaign, isLoading: isCampaignLoading } = useDoc<Campaign>(campaignDocRef);

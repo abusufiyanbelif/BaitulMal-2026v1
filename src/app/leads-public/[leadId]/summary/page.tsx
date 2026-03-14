@@ -107,7 +107,6 @@ export default function PublicLeadSummaryPage() {
     const leadDocRef = useMemoFirebase(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
     
-    // Explicitly filter for Verified status to satisfy security rules for guest users
     const allDonationsCollectionRef = useMemoFirebase(() => (firestore) ? query(collection(firestore, 'donations'), where('status', '==', 'Verified')) : null, [firestore]);
 
     const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
