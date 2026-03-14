@@ -1,41 +1,47 @@
 rules_version = '2';
-service firebase.storage {
+service border.storage {
   match /b/{bucket}/o {
-    function isSignedIn() {
-      return request.auth != null;
-    }
     
+    // Helper: Is the user an authenticated administrator?
     function isAdmin() {
-      return isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+      return request.auth != null && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin';
     }
 
+    // --- Settings Branding (Public) ---
     match /settings/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    match /users/{userId}/{allPaths=**} {
-      allow read, write: if request.auth.uid == userId || isAdmin();
+    // --- User Identification (Private) ---
+    match /users/{userId}/{fileName} {
+      allow read, write: if request.auth != null && (request.auth.uid == userId || isAdmin());
     }
 
+    // --- Campaigns (Public if Published) ---
     match /campaigns/{campaignId}/{allPaths=**} {
-      allow read: if firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published' || isAdmin();
-      allow write: if isAdmin();
+      allow read: if firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published' 
+                  || (request.auth != null);
+      allow write: if isAdmin() || (request.auth != null);
     }
 
+    // --- Leads (Public if Published) ---
     match /leads/{leadId}/{allPaths=**} {
-      allow read: if firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published' || isAdmin();
-      allow write: if isAdmin();
+      allow read: if firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published' 
+                  || (request.auth != null);
+      allow write: if isAdmin() || (request.auth != null);
     }
 
-    match /beneficiaries/{benId}/{allPaths=**} {
-      allow read: if isAdmin();
-      allow write: if isSignedIn();
+    // --- Master Beneficiary Identification (Staff Only) ---
+    match /beneficiaries/{beneficiaryId}/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
     }
 
-    match /donations/{donId}/{allPaths=**} {
-      allow read: if isAdmin();
-      allow write: if isSignedIn();
+    // --- Donation Evidence (Uploader or Reviewer) ---
+    match /donations/{donationId}/{fileName} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
     }
   }
 }

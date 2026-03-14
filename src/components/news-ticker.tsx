@@ -23,9 +23,7 @@ interface NewsTickerProps {
 
 /**
  * Sequential News Ticker with theme-managed variant colors.
- * - Active: Institutional Primary
- * - Donation: Financial Blue (Chart 2)
- * - Completed: Neutral Muted
+ * Title Case enforced for all status messaging.
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -77,7 +75,6 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
   const isActive = variant === 'active';
   const isPriority = currentItem?.isUrgent || currentItem?.isHigh;
 
-  // Theme-managed variant styles
   const styleConfig = {
     active: {
       container: "border-primary/10",

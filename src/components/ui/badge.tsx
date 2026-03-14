@@ -53,7 +53,11 @@ function Badge({ className, variant, children, ...props }: BadgeProps) {
       const content = children.trim();
       displayChildren = content
         .split(' ')
-        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+        .map(word => {
+            // Keep specific acronyms uppercase
+            if (['upi', 'pan', 'ifsc', 'id', 'pwa'].includes(word.toLowerCase())) return word.toUpperCase();
+            return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+        })
         .join(' ');
   }
 

@@ -36,7 +36,7 @@ import { Label } from '@/components/ui/label';
 
 /**
  * App Footer - Fully reactive to logo settings.
- * Removed background boxes to allow pure scaling.
+ * Clean Title Case typography enforced.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
@@ -54,7 +54,7 @@ export function AppFooter() {
     navigator.clipboard.writeText(text);
     toast({
       title: `${label} Copied`,
-      description: "The Information Has Been Copied To Your Clipboard.",
+      description: "Information Has Been Copied To Clipboard.",
       variant: "success",
     });
   };
@@ -68,7 +68,7 @@ export function AppFooter() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Organization-Qr-${paymentSettings?.upiId || 'payment'}.png`;
+      link.download = `Organization-Qr.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -87,7 +87,7 @@ export function AppFooter() {
             <Link href="/" className="flex items-center gap-3 transition-opacity hover:opacity-80">
               {validLogoUrl && (
                 <div 
-                    className="relative overflow-hidden bg-transparent border-0 shadow-none p-0"
+                    className="relative overflow-hidden bg-transparent border-0"
                     style={{ 
                         width: brandingSettings?.logoWidth ? `${brandingSettings.logoWidth}px` : '48px',
                         height: brandingSettings?.logoHeight ? `${brandingSettings.logoHeight}px` : '48px'
@@ -103,7 +103,7 @@ export function AppFooter() {
                 </div>
               )}
               <span className="text-2xl font-bold tracking-tighter text-primary">
-                {brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}
+                {brandingSettings?.name || 'Baitulmal Samajik Sanstha'}
               </span>
             </Link>
             <div className="space-y-3 text-sm text-muted-foreground leading-relaxed font-normal">
@@ -129,7 +129,7 @@ export function AppFooter() {
           </div>
 
           <div className="space-y-6 md:pl-10">
-            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight uppercase tracking-widest">
+            <h3 className="text-[10px] font-bold text-primary/40 tracking-widest uppercase">
               Resources & Info
             </h3>
             <nav className="flex flex-col gap-4">
@@ -149,7 +149,7 @@ export function AppFooter() {
           </div>
 
           <div className="flex flex-col md:items-end gap-6">
-            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight uppercase tracking-widest">
+            <h3 className="text-[10px] font-bold text-primary/40 tracking-widest uppercase">
               Support Us
             </h3>
             <div className="w-full sm:w-auto">
@@ -184,7 +184,7 @@ export function AppFooter() {
             )}
           </div>
           <p className="text-center sm:text-right font-normal text-muted-foreground opacity-80">
-            {paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur'}. All Rights Reserved.`}
+            {paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'}. All Rights Reserved.`}
           </p>
         </div>
       </div>
@@ -256,10 +256,6 @@ export function AppFooter() {
                             <div className="space-y-1">
                                 <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Account Name</Label>
                                 <p className="text-sm font-bold text-primary">{paymentSettings?.bankAccountName || 'N/A'}</p>
-                            </div>
-                            <div className="space-y-1">
-                                <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Bank Details</Label>
-                                <p className="text-sm font-bold text-primary">{paymentSettings?.bankAccountNumber ? 'Available Upon Request' : 'N/A'}</p>
                             </div>
                             <div className="space-y-1">
                                 <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Account Number</Label>
