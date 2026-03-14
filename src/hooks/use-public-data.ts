@@ -31,8 +31,11 @@ export function usePublicData() {
     );
   }, [firestore]);
   
-  // We gate the donations fetch by the session loading state.
-  // This ensures we only attempt the query once the auth context is determined.
+  /**
+   * We gate the donations fetch by the session loading state.
+   * This ensures we only attempt the query once the auth context is determined.
+   * NOTE: For guests, the query will fire if the rules allow public 'list' on Verified docs.
+   */
   const donationsCollectionRef = useMemoFirebase(() => {
     if (!firestore || isSessionLoading) return null;
     return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));

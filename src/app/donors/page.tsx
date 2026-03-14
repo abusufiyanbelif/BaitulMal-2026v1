@@ -291,7 +291,7 @@ export default function DonorRegistryPage() {
                     <Input 
                         placeholder="Search Name, Phone, UPI, Acc..." 
                         value={searchTerm} 
-                        onChange={(e) => setSearchTerm(e.target.value)} 
+                        onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
                         className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary rounded-[12px] bg-white" 
                     />
                 </div>
