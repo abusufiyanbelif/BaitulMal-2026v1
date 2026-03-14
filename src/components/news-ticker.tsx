@@ -117,7 +117,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
         ) : (
           <Megaphone className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
         )}
-        <span className="text-[9px] sm:text-xs font-bold tracking-tight whitespace-nowrap uppercase">
+        <span className="text-[9px] sm:text-xs font-bold tracking-tight whitespace-nowrap">
           {label}
         </span>
       </div>

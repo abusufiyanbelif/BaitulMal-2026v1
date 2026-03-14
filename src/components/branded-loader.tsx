@@ -57,7 +57,7 @@ export function BrandedLoader({ message = "Synchronizing...", progress }: { mess
             </p>
             {progress !== undefined && (
               <p className="text-[10px] font-black text-primary/40 tracking-widest animate-pulse">
-                {Math.round(progress)}% SECURED
+                {Math.round(progress)}% Secured
               </p>
             )}
           </div>

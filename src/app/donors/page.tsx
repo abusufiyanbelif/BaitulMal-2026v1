@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useMemo } from 'react';
@@ -69,7 +68,7 @@ function StatCard({ title, count, description, icon: Icon, delay }: { title: str
         <Card className="flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md" style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">{count}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">
@@ -303,12 +302,12 @@ export default function DonorRegistryPage() {
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-primary/5">
-                            <TableHead className="w-[60px] pl-4 text-[10px] uppercase font-bold tracking-tight">#</TableHead>
-                            <TableHead className="text-[10px] uppercase font-bold tracking-tight">Donor Identity</TableHead>
-                            <TableHead className="text-[10px] uppercase font-bold tracking-tight">Primary Contact</TableHead>
-                            <TableHead className="text-[10px] uppercase font-bold tracking-tight">Financial Handles</TableHead>
-                            <TableHead className="text-center text-[10px] uppercase font-bold tracking-tight">Registry Status</TableHead>
-                            <TableHead className="text-right pr-6 text-[10px] uppercase font-bold tracking-tight">Actions</TableHead>
+                            <TableHead className="w-[60px] pl-4 text-[10px] font-bold tracking-tight">#</TableHead>
+                            <TableHead className="text-[10px] font-bold tracking-tight">Donor Identity</TableHead>
+                            <TableHead className="text-[10px] font-bold tracking-tight">Primary Contact</TableHead>
+                            <TableHead className="text-[10px] font-bold tracking-tight">Financial Handles</TableHead>
+                            <TableHead className="text-center text-[10px] font-bold tracking-tight">Registry Status</TableHead>
+                            <TableHead className="text-right pr-6 text-[10px] font-bold tracking-tight">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -353,7 +352,7 @@ export default function DonorRegistryPage() {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between border-t pt-4">
-          <p className="text-[10px] font-bold text-muted-foreground uppercase">Page {currentPage} Of {totalPages}</p>
+          <p className="text-[10px] font-bold text-muted-foreground">Page {currentPage} Of {totalPages}</p>
           <div className="flex gap-2">
             <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1}>Previous</Button>
             <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages}>Next</Button>
@@ -368,12 +367,12 @@ export default function DonorRegistryPage() {
                 <ScrollArea className="flex-1">
                     <div className="p-6 space-y-6">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2"><Label className="font-bold text-xs uppercase">Full Name *</Label><Input name="name" required className="font-bold h-10" /></div>
-                            <div className="space-y-2"><Label className="font-bold text-xs uppercase">Phone Number *</Label><Input name="phone" required className="font-mono h-10" /></div>
+                            <div className="space-y-2"><Label className="font-bold text-xs">Full Name *</Label><Input name="name" required className="font-bold h-10" /></div>
+                            <div className="space-y-2"><Label className="font-bold text-xs">Phone Number *</Label><Input name="phone" required className="font-mono h-10" /></div>
                         </div>
-                        <div className="space-y-2"><Label className="font-bold text-xs uppercase">Email</Label><Input name="email" type="email" className="font-normal h-10" /></div>
-                        <div className="space-y-2"><Label className="font-bold text-xs uppercase">Address</Label><Input name="address" className="font-normal h-10" /></div>
-                        <div className="space-y-2"><Label className="font-bold text-xs uppercase">Notes</Label><Textarea name="notes" rows={3} className="font-normal" /></div>
+                        <div className="space-y-2"><Label className="font-bold text-xs">Email</Label><Input name="email" type="email" className="font-normal h-10" /></div>
+                        <div className="space-y-2"><Label className="font-bold text-xs">Address</Label><Input name="address" className="font-normal h-10" /></div>
+                        <div className="space-y-2"><Label className="font-bold text-xs">Notes</Label><Textarea name="notes" rows={3} className="font-normal" /></div>
                     </div>
                     <ScrollBar orientation="vertical" />
                 </ScrollArea>

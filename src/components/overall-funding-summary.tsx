@@ -37,13 +37,13 @@ export function OverallFundingSummary() {
   }
 
   return (
-    <Card className="animate-fade-in-up border-primary/20" style={{ animationDelay: '700ms', animationFillMode: 'backwards' }}>
+    <Card className="animate-fade-in-up border-primary/20 bg-white shadow-md transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '700ms', animationFillMode: 'backwards' }}>
       <CardHeader>
         <CardTitle className="flex items-center gap-2 font-bold text-primary">
             <Target className="h-6 w-6 text-primary" />
             Overall Fundraising Progress
         </CardTitle>
-        <CardDescription className="font-normal text-primary/70">A Real-Time Look At Our Total Collected Donations Against Our Published And Verified Goals.</CardDescription>
+        <CardDescription className="font-normal text-primary/70">A real-time look at our total collected donations against our published and verified goals.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">

@@ -205,7 +205,7 @@ export default function BeneficiariesPage() {
   const totalPages = Math.ceil(filteredAndSortedBeneficiaries.length / itemsPerPage);
   const paginatedBeneficiaries = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
-    return filteredAndSortedBeneficiaries.slice(start, start + itemsPerPage);
+    return filteredAndSortedDonations.slice(start, start + itemsPerPage);
   }, [filteredAndSortedBeneficiaries, currentPage]);
 
   const handleSort = (key: string) => {

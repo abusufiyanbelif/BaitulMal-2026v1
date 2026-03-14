@@ -656,7 +656,7 @@ export default function DonationsPage() {
                         <Select value={identityFilter} onValueChange={v => { setIdentityFilter(v); setCurrentPage(1); }}>
                             <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-primary/[0.02] font-normal shrink-0"><SelectValue placeholder="Identity Linkage"/></SelectTrigger>
                             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                                <SelectItem value="All" className="font-normal">All Identifies</SelectItem>
+                                <SelectItem value="All" className="font-normal">All Identities</SelectItem>
                                 <SelectItem value="Linked" className="font-normal text-primary">Fully Linked</SelectItem>
                                 <SelectItem value="Unlinked" className="font-normal text-amber-600 font-bold">Needs Resolution</SelectItem>
                             </SelectContent>
