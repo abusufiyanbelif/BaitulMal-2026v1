@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-
 import { cn } from "@/lib/utils"
 
 const Table = React.forwardRef<
@@ -60,7 +59,7 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b transition-colors hover:bg-[hsl(var(--table-row-hover))] data-[state=selected]:bg-muted",
+      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
       className
     )}
     {...props}
@@ -75,7 +74,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={cn(
-      "px-3 py-3 text-left align-middle font-bold text-[hsl(var(--table-header-fg))] bg-[hsl(var(--table-header-bg))] [&:has([role=checkbox])]:pr-0 text-[10px] tracking-tight",
+      "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}
@@ -89,7 +88,7 @@ const TableCell = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <td
     ref={ref}
-    className={cn("px-3 py-3 align-middle bg-white [&:has([role=checkbox])]:pr-0", className)}
+    className={cn("p-4 align-middle [&:has([role=checkbox])]:pr-0", className)}
     {...props}
   />
 ))
@@ -112,8 +111,8 @@ export {
   TableHeader,
   TableBody,
   TableFooter,
-  TableHead,
   TableRow,
+  TableHead,
   TableCell,
   TableCaption,
 }
