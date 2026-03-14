@@ -12,7 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, ShieldAlert, UserCheck, UserX, Database, ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, ShieldAlert, UserCheck, UserX, Database, ArrowUp, ArrowDown, RefreshCw, ShieldCheck } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,7 +39,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { deleteUserAction } from './actions';
+import { deleteUserAction, mirrorIndividualUserToDonorAction } from './actions';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn, getNestedValue } from '@/lib/utils';
@@ -75,6 +75,7 @@ export default function UsersPage() {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [isMirroring, setIsMirroring] = useState<string | null>(null);
 
   const usersCollectionRef = useMemoFirebase(() => {
     if (!firestore || !userProfile || userProfile.role !== 'Admin') {
@@ -101,6 +102,18 @@ export default function UsersPage() {
   const handleEdit = (user: UserProfile) => {
     if (!canUpdate) return;
     router.push(`/users/${user.id}`);
+  };
+
+  const handleMirrorToDonor = async (userId: string) => {
+    if (!userProfile) return;
+    setIsMirroring(userId);
+    const res = await mirrorIndividualUserToDonorAction(userId, userProfile.id, userProfile.name);
+    if (res.success) {
+        toast({ title: "Mirroring Complete", description: res.message, variant: "success" });
+    } else {
+        toast({ title: "Mirroring Failed", description: res.message, variant: "destructive" });
+    }
+    setIsMirroring(null);
   };
 
   const handleDeleteClick = (id: string) => {
@@ -272,9 +285,9 @@ export default function UsersPage() {
   }
 
   return (
-    <main className="container mx-auto p-4 md:p-8 text-primary">
+    <main className="container mx-auto p-4 md:p-8 text-primary font-normal">
       <div className="mb-4">
-          <Button variant="outline" asChild className="text-primary border-primary/20">
+          <Button variant="outline" asChild className="text-primary border-primary/20 font-bold transition-transform active:scale-95">
               <Link href="/dashboard">
                   <ArrowLeft className="mr-2 h-4 w-4" />
                   Back To Dashboard
@@ -292,25 +305,25 @@ export default function UsersPage() {
                         placeholder="Search Name, Email, Phone..."
                         value={searchTerm}
                         onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                        className="max-w-sm font-normal text-primary"
+                        className="max-w-sm font-normal text-primary h-9 text-xs"
                     />
                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-auto md:w-[150px] text-primary font-normal">
+                        <SelectTrigger className="w-auto md:w-[150px] text-primary font-normal h-9 text-xs">
                             <SelectValue placeholder="All Statuses" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="rounded-[12px] shadow-dropdown">
                             <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
                             <SelectItem value="Active" className="font-normal">Active</SelectItem>
                             <SelectItem value="Inactive" className="font-normal">Inactive</SelectItem>
                         </SelectContent>
                     </Select>
                     <Select value={roleFilter} onValueChange={(value) => { setRoleFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-auto md:w-[150px] text-primary font-normal">
+                        <SelectTrigger className="w-auto md:w-[150px] text-primary font-normal h-9 text-xs">
                             <SelectValue placeholder="All Roles" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="rounded-[12px] shadow-dropdown">
                             <SelectItem value="All" className="font-normal">All Roles</SelectItem>
-                            <SelectItem value="Admin" className="font-normal">Admin</SelectItem>
+                            <SelectItem value="Admin" className="font-normal text-primary">Admin</SelectItem>
                             <SelectItem value="User" className="font-normal">User</SelectItem>
                         </SelectContent>
                     </Select>
@@ -318,7 +331,7 @@ export default function UsersPage() {
             </div>
             <div className="flex items-center gap-2">
                 {userProfile?.role === 'Admin' && (
-                      <Button variant="outline" asChild className="text-primary border-primary/20 font-bold">
+                      <Button variant="outline" asChild className="text-primary border-primary/20 font-bold h-9">
                         <Link href="/seed">
                             <Database className="mr-2 h-4 w-4" />
                             Database Hub
@@ -326,7 +339,7 @@ export default function UsersPage() {
                     </Button>
                 )}
                 {canCreate && (
-                    <Button onClick={handleAdd} disabled={areUsersLoading} className="font-bold text-white shadow-md">
+                    <Button onClick={handleAdd} disabled={areUsersLoading} className="font-bold text-white shadow-md h-9">
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Add New User
                     </Button>
@@ -339,7 +352,7 @@ export default function UsersPage() {
               <div className="min-w-[1000px]">
                   <Table>
                       <TableHeader>
-                          <TableRow>
+                          <TableRow className="bg-[hsl(var(--table-header-bg))]">
                               <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">#</SortableHeader>
                               <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Full Name</SortableHeader>
                               <SortableHeader sortKey="email" sortConfig={sortConfig} handleSort={handleSort}>Email Address</SortableHeader>
@@ -348,7 +361,7 @@ export default function UsersPage() {
                               <SortableHeader sortKey="userKey" sortConfig={sortConfig} handleSort={handleSort}>User Key</SortableHeader>
                               <SortableHeader sortKey="role" sortConfig={sortConfig} handleSort={handleSort}>Access Role</SortableHeader>
                               <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Account Status</SortableHeader>
-                                {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right">Actions</TableHead>}
+                                {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right pr-4">Actions</TableHead>}
                           </TableRow>
                       </TableHeader>
                       <TableBody className="font-normal text-primary">
@@ -382,37 +395,52 @@ export default function UsersPage() {
                                   <Badge variant={user.status === 'Active' ? 'active' : 'outline'} className="text-[10px] font-bold">{user.status}</Badge>
                                   </TableCell>
                                   {(canUpdate || canDelete) && (
-                                  <TableCell className="text-right pr-4">
+                                  <TableCell className="text-right pr-4" onClick={e => e.stopPropagation()}>
                                       <DropdownMenu>
-                                          <DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
-                                              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary">
+                                          <DropdownMenuTrigger asChild>
+                                              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90">
                                                   <MoreHorizontal className="h-4 w-4" />
                                               </Button>
                                           </DropdownMenuTrigger>
                                           <DropdownMenuContent align="end" className="rounded-[12px] border-border shadow-dropdown">
+                                              <DropdownMenuItem onClick={() => handleEdit(user)} className="text-primary font-normal cursor-pointer">
+                                                  <Edit className="mr-2 h-4 w-4 opacity-60" />
+                                                  View / Edit Profile
+                                              </DropdownMenuItem>
+                                              
                                               {canUpdate && (
-                                                  <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleEdit(user)}} className="text-primary font-normal">
-                                                      <Edit className="mr-2 h-4 w-4" />
-                                                      View Or Edit Profile
+                                                  <DropdownMenuItem 
+                                                    onClick={() => handleMirrorToDonor(user.id)} 
+                                                    disabled={isMirroring === user.id}
+                                                    className="text-primary font-normal cursor-pointer"
+                                                  >
+                                                      {isMirroring === user.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ShieldCheck className="mr-2 h-4 w-4 opacity-60"/>}
+                                                      Mirror to Donor Registry
                                                   </DropdownMenuItem>
                                               )}
-                                              {canUpdate && canDelete && <DropdownMenuSeparator />}
+
+                                              {canUpdate && <DropdownMenuSeparator className="bg-primary/5" />}
+                                              
                                               {canUpdate && user.status === 'Active' ? (
-                                                  <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="font-normal text-destructive">
+                                                  <DropdownMenuItem onClick={() => handleToggleStatus(user)} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="font-normal text-destructive cursor-pointer">
                                                       <UserX className="mr-2 h-4 w-4" />
                                                       Deactivate Member
                                                   </DropdownMenuItem>
                                               ) : canUpdate ? (
-                                                  <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleToggleStatus(user)}} className="font-normal text-primary">
+                                                  <DropdownMenuItem onClick={() => handleToggleStatus(user)} className="font-normal text-primary cursor-pointer">
                                                       <UserCheck className="mr-2 h-4 w-4" />
                                                       Activate Member
                                                   </DropdownMenuItem>
                                               ) : null}
+                                              
                                               {canDelete && (
-                                                  <DropdownMenuItem onClick={(e) => {e.stopPropagation(); handleDeleteClick(user.id)}} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal">
-                                                      <Trash2 className="mr-2 h-4 w-4" />
-                                                      Permanently Delete
-                                                  </DropdownMenuItem>
+                                                  <>
+                                                    <DropdownMenuSeparator className="bg-primary/5" />
+                                                    <DropdownMenuItem onClick={() => handleDeleteClick(user.id)} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal cursor-pointer">
+                                                        <Trash2 className="mr-2 h-4 w-4" />
+                                                        Permanently Delete
+                                                    </DropdownMenuItem>
+                                                  </>
                                               )}
                                           </DropdownMenuContent>
                                       </DropdownMenu>
@@ -439,9 +467,8 @@ export default function UsersPage() {
                   Showing {paginatedUsers.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} To {Math.min(currentPage * itemsPerPage, filteredAndSortedUsers.length)} Of {filteredAndSortedUsers.length} Members
               </p>
               <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold h-8 border-primary/20 text-primary">Previous</Button>
-                  <span className="text-xs font-bold text-primary">{currentPage} / {totalPages}</span>
-                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold h-8 border-primary/20 text-primary">Next</Button>
+                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold h-8 border-primary/20 text-primary transition-transform active:scale-95">Previous</Button>
+                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold h-8 border-primary/20 text-primary transition-transform active:scale-95">Next</Button>
               </div>
             </CardFooter>
         )}

@@ -25,7 +25,7 @@ import {
     UserPlus,
     Users,
     TrendingUp,
-    Pencil,
+    Edit,
     Save,
     Plus,
     DatabaseZap,
@@ -201,7 +201,7 @@ export default function DonorRegistryPage() {
         </Button>
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div className="space-y-1">
-                <h1 className="text-3xl font-bold tracking-tight">Donor Registry</h1>
+                <h1 className="text-3xl font-bold tracking-tight text-primary">Donor Registry</h1>
                 <p className="text-sm font-medium text-muted-foreground opacity-70">Total Registered Profiles: {donors?.length || 0}</p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -302,7 +302,7 @@ export default function DonorRegistryPage() {
                                                 </DropdownMenuItem>
                                                 {canUpdate && (
                                                     <DropdownMenuItem onSelect={(e) => { e.preventDefault(); router.push(`/donors/${donor.id}?edit=true`); }} className="text-primary font-normal cursor-pointer">
-                                                        <Pencil className="mr-2 h-4 w-4 opacity-60"/> Edit Profile
+                                                        <Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Profile
                                                     </DropdownMenuItem>
                                                 )}
                                                 {canDelete && (
@@ -418,8 +418,8 @@ export default function DonorRegistryPage() {
                 </ScrollArea>
                 <DialogFooter className="px-6 py-4 bg-primary/5 border-t">
                     <div className="flex flex-col sm:flex-row gap-2 w-full justify-end">
-                        <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Discard</Button>
-                        <Button type="submit" disabled={isSubmitting} className="font-bold shadow-md transition-transform active:scale-95 px-8">
+                        <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)} className="w-full sm:w-auto font-bold border-primary/20 text-primary transition-transform active:scale-95">Discard</Button>
+                        <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto font-bold shadow-md transition-transform active:scale-95 px-8">
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                             Register Profile
                         </Button>

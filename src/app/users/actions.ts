@@ -152,7 +152,7 @@ export async function syncAllUsersToDonorsAction(adminUserId: string, adminUserN
                     createdAt: FieldValue.serverTimestamp(),
                     createdById: adminUserId,
                     createdByName: adminUserName,
-                    notes: `Institutional Member (Auto-mirrored during sync)`,
+                    notes: `Institutional Member Profile (Auto-mirrored during sync)`,
                 };
                 batch.set(donorRef, newDonor);
                 count++;
@@ -168,5 +168,48 @@ export async function syncAllUsersToDonorsAction(adminUserId: string, adminUserN
     } catch (error: any) {
         console.error("Member-Donor Sync Failed:", error);
         return { success: false, message: `Sync Failed: ${error.message}`, count: 0 };
+    }
+}
+
+/**
+ * Mirror a single individual user to the donor registry.
+ */
+export async function mirrorIndividualUserToDonorAction(userId: string, adminUserId: string, adminUserName: string): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const userDoc = await adminDb.collection('users').doc(userId).get();
+        if (!userDoc.exists) throw new Error("User not found.");
+        
+        const user = userDoc.data() as UserProfile;
+        const donorRef = adminDb.collection('donors').doc(userId);
+        
+        const donorData: any = {
+            id: userId,
+            name: user.name,
+            phone: user.phone || '',
+            email: user.email || '',
+            status: user.status === 'Active' ? 'Active' : 'Inactive',
+            updatedAt: FieldValue.serverTimestamp(),
+        };
+
+        const donorSnap = await donorRef.get();
+        if (!donorSnap.exists) {
+            donorData.createdAt = FieldValue.serverTimestamp();
+            donorData.createdById = adminUserId;
+            donorData.createdByName = adminUserName;
+            donorData.notes = `Institutional Member Profile (Established via individual mirroring)`;
+        }
+
+        await donorRef.set(donorData, { merge: true });
+        
+        revalidatePath('/donors');
+        revalidatePath('/users');
+        revalidatePath(`/users/${userId}`);
+        
+        return { success: true, message: "Member identity successfully mirrored to donor registry." };
+    } catch (error: any) {
+        return { success: false, message: error.message };
     }
 }
