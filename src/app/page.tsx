@@ -90,7 +90,7 @@ export default function Home() {
     }, [campaignsWithProgress, leadsWithProgress]);
 
     const heroTitle = brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.';
-    const heroDescription = brandingSettings?.heroDescription || `Join ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'} To Make A Lasting Impact. Your Contribution Brings Hope, Changes Lives, And Empowers Our Community.`;
+    const heroDescription = brandingSettings?.heroDescription || `Join ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'} to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.`;
     
     const isHeroVisible = brandingSettings?.isHeroVisible !== false;
     const isNewsTickerVisible = brandingSettings?.isNewsTickerVisible !== false;

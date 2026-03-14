@@ -215,7 +215,7 @@ export default function AppSettingsPage() {
                 logoWidth: brandingSettings?.logoWidth || 40,
                 logoHeight: brandingSettings?.logoHeight || 40,
                 heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.',
-                heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.',
+                heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact.',
                 isHeroVisible: brandingSettings?.isHeroVisible ?? true,
                 isNewsTickerVisible: brandingSettings?.isNewsTickerVisible ?? true,
                 isWisdomVisible: brandingSettings?.isWisdomVisible ?? true,
@@ -241,7 +241,7 @@ export default function AppSettingsPage() {
                 bankIfsc: paymentSettings?.bankIfsc || '',
                 isGuidingPrinciplesPublic: guidingPrinciplesData?.isGuidingPrinciplesPublic || false,
                 gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
-                gpDescription: guidingPrinciplesData?.description || 'To ensure our operations are transparent, fair, and impactful, we adhere to a clear set of guiding principles. These rules govern how we identify beneficiaries, allocate funds, and manage our resources to best serve the community.',
+                gpDescription: guidingPrinciplesData?.description || '',
                 principles: guidingPrinciplesData?.principles || [],
                 focusAreas: guidingPrinciplesData?.focusAreas || [],
             });
@@ -502,7 +502,7 @@ export default function AppSettingsPage() {
                     <div className="space-y-6">
                         <div className="grid gap-6">
                             <div className="space-y-2">
-                                <Label htmlFor="heroTitle" className="font-bold text-xs text-muted-foreground tracking-tighter uppercase">Hero Title</Label>
+                                <Label htmlFor="heroTitle" className="font-bold text-xs text-muted-foreground tracking-tighter">Hero Title</Label>
                                 {isEditMode ? (
                                     <Input 
                                         id="heroTitle"
@@ -516,7 +516,7 @@ export default function AppSettingsPage() {
                                 )}
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="heroDescription" className="font-bold text-xs text-muted-foreground tracking-tighter uppercase">Hero Description</Label>
+                                <Label htmlFor="heroDescription" className="font-bold text-xs text-muted-foreground tracking-tighter">Hero Description</Label>
                                 {isEditMode ? (
                                     <Textarea 
                                         id="heroDescription"
@@ -620,7 +620,7 @@ export default function AppSettingsPage() {
                 >
                     <div className="space-y-8">
                         <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Identity & Registration</h4>
+                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2">Identity & Registration</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
                                 <VerifiableItem 
                                     icon={Building2} 
@@ -642,7 +642,7 @@ export default function AppSettingsPage() {
                                 />
                                 <VerifiableItem 
                                     icon={Hash} 
-                                    label="Registration No." 
+                                    label="Registration Number" 
                                     value={displayData.regNo} 
                                     isEditing={isEditMode}
                                     id="org-reg"
@@ -671,7 +671,7 @@ export default function AppSettingsPage() {
                         </div>
 
                         <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Visual Branding</h4>
+                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2">Visual Branding</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                                 <div className="flex flex-col items-center gap-4 bg-muted/5 rounded-xl p-4 border border-dashed">
                                     <div className="relative w-full max-w-[200px] aspect-[2/1] rounded-lg flex items-center justify-center bg-white overflow-hidden shadow-inner">
@@ -712,7 +712,7 @@ export default function AppSettingsPage() {
                         </div>
 
                         <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Communications & Footer</h4>
+                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2">Communications & Footer</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                                 <div className="space-y-1">
                                     <Label htmlFor="contactEmail" className="font-bold text-sm text-primary">Support Email</Label>
@@ -740,7 +740,7 @@ export default function AppSettingsPage() {
                     <div className="space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-4">
-                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Traditional Bank Transfer</h4>
+                                <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2">Traditional Bank Transfer</h4>
                                 <VerifiableItem 
                                     icon={User} 
                                     label="Account Holder Name" 
@@ -771,7 +771,7 @@ export default function AppSettingsPage() {
                             </div>
                             
                             <div className="space-y-4">
-                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">UPI & QR Setup</h4>
+                                <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2">UPI & QR Setup</h4>
                                 <VerifiableItem 
                                     icon={QrCode} 
                                     label="UPI ID" 
@@ -783,7 +783,7 @@ export default function AppSettingsPage() {
                                 />
                                 <VerifiableItem 
                                     icon={Smartphone} 
-                                    label="Payment Mobile No." 
+                                    label="Payment Mobile Number" 
                                     value={displayData.paymentMobileNumber} 
                                     isEditing={isEditMode}
                                     id="pay-mob"
@@ -810,7 +810,7 @@ export default function AppSettingsPage() {
                                             <Input id="qr-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setQrCodeFile(e.target.files[0])} />
                                             {editableData?.qrCodeUrl && (
                                                 <Button type="button" variant="destructive" size="sm" className="font-bold h-8" onClick={handleRemoveQrCode} disabled={isSubmitting}>
-                                                    <Trash2 className="mr-2 h-4 w-4" />
+                                                    <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             )}
                                         </div>
@@ -856,16 +856,16 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-4">
                             <div className="space-y-1.5">
-                                <Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Section Heading</Label>
+                                <Label className="font-bold text-[10px] text-muted-foreground tracking-tighter">Section Heading</Label>
                                 <Input 
                                     value={displayData.gpTitle} 
                                     onChange={(e) => handleFieldChange('gpTitle', e.target.value)} 
                                     disabled={isFormDisabled}
-                                    className="font-bold text-primary"
+                                    className="font-bold text-primary h-10"
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Mission Description</Label>
+                                <Label className="font-bold text-[10px] text-muted-foreground tracking-tighter">Mission Description</Label>
                                 <Textarea 
                                     rows={3} 
                                     value={displayData.gpDescription} 
@@ -881,7 +881,7 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <h4 className="text-xs font-bold text-primary uppercase tracking-widest flex items-center gap-2"><Target className="h-4 w-4"/> Core Pillars (Focus Areas)</h4>
+                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2"><Target className="h-4 w-4"/> Core Pillars (Focus Areas)</h4>
                                 {isEditMode && (
                                     <Button type="button" variant="outline" size="sm" onClick={handleAddFocusArea} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add Pillar</Button>
                                 )}
@@ -906,7 +906,7 @@ export default function AppSettingsPage() {
                                         )}
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div className="space-y-1">
-                                                <Label className="text-[9px] font-bold text-muted-foreground uppercase">Icon & Title</Label>
+                                                <Label className="text-[9px] font-bold text-muted-foreground">Icon & Title</Label>
                                                 <div className="flex gap-2">
                                                     <Select value={area.icon} onValueChange={(val) => handleFocusAreaChange(index, 'icon', val)} disabled={isFormDisabled}>
                                                         <SelectTrigger className="w-12 h-9 p-0 justify-center"><FocusAreaIcon type={area.icon}/></SelectTrigger>
@@ -926,7 +926,7 @@ export default function AppSettingsPage() {
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
-                                                <Label className="text-[9px] font-bold text-muted-foreground uppercase">Description</Label>
+                                                <Label className="text-[9px] font-bold text-muted-foreground">Description</Label>
                                                 <Textarea 
                                                     value={area.description} 
                                                     onChange={(e) => handleFocusAreaChange(index, 'description', e.target.value)} 
@@ -945,7 +945,7 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <h4 className="text-xs font-bold text-primary uppercase tracking-widest flex items-center gap-2"><ListChecks className="h-4 w-4"/> Procedural Rules</h4>
+                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2"><ListChecks className="h-4 w-4"/> Procedural Rules</h4>
                                 {isEditMode && (
                                     <Button type="button" variant="outline" size="sm" onClick={handleAddPrinciple} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add Rule</Button>
                                 )}
@@ -980,7 +980,7 @@ export default function AppSettingsPage() {
                                             />
                                         ) : (
                                             <p className="text-sm font-normal text-foreground leading-relaxed">
-                                                {principle.text || <span className="italic opacity-50">Empty Rule Text</span>}
+                                                {principle.text || <span className="italic opacity-50">Empty rule text</span>}
                                                 {principle.isHidden && <Badge variant="outline" className="ml-2 text-[8px]">Hidden</Badge>}
                                             </p>
                                         )}

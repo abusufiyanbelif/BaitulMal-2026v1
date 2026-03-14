@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -324,7 +323,7 @@ export default function BeneficiariesPage() {
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Master Registry..." description="Retrieving Organizational Records." />;
+  if (isLoading) return <SectionLoader label="Loading Master Registry..." description="Retrieving organizational records." />;
   
   if (!canRead) return (
     <main className="container mx-auto p-8 text-primary font-normal">
@@ -586,7 +585,7 @@ export default function BeneficiariesPage() {
                                         {canDelete && (
                                             <>
                                             <DropdownMenuSeparator className="bg-primary/10" />
-                                            <DropdownMenuItem onClick={async () => { if(confirm('Are You Certain?')) { const res = await deleteBeneficiaryAction(b.id); toast({ title: res.success ? 'Deleted' : 'Error', variant: res.success ? 'success' : 'destructive'}); } }} className="text-destructive font-normal"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={async () => { if(confirm('Are you certain?')) { const res = await deleteBeneficiaryAction(b.id); toast({ title: res.success ? 'Deleted' : 'Error', variant: res.success ? 'success' : 'destructive'}); } }} className="text-destructive font-normal"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
                                             </>
                                         )}
                                     </DropdownMenuContent>
@@ -597,31 +596,31 @@ export default function BeneficiariesPage() {
                     <AccordionContent className="bg-primary/[0.02] px-6 py-4 border-t border-primary/10 animate-fade-in-up">
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-3 text-primary font-normal">
                         <div className="space-y-1 col-span-2">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Address</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Address</p>
                             <p className="text-sm leading-tight font-normal">{b.address || 'N/A'}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Age</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Age</p>
                             <p className="text-sm font-normal">{b.age || 'N/A'}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Occupation</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Occupation</p>
                             <p className="text-sm font-normal">{b.occupation || 'N/A'}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Family Details</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Family Details</p>
                             <p className="text-sm font-normal">T: {b.members || 0}, E: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">ID Artifact</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight">ID Artifact</p>
                             <p className="text-sm font-normal">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Date Added</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Date Added</p>
                             <p className="text-sm font-normal">{b.addedDate || 'N/A'}</p>
                         </div>
                         <div className="space-y-1 col-span-2">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Notes</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Notes</p>
                             <p className="text-sm italic opacity-80 font-normal line-clamp-2">{b.notes || (b.isEligibleForZakat ? 'Eligible For Zakat Support.' : 'N/A')}</p>
                         </div>
                         </div>
@@ -640,7 +639,7 @@ export default function BeneficiariesPage() {
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between border-t pt-4">
-          <p className="text-[10px] font-bold opacity-60 uppercase">Registry Page {currentPage} Of {totalPages}</p>
+          <p className="text-[10px] font-bold opacity-60">Registry Page {currentPage} Of {totalPages}</p>
           <div className="flex items-center gap-2">
             <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/10 h-8 rounded-[10px] transition-transform active:scale-95">Previous</Button>
             <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/10 h-8 rounded-[10px] transition-transform active:scale-95">Next</Button>

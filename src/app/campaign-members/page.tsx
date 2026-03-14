@@ -1,4 +1,3 @@
-
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
@@ -20,9 +19,9 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuPortal,
   DropdownMenuSub,
   DropdownMenuSubTrigger,
-  DropdownMenuPortal,
   DropdownMenuSubContent,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
@@ -254,7 +253,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                 </div>
                 <Progress value={campaign.progress} className="h-2 bg-primary/10 shadow-inner" />
                 <div className="flex justify-between items-center">
-                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Progress</span>
+                    <span className="text-[9px] font-bold text-muted-foreground tracking-tight">Progress</span>
                     <span className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary/5 border border-primary/10">
                         {Math.round(campaign.progress)}% Funded
                     </span>

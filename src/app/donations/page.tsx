@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -110,7 +109,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
         <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -127,7 +126,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))] tracking-tight uppercase", className)} onClick={() => handleSort(sortKey)}>
+        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))] tracking-tight", className)} onClick={() => handleSort(sortKey)}>
             {children}
             <div className="flex flex-col opacity-40">
                 <ArrowUp className={cn("h-2.5 w-2.5 -mb-1", isSorted && sortConfig?.direction === 'ascending' && "text-primary opacity-100")} />
@@ -188,7 +187,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                             {canUpdate && <DropdownMenuItem onClick={handleEdit} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Record</DropdownMenuItem>}
                             {canDelete && (
                                 <>
-                                    <DropdownMenuSeparator className="bg-primary/10" />
+                                    <DropdownMenuSeparator className="bg-primary/5" />
                                     <DropdownMenuItem onClick={handleDeleteClick} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal">
                                         <Trash2 className="mr-2 h-4 w-4"/> Delete Permanently
                                     </DropdownMenuItem>
@@ -203,7 +202,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                     <div className="space-y-6 max-w-5xl mx-auto">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="space-y-3">
-                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight uppercase"><IndianRupee className="h-3 w-3"/> Category Breakdown</h4>
+                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight"><IndianRupee className="h-3 w-3"/> Category Breakdown</h4>
                                 <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
                                     <ScrollArea className="w-full">
                                         <Table>
@@ -227,7 +226,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                 </div>
                             </div>
                             <div className="space-y-3">
-                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight uppercase"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
+                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
                                 <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
                                     <ScrollArea className="w-full">
                                         <div className="min-w-[300px]">
@@ -260,7 +259,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                             </div>
                         </div>
                         <div className="space-y-3">
-                            <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight uppercase"><ImageIcon className="h-3 w-3"/> Transaction Documents</h4>
+                            <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight"><ImageIcon className="h-3 w-3"/> Transaction Documents</h4>
                             <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
                                 <ScrollArea className="w-full">
                                     <div className="min-w-[600px]">
@@ -268,7 +267,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                             <TableHeader className="bg-primary/5">
                                                 <TableRow>
                                                     <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Amount</TableHead>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Ref. Id</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Ref. ID</TableHead>
                                                     <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Date</TableHead>
                                                     <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight pr-6">Evidence</TableHead>
                                                 </TableRow>
@@ -451,7 +450,7 @@ export default function DonationsPage() {
         toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Update Failed", description: res?.message || "Failed To Update Status.", variant: "destructive" });
+        toast({ title: "Update Failed", description: res?.message || "Failed to update status.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -520,7 +519,7 @@ export default function DonationsPage() {
     if (res && res.success) {
         toast({ title: 'Deleted', description: res.message, variant: 'success' });
     } else {
-        toast({ title: 'Error', description: res?.message || 'Delete Failed.', variant: 'destructive' });
+        toast({ title: 'Error', description: res?.message || 'Delete failed.', variant: 'destructive' });
     }
     setDonationToDelete(null);
   };
@@ -538,13 +537,13 @@ export default function DonationsPage() {
     if (res && res.success) {
         toast({ title: 'Import Complete', description: res.message, variant: 'success' });
     } else {
-        toast({ title: 'Import Failed', description: res?.message || "Operation Failed.", variant: 'destructive' });
+        toast({ title: 'Import Failed', description: res?.message || "Operation failed.", variant: 'destructive' });
     }
   };
 
   const isLoading = areDonationsLoading || isProfileLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Institutional Logs." />;
+  if (isLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving institutional logs." />;
 
   return (
     <main className="container mx-auto p-4 md:p-8 font-normal text-primary relative">
@@ -585,12 +584,12 @@ export default function DonationsPage() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-            <StatCard title="Total Count" count={stats.total} description="All Records Logged" icon={Users} delay="100ms" />
-            <StatCard title="Verified Sum" count={stats.totalAmount.toLocaleString('en-IN')} description="Confirmed Funds" icon={CheckCircle2} delay="150ms" isCurrency />
-            <StatCard title="Pending Sum" count={stats.pendingAmount.toLocaleString('en-IN')} description="Awaiting Vetting" icon={Hourglass} delay="150ms" isCurrency />
-            <StatCard title="Unlinked" count={stats.unlinked} description="Needs Profile Mapping" icon={AlertCircle} delay="200ms" colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} />
-            <StatCard title="Online Pay" count={stats.online} description="Digital Transfers" icon={Smartphone} delay="250ms" />
-            <StatCard title="Cash" count={stats.cash} description="Physical Collections" icon={Wallet} delay="300ms" />
+            <StatCard title="Total Count" count={stats.total} description="All records logged" icon={Users} delay="100ms" />
+            <StatCard title="Verified Sum" count={stats.totalAmount.toLocaleString('en-IN')} description="Confirmed funds" icon={CheckCircle2} delay="150ms" isCurrency />
+            <StatCard title="Pending Sum" count={stats.pendingAmount.toLocaleString('en-IN')} description="Awaiting vetting" icon={Hourglass} delay="150ms" isCurrency />
+            <StatCard title="Unlinked" count={stats.unlinked} description="Needs profile mapping" icon={AlertCircle} delay="200ms" colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} />
+            <StatCard title="Online Pay" count={stats.online} description="Digital transfers" icon={Smartphone} delay="250ms" />
+            <StatCard title="Cash" count={stats.cash} description="Physical collections" icon={Wallet} delay="300ms" />
         </div>
 
         {selectedIds.length > 0 && (
@@ -629,7 +628,7 @@ export default function DonationsPage() {
             <CardHeader className="bg-primary/5 border-b">
                 <ScrollArea className="w-full">
                     <div className="flex flex-nowrap gap-2 pb-2">
-                        <Input placeholder="Search Donor, Phone, Id..." value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-[250px] h-9 text-xs border-primary/10 focus-visible:ring-primary text-primary font-normal bg-primary/[0.02] rounded-[10px] shrink-0"/>
+                        <Input placeholder="Search Donor, Phone, ID..." value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-[250px] h-9 text-xs border-primary/10 focus-visible:ring-primary text-primary font-normal bg-primary/[0.02] rounded-[10px] shrink-0"/>
                         
                         <Popover>
                             <PopoverTrigger asChild>
@@ -721,7 +720,7 @@ export default function DonationsPage() {
             <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
                 <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0">
                     <DialogTitle className="text-xl font-bold text-primary tracking-tight">
-                        {editingDonation ? 'Modify Donation Profile' : 'Donation Details To Be Add'}
+                        {editingDonation ? 'Modify Donation Profile' : 'Donation Details To Add'}
                     </DialogTitle>
                 </DialogHeader>
                 <div className="flex-1 min-h-0 relative overflow-hidden flex flex-col">
