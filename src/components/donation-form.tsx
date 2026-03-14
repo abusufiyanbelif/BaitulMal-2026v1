@@ -245,7 +245,7 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                  {!isReadOnly && fileList && fileList.length > 0 && (
                     <Button type="button" onClick={handleScanScreenshot} disabled={isScanning} className="w-full mt-2 font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-all active:scale-95 shadow-sm">
                         {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />}
-                        Scan Artifact With AI
+                        Scan Artifact with AI
                     </Button>
                 )}
             </div>
@@ -323,12 +323,10 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
       const firstLink = currentLinks.length > 0 ? currentLinks[0].linkId : (defaultLinkId || 'unlinked');
       replaceLinkSplit([{ linkId: firstLink, amount: totalAmount }]);
     }
-  }, [isLinkSplit, totalAmount, replaceTypeSplit, getValues, defaultLinkId]);
+  }, [isLinkSplit, totalAmount, replaceLinkSplit, getValues, defaultLinkId]);
 
   const filteredCampaigns = useMemo(() => {
     return campaigns.filter(c => {
-      // Logic: Show if Active/Upcoming AND Published. 
-      // Also show if it's already linked to THIS donation (for editing historical records).
       const isAlreadyLinked = donation?.linkSplit?.some(link => link.linkId === c.id && link.linkType === 'campaign');
       const isDefaultContext = defaultLinkId === `campaign_${c.id}`;
       return isAlreadyLinked || isDefaultContext || (c.status !== 'Completed' && c.publicVisibility === 'Published');
@@ -375,7 +373,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     setValue('donorName', donor.name, { shouldDirty: true, shouldValidate: true });
     setValue('donorPhone', donor.phone, { shouldDirty: true, shouldValidate: true });
     setValue('donorId', donor.id, { shouldDirty: true });
-    toast({ title: 'Identity Verified', variant: 'success' });
+    toast({ title: 'Identity verified', variant: 'success' });
   };
 
   const verifyDonorByPhone = useCallback(async () => {
@@ -388,7 +386,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
             const donor = { id: snap.docs[0].id, ...snap.docs[0].data() } as Donor;
             handleSelectDonorProfile(donor);
         } else {
-            toast({ title: 'New Contributor', description: 'No matching profile found. A new one will be created.', variant: 'info' });
+            toast({ title: 'New contributor', description: 'No matching profile found. A new one will be created.', variant: 'info' });
         }
     } finally {
         setIsVerifying(false);
@@ -406,14 +404,14 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
         phone: donorPhone || '',
         status: 'Active',
         upiIds: Array.from(new Set(currentUpis)),
-        notes: `Profile registered directly from donation hub for verification.`
+        notes: `Profile registered directly from donation hub.`
     }, { id: userProfile.id, name: userProfile.name });
 
     if (res.success && res.id) {
         setValue('donorId', res.id, { shouldDirty: true });
-        toast({ title: 'Profile Secured', description: 'Identity now linked to institutional registry.', variant: 'success' });
+        toast({ title: 'Profile secured', description: 'Identity now linked to institutional registry.', variant: 'success' });
     } else {
-        toast({ title: 'Registration Failed', description: res.message, variant: 'destructive' });
+        toast({ title: 'Registration failed', description: res.message, variant: 'destructive' });
     }
     setIsSubmitting(false);
   };
@@ -440,13 +438,13 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                             {!isReadOnly && (
                                 <div className="flex gap-2">
                                     <Button type="button" variant="outline" size="sm" onClick={() => setIsDonorSearchOpen(true)} className="h-8 font-bold border-primary/20 text-primary active:scale-95 transition-transform">
-                                        <Search className="mr-2 h-3.5 w-3.5"/> Manual Search
+                                        <Search className="mr-2 h-3.5 w-3.5"/> Manual search
                                     </Button>
                                 </div>
                             )}
                         </div>
                         <FormField control={control} name="donationType" render={({ field }) => (
-                            <FormItem>{renderLabel('Payment Method', 'donationType')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select method" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="Online Payment" className="font-normal">Online Payment</SelectItem><SelectItem value="Cash" className="font-normal">Cash</SelectItem><SelectItem value="Check" className="font-normal">Check</SelectItem><SelectItem value="Other" className="font-normal">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                            <FormItem>{renderLabel('Payment method', 'donationType')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select method" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="Online Payment" className="font-normal">Online Payment</SelectItem><SelectItem value="Cash" className="font-normal">Cash</SelectItem><SelectItem value="Check" className="font-normal">Check</SelectItem><SelectItem value="Other" className="font-normal">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                         )}/>
                         <div className="space-y-4">
                             {transactionFields.map((field, index) => (
@@ -454,7 +452,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                             ))}
                         </div>
                         {!isReadOnly && (
-                            <Button type="button" variant="outline" size="sm" onClick={() => appendTransaction({ id: `tx_${Date.now()}`, amount: 0, transactionId: '', date: new Date().toISOString().split('T')[0], upiId: '' })} className="font-bold text-primary border-primary/20 transition-transform active:scale-95 shadow-none w-full"><Plus className="mr-2 h-4 w-4"/> Record Another Transaction</Button>
+                            <Button type="button" variant="outline" size="sm" onClick={() => appendTransaction({ id: `tx_${Date.now()}`, amount: 0, transactionId: '', date: new Date().toISOString().split('T')[0], upiId: '' })} className="font-bold text-primary border-primary/20 transition-transform active:scale-95 shadow-none w-full"><Plus className="mr-2 h-4 w-4"/> Record another transaction</Button>
                         )}
                     </div>
                     
@@ -464,11 +462,11 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                         <FormField control={control} name="donorName" render={({ field }) => (
                             <FormItem>
                                 <div className="flex items-center justify-between">
-                                    {renderLabel('Donor Name', 'donorName')}
+                                    {renderLabel('Donor name', 'donorName')}
                                     {donorId ? (
                                         <Badge variant="eligible" className="h-4 text-[8px] font-black uppercase"><ShieldCheck className="h-2.5 w-2.5 mr-1"/> Identified Profile</Badge>
                                     ) : !isReadOnly && donorName.length > 2 && (
-                                        <Button type="button" variant="link" onClick={handleRegisterDonorProfile} className="h-4 text-[8px] font-black uppercase p-0 text-primary underline">Create Donor Profile</Button>
+                                        <Button type="button" variant="link" onClick={handleRegisterDonorProfile} className="h-4 text-[8px] font-black uppercase p-0 text-primary underline">Create profile</Button>
                                     )}
                                 </div>
                                 <FormControl><Input placeholder="e.g. Saleem Khan" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl>
@@ -477,7 +475,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                         )}/>
                         <FormField control={control} name="donorPhone" render={({ field }) => (
                             <FormItem>
-                                {renderLabel('Donor Phone', 'donorPhone')}
+                                {renderLabel('Donor phone', 'donorPhone')}
                                 <div className="flex gap-2">
                                     <FormControl><Input placeholder="10-digit mobile" {...field} disabled={isReadOnly} className="font-mono text-primary flex-1"/></FormControl>
                                     {!isReadOnly && !donorId && donorPhone?.length === 10 && (
@@ -492,7 +490,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <FormField control={control} name="receiverName" render={({ field }) => (
-                            <FormItem>{renderLabel('Receiver Name', 'receiverName')}<FormControl><Input placeholder="Institutional representative" {...field} disabled={isReadOnly} className="font-normal text-primary"/></FormControl><FormMessage /></FormItem>
+                            <FormItem>{renderLabel('Receiver name', 'receiverName')}<FormControl><Input placeholder="Institutional representative" {...field} disabled={isReadOnly} className="font-normal text-primary"/></FormControl><FormMessage /></FormItem>
                         )}/>
                         <FormField control={control} name="referral" render={({ field }) => (
                             <FormItem>{renderLabel('Referral', 'referral')}<FormControl><Input placeholder="e.g. Local volunteer" {...field} disabled={isReadOnly} className="font-normal text-primary"/></FormControl><FormMessage /></FormItem>
@@ -500,16 +498,16 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <FormField control={control} name="donationDate" render={({ field }) => (
-                            <FormItem>{renderLabel('Entry Date', 'donationDate')}<FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl><FormMessage /></FormItem>
+                            <FormItem>{renderLabel('Entry date', 'donationDate')}<FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl><FormMessage /></FormItem>
                         )}/>
                         <FormField control={control} name="status" render={({ field }) => (
-                            <FormItem>{renderLabel('Verification Status', 'status')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="Pending" className="font-normal">Pending</SelectItem><SelectItem value="Verified" className="font-normal text-primary">Verified</SelectItem><SelectItem value="Canceled" className="font-normal text-destructive">Canceled</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                            <FormItem>{renderLabel('Verification status', 'status')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="Pending" className="font-normal">Pending</SelectItem><SelectItem value="Verified" className="font-normal text-primary">Verified</SelectItem><SelectItem value="Canceled" className="font-normal text-destructive">Canceled</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                         )}/>
                     </div>
                     
                     <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm">
                         <FormField control={control} name="isTypeSplit" render={({ field }) => (
-                            <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value === true} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Split Contribution By Designation</FormLabel></FormItem>
+                            <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value === true} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Split contribution by designation</FormLabel></FormItem>
                         )}/>
                     {isTypeSplit ? (
                         <div className="space-y-4 animate-fade-in-up">
@@ -517,11 +515,11 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                                 <ScrollArea className="w-full">
                                     <div className="min-w-[450px]">
                                         <Table>
-                                            <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Designation</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Allocation (₹)</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight pr-4 uppercase">Action</TableHead></TableRow></TableHeader>
+                                            <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Designation</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Value</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight pr-4 uppercase">Action</TableHead></TableRow></TableHeader>
                                             <TableBody>
                                                 {typeSplitFields.map((field, index) => (
                                                     <TableRow key={field.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
-                                                        <TableCell><FormField control={control} name={`typeSplit.${index}.category`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none h-8"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select>)}/>{watch(`typeSplit.${index}.category`) === 'Zakat' && <FormField control={control} name={`typeSplit.${index}.forFundraising`} render={({ field: checkboxField }) => (<div className="flex items-center space-x-2 px-2 mt-1"><Checkbox checked={checkboxField.value === true} onCheckedChange={(val) => checkboxField.onChange(val === true)} disabled={isReadOnly}/><Label className="text-[8px] font-bold text-muted-foreground tracking-tighter uppercase">Goal Contribution</Label></div>)}/>}</TableCell>
+                                                        <TableCell><FormField control={control} name={`typeSplit.${index}.category`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none h-8"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select>)}/>{watch(`typeSplit.${index}.category`) === 'Zakat' && <FormField control={control} name={`typeSplit.${index}.forFundraising`} render={({ field: checkboxField }) => (<div className="flex items-center space-x-2 px-2 mt-1"><Checkbox checked={checkboxField.value === true} onCheckedChange={(val) => checkboxField.onChange(val === true)} disabled={isReadOnly}/><Label className="text-[8px] font-bold text-muted-foreground tracking-tighter uppercase">Goal contribution</Label></div>)}/>}</TableCell>
                                                         <TableCell><FormField control={control} name={`typeSplit.${index}.amount`} render={({ field }) => (<FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="border-none bg-transparent shadow-none font-bold font-mono h-8 text-primary"/></FormControl>)}/></TableCell>
                                                         <TableCell className="text-right pr-4">{!isReadOnly && <Button type="button" variant="ghost" size="icon" onClick={() => removeTypeSplit(index)} disabled={typeSplitFields.length <= 1} className="h-8 w-8 text-destructive transition-transform hover:scale-110"><Trash2 className="h-4 w-4"/></Button>}</TableCell>
                                                     </TableRow>
@@ -532,12 +530,12 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                                     <ScrollBar orientation="horizontal" className="h-1.5" />
                                 </ScrollArea>
                             </div>
-                            {!isReadOnly && <Button type="button" variant="outline" size="sm" onClick={() => appendTypeSplit({ category: 'Sadaqah', amount: 0, forFundraising: false })} className="font-bold text-primary border-primary/20 transition-transform active:scale-95 shadow-none w-full"><Plus className="mr-2 h-4 w-4"/> Add Split Designation</Button>}
+                            {!isReadOnly && <Button type="button" variant="outline" size="sm" onClick={() => appendTypeSplit({ category: 'Sadaqah', amount: 0, forFundraising: false })} className="font-bold text-primary border-primary/20 transition-transform active:scale-95 shadow-none w-full"><Plus className="mr-2 h-4 w-4"/> Add split designation</Button>}
                         </div>
                     ) : (
                         <div className="pl-6 space-y-4">
                             <FormField control={control} name={`typeSplit.0.category`} render={({ field }) => (
-                                <FormItem>{renderLabel('Primary Designation', 'typeSplit.0.category')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                                <FormItem>{renderLabel('Primary designation', 'typeSplit.0.category')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                             )}/>
                         </div>
                     )}
@@ -545,13 +543,13 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                     
                     {watch(`typeSplit.0.category`) === 'Monthly Contribution' && (
                     <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm animate-fade-in-zoom">
-                        <h3 className="text-sm font-bold text-primary tracking-tight">Contribution Cycle</h3>
+                        <h3 className="text-sm font-bold text-primary tracking-tight">Contribution cycle</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <FormField control={control} name="contributionFromDate" render={({ field }) => (
-                            <FormItem>{renderLabel('Period Start', 'contributionFromDate')}<FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl></FormItem>
+                            <FormItem>{renderLabel('Period start', 'contributionFromDate')}<FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl></FormItem>
                         )}/>
                         <FormField control={control} name="contributionToDate" render={({ field }) => (
-                            <FormItem>{renderLabel('Period End', 'contributionToDate')}<FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl></FormItem>
+                            <FormItem>{renderLabel('Period end', 'contributionToDate')}<FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl></FormItem>
                         )}/>
                         </div>
                     </div>
@@ -559,7 +557,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
 
                     <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm">
                         <FormField control={control} name="isSplit" render={({ field }) => (
-                            <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value === true} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Allocate Across Multiple Initiatives</FormLabel></FormItem>
+                            <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value === true} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Allocate across multiple initiatives</FormLabel></FormItem>
                         )}/>
                     {isLinkSplit ? (
                         <div className="space-y-4 animate-fade-in-up">
@@ -567,11 +565,11 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                                 <ScrollArea className="w-full">
                                     <div className="min-w-[500px]">
                                         <Table>
-                                            <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Target Initiative</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Value (₹)</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight uppercase pr-4">Action</TableHead></TableRow></TableHeader>
+                                            <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Initiative</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Value</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight uppercase pr-4">Action</TableHead></TableRow></TableHeader>
                                             <TableBody>
                                                 {linkSplitFields.map((field, index) => (
                                                     <TableRow key={field.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
-                                                        <TableCell><FormField control={control} name={`linkSplit.${index}.linkId`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none min-w-[200px] h-8"><SelectValue placeholder="Select target..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectGroup><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 uppercase">Campaigns</SelectLabel>{filteredCampaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`} className="font-normal">{c.name}</SelectItem>)}</SelectGroup><SelectGroup><Separator className="my-1 opacity-10"/><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 uppercase">Individual Appeals</SelectLabel>{filteredLeads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`} className="font-normal">{l.name}</SelectItem>)}</SelectGroup></SelectContent></Select>)}/></TableCell>
+                                                        <TableCell><FormField control={control} name={`linkSplit.${index}.linkId`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none min-w-[200px] h-8"><SelectValue placeholder="Select target..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectGroup><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 uppercase">Campaigns</SelectLabel>{filteredCampaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`} className="font-normal">{c.name}</SelectItem>)}</SelectGroup><SelectGroup><Separator className="my-1 opacity-10"/><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 uppercase">Appeals</SelectLabel>{filteredLeads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`} className="font-normal">{l.name}</SelectItem>)}</SelectGroup></SelectContent></Select>)}/></TableCell>
                                                         <TableCell><FormField control={control} name={`linkSplit.${index}.amount`} render={({ field }) => (<FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="border-none bg-transparent shadow-none font-bold font-mono h-8 text-primary"/></FormControl>)}/></TableCell>
                                                         <TableCell className="text-right pr-4">{!isReadOnly && <Button type="button" variant="ghost" size="icon" onClick={() => removeLinkSplit(index)} disabled={linkSplitFields.length <= 1} className="h-8 w-8 text-destructive transition-transform hover:scale-110"><Trash2 className="h-4 w-4"/></Button>}</TableCell>
                                                     </TableRow>
@@ -582,21 +580,21 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                                     <ScrollBar orientation="horizontal" className="h-1.5" />
                                 </ScrollArea>
                             </div>
-                            {!isReadOnly && <Button type="button" variant="outline" size="sm" onClick={() => appendLinkSplit({ linkId: 'unlinked', amount: 0 })} className="font-bold text-primary border-primary/20 transition-transform active:scale-95 shadow-none w-full"><Plus className="mr-2 h-4 w-4"/> Allocate Another Initiative</Button>}
+                            {!isReadOnly && <Button type="button" variant="outline" size="sm" onClick={() => appendLinkSplit({ linkId: 'unlinked', amount: 0 })} className="font-bold text-primary border-primary/20 transition-transform active:scale-95 shadow-none w-full"><Plus className="mr-2 h-4 w-4"/> Allocate another initiative</Button>}
                         </div>
                     ) : (
                         <FormField control={control} name={`linkSplit.0.linkId`} render={({ field }) => (
-                            <FormItem className="pl-6">{renderLabel('Primary Allocation Target', 'linkSplit.0.linkId')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold text-primary"><SelectValue placeholder="No initiative linked"/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="unlinked" className="font-normal italic">-- Institutional General Fund --</SelectItem><SelectGroup><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 uppercase">Campaigns</SelectLabel>{filteredCampaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`} className="font-normal">{c.name}</SelectItem>)}</SelectGroup><SelectGroup><Separator className="my-1 opacity-10"/><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 uppercase">Individual Appeals</SelectLabel>{filteredLeads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`} className="font-normal">{l.name}</SelectItem>)}</SelectGroup></SelectContent></Select></FormItem>
+                            <FormItem className="pl-6">{renderLabel('Primary target', 'linkSplit.0.linkId')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold text-primary"><SelectValue placeholder="No initiative linked"/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="unlinked" className="font-normal italic">-- General Fund --</SelectItem><SelectGroup><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 uppercase">Campaigns</SelectLabel>{filteredCampaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`} className="font-normal">{c.name}</SelectItem>)}</SelectGroup><SelectGroup><Separator className="my-1 opacity-10"/><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 uppercase">Individual Appeals</SelectLabel>{filteredLeads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`} className="font-normal">{l.name}</SelectItem>)}</SelectGroup></SelectContent></Select></FormItem>
                         )}/>
                     )}
                     </div>
 
                     <div className="space-y-6">
                         <FormField control={control} name="comments" render={({ field }) => (
-                            <FormItem>{renderLabel('Donor Verification Comments', 'comments')}<FormControl><Textarea placeholder="Verification notes provided by the donor..." {...field} disabled={isReadOnly} className="font-normal text-primary" /></FormControl></FormItem>
+                            <FormItem>{renderLabel('Donor comments', 'comments')}<FormControl><Textarea placeholder="Verification notes from the donor..." {...field} disabled={isReadOnly} className="font-normal text-primary" /></FormControl></FormItem>
                         )}/>
                         <FormField control={control} name="suggestions" render={({ field }) => (
-                            <FormItem>{renderLabel('Internal Staff Vetting Suggestions', 'suggestions')}<FormControl><Textarea placeholder="Staff suggestions for future vetting..." {...field} disabled={isReadOnly} className="font-normal text-primary" /></FormControl></FormItem>
+                            <FormItem>{renderLabel('Staff suggestions', 'suggestions')}<FormControl><Textarea placeholder="Internal staff observations..." {...field} disabled={isReadOnly} className="font-normal text-primary" /></FormControl></FormItem>
                         )}/>
                     </div>
                 </div>
@@ -606,10 +604,10 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
 
         {!isReadOnly && (
             <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 sticky bottom-0 bg-background/95 backdrop-blur-sm p-4 border-t z-50 shrink-0">
-                <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="w-full sm:w-auto font-bold text-primary border-primary/20 transition-transform active:scale-95">Discard Changes</Button>
+                <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="w-full sm:w-auto font-bold text-primary border-primary/20 transition-transform active:scale-95">Discard</Button>
                 <Button type="submit" disabled={isSubmitting || (!!donation && !isDirty)} className="w-full sm:w-auto font-bold px-10 transition-transform active:scale-95 shadow-md">
                     {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                    {isSubmitting ? 'Securing Data...' : 'Confirm & Secure Record'}
+                    {isSubmitting ? 'Securing...' : 'Confirm record'}
                 </Button>
             </div>
         )}

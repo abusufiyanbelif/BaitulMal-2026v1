@@ -1,6 +1,5 @@
 'use client';
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import React, { useMemo } from 'react';
@@ -13,8 +12,7 @@ import { NewsTicker } from '@/components/news-ticker';
 import { RecentVerificationTicker } from '@/components/recent-verification-ticker';
 import { usePublicData } from '@/hooks/use-public-data';
 import { useBranding } from '@/hooks/use-branding';
-import { cn } from '@/lib/utils';
-import { FolderKanban, Lightbulb, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle, HandHelping, HeartHandshake } from 'lucide-react';
+import { FolderKanban, Lightbulb, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle } from 'lucide-react';
 
 const getPriorityIcon = (priority?: string) => {
   switch (priority) {
@@ -89,7 +87,7 @@ export default function Home() {
         return [...completedCampaigns, ...completedLeads];
     }, [campaignsWithProgress, leadsWithProgress]);
 
-    const heroTitle = brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.';
+    const heroTitle = brandingSettings?.heroTitle || 'Empowering Our Community, One Act of Kindness at a Time.';
     const heroDescription = brandingSettings?.heroDescription || `Join ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'} to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.`;
     
     const isHeroVisible = brandingSettings?.isHeroVisible !== false;

@@ -3,10 +3,6 @@ import { useBranding } from '@/hooks/use-branding';
 import { cn } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 
-/**
- * Watermark - Subtle background branding that "blooms" into view on page load.
- * Features synchronized scaling and opacity transitions for a premium feel.
- */
 export function Watermark() {
     const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
     const [isLoaded, setIsLoaded] = useState(false);
@@ -29,7 +25,7 @@ export function Watermark() {
             {validLogoUrl && (
                 <img
                     src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
-                    alt="Institutional Branding"
+                    alt="BMS3 Watermark"
                     className={cn(
                         "w-auto h-auto max-w-[85vw] max-h-[85vh] object-contain transition-all duration-1000 ease-in-out pointer-events-none",
                         isLoaded ? "opacity-[0.08] scale-100" : "opacity-0 scale-95 translate-y-4"
