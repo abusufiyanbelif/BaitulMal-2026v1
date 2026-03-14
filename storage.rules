@@ -1,50 +1,47 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Helper: Is user signed in?
     function isSignedIn() {
       return request.auth != null;
     }
-
-    // Helper: Is the user an Admin in Firestore?
+    
     function isAdmin() {
-      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == "Admin";
+      return isSignedIn() && 
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin';
     }
 
-    // 1. Settings: Logos and QRs are public
+    function hasPermission(module, action) {
+      let data = firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+      return data.role == 'Admin' || (data.permissions[module] != null && data.permissions[module][action] == true);
+    }
+
     match /settings/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // 2. Campaigns: Public can see images/docs IF the campaign is published
-    match /campaigns/{campaignId}/{allPaths=**} {
-      allow read: if firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == "Published"
-                  || isSignedIn();
-      allow write: if isAdmin();
-    }
-
-    // 3. Leads: Public can see images/docs IF the lead is published
-    match /leads/{leadId}/{allPaths=**} {
-      allow read: if firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == "Published"
-                  || isSignedIn();
-      allow write: if isAdmin();
-    }
-
-    // 4. Users: ID proofs are private
     match /users/{userId}/{allPaths=**} {
-      allow read, write: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
+      allow read: if request.auth.uid == userId || isAdmin();
+      allow write: if request.auth.uid == userId || isAdmin();
     }
 
-    // 5. Beneficiaries Master: Strictly for authorized staff
+    match /campaigns/{campaignId}/{allPaths=**} {
+      allow read: if firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published' || (isSignedIn() && hasPermission('campaigns', 'read'));
+      allow write: if isAdmin() || hasPermission('campaigns', 'write');
+    }
+
+    match /leads/{leadId}/{allPaths=**} {
+      allow read: if firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published' || (isSignedIn() && hasPermission('leads-members', 'read'));
+      allow write: if isAdmin() || hasPermission('leads-members', 'write');
+    }
+
     match /beneficiaries/{benId}/{allPaths=**} {
-      allow read: if isAdmin();
+      allow read: if isSignedIn() && hasPermission('beneficiaries', 'read');
       allow write: if isSignedIn();
     }
 
-    // 6. Donations: Transaction screenshots are private unless flagged as public
-    match /donations/{donationId}/{allPaths=**} {
-      allow read: if isAdmin();
+    match /donations/{donId}/{allPaths=**} {
+      allow read: if isSignedIn() && hasPermission('donations', 'read');
       allow write: if isSignedIn();
     }
   }

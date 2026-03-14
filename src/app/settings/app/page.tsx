@@ -14,7 +14,7 @@ import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, UploadCloud, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, ChevronDown, Monitor, Megaphone, Quote, Target, PieChart, Info, HeartHandshake, Smartphone, CheckCircle2, GraduationCap, HeartPulse, Utensils, HelpCircle } from 'lucide-react';
+import { Loader2, UploadCloud, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, ChevronDown, Monitor, Megaphone, Quote, Target, PieChart, Info, HeartHandshake, Smartphone, CheckCircle2, GraduationCap, HeartPulse, Utensils, HelpCircle, ListChecks } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -201,7 +201,7 @@ export default function AppSettingsPage() {
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [qrCodeFile, setQrCodeFile] = useState<File | null>(null);
     
-    const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.update', false);
+    const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.app.update', false);
 
     const handleFieldChange = useCallback((field: keyof FormDataType, value: any) => {
         setEditableData(prev => prev ? { ...prev, [field]: value } : null);

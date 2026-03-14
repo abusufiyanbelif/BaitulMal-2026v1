@@ -1,84 +1,88 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper: Is the user signed in?
+    // Helper Functions
     function isSignedIn() {
       return request.auth != null;
     }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
 
-    // Helper: Is the user an Admin?
     function isAdmin() {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "Admin";
+      return isSignedIn() && getUserData().role == 'Admin';
     }
 
-    // Helper: Check granular permissions
     function hasPermission(module, action) {
-      let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid));
-      let permissions = userDoc.data.permissions;
-      return isAdmin() || (permissions != null && permissions[module] != null && permissions[module][action] == true);
+      let permissions = getUserData().permissions;
+      return isAdmin() || (
+        permissions != null &&
+        permissions[module] != null &&
+        permissions[module][action] == true
+      );
     }
 
-    // 1. Settings: Branding and payments are public
-    match /settings/{docId} {
-      allow read: if true;
-      allow write: if isAdmin();
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
     }
 
-    // 2. Campaigns: Public read for published items, full access for staff
-    match /campaigns/{campaignId} {
-      allow read: if resource.data.publicVisibility == "Published" || hasPermission("campaigns", "read");
-      allow write: if hasPermission("campaigns", "update");
-      
-      match /beneficiaries/{benId} {
-        allow read: if hasPermission("campaigns", "beneficiaries.read");
-        allow write: if hasPermission("campaigns", "beneficiaries.update");
-      }
-    }
-
-    // 3. Leads: Public read for published items, full access for staff
-    match /leads/{leadId} {
-      allow read: if resource.data.publicVisibility == "Published" || hasPermission("leads-members", "read");
-      allow write: if hasPermission("leads-members", "update");
-      
-      match /beneficiaries/{benId} {
-        allow read: if hasPermission("leads-members", "beneficiaries.read");
-        allow write: if hasPermission("leads-members", "beneficiaries.update");
-      }
-    }
-
-    // 4. Donations: Public can view verified totals for progress bars
-    match /donations/{donationId} {
-      allow read: if resource.data.status == "Verified" || hasPermission("donations", "read");
-      allow list: if (request.query.limit <= 500) && (request.query.filters.status == "Verified" || isSignedIn());
-      allow write: if hasPermission("donations", "update");
-    }
-
-    // 5. Beneficiaries Master: Strictly gated to authorized staff
-    match /beneficiaries/{benId} {
-      allow read: if hasPermission("beneficiaries", "read");
-      allow write: if hasPermission("beneficiaries", "update");
-    }
-
-    // 6. Donors: Strictly gated to authorized staff
-    match /donors/{donorId} {
-      allow read: if hasPermission("donors", "read");
-      allow write: if hasPermission("donors", "update");
-    }
-
-    // 7. Users: Public can see profiles of team members
-    match /users/{userId} {
-      allow read: if (resource.data.status == "Active" && resource.data.organizationGroup != null) || (isSignedIn() && hasPermission("users", "read"));
-      allow write: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
-    }
-
-    // 8. Lookups & Analytics
+    // Rules
     match /user_lookups/{lookupId} {
       allow read: if true;
       allow write: if isAdmin();
     }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin() || hasPermission('users', 'read');
+      // Allow public to see basic member info for "About" pages
+      allow read: if resource.data.organizationGroup != null && resource.data.status == 'Active';
+      allow write: if isAdmin() || hasPermission('users', 'write');
+    }
+
+    match /campaigns/{campaignId} {
+      allow read: if (resource.data.authenticityStatus == 'Verified' && resource.data.publicVisibility == 'Published') || (isSignedIn() && hasPermission('campaigns', 'read'));
+      allow write: if isAdmin() || hasPermission('campaigns', 'write');
+      
+      match /beneficiaries/{benId} {
+        allow read: if (get(/databases/$(database)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published') || (isSignedIn() && hasPermission('campaigns', 'read'));
+        allow write: if isAdmin() || hasPermission('campaigns', 'write');
+      }
+    }
+
+    match /leads/{leadId} {
+      allow read: if (resource.data.authenticityStatus == 'Verified' && resource.data.publicVisibility == 'Published') || (isSignedIn() && hasPermission('leads-members', 'read'));
+      allow write: if isAdmin() || hasPermission('leads-members', 'write');
+      
+      match /beneficiaries/{benId} {
+        allow read: if (get(/databases/$(database)/documents/leads/$(leadId)).data.publicVisibility == 'Published') || (isSignedIn() && hasPermission('leads-members', 'read'));
+        allow write: if isAdmin() || hasPermission('leads-members', 'write');
+      }
+    }
+
+    match /donations/{donationId} {
+      // Public needs to list verified donations for progress calculations on summary pages
+      allow read: if resource.data.status == 'Verified' || (isSignedIn() && hasPermission('donations', 'read'));
+      allow write: if isAdmin() || hasPermission('donations', 'write');
+    }
+
+    match /beneficiaries/{benId} {
+      allow read: if isSignedIn() && hasPermission('beneficiaries', 'read');
+      allow write: if isAdmin() || hasPermission('beneficiaries', 'write');
+    }
+
+    match /donors/{donorId} {
+      allow read: if isSignedIn() && hasPermission('donors', 'read');
+      allow write: if isAdmin() || hasPermission('donors', 'write');
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin() || hasPermission('settings', 'write');
+    }
     
     match /page_hits/{pageId} {
-      allow read, write: if true;
+      allow read, write: if true; // Public analytics
     }
   }
 }
