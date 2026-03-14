@@ -299,7 +299,7 @@ export default function DonationsSummaryPage() {
     return (
         <div className="container mx-auto p-4 md:p-8 text-primary font-normal">
             <div className="mb-4">
-                <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
+                <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95 text-primary">
                     <Link href="/dashboard">
                         <ArrowLeft className="mr-2 h-4 w-4" />
                         Back To Dashboard
@@ -405,24 +405,24 @@ export default function DonationsSummaryPage() {
                             <Skeleton className="h-48 w-full" />
                         ) : (
                             <ScrollArea className="w-full">
-                                <div className="min-w-[500px]">
+                                <div className="min-w-[1000px]">
                                     <Table>
                                         <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                             <TableRow>
-                                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))]">Initiative</TableHead>
+                                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] pl-6">Initiative</TableHead>
                                                 <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))]">Donation Count</TableHead>
-                                                <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))]">Total Amount</TableHead>
+                                                <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] pr-6">Total Amount</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {summaryData?.sortedInitiatives.map((initiative) => (
                                                 <TableRow key={`${initiative.type}_${initiative.name}`} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5 bg-white">
-                                                    <TableCell className="font-bold text-sm flex items-center gap-2 text-primary">
+                                                    <TableCell className="font-bold text-sm flex items-center gap-2 text-primary pl-6">
                                                         {initiative.type === 'campaign' ? <FolderKanban className="h-4 w-4 opacity-40" /> : initiative.type === 'lead' ? <Lightbulb className="h-4 w-4 opacity-40" /> : <Wallet className="h-4 w-4 opacity-40" />}
-                                                        <span className="truncate max-w-[200px]">{initiative.name}</span>
+                                                        <span className="truncate max-w-[400px]">{initiative.name}</span>
                                                     </TableCell>
                                                     <TableCell className="text-right font-normal">{initiative.count}</TableCell>
-                                                    <TableCell className="text-right font-bold font-mono text-primary">₹{initiative.amount.toLocaleString('en-IN')}</TableCell>
+                                                    <TableCell className="text-right font-bold font-mono text-primary pr-6">₹{initiative.amount.toLocaleString('en-IN')}</TableCell>
                                                 </TableRow>
                                             ))}
                                             {summaryData?.sortedInitiatives.length === 0 && (
@@ -518,7 +518,7 @@ export default function DonationsSummaryPage() {
                                     <ChartLegend content={<ChartLegendContent />} />
                                 </PieChart>
                             </ChartContainer>
-                          ) : <Skeleton className="h-[300px] w-full rounded-md"/>}
+                          ) : <Skeleton className="h-[250px] w-full rounded-md"/>}
                         </CardContent>
                     </Card>
                 </div>
