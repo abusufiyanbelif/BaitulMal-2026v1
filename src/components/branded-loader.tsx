@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useFirebase } from '@/firebase/provider';
@@ -57,7 +56,7 @@ export function BrandedLoader({ message = "Synchronizing...", progress }: { mess
               {message}
             </p>
             {progress !== undefined && (
-              <p className="text-[10px] font-black text-primary/40 tracking-widest animate-pulse">
+              <p className="text-[10px] font-black text-primary/40 tracking-widest animate-pulse uppercase">
                 {Math.round(progress)}% Secured
               </p>
             )}

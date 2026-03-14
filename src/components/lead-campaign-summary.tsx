@@ -64,7 +64,7 @@ export function LeadAndCampaignSummary() {
               </CardTitle>
               <span className="text-2xl font-bold text-primary">{campaignSummary?.total || 0}</span>
           </div>
-          <CardDescription className="font-normal">Total Public Campaigns By Category.</CardDescription>
+          <CardDescription className="font-normal text-primary/70">Total Public Campaigns By Category.</CardDescription>
         </CardHeader>
         <CardContent className="p-0 pt-4">
           <ScrollArea className="w-full">
@@ -78,7 +78,7 @@ export function LeadAndCampaignSummary() {
                     </TableHeader>
                     <TableBody>
                     {campaignSummary?.chartData.map((entry) => (
-                        <TableRow key={entry.name} className="hover:bg-primary/5 transition-colors">
+                        <TableRow key={entry.name} className="hover:bg-primary/5 transition-colors border-b border-primary/5">
                         <TableCell className="font-bold text-primary text-sm pl-6">{entry.name}</TableCell>
                         <TableCell className="text-right font-normal pr-6">{entry.value}</TableCell>
                         </TableRow>
@@ -99,7 +99,7 @@ export function LeadAndCampaignSummary() {
             </CardTitle>
             <span className="text-2xl font-bold text-primary">{leadSummary?.total || 0}</span>
           </div>
-          <CardDescription className="font-normal">
+          <CardDescription className="font-normal text-primary/70">
             Total Public Leads By Purpose.
           </CardDescription>
         </CardHeader>
@@ -115,7 +115,7 @@ export function LeadAndCampaignSummary() {
                     </TableHeader>
                     <TableBody>
                     {leadSummary?.chartData.map((entry) => (
-                        <TableRow key={entry.name} className="hover:bg-primary/5 transition-colors">
+                        <TableRow key={entry.name} className="hover:bg-primary/5 transition-colors border-b border-primary/5">
                         <TableCell className="font-bold text-primary text-sm pl-6">{entry.name}</TableCell>
                         <TableCell className="text-right font-normal pr-6">{entry.value}</TableCell>
                         </TableRow>

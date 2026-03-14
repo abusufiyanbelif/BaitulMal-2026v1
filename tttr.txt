@@ -1,0 +1,6 @@
+src/app/beneficiaries/page.tsx(414,30): error TS2552: Cannot find name 'ChevronDown'. Did you mean 'ChevronsUpDown'?
+src/app/beneficiaries/page.tsx(547,38): error TS2552: Cannot find name 'ChevronDown'. Did you mean 'ChevronsUpDown'?
+src/app/campaign-public/[campaignId]/summary/page.tsx(504,46): error TS2304: Cannot find name 'ResponsiveContainer'.
+src/app/campaign-public/[campaignId]/summary/page.tsx(508,47): error TS2304: Cannot find name 'ResponsiveContainer'.
+src/app/campaign-public/[campaignId]/summary/page.tsx(521,50): error TS2304: Cannot find name 'ResponsiveContainer'.
+src/app/campaign-public/[campaignId]/summary/page.tsx(541,51): error TS2304: Cannot find name 'ResponsiveContainer'.

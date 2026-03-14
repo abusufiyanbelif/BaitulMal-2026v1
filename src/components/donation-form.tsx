@@ -185,28 +185,28 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField control={control} name={`transactions.${index}.amount`} render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight">Amount (₹) *</FormLabel><FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="font-bold font-mono" /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Amount (₹) *</FormLabel><FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="font-bold font-mono" /></FormControl><FormMessage /></FormItem>
                 )}/>
                 <FormField control={control} name={`transactions.${index}.date`} render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight">Transaction Date</FormLabel><FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold" /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Transaction Date</FormLabel><FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold" /></FormControl><FormMessage /></FormItem>
                 )}/>
             </div>
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                  <FormField control={control} name={`transactions.${index}.transactionId`} render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight">Reference ID (e.g. UPI / UTR)</FormLabel>
+                        <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Reference ID (e.g. UPI / UTR)</FormLabel>
                         <FormControl><Input placeholder="Unique Transaction Ref" {...field} disabled={isReadOnly} className="font-normal" /></FormControl>
                         <FormMessage />
                     </FormItem>
                 )}/>
                  <FormField control={control} name={`transactions.${index}.upiId`} render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight">Sender UPI ID</FormLabel><FormControl><Input placeholder="e.g. sender@upi" {...field} disabled={isReadOnly} className="font-normal" /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Sender UPI ID</FormLabel><FormControl><Input placeholder="e.g. sender@upi" {...field} disabled={isReadOnly} className="font-normal" /></FormControl><FormMessage /></FormItem>
                 )}/>
             </div>
             <div className="space-y-2">
                 {!isReadOnly && (
                     <FormField control={control} name={`transactions.${index}.screenshotFile`} render={() => (
-                        <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight">Upload Evidence {mandatoryFields.screenshot ? '*' : ''}</FormLabel><FormControl><Input id={`tx-screenshot-upload-${index}`} type="file" accept="image/*" {...register(`transactions.${index}.screenshotFile`)} className="font-normal" /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Upload Evidence {mandatoryFields.screenshot ? '*' : ''}</FormLabel><FormControl><Input id={`tx-screenshot-upload-${index}`} type="file" accept="image/*" {...register(`transactions.${index}.screenshotFile`)} className="font-normal" /></FormControl><FormMessage /></FormItem>
                     )}/>
                 )}
                 {preview && (
@@ -419,7 +419,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   };
 
   const renderLabel = (label: string, fieldName: string) => (
-    <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight">
+    <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">
         {label} {mandatoryFields[fieldName] ? '*' : ''}
     </FormLabel>
   );
@@ -468,7 +468,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                                     {donorId ? (
                                         <Badge variant="eligible" className="h-4 text-[8px] font-black uppercase"><ShieldCheck className="h-2.5 w-2.5 mr-1"/> Identified Profile</Badge>
                                     ) : !isReadOnly && donorName.length > 2 && (
-                                        <Button type="button" variant="link" onClick={handleRegisterDonorProfile} className="h-4 text-[8px] font-black uppercase p-0 text-primary underline">Create donor profile</Button>
+                                        <Button type="button" variant="link" onClick={handleRegisterDonorProfile} className="h-4 text-[8px] font-black uppercase p-0 text-primary underline">Create Donor Profile</Button>
                                     )}
                                 </div>
                                 <FormControl><Input placeholder="e.g. Saleem Khan" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl>
@@ -517,7 +517,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                                 <ScrollArea className="w-full">
                                     <div className="min-w-[450px]">
                                         <Table>
-                                            <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight">Designation</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight">Allocation (₹)</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight pr-4">Action</TableHead></TableRow></TableHeader>
+                                            <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Designation</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Allocation (₹)</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight pr-4 uppercase">Action</TableHead></TableRow></TableHeader>
                                             <TableBody>
                                                 {typeSplitFields.map((field, index) => (
                                                     <TableRow key={field.id} className="hover:bg-primary/[0.02] border-b border-primary/5">

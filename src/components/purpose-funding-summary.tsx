@@ -66,7 +66,7 @@ export function PurposeFundingSummary() {
         <ScrollArea className="w-full">
             <div className="min-w-[400px]">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-primary/5">
                         <TableRow>
                         <TableHead className="pl-6 tracking-tight">Purpose Type</TableHead>
                         <TableHead className="text-right tracking-tight pr-6">Amount Received</TableHead>
