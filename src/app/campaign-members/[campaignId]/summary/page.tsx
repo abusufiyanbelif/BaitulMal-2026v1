@@ -754,7 +754,7 @@ export default function CampaignSummaryPage() {
                                         <div className="space-y-2">
                                             <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded">
                                                 <span className="text-muted-foreground tracking-tight font-normal">Net Registry Balance</span>
-                                                <span className="font-bold text-primary font-mono">₹{fundingData.totalZakatBalance.toLocaleString('en-IN')}</span>
+                                                <span className="font-bold font-mono">₹{fundingData.totalZakatBalance.toLocaleString('en-IN')}</span>
                                             </div>
                                             <div className="flex justify-between items-center text-[10px] font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded italic opacity-60">
                                                 <span>Contribution to Goal</span>

@@ -302,7 +302,7 @@ export default function DonorRegistryPage() {
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-primary/5">
-                            <TableHead className="w-[60px] pl-6 text-[10px] uppercase font-bold tracking-tight">#</TableHead>
+                            <TableHead className="w-[60px] pl-4 text-[10px] uppercase font-bold tracking-tight">#</TableHead>
                             <TableHead className="text-[10px] uppercase font-bold tracking-tight">Donor Identity</TableHead>
                             <TableHead className="text-[10px] uppercase font-bold tracking-tight">Primary Contact</TableHead>
                             <TableHead className="text-[10px] uppercase font-bold tracking-tight">Financial Handles</TableHead>
@@ -313,7 +313,7 @@ export default function DonorRegistryPage() {
                     <TableBody>
                         {paginatedDonors.map((donor, idx) => (
                             <TableRow key={donor.id} onClick={() => router.push(`/donors/${donor.id}`)} className="cursor-pointer hover:bg-primary/[0.02] border-b border-primary/5 last:border-0 bg-white">
-                                <TableCell className="pl-6 font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</TableCell>
+                                <TableCell className="pl-4 font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</TableCell>
                                 <TableCell className="py-4">
                                     <div className="font-bold text-sm text-primary">{donor.name}</div>
                                     <div className="text-[10px] text-muted-foreground truncate max-w-[200px]">{donor.email || 'No email'}</div>

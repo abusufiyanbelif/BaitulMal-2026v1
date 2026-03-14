@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -90,7 +89,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn, getNestedValue } from '@/lib/utils';
-import { bulkUpdateDonationStatusAction, bulkImportDonationsAction, upsertDonationWithDonorAction } from './actions';
+import { bulkUpdateDonationStatusAction, bulkImportDonationsAction, upsertDonationWithDonorAction, deleteDonationAction } from './actions';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
@@ -165,7 +164,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                 <div className="min-w-0">
                     <div className="flex items-center gap-2">
                         <div className="font-bold text-sm text-primary truncate">{donation.donorName}</div>
-                        {!donation.donorId && <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" title="Unlinked Identity" />}
+                        {!donation.donorId && <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
                     </div>
                     <div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone || 'N/A'}</div>
                 </div>
@@ -184,7 +183,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
-                            <DropdownMenuItem onClick={() => router.push(`/donations/${donation.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4 opacity-60"/> View Details</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => router.push(`/donations/${donation.id}`)} className="text-primary font-normal cursor-pointer"><Eye className="mr-2 h-4 w-4 opacity-60"/> View Details</DropdownMenuItem>
                             {canUpdate && <DropdownMenuItem onClick={handleEdit} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Record</DropdownMenuItem>}
                             {canDelete && (
                                 <>
@@ -406,6 +405,8 @@ export default function DonationsPage() {
           unlinked: data.filter(d => !d.donorId).length,
           totalAmount: data.filter(d => d.status === 'Verified').reduce((sum, d) => sum + d.amount, 0),
           pendingAmount: data.filter(d => d.status === 'Pending').reduce((sum, d) => sum + d.amount, 0),
+          online: data.filter(d => d.donationType === 'Online Payment').length,
+          cash: data.filter(d => d.donationType === 'Cash').length,
       };
   }, [filteredAndSortedDonations]);
 
@@ -547,7 +548,7 @@ export default function DonationsPage() {
                 <h1 className="text-3xl font-bold tracking-tight text-primary">Master Donation Registry</h1>
             </div>
             <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                <Button variant="outline" size="sm" onClick={() => { if(!filteredAndSortedDonations.length) return; const headers = ['ID', 'Donor Name', 'Donor Phone', 'Receiver Name', 'Referral', 'Amount', 'Donation Date', 'Status', 'Donation Type', 'Comments', 'Suggestions']; const rows = filteredAndSortedDonations.map(d => [ d.id, `"${d.donorName || ''}"`, d.donorPhone || '', `"${d.receiverName || ''}"`, `"${(d.referral || '').replace(/"/g, '""')}"`, d.amount || 0, d.donationDate || '', d.status || 'Pending', d.donationType || '', `"${(d.comments || '').replace(/"/g, '""')}"`, `"${(d.suggestions || '').replace(/"/g, '""')}"` ]); const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); link.setAttribute("download", "master_donation_registry.csv"); document.body.appendChild(link); link.click(); document.body.removeChild(link); }} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
+                <Button variant="outline" size="sm" onClick={() => { if(!filteredAndSortedDonations.length) return; const headers = ['ID', 'Donor Name', 'Donor Phone', 'Receiver Name', 'Referral', 'Amount', 'Donation Date', 'Status', 'DonationType', 'Comments', 'Suggestions']; const rows = filteredAndSortedDonations.map(d => [ d.id, `"${d.donorName || ''}"`, d.donorPhone || '', `"${d.receiverName || ''}"`, `"${(d.referral || '').replace(/"/g, '""')}"`, d.amount || 0, d.donationDate || '', d.status || 'Pending', d.donationType || '', `"${(d.comments || '').replace(/"/g, '""')}"`, `"${(d.suggestions || '').replace(/"/g, '""')}"` ]); const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); link.setAttribute("download", "master_donation_registry.csv"); document.body.appendChild(link); link.click(); document.body.removeChild(link); }} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
                     <Download className="mr-2 h-4 w-4" /> Export CSV
                 </Button>
                 <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
@@ -760,7 +761,7 @@ export default function DonationsPage() {
                     <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
                     <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5)) } className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
                     <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
-                    <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
+                    <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold border-primary/10 text-primary transition-transform active:scale-95"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

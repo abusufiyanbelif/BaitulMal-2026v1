@@ -45,6 +45,7 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { cn, getNestedValue } from '@/lib/utils';
 import { 

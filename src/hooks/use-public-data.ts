@@ -33,7 +33,7 @@ export function usePublicData() {
   
   /**
    * Verified donations are publicly listing enabled via firestore.rules
-   * We only gate by firestore initialization.
+   * We wait for firestore to ensure the SDK is ready.
    */
   const donationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;

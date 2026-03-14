@@ -14,6 +14,7 @@ import {
     DocumentReference,
     errorEmitter,
     FirestorePermissionError,
+    serverTimestamp,
 } from '@/firebase';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
 import type { UserProfile } from '@/lib/types';

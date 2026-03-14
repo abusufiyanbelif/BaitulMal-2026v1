@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -216,6 +215,22 @@ export default function PublicLeadSummaryPage() {
         };
     }, [allDonations, lead, beneficiaries, calculatedRequirementTotal]);
 
+    const chartData = useMemo(() => {
+        return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ 
+            name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` 
+        })) : [];
+    }, [fundingData]);
+
+    const paymentTypeChartData = useMemo(() => {
+        if (!fundingData?.paymentTypeStats) return [];
+        return Object.entries(fundingData.paymentTypeStats).map(([name, stats]) => ({
+            name, 
+            value: stats.amount, 
+            count: stats.count,
+            fill: `var(--color-${name.replace(/\s+/g, '')})`
+        }));
+    }, [fundingData]);
+
     const isLoading = isLeadLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
 
     if (isLoading) return <BrandedLoader />;
@@ -252,7 +267,7 @@ export default function PublicLeadSummaryPage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
-             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform font-bold border-primary/20 text-primary"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
+             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform font-bold border-primary/20 text-primary"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button></div>
             
             <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center cursor-pointer" onClick={() => lead.imageUrl && handleViewImage(lead.imageUrl, lead.name)}>
                 {lead.imageUrl ? (
@@ -428,7 +443,7 @@ export default function PublicLeadSummaryPage() {
                             )}
 
                             {isVisible('zakat_utilization') && (
-                                <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-lg">
+                                <Card className="shadow-sm border-primary/5 bg-white transition-all duration-300 hover:shadow-lg">
                                     <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Zakat Fund Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking of designated Zakat resources.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 pt-6 font-normal text-foreground">
                                         <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded">

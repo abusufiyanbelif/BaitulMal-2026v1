@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Main entry point for Firebase services.
- * Re-exports services and hooks from sub-modules to provide a clean barrel interface.
+ * decoupled initialization to prevent circular dependencies during build.
  */
 
 export { 
