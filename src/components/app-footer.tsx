@@ -159,7 +159,7 @@ export function AppFooter() {
                     className="font-bold border-primary/20 text-primary h-12 px-10 rounded-xl hover:bg-primary hover:text-white transition-all active:scale-95 shadow-md group w-full"
                 >
                     <HeartHandshake className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                    How To Give
+                    Donation Channel Details
                 </Button>
                 <p className="text-[9px] text-muted-foreground mt-3 font-normal italic md:text-right tracking-tight opacity-60">
                     Scan Our Quick Codes Or Use Bank Transfer.

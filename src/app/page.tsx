@@ -160,26 +160,6 @@ export default function Home() {
                     <RecentVerificationTicker items={recentDonationsFormatted} />
                 )}
             </div>
-
-            {/* Support CTA Section */}
-            <section className="max-w-4xl mx-auto pt-10 animate-fade-in-up" style={{ animationDelay: '800ms' }}>
-                <Card className="bg-primary/[0.02] border-primary/20 border-2 border-dashed shadow-none">
-                    <CardContent className="p-8 flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
-                        <div className="p-4 rounded-full bg-primary/10 text-primary">
-                            <HeartHandshake className="h-10 w-10" />
-                        </div>
-                        <div className="space-y-2 flex-1">
-                            <h3 className="text-2xl font-bold tracking-tight">Contribute To Institutional Impact</h3>
-                            <p className="text-sm font-normal text-muted-foreground leading-relaxed">
-                                Every donation is verified and precisely allocated to your selected cause. Join us in making a difference.
-                            </p>
-                        </div>
-                        <Button asChild size="lg" className="font-bold shadow-md h-12 px-10 rounded-xl active:scale-95 transition-transform shrink-0">
-                            <Link href="/info/members">View Donation Channels</Link>
-                        </Button>
-                    </CardContent>
-                </Card>
-            </section>
         </div>
     );
 }

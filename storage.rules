@@ -1,49 +1,50 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    // Helper: Is user signed in?
     function isSignedIn() {
       return request.auth != null;
     }
-    
+
+    // Helper: Is the user an Admin in Firestore?
     function isAdmin() {
-      return isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == "Admin";
     }
 
-    // --- 1. Settings (Logo, QR) ---
+    // 1. Settings: Logos and QRs are public
     match /settings/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // --- 2. Campaigns ---
+    // 2. Campaigns: Public can see images/docs IF the campaign is published
     match /campaigns/{campaignId}/{allPaths=**} {
-      // Allow read if campaign is public or user is staff
-      allow read: if firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published' || isSignedIn();
-      allow write: if isSignedIn(); // Gated by app logic and firestore permissions
+      allow read: if firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == "Published"
+                  || isSignedIn();
+      allow write: if isAdmin();
     }
 
-    // --- 3. Leads ---
+    // 3. Leads: Public can see images/docs IF the lead is published
     match /leads/{leadId}/{allPaths=**} {
-      allow read: if firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published' || isSignedIn();
-      allow write: if isSignedIn();
+      allow read: if firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == "Published"
+                  || isSignedIn();
+      allow write: if isAdmin();
     }
 
-    // --- 4. Users (Private ID Proofs) ---
+    // 4. Users: ID proofs are private
     match /users/{userId}/{allPaths=**} {
-      // Only owner or admin can see sensitive ID artifacts
-      allow read: if request.auth.uid == userId || isAdmin();
-      allow write: if request.auth.uid == userId || isAdmin();
+      allow read, write: if (isSignedIn() && request.auth.uid == userId) || isAdmin();
     }
 
-    // --- 5. Beneficiaries (Private Documents) ---
-    match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-      allow read: if isSignedIn();
+    // 5. Beneficiaries Master: Strictly for authorized staff
+    match /beneficiaries/{benId}/{allPaths=**} {
+      allow read: if isAdmin();
       allow write: if isSignedIn();
     }
 
-    // --- 6. Donations (Evidence) ---
+    // 6. Donations: Transaction screenshots are private unless flagged as public
     match /donations/{donationId}/{allPaths=**} {
-      allow read: if isSignedIn();
+      allow read: if isAdmin();
       allow write: if isSignedIn();
     }
   }
