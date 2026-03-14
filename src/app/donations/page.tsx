@@ -387,8 +387,12 @@ export default function DonationsPage() {
             const aVal = (a[sortConfig.key as keyof Donation] ?? '').toString().toLowerCase();
             const bValue = (b[sortConfig.key as keyof Donation] ?? '').toString().toLowerCase();
             
-            if (aVal < bValue) return sortConfig.direction === 'ascending' ? -1 : 1;
-            if (aVal > bValue) return sortConfig.direction === 'ascending' ? 1 : -1;
+            if (aVal < bValue) {
+                return sortConfig.direction === 'ascending' ? -1 : 1;
+            }
+            if (aVal > bValue) {
+                return sortConfig.direction === 'ascending' ? 1 : -1;
+            }
             return 0;
         });
     }

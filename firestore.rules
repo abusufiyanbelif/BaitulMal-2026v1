@@ -1,7 +1,7 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper functions for robust security
+    // Helper functions
     function isSignedIn() {
       return request.auth != null;
     }
@@ -9,21 +9,22 @@ service cloud.firestore {
     function getUserData() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
-
+    
     function isAdmin() {
       return isSignedIn() && getUserData().role == 'Admin';
     }
-
-    function hasPermission(module, permission) {
-      return isAdmin() || (isSignedIn() && getUserData().permissions[module][permission] == true);
+    
+    function hasPermission(module, action) {
+      return isAdmin() || (isSignedIn() && getUserData().permissions[module][action] == true);
     }
 
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+    // Settings are mostly public for branding and guidance
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
-    // --- 1. Campaigns & Leads ---
-    // Public can read verified and published initiatives. Members need read permission.
+    // Campaigns & Leads: Public can see verified/published summaries
     match /campaigns/{campaignId} {
       allow read: if (resource.data.publicVisibility == 'Published' && resource.data.authenticityStatus == 'Verified') || hasPermission('campaigns', 'read');
       allow create: if hasPermission('campaigns', 'create');
@@ -31,8 +32,8 @@ service cloud.firestore {
       allow delete: if hasPermission('campaigns', 'delete');
 
       match /beneficiaries/{benId} {
-        allow read: if hasPermission('campaigns', 'beneficiaries');
-        allow write: if hasPermission('campaigns', 'beneficiaries');
+        allow read: if hasPermission('campaigns', 'read');
+        allow write: if hasPermission('campaigns', 'update');
       }
     }
 
@@ -43,13 +44,12 @@ service cloud.firestore {
       allow delete: if hasPermission('leads-members', 'delete');
 
       match /beneficiaries/{benId} {
-        allow read: if hasPermission('leads-members', 'beneficiaries');
-        allow write: if hasPermission('leads-members', 'beneficiaries');
+        allow read: if hasPermission('leads-members', 'read');
+        allow write: if hasPermission('leads-members', 'update');
       }
     }
 
-    // --- 2. Donations ---
-    // Public can read verified donations for progress tracking. Donor PII exposure is limited by app logic.
+    // Donations: Public can see verified amounts for progress tracking
     match /donations/{donationId} {
       allow read: if (resource.data.status == 'Verified') || hasPermission('donations', 'read');
       allow create: if hasPermission('donations', 'create');
@@ -57,47 +57,32 @@ service cloud.firestore {
       allow delete: if hasPermission('donations', 'delete');
     }
 
-    // --- 3. Beneficiaries (Master List) ---
-    // Strictly private. PII protection for Aadhaar and contact details.
-    match /beneficiaries/{beneficiaryId} {
-      allow read: if hasPermission('beneficiaries', 'read');
-      allow create: if hasPermission('beneficiaries', 'create');
-      allow update: if hasPermission('beneficiaries', 'update');
-      allow delete: if hasPermission('beneficiaries', 'delete');
-    }
-
-    // --- 4. Donors (Registry) ---
-    // Strictly private management of contributor profiles.
+    // Private Registries
     match /donors/{donorId} {
       allow read: if hasPermission('donors', 'read');
-      allow create: if hasPermission('donors', 'create');
-      allow update: if hasPermission('donors', 'update');
+      allow write: if hasPermission('donors', 'update');
       allow delete: if hasPermission('donors', 'delete');
     }
 
-    // --- 5. Users & Members ---
-    // Public can see active team members (Name/Role only). Full profiles are private.
-    match /users/{userId} {
-      allow read: if (resource.data.status == 'Active' && resource.data.organizationGroup != null) || isOwner(userId) || hasPermission('users', 'read');
-      allow create: if hasPermission('users', 'create');
-      allow update: if isOwner(userId) || hasPermission('users', 'update');
-      allow delete: if hasPermission('users', 'delete');
+    match /beneficiaries/{benId} {
+      allow read: if hasPermission('beneficiaries', 'read');
+      allow write: if hasPermission('beneficiaries', 'update');
+      allow delete: if hasPermission('beneficiaries', 'delete');
     }
 
-    // Lookup table is internal only
-    match /user_lookups/{lookupId} {
-      allow read: if true; // Publicly readable for login resolution
+    // Team directory is public, but specific PII is gated
+    match /users/{userId} {
+      allow read: if (resource.data.organizationGroup != null && resource.data.status == 'Active') || isSignedIn();
       allow write: if isAdmin();
     }
 
-    // --- 6. Settings & Metadata ---
-    match /settings/{settingId} {
-      allow read: if true; // Publicly readable for branding/payments
-      allow write: if isAdmin() || hasPermission('settings', 'update');
+    match /user_lookups/{lookupId} {
+      allow read: if true;
+      allow write: if isAdmin() || !isSignedIn();
     }
-
-    match /page_hits/{hitId} {
-      allow read, write: if true; // Analytics pings
+    
+    match /page_hits/{pageId} {
+      allow read, write: if true;
     }
   }
 }

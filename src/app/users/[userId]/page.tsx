@@ -161,6 +161,7 @@ export default function UserDetailsPage() {
         idProofUrl,
         organizationGroup: data.organizationGroup === 'none' ? null : data.organizationGroup,
         organizationRole: data.organizationRole,
+        updatedAt: serverTimestamp(),
     };
 
     // Mirror updates to Linked Donor Profile

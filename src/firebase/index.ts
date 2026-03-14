@@ -41,12 +41,12 @@ export {
 
 export {
   getStorage,
-  ref as storageRef,
+  storageRef,
   uploadBytes,
   getDownloadURL,
   deleteObject,
   uploadString
-} from 'firebase/storage';
+} from './storage-exports';
 
 export {
   FirebaseProvider,
