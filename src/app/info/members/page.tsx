@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, ArrowLeft, Users, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, QrCode, Award, Shield } from 'lucide-react';
+import { Loader2, ArrowLeft, Users, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, QrCode, Award, Shield, GraduationCap, HeartPulse, Utensils } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -184,7 +184,7 @@ export default function AboutOrganizationPage() {
                 </AccordionItem>
 
                 {/* Guiding Principles Section */}
-                {isGPVisible && visiblePrinciples.length > 0 && (
+                {isGPVisible && (
                     <AccordionItem value="principles" className="border rounded-xl bg-white shadow-lg overflow-hidden border-primary/10">
                         <AccordionTrigger className="px-6 py-4 hover:no-underline bg-primary/5">
                             <div className="flex items-center gap-3">
@@ -193,23 +193,46 @@ export default function AboutOrganizationPage() {
                             </div>
                         </AccordionTrigger>
                         <AccordionContent className="px-6 pt-8 pb-10">
+                            {/* Institutional Areas of Focus */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
+                                <div className="p-4 rounded-xl bg-primary/[0.02] border border-primary/5 space-y-3">
+                                    <div className="p-2 rounded-lg bg-primary/10 text-primary w-fit"><GraduationCap className="h-5 w-5" /></div>
+                                    <h4 className="font-bold text-sm">Education</h4>
+                                    <p className="text-xs text-muted-foreground leading-relaxed font-normal">Empowering students through verified fee assistance and academic support to secure a brighter future.</p>
+                                </div>
+                                <div className="p-4 rounded-xl bg-primary/[0.02] border border-primary/5 space-y-3">
+                                    <div className="p-2 rounded-lg bg-primary/10 text-primary w-fit"><HeartPulse className="h-5 w-5" /></div>
+                                    <h4 className="font-bold text-sm">Healthcare</h4>
+                                    <p className="text-xs text-muted-foreground leading-relaxed font-normal">Vetting critical medical cases to provide timely financial aid for surgeries and life-saving treatments.</p>
+                                </div>
+                                <div className="p-4 rounded-xl bg-primary/[0.02] border border-primary/5 space-y-3">
+                                    <div className="p-2 rounded-lg bg-primary/10 text-primary w-fit"><Utensils className="h-5 w-5" /></div>
+                                    <h4 className="font-bold text-sm">Relief Hub</h4>
+                                    <p className="text-xs text-muted-foreground leading-relaxed font-normal">Coordinating monthly ration distributions and emergency relief kits for the most deserving families.</p>
+                                </div>
+                            </div>
+                            
+                            <Separator className="mb-8 opacity-10" />
+
                             <p className="text-sm text-primary/70 mb-8 max-w-3xl font-normal leading-relaxed">
                                 {gpData.description}
                             </p>
-                            <div className="grid gap-6">
-                                {visiblePrinciples.map((principle, idx) => (
-                                    <div key={principle.id} className="flex gap-4 group">
-                                        <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
-                                            {idx + 1}
+                            {visiblePrinciples.length > 0 && (
+                                <div className="grid gap-6">
+                                    {visiblePrinciples.map((principle, idx) => (
+                                        <div key={principle.id} className="flex gap-4 group">
+                                            <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0 border border-primary/20">
+                                                {idx + 1}
+                                            </div>
+                                            <div className="pt-1">
+                                                <p className="text-base font-normal leading-relaxed text-foreground/90">
+                                                    {principle.text}
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div className="pt-1">
-                                            <p className="text-base font-normal leading-relaxed text-foreground/90">
-                                                {principle.text}
-                                            </p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
+                                    ))}
+                                </div>
+                            )}
                         </AccordionContent>
                     </AccordionItem>
                 )}

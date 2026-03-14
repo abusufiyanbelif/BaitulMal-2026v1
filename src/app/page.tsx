@@ -14,7 +14,7 @@ import { RecentVerificationTicker } from '@/components/recent-verification-ticke
 import { usePublicData } from '@/hooks/use-public-data';
 import { useBranding } from '@/hooks/use-branding';
 import { cn } from '@/lib/utils';
-import { FolderKanban, Lightbulb, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle, HandHelping, Utensils, LifeBuoy, GraduationCap, HeartPulse, HeartHandshake } from 'lucide-react';
+import { FolderKanban, Lightbulb, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle, HandHelping, HeartHandshake } from 'lucide-react';
 
 const getPriorityIcon = (priority?: string) => {
   switch (priority) {
@@ -145,43 +145,6 @@ export default function Home() {
                     <WisdomAndReflection />
                 </div>
             )}
-
-            {/* Institutional Focus Section */}
-            <section className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-up" style={{ animationDelay: '500ms' }}>
-                <Card className="bg-white border-primary/10 shadow-sm transition-all hover:shadow-md">
-                    <CardHeader className="p-6">
-                        <div className="p-3 rounded-xl bg-primary/10 text-primary w-fit mb-4">
-                            <GraduationCap className="h-6 w-6" />
-                        </div>
-                        <CardTitle className="text-xl font-bold tracking-tight">Education</CardTitle>
-                        <CardDescription className="font-normal text-primary/70 leading-relaxed pt-2">
-                            Empowering students through verified fee assistance and academic support to secure a brighter future.
-                        </CardDescription>
-                    </CardHeader>
-                </Card>
-                <Card className="bg-white border-primary/10 shadow-sm transition-all hover:shadow-md">
-                    <CardHeader className="p-6">
-                        <div className="p-3 rounded-xl bg-primary/10 text-primary w-fit mb-4">
-                            <HeartPulse className="h-6 w-6" />
-                        </div>
-                        <CardTitle className="text-xl font-bold tracking-tight">Healthcare</CardTitle>
-                        <CardDescription className="font-normal text-primary/70 leading-relaxed pt-2">
-                            Vetting critical medical cases to provide timely financial aid for surgeries and life-saving treatments.
-                        </CardDescription>
-                    </CardHeader>
-                </Card>
-                <Card className="bg-white border-primary/10 shadow-sm transition-all hover:shadow-md">
-                    <CardHeader className="p-6">
-                        <div className="p-3 rounded-xl bg-primary/10 text-primary w-fit mb-4">
-                            <Utensils className="h-6 w-6" />
-                        </div>
-                        <CardTitle className="text-xl font-bold tracking-tight">Relief Hub</CardTitle>
-                        <CardDescription className="font-normal text-primary/70 leading-relaxed pt-2">
-                            Coordinating monthly ration distributions and emergency relief kits for the most deserving families.
-                        </CardDescription>
-                    </CardHeader>
-                </Card>
-            </section>
 
             <div className="space-y-10 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
                 {isOverallSummaryVisible && <OverallFundingSummary />}
