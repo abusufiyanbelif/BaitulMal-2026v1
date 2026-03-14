@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useFirestore, useMemoFirebase, useCollection, collection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import type { Donor, BankDetail, Donation } from '@/lib/types';
+import type { Donor, BankDetail, Donation, DonationCategory } from '@/lib/types';
+import { donationCategories } from '@/lib/modules';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -30,7 +31,12 @@ import {
     Plus,
     DatabaseZap,
     AlertCircle,
-    Eye
+    Eye,
+    CalendarIcon,
+    Filter,
+    Smartphone,
+    Landmark,
+    CheckCircle2
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -38,6 +44,12 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubTrigger,
+  DropdownMenuPortal,
+  DropdownMenuSubContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from '@/components/ui/dropdown-menu';
 import { useToast } from '@/hooks/use-toast';
 import { deleteDonorAction, createDonorAction } from './actions';
@@ -51,6 +63,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { UnlinkedDonationResolver } from '@/components/unlinked-donation-resolver';
+import { DateRange } from "react-day-picker";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
+import { Separator } from '@/components/ui/separator';
 
 function StatCard({ title, count, description, icon: Icon, delay }: { title: string, count: number, description: string, icon: any, delay: string }) {
     return (
@@ -77,6 +94,9 @@ export default function DonorRegistryPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [designationFilter, setDesignationFilter] = useState('All');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isResolverOpen, setIsResolverOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -103,14 +123,42 @@ export default function DonorRegistryPage() {
 
   const filteredDonors = useMemo(() => {
     if (!donors) return [];
+    
     return donors.filter(d => {
-        const matchesSearch = (d.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
-                             (d.phone || '').includes(searchTerm) ||
-                             (d.email || '').toLowerCase().includes(searchTerm.toLowerCase());
+        // 1. Unified Search (Name, Phone, Email, UPI, Bank Acc)
+        const lowerSearch = searchTerm.toLowerCase();
+        const matchesSearch = !searchTerm || (
+            (d.name || '').toLowerCase().includes(lowerSearch) || 
+            (d.phone || '').includes(searchTerm) ||
+            (d.email || '').toLowerCase().includes(lowerSearch) ||
+            (d.upiIds || []).some(u => u.toLowerCase().includes(lowerSearch)) ||
+            (d.accountNumbers || []).some(a => a.includes(searchTerm))
+        );
+
+        // 2. Status Filter
         const matchesStatus = statusFilter === 'All' || d.status === statusFilter;
-        return matchesSearch && matchesStatus;
+
+        // 3. Designation Filter (Find donors who have given specific categories)
+        let matchesDesignation = true;
+        if (designationFilter !== 'All' && allDonations) {
+            const donorDonations = allDonations.filter(don => don.donorId === d.id);
+            matchesDesignation = donorDonations.some(don => 
+                (don.typeSplit || []).some(s => s.category === designationFilter)
+            );
+        }
+
+        // 4. Date Filter (By profile creation)
+        let matchesDate = true;
+        if (dateRange?.from && d.createdAt) {
+            const createdAtDate = (d.createdAt as any).toDate ? (d.createdAt as any).toDate() : new Date(d.createdAt as any);
+            const from = startOfDay(dateRange.from);
+            const to = dateRange.to ? endOfDay(dateRange.to) : endOfDay(dateRange.from);
+            matchesDate = createdAtDate >= from && createdAtDate <= to;
+        }
+
+        return matchesSearch && matchesStatus && matchesDesignation && matchesDate;
     }).sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-  }, [donors, searchTerm, statusFilter]);
+  }, [donors, searchTerm, statusFilter, designationFilter, dateRange, allDonations]);
 
   const stats = useMemo(() => {
       const data = filteredDonors;
@@ -173,7 +221,7 @@ export default function DonorRegistryPage() {
             toast({ title: 'Removal Failed', description: res.message, variant: 'destructive' });
         }
     } catch (e: any) {
-        toast({ title: 'System Error', description: e.message || 'An unexpected error occurred during the purge.', variant: 'destructive' });
+        toast({ title: 'System Error', description: e.message || 'An unexpected error occurred.', variant: 'destructive' });
     } finally {
         setIsSubmitting(false);
     }
@@ -240,41 +288,72 @@ export default function DonorRegistryPage() {
       </div>
 
       <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">
-        <div className="flex flex-wrap items-center gap-3">
-            <div className="relative flex-1 min-w-[250px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
-                <Input 
-                    placeholder="Search Name, Phone, Email..." 
-                    value={searchTerm} 
-                    onChange={(e) => setSearchTerm(e.target.value)} 
-                    className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary rounded-[12px]" 
-                />
+        <ScrollArea className="w-full">
+            <div className="flex flex-nowrap items-center gap-3 pb-2">
+                <div className="relative w-[300px] shrink-0">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
+                    <Input 
+                        placeholder="Search Name, Phone, UPI, Acc..." 
+                        value={searchTerm} 
+                        onChange={(e) => setSearchTerm(e.target.value)} 
+                        className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary rounded-[12px] bg-white" 
+                    />
+                </div>
+
+                <Popover>
+                    <PopoverTrigger asChild>
+                        <Button variant="outline" className={cn("w-[220px] shrink-0 justify-start h-10 text-sm border-primary/10 text-primary font-bold rounded-[12px] bg-white transition-all hover:border-primary/30", !dateRange && "text-muted-foreground")}>
+                            <CalendarIcon className="mr-2 h-4 w-4 opacity-40" />
+                            {dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd, y")) : "Filter Registration Date"}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar initialFocus mode="range" selected={dateRange} onSelect={setDate} numberOfMonths={2} />
+                    </PopoverContent>
+                </Popover>
+                {dateRange && <Button variant="ghost" size="icon" className="h-10 w-10 text-primary/40 hover:text-primary shrink-0" onClick={() => setDateRange(undefined)}><X className="h-4 w-4"/></Button>}
+                
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                    <SelectTrigger className="w-[180px] shrink-0 h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white">
+                        <SelectValue placeholder="Account Status" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                        <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
+                        <SelectItem value="Active" className="font-normal text-primary">Active</SelectItem>
+                        <SelectItem value="Inactive" className="font-normal text-destructive">Inactive</SelectItem>
+                    </SelectContent>
+                </Select>
+
+                <Select value={designationFilter} onValueChange={setDesignationFilter}>
+                    <SelectTrigger className="w-[200px] shrink-0 h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white">
+                        <div className="flex items-center gap-2 truncate">
+                            <Filter className="h-3.5 w-3.5 opacity-40" />
+                            <SelectValue placeholder="Has Given Designation" />
+                        </div>
+                    </SelectTrigger>
+                    <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                        <SelectItem value="All" className="font-normal">Any Designation</SelectItem>
+                        {donationCategories.map(cat => (
+                            <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
             </div>
-            
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-[180px] h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white">
-                    <SelectValue placeholder="Account Status" />
-                </SelectTrigger>
-                <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                    <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
-                    <SelectItem value="Active" className="font-normal text-primary">Active</SelectItem>
-                    <SelectItem value="Inactive" className="font-normal text-destructive">Inactive</SelectItem>
-                </SelectContent>
-            </Select>
-        </div>
+            <ScrollBar orientation="horizontal" />
+        </ScrollArea>
       </div>
 
       <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm">
         <ScrollArea className="w-full">
-            <div className="min-w-[900px]">
+            <div className="min-w-[1000px]">
                 <Table>
                     <TableHeader>
                         <TableRow className="hover:bg-transparent border-b border-primary/10">
                             <TableHead className="w-[60px] pl-6 text-[10px] uppercase font-bold tracking-tight">#</TableHead>
-                            <TableHead className="text-[10px] uppercase font-bold tracking-tight">Donor Name</TableHead>
-                            <TableHead className="text-[10px] uppercase font-bold tracking-tight">Phone Number</TableHead>
-                            <TableHead className="text-[10px] uppercase font-bold tracking-tight">Email Address</TableHead>
-                            <TableHead className="text-center text-[10px] uppercase font-bold tracking-tight">Status</TableHead>
+                            <TableHead className="text-[10px] uppercase font-bold tracking-tight">Donor Identity</TableHead>
+                            <TableHead className="text-[10px] uppercase font-bold tracking-tight">Primary Contact</TableHead>
+                            <TableHead className="text-[10px] uppercase font-bold tracking-tight">Financial Handles</TableHead>
+                            <TableHead className="text-center text-[10px] uppercase font-bold tracking-tight">Registry Status</TableHead>
                             <TableHead className="text-right pr-6 text-[10px] uppercase font-bold tracking-tight">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
@@ -282,11 +361,32 @@ export default function DonorRegistryPage() {
                         {filteredDonors.map((donor, idx) => (
                             <TableRow key={donor.id} onClick={() => router.push(`/donors/${donor.id}`)} className="cursor-pointer hover:bg-primary/[0.02] transition-colors border-b border-primary/5 last:border-0 bg-white">
                                 <TableCell className="pl-6 font-mono text-xs opacity-60">{idx + 1}</TableCell>
-                                <TableCell className="font-bold text-sm text-primary">{donor.name}</TableCell>
-                                <TableCell className="font-mono text-xs opacity-70">{donor.phone || '---'}</TableCell>
-                                <TableCell className="text-xs font-normal text-muted-foreground">{donor.email || '---'}</TableCell>
+                                <TableCell className="py-4">
+                                    <div className="flex items-center gap-2">
+                                        <div className="font-bold text-sm text-primary">{donor.name}</div>
+                                        {!donor.donorId && <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0 opacity-40" title="System Linked Profile" />}
+                                    </div>
+                                    <div className="text-[10px] text-muted-foreground font-normal truncate max-w-[200px]">{donor.email || 'No email registered'}</div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex flex-col gap-0.5">
+                                        <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-primary">
+                                            <Smartphone className="h-3 w-3 opacity-40"/> {donor.phone}
+                                        </div>
+                                        {donor.address && <div className="text-[9px] text-muted-foreground truncate max-w-[150px] italic">{donor.address}</div>}
+                                    </div>
+                                </TableCell>
+                                <TableCell>
+                                    <div className="flex flex-wrap gap-1">
+                                        {(donor.upiIds || []).slice(0, 2).map((upi, i) => (
+                                            <Badge key={i} variant="outline" className="text-[8px] font-mono border-primary/10 text-primary/60">{upi}</Badge>
+                                        ))}
+                                        {(donor.accountNumbers || []).length > 0 && <Badge variant="secondary" className="text-[8px] font-bold"><Landmark className="h-2 w-2 mr-1"/> {(donor.accountNumbers || []).length} Acc</Badge>}
+                                        {!(donor.upiIds?.length) && !(donor.accountNumbers?.length) && <span className="text-[9px] text-muted-foreground italic font-normal">None Verified</span>}
+                                    </div>
+                                </TableCell>
                                 <TableCell className="text-center">
-                                    <Badge variant={donor.status === 'Active' ? 'active' : 'outline'} className="text-[10px] font-bold">
+                                    <Badge variant={donor.status === 'Active' ? 'eligible' : 'outline'} className="text-[10px] font-bold">
                                         {donor.status}
                                     </Badge>
                                 </TableCell>
@@ -307,7 +407,7 @@ export default function DonorRegistryPage() {
                                                 )}
                                                 {canDelete && (
                                                     <>
-                                                        <DropdownMenuSeparator className="bg-primary/10" />
+                                                        <DropdownMenuSeparator className="bg-primary/5" />
                                                         <DropdownMenuItem onSelect={(e) => { e.preventDefault(); handleDelete(donor); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal cursor-pointer">
                                                             <Trash2 className="mr-2 h-4 w-4"/> Remove Profile
                                                         </DropdownMenuItem>
@@ -330,6 +430,16 @@ export default function DonorRegistryPage() {
             <ScrollBar orientation="horizontal" />
         </ScrollArea>
       </Card>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between border-t pt-4 bg-primary/5 p-4 rounded-b-[16px]">
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Registry Page {currentPage} Of {totalPages}</p>
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/10 h-8 rounded-[10px] transition-transform active:scale-95">Previous</Button>
+            <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold border-primary/10 h-8 rounded-[10px] transition-transform active:scale-95">Next</Button>
+          </div>
+        </div>
+      )}
 
       <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
         <DialogContent className="max-w-2xl rounded-[16px] border-primary/10 p-0 overflow-hidden flex flex-col max-h-[90vh]">
