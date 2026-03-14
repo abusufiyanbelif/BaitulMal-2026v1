@@ -11,6 +11,7 @@ interface SectionLoaderProps {
 
 /**
  * A branded section-level loader that identifies exactly what component is being loaded.
+ * Now supports an optional progress percentage for deterministic feedback.
  */
 export function SectionLoader({ label, description, progress }: SectionLoaderProps) {
   return (
@@ -29,12 +30,12 @@ export function SectionLoader({ label, description, progress }: SectionLoaderPro
         )}
         {progress !== undefined && (
           <span className="text-[10px] font-bold text-primary/60 tracking-tight">
-            {Math.round(progress)}% Secured
+            {Math.round(progress)}%
           </span>
         )}
       </div>
       <div className="w-full max-w-md px-6">
-        <Progress value={progress} className="h-1 w-full bg-primary/10 rounded-full" />
+        <Progress value={progress} className="h-1.5 w-full bg-primary/10" />
       </div>
     </div>
   );

@@ -35,7 +35,8 @@ import {
     CheckSquare,
     X,
     ChevronsUpDown,
-    CalendarIcon
+    CalendarIcon,
+    ChevronDown
 } from 'lucide-react';
 import {
   DropdownMenu,

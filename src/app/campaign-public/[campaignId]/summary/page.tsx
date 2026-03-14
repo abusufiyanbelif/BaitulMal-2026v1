@@ -389,9 +389,9 @@ export default function PublicCampaignSummaryPage() {
                                                         ))}
                                                     </TableBody>
                                                     {beneficiaryGroups.length > 0 && (
-                                                        <TableFooter className="bg-primary/5 border-t">
+                                                        <tfoot className="bg-primary/5 border-t">
                                                             <TableRow><TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Total Requirement</TableCell><TableCell className="text-right font-mono font-bold text-primary text-lg">₹{calculatedRequirementTotal.toLocaleString('en-IN')}</TableCell></TableRow>
-                                                        </TableFooter>
+                                                        </tfoot>
                                                     )}
                                                 </Table>
                                             ) : (
@@ -414,14 +414,14 @@ export default function PublicCampaignSummaryPage() {
                                                             </TableRow>
                                                         ))}
                                                     </TableBody>
-                                                    <TableFooter className="bg-primary/5 border-t">
+                                                    <tfoot className="bg-primary/5 border-t">
                                                         <TableRow>
                                                             <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Single Unit Total</TableCell>
                                                             <TableCell className="text-right font-mono font-bold text-primary text-lg">
                                                                 ₹{(campaign?.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
                                                             </TableCell>
                                                         </TableRow>
-                                                    </TableFooter>
+                                                    </tfoot>
                                                 </Table>
                                             )}
                                         </div>
@@ -480,7 +480,7 @@ export default function PublicCampaignSummaryPage() {
                                         <div className="space-y-2">
                                             <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded">
                                                 <span className="text-muted-foreground tracking-tight font-normal">Net Registry Balance</span>
-                                                <span className="font-bold font-mono">₹{fundingData.totalZakatBalance.toLocaleString('en-IN')}</span>
+                                                <span className="font-bold text-primary font-mono">₹{fundingData.totalZakatBalance.toLocaleString('en-IN')}</span>
                                             </div>
                                             <div className="flex justify-between items-center text-[10px] font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded italic opacity-60">
                                                 <span>Contribution to Goal</span>

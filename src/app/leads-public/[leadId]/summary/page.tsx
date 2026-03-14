@@ -285,7 +285,7 @@ export default function PublicLeadSummaryPage() {
                     <CardContent className="space-y-4 pt-6 text-foreground font-normal">
                         <div className="space-y-2">
                             <Label className="text-muted-foreground text-[10px] font-bold tracking-tight uppercase">Description</Label>
-                            <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{lead.description || 'No description provided.'}</p>
+                            <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{lead.description || 'No Description Provided.'}</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 text-primary">
                             <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Required Amount</p><p className="mt-1 text-lg font-bold text-primary font-mono">₹{(lead.requiredAmount ?? 0).toLocaleString('en-IN')}</p></div>
@@ -401,14 +401,14 @@ export default function PublicLeadSummaryPage() {
                                                             </TableRow>
                                                         ))}
                                                     </TableBody>
-                                                    <TableFooter className="bg-primary/5 border-t">
+                                                    <tfoot className="bg-primary/5 border-t">
                                                         <TableRow>
                                                             <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Single Beneficiary Total</TableCell>
                                                             <TableCell className="text-right font-mono font-bold text-primary text-lg">
                                                                 ₹{calculatedRequirementTotal.toLocaleString('en-IN')}
                                                             </TableCell>
                                                         </TableRow>
-                                                    </TableFooter>
+                                                    </tfoot>
                                                 </Table>
                                             )}
                                         </div>
