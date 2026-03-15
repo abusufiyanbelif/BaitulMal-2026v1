@@ -1,6 +1,7 @@
+
 'use client';
-import React, { useState, useMemo } from 'react';
-import { useParams, useRouter, usePathname } from 'next/navigation';
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -142,10 +143,11 @@ function SortableHeader({ sortKey, children, className, sortConfig, handleSort }
     );
 };
 
-export default function DonationsPage() {
+function DonationListContent() {
   const params = useParams();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const campaignId = params.campaignId as string;
   const firestore = useFirestore();
   const storage = useStorage();
@@ -164,6 +166,34 @@ export default function DonationsPage() {
     return collection(firestore, 'donations');
   }, [firestore]);
   const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
+
+  const initialStatus = searchParams.get('status') || 'All';
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isImportOpen, setIsImportOpen] = useState(false);
+  const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
+  const [isUnlinkDialogOpen, setIsUnlinkDialogOpen] = useState(false);
+  const [donationToUnlink, setDonationToUnlink] = useState<string | null>(null);
+  
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  const [imageToView, setImageToView] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
+  const [identityFilter, setIdentityFilter] = useState('All');
+  const [methodFilter, setMethodFilter] = useState('All');
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
+  const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(15);
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+  
+  const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.update', false);
 
   const donations = useMemo(() => {
     if (!allDonations || !campaignId) return [];
@@ -187,32 +217,6 @@ export default function DonationsPage() {
   const allLeadsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'leads') : null), [firestore]);
   const { data: allLeads } = useCollection<Lead>(allLeadsCollectionRef);
 
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [isImportOpen, setIsImportOpen] = useState(false);
-  const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
-  const [isUnlinkDialogOpen, setIsUnlinkDialogOpen] = useState(false);
-  const [donationToUnlink, setDonationToUnlink] = useState<string | null>(null);
-  
-  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
-  const [imageToView, setImageToView] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(1);
-  const [rotation, setRotation] = useState(0);
-
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [identityFilter, setIdentityFilter] = useState('All');
-  const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
-  const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(15);
-
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
-  
-  const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.update', false);
-
   const filteredAndSortedDonations = useMemo(() => {
     if (!donations) return [];
     let items = [...donations];
@@ -225,6 +229,10 @@ export default function DonationsPage() {
         items = items.filter(d => !d.donorId);
     } else if (identityFilter === 'Linked') {
         items = items.filter(d => !!d.donorId);
+    }
+
+    if (methodFilter !== 'All') {
+        items = items.filter(d => d.donationType === methodFilter);
     }
 
     if (searchTerm) {
@@ -254,7 +262,7 @@ export default function DonationsPage() {
       });
     }
     return items;
-  }, [donations, searchTerm, statusFilter, identityFilter, dateRange, sortConfig]);
+  }, [donations, searchTerm, statusFilter, identityFilter, methodFilter, dateRange, sortConfig]);
 
   const stats = useMemo(() => {
       const allData = donations || [];
@@ -265,6 +273,8 @@ export default function DonationsPage() {
           unlinked: allData.filter(d => !d.donorId).length,
           totalAmount: allData.filter(d => d.status === 'Verified').reduce((sum, d) => sum + d.amountForThisCampaign, 0),
           pendingAmount: allData.filter(d => d.status === 'Pending').reduce((sum, d) => sum + d.amountForThisCampaign, 0),
+          online: allData.filter(d => d.donationType === 'Online Payment').length,
+          cash: allData.filter(d => d.donationType === 'Cash').length,
       };
   }, [donations]);
 
@@ -307,7 +317,7 @@ export default function DonationsPage() {
     const updateData = { linkSplit: newLinkSplit };
     updateDoc(docRef, updateData)
         .catch(async (serverError: any) => {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: updateData }));
+            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData }));
         })
         .finally(() => {
             toast({ title: 'Success', description: 'Donation Unlinked Successfully.', variant: 'success' });
@@ -339,15 +349,15 @@ export default function DonationsPage() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <StatCard 
-                title="Total Count" 
+                title="Total" 
                 count={stats.total} 
                 description="All Records Logged" 
                 icon={Users} 
                 delay="100ms" 
-                onClick={() => { setStatusFilter('All'); setIdentityFilter('All'); setSearchTerm(''); }}
+                onClick={() => { setStatusFilter('All'); setIdentityFilter('All'); setMethodFilter('All'); setSearchTerm(''); }}
             />
             <StatCard 
-                title="Verified Sum" 
+                title="Verified" 
                 count={stats.totalAmount.toLocaleString('en-IN')} 
                 description="Confirmed Funds" 
                 icon={CheckCircle2} 
@@ -356,7 +366,7 @@ export default function DonationsPage() {
                 onClick={() => { setStatusFilter('Verified'); }}
             />
             <StatCard 
-                title="Pending Sum" 
+                title="Pending" 
                 count={stats.pendingAmount.toLocaleString('en-IN')} 
                 description="Awaiting Vetting" 
                 icon={Hourglass} 
@@ -373,8 +383,22 @@ export default function DonationsPage() {
                 colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} 
                 onClick={() => { setIdentityFilter('Unlinked'); }}
             />
-            <StatCard title="Online Pay" count={stats.online} description="Digital Transfers" icon={Smartphone} delay="300ms" />
-            <StatCard title="Cash" count={stats.cash} description="Physical Collections" icon={Wallet} delay="350ms" />
+            <StatCard 
+                title="Online Pay" 
+                count={stats.online} 
+                description="Digital Transfers" 
+                icon={Smartphone} 
+                delay="300ms" 
+                onClick={() => { setMethodFilter('Online Payment'); }}
+            />
+            <StatCard 
+                title="Cash" 
+                count={stats.cash} 
+                description="Physical Collections" 
+                icon={Wallet} 
+                delay="350ms" 
+                onClick={() => { setMethodFilter('Cash'); }}
+            />
         </div>
 
         {selectedIds.length > 0 && (
@@ -393,7 +417,7 @@ export default function DonationsPage() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" className="w-56 rounded-xl shadow-dropdown border-primary/10">
-                                <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-normal">Set To Verified</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-normal text-primary">Set To Verified</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleBulkStatusChange('Canceled')} className="font-normal text-destructive">Set To Canceled</DropdownMenuItem>
                             </DropdownMenuContent>
@@ -427,7 +451,7 @@ export default function DonationsPage() {
                     <Input placeholder="Search Donor..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-[200px] h-9 text-xs font-normal" />
                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
                         <SelectTrigger className="w-[140px] h-9 text-xs text-primary font-bold border-primary/20"><SelectValue placeholder="Status" /></SelectTrigger>
-                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Verified" className="font-bold">Verified</SelectItem><SelectItem value="Pending" className="font-bold">Pending</SelectItem><SelectItem value="Canceled" className="font-bold">Canceled</SelectItem></SelectContent>
+                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Verified" className="font-bold text-primary">Verified</SelectItem><SelectItem value="Pending" className="font-bold">Pending</SelectItem><SelectItem value="Canceled" className="font-bold text-destructive">Canceled</SelectItem></SelectContent>
                     </Select>
                     <Select value={identityFilter} onValueChange={v => { setIdentityFilter(v); setCurrentPage(1); }}>
                         <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-white font-normal shrink-0"><SelectValue placeholder="Identity Linkage"/></SelectTrigger>
@@ -435,6 +459,16 @@ export default function DonationsPage() {
                             <SelectItem value="All" className="font-normal">All Identities</SelectItem>
                             <SelectItem value="Linked" className="font-normal text-primary">Fully Linked</SelectItem>
                             <SelectItem value="Unlinked" className="font-normal text-amber-600 font-bold">Needs Resolution</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Select value={methodFilter} onValueChange={v => { setMethodFilter(v); setCurrentPage(1); }}>
+                        <SelectTrigger className="w-[160px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-white font-normal shrink-0"><SelectValue placeholder="Method"/></SelectTrigger>
+                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                            <SelectItem value="All">All Methods</SelectItem>
+                            <SelectItem value="Online Payment">Online Payment</SelectItem>
+                            <SelectItem value="Cash">Cash</SelectItem>
+                            <SelectItem value="Check">Check</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -574,8 +608,16 @@ export default function DonationsPage() {
       )}
       
       <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
-        <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink From Project?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach This Record From The Current Campaign? The Record Remains Secured In The Master Registry.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive hover:bg-destructive/90 text-white font-bold rounded-[12px] transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink From Project?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach This Record From The Current Campaign? The Record Remains Secured In The Master Registry.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white font-bold rounded-[12px] transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
     </main>
   );
+}
+
+export default function DonationsPage() {
+    return (
+        <Suspense fallback={<BrandedLoader message="Syncing Campaign Donations..." />}>
+            <DonationListContent />
+        </Suspense>
+    );
 }

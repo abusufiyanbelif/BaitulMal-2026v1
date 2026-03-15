@@ -1,7 +1,8 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { useParams, usePathname } from 'next/navigation';
+import { useParams, usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { 
     useFirestore, 
@@ -54,7 +55,8 @@ import {
     Info,
     HandHelping,
     ShieldCheck,
-    LifeBuoy
+    LifeBuoy,
+    ChevronRight
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
@@ -124,6 +126,7 @@ const donationPaymentTypeChartConfig = {
 export default function LeadSummaryPage() {
     const params = useParams();
     const pathname = usePathname();
+    const router = useRouter();
     const leadId = params?.leadId as string;
     const firestore = useFirestore();
     const storage = useStorage();
@@ -665,9 +668,24 @@ export default function LeadSummaryPage() {
                                             <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold tracking-tight uppercase">Funded</span></div>
                                         </div>
                                         <div className="space-y-4 text-center md:text-left text-primary font-bold animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Raised For Goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Grand Total Received</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div 
+                                                className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
+                                                onClick={() => router.push(`/leads-members/${leadId}/donations?status=Verified`)}
+                                            >
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase group-hover:text-primary transition-colors">Raised For Goal</p>
+                                                <p className="text-3xl font-bold text-primary font-mono flex items-center gap-2">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
+                                            </div>
+                                            <div className="transition-transform hover:translate-x-1 duration-300">
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Target Goal</p>
+                                                <p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p>
+                                            </div>
+                                            <div 
+                                                className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
+                                                onClick={() => router.push(`/leads-members/${leadId}/donations?status=Verified`)}
+                                            >
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase group-hover:text-primary transition-colors">Grand Total Received</p>
+                                                <p className="text-2xl font-bold text-primary font-mono flex items-center gap-2">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
+                                            </div>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -676,9 +694,42 @@ export default function LeadSummaryPage() {
 
                         {isVisible('quick_stats') && (
                             <div className="grid gap-6 grid-cols-1 sm:grid-cols-3 font-normal">
-                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight uppercase">Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.totalBeneficiaries}</div></CardContent></Card>
-                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight uppercase">{itemGivenLabel}</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesGiven}</div></CardContent></Card>
-                                <Card className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight uppercase">{itemPendingLabel}</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData.beneficiariesPending}</div></CardContent></Card>
+                                <Card 
+                                    className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer group"
+                                    onClick={() => router.push(`/leads-members/${leadId}/beneficiaries`)}
+                                >
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-[10px] font-bold text-primary tracking-tight uppercase">Beneficiaries</CardTitle>
+                                        <Users className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold text-primary flex items-center justify-between">{fundingData.totalBeneficiaries} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></div>
+                                    </CardContent>
+                                </Card>
+                                <Card 
+                                    className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer group"
+                                    onClick={() => router.push(`/leads-members/${leadId}/beneficiaries?status=Given`)}
+                                >
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-[10px] font-bold text-primary tracking-tight uppercase">{itemGivenLabel}</CardTitle>
+                                        <Gift className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold text-primary flex items-center justify-between">{fundingData.beneficiariesGiven} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></div>
+                                    </CardContent>
+                                </Card>
+                                <Card 
+                                    className="bg-white border-primary/10 transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer group"
+                                    onClick={() => router.push(`/leads-members/${leadId}/beneficiaries?status=Pending`)}
+                                >
+                                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                        <CardTitle className="text-[10px] font-bold text-primary tracking-tight uppercase">{itemPendingLabel}</CardTitle>
+                                        <Hourglass className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+                                    </CardHeader>
+                                    <CardContent>
+                                        <div className="text-2xl font-bold text-primary flex items-center justify-between">{fundingData.beneficiariesPending} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></div>
+                                    </CardContent>
+                                </Card>
                             </div>
                         )}
 

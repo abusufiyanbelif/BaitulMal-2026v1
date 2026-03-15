@@ -1,6 +1,7 @@
+
 'use client';
-import React, { useState, useMemo } from 'react';
-import { useParams, useRouter, usePathname } from 'next/navigation';
+import React, { useState, useMemo, Suspense } from 'react';
+import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
@@ -141,10 +142,11 @@ function SortableHeader({ sortKey, children, className, sortConfig, handleSort }
     );
 };
 
-export default function DonationsPage() {
+function LeadDonationListContent() {
   const params = useParams();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const leadId = params.leadId as string;
   const firestore = useFirestore();
   const storage = useStorage();
@@ -170,6 +172,7 @@ export default function DonationsPage() {
   const leadsCollectionRef = useMemoFirebase(() => firestore ? collection(firestore, 'leads') : null, [firestore]);
   const { data: allLeads } = useCollection<Lead>(leadsCollectionRef);
 
+  const initialStatus = searchParams.get('status') || 'All';
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
@@ -183,8 +186,9 @@ export default function DonationsPage() {
   const [rotation, setRotation] = useState(0);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [identityFilter, setIdentityFilter] = useState('All');
+  const [methodFilter, setMethodFilter] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
@@ -219,6 +223,10 @@ export default function DonationsPage() {
         items = items.filter(d => !!d.donorId);
     }
 
+    if (methodFilter !== 'All') {
+        items = items.filter(d => d.donationType === methodFilter);
+    }
+
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       items = items.filter(d => d.donorName.toLowerCase().includes(term) || d.receiverName.toLowerCase().includes(term) || d.donorPhone.includes(term));
@@ -244,7 +252,7 @@ export default function DonationsPage() {
       });
     }
     return items;
-  }, [donations, searchTerm, statusFilter, identityFilter, dateRange, sortConfig]);
+  }, [donations, searchTerm, statusFilter, identityFilter, methodFilter, dateRange, sortConfig]);
 
   const stats = useMemo(() => {
       const allData = donations || [];
@@ -290,7 +298,7 @@ export default function DonationsPage() {
     const updateData = { linkSplit: newLinkSplit };
     updateDoc(docRef, updateData)
         .catch(async (serverError: any) => {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData }));
+            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: updateData }));
         })
         .finally(() => {
             toast({ title: 'Success', description: 'Donation Unlinked Successfully.', variant: 'success' });
@@ -385,8 +393,8 @@ export default function DonationsPage() {
         d.id,
         `"${d.donorName || ''}"`,
         d.donorPhone || '',
-        `"${d.receiverName || ''}"`,
-        `"${d.referral || ''}"`,
+        `"${(d.receiverName || '' )}"`,
+        `"${(d.referral || '')}"`,
         d.amount || 0,
         d.donationDate || '',
         d.status || 'Pending',
@@ -439,15 +447,15 @@ export default function DonationsPage() {
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <StatCard 
-                title="Total Count" 
+                title="Total" 
                 count={stats.total} 
                 description="All Records Logged" 
                 icon={Users} 
                 delay="100ms" 
-                onClick={() => { setStatusFilter('All'); setIdentityFilter('All'); setSearchTerm(''); }}
+                onClick={() => { setStatusFilter('All'); setIdentityFilter('All'); setMethodFilter('All'); setSearchTerm(''); }}
             />
             <StatCard 
-                title="Verified Sum" 
+                title="Verified" 
                 count={stats.totalAmount.toLocaleString('en-IN')} 
                 description="Confirmed Funds" 
                 icon={CheckCircle2} 
@@ -456,7 +464,7 @@ export default function DonationsPage() {
                 onClick={() => { setStatusFilter('Verified'); }}
             />
             <StatCard 
-                title="Pending Sum" 
+                title="Pending" 
                 count={stats.pendingAmount.toLocaleString('en-IN')} 
                 description="Awaiting Vetting" 
                 icon={Hourglass} 
@@ -473,8 +481,22 @@ export default function DonationsPage() {
                 colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} 
                 onClick={() => { setIdentityFilter('Unlinked'); }}
             />
-            <StatCard title="Online Pay" count={stats.online} description="Digital Transfers" icon={Smartphone} delay="300ms" />
-            <StatCard title="Cash" count={stats.cash} description="Physical Collections" icon={Wallet} delay="350ms" />
+            <StatCard 
+                title="Online Pay" 
+                count={stats.online} 
+                description="Digital Transfers" 
+                icon={Smartphone} 
+                delay="300ms" 
+                onClick={() => { setMethodFilter('Online Payment'); }}
+            />
+            <StatCard 
+                title="Cash" 
+                count={stats.cash} 
+                description="Physical Collections" 
+                icon={Wallet} 
+                delay="350ms" 
+                onClick={() => { setMethodFilter('Cash'); }}
+            />
         </div>
 
         {selectedIds.length > 0 && (
@@ -493,7 +515,7 @@ export default function DonationsPage() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" className="w-56 rounded-xl shadow-dropdown border-primary/10">
-                                <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-normal">Set To Verified</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-normal text-primary">Set To Verified</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleBulkStatusChange('Canceled')} className="font-normal text-destructive">Set To Canceled</DropdownMenuItem>
                             </DropdownMenuContent>
@@ -549,6 +571,16 @@ export default function DonationsPage() {
                             <SelectItem value="All" className="font-normal">All Identities</SelectItem>
                             <SelectItem value="Linked" className="font-normal text-primary">Fully Linked</SelectItem>
                             <SelectItem value="Unlinked" className="font-normal text-amber-600 font-bold">Needs Resolution</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Select value={methodFilter} onValueChange={v => { setMethodFilter(v); setCurrentPage(1); }}>
+                        <SelectTrigger className="w-[160px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-white font-normal shrink-0"><SelectValue placeholder="Method"/></SelectTrigger>
+                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                            <SelectItem value="All">All Methods</SelectItem>
+                            <SelectItem value="Online Payment">Online Payment</SelectItem>
+                            <SelectItem value="Cash">Cash</SelectItem>
+                            <SelectItem value="Check">Check</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
                         </SelectContent>
                     </Select>
                 </div>
@@ -660,4 +692,12 @@ export default function DonationsPage() {
         </AlertDialog>
     </main>
   );
+}
+
+export default function DonationsPage() {
+    return (
+        <Suspense fallback={<BrandedLoader message="Syncing Lead Donations..." />}>
+            <LeadDonationListContent />
+        </Suspense>
+    );
 }

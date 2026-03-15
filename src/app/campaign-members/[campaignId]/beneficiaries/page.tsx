@@ -1,7 +1,8 @@
+
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { useParams, useRouter, usePathname } from 'next/navigation';
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { 
     useFirestore, 
     useStorage, 
@@ -72,7 +73,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter
 } from "@/components/ui/dialog";
 import {
   Popover,
@@ -130,10 +130,11 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, on
     );
 }
 
-export default function BeneficiariesPage() {
+function BeneficiaryListContent() {
   const params = useParams();
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const campaignId = typeof params?.campaignId === "string" ? params.campaignId : "";
   const firestore = useFirestore();
   const storage = useStorage();
@@ -145,15 +146,15 @@ export default function BeneficiariesPage() {
   const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && campaignId) ? collection(firestore, 'campaigns', campaignId, 'beneficiaries') : null, [firestore, campaignId]);
   const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
 
+  const initialStatus = searchParams.get('status') || 'All';
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [zakatFilter, setZakatFilter] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
-  const [selectedReferrals, setSelectedReferrals] = useState<string[]>([]);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [editingBeneficiary, setEditingBeneficiary] = useState<Beneficiary | null>(null);
   
@@ -189,7 +190,6 @@ export default function BeneficiariesPage() {
         const matchesSearch = (b.name?.toLowerCase().includes(searchTerm.toLowerCase()) || b.phone?.includes(searchTerm) || b.address?.toLowerCase().includes(searchTerm.toLowerCase()));
         const matchesStatus = statusFilter === 'All' || b.status === statusFilter;
         const matchesZakat = zakatFilter === 'All' || (zakatFilter === 'Eligible' ? b.isEligibleForZakat : !b.isEligibleForZakat);
-        const matchesReferral = selectedReferrals.length === 0 || (b.referralBy && selectedReferrals.includes(b.referralBy.trim()));
         
         let matchesDate = true;
         if (dateRange?.from) {
@@ -204,12 +204,11 @@ export default function BeneficiariesPage() {
             }
         }
 
-        return matchesSearch && matchesStatus && matchesZakat && matchesReferral && matchesDate;
+        return matchesSearch && matchesStatus && matchesZakat && matchesDate;
     });
-  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, selectedReferrals, dateRange]);
+  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, dateRange]);
 
   const stats = useMemo(() => {
-      const data = filteredBeneficiaries;
       const allData = beneficiaries || [];
       return {
           total: allData.length,
@@ -220,7 +219,7 @@ export default function BeneficiariesPage() {
           needDetails: allData.filter(b => b.verificationStatus === 'Need More Details').length,
           totalAmount: allData.reduce((sum, b) => sum + (b.kitAmount || 0), 0)
       };
-  }, [filteredBeneficiaries, beneficiaries]);
+  }, [beneficiaries]);
 
   const beneficiariesByCategory = useMemo(() => {
     const groups: Record<string, Beneficiary[]> = {};
@@ -234,10 +233,6 @@ export default function BeneficiariesPage() {
 
   const toggleGroup = (id: string) => {
     setOpenGroups(prev => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  const toggleReferral = (referral: string) => {
-    setSelectedReferrals(prev => prev.includes(referral) ? prev.filter(r => r !== referral) : [...prev, referral]);
   };
 
   const toggleSelectAll = (checked: boolean | string) => {
@@ -770,7 +765,7 @@ export default function BeneficiariesPage() {
                                                                             <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                                                                 <DropdownMenuRadioGroup value={b.verificationStatus || 'Pending'} onValueChange={(s) => handleVerificationChange(b, s)}>
                                                                                     <DropdownMenuRadioItem value="Pending" className="font-normal">Pending</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Verified" className="font-normal">Verified</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Verified" className="font-normal text-primary">Verified</DropdownMenuRadioItem>
                                                                                     <DropdownMenuRadioItem value="Hold" className="font-normal">Hold</DropdownMenuRadioItem>
                                                                                     <DropdownMenuRadioItem value="Need More Details" className="font-normal">Need Details</DropdownMenuRadioItem>
                                                                                 </DropdownMenuRadioGroup>
@@ -784,8 +779,8 @@ export default function BeneficiariesPage() {
                                                                             <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                                                                 <DropdownMenuRadioGroup value={b.status} onValueChange={(s) => handleStatusChange(b, s)}>
                                                                                     <DropdownMenuRadioItem value="Pending" className="font-normal">Pending</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Verified" className="font-normal">Verified (Secured)</DropdownMenuRadioItem>
-                                                                                    <DropdownMenuRadioItem value="Given" className="font-normal">Given (Completed)</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Verified" className="font-normal text-primary">Verified (Secured)</DropdownMenuRadioItem>
+                                                                                    <DropdownMenuRadioItem value="Given" className="font-normal text-primary">Given (Completed)</DropdownMenuRadioItem>
                                                                                 </DropdownMenuRadioGroup>
                                                                             </DropdownMenuSubContent></DropdownMenuPortal>
                                                                         </DropdownMenuSub>
@@ -878,4 +873,12 @@ export default function BeneficiariesPage() {
         <BeneficiaryImportDialog open={isImportOpen} onOpenChange={setIsImportOpen} onImport={handleImport} />
     </main>
   );
+}
+
+export default function BeneficiariesPage() {
+    return (
+        <Suspense fallback={<BrandedLoader message="Initializing Beneficiary Registry..." />}>
+            <BeneficiaryListContent />
+        </Suspense>
+    );
 }
