@@ -41,13 +41,15 @@ import {
     ChevronsUpDown,
     Download,
     UploadCloud,
-    Users,
-    CheckCircle2,
+    IndianRupee,
     Hourglass,
     XCircle,
     Smartphone,
     Wallet,
-    CalendarIcon
+    CalendarIcon,
+    Users,
+    CheckCircle2,
+    AlertCircle
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -234,6 +236,7 @@ export default function DonationsPage() {
           total: data.length,
           verified: data.filter(d => d.status === 'Verified').length,
           pending: data.filter(d => d.status === 'Pending').length,
+          unlinked: data.filter(d => !d.donorId).length,
           canceled: data.filter(d => d.status === 'Canceled').length,
           online: data.filter(d => d.donationType === 'Online Payment').length,
           cash: data.filter(d => d.donationType === 'Cash').length,
@@ -419,12 +422,12 @@ export default function DonationsPage() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <StatCard title="Total Count" count={stats.total} description="All records logged" icon={Users} delay="100ms" />
-            <StatCard title="Verified Sum" count={stats.totalAmount.toLocaleString('en-IN')} description="Confirmed funds" icon={CheckCircle2} delay="150ms" isCurrency />
-            <StatCard title="Pending Sum" count={stats.pendingAmount.toLocaleString('en-IN')} description="Awaiting vetting" icon={Hourglass} delay="150ms" isCurrency />
-            <StatCard title="Online Pay" count={stats.online} description="Digital transfers" icon={Smartphone} delay="250ms" />
-            <StatCard title="Cash" count={stats.cash} description="Physical collections" icon={Wallet} delay="300ms" />
-            <StatCard title="Canceled" count={stats.canceled} description="Voided records" icon={XCircle} delay="350ms" colorClass="bg-red-50/50" />
+            <StatCard title="Total Count" count={stats.total} description="All Records Logged" icon={Users} delay="100ms" />
+            <StatCard title="Verified Sum" count={stats.totalAmount.toLocaleString('en-IN')} description="Confirmed Funds" icon={CheckCircle2} delay="150ms" isCurrency />
+            <StatCard title="Pending Sum" count={stats.pendingAmount.toLocaleString('en-IN')} description="Awaiting Vetting" icon={Hourglass} delay="200ms" isCurrency />
+            <StatCard title="Unlinked" count={stats.unlinked} description="Needs Profile Mapping" icon={AlertCircle} delay="250ms" colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} />
+            <StatCard title="Online Pay" count={stats.online} description="Digital Transfers" icon={Smartphone} delay="300ms" />
+            <StatCard title="Cash" count={stats.cash} description="Physical Collections" icon={Wallet} delay="350ms" />
         </div>
 
         {selectedIds.length > 0 && (
@@ -464,7 +467,7 @@ export default function DonationsPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                     <div className="space-y-1.5">
                         <CardTitle className="text-xl font-bold tracking-tight text-primary">Donation List ({filteredAndSortedDonations.length})</CardTitle>
-                        <CardDescription className="font-normal text-primary/70">Verified contribution logs for this individual case.</CardDescription>
+                        <CardDescription className="font-normal text-primary/70">Verified Contribution Logs For This Individual Case.</CardDescription>
                     </div>
                     <div className="flex flex-wrap gap-2">
                         <Button variant="outline" size="sm" onClick={handleExport} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><Download className="mr-2 h-4 w-4"/> Export CSV</Button>
@@ -524,7 +527,13 @@ export default function DonationsPage() {
                                     />
                                 </div>
                                 <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</div>
-                                <div className="min-w-0"><div className="font-bold text-sm text-primary truncate">{donation.donorName}</div><div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone}</div></div>
+                                <div className="min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <div className="font-bold text-sm text-primary truncate">{donation.donorName}</div>
+                                        {!donation.donorId && <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
+                                    </div>
+                                    <div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone}</div>
+                                </div>
                                 <div className="text-right font-bold font-mono text-primary text-sm">₹{donation.amountForThisLead.toFixed(2)}</div>
                                 <div className="text-xs font-normal text-primary/80 text-center">{donation.donationDate}</div>
                                 <div className="text-center"><Badge variant="secondary" className="text-[9px] font-bold">{donation.donationType}</Badge></div>
