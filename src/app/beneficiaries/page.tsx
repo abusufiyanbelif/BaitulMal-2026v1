@@ -233,8 +233,8 @@ export default function BeneficiariesPage() {
     setCurrentPage(1);
   };
 
-  const toggleSelectAll = (checked: boolean) => {
-    if (checked) {
+  const toggleSelectAll = (checked: boolean | string) => {
+    if (checked === true) {
         setSelectedIds(paginatedBeneficiaries.map(b => b.id));
     } else {
         setSelectedIds([]);
@@ -494,7 +494,7 @@ export default function BeneficiariesPage() {
 
                 <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
                     <SelectTrigger className="w-[180px] shrink-0 h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white"><SelectValue placeholder="Verification Status" /></SelectTrigger>
-                    <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">
+                    <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                         <SelectItem value="All" className="font-normal">All Verification</SelectItem>
                         <SelectItem value="Verified" className="font-normal">Verified</SelectItem>
                         <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
@@ -504,7 +504,7 @@ export default function BeneficiariesPage() {
                 </Select>
                 <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPage(1); }}>
                     <SelectTrigger className="w-[180px] shrink-0 h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white"><SelectValue placeholder="Zakat Eligibility" /></SelectTrigger>
-                    <SelectContent className="rounded-[12px] border-primary/10 shadow-dropdown">
+                    <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                         <SelectItem value="All" className="font-normal">All Zakat Status</SelectItem>
                         <SelectItem value="Eligible" className="font-normal">Eligible</SelectItem>
                         <SelectItem value="Not Eligible" className="font-normal">Not Eligible</SelectItem>
@@ -566,7 +566,7 @@ export default function BeneficiariesPage() {
                 <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold tracking-tight text-[hsl(var(--table-header-fg))]", gridClass)}>
                     <div className="flex justify-center">
                         <Checkbox 
-                            checked={paginatedBeneficiaries.length > 0 && selectedIds.length === paginatedDonations.length}
+                            checked={paginatedBeneficiaries.length > 0 && selectedIds.length === paginatedBeneficiaries.length}
                             onCheckedChange={toggleSelectAll}
                             className="border-primary/40 data-[state=checked]:bg-primary"
                         />

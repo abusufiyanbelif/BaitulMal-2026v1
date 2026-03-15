@@ -1,7 +1,6 @@
-
 'use client';
 
-import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
 import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { 
     useFirestore, 
@@ -122,7 +121,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, on
                     <p className="text-2xl font-black text-primary tracking-tight">{count}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-4 w-4" />
                 </div>
             </div>
             <p className="text-[9px] font-medium text-muted-foreground mt-auto">{description}</p>
@@ -155,6 +154,7 @@ function LeadBeneficiaryListContent() {
   const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [zakatFilter, setZakatFilter] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [selectedReferrals, setSelectedReferrals] = useState<string[]>([]);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [editingBeneficiary, setEditingBeneficiary] = useState<Beneficiary | null>(null);
   
@@ -165,6 +165,13 @@ function LeadBeneficiaryListContent() {
   const itemsPerPage = 15;
 
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.update', false);
+
+  const toggleReferral = useCallback((referral: string) => {
+    setSelectedReferrals(prev => 
+        prev.includes(referral) ? prev.filter(r => r !== referral) : [...prev, referral]
+    );
+    setCurrentPages({});
+  }, []);
 
   const isRation = lead?.purpose === 'Relief' && lead?.category === 'Ration Kit';
   const itemGivenLabel = isRation ? 'Kits Given' : 'Assistance Given';
@@ -190,6 +197,7 @@ function LeadBeneficiaryListContent() {
         const matchesSearch = (b.name?.toLowerCase().includes(searchTerm.toLowerCase()) || b.phone?.includes(searchTerm) || b.address?.toLowerCase().includes(searchTerm.toLowerCase()));
         const matchesStatus = statusFilter === 'All' || b.status === statusFilter;
         const matchesZakat = zakatFilter === 'All' || (zakatFilter === 'Eligible' ? b.isEligibleForZakat : !b.isEligibleForZakat);
+        const matchesReferral = selectedReferrals.length === 0 || (b.referralBy && selectedReferrals.includes(b.referralBy.trim()));
         
         let matchesDate = true;
         if (dateRange?.from) {
@@ -204,9 +212,9 @@ function LeadBeneficiaryListContent() {
             }
         }
 
-        return matchesSearch && matchesStatus && matchesZakat && matchesDate;
+        return matchesSearch && matchesStatus && matchesZakat && matchesDate && matchesReferral;
     });
-  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, dateRange]);
+  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, dateRange, selectedReferrals]);
 
   const stats = useMemo(() => {
       const allData = beneficiaries || [];

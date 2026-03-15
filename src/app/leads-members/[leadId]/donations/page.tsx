@@ -1,12 +1,10 @@
-
 'use client';
 import React, { useState, useMemo, Suspense } from 'react';
 import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc } from '@/firebase';
+import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc, storageRef, uploadBytes, getDownloadURL } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, doc, serverTimestamp, setDoc, updateDoc, type DocumentReference, deleteField } from 'firebase/firestore';
 import type { Donation, Lead, Campaign } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
@@ -94,7 +92,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn, getNestedValue } from '@/lib/utils';
-import { bulkUpdateDonationStatusAction, bulkImportDonationsAction } from '@/app/donations/actions';
+import { bulkUpdateDonationStatusAction, bulkImportDonationsAction, upsertDonationWithDonorAction } from '@/app/donations/actions';
 import { donationCategories } from '@/lib/modules';
 import { BrandedLoader } from '@/components/branded-loader';
 import { DonationImportDialog } from '@/components/donation-import-dialog';
@@ -201,6 +199,19 @@ function LeadDonationListContent() {
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.update', false);
   const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.create', false);
 
+  const handleSort = (key: string) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') direction = 'descending';
+    setSortConfig({ key, direction });
+    setCurrentPage(1);
+  };
+
+  const handleUnlinkClick = (id: string) => {
+    if (!canUpdate) return;
+    setDonationToUnlink(id);
+    setIsUnlinkDialogOpen(true);
+  };
+
   const donations = useMemo(() => {
     if (!allDonations || !leadId) return [];
     return allDonations
@@ -275,12 +286,6 @@ function LeadDonationListContent() {
     setIsFormOpen(true);
   };
 
-  const handleUnlinkClick = (id: string) => {
-    if (!canUpdate) return;
-    setDonationToUnlink(id);
-    setIsUnlinkDialogOpen(true);
-  };
-
   const handleViewImage = (url: string) => {
     setImageToView(url);
     setZoom(1);
@@ -298,7 +303,7 @@ function LeadDonationListContent() {
     const updateData = { linkSplit: newLinkSplit };
     updateDoc(docRef, updateData)
         .catch(async (serverError: any) => {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: updateData }));
+            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData }));
         })
         .finally(() => {
             toast({ title: 'Success', description: 'Donation Unlinked Successfully.', variant: 'success' });
@@ -348,13 +353,6 @@ function LeadDonationListContent() {
     } finally {
         setEditingDonation(null);
     }
-  };
-  
-  const handleSort = (key: string) => {
-    let direction: 'ascending' | 'descending' = 'ascending';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') direction = 'descending';
-    setSortConfig({ key, direction });
-    setCurrentPage(1);
   };
   
   const totalPages = Math.ceil(filteredAndSortedDonations.length / itemsPerPage);
@@ -426,7 +424,7 @@ function LeadDonationListContent() {
   const isLoading = isLeadLoading || areDonationsLoading || isProfileLoading;
   
   if (isLoading && !lead) return <BrandedLoader />;
-  if (!lead) return <div className="p-8 text-center text-primary font-bold"><p>Lead Not Found.</p><Button asChild variant="outline" className="mt-4 border-primary/20 text-primary"><Link href="/leads-members"><ArrowLeft className="mr-2"/>Back</Link></Button></div>;
+  if (!lead) return <div className="p-8 text-center text-primary font-bold"><p>Lead Found.</p><Button asChild variant="outline" className="mt-4 border-primary/20 text-primary"><Link href="/leads-members"><ArrowLeft className="mr-2"/>Back</Link></Button></div>;
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative overflow-hidden">

@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo, useEffect, Suspense } from 'react';
 import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
@@ -80,6 +79,7 @@ import {
     DialogTitle,
     DialogFooter,
 } from "@/components/ui/dialog";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { DonationSearchDialog } from '@/components/donation-search-dialog';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -92,7 +92,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn, getNestedValue } from '@/lib/utils';
-import { bulkUpdateDonationStatusAction, bulkImportDonationsAction } from '@/app/donations/actions';
+import { bulkUpdateDonationStatusAction, bulkImportDonationsAction, upsertDonationWithDonorAction } from '@/app/donations/actions';
 import { donationCategories } from '@/lib/modules';
 import { BrandedLoader } from '@/components/branded-loader';
 import { DonationImportDialog } from '@/components/donation-import-dialog';
@@ -278,6 +278,27 @@ function DonationListContent() {
       };
   }, [donations]);
 
+  const handleSort = (key: string) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+        direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+    setCurrentPage(1);
+  };
+
+  const handleUnlinkClick = (id: string) => {
+    setDonationToUnlink(id);
+    setIsUnlinkDialogOpen(true);
+  };
+
+  const handleViewImage = (url: string) => {
+    setImageToView(url);
+    setZoom(1);
+    setRotation(0);
+    setIsImageViewerOpen(true);
+  };
+
   const totalPages = Math.ceil(filteredAndSortedDonations.length / itemsPerPage);
   const paginatedDonations = useMemo(() => filteredAndSortedDonations.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [filteredAndSortedDonations, currentPage, itemsPerPage]);
 
@@ -323,6 +344,34 @@ function DonationListContent() {
             toast({ title: 'Success', description: 'Donation Unlinked Successfully.', variant: 'success' });
             setDonationToUnlink(null);
         });
+  };
+
+  const handleFormSubmit = async (data: DonationFormData) => {
+    if (!userProfile) return;
+    setIsFormOpen(false);
+    try {
+        const result = await upsertDonationWithDonorAction(
+            editingDonation?.id || null,
+            data as any,
+            { id: userProfile.id, name: userProfile.name }
+        );
+        if (result.success) {
+            toast({ title: "Success", description: result.message, variant: 'success' });
+        } else {
+            toast({ title: "Error", description: result.message, variant: 'destructive' });
+        }
+    } catch (error: any) {
+        toast({ title: "Failed", description: error.message, variant: 'destructive' });
+    } finally {
+        setEditingDonation(null);
+    }
+  };
+
+  const handleImport = async (records: Partial<Donation>[]) => {
+    if (!userProfile) return;
+    const res = await bulkImportDonationsAction(records, { id: userProfile.id, name: userProfile.name }, { type: 'campaign', id: campaignId, name: campaign?.name || 'Campaign' });
+    if (res && res.success) toast({ title: 'Import Complete', description: res.message, variant: 'success' });
+    else toast({ title: 'Import Failed', description: res?.message || "Import Operation Failed.", variant: 'destructive' });
   };
 
   const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading;

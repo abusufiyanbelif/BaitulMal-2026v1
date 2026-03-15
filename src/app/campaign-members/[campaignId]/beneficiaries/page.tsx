@@ -1,7 +1,6 @@
-
 'use client';
 
-import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import React, { useState, useMemo, useEffect, Suspense, useCallback } from 'react';
 import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import { 
     useFirestore, 
@@ -155,6 +154,7 @@ function BeneficiaryListContent() {
   const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [zakatFilter, setZakatFilter] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
+  const [selectedReferrals, setSelectedReferrals] = useState<string[]>([]);
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
   const [editingBeneficiary, setEditingBeneficiary] = useState<Beneficiary | null>(null);
   
@@ -165,6 +165,13 @@ function BeneficiaryListContent() {
   const itemsPerPage = 15;
 
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.update', false);
+
+  const toggleReferral = useCallback((referral: string) => {
+    setSelectedReferrals(prev => 
+        prev.includes(referral) ? prev.filter(r => r !== referral) : [...prev, referral]
+    );
+    setCurrentPages({});
+  }, []);
 
   const isRation = campaign?.category === 'Ration';
   const itemGivenLabel = isRation ? 'Kits Given' : 'Assistance Given';
@@ -190,6 +197,7 @@ function BeneficiaryListContent() {
         const matchesSearch = (b.name?.toLowerCase().includes(searchTerm.toLowerCase()) || b.phone?.includes(searchTerm) || b.address?.toLowerCase().includes(searchTerm.toLowerCase()));
         const matchesStatus = statusFilter === 'All' || b.status === statusFilter;
         const matchesZakat = zakatFilter === 'All' || (zakatFilter === 'Eligible' ? b.isEligibleForZakat : !b.isEligibleForZakat);
+        const matchesReferral = selectedReferrals.length === 0 || (b.referralBy && selectedReferrals.includes(b.referralBy.trim()));
         
         let matchesDate = true;
         if (dateRange?.from) {
@@ -204,9 +212,9 @@ function BeneficiaryListContent() {
             }
         }
 
-        return matchesSearch && matchesStatus && matchesZakat && matchesDate;
+        return matchesSearch && matchesStatus && matchesZakat && matchesDate && matchesReferral;
     });
-  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, dateRange]);
+  }, [beneficiaries, searchTerm, statusFilter, zakatFilter, dateRange, selectedReferrals]);
 
   const stats = useMemo(() => {
       const allData = beneficiaries || [];
@@ -631,7 +639,7 @@ function BeneficiaryListContent() {
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="start" className="w-48 rounded-xl shadow-dropdown border-primary/10">
-                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Verified')} className="font-normal">Mark Verified</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleBulkVerificationChange('Verified')} className="font-normal text-primary">Mark Verified</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleBulkVerificationChange('Pending')} className="font-normal">Mark Pending</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleBulkVerificationChange('Hold')} className="font-normal">Mark Hold</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleBulkVerificationChange('Need More Details')} className="font-normal">More Details</DropdownMenuItem>
