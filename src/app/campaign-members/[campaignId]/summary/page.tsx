@@ -298,7 +298,7 @@ export default function CampaignSummaryPage() {
 
     useEffect(() => {
         if (campaign && !editMode) {
-             setEditableCampaign({
+             setEditableLead({
                 name: campaign.name || '',
                 description: campaign.description || '',
                 startDate: campaign.startDate || '',
@@ -614,7 +614,7 @@ export default function CampaignSummaryPage() {
                                         </div>
                                         <div className="space-y-4 text-center md:text-left text-primary font-bold animate-fade-in-up" style={{ animationDelay: '300ms' }}>
                                             <div 
-                                                className="transition-transform hover:translate-x-1 cursor-pointer duration-300 group"
+                                                className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
                                                 onClick={() => router.push(`/campaign-members/${campaignId}/donations?status=Verified`)}
                                             >
                                                 <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase group-hover:text-primary transition-colors">Raised For Goal</p>
@@ -625,7 +625,7 @@ export default function CampaignSummaryPage() {
                                                 <p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p>
                                             </div>
                                             <div 
-                                                className="transition-transform hover:translate-x-1 cursor-pointer duration-300 group"
+                                                className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
                                                 onClick={() => router.push(`/campaign-members/${campaignId}/donations?status=Verified`)}
                                             >
                                                 <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase group-hover:text-primary transition-colors">Grand Total Received</p>
@@ -745,7 +745,7 @@ export default function CampaignSummaryPage() {
                                                     <TableFooter className="bg-primary/5 border-t font-bold">
                                                         <TableRow>
                                                             <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Single Unit Total</TableCell>
-                                                            <TableCell className="text-right font-mono font-bold text-primary text-base">
+                                                            <TableCell className="text-right font-mono font-bold text-primary text-lg">
                                                                 ₹{(campaign?.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
                                                             </TableCell>
                                                         </TableRow>

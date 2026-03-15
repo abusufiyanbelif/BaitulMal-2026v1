@@ -11,6 +11,9 @@ import {
     Wallet,
     CheckCircle2,
     ChevronRight,
+    AlertCircle,
+    ShieldAlert,
+    DatabaseZap
 } from 'lucide-react';
 import Link from 'next/link';
 import { 
@@ -29,7 +32,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from '@/components/ui/badge';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import type { Donation, Beneficiary, Lead, Campaign } from '@/lib/types';
 
@@ -57,7 +60,7 @@ function NotificationItem({ icon: Icon, title, subtitle, href, variant = 'info' 
                 <Icon className="h-4 w-4" />
             </div>
             <div className="flex-1 min-w-0 space-y-0.5">
-                <p className="text-xs font-medium text-primary truncate tracking-tight">{title}</p>
+                <p className="text-xs font-bold text-primary truncate tracking-tight">{title}</p>
                 <p className="text-[9px] text-muted-foreground truncate font-medium tracking-tight opacity-80">{subtitle}</p>
             </div>
             <ChevronRight className="h-3 w-3 text-muted-foreground/30 group-hover:text-primary transition-colors shrink-0" />
@@ -70,7 +73,7 @@ function SectionHeader({ title, count, icon: Icon }: { title: string, count: num
         <div className="flex items-center justify-between px-3 py-2 mt-2 first:mt-0">
             <div className="flex items-center gap-2">
                 <Icon className="h-3 w-3 text-primary/40" />
-                <span className="text-[10px] font-medium text-muted-foreground tracking-tight">{title}</span>
+                <span className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</span>
             </div>
             <Badge variant="secondary" className="h-4 px-1.5 text-[9px] font-bold rounded-full">{count}</Badge>
         </div>
@@ -87,17 +90,22 @@ export function NotificationBell() {
     [firestore, user]);
     const { data: unverifiedBeneficiaries } = useCollection<Beneficiary>(unverifiedBeneficiariesQuery);
 
-    // 2. Unverified Donations (Pending)
+    // 2. Unverified Donations (Pending status)
     const unverifiedDonationsQuery = useMemoFirebase(() => 
         (firestore && user) ? query(collection(firestore, 'donations'), where('status', '==', 'Pending')) : null, 
     [firestore, user]);
     const { data: unverifiedDonations } = useCollection<Donation>(unverifiedDonationsQuery);
 
-    // 3. Unallocated Donations (Verified with Balance)
+    // 3. Unlinked Donations (Verified but donorId is null - Identity Resolution)
     const verifiedDonationsQuery = useMemoFirebase(() => 
         (firestore && user) ? query(collection(firestore, 'donations'), where('status', '==', 'Verified')) : null, 
     [firestore, user]);
     const { data: verifiedDonations } = useCollection<Donation>(verifiedDonationsQuery);
+
+    const unlinkedDonations = useMemo(() => {
+        if (!verifiedDonations) return [];
+        return verifiedDonations.filter(d => !d.donorId);
+    }, [verifiedDonations]);
 
     const unallocatedCount = useMemo(() => {
         if (!verifiedDonations) return 0;
@@ -120,6 +128,7 @@ export function NotificationBell() {
 
     const totalAlerts = (unverifiedBeneficiaries?.length || 0) + 
                         (unverifiedDonations?.length || 0) + 
+                        (unlinkedDonations.length) +
                         (unallocatedCount) + 
                         (unverifiedLeads?.length || 0) + 
                         (unverifiedCampaigns?.length || 0);
@@ -162,17 +171,37 @@ export function NotificationBell() {
                                 <div className="p-4 rounded-full bg-primary/5 text-primary/20 mb-4 animate-fade-in-zoom">
                                     <CheckCircle2 className="h-10 w-10" />
                                 </div>
-                                <p className="text-sm font-bold text-primary tracking-tight">Everything is verified</p>
-                                <p className="text-[10px] text-muted-foreground font-normal">All data has been reviewed and allocated.</p>
+                                <p className="text-sm font-bold text-primary tracking-tight">Everything Is Verified</p>
+                                <p className="text-[10px] text-muted-foreground font-normal">All Data Has Been Reviewed And Allocated.</p>
                             </div>
                         ) : (
                             <div className="space-y-4">
+                                {/* Resolve Identities Section */}
+                                {unlinkedDonations.length > 0 && (
+                                    <div className="space-y-1">
+                                        <SectionHeader title="Map Identities" count={unlinkedDonations.length} icon={DatabaseZap} />
+                                        <div className="space-y-1">
+                                            {unlinkedDonations.slice(0, 3).map(d => (
+                                                <NotificationItem 
+                                                    key={`unlinked_${d.id}`}
+                                                    icon={AlertCircle}
+                                                    title={d.donorName}
+                                                    subtitle="Action: Map Identity To Profile"
+                                                    href={`/donations/${d.id}`}
+                                                    variant="warning"
+                                                />
+                                            ))}
+                                            <Link href="/donors" className="block text-[9px] font-black text-center text-amber-600 py-2 hover:underline uppercase tracking-tighter">Open Resolver Hub</Link>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Beneficiaries Section */}
                                 {unverifiedBeneficiaries && unverifiedBeneficiaries.length > 0 && (
                                     <div className="space-y-1">
                                         <SectionHeader title="Verify Profiles" count={unverifiedBeneficiaries.length} icon={Users} />
                                         <div className="space-y-1">
-                                            {unverifiedBeneficiaries.slice(0, 5).map(b => (
+                                            {unverifiedBeneficiaries.slice(0, 3).map(b => (
                                                 <NotificationItem 
                                                     key={b.id}
                                                     icon={Users}
@@ -182,8 +211,8 @@ export function NotificationBell() {
                                                     variant="destructive"
                                                 />
                                             ))}
-                                            {unverifiedBeneficiaries.length > 5 && (
-                                                <Link href="/beneficiaries" className="block text-[9px] font-bold text-center text-primary py-2 hover:underline">Manage All Profile Vetting</Link>
+                                            {unverifiedBeneficiaries.length > 3 && (
+                                                <Link href="/beneficiaries" className="block text-[9px] font-bold text-center text-primary py-2 hover:underline uppercase">Manage All Vetting</Link>
                                             )}
                                         </div>
                                     </div>
@@ -194,19 +223,16 @@ export function NotificationBell() {
                                     <div className="space-y-1">
                                         <SectionHeader title="Confirm Donations" count={unverifiedDonations.length} icon={IndianRupee} />
                                         <div className="space-y-1">
-                                            {unverifiedDonations.slice(0, 5).map(d => (
+                                            {unverifiedDonations.slice(0, 3).map(d => (
                                                 <NotificationItem 
                                                     key={d.id}
                                                     icon={IndianRupee}
                                                     title={`From: ${d.donorName}`}
-                                                    subtitle="Action: Verify Transaction Details"
+                                                    subtitle="Action: Confirm Receipt Of Funds"
                                                     href={`/donations/${d.id}`}
                                                     variant="destructive"
                                                 />
                                             ))}
-                                            {unverifiedDonations.length > 5 && (
-                                                <Link href="/donations" className="block text-[9px] font-bold text-center text-primary py-2 hover:underline">View All Pending Vetting</Link>
-                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -219,23 +245,20 @@ export function NotificationBell() {
                                             {verifiedDonations?.filter(d => {
                                                 const allocated = d.linkSplit?.reduce((s, l) => s + l.amount, 0) || 0;
                                                 return (d.amount - allocated) > 0.01;
-                                            }).slice(0, 5).map(d => {
+                                            }).slice(0, 3).map(d => {
                                                 const allocated = d.linkSplit?.reduce((s, l) => s + l.amount, 0) || 0;
                                                 const balance = d.amount - allocated;
                                                 return (
                                                     <NotificationItem 
-                                                        key={d.id}
+                                                        key={`alloc_${d.id}`}
                                                         icon={Wallet}
                                                         title={`Balance: ₹${balance.toLocaleString()}`}
                                                         subtitle="Action: Link Remaining Funds"
                                                         href={`/donations/${d.id}`}
-                                                        variant="warning"
+                                                        variant="info"
                                                     />
                                                 );
                                             })}
-                                            {unallocatedCount > 5 && (
-                                                <Link href="/donations" className="block text-[9px] font-bold text-center text-primary py-2 hover:underline">Complete Fund Allocations</Link>
-                                            )}
                                         </div>
                                     </div>
                                 )}
@@ -245,7 +268,7 @@ export function NotificationBell() {
                                     <div className="space-y-1">
                                         <SectionHeader title="Approve Appeals" count={(unverifiedLeads?.length || 0) + (unverifiedCampaigns?.length || 0)} icon={Lightbulb} />
                                         <div className="space-y-1">
-                                            {unverifiedCampaigns?.slice(0, 3).map(c => (
+                                            {unverifiedCampaigns?.slice(0, 2).map(c => (
                                                 <NotificationItem 
                                                     key={c.id}
                                                     icon={FolderKanban}
@@ -255,7 +278,7 @@ export function NotificationBell() {
                                                     variant="info"
                                                 />
                                             ))}
-                                            {unverifiedLeads?.slice(0, 3).map(l => (
+                                            {unverifiedLeads?.slice(0, 2).map(l => (
                                                 <NotificationItem 
                                                     key={l.id}
                                                     icon={Lightbulb}
@@ -271,11 +294,12 @@ export function NotificationBell() {
                             </div>
                         )}
                     </div>
+                    <ScrollBar />
                 </ScrollArea>
                 
                 {totalAlerts > 0 && (
                     <div className="p-3 bg-muted/20 border-t flex justify-center">
-                        <Button variant="ghost" size="sm" asChild className="h-7 text-[9px] font-bold text-primary tracking-tighter hover:bg-primary/5">
+                        <Button variant="ghost" size="sm" asChild className="h-7 text-[9px] font-bold text-primary tracking-tighter hover:bg-primary/5 uppercase">
                             <Link href="/dashboard" className="flex items-center">
                                 Return To Dashboard <ChevronRight className="ml-1 h-3 w-3" />
                             </Link>

@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -154,6 +155,13 @@ export default function BeneficiariesPage() {
     return Array.from(sources).sort();
   }, [beneficiaries]);
 
+  const toggleReferral = (referral: string) => {
+    setSelectedReferrals(prev => 
+        prev.includes(referral) ? prev.filter(r => r !== referral) : [...prev, referral]
+    );
+    setCurrentPage(1);
+  };
+
   const filteredAndSortedBeneficiaries = useMemo(() => {
     if (!beneficiaries) return [];
     
@@ -217,22 +225,6 @@ export default function BeneficiariesPage() {
     return filteredAndSortedBeneficiaries.slice(start, start + itemsPerPage);
   }, [filteredAndSortedBeneficiaries, currentPage, itemsPerPage]);
 
-  const handleSort = (key: string) => {
-    let direction: 'ascending' | 'descending' = 'ascending';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
-        direction = 'descending';
-    }
-    setSortConfig({ key, direction });
-    setCurrentPage(1);
-  };
-
-  const toggleReferral = (referral: string) => {
-    setSelectedReferrals(prev => 
-        prev.includes(referral) ? prev.filter(r => r !== referral) : [...prev, referral]
-    );
-    setCurrentPage(1);
-  };
-
   const toggleSelectAll = (checked: boolean | string) => {
     if (checked === true) {
         setSelectedIds(paginatedBeneficiaries.map(b => b.id));
@@ -253,7 +245,7 @@ export default function BeneficiariesPage() {
         toast({ title: "Status Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Failed", description: res?.message || "Failed to update records.", variant: "destructive" });
+        toast({ title: "Failed", description: res?.message || "Failed To Update Records.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -266,7 +258,7 @@ export default function BeneficiariesPage() {
         toast({ title: "Zakat Eligibility Updated", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Failed", description: res?.message || "Failed to update records.", variant: "destructive" });
+        toast({ title: "Failed", description: res?.message || "Failed To Update Records.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -326,13 +318,13 @@ export default function BeneficiariesPage() {
     if (res && res.success) {
         toast({ title: 'Import Complete', description: res.message, variant: 'success' });
     } else {
-        toast({ title: 'Import Failed', description: res?.message || "Operation failed.", variant: 'destructive' });
+        toast({ title: 'Import Failed', description: res?.message || "Operation Failed.", variant: 'destructive' });
     }
   };
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Master Registry..." description="Retrieving organizational records." />;
+  if (isLoading) return <SectionLoader label="Loading Master Registry..." description="Retrieving Institutional Records." />;
   
   if (!canRead) return (
     <main className="container mx-auto p-8 text-primary font-normal">
