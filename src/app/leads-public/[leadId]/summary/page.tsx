@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -37,9 +38,9 @@ import {
     Utensils, 
     LifeBuoy,
     ZoomIn,
-    ZoomOut,
-    RotateCw,
-    RefreshCw,
+    ZoomOut, 
+    RotateCw, 
+    RefreshCw, 
     ImageIcon,
     GraduationCap,
     HeartPulse,
@@ -235,7 +236,7 @@ export default function PublicLeadSummaryPage() {
 
     if (!lead || lead.publicVisibility !== 'Published') {
         return (
-            <main className="container mx-auto p-4 md:p-8 text-center text-primary font-bold">
+            <main className="container mx-auto p-4 md:p-8 text-center text-primary font-normal">
                 <p className="text-lg text-primary/70 font-normal">This Lead Is Not Available For Public View.</p>
                 <Button asChild className="mt-4 active:scale-95 transition-transform font-bold border-primary/20 text-primary" variant="outline"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Public Leads</Link></Button>
             </main>
@@ -306,12 +307,12 @@ export default function PublicLeadSummaryPage() {
                         {isVisible('funding_progress') && (
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
                                 <CardHeader className="bg-primary/5 border-b">
-                                    <CardTitle className="flex items-center gap-2 font-bold text-primary"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
+                                    <CardTitle className="flex items-center gap-2 font-bold text-primary uppercase"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
                                     <CardDescription className="font-normal text-primary/70">Verified Donations For This Initiative.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="pt-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                                        <div className="relative h-48 sm:h-64 w-full">
+                                        <div className="relative h-48 sm:h-64 w-full transition-transform duration-500 hover:scale-105">
                                             {isClient ? (
                                                 <ChartContainer config={{ progress: { label: 'Progress', color: 'hsl(var(--primary))' } }} className="mx-auto aspect-square h-full">
                                                     <ResponsiveContainer>
@@ -501,7 +502,7 @@ export default function PublicLeadSummaryPage() {
 
                             {isVisible('donations_by_payment_type') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-[10px] tracking-tight">Donations By Payment Type</CardTitle><CardDescription className="font-normal text-primary/70">Breakdown of funds by contribution channel.</CardDescription></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-[10px] tracking-tight">Donations By Payment Type</CardTitle><CardDescription className="font-normal text-primary/70">Breakdown Of Funds By Contribution Channel.</CardDescription></CardHeader>
                                     <CardContent className="pt-6">
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
@@ -537,7 +538,7 @@ export default function PublicLeadSummaryPage() {
 
                 {isVisible('documents') && publicDocuments.length > 0 && (
                     <Card className="animate-fade-in-up bg-white border-primary/10 shadow-sm overflow-hidden" style={{ animationDelay: '100ms' }}>
-                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight">Public Artifacts</CardTitle></CardHeader>
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight uppercase">Public Artifacts</CardTitle></CardHeader>
                         <CardContent className="pt-6">
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                 {publicDocuments.map((doc) => {

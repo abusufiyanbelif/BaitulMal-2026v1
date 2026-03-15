@@ -1,6 +1,7 @@
+
 'use client';
-import React, { useState, useMemo } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase, useAuth, storageRef, uploadBytes, getDownloadURL } from '@/firebase';
 import { collection, doc, serverTimestamp, setDoc, updateDoc, deleteField } from 'firebase/firestore';
@@ -104,14 +105,13 @@ type SortKey = keyof Donation | 'srNo';
 
 const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1100px]";
 
-function StatCard({ title, count, description, icon: Icon, colorClass, delay, isCurrency = false, onClick }: { title: string, count: number | string, description: string, icon: any, colorClass?: string, delay: string, isCurrency?: boolean, onClick?: () => void }) {
+function StatCard({ title, count, description, icon: Icon, delay, isCurrency = false, onClick }: { title: string, count: number | string, description: string, icon: any, delay: string, isCurrency?: boolean, onClick?: () => void }) {
     return (
         <Card 
             onClick={onClick}
             className={cn(
                 "flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", 
-                onClick && "cursor-pointer hover:-translate-y-1 active:scale-95",
-                colorClass
+                onClick && "cursor-pointer hover:-translate-y-1 active:scale-95"
             )} 
             style={{ animationDelay: delay, animationFillMode: 'backwards' }}
         >
@@ -123,7 +123,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, is
                     </p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-4 w-4" />
                 </div>
             </div>
             <p className="text-[9px] font-medium text-muted-foreground mt-auto">{description}</p>
@@ -210,14 +210,14 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                     <div className="space-y-6 max-w-5xl mx-auto">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="space-y-3">
-                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight"><IndianRupee className="h-3 w-3"/> Category Breakdown</h4>
+                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight uppercase"><IndianRupee className="h-3 w-3"/> Category Breakdown</h4>
                                 <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
                                     <ScrollArea className="w-full">
                                         <Table>
                                             <TableHeader className="bg-primary/5">
                                                 <TableRow>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Category</TableHead>
-                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Value</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Category</TableHead>
+                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Value</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -234,15 +234,15 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                 </div>
                             </div>
                             <div className="space-y-3">
-                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
+                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight uppercase"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
                                 <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
                                     <ScrollArea className="w-full">
                                         <div className="min-w-[300px]">
                                             <Table>
                                                 <TableHeader className="bg-primary/5">
                                                     <TableRow>
-                                                        <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Target Initiative</TableHead>
-                                                        <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Allocated Sum</TableHead>
+                                                        <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Target Initiative</TableHead>
+                                                        <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Allocated Sum</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
@@ -267,22 +267,22 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                             </div>
                         </div>
                         <div className="space-y-3">
-                            <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight"><ImageIcon className="h-3 w-3"/> Transaction Documents</h4>
+                            <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight uppercase"><ImageIcon className="h-3 w-3"/> Transaction Documents</h4>
                             <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
                                 <ScrollArea className="w-full">
                                     <div className="min-w-[600px]">
                                         <Table>
                                             <TableHeader className="bg-primary/5">
                                                 <TableRow>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Amount</TableHead>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Ref. ID</TableHead>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight">Date</TableHead>
-                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight pr-6">Evidence</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Amount</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Ref. ID</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Date</TableHead>
+                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight pr-6 uppercase">Evidence</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
                                                 {(donation.transactions || []).map((tx) => (
-                                                    <TableRow key={tx.id} className="hover:bg-[hsl(var(--table-row-hover))]">
+                                                    <TableRow key={tx.id} className="hover:bg-primary/[0.02]">
                                                         <TableCell className="font-bold font-mono text-primary text-[11px] py-2">₹{tx.amount.toFixed(2)}</TableCell>
                                                         <TableCell className="font-mono text-[10px] py-2 text-primary/80 whitespace-nowrap">{tx.transactionId || 'N/A'}</TableCell>
                                                         <TableCell className="text-[10px] font-normal text-muted-foreground py-2 whitespace-nowrap">{tx.date || donation.donationDate}</TableCell>
@@ -312,15 +312,18 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
 export default function DonationsPage() {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const firestore = useFirestore();
   const storage = useStorage();
   const { toast } = useToast();
   const { user, userProfile, isLoading: isProfileLoading } = useSession();
-  const auth = useAuth();
+
+  const initialStatus = searchParams.get('status') || 'All';
+  const initialIdentity = searchParams.get('identity') || 'All';
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [identityFilter, setIdentityFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
+  const [identityFilter, setIdentityFilter] = useState(initialIdentity);
   const [methodFilter, setMethodFilter] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
@@ -463,7 +466,7 @@ export default function DonationsPage() {
         toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
         setSelectedIds([]);
     } else {
-        toast({ title: "Update Failed", description: res?.message || "Failed to update status.", variant: "destructive" });
+        toast({ title: "Update Failed", description: res?.message || "Failed To Update Status.", variant: "destructive" });
     }
     setIsBulkUpdating(false);
   };
@@ -532,7 +535,7 @@ export default function DonationsPage() {
     if (res && res.success) {
         toast({ title: 'Deleted', description: res.message, variant: 'success' });
     } else {
-        toast({ title: 'Error', description: res?.message || 'Delete failed.', variant: 'destructive' });
+        toast({ title: 'Error', description: res?.message || 'Delete Failed.', variant: 'destructive' });
     }
     setDonationToDelete(null);
   };
@@ -550,13 +553,13 @@ export default function DonationsPage() {
     if (res && res.success) {
         toast({ title: 'Import Complete', description: res.message, variant: 'success' });
     } else {
-        toast({ title: 'Import Failed', description: res?.message || "Operation failed.", variant: 'destructive' });
+        toast({ title: 'Import Failed', description: res?.message || "Operation Failed.", variant: 'destructive' });
     }
   };
 
   const isLoading = areDonationsLoading || isProfileLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving institutional logs." />;
+  if (isLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Institutional Logs." />;
 
   return (
     <main className="container mx-auto p-4 md:p-8 font-normal text-primary relative">
@@ -600,7 +603,7 @@ export default function DonationsPage() {
             <StatCard 
                 title="Total Count" 
                 count={stats.total} 
-                description="All records logged" 
+                description="All Records Logged" 
                 icon={Users} 
                 delay="100ms" 
                 onClick={() => { setStatusFilter('All'); setIdentityFilter('All'); setMethodFilter('All'); setSearchTerm(''); }}
@@ -608,34 +611,34 @@ export default function DonationsPage() {
             <StatCard 
                 title="Verified Sum" 
                 count={stats.totalAmount.toLocaleString('en-IN')} 
-                description="Confirmed funds" 
+                description="Confirmed Funds" 
                 icon={CheckCircle2} 
                 delay="150ms" 
                 isCurrency 
-                onClick={() => { setStatusFilter('Verified'); }}
+                onClick={() => { setStatusFilter('Verified'); setIdentityFilter('All'); }}
             />
             <StatCard 
                 title="Pending Sum" 
                 count={stats.pendingAmount.toLocaleString('en-IN')} 
-                description="Awaiting vetting" 
+                description="Awaiting Vetting" 
                 icon={Hourglass} 
                 delay="150ms" 
                 isCurrency 
-                onClick={() => { setStatusFilter('Pending'); }}
+                onClick={() => { setStatusFilter('Pending'); setIdentityFilter('All'); }}
             />
             <StatCard 
                 title="Unlinked" 
                 count={stats.unlinked} 
-                description="Needs profile mapping" 
+                description="Needs Profile Mapping" 
                 icon={AlertCircle} 
                 delay="200ms" 
                 colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} 
-                onClick={() => { setIdentityFilter('Unlinked'); }}
+                onClick={() => { setIdentityFilter('Unlinked'); setStatusFilter('All'); }}
             />
             <StatCard 
                 title="Online Pay" 
                 count={stats.online} 
-                description="Digital transfers" 
+                description="Digital Transfers" 
                 icon={Smartphone} 
                 delay="250ms" 
                 onClick={() => { setMethodFilter('Online Payment'); }}
@@ -643,7 +646,7 @@ export default function DonationsPage() {
             <StatCard 
                 title="Cash" 
                 count={stats.cash} 
-                description="Physical collections" 
+                description="Physical Collections" 
                 icon={Wallet} 
                 delay="300ms" 
                 onClick={() => { setMethodFilter('Cash'); }}

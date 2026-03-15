@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -298,7 +299,7 @@ export default function PublicCampaignSummaryPage() {
                     <CardContent className="space-y-4 pt-6 text-foreground font-normal">
                         <div className="space-y-2 text-primary">
                             <Label className="text-muted-foreground text-[10px] font-bold tracking-tight uppercase">Description</Label>
-                            <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{campaign.description || 'No description provided.'}</p>
+                            <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{campaign.description || 'No Description Provided.'}</p>
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-6 text-primary">
                             <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Fundraising Goal</p><p className="mt-1 text-lg font-bold text-primary font-mono">₹{(fundingData?.targetAmount ?? 0).toLocaleString('en-IN')}</p></div>
@@ -482,7 +483,7 @@ export default function PublicCampaignSummaryPage() {
                                         <div className="space-y-2">
                                             <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded">
                                                 <span className="text-muted-foreground tracking-tight font-normal">Net Registry Balance</span>
-                                                <span className="font-bold text-primary font-mono">₹{fundingData.totalZakatBalance.toLocaleString('en-IN')}</span>
+                                                <span className="font-bold font-mono">₹{fundingData.totalZakatBalance.toLocaleString('en-IN')}</span>
                                             </div>
                                             <div className="flex justify-between items-center text-[10px] font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded italic opacity-60">
                                                 <span>Contribution to Goal</span>
@@ -514,7 +515,7 @@ export default function PublicCampaignSummaryPage() {
 
                             {isVisible('donations_by_payment_type') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-[10px] tracking-tight uppercase">Donations By Payment Type</CardTitle><CardDescription className="font-normal text-primary/70">Breakdown of funds by contribution channel.</CardDescription></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-[10px] tracking-tight uppercase">Donations By Payment Type</CardTitle><CardDescription className="font-normal text-primary/70">Breakdown Of Funds By Contribution Channel.</CardDescription></CardHeader>
                                     <CardContent className="pt-6">
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">

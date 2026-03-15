@@ -104,14 +104,13 @@ import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1100px]";
 
-function StatCard({ title, count, description, icon: Icon, colorClass, delay, isCurrency = false, onClick }: { title: string, count: number | string, description: string, icon: any, colorClass?: string, delay: string, isCurrency?: boolean, onClick?: () => void }) {
+function StatCard({ title, count, description, icon: Icon, delay, isCurrency = false, onClick }: { title: string, count: number | string, description: string, icon: any, delay: string, isCurrency?: boolean, onClick?: () => void }) {
     return (
         <Card 
             onClick={onClick}
             className={cn(
                 "flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", 
-                onClick && "cursor-pointer hover:-translate-y-1 active:scale-95",
-                colorClass
+                onClick && "cursor-pointer hover:-translate-y-1 active:scale-95"
             )} 
             style={{ animationDelay: delay, animationFillMode: 'backwards' }}
         >
@@ -172,6 +171,8 @@ function LeadDonationListContent() {
   const { data: allLeads } = useCollection<Lead>(leadsCollectionRef);
 
   const initialStatus = searchParams.get('status') || 'All';
+  const initialIdentity = searchParams.get('identity') || 'All';
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
@@ -186,7 +187,7 @@ function LeadDonationListContent() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState(initialStatus);
-  const [identityFilter, setIdentityFilter] = useState('All');
+  const [identityFilter, setIdentityFilter] = useState(initialIdentity);
   const [methodFilter, setMethodFilter] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
@@ -460,7 +461,7 @@ function LeadDonationListContent() {
                 icon={CheckCircle2} 
                 delay="150ms" 
                 isCurrency 
-                onClick={() => { setStatusFilter('Verified'); }}
+                onClick={() => { setStatusFilter('Verified'); setIdentityFilter('All'); }}
             />
             <StatCard 
                 title="Pending" 
@@ -469,7 +470,7 @@ function LeadDonationListContent() {
                 icon={Hourglass} 
                 delay="200ms" 
                 isCurrency 
-                onClick={() => { setStatusFilter('Pending'); }}
+                onClick={() => { setStatusFilter('Pending'); setIdentityFilter('All'); }}
             />
             <StatCard 
                 title="Unlinked" 
@@ -478,7 +479,7 @@ function LeadDonationListContent() {
                 icon={AlertCircle} 
                 delay="250ms" 
                 colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} 
-                onClick={() => { setIdentityFilter('Unlinked'); }}
+                onClick={() => { setIdentityFilter('Unlinked'); setStatusFilter('All'); }}
             />
             <StatCard 
                 title="Online Pay" 

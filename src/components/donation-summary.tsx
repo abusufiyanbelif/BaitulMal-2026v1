@@ -1,3 +1,4 @@
+
 'use client';
 
 import { usePublicData } from '@/hooks/use-public-data';
@@ -61,7 +62,7 @@ export function DonationSummary() {
       <Card className="animate-fade-in-up border-primary/20 bg-white shadow-md transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '800ms', animationFillMode: 'backwards' }}>
         <CardHeader className="bg-primary/5 border-b">
           <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 font-bold text-primary">
+              <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
                 <Calendar className="h-6 w-6 text-primary" />
                 Yearly Financial Summary
               </CardTitle>

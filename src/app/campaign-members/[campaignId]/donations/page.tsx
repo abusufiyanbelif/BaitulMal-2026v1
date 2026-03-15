@@ -1,6 +1,6 @@
 
 'use client';
-import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import React, { useState, useMemo, Suspense } from 'react';
 import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc } from '@/firebase';
@@ -104,14 +104,13 @@ import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1150px]";
 
-function StatCard({ title, count, description, icon: Icon, colorClass, delay, isCurrency = false, onClick }: { title: string, count: number | string, description: string, icon: any, colorClass?: string, delay: string, isCurrency?: boolean, onClick?: () => void }) {
+function StatCard({ title, count, description, icon: Icon, delay, isCurrency = false, onClick }: { title: string, count: number | string, description: string, icon: any, delay: string, isCurrency?: boolean, onClick?: () => void }) {
     return (
         <Card 
             onClick={onClick}
             className={cn(
                 "flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", 
-                onClick && "cursor-pointer hover:-translate-y-1 active:scale-95",
-                colorClass
+                onClick && "cursor-pointer hover:-translate-y-1 active:scale-95"
             )} 
             style={{ animationDelay: delay, animationFillMode: 'backwards' }}
         >
@@ -169,6 +168,8 @@ function DonationListContent() {
   const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
 
   const initialStatus = searchParams.get('status') || 'All';
+  const initialIdentity = searchParams.get('identity') || 'All';
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
@@ -183,7 +184,7 @@ function DonationListContent() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState(initialStatus);
-  const [identityFilter, setIdentityFilter] = useState('All');
+  const [identityFilter, setIdentityFilter] = useState(initialIdentity);
   const [methodFilter, setMethodFilter] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
@@ -413,7 +414,7 @@ function DonationListContent() {
                 icon={CheckCircle2} 
                 delay="150ms" 
                 isCurrency 
-                onClick={() => { setStatusFilter('Verified'); }}
+                onClick={() => { setStatusFilter('Verified'); setIdentityFilter('All'); }}
             />
             <StatCard 
                 title="Pending" 
@@ -422,7 +423,7 @@ function DonationListContent() {
                 icon={Hourglass} 
                 delay="200ms" 
                 isCurrency 
-                onClick={() => { setStatusFilter('Pending'); }}
+                onClick={() => { setStatusFilter('Pending'); setIdentityFilter('All'); }}
             />
             <StatCard 
                 title="Unlinked" 
@@ -431,7 +432,7 @@ function DonationListContent() {
                 icon={AlertCircle} 
                 delay="250ms" 
                 colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} 
-                onClick={() => { setIdentityFilter('Unlinked'); }}
+                onClick={() => { setIdentityFilter('Unlinked'); setStatusFilter('All'); }}
             />
             <StatCard 
                 title="Online Pay" 

@@ -49,7 +49,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
       });
       setMasterDonors(results);
     } catch (e: any) {
-      console.error("Failed to fetch master donor list:", e);
+      console.error("Failed To Fetch Master Donor List:", e);
     } finally {
       setIsInitialLoading(false);
     }
@@ -78,7 +78,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
 
   const handleRegisterNewProfile = async () => {
     if (!userProfile || !currentFormData?.name) {
-        toast({ title: 'Validation Error', description: 'At least a name is required to create a profile.', variant: 'destructive' });
+        toast({ title: 'Validation Error', description: 'At Least A Name Is Required To Create A Profile.', variant: 'destructive' });
         return;
     }
 
@@ -90,7 +90,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
     if (existing) {
         toast({ 
             title: 'Profile Already Exists', 
-            description: `A matching profile for '${existing.name}' was discovered. Linking to that instead.`, 
+            description: `A Matching Profile For '${existing.name}' Was Discovered. Linking To That Instead.`, 
             variant: 'info' 
         });
         onSelectDonor(existing);
@@ -104,11 +104,11 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
         phone: currentFormData.phone || '',
         upiIds: currentFormData.upiIds || [],
         status: 'Active',
-        notes: `Profile established via Identity Resolution during donation entry.`
+        notes: `Profile Established Via Identity Resolution During Donation Entry.`
     }, { id: userProfile.id, name: userProfile.name });
 
     if (res.success && res.id) {
-        toast({ title: 'New Profile Secured', description: 'Institutional identity registered.', variant: 'success' });
+        toast({ title: 'New Profile Secured', description: 'Institutional Identity Registered.', variant: 'success' });
         onSelectDonor({ id: res.id, name: currentFormData.name, phone: currentFormData.phone || '', status: 'Active' } as Donor);
         onOpenChange(false);
     } else {
@@ -130,7 +130,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
             <Users className="h-5 w-5 opacity-40"/> Retrieve Donor Profile
           </DialogTitle>
           <DialogDescription className="text-sm font-normal text-primary/70">
-            Select an existing donor or register a new identity from this hub.
+            Select An Existing Donor Or Register A New Identity From This Hub.
           </DialogDescription>
         </DialogHeader>
         
@@ -138,7 +138,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
             <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
                 <Input
-                    placeholder="Search by Name, Mobile, Email, UPI, or Account..."
+                    placeholder="Search By Name, Mobile, Email, UPI, Or Account..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary rounded-[12px] font-normal"
@@ -161,7 +161,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
                             <div className="flex flex-col items-center justify-center py-12 text-center">
                                 <AlertCircle className="h-12 w-12 mb-4 text-primary/20" />
                                 <p className="text-sm font-bold text-primary tracking-tight">No Matching Profiles Discovered</p>
-                                <p className="text-[10px] text-muted-foreground mt-1 mb-6">Create a new institutional identity for this contributor.</p>
+                                <p className="text-[10px] text-muted-foreground mt-1 mb-6 font-normal">Create A New Institutional Identity For This Contributor.</p>
                                 
                                 {currentFormData?.name && (
                                     <Button onClick={handleRegisterNewProfile} disabled={isCreating} className="font-bold shadow-md rounded-xl h-11 px-8 group active:scale-95 transition-transform">
