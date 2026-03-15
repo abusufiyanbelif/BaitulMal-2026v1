@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -428,7 +427,9 @@ export default function LeadSummaryPage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
-             <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95 text-primary"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
+             <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95 text-primary">
+                <Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button>
+            </div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2 animate-fade-in-up">
                  <div className="space-y-1">
                     {editMode ? ( <Input id="name" value={editableLead.name || ''} onChange={(e) => handleFieldChange('name', e.target.value)} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary tracking-tight">{lead?.name}</h1> )}
@@ -892,7 +893,7 @@ export default function LeadSummaryPage() {
                                                 </div>
                                             ))}
                                         </div>
-                                    ) : <p className="text-[10px] text-muted-foreground font-bold tracking-tight italic opacity-60 uppercase">No Documents Attached.</p>}
+                                    ) : <p className="text-[10px] text-muted-foreground font-bold tracking-tight italic uppercase opacity-60">No Documents Attached.</p>}
                                 </div>
                             ) : (
                                 lead?.documents && lead?.documents.length > 0 ? (
@@ -920,7 +921,7 @@ export default function LeadSummaryPage() {
                                             );
                                         })}
                                     </div>
-                                ) : <p className="text-[10px] text-muted-foreground font-bold tracking-tight italic opacity-60 uppercase">No Documents Attached.</p>
+                                ) : <p className="text-[10px] text-muted-foreground font-bold tracking-tight italic uppercase opacity-60">No Documents Attached.</p>
                             )}
                         </CardContent>
                     </Card>

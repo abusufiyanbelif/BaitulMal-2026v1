@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -427,7 +426,9 @@ export default function CampaignSummaryPage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
-             <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95 text-primary"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button></div>
+             <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95 text-primary">
+                <Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button>
+            </div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2 animate-fade-in-up">
                  <div className="space-y-1">
                     {editMode ? ( <Input id="name" value={editableCampaign.name || ''} onChange={(e) => handleFieldChange('name', e.target.value)} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary tracking-tight">{campaign?.name}</h1> )}
@@ -508,9 +509,9 @@ export default function CampaignSummaryPage() {
                                         <Select value={editableCampaign.status} onValueChange={(value) => handleFieldChange('status', value)}>
                                             <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
-                                                <SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem>
+                                                <SelectItem value="Upcoming" className="font-normal">Upcoming</SelectItem>
                                                 <SelectItem value="Active" className="font-bold text-primary">Active</SelectItem>
-                                                <SelectItem value="Completed" className="font-bold">Completed</SelectItem>
+                                                <SelectItem value="Completed" className="font-normal">Completed</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -519,9 +520,9 @@ export default function CampaignSummaryPage() {
                                         <Select value={editableCampaign.authenticityStatus} onValueChange={(value) => handleFieldChange('authenticityStatus', value)}>
                                             <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
-                                                <SelectItem value="Pending Verification" className="font-bold">Pending</SelectItem>
+                                                <SelectItem value="Pending Verification" className="font-normal">Pending</SelectItem>
                                                 <SelectItem value="Verified" className="font-bold text-primary">Verified</SelectItem>
-                                                <SelectItem value="On Hold" className="font-bold">On Hold</SelectItem>
+                                                <SelectItem value="On Hold" className="font-normal">On Hold</SelectItem>
                                                 <SelectItem value="Rejected" className="font-bold text-destructive">Rejected</SelectItem>
                                                 <SelectItem value="Need More Details" className="font-bold">Need Details</SelectItem>
                                             </SelectContent>
