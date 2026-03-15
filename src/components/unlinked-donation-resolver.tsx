@@ -66,7 +66,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
     const [isSearching, setIsSearching] = useState(false);
     const [searchResults, setSearchResults] = useState<Donor[]>([]);
 
-    // Pagination State
+    // Robust Pagination Engine
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
@@ -94,10 +94,9 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
         }
     }, [open, initialDonationId, unlinkedDonations]);
 
-    // Reset pagination when data changes
     useEffect(() => {
         setCurrentPage(1);
-    }, [unlinkedDonations.length]);
+    }, [unlinkedDonations.length, searchTerm]);
 
     useEffect(() => {
         const fetchMatches = async () => {
@@ -163,12 +162,6 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                 toast({ title: 'New Profile Registered', description: 'Institutional Identity Secured And Linked.', variant: 'success' });
                 setSelectedDonation(null);
             }
-        } else if (!res.success && res.id) {
-            const linkRes = await linkDonationToDonorAction(selectedDonation.id, res.id, { id: userProfile.id, name: userProfile.name });
-            if (linkRes.success) {
-                toast({ title: 'Identity Resolved', description: 'Donation Linked To Existing Verified Profile.', variant: 'success' });
-                setSelectedDonation(null);
-            }
         } else {
             toast({ title: 'Creation Failed', description: res.message, variant: 'destructive' });
         }
@@ -181,7 +174,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                 <DialogHeader className="bg-primary/5 px-6 py-6 border-b">
                     <DialogTitle className="text-2xl font-bold text-primary tracking-tight">Identity Resolver Hub</DialogTitle>
                     <DialogDescription className="font-normal text-primary/70">
-                        Map Unlinked "Dummy" Contributions To Verified Institutional Donor Profiles.
+                        Map Unlinked Contributions To Verified Institutional Donor Profiles.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -225,7 +218,6 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                             <ScrollBar orientation="vertical" />
                         </ScrollArea>
                         
-                        {/* Sidebar Pagination */}
                         {totalPages > 1 && (
                             <div className="p-3 bg-white border-t flex items-center justify-between">
                                 <p className="text-[10px] font-bold text-muted-foreground">Page {currentPage} Of {totalPages}</p>
@@ -233,7 +225,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                     <Button 
                                         variant="outline" 
                                         size="icon" 
-                                        className="h-7 w-7 border-primary/10 text-primary" 
+                                        className="h-7 w-7 border-primary/10 text-primary transition-transform active:scale-90" 
                                         onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                                         disabled={currentPage === 1}
                                     >
@@ -242,7 +234,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                     <Button 
                                         variant="outline" 
                                         size="icon" 
-                                        className="h-7 w-7 border-primary/10 text-primary" 
+                                        className="h-7 w-7 border-primary/10 text-primary transition-transform active:scale-90" 
                                         onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                                         disabled={currentPage === totalPages}
                                     >
@@ -253,10 +245,10 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                         )}
                     </div>
 
-                    <div className="flex-1 flex flex-col bg-white">
+                    <div className="flex-1 flex flex-col bg-white overflow-hidden relative">
                         {selectedDonation ? (
-                            <ScrollArea className="flex-1">
-                                <div className="p-6 space-y-8 animate-fade-in-up">
+                            <ScrollArea className="h-full w-full">
+                                <div className="p-6 space-y-8 animate-fade-in-up pb-20">
                                     <div className="space-y-4">
                                         <h3 className="text-lg font-bold text-primary tracking-tight">Resolving Contribution</h3>
                                         <Card className="p-4 bg-primary/5 border-primary/10 shadow-none">
@@ -278,7 +270,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                         </div>
                                         
                                         <div className="grid gap-3">
-                                            <Button onClick={handleCreateNewProfile} disabled={!!isResolving} className="h-12 font-bold justify-between px-6 rounded-xl shadow-md transition-transform active:scale-95 group">
+                                            <Button onClick={handleCreateNewProfile} disabled={!!isResolving} className="h-12 font-bold justify-between px-6 rounded-xl shadow-md transition-transform active:scale-95 group bg-primary text-white">
                                                 <div className="flex items-center gap-3">
                                                     <UserPlus className="h-5 w-5 group-hover:scale-110 transition-transform" />
                                                     Establish New Profile
@@ -331,9 +323,9 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                     </div>
                 </div>
 
-                <DialogFooter className="px-6 py-4 bg-primary/5 border-t">
-                    <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-primary/20 text-primary px-10 rounded-xl">
-                        Close Hub
+                <DialogFooter className="px-6 py-4 bg-primary/5 border-t shrink-0">
+                    <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-primary/20 text-primary px-10 rounded-xl transition-transform active:scale-95">
+                        Close Resolver
                     </Button>
                 </DialogFooter>
             </DialogContent>

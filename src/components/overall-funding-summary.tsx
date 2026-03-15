@@ -12,6 +12,10 @@ import {
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { useMemo } from 'react';
 
+/**
+ * Overall Funding Summary - Displays aggregate organizational metrics.
+ * Labels follow the professional Title Case typography standard.
+ */
 export function OverallFundingSummary() {
   const { isLoading, overallSummary } = usePublicData();
 
@@ -26,7 +30,7 @@ export function OverallFundingSummary() {
   if (isLoading) {
     return (
         <Card className="border-primary/20">
-            <CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader>
+            <CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader>
             <CardContent><Skeleton className="h-48 w-full" /></CardContent>
         </Card>
     )
@@ -39,7 +43,7 @@ export function OverallFundingSummary() {
   return (
     <Card className="animate-fade-in-up border-primary/20 bg-white shadow-md transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '700ms', animationFillMode: 'backwards' }}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 font-bold text-primary">
+        <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
             <Target className="h-6 w-6 text-primary" />
             Overall Fundraising Progress
         </CardTitle>
@@ -86,19 +90,19 @@ export function OverallFundingSummary() {
             </div>
              <div className="space-y-4 text-center md:text-left font-bold text-primary">
                 <div>
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Total Raised For Goals</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Total Raised For Goals</p>
                     <p className="text-3xl font-bold font-mono">
                     ₹{(overallSummary.totalCollectedForGoals || 0).toLocaleString('en-IN')}
                     </p>
                 </div>
                 <div>
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Combined Target</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Combined Target</p>
                     <p className="text-3xl font-bold font-mono opacity-70">
                     ₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}
                     </p>
                 </div>
                 <div>
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Grand Total Received (All Types)</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Grand Total Received (All Types)</p>
                     <p className="text-3xl font-bold font-mono">
                     ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}
                     </p>

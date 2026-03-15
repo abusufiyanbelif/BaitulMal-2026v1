@@ -12,7 +12,7 @@ import type { BrandingSettings } from '@/lib/types';
  * Branded Loader - Displays the organizational logo with premium high-fidelity animations.
  * Status messages follow the professional Title Case standard.
  */
-export function BrandedLoader({ message = "Synchronizing...", progress }: { message?: string, progress?: number }) {
+export function BrandedLoader({ message = "Synchronizing Institutional Data...", progress }: { message?: string, progress?: number }) {
   const firebase = useFirebase();
   const [branding, setBranding] = useState<BrandingSettings | null>(null);
 
