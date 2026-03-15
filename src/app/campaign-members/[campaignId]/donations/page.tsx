@@ -102,9 +102,17 @@ import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1150px]";
 
-function StatCard({ title, count, description, icon: Icon, colorClass, delay, isCurrency = false }: { title: string, count: number | string, description: string, icon: any, colorClass?: string, delay: string, isCurrency?: boolean }) {
+function StatCard({ title, count, description, icon: Icon, colorClass, delay, isCurrency = false, onClick }: { title: string, count: number | string, description: string, icon: any, colorClass?: string, delay: string, isCurrency?: boolean, onClick?: () => void }) {
     return (
-        <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
+        <Card 
+            onClick={onClick}
+            className={cn(
+                "flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", 
+                onClick && "cursor-pointer hover:-translate-y-1 active:scale-95",
+                colorClass
+            )} 
+            style={{ animationDelay: delay, animationFillMode: 'backwards' }}
+        >
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
                     <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
@@ -193,7 +201,7 @@ export default function DonationsPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
-  const [typeFilter, setTypeFilter] = useState('All');
+  const [identityFilter, setIdentityFilter] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
@@ -203,142 +211,22 @@ export default function DonationsPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
   
-  const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
-  const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
-  const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
-  const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.read', false);
-
-  const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.create', false);
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.update', false);
 
-  const handleAdd = () => {
-    if (!canCreate) return;
-    setEditingDonation(null);
-    setIsFormOpen(true);
-  };
-  
-  const handleEdit = (donation: Donation) => {
-    if (!canUpdate) return;
-    setEditingDonation(donation);
-    setIsFormOpen(true);
-  };
-
-  const handleUnlinkClick = (id: string) => {
-    if (!canUpdate) return;
-    setDonationToUnlink(id);
-    setIsUnlinkDialogOpen(true);
-  };
-
-  const handleViewImage = (url: string) => {
-    setImageToView(url);
-    setZoom(1);
-    setRotation(0);
-    setIsImageViewerOpen(true);
-  };
-
-  const handleUnlinkConfirm = async () => {
-    if (!donationToUnlink || !firestore || !canUpdate || !donations || !campaignId) return;
-
-    const donationData = donations.find(d => d.id === donationToUnlink);
-    if (!donationData) return;
-
-    setIsUnlinkDialogOpen(false);
-
-    const docRef = doc(firestore, 'donations', donationToUnlink);
-    const newLinkSplit = (donationData.linkSplit || []).filter(link => link.linkId !== campaignId || link.linkType !== 'campaign');
-    
-    const updateData = { linkSplit: newLinkSplit };
-    
-    updateDoc(docRef, updateData)
-        .catch(async (serverError: any) => {
-            const permissionError = new FirestorePermissionError({
-                path: docRef.path,
-                operation: 'update',
-                requestResourceData: updateData,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        })
-        .finally(() => {
-            toast({ title: 'Success', description: 'Donation Unlinked Successfully.', variant: 'success' });
-            setDonationToUnlink(null);
-        });
-  };
-  
-  const handleFormSubmit = async (data: DonationFormData) => {
-    const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
-    if (hasFilesToUpload && !auth?.currentUser) {
-        toast({ title: "Authentication Error", description: "Authorization session expired.", variant: "destructive" });
-        return;
-    }
-
-    if (!firestore || !storage || !userProfile || !allCampaigns || !allLeads) return;
-    
-    setIsFormOpen(false);
-    const docRef = editingDonation ? doc(firestore, 'donations', editingDonation.id) : doc(collection(firestore, 'donations'));
-    
-    try {
-        const transactionPromises = data.transactions.map(async (transaction) => {
-            let screenshotUrl = transaction.screenshotUrl || '';
-            const fileList = transaction.screenshotFile as FileList | undefined;
-            if (fileList && fileList.length > 0) {
-                const file = fileList[0];
-                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
-                const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
-                const fileRef = storageRef(storage, filePath);
-                await uploadBytes(fileRef, resizedBlob);
-                screenshotUrl = await getDownloadURL(fileRef);
-            }
-            return { id: transaction.id, amount: transaction.amount, transactionId: transaction.transactionId || '', screenshotUrl, screenshotIsPublic: transaction.screenshotIsPublic || false };
-        });
-
-        const finalTransactions = await Promise.all(transactionPromises);
-        const { transactions, ...donationData } = data;
-        
-        const finalLinkSplit = data.linkSplit?.map(split => {
-            if (!split.linkId || split.linkId === 'unlinked') return split.amount > 0 ? { linkId: 'unallocated', linkName: 'Unallocated', linkType: 'general' as const, amount: split.amount } : null;
-            const [type, id] = split.linkId.split('_');
-            const linkType = type as 'campaign' | 'lead';
-            const source = linkType === 'campaign' ? allCampaigns : allLeads;
-            const linkedItem = source?.find(item => item.id === id);
-            return { linkId: id, linkName: linkedItem?.name || 'Unknown', linkType, amount: split.amount };
-        }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
-        
-        const finalData = { ...donationData, transactions: finalTransactions, amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0), linkSplit: finalLinkSplit, uploadedBy: userProfile.name, uploadedById: userProfile.id, ...(!editingDonation && { createdAt: serverTimestamp() }) };
-
-        if (editingDonation) {
-            (finalData as any).campaignId = deleteField();
-            (finalData as any).campaignName = deleteField();
-        }
-
-        await setDoc(docRef, finalData, { merge: true });
-        toast({ title: 'Success', description: 'Donation Saved.', variant: 'success' });
-    } catch (error: any) {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: editingDonation ? 'update' : 'create', requestResourceData: data }));
-    } finally {
-        setEditingDonation(null);
-    }
-  };
-  
-  const handleSort = (key: string) => {
-    let direction: 'ascending' | 'descending' = 'ascending';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') direction = 'descending';
-    setSortConfig({ key, direction });
-    setCurrentPage(1);
-  };
-  
   const filteredAndSortedDonations = useMemo(() => {
     if (!donations) return [];
     let items = [...donations];
 
-    if (statusFilter === 'No Transactions') {
-        items = items.filter(d => !d.transactions || d.transactions.length === 0);
-    } else if (statusFilter !== 'All') {
+    if (statusFilter !== 'All') {
         items = items.filter(d => d.status === statusFilter);
     }
 
-    if (typeFilter !== 'All') {
-        items = items.filter(d => d.typeSplit?.some(s => s.category === typeFilter));
+    if (identityFilter === 'Unlinked') {
+        items = items.filter(d => !d.donorId);
+    } else if (identityFilter === 'Linked') {
+        items = items.filter(d => !!d.donorId);
     }
+
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       items = items.filter(d => (d.donorName || '').toLowerCase().includes(term) || (d.donorPhone || '').includes(term));
@@ -366,22 +254,19 @@ export default function DonationsPage() {
       });
     }
     return items;
-  }, [donations, searchTerm, statusFilter, typeFilter, dateRange, sortConfig]);
+  }, [donations, searchTerm, statusFilter, identityFilter, dateRange, sortConfig]);
 
   const stats = useMemo(() => {
-      const data = filteredAndSortedDonations;
+      const allData = donations || [];
       return {
-          total: data.length,
-          verified: data.filter(d => d.status === 'Verified').length,
-          pending: data.filter(d => d.status === 'Pending').length,
-          unlinked: data.filter(d => !d.donorId).length,
-          canceled: data.filter(d => d.status === 'Canceled').length,
-          online: data.filter(d => d.donationType === 'Online Payment').length,
-          cash: data.filter(d => d.donationType === 'Cash').length,
-          totalAmount: data.filter(d => d.status === 'Verified').reduce((sum, d) => sum + d.amountForThisCampaign, 0),
-          pendingAmount: data.filter(d => d.status === 'Pending').reduce((sum, d) => sum + d.amountForThisCampaign, 0),
+          total: allData.length,
+          verified: allData.filter(d => d.status === 'Verified').length,
+          pending: allData.filter(d => d.status === 'Pending').length,
+          unlinked: allData.filter(d => !d.donorId).length,
+          totalAmount: allData.filter(d => d.status === 'Verified').reduce((sum, d) => sum + d.amountForThisCampaign, 0),
+          pendingAmount: allData.filter(d => d.status === 'Pending').reduce((sum, d) => sum + d.amountForThisCampaign, 0),
       };
-  }, [filteredAndSortedDonations]);
+  }, [donations]);
 
   const totalPages = Math.ceil(filteredAndSortedDonations.length / itemsPerPage);
   const paginatedDonations = useMemo(() => filteredAndSortedDonations.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [filteredAndSortedDonations, currentPage, itemsPerPage]);
@@ -412,41 +297,22 @@ export default function DonationsPage() {
     setIsBulkUpdating(false);
   };
 
-  const handleExport = () => {
-    if (!donations || donations.length === 0) return;
-    const headers = ['ID', 'Donor Name', 'Donor Phone', 'Receiver Name', 'Referral', 'Total Amount', 'Donation Date', 'Status', 'Donation Type', 'Comments', 'Suggestions'];
-    const rows = donations.map(d => [
-        d.id,
-        `"${d.donorName || ''}"`,
-        d.donorPhone || '',
-        `"${d.receiverName || ''}"`,
-        `"${d.referral || ''}"`,
-        d.amount || 0,
-        d.donationDate || '',
-        d.status || 'Pending',
-        d.donationType || '',
-        `"${(d.comments || '').replace(/"/g, '""')}"`,
-        `"${(d.suggestions || '').replace(/"/g, '""')}"`
-    ]);
-    const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement("a");
-    link.setAttribute("href", encodedUri);
-    link.setAttribute("download", `donations_camp_${campaignId}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleImport = async (records: Partial<Donation>[]) => {
-    if (!userProfile || !campaign) return;
-    const res = await bulkImportDonationsAction(
-        records, 
-        { id: userProfile.id, name: userProfile.name },
-        { type: 'campaign', id: campaign.id, name: campaign.name }
-    );
-    if (res && res.success) toast({ title: 'Import Complete', description: res.message, variant: 'success' });
-    else toast({ title: 'Import Failed', description: res?.message || "Import Failed.", variant: 'destructive' });
+  const handleUnlinkConfirm = async () => {
+    if (!donationToUnlink || !firestore || !canUpdate || !donations || !campaignId) return;
+    const donationData = donations.find(d => d.id === donationToUnlink);
+    if (!donationData) return;
+    setIsUnlinkDialogOpen(false);
+    const docRef = doc(firestore, 'donations', donationToUnlink);
+    const newLinkSplit = (donationData.linkSplit || []).filter(link => link.linkId !== campaignId || link.linkType !== 'campaign');
+    const updateData = { linkSplit: newLinkSplit };
+    updateDoc(docRef, updateData)
+        .catch(async (serverError: any) => {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: ref.path, operation: 'update', requestResourceData: updateData }));
+        })
+        .finally(() => {
+            toast({ title: 'Success', description: 'Donation Unlinked Successfully.', variant: 'success' });
+            setDonationToUnlink(null);
+        });
   };
 
   const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading;
@@ -460,22 +326,53 @@ export default function DonationsPage() {
         <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold tracking-tight text-primary">{campaign.name}</h1></div>
         
         <div className="border-b border-primary/10 mb-4">
-            <ScrollArea className="w-full">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 w-full bg-transparent p-0 border-b border-primary/10 pb-4">
-                    {canReadSummary && (<Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>)}
-                    {canReadRation && (<Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item Lists</Link>)}
-                    {canReadBeneficiaries && (<Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>)}
-                    {canReadDonations && (<Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}/donations` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link>)}
+            <ScrollArea className="w-full whitespace-nowrap">
+                <div className="flex w-max space-x-2 pb-2">
+                    <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.endsWith('/summary') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
+                    <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item Lists</Link>
+                    <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link>
+                    <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}/donations` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link>
                 </div>
                 <ScrollBar orientation="horizontal" />
             </ScrollArea>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <StatCard title="Total Count" count={stats.total} description="All Records Logged" icon={Users} delay="100ms" />
-            <StatCard title="Verified Sum" count={stats.totalAmount.toLocaleString('en-IN')} description="Confirmed Funds" icon={CheckCircle2} delay="150ms" isCurrency />
-            <StatCard title="Pending Sum" count={stats.pendingAmount.toLocaleString('en-IN')} description="Awaiting Vetting" icon={Hourglass} delay="200ms" isCurrency />
-            <StatCard title="Unlinked" count={stats.unlinked} description="Needs Profile Mapping" icon={AlertCircle} delay="250ms" colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} />
+            <StatCard 
+                title="Total Count" 
+                count={stats.total} 
+                description="All Records Logged" 
+                icon={Users} 
+                delay="100ms" 
+                onClick={() => { setStatusFilter('All'); setIdentityFilter('All'); setSearchTerm(''); }}
+            />
+            <StatCard 
+                title="Verified Sum" 
+                count={stats.totalAmount.toLocaleString('en-IN')} 
+                description="Confirmed Funds" 
+                icon={CheckCircle2} 
+                delay="150ms" 
+                isCurrency 
+                onClick={() => { setStatusFilter('Verified'); }}
+            />
+            <StatCard 
+                title="Pending Sum" 
+                count={stats.pendingAmount.toLocaleString('en-IN')} 
+                description="Awaiting Vetting" 
+                icon={Hourglass} 
+                delay="200ms" 
+                isCurrency 
+                onClick={() => { setStatusFilter('Pending'); }}
+            />
+            <StatCard 
+                title="Unlinked" 
+                count={stats.unlinked} 
+                description="Needs Profile Mapping" 
+                icon={AlertCircle} 
+                delay="250ms" 
+                colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} 
+                onClick={() => { setIdentityFilter('Unlinked'); }}
+            />
             <StatCard title="Online Pay" count={stats.online} description="Digital Transfers" icon={Smartphone} delay="300ms" />
             <StatCard title="Cash" count={stats.cash} description="Physical Collections" icon={Wallet} delay="350ms" />
         </div>
@@ -523,32 +420,22 @@ export default function DonationsPage() {
                         <Button variant="outline" size="sm" onClick={handleExport} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><Download className="mr-2 h-4 w-4"/> Export CSV</Button>
                         <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><UploadCloud className="mr-2 h-4 w-4"/> Import Data</Button>
                         {canUpdate && <Button variant="outline" onClick={() => setIsSearchOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><LinkIcon className="mr-2 h-4 w-4"/> Select From Master</Button>}
-                        {canCreate && <Button onClick={handleAdd} className="font-bold shadow-md active:scale-95 transition-transform rounded-[12px]"><PlusCircle className="mr-2 h-4 w-4" /> Add Record</Button>}
+                        {canUpdate && <Button onClick={() => setIsFormOpen(true)} className="font-bold shadow-md active:scale-95 transition-transform rounded-[12px]"><PlusCircle className="mr-2 h-4 w-4" /> Add Record</Button>}
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-4">
                     <Input placeholder="Search Donor..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-[200px] h-9 text-xs font-normal" />
-                    
-                    <Popover>
-                        <PopoverTrigger asChild>
-                            <Button variant="outline" className={cn("w-[220px] shrink-0 justify-start h-9 text-xs border-primary/10 text-primary font-bold rounded-[10px] bg-white transition-all hover:border-primary/30", !dateRange && "text-muted-foreground")}>
-                                <CalendarIcon className="mr-2 h-3 w-3 opacity-40" />
-                                {dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd, y")) : "Select Date Range"}
-                            </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                            <Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); setCurrentPage(1); }} numberOfMonths={2} />
-                        </PopoverContent>
-                    </Popover>
-                    {dateRange && <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/40 hover:text-primary shrink-0" onClick={() => { setDateRange(undefined); setCurrentPage(1); }}><X className="h-4 w-4"/></Button>}
-
                     <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
                         <SelectTrigger className="w-[140px] h-9 text-xs text-primary font-bold border-primary/20"><SelectValue placeholder="Status" /></SelectTrigger>
                         <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Verified" className="font-bold">Verified</SelectItem><SelectItem value="Pending" className="font-bold">Pending</SelectItem><SelectItem value="Canceled" className="font-bold">Canceled</SelectItem></SelectContent>
                     </Select>
-                    <Select value={typeFilter} onValueChange={(value) => { setTypeFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[140px] h-9 text-xs text-primary font-bold border-primary/20"><SelectValue placeholder="Category" /></SelectTrigger>
-                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="All" className="font-bold">All Categories</SelectItem>{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent>
+                    <Select value={identityFilter} onValueChange={v => { setIdentityFilter(v); setCurrentPage(1); }}>
+                        <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-white font-normal shrink-0"><SelectValue placeholder="Identity Linkage"/></SelectTrigger>
+                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                            <SelectItem value="All" className="font-normal">All Identities</SelectItem>
+                            <SelectItem value="Linked" className="font-normal text-primary">Fully Linked</SelectItem>
+                            <SelectItem value="Unlinked" className="font-normal text-amber-600 font-bold">Needs Resolution</SelectItem>
+                        </SelectContent>
                     </Select>
                 </div>
             </CardHeader>
@@ -604,7 +491,7 @@ export default function DonationsPage() {
                                                 <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown border-primary/10">
                                                     <DropdownMenuItem onClick={() => router.push(`/campaign-members/${campaignId}/donations/${donation.id}`)} className="font-normal text-primary"><Eye className="mr-2 h-4 w-4 opacity-60" /> Details</DropdownMenuItem>
-                                                    {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)} className="font-normal text-primary"><Edit className="mr-2 h-4 w-4 opacity-60" /> Edit Record</DropdownMenuItem>}
+                                                    {canUpdate && <DropdownMenuItem onClick={() => { setEditingDonation(donation); setIsFormOpen(true); }} className="font-normal text-primary"><Edit className="mr-2 h-4 w-4 opacity-60" /> Edit Record</DropdownMenuItem>}
                                                     {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive font-normal"><Link2Off className="mr-2 h-4 w-4 opacity-60" /> Unlink From Project</DropdownMenuItem>}
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -689,29 +576,6 @@ export default function DonationsPage() {
       <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
         <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink From Project?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach This Record From The Current Campaign? The Record Remains Secured In The Master Registry.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive hover:bg-destructive/90 text-white font-bold rounded-[12px] transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
-
-      <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-        <DialogContent className="max-w-4xl p-0 overflow-hidden rounded-[16px] border-primary/10 animate-fade-in-zoom">
-            <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary text-sm tracking-widest uppercase">Evidence Artifact Viewer</DialogTitle></DialogHeader>
-            <ScrollArea className="bg-secondary/20 h-[70vh]">
-                <div className="p-4 min-h-full flex items-center justify-center">
-                    {imageToView && (
-                        <div className="relative w-full h-full min-h-[60vh]">
-                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Vetting Evidence" fill sizes="100vw" className="object-contain transition-all duration-300 origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
-                        </div>
-                    )}
-                </div>
-                <ScrollBar orientation="horizontal" />
-                <ScrollBar orientation="vertical" />
-            </ScrollArea>
-             <DialogFooter className="px-6 py-4 border-t bg-white flex-wrap gap-2 justify-center">
-                <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
-                <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5))} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
-                <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
-                <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
-            </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </main>
   );
 }

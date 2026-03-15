@@ -63,16 +63,23 @@ import { Calendar } from "@/components/ui/calendar";
 import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
 
-function StatCard({ title, count, description, icon: Icon, delay }: { title: string, count: number, description: string, icon: any, delay: string }) {
+function StatCard({ title, count, description, icon: Icon, delay, onClick }: { title: string, count: number, description: string, icon: any, delay: string, onClick?: () => void }) {
     return (
-        <Card className="flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md" style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
+        <Card 
+            onClick={onClick}
+            className={cn(
+                "flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md", 
+                onClick && "cursor-pointer hover:-translate-y-1 active:scale-95"
+            )} 
+            style={{ animationDelay: delay, animationFillMode: 'backwards' }}
+        >
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">{count}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-4 w-4" />
                 </div>
             </div>
             <p className="text-[9px] font-medium text-muted-foreground mt-auto">{description}</p>
@@ -154,13 +161,13 @@ export default function DonorRegistryPage() {
   }, [donors, searchTerm, statusFilter, designationFilter, dateRange, allDonations]);
 
   const stats = useMemo(() => {
-      const data = filteredDonors;
+      const allData = donors || [];
       return {
-          total: data.length,
-          active: data.filter(d => d.status === 'Active').length,
-          inactive: data.filter(d => d.status === 'Inactive').length,
+          total: allData.length,
+          active: allData.filter(d => d.status === 'Active').length,
+          inactive: allData.filter(d => d.status === 'Inactive').length,
       };
-  }, [filteredDonors]);
+  }, [donors]);
 
   const handleSaveDonor = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -253,9 +260,30 @@ export default function DonorRegistryPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatCard title="Total Profiles" count={stats.total} description="All Registered Donors" icon={Users} delay="100ms" />
-          <StatCard title="Active Status" count={stats.active} description="Regular Contributors" icon={HeartHandshake} delay="150ms" />
-          <StatCard title="Inactive" count={stats.inactive} description="Suspended Profiles" icon={X} delay="200ms" />
+          <StatCard 
+            title="Total Profiles" 
+            count={stats.total} 
+            description="All Registered Donors" 
+            icon={Users} 
+            delay="100ms" 
+            onClick={() => { setStatusFilter('All'); setDesignationFilter('All'); setSearchTerm(''); }}
+          />
+          <StatCard 
+            title="Active Status" 
+            count={stats.active} 
+            description="Regular Contributors" 
+            icon={HeartHandshake} 
+            delay="150ms" 
+            onClick={() => { setStatusFilter('Active'); }}
+          />
+          <StatCard 
+            title="Inactive" 
+            count={stats.inactive} 
+            description="Suspended Profiles" 
+            icon={X} 
+            delay="200ms" 
+            onClick={() => { setStatusFilter('Inactive'); }}
+          />
       </div>
 
       <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">

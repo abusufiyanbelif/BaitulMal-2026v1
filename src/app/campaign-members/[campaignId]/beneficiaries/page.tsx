@@ -105,9 +105,17 @@ import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 const gridClass = "grid grid-cols-[40px_40px_50px_200px_120px_140px_140px_100px_120px_120px_150px_60px] items-center gap-4 px-4 py-3 min-w-[1300px]";
 
-function StatCard({ title, count, description, icon: Icon, colorClass, delay }: { title: string, count: number, description: string, icon: any, colorClass?: string, delay: string }) {
+function StatCard({ title, count, description, icon: Icon, colorClass, delay, onClick }: { title: string, count: number, description: string, icon: any, colorClass?: string, delay: string, onClick?: () => void }) {
     return (
-        <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
+        <Card 
+            onClick={onClick}
+            className={cn(
+                "flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md", 
+                onClick && "cursor-pointer hover:-translate-y-1 active:scale-95",
+                colorClass
+            )} 
+            style={{ animationDelay: delay, animationFillMode: 'backwards' }}
+        >
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
                     <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
@@ -202,16 +210,17 @@ export default function BeneficiariesPage() {
 
   const stats = useMemo(() => {
       const data = filteredBeneficiaries;
+      const allData = beneficiaries || [];
       return {
-          total: data.length,
-          pending: data.filter(b => b.status === 'Pending').length,
-          verified: data.filter(b => b.verificationStatus === 'Verified').length,
-          given: data.filter(b => b.status === 'Given').length,
-          hold: data.filter(b => b.verificationStatus === 'Hold').length,
-          needDetails: data.filter(b => b.verificationStatus === 'Need More Details').length,
-          totalAmount: data.reduce((sum, b) => sum + (b.kitAmount || 0), 0)
+          total: allData.length,
+          pending: allData.filter(b => b.status === 'Pending').length,
+          verified: allData.filter(b => b.verificationStatus === 'Verified').length,
+          given: allData.filter(b => b.status === 'Given').length,
+          hold: allData.filter(b => b.verificationStatus === 'Hold').length,
+          needDetails: allData.filter(b => b.verificationStatus === 'Need More Details').length,
+          totalAmount: allData.reduce((sum, b) => sum + (b.kitAmount || 0), 0)
       };
-  }, [filteredBeneficiaries]);
+  }, [filteredBeneficiaries, beneficiaries]);
 
   const beneficiariesByCategory = useMemo(() => {
     const groups: Record<string, Beneficiary[]> = {};
@@ -462,12 +471,55 @@ export default function BeneficiariesPage() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <StatCard title="Total" count={stats.total} description="Combined Recipients" icon={Users} delay="100ms" />
-            <StatCard title="Pending" count={stats.pending} description="Awaiting Support" icon={Hourglass} delay="150ms" />
-            <StatCard title="Verified" count={stats.verified} description="Assistance Secured" icon={CheckCircle2} delay="200ms" />
-            <StatCard title="Given" count={stats.given} description={itemGivenLabel} icon={CheckCircle2} delay="250ms" colorClass="border-primary/10 bg-primary/5 shadow-inner" />
-            <StatCard title="Hold" count={stats.hold} description="Suspended Profiles" icon={XCircle} delay="300ms" />
-            <StatCard title="Need Details" count={stats.needDetails} description="Review Required" icon={Info} delay="350ms" />
+            <StatCard 
+                title="Total" 
+                count={stats.total} 
+                description="Combined Recipients" 
+                icon={Users} 
+                delay="100ms" 
+                onClick={() => { setStatusFilter('All'); setSearchTerm(''); }}
+            />
+            <StatCard 
+                title="Pending" 
+                count={stats.pending} 
+                description="Awaiting Support" 
+                icon={Hourglass} 
+                delay="150ms" 
+                onClick={() => { setStatusFilter('Pending'); }}
+            />
+            <StatCard 
+                title="Verified" 
+                count={stats.verified} 
+                description="Assistance Secured" 
+                icon={CheckCircle2} 
+                delay="200ms" 
+                onClick={() => { setStatusFilter('Verified'); }}
+            />
+            <StatCard 
+                title="Given" 
+                count={stats.given} 
+                description={itemGivenLabel} 
+                icon={CheckCircle2} 
+                delay="250ms" 
+                colorClass="border-primary/10 bg-primary/5 shadow-inner" 
+                onClick={() => { setStatusFilter('Given'); }}
+            />
+            <StatCard 
+                title="Hold" 
+                count={stats.hold} 
+                description="Suspended Profiles" 
+                icon={XCircle} 
+                delay="300ms" 
+                onClick={() => { setStatusFilter('Hold'); }}
+            />
+            <StatCard 
+                title="Need Details" 
+                count={stats.needDetails} 
+                description="Review Required" 
+                icon={Info} 
+                delay="350ms" 
+                onClick={() => { setStatusFilter('Need More Details'); }}
+            />
         </div>
 
         <div className="flex flex-wrap items-center gap-3 bg-primary/5 p-4 rounded-xl border border-primary/10 shadow-sm">

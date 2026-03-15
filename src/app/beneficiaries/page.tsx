@@ -79,12 +79,20 @@ import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 const gridClass = "grid grid-cols-[40px_40px_50px_200px_120px_140px_140px_100px_200px_60px] items-center gap-4 px-4 py-3 min-w-[1150px]";
 
-function StatCard({ title, count, description, icon: Icon, colorClass, delay }: { title: string, count: number, description: string, icon: any, colorClass?: string, delay: string }) {
+function StatCard({ title, count, description, icon: Icon, colorClass, delay, onClick }: { title: string, count: number, description: string, icon: any, colorClass?: string, delay: string, onClick?: () => void }) {
     return (
-        <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
+        <Card 
+            onClick={onClick}
+            className={cn(
+                "flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all hover:shadow-md", 
+                onClick && "cursor-pointer hover:-translate-y-1 active:scale-95",
+                colorClass
+            )} 
+            style={{ animationDelay: delay, animationFillMode: 'backwards' }}
+        >
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">{count}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">
@@ -192,15 +200,16 @@ export default function BeneficiariesPage() {
 
   const stats = useMemo(() => {
       const data = filteredAndSortedBeneficiaries;
+      const allData = beneficiaries || [];
       return {
-          total: data.length,
-          pending: data.filter(b => b.status === 'Pending').length,
-          verified: data.filter(b => b.status === 'Verified').length,
-          hold: data.filter(b => b.status === 'Hold').length,
-          needDetails: data.filter(b => b.status === 'Need More Details').length,
-          zakat: data.filter(b => b.isEligibleForZakat).length
+          total: allData.length,
+          pending: allData.filter(b => b.status === 'Pending').length,
+          verified: allData.filter(b => b.status === 'Verified').length,
+          hold: allData.filter(b => b.status === 'Hold').length,
+          needDetails: allData.filter(b => b.status === 'Need More Details').length,
+          zakat: allData.filter(b => b.isEligibleForZakat).length
       }
-  }, [filteredAndSortedBeneficiaries]);
+  }, [filteredAndSortedBeneficiaries, beneficiaries]);
 
   const totalPages = Math.ceil(filteredAndSortedBeneficiaries.length / itemsPerPage);
   const paginatedBeneficiaries = useMemo(() => {
@@ -367,12 +376,54 @@ export default function BeneficiariesPage() {
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <StatCard title="Total" count={stats.total} description="All Registry Records" icon={Users} delay="100ms" />
-          <StatCard title="Pending" count={stats.pending} description="Awaiting Verification" icon={Hourglass} delay="150ms" />
-          <StatCard title="Verified" count={stats.verified} description="Confirmed Profiles" icon={CheckCircle2} delay="200ms" />
-          <StatCard title="On Hold" count={stats.hold} description="Suspended Profiles" icon={XCircle} delay="150ms" />
-          <StatCard title="Need Details" count={stats.needDetails} description="Incomplete Profiles" icon={Info} delay="300ms" />
-          <StatCard title="Zakat" count={stats.zakat} description="Eligible For Support" icon={Coins} delay="350ms" />
+          <StatCard 
+            title="Total" 
+            count={stats.total} 
+            description="All Registry Records" 
+            icon={Users} 
+            delay="100ms" 
+            onClick={() => { setStatusFilter('All'); setZakatFilter('All'); setSearchTerm(''); }}
+          />
+          <StatCard 
+            title="Pending" 
+            count={stats.pending} 
+            description="Awaiting Verification" 
+            icon={Hourglass} 
+            delay="150ms" 
+            onClick={() => { setStatusFilter('Pending'); setZakatFilter('All'); }}
+          />
+          <StatCard 
+            title="Verified" 
+            count={stats.verified} 
+            description="Confirmed Profiles" 
+            icon={CheckCircle2} 
+            delay="200ms" 
+            onClick={() => { setStatusFilter('Verified'); setZakatFilter('All'); }}
+          />
+          <StatCard 
+            title="On Hold" 
+            count={stats.hold} 
+            description="Suspended Profiles" 
+            icon={XCircle} 
+            delay="150ms" 
+            onClick={() => { setStatusFilter('Hold'); setZakatFilter('All'); }}
+          />
+          <StatCard 
+            title="Need Details" 
+            count={stats.needDetails} 
+            description="Incomplete Profiles" 
+            icon={Info} 
+            delay="300ms" 
+            onClick={() => { setStatusFilter('Need More Details'); setZakatFilter('All'); }}
+          />
+          <StatCard 
+            title="Zakat" 
+            count={stats.zakat} 
+            description="Eligible For Support" 
+            icon={Coins} 
+            delay="350ms" 
+            onClick={() => { setZakatFilter('Eligible'); setStatusFilter('All'); }}
+          />
       </div>
 
       <div className="bg-primary/5 p-4 rounded-xl border border-primary/10">
@@ -392,7 +443,7 @@ export default function BeneficiariesPage() {
                 
                 <Popover>
                     <PopoverTrigger asChild>
-                        <Button variant="outline" className={cn("w-[220px] shrink-0 justify-start h-10 text-sm border-primary/10 text-primary font-bold rounded-[12px] bg-white transition-all hover:border-primary/30", !dateRange && "text-muted-foreground")}>
+                        <Button id="date" variant={"outline"} className={cn("w-[220px] shrink-0 justify-start h-10 text-sm border-primary/10 text-primary font-bold rounded-[12px] bg-white transition-all hover:border-primary/30", !dateRange && "text-muted-foreground")}>
                             <CalendarIcon className="mr-2 h-4 w-4 opacity-40" />
                             {dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd, y")) : "Select Date Range"}
                         </Button>
@@ -515,7 +566,7 @@ export default function BeneficiariesPage() {
                 <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold tracking-tight text-[hsl(var(--table-header-fg))]", gridClass)}>
                     <div className="flex justify-center">
                         <Checkbox 
-                            checked={paginatedBeneficiaries.length > 0 && selectedIds.length === paginatedBeneficiaries.length}
+                            checked={paginatedBeneficiaries.length > 0 && selectedIds.length === paginatedDonations.length}
                             onCheckedChange={toggleSelectAll}
                             className="border-primary/40 data-[state=checked]:bg-primary"
                         />

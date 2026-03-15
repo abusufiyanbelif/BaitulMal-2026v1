@@ -104,9 +104,17 @@ import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1100px]";
 
-function StatCard({ title, count, description, icon: Icon, colorClass, delay, isCurrency = false }: { title: string, count: number | string, description: string, icon: any, colorClass?: string, delay: string, isCurrency?: boolean }) {
+function StatCard({ title, count, description, icon: Icon, colorClass, delay, isCurrency = false, onClick }: { title: string, count: number | string, description: string, icon: any, colorClass?: string, delay: string, isCurrency?: boolean, onClick?: () => void }) {
     return (
-        <Card className={cn("flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", colorClass)} style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
+        <Card 
+            onClick={onClick}
+            className={cn(
+                "flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", 
+                onClick && "cursor-pointer hover:-translate-y-1 active:scale-95",
+                colorClass
+            )} 
+            style={{ animationDelay: delay, animationFillMode: 'backwards' }}
+        >
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
                     <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
@@ -176,6 +184,7 @@ export default function DonationsPage() {
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [identityFilter, setIdentityFilter] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
@@ -203,6 +212,13 @@ export default function DonationsPage() {
     if (!donations) return [];
     let items = [...donations];
     if (statusFilter !== 'All') items = items.filter(d => d.status === statusFilter);
+    
+    if (identityFilter === 'Unlinked') {
+        items = items.filter(d => !d.donorId);
+    } else if (identityFilter === 'Linked') {
+        items = items.filter(d => !!d.donorId);
+    }
+
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       items = items.filter(d => d.donorName.toLowerCase().includes(term) || d.receiverName.toLowerCase().includes(term) || d.donorPhone.includes(term));
@@ -228,22 +244,22 @@ export default function DonationsPage() {
       });
     }
     return items;
-  }, [donations, searchTerm, statusFilter, dateRange, sortConfig]);
+  }, [donations, searchTerm, statusFilter, identityFilter, dateRange, sortConfig]);
 
   const stats = useMemo(() => {
-      const data = filteredAndSortedDonations;
+      const allData = donations || [];
       return {
-          total: data.length,
-          verified: data.filter(d => d.status === 'Verified').length,
-          pending: data.filter(d => d.status === 'Pending').length,
-          unlinked: data.filter(d => !d.donorId).length,
-          canceled: data.filter(d => d.status === 'Canceled').length,
-          online: data.filter(d => d.donationType === 'Online Payment').length,
-          cash: data.filter(d => d.donationType === 'Cash').length,
-          totalAmount: data.filter(d => d.status === 'Verified').reduce((sum, d) => sum + d.amountForThisLead, 0),
-          pendingAmount: data.filter(d => d.status === 'Pending').reduce((sum, d) => sum + d.amountForThisLead, 0),
+          total: allData.length,
+          verified: allData.filter(d => d.status === 'Verified').length,
+          pending: allData.filter(d => d.status === 'Pending').length,
+          unlinked: allData.filter(d => !d.donorId).length,
+          canceled: allData.filter(d => d.status === 'Canceled').length,
+          online: allData.filter(d => d.donationType === 'Online Payment').length,
+          cash: allData.filter(d => d.donationType === 'Cash').length,
+          totalAmount: allData.filter(d => d.status === 'Verified').reduce((sum, d) => sum + d.amountForThisLead, 0),
+          pendingAmount: allData.filter(d => d.status === 'Pending').reduce((sum, d) => sum + d.amountForThisLead, 0),
       };
-  }, [filteredAndSortedDonations]);
+  }, [donations]);
 
   const handleEdit = (donation: Donation) => {
     if (!canUpdate) return;
@@ -422,10 +438,41 @@ export default function DonationsPage() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            <StatCard title="Total Count" count={stats.total} description="All Records Logged" icon={Users} delay="100ms" />
-            <StatCard title="Verified Sum" count={stats.totalAmount.toLocaleString('en-IN')} description="Confirmed Funds" icon={CheckCircle2} delay="150ms" isCurrency />
-            <StatCard title="Pending Sum" count={stats.pendingAmount.toLocaleString('en-IN')} description="Awaiting Vetting" icon={Hourglass} delay="200ms" isCurrency />
-            <StatCard title="Unlinked" count={stats.unlinked} description="Needs Profile Mapping" icon={AlertCircle} delay="250ms" colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} />
+            <StatCard 
+                title="Total Count" 
+                count={stats.total} 
+                description="All Records Logged" 
+                icon={Users} 
+                delay="100ms" 
+                onClick={() => { setStatusFilter('All'); setIdentityFilter('All'); setSearchTerm(''); }}
+            />
+            <StatCard 
+                title="Verified Sum" 
+                count={stats.totalAmount.toLocaleString('en-IN')} 
+                description="Confirmed Funds" 
+                icon={CheckCircle2} 
+                delay="150ms" 
+                isCurrency 
+                onClick={() => { setStatusFilter('Verified'); }}
+            />
+            <StatCard 
+                title="Pending Sum" 
+                count={stats.pendingAmount.toLocaleString('en-IN')} 
+                description="Awaiting Vetting" 
+                icon={Hourglass} 
+                delay="200ms" 
+                isCurrency 
+                onClick={() => { setStatusFilter('Pending'); }}
+            />
+            <StatCard 
+                title="Unlinked" 
+                count={stats.unlinked} 
+                description="Needs Profile Mapping" 
+                icon={AlertCircle} 
+                delay="250ms" 
+                colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} 
+                onClick={() => { setIdentityFilter('Unlinked'); }}
+            />
             <StatCard title="Online Pay" count={stats.online} description="Digital Transfers" icon={Smartphone} delay="300ms" />
             <StatCard title="Cash" count={stats.cash} description="Physical Collections" icon={Wallet} delay="350ms" />
         </div>
@@ -496,6 +543,14 @@ export default function DonationsPage() {
                         <SelectTrigger className="w-[140px] h-9 text-xs text-primary font-bold border-primary/20"><SelectValue placeholder="Status"/></SelectTrigger>
                         <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Verified" className="font-bold">Verified</SelectItem><SelectItem value="Pending" className="font-bold">Pending</SelectItem><SelectItem value="Canceled" className="font-bold">Canceled</SelectItem></SelectContent>
                     </Select>
+                    <Select value={identityFilter} onValueChange={v => { setIdentityFilter(v); setCurrentPage(1); }}>
+                        <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-white font-normal shrink-0"><SelectValue placeholder="Identity Linkage"/></SelectTrigger>
+                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                            <SelectItem value="All" className="font-normal">All Identities</SelectItem>
+                            <SelectItem value="Linked" className="font-normal text-primary">Fully Linked</SelectItem>
+                            <SelectItem value="Unlinked" className="font-normal text-amber-600 font-bold">Needs Resolution</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
             </CardHeader>
             <CardContent className="p-0">
@@ -557,7 +612,7 @@ export default function DonationsPage() {
                 </ScrollArea>
             </CardContent>
             {totalPages > 1 && (
-                <CardFooter className="flex items-center justify-between border-t py-4 bg-primary/5 px-4">
+                <CardFooter className="flex items-center justify-between border-t bg-primary/5 px-4">
                     <p className="text-[10px] font-bold text-muted-foreground">Page {currentPage} Of {totalPages}</p>
                     <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 h-8 text-primary transition-transform active:scale-95">Previous</Button>
