@@ -207,7 +207,6 @@ export default function BeneficiariesPage() {
   }, [beneficiaries, searchTerm, statusFilter, zakatFilter, selectedReferrals, dateRange, sortConfig]);
 
   const stats = useMemo(() => {
-      const data = filteredAndSortedBeneficiaries;
       const allData = beneficiaries || [];
       return {
           total: allData.length,
@@ -217,13 +216,22 @@ export default function BeneficiariesPage() {
           needDetails: allData.filter(b => b.status === 'Need More Details').length,
           zakat: allData.filter(b => b.isEligibleForZakat).length
       }
-  }, [filteredAndSortedBeneficiaries, beneficiaries]);
+  }, [beneficiaries]);
 
   const totalPages = Math.ceil(filteredAndSortedBeneficiaries.length / itemsPerPage);
   const paginatedBeneficiaries = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
     return filteredAndSortedBeneficiaries.slice(start, start + itemsPerPage);
   }, [filteredAndSortedBeneficiaries, currentPage, itemsPerPage]);
+
+  const handleSort = (key: SortKey) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
+        direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+    setCurrentPage(1);
+  };
 
   const toggleSelectAll = (checked: boolean | string) => {
     if (checked === true) {

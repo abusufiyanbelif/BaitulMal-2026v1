@@ -123,7 +123,7 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
                     </p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-5 w-5" />
                 </div>
             </div>
             <p className="text-[9px] font-medium text-muted-foreground mt-auto">{description}</p>

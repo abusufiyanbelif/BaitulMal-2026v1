@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -39,12 +40,13 @@ import {
     Utensils, 
     LifeBuoy,
     ZoomIn,
-    ZoomOut,
-    RotateCw,
-    RefreshCw,
+    ZoomOut, 
+    RotateCw, 
+    RefreshCw, 
     ImageIcon,
     ShieldCheck,
-    ChevronRight
+    ChevronRight,
+    Calendar
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ShareDialog } from '@/components/share-dialog';
@@ -220,6 +222,12 @@ export default function PublicCampaignSummaryPage() {
         };
     }, [allDonations, campaign, beneficiaries, calculatedRequirementTotal]);
 
+    const chartDataValues = useMemo(() => {
+        return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ 
+            name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` 
+        })) : [];
+    }, [fundingData]);
+
     const paymentTypeChartData = useMemo(() => {
         if (!fundingData?.paymentTypeStats) return [];
         return Object.entries(fundingData.paymentTypeStats).map(([name, stats]) => ({
@@ -228,12 +236,6 @@ export default function PublicCampaignSummaryPage() {
             count: stats.count,
             fill: `var(--color-${name.replace(/\s+/g, '')})`
         }));
-    }, [fundingData]);
-
-    const chartDataValues = useMemo(() => {
-        return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ 
-            name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` 
-        })) : [];
     }, [fundingData]);
 
     const isLoading = isCampaignLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
@@ -440,7 +442,7 @@ export default function PublicCampaignSummaryPage() {
                                     <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight uppercase">Fund Totals By Type</CardTitle></CardHeader>
                                     <CardContent className="space-y-2 pt-6 font-normal">
                                         <ScrollArea className="w-full">
-                                            <div className="space-y-2 min-w-[300px]">
+                                            <div className="space-y-2 min-w-[300px] px-2">
                                                 {donationCategories.map(cat => (
                                                     <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
                                                         <span className="text-muted-foreground font-normal whitespace-nowrap">{cat === 'Interest' ? 'Interest (For Disposal)' : cat === 'Loan' ? 'Loan (Qard-e-Hasana)' : cat}</span>
@@ -502,7 +504,7 @@ export default function PublicCampaignSummaryPage() {
                                     <CardContent className="pt-6">
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                            <ResponsiveContainer>
+                                            <ResponsiveContainer width="100%" height="100%">
                                                 <BarChart data={chartDataValues} layout="vertical" margin={{ right: 20 }}>
                                                     <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartDataValues.map((entry) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
                                                 </BarChart>
