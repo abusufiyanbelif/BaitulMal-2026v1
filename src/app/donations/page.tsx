@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo, useEffect } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
@@ -719,10 +718,10 @@ export default function DonationsPage() {
                         <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor Name</SortableHeader>
                         <SortableHeader sortKey="amount" sortConfig={sortConfig} handleSort={handleSort} className="text-right">Amount (₹)</SortableHeader>
                         <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Entry Date</SortableHeader>
-                        <div className="text-center font-bold text-[10px] tracking-tight">Method</div>
+                        <div className="text-center font-bold text-[10px] tracking-tight uppercase">Method</div>
                         <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Verification Status</SortableHeader>
-                        <div className="font-bold text-[10px] tracking-tight">Target Initiative</div>
-                        <div className="text-right pr-4 font-bold text-[10px] tracking-tight">Actions</div>
+                        <div className="font-bold text-[10px] tracking-tight uppercase">Target Initiative</div>
+                        <div className="text-right pr-4 font-bold text-[10px] tracking-tight uppercase">Actions</div>
                     </div>
                     <div className="w-full max-h-[70vh]">
                         {paginatedDonations.map((d, i) => (
@@ -746,7 +745,7 @@ export default function DonationsPage() {
                 </ScrollArea>
             </CardContent>
             {totalPages > 1 && (
-                <CardFooter className="flex justify-between items-center py-4 border-t bg-primary/5 p-4">
+                <CardFooter className="flex justify-between items-center py-4 border-t bg-primary/5 px-4">
                     <p className="text-[10px] font-bold text-muted-foreground">Page {currentPage} Of {totalPages}</p>
                     <div className="flex gap-2">
                         <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold h-8 border-primary/10 text-primary transition-transform active:scale-95">Previous</Button>

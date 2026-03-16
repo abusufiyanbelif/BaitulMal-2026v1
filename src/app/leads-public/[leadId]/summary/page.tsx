@@ -265,53 +265,55 @@ export default function PublicLeadSummaryPage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
-             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform font-bold border-primary/20 text-primary"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button></div>
+             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform font-bold border-primary/20 text-primary"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Public Leads</Link></Button></div>
             
-            <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center cursor-pointer" onClick={() => lead.imageUrl && handleViewImage(lead.imageUrl, lead.name)}>
+            <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center cursor-pointer shadow-sm border border-primary/5" onClick={() => lead.imageUrl && handleViewImage(lead.imageUrl, lead.name)}>
                 {lead.imageUrl ? (
                     <Image src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`} alt={lead.name} fill sizes="100vw" className="object-cover" priority />
                 ) : ( <FallbackIcon className="w-24 h-24 text-muted-foreground/30" /> )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-6"><h1 className="text-3xl lg:text-4xl font-bold text-white shadow-lg">{lead.name}</h1><p className="text-sm text-white/90 shadow-md font-bold">{lead.status}</p></div>
+                <div className="absolute bottom-0 left-0 p-6"><h1 className="text-3xl lg:text-4xl font-bold text-white shadow-lg">{lead.name}</h1><p className="text-sm text-white/90 shadow-md font-bold tracking-tight">{lead.status}</p></div>
             </div>
 
             <div className="flex justify-end items-center mb-4 flex-wrap gap-2">
-                <Button onClick={handleShare} variant="outline" className="active:scale-95 transition-transform font-bold border-primary/20 text-primary"><Share2 className="mr-2 h-4 w-4" /> Share</Button>
+                <Button onClick={handleShare} variant="outline" className="active:scale-95 transition-transform font-bold border-primary/20 text-primary h-10 px-6 rounded-xl shadow-sm">
+                    <Share2 className="mr-2 h-4 w-4" /> Share Dashboard
+                </Button>
             </div>
 
-            <div className="space-y-6" ref={summaryRef}>
-                <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white">
-                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary tracking-tight">Lead Details</CardTitle></CardHeader>
-                    <CardContent className="space-y-4 pt-6 text-foreground font-normal">
+            <div className="space-y-10" ref={summaryRef}>
+                <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white overflow-hidden">
+                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary tracking-tight uppercase">Appeal Objectives</CardTitle></CardHeader>
+                    <CardContent className="space-y-6 pt-6 text-foreground font-normal">
                         <div className="space-y-2">
-                            <Label className="text-muted-foreground text-[10px] font-bold tracking-tight">Description</Label>
-                            <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{lead.description || 'No Description Provided.'}</p>
+                            <Label className="text-muted-foreground text-[10px] font-bold tracking-tight uppercase opacity-60">Background Context</Label>
+                            <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{lead.description || 'No Detailed Description Provided.'}</p>
                         </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mt-4 text-primary">
-                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Required Amount</p><p className="mt-1 text-lg font-bold text-primary font-mono">₹{(lead.requiredAmount ?? 0).toLocaleString('en-IN')}</p></div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-4 border-t border-primary/5">
+                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Required Amount</p><p className="text-lg font-bold text-primary font-mono">₹{(lead.requiredAmount ?? 0).toLocaleString('en-IN')}</p></div>
                             <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight">
+                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">
                                     {calculatedRequirementTotal > 0 ? "Target Goal (Synced)" : "Target Goal"}
                                 </p>
-                                <p className="mt-1 text-lg font-bold text-primary font-mono">₹{(fundingData?.targetAmount ?? 0).toLocaleString('en-IN')}</p>
+                                <p className="text-lg font-bold text-primary font-mono">₹{(fundingData?.targetAmount ?? 0).toLocaleString('en-IN')}</p>
                             </div>
-                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Purpose</p><p className="mt-1 text-lg font-bold text-primary">{lead.purpose}</p></div>
-                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Start Date</p><p className="mt-1 text-lg font-bold text-primary">{lead.startDate}</p></div>
+                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Case Purpose</p><Badge variant="outline" className="font-bold text-xs border-primary/20 text-primary">{lead.purpose}</Badge></div>
+                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Verification Date</p><p className="text-sm font-bold text-primary">{lead.startDate}</p></div>
                         </div>
                     </CardContent>
                 </Card>
 
                 {fundingData && (
-                    <div className="grid gap-6 animate-fade-in-up">
+                    <div className="grid gap-10 animate-fade-in-up">
                         {isVisible('funding_progress') && (
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
                                 <CardHeader className="bg-primary/5 border-b">
                                     <CardTitle className="flex items-center gap-2 font-bold text-primary uppercase"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
-                                    <CardDescription className="font-normal text-primary/70">Verified Donations For This Initiative.</CardDescription>
+                                    <CardDescription className="font-normal text-primary/70">Verified Donations For This Individual Appeal.</CardDescription>
                                 </CardHeader>
-                                <CardContent className="pt-6">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
-                                        <div className="relative h-48 sm:h-64 w-full transition-transform duration-500 hover:scale-105">
+                                <CardContent className="pt-10">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center font-normal">
+                                        <div className="relative h-48 sm:h-64 w-full">
                                             {isClient ? (
                                                 <ChartContainer config={{ progress: { label: 'Progress', color: 'hsl(var(--primary))' } }} className="mx-auto aspect-square h-full">
                                                     <ResponsiveContainer>
@@ -322,12 +324,15 @@ export default function PublicLeadSummaryPage() {
                                                     </ResponsiveContainer>
                                                 </ChartContainer>
                                             ) : <Skeleton className="w-full h-full rounded-full" />}
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold tracking-tight">Funded</span></div>
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold tracking-tight uppercase">Funded</span></div>
                                         </div>
-                                        <div className="space-y-4 text-center md:text-left text-primary font-bold animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Raised For Goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData?.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Grand Total Received</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData?.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                        <div className="space-y-6 text-center md:text-left text-primary font-bold animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Raised For Goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Target Goal</p>
+                                                <p className="text-3xl font-bold text-primary opacity-40 font-mono">₹{(fundingData?.targetAmount || 0).toLocaleString('en-IN')}</p>
+                                            </div>
+                                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Grand Total Received</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData?.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -335,17 +340,17 @@ export default function PublicLeadSummaryPage() {
                         )}
 
                         {isVisible('quick_stats') && (
-                            <div className="grid gap-6 sm:grid-cols-3">
-                                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
-                                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">{itemGivenLabel}</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
-                                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">{itemPendingLabel}</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
+                            <div className="grid gap-6 sm:grid-cols-3 font-normal">
+                                <Card className="bg-white border-primary/10 shadow-sm transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight uppercase">Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 shadow-sm transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight uppercase">{itemGivenLabel}</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 shadow-sm transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight uppercase">{itemPendingLabel}</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
                             </div>
                         )}
 
                         {isVisible('beneficiary_groups') && (
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
                                 <CardHeader className="bg-primary/5 border-b">
-                                    <CardTitle className="font-bold text-primary tracking-tight">
+                                    <CardTitle className="font-bold text-primary tracking-tight uppercase">
                                         {isRationInitiative ? 'Beneficiary Groups' : 'Required Financial Allocation'}
                                     </CardTitle>
                                     <CardDescription className="font-normal text-primary/70">
@@ -354,9 +359,9 @@ export default function PublicLeadSummaryPage() {
                                             : 'Itemized Requirement Breakdown For This Initiative.'}
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="pt-6 px-0 sm:px-6">
+                                <CardContent className="pt-6 px-0 sm:px-6 font-normal">
                                     <ScrollArea className="w-full">
-                                        <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[600px] border-primary/10 mx-4 sm:mx-0">
+                                        <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[650px] border-primary/10 mx-4 sm:mx-0">
                                             {isRationInitiative ? (
                                                 <Table>
                                                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
@@ -369,11 +374,11 @@ export default function PublicLeadSummaryPage() {
                                                     </TableHeader>
                                                     <TableBody>
                                                         {beneficiaryGroups.map((group) => (
-                                                            <TableRow key={group.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white">
-                                                                <TableCell className="font-bold text-primary">{group.name}</TableCell>
-                                                                <TableCell className="text-right font-normal">{group.count}</TableCell>
-                                                                <TableCell className="text-right font-mono font-bold">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
-                                                                <TableCell className="text-right font-mono font-bold">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                                            <TableRow key={group.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white border-b border-primary/5 last:border-none">
+                                                                <TableCell className="font-bold text-primary text-xs">{group.name}</TableCell>
+                                                                <TableCell className="text-right font-normal text-xs">{group.count}</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold text-xs">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold text-xs">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
                                                             </TableRow>
                                                         ))}
                                                     </TableBody>
@@ -395,11 +400,11 @@ export default function PublicLeadSummaryPage() {
                                                     </TableHeader>
                                                     <TableBody>
                                                         {lead.itemCategories?.[0]?.items.map((item, idx) => (
-                                                            <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white">
-                                                                <TableCell className="font-medium">{item.name}</TableCell>
-                                                                <TableCell className="text-right font-normal">{item.quantity} {item.quantityType}</TableCell>
-                                                                <TableCell className="text-right font-mono font-bold">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
-                                                                <TableCell className="text-right font-mono font-bold">₹{(item.price || 0).toLocaleString('en-IN')}</TableCell>
+                                                            <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white border-b border-primary/5 last:border-none">
+                                                                <TableCell className="font-medium text-xs">{item.name}</TableCell>
+                                                                <TableCell className="text-right font-normal text-xs">{item.quantity} {item.quantityType}</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold text-xs">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold text-xs">₹{(item.price || 0).toLocaleString('en-IN')}</TableCell>
                                                             </TableRow>
                                                         ))}
                                                     </TableBody>
@@ -420,15 +425,15 @@ export default function PublicLeadSummaryPage() {
                             </Card>
                         )}
 
-                        <div className="grid gap-6 lg:grid-cols-2">
+                        <div className="grid gap-6 lg:grid-cols-2 font-normal">
                             {isVisible('fund_totals') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight uppercase">Fund Totals By Type</CardTitle></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight uppercase opacity-60">Fund Totals By Type</CardTitle></CardHeader>
                                     <CardContent className="space-y-2 pt-6 font-normal">
                                         <ScrollArea className="w-full">
                                             <div className="space-y-2 min-w-[300px] px-2">
                                                 {donationCategories.map(cat => (
-                                                    <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
+                                                    <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded">
                                                         <span className="text-muted-foreground font-normal whitespace-nowrap">{cat === 'Interest' ? 'Interest (For Disposal)' : cat === 'Loan' ? 'Loan (Qard-e-Hasana)' : cat}</span>
                                                         <span className="font-mono">₹{(fundingData.amountsByCategory[cat] || 0).toLocaleString('en-IN')}</span>
                                                     </div>
@@ -481,11 +486,11 @@ export default function PublicLeadSummaryPage() {
                             )}
                         </div>
 
-                        <div className="grid gap-6 lg:grid-cols-2">
+                        <div className="grid gap-6 lg:grid-cols-2 font-normal text-primary">
                             {isVisible('donations_by_category') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight uppercase">Donations By Category</CardTitle></CardHeader>
-                                    <CardContent className="pt-6">
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight uppercase opacity-60">Donations By Category</CardTitle></CardHeader>
+                                    <CardContent className="pt-6 px-0 sm:px-6">
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
                                             <ResponsiveContainer width="100%" height="100%">
@@ -501,8 +506,8 @@ export default function PublicLeadSummaryPage() {
 
                             {isVisible('donations_by_payment_type') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-[10px] tracking-tight uppercase">Donations By Payment Type</CardTitle><CardDescription className="font-normal text-primary/70">Breakdown Of Funds By Contribution Channel.</CardDescription></CardHeader>
-                                    <CardContent className="pt-6">
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-[10px] tracking-tight uppercase opacity-60">Donations By Payment Type</CardTitle><CardDescription className="font-normal text-primary/70">Breakdown Of Funds By Contribution Channel.</CardDescription></CardHeader>
+                                    <CardContent className="pt-6 px-0 sm:px-6">
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
                                                 <ResponsiveContainer width="100%" height="100%">
@@ -537,7 +542,7 @@ export default function PublicLeadSummaryPage() {
 
                 {isVisible('documents') && publicDocuments.length > 0 && (
                     <Card className="animate-fade-in-up bg-white border-primary/10 shadow-sm overflow-hidden" style={{ animationDelay: '100ms' }}>
-                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight uppercase">Public Artifacts</CardTitle></CardHeader>
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight uppercase opacity-60">Public Artifacts</CardTitle></CardHeader>
                         <CardContent className="pt-6">
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                 {publicDocuments.map((doc) => {
@@ -565,13 +570,11 @@ export default function PublicLeadSummaryPage() {
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-                <DialogContent className="max-w-4xl animate-fade-in-zoom p-0 overflow-hidden">
+                <DialogContent className="max-w-4xl animate-fade-in-zoom p-0 overflow-hidden rounded-[24px] border-primary/10 shadow-2xl">
                     <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary tracking-tight text-sm">{imageToView?.name}</DialogTitle></DialogHeader>
-                    <div className="p-4 bg-secondary/20">
+                    <div className="p-4 bg-secondary/20 flex-1 overflow-hidden relative min-h-[70vh]">
                         {imageToView && (
-                            <div className="relative h-[70vh] w-full overflow-auto border border-primary/10 rounded-md bg-white">
-                                <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
-                            </div>
+                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                         )}
                     </div>
                     <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">

@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -224,7 +223,7 @@ export default function BeneficiariesPage() {
     return filteredAndSortedBeneficiaries.slice(start, start + itemsPerPage);
   }, [filteredAndSortedBeneficiaries, currentPage, itemsPerPage]);
 
-  const handleSort = (key: SortKey) => {
+  const handleSort = (key: any) => {
     let direction: 'ascending' | 'descending' = 'ascending';
     if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
         direction = 'descending';
@@ -434,7 +433,7 @@ export default function BeneficiariesPage() {
                         placeholder="Search Name, Phone..." 
                         value={searchTerm} 
                         onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
-                        className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary rounded-[12px]" 
+                        className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary rounded-[12px] bg-white" 
                     />
                     <div className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50">
                         <Search className="h-4 w-4" />
@@ -579,7 +578,7 @@ export default function BeneficiariesPage() {
                     <div className="text-center font-bold tracking-tight text-[10px]">Disbursement Status</div>
                     <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Zakat</SortableHeader>
                     <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">Referred By</SortableHeader>
-                    <div className="text-right pr-4">Actions</div>
+                    <div className="text-right pr-4 font-bold tracking-tight text-[10px] uppercase">Actions</div>
                 </div>
 
                 <Accordion type="single" collapsible className="w-full">

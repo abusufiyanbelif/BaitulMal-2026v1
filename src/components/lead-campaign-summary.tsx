@@ -58,31 +58,31 @@ export function LeadAndCampaignSummary() {
   }
 
   return (
-    <div className="grid gap-6 md:grid-cols-2">
-      <Card className="animate-fade-in-up border-primary/10 bg-white" style={{ animationDelay: '1000ms', animationFillMode: 'backwards' }}>
+    <div className="grid gap-10 lg:grid-cols-2">
+      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md" style={{ animationDelay: '1000ms', animationFillMode: 'backwards' }}>
         <CardHeader className="bg-primary/5 border-b">
           <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 font-bold text-primary">
+              <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
                 <FolderKanban className="h-6 w-6 text-primary" />
-                Campaigns
+                Active Campaigns
               </CardTitle>
               <span className="text-2xl font-bold text-primary">{campaignSummary?.total || 0}</span>
           </div>
-          <CardDescription className="font-normal text-primary/70">Total Public Campaigns By Category.</CardDescription>
+          <CardDescription className="font-normal text-primary/70">Public Campaigns Grouped By Category.</CardDescription>
         </CardHeader>
-        <CardContent className="p-0 pt-4">
+        <CardContent className="p-0">
           <ScrollArea className="w-full">
-            <div className="min-w-[300px]">
+            <div className="min-w-[450px]">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-primary/5">
                     <TableRow>
-                        <TableHead className="pl-6 font-bold tracking-tight">Category</TableHead>
-                        <TableHead className="text-right pr-6 font-bold tracking-tight">Count</TableHead>
+                        <TableHead className="pl-6 font-bold text-primary">Category Name</TableHead>
+                        <TableHead className="text-right pr-6 font-bold text-primary">Project Count</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
                     {campaignSummary?.chartData.map((entry) => (
-                        <TableRow key={entry.name} className="hover:bg-primary/5 transition-colors border-b border-primary/5">
+                        <TableRow key={entry.name} className="hover:bg-primary/5 transition-colors border-b border-primary/5 bg-white">
                         <TableCell className="font-bold text-primary text-sm pl-6">{entry.name}</TableCell>
                         <TableCell className="text-right font-normal pr-6">{entry.value}</TableCell>
                         </TableRow>
@@ -94,32 +94,32 @@ export function LeadAndCampaignSummary() {
           </ScrollArea>
         </CardContent>
       </Card>
-      <Card className="animate-fade-in-up border-primary/10 bg-white" style={{ animationDelay: '1100ms', animationFillMode: 'backwards' }}>
+      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md" style={{ animationDelay: '1100ms', animationFillMode: 'backwards' }}>
         <CardHeader className="bg-primary/5 border-b">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 font-bold text-primary">
+            <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
               <Lightbulb className="h-6 w-6 text-primary" />
-              Leads
+              Verified Leads
             </CardTitle>
             <span className="text-2xl font-bold text-primary">{leadSummary?.total || 0}</span>
           </div>
           <CardDescription className="font-normal text-primary/70">
-            Total Public Leads By Purpose.
+            Current Support Appeals Organized By Purpose.
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-0 pt-4">
+        <CardContent className="p-0">
           <ScrollArea className="w-full">
-            <div className="min-w-[300px]">
+            <div className="min-w-[450px]">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-primary/5">
                     <TableRow>
-                        <TableHead className="pl-6 font-bold tracking-tight">Purpose</TableHead>
-                        <TableHead className="text-right pr-6 font-bold tracking-tight">Count</TableHead>
+                        <TableHead className="pl-6 font-bold text-primary">Appeal Purpose</TableHead>
+                        <TableHead className="text-right pr-6 font-bold text-primary">Case Count</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
                     {leadSummary?.chartData.map((entry) => (
-                        <TableRow key={entry.name} className="hover:bg-primary/5 transition-colors border-b border-primary/5">
+                        <TableRow key={entry.name} className="hover:bg-primary/5 transition-colors border-b border-primary/5 bg-white">
                         <TableCell className="font-bold text-primary text-sm pl-6">{entry.name}</TableCell>
                         <TableCell className="text-right font-normal pr-6">{entry.value}</TableCell>
                         </TableRow>

@@ -60,26 +60,26 @@ export function PurposeFundingSummary() {
           Impact By Purpose
         </CardTitle>
         <CardDescription className="font-normal text-primary/70">
-          Total Verified Funds Utilized Across Different Support Categories.
+          Total Verified Funds Utilized Across Institutional Support Categories.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0">
         <ScrollArea className="w-full">
-            <div className="min-w-[400px]">
+            <div className="min-w-[450px]">
                 <Table>
                     <TableHeader className="bg-primary/5">
                         <TableRow>
-                        <TableHead className="pl-6 tracking-tight">Purpose Type</TableHead>
-                        <TableHead className="text-right tracking-tight pr-6">Amount Received</TableHead>
+                        <TableHead className="pl-6 font-bold text-primary">Purpose Type</TableHead>
+                        <TableHead className="text-right font-bold text-primary pr-6">Amount Received</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
                         {purposeData.map((item) => (
-                        <TableRow key={item.name} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5">
+                        <TableRow key={item.name} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5 bg-white">
                             <TableCell className="font-bold text-primary text-sm pl-6">{item.name}</TableCell>
                             <TableCell className="text-right font-bold font-mono text-primary text-sm pr-6">
                             <div className="flex items-center justify-end gap-1">
-                                <IndianRupee className="h-3 w-3" />
+                                <IndianRupee className="h-3 w-3 opacity-40" />
                                 {item.amount.toLocaleString('en-IN')}
                             </div>
                             </TableCell>
