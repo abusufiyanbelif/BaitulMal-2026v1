@@ -1,4 +1,3 @@
-
 'use client';
 import React, { useState, useMemo, Suspense } from 'react';
 import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
@@ -48,7 +47,8 @@ import {
     CheckCircle2,
     Users,
     CalendarIcon,
-    AlertCircle
+    AlertCircle,
+    Save
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -78,7 +78,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
 } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
@@ -173,6 +172,7 @@ function DonationListContent() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
   const [isUnlinkDialogOpen, setIsUnlinkDialogOpen] = useState(false);
   const [donationToUnlink, setDonationToUnlink] = useState<string | null>(null);
@@ -349,14 +349,69 @@ function DonationListContent() {
   };
 
   const handleFormSubmit = async (data: DonationFormData) => {
-    if (!userProfile) return;
+    if (!firestore || !storage || !userProfile || !allCampaigns || !allLeads) return;
+    
+    const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
+    if (hasFilesToUpload && !auth?.currentUser) {
+        toast({ title: "Authentication Error", description: "Authorization Expired. Please Re-Login.", variant: "destructive" });
+        return;
+    }
+
     setIsFormOpen(false);
+    setIsSubmitting(true);
+
     try {
+        const transactionPromises = data.transactions.map(async (transaction) => {
+            let screenshotUrl = transaction.screenshotUrl || '';
+            const fileList = transaction.screenshotFile as FileList | undefined;
+            if (fileList && fileList.length > 0) {
+                const file = fileList[0];
+                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
+                const tempId = editingDonation?.id || `new_${Date.now()}`;
+                const filePath = `donations/${tempId}/${data.donationDate}_${transaction.id}.png`;
+                const fileRef = storageRef(storage, filePath);
+                await uploadBytes(fileRef, resizedBlob);
+                screenshotUrl = await getDownloadURL(fileRef);
+            }
+            return {
+                id: transaction.id,
+                amount: transaction.amount,
+                transactionId: transaction.transactionId || '',
+                date: transaction.date || '',
+                upiId: transaction.upiId || '',
+                screenshotUrl: screenshotUrl,
+                screenshotIsPublic: transaction.screenshotIsPublic || false,
+            };
+        });
+
+        const finalTransactions = await Promise.all(transactionPromises);
+
+        const finalLinkSplit = data.linkSplit?.map(split => {
+            if (!split.linkId || split.linkId === 'unlinked') {
+                return split.amount > 0 ? { linkId: 'unallocated', linkName: 'Unallocated', linkType: 'general' as const, amount: split.amount } : null;
+            }
+            const [type, id] = split.linkId.split('_');
+            const linkType = type as 'campaign' | 'lead';
+            const source = linkType === 'campaign' ? allCampaigns : allLeads;
+            const linkedItem = source?.find(item => item.id === id);
+            return { linkId: id, linkName: linkedItem?.name || 'Unknown', linkType, amount: split.amount };
+        }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
+
+        const { transactions, ...donationCoreData } = data;
+        
+        const processedDonationData = {
+            ...donationCoreData,
+            transactions: finalTransactions,
+            amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0),
+            linkSplit: finalLinkSplit,
+        };
+
         const result = await upsertDonationWithDonorAction(
             editingDonation?.id || null,
-            data as any,
+            processedDonationData as any,
             { id: userProfile.id, name: userProfile.name }
         );
+
         if (result.success) {
             toast({ title: "Success", description: result.message, variant: 'success' });
         } else {
@@ -365,6 +420,7 @@ function DonationListContent() {
     } catch (error: any) {
         toast({ title: "Failed", description: error.message, variant: 'destructive' });
     } finally {
+        setIsSubmitting(false);
         setEditingDonation(null);
     }
   };
@@ -376,7 +432,7 @@ function DonationListContent() {
     else toast({ title: 'Import Failed', description: res?.message || "Import Operation Failed.", variant: 'destructive' });
   };
 
-  const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading;
+  const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading || isSubmitting;
   
   if (isLoading && !campaign) return <BrandedLoader />;
   if (!campaign) return <div className="p-8 text-center text-primary font-bold"><p>Campaign Not Found.</p><Button asChild variant="outline" className="mt-4 border-primary/20 text-primary"><Link href="/campaign-members"><ArrowLeft className="mr-2"/>Back</Link></Button></div>;
@@ -495,7 +551,7 @@ function DonationListContent() {
                         <Button variant="outline" size="sm" onClick={() => { if(!donations.length) return; const headers = ['ID', 'Donor Name', 'Donor Phone', 'Amount', 'Date', 'Type', 'Status']; const rows = donations.map(d => [ d.id, d.donorName, d.donorPhone, d.amountForThisCampaign, d.donationDate, d.donationType, d.status ]); const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const blob = new Blob([csv], { type: 'text/csv' }); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `donations_${campaignId}.csv`; a.click(); }} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><Download className="mr-2 h-4 w-4"/> Export CSV</Button>
                         <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><UploadCloud className="mr-2 h-4 w-4"/> Import Data</Button>
                         {canUpdate && <Button variant="outline" onClick={() => setIsSearchOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><LinkIcon className="mr-2 h-4 w-4"/> Select From Master</Button>}
-                        {canUpdate && <Button onClick={() => setIsFormOpen(true)} className="font-bold shadow-md active:scale-95 transition-transform rounded-[12px]"><PlusCircle className="mr-2 h-4 w-4" /> Add Record</Button>}
+                        {canUpdate && <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="font-bold shadow-md active:scale-95 transition-transform rounded-[12px]"><PlusCircle className="mr-2 h-4 w-4" /> Add Record</Button>}
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-4">

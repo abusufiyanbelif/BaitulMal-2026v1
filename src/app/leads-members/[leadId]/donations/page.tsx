@@ -1,11 +1,11 @@
-
 'use client';
 import React, { useState, useMemo, Suspense } from 'react';
 import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc, storageRef, uploadBytes, getDownloadURL } from '@/firebase';
+import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, doc, serverTimestamp, setDoc, updateDoc, type DocumentReference, deleteField } from 'firebase/firestore';
 import type { Donation, Lead, Campaign } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
@@ -49,7 +49,8 @@ import {
     CalendarIcon,
     Users,
     CheckCircle2,
-    AlertCircle
+    AlertCircle,
+    Save
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -176,6 +177,7 @@ function LeadDonationListContent() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
   const [isUnlinkDialogOpen, setIsUnlinkDialogOpen] = useState(false);
   const [donationToUnlink, setDonationToUnlink] = useState<string | null>(null);
@@ -315,8 +317,16 @@ function LeadDonationListContent() {
   
   const handleFormSubmit = async (data: DonationFormData) => {
     if (!firestore || !storage || !userProfile || !allCampaigns || !allLeads) return;
+    
+    const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
+    if (hasFilesToUpload && !auth?.currentUser) {
+        toast({ title: "Authentication Error", description: "Authorization Session Expired.", variant: "destructive" });
+        return;
+    }
+
     setIsFormOpen(false);
-    const docRef = editingDonation ? doc(firestore, 'donations', editingDonation.id) : doc(collection(firestore, 'donations'));
+    setIsSubmitting(true);
+
     try {
         const transactionPromises = data.transactions.map(async (transaction) => {
             let screenshotUrl = transaction.screenshotUrl || '';
@@ -324,35 +334,60 @@ function LeadDonationListContent() {
             if (fileList && fileList.length > 0) {
                 const file = fileList[0];
                 const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
-                const filePath = `donations/${docRef.id}/${data.donationDate}_${transaction.id}.png`;
+                const tempId = editingDonation?.id || `new_${Date.now()}`;
+                const filePath = `donations/${tempId}/${data.donationDate}_${transaction.id}.png`;
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);
                 screenshotUrl = await getDownloadURL(fileRef);
             }
-            return { id: transaction.id, amount: transaction.amount, transactionId: transaction.transactionId || '', screenshotUrl, screenshotIsPublic: transaction.screenshotIsPublic || false };
+            return {
+                id: transaction.id,
+                amount: transaction.amount,
+                transactionId: transaction.transactionId || '',
+                date: transaction.date || '',
+                upiId: transaction.upiId || '',
+                screenshotUrl: screenshotUrl,
+                screenshotIsPublic: transaction.screenshotIsPublic || false,
+            };
         });
+
         const finalTransactions = await Promise.all(transactionPromises);
-        const { transactions, ...donationData } = data;
+
         const finalLinkSplit = data.linkSplit?.map(split => {
-            if (!split.linkId || split.linkId === 'unlinked') return split.amount > 0 ? { linkId: 'unallocated', linkName: 'Unallocated', linkType: 'general' as const, amount: split.amount } : null;
+            if (!split.linkId || split.linkId === 'unlinked') {
+                return split.amount > 0 ? { linkId: 'unallocated', linkName: 'Unallocated', linkType: 'general' as const, amount: split.amount } : null;
+            }
             const [type, id] = split.linkId.split('_');
             const linkType = type as 'campaign' | 'lead';
             const source = linkType === 'campaign' ? allCampaigns : allLeads;
             const linkedItem = source?.find(item => item.id === id);
             return { linkId: id, linkName: linkedItem?.name || 'Unknown', linkType, amount: split.amount };
         }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
-        const finalData = { ...donationData, transactions: finalTransactions, amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0), linkSplit: finalLinkSplit, uploadedBy: userProfile.name, uploadedById: userProfile.id, ...(!editingDonation && { createdAt: serverTimestamp() }) };
-        
-        if (editingDonation) {
-            (finalData as any).campaignId = deleteField();
-            (finalData as any).campaignName = deleteField();
-        }
 
-        await setDoc(docRef, finalData, { merge: true });
-        toast({ title: 'Success', description: 'Donation Saved Successfully.', variant: 'success' });
+        const { transactions, ...donationCoreData } = data;
+        
+        const processedDonationData = {
+            ...donationCoreData,
+            transactions: finalTransactions,
+            amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0),
+            linkSplit: finalLinkSplit,
+        };
+
+        const result = await upsertDonationWithDonorAction(
+            editingDonation?.id || null,
+            processedDonationData as any,
+            { id: userProfile.id, name: userProfile.name }
+        );
+
+        if (result.success) {
+            toast({ title: "Success", description: result.message, variant: 'success' });
+        } else {
+            toast({ title: "Error", description: result.message, variant: 'destructive' });
+        }
     } catch (error: any) {
-        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: editingDonation ? 'update' : 'create', requestResourceData: data }));
+        toast({ title: "Failed", description: error.message, variant: 'destructive' });
     } finally {
+        setIsSubmitting(false);
         setEditingDonation(null);
     }
   };
@@ -423,7 +458,7 @@ function LeadDonationListContent() {
     else toast({ title: 'Import Failed', description: res?.message || "Import Failed.", variant: 'destructive' });
   };
 
-  const isLoading = isLeadLoading || areDonationsLoading || isProfileLoading;
+  const isLoading = isLeadLoading || areDonationsLoading || isProfileLoading || isSubmitting;
   
   if (isLoading && !lead) return <BrandedLoader />;
   if (!lead) return <div className="p-8 text-center text-primary font-bold"><p>Lead Found.</p><Button asChild variant="outline" className="mt-4 border-primary/20 text-primary"><Link href="/leads-members"><ArrowLeft className="mr-2"/>Back</Link></Button></div>;

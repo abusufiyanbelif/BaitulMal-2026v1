@@ -46,7 +46,8 @@ import {
     Wallet,
     ArrowLeft,
     CalendarIcon,
-    AlertCircle
+    AlertCircle,
+    Save
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -316,6 +317,7 @@ export default function DonationsPage() {
   const storage = useStorage();
   const { toast } = useToast();
   const { user, userProfile, isLoading: isProfileLoading } = useSession();
+  const auth = useAuth();
 
   const initialStatus = searchParams.get('status') || 'All';
   const initialIdentity = searchParams.get('identity') || 'All';
@@ -331,6 +333,7 @@ export default function DonationsPage() {
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isImportOpen, setIsImportOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [donationToDelete, setDonationToDelete] = useState<string | null>(null);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   
@@ -471,8 +474,16 @@ export default function DonationsPage() {
   };
 
   const handleFormSubmit = async (data: DonationFormData) => {
-    if (!userProfile) return;
+    if (!firestore || !storage || !userProfile || !allCampaigns || !allLeads) return;
+    
+    const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
+    if (hasFilesToUpload && !auth?.currentUser) {
+        toast({ title: "Authentication Error", description: "Authorization Expired. Please Re-Login.", variant: "destructive" });
+        return;
+    }
+
     setIsFormOpen(false);
+    setIsSubmitting(true);
     
     try {
         const transactionPromises = data.transactions.map(async (transaction) => {
@@ -483,29 +494,40 @@ export default function DonationsPage() {
                 const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
                 const tempId = editingDonation?.id || `new_${Date.now()}`;
                 const filePath = `donations/${tempId}/${data.donationDate}_${transaction.id}.png`;
-                const fileRef = storageRef(storage!, filePath);
+                const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);
                 screenshotUrl = await getDownloadURL(fileRef);
             }
-            return { id: transaction.id, amount: transaction.amount, transactionId: transaction.transactionId || '', screenshotUrl, screenshotIsPublic: transaction.screenshotIsPublic || false };
+            return {
+                id: transaction.id,
+                amount: transaction.amount,
+                transactionId: transaction.transactionId || '',
+                date: transaction.date || '',
+                upiId: transaction.upiId || '',
+                screenshotUrl: screenshotUrl,
+                screenshotIsPublic: transaction.screenshotIsPublic || false,
+            };
         });
 
         const finalTransactions = await Promise.all(transactionPromises);
-        const { transactions, ...donationData } = data;
-        
+
         const finalLinkSplit = data.linkSplit?.map(split => {
-            if (!split.linkId || split.linkId === 'unlinked') return split.amount > 0 ? { linkId: 'unallocated', linkName: 'Unallocated', linkType: 'general' as const, amount: split.amount } : null;
+            if (!split.linkId || split.linkId === 'unlinked') {
+                return split.amount > 0 ? { linkId: 'unallocated', linkName: 'Unallocated', linkType: 'general' as const, amount: split.amount } : null;
+            }
             const [type, id] = split.linkId.split('_');
             const linkType = type as 'campaign' | 'lead';
             const source = linkType === 'campaign' ? allCampaigns : allLeads;
             const linkedItem = source?.find(item => item.id === id);
             return { linkId: id, linkName: linkedItem?.name || 'Unknown', linkType, amount: split.amount };
         }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
+
+        const { transactions, ...donationCoreData } = data;
         
-        const processedDonationData = { 
-            ...donationData, 
-            transactions: finalTransactions, 
-            amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0), 
+        const processedDonationData = {
+            ...donationCoreData,
+            transactions: finalTransactions,
+            amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0),
             linkSplit: finalLinkSplit,
         };
 
@@ -523,6 +545,7 @@ export default function DonationsPage() {
     } catch (error: any) {
         toast({ title: "Failed", description: error.message, variant: 'destructive' });
     } finally {
+        setIsSubmitting(false);
         setEditingDonation(null);
     }
   };
@@ -556,9 +579,9 @@ export default function DonationsPage() {
     }
   };
 
-  const isLoading = areDonationsLoading || isProfileLoading;
+  const isLoading = areDonationsLoading || isProfileLoading || isSubmitting;
   
-  if (isLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Institutional Logs." />;
+  if (isLoading && !donations) return <SectionLoader label="Loading Donation Records..." description="Retrieving Institutional Logs." />;
 
   return (
     <main className="container mx-auto p-4 md:p-8 font-normal text-primary relative">
