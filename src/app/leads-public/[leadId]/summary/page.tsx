@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -327,8 +326,8 @@ export default function PublicLeadSummaryPage() {
                                         </div>
                                         <div className="space-y-4 text-center md:text-left text-primary font-bold animate-fade-in-up" style={{ animationDelay: '300ms' }}>
                                             <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Raised For Goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p></div>
-                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Grand Total Received</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Target Goal</p><p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData?.targetAmount || 0).toLocaleString('en-IN')}</p></div>
+                                            <div className="transition-transform hover:translate-x-1 duration-300"><p className="text-[10px] font-bold text-muted-foreground tracking-tight">Grand Total Received</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData?.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -355,17 +354,17 @@ export default function PublicLeadSummaryPage() {
                                             : 'Itemized Requirement Breakdown For This Initiative.'}
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="pt-6">
+                                <CardContent className="pt-6 px-0 sm:px-6">
                                     <ScrollArea className="w-full">
-                                        <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[600px] border-primary/10">
+                                        <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[600px] border-primary/10 mx-4 sm:mx-0">
                                             {isRationInitiative ? (
                                                 <Table>
                                                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                         <TableRow>
-                                                            <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Category Name</TableHead>
-                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Beneficiaries</TableHead>
-                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Kit Amount</TableHead>
-                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Total Amount</TableHead>
+                                                            <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Category Name</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Beneficiaries</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Kit Amount</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Total Amount</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
@@ -380,7 +379,7 @@ export default function PublicLeadSummaryPage() {
                                                     </TableBody>
                                                     {beneficiaryGroups.length > 0 && (
                                                         <TableFooter className="bg-primary/5 border-t">
-                                                            <TableRow><TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight">Total Requirement</TableCell><TableCell className="text-right font-mono font-bold text-primary text-lg">₹{calculatedRequirementTotal.toLocaleString('en-IN')}</TableCell></TableRow>
+                                                            <TableRow><TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Total Requirement</TableCell><TableCell className="text-right font-mono font-bold text-primary text-lg">₹{calculatedRequirementTotal.toLocaleString('en-IN')}</TableCell></TableRow>
                                                         </TableFooter>
                                                     )}
                                                 </Table>
@@ -388,10 +387,10 @@ export default function PublicLeadSummaryPage() {
                                                 <Table>
                                                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                         <TableRow>
-                                                            <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Requirement Description</TableHead>
-                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Quantity</TableHead>
-                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Unit Price</TableHead>
-                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Total Price</TableHead>
+                                                            <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Requirement Description</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Quantity</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Unit Price</TableHead>
+                                                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Total Price</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
@@ -406,7 +405,7 @@ export default function PublicLeadSummaryPage() {
                                                     </TableBody>
                                                     <TableFooter className="bg-primary/5 border-t">
                                                         <TableRow>
-                                                            <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight">Single Beneficiary Total</TableCell>
+                                                            <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Single Beneficiary Total</TableCell>
                                                             <TableCell className="text-right font-mono font-bold text-primary text-lg">
                                                                 ₹{calculatedRequirementTotal.toLocaleString('en-IN')}
                                                             </TableCell>
@@ -424,10 +423,10 @@ export default function PublicLeadSummaryPage() {
                         <div className="grid gap-6 lg:grid-cols-2">
                             {isVisible('fund_totals') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight">Fund Totals By Type</CardTitle></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight uppercase">Fund Totals By Type</CardTitle></CardHeader>
                                     <CardContent className="space-y-2 pt-6 font-normal">
                                         <ScrollArea className="w-full">
-                                            <div className="space-y-2">
+                                            <div className="space-y-2 min-w-[300px] px-2">
                                                 {donationCategories.map(cat => (
                                                     <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
                                                         <span className="text-muted-foreground font-normal whitespace-nowrap">{cat === 'Interest' ? 'Interest (For Disposal)' : cat === 'Loan' ? 'Loan (Qard-e-Hasana)' : cat}</span>
@@ -445,7 +444,7 @@ export default function PublicLeadSummaryPage() {
 
                             {isVisible('zakat_utilization') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-lg">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Zakat Fund Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking Of Designated Zakat Resources.</CardDescription></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Zakat Fund Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking Of Designated Zakat Resources.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 pt-6 font-normal text-foreground">
                                         <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded">
                                             <span className="text-muted-foreground tracking-tight font-normal">Total Zakat Collected</span>
@@ -485,7 +484,7 @@ export default function PublicLeadSummaryPage() {
                         <div className="grid gap-6 lg:grid-cols-2">
                             {isVisible('donations_by_category') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight">Donations By Category</CardTitle></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight uppercase">Donations By Category</CardTitle></CardHeader>
                                     <CardContent className="pt-6">
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
@@ -502,7 +501,7 @@ export default function PublicLeadSummaryPage() {
 
                             {isVisible('donations_by_payment_type') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-[10px] tracking-tight">Donations By Payment Type</CardTitle><CardDescription className="font-normal text-primary/70">Breakdown Of Funds By Contribution Channel.</CardDescription></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-[10px] tracking-tight uppercase">Donations By Payment Type</CardTitle><CardDescription className="font-normal text-primary/70">Breakdown Of Funds By Contribution Channel.</CardDescription></CardHeader>
                                     <CardContent className="pt-6">
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">

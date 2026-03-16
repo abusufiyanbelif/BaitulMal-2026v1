@@ -1,4 +1,3 @@
-
 'use client';
 
 import { usePublicData } from '@/hooks/use-public-data';
@@ -70,9 +69,9 @@ export function DonationSummary() {
           </div>
           <CardDescription className="font-normal text-primary/70">A Year-By-Year Breakdown Of Funds Received Against Fundraising Goals.</CardDescription>
         </CardHeader>
-        <CardContent className="pt-6">
+        <CardContent className="p-0 pt-4">
             <ScrollArea className="w-full">
-                <div className="min-w-[600px]">
+                <div className="min-w-[600px] px-4">
                     <Table>
                         <TableHeader className="bg-primary/5">
                             <TableRow>
@@ -80,20 +79,20 @@ export function DonationSummary() {
                                 <TableHead className="font-bold text-primary">Goal</TableHead>
                                 <TableHead className="font-bold text-primary">Raised For Goal</TableHead>
                                 <TableHead className="font-bold text-primary">Total Received</TableHead>
-                                <TableHead className="text-right font-bold text-primary">Progress</TableHead>
+                                <TableHead className="text-right font-bold text-primary pr-6">Progress</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {yearlySummary.map(({ year, totalTarget, totalGoalReceived, overallTotalReceived, progress }) => (
-                                <TableRow key={year} className="hover:bg-primary/5">
+                                <TableRow key={year} className="hover:bg-primary/5 transition-colors border-b border-primary/5">
                                     <TableCell className="font-bold text-primary">{year}</TableCell>
                                     <TableCell className="font-normal text-primary/80">₹{totalTarget.toLocaleString('en-IN')}</TableCell>
-                                    <TableCell className="font-normal text-primary">₹{totalGoalReceived.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell className="font-normal text-primary font-bold">₹{totalGoalReceived.toLocaleString('en-IN')}</TableCell>
                                     <TableCell className="font-normal text-primary/60">₹{overallTotalReceived.toLocaleString('en-IN')}</TableCell>
-                                    <TableCell className="text-right w-[150px]">
-                                        <div className="flex items-center gap-2">
-                                            <Progress value={progress} className="h-2 flex-1" />
-                                            <span className="text-xs font-normal text-primary">{Math.round(progress)}%</span>
+                                    <TableCell className="text-right w-[150px] pr-6">
+                                        <div className="flex items-center gap-3">
+                                            <Progress value={progress} className="h-1.5 flex-1" />
+                                            <span className="text-[10px] font-bold text-primary whitespace-nowrap">{Math.round(progress)}%</span>
                                         </div>
                                     </TableCell>
                                 </TableRow>
@@ -118,9 +117,9 @@ export function DonationSummary() {
           <ChartContainer config={donationCategoryChartConfig} className="h-[300px] w-full">
             <PieChart>
               <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-              <Pie data={categorySummary} dataKey="value" nameKey="name" innerRadius={60} outerRadius={100} strokeWidth={5} paddingAngle={2}>
+              <Pie data={categorySummary} dataKey="value" nameKey="name" innerRadius={60} outerRadius={100} strokeWidth={5} paddingAngle={2} className="transition-all duration-1000 ease-out focus:outline-none">
                 {categorySummary.map((entry: any) => (
-                  <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                  <Cell key={`cell-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />
                 ))}
               </Pie>
               <ChartLegend content={<ChartLegendContent nameKey="name" />} />

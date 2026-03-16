@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
@@ -9,10 +8,9 @@ import { useFirestore, useMemoFirebase, collection, query, getDocs, type QueryDo
 import type { Donor } from '@/lib/types';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Loader2, Search, Users, Phone, Mail, CheckCircle2, UserPlus, X, Landmark, Smartphone, AlertCircle, ArrowRight } from 'lucide-react';
+import { Loader2, Search, Users, Phone, Mail, CheckCircle2, UserPlus, X, AlertCircle, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { cn } from '@/lib/utils';
 import { useSession } from '@/hooks/use-session';
 import { createDonorAction } from '@/app/donors/actions';
 import { useToast } from '@/hooks/use-toast';
@@ -124,24 +122,24 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl text-primary font-normal p-0 overflow-hidden rounded-[16px] border-primary/10">
-        <DialogHeader className="px-6 py-4 bg-primary/5 border-b border-primary/10">
+      <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] text-primary font-normal p-0 overflow-hidden rounded-[24px] border-primary/10 flex flex-col">
+        <DialogHeader className="px-6 py-6 bg-primary/5 border-b border-primary/10 shrink-0">
           <DialogTitle className="text-xl font-bold tracking-tight text-primary flex items-center gap-2">
             <Users className="h-5 w-5 opacity-40"/> Retrieve Donor Profile
           </DialogTitle>
-          <DialogDescription className="text-sm font-normal text-primary/70">
+          <DialogDescription className="text-sm font-normal text-primary/70 pr-6">
             Select An Existing Donor Or Register A New Identity From This Hub.
           </DialogDescription>
         </DialogHeader>
         
-        <div className="p-6 space-y-4">
-            <div className="relative">
+        <div className="flex-1 overflow-hidden flex flex-col p-4 sm:p-6 space-y-4">
+            <div className="relative shrink-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
                 <Input
                     placeholder="Search By Name, Mobile, Email, UPI, Or Account..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 h-10 text-sm border-primary/10 focus-visible:ring-primary rounded-[12px] font-normal"
+                    className="pl-10 h-11 border-primary/10 focus-visible:ring-primary rounded-xl font-normal shadow-sm"
                 />
                 {searchTerm && (
                     <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8 hover:bg-transparent" onClick={() => setSearchTerm('')}>
@@ -150,35 +148,35 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
                 )}
             </div>
 
-            <div className="rounded-[12px] border border-primary/10 bg-primary/[0.02] overflow-hidden shadow-inner h-[350px]">
+            <div className="flex-1 rounded-2xl border border-primary/10 bg-primary/[0.02] overflow-hidden shadow-inner relative">
                 <ScrollArea className="h-full w-full">
                     <div className="p-2 space-y-2">
                         {isInitialLoading ? (
-                            <div className="space-y-2 p-2">
-                                {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-16 w-full rounded-[10px]" />)}
+                            <div className="space-y-3 p-2">
+                                {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)}
                             </div>
                         ) : filteredResults.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-12 text-center">
+                            <div className="flex flex-col items-center justify-center py-16 text-center px-4">
                                 <AlertCircle className="h-12 w-12 mb-4 text-primary/20" />
                                 <p className="text-sm font-bold text-primary tracking-tight">No Matching Profiles Discovered</p>
-                                <p className="text-[10px] text-muted-foreground mt-1 mb-6 font-normal">Create A New Institutional Identity For This Contributor.</p>
+                                <p className="text-[10px] text-muted-foreground mt-1 mb-8 font-normal max-w-[200px]">Create A New Institutional Identity For This Contributor.</p>
                                 
                                 {currentFormData?.name && (
-                                    <Button onClick={handleRegisterNewProfile} disabled={isCreating} className="font-bold shadow-md rounded-xl h-11 px-8 group active:scale-95 transition-transform">
+                                    <Button onClick={handleRegisterNewProfile} disabled={isCreating} className="font-bold shadow-md rounded-xl h-12 px-8 group active:scale-95 transition-transform w-full sm:w-auto">
                                         {isCreating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <UserPlus className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />}
-                                        Register '{currentFormData.name}' As New Donor
+                                        <span className="truncate">Register '{currentFormData.name}'</span>
                                     </Button>
                                 )}
                             </div>
                         ) : (
-                            <>
+                            <div className="pb-4">
                                 {filteredResults.map(donor => (
                                     <div 
                                         key={donor.id} 
-                                        className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-[12px] bg-white border border-transparent hover:border-primary/20 hover:shadow-sm transition-all group cursor-pointer"
+                                        className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl bg-white border border-transparent hover:border-primary/20 hover:shadow-sm transition-all group cursor-pointer mb-2"
                                         onClick={() => handleSelect(donor)}
                                     >
-                                        <div className="flex-1 min-w-0 space-y-1">
+                                        <div className="flex-1 min-w-0 space-y-1 pr-2">
                                             <div className="flex items-center gap-2">
                                                 <p className="font-bold text-sm text-primary truncate">{donor.name}</p>
                                                 <Badge variant={donor.status === 'Active' ? 'eligible' : 'outline'} className="text-[9px] font-bold">
@@ -190,20 +188,20 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
                                                 {donor.email && <span className="flex items-center gap-1.5"><Mail className="h-3 w-3 opacity-40"/> {donor.email}</span>}
                                             </div>
                                         </div>
-                                        <Button size="sm" className="mt-2 sm:mt-0 font-bold bg-primary hover:bg-primary/90 text-white rounded-[10px] h-8 px-4 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow-sm">
+                                        <Button size="sm" className="mt-3 sm:mt-0 font-bold bg-primary hover:bg-primary/90 text-white rounded-lg h-8 px-4 opacity-0 sm:opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow-sm shrink-0">
                                             Load Profile
                                         </Button>
                                     </div>
                                 ))}
                                 
-                                <Separator className="my-4 bg-primary/10" />
-                                <div className="p-4 bg-primary/[0.03] rounded-xl border border-dashed border-primary/20 flex flex-col items-center gap-3">
+                                <Separator className="my-6 bg-primary/10" />
+                                <div className="p-6 bg-primary/[0.03] rounded-2xl border border-dashed border-primary/20 flex flex-col items-center gap-4 text-center">
                                     <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Entry Not Listed?</p>
-                                    <Button variant="outline" size="sm" onClick={handleRegisterNewProfile} disabled={isCreating} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform h-9 px-6 rounded-lg bg-white shadow-sm">
-                                        Register New Identity <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                                    <Button variant="outline" size="sm" onClick={handleRegisterNewProfile} disabled={isCreating} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform h-10 px-8 rounded-xl bg-white shadow-sm w-full sm:w-auto">
+                                        Register New Identity <ArrowRight className="ml-2 h-4 w-4" />
                                     </Button>
                                 </div>
-                            </>
+                            </div>
                         )}
                     </div>
                     <ScrollBar orientation="vertical" />
@@ -211,12 +209,12 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
             </div>
         </div>
 
-        <DialogFooter className="px-6 py-4 bg-primary/[0.02] border-t border-primary/10">
-          <div className="flex justify-between items-center w-full">
+        <DialogFooter className="px-6 py-4 bg-primary/[0.02] border-t border-primary/10 shrink-0">
+          <div className="flex flex-col sm:flex-row justify-between items-center w-full gap-4">
             <p className="text-[10px] font-bold text-primary/60 tracking-tight flex items-center gap-2">
                 <CheckCircle2 className="h-3 w-3" /> Secure Institutional Identity Retrieval
             </p>
-            <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-primary/20 text-primary h-9 rounded-[10px] transition-transform active:scale-95">
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-primary/20 text-primary h-10 px-8 rounded-xl transition-transform active:scale-95 w-full sm:w-auto">
                 Cancel
             </Button>
           </div>

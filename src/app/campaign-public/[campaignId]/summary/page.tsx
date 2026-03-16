@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -44,7 +43,8 @@ import {
     RotateCw,
     RefreshCw,
     ImageIcon,
-    ShieldCheck
+    ShieldCheck,
+    ChevronRight
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ShareDialog } from '@/components/share-dialog';
@@ -351,8 +351,8 @@ export default function PublicCampaignSummaryPage() {
                         {isVisible('quick_stats') && (
                             <div className="grid gap-6 sm:grid-cols-3">
                                 <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight uppercase">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
-                                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight uppercase">{itemGivenLabel}</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
-                                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight uppercase">{itemPendingLabel}</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">{itemGivenLabel}</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight">{itemPendingLabel}</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
                             </div>
                         )}
 
@@ -368,9 +368,9 @@ export default function PublicCampaignSummaryPage() {
                                             : 'Itemized Requirement Breakdown For This Initiative.'}
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="pt-6">
+                                <CardContent className="p-0 sm:p-6 font-normal">
                                     <ScrollArea className="w-full">
-                                        <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[600px] border-primary/10">
+                                        <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[600px] border-primary/10 mx-4 sm:mx-0">
                                             {isRationInitiative ? (
                                                 <Table>
                                                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
@@ -428,7 +428,7 @@ export default function PublicCampaignSummaryPage() {
                                                 </Table>
                                             )}
                                         </div>
-                                        <ScrollBar orientation="horizontal" className="h-1.5" />
+                                        <ScrollBar orientation="horizontal" />
                                     </ScrollArea>
                                 </CardContent>
                             </Card>
@@ -440,7 +440,7 @@ export default function PublicCampaignSummaryPage() {
                                     <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight uppercase">Fund Totals By Type</CardTitle></CardHeader>
                                     <CardContent className="space-y-2 pt-6 font-normal">
                                         <ScrollArea className="w-full">
-                                            <div className="space-y-2">
+                                            <div className="space-y-2 min-w-[300px]">
                                                 {donationCategories.map(cat => (
                                                     <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
                                                         <span className="text-muted-foreground font-normal whitespace-nowrap">{cat === 'Interest' ? 'Interest (For Disposal)' : cat === 'Loan' ? 'Loan (Qard-e-Hasana)' : cat}</span>
@@ -519,7 +519,7 @@ export default function PublicCampaignSummaryPage() {
                                     <CardContent className="pt-6">
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
-                                                <ResponsiveContainer>
+                                                <ResponsiveContainer width="100%" height="100%">
                                                     <PieChart>
                                                         <ChartTooltip 
                                                             content={
