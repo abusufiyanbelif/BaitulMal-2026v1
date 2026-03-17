@@ -265,7 +265,7 @@ export default function PublicLeadSummaryPage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
-             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform font-bold border-primary/20 text-primary"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Public Leads</Link></Button></div>
+             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform font-bold border-primary/20 text-primary"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button></div>
             
             <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center cursor-pointer shadow-sm border border-primary/5" onClick={() => lead.imageUrl && handleViewImage(lead.imageUrl, lead.name)}>
                 {lead.imageUrl ? (
@@ -297,7 +297,7 @@ export default function PublicLeadSummaryPage() {
                                 </p>
                                 <p className="text-lg font-bold text-primary font-mono">₹{(fundingData?.targetAmount ?? 0).toLocaleString('en-IN')}</p>
                             </div>
-                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Case Purpose</p><Badge variant="outline" className="font-bold text-xs border-primary/20 text-primary">{lead.purpose}</Badge></div>
+                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Case Purpose</p><Badge variant="outline" className="font-bold text-xs border-primary/20 text-primary uppercase">{lead.purpose}</Badge></div>
                             <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Verification Date</p><p className="text-sm font-bold text-primary">{lead.startDate}</p></div>
                         </div>
                     </CardContent>
@@ -359,8 +359,8 @@ export default function PublicLeadSummaryPage() {
                                             : 'Itemized Requirement Breakdown For This Initiative.'}
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="pt-6 px-0 sm:px-6 font-normal">
-                                    <ScrollArea className="w-full">
+                                <CardContent className="pt-6 px-0 sm:px-6 font-normal flex flex-col overflow-hidden">
+                                    <ScrollArea className="w-full flex-1">
                                         <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[650px] border-primary/10 mx-4 sm:mx-0">
                                             {isRationInitiative ? (
                                                 <Table>
@@ -486,7 +486,7 @@ export default function PublicLeadSummaryPage() {
                             )}
                         </div>
 
-                        <div className="grid gap-6 lg:grid-cols-2 font-normal text-primary">
+                        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 font-normal text-primary">
                             {isVisible('donations_by_category') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
                                     <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight uppercase opacity-60">Donations By Category</CardTitle></CardHeader>

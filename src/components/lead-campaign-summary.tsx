@@ -60,10 +60,10 @@ export function LeadAndCampaignSummary() {
 
   return (
     <div className="grid gap-10 lg:grid-cols-2">
-      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md overflow-hidden" style={{ animationDelay: '1000ms', animationFillMode: 'backwards' }}>
-        <CardHeader className="bg-primary/5 border-b">
+      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md overflow-hidden flex flex-col" style={{ animationDelay: '1000ms', animationFillMode: 'backwards' }}>
+        <CardHeader className="bg-primary/5 border-b shrink-0">
           <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
+              <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight uppercase">
                 <FolderKanban className="h-6 w-6 text-primary" />
                 Active Campaigns
               </CardTitle>
@@ -71,14 +71,14 @@ export function LeadAndCampaignSummary() {
           </div>
           <CardDescription className="font-normal text-primary/70">Public Campaigns Grouped By Category.</CardDescription>
         </CardHeader>
-        <CardContent className="p-0">
-          <ScrollArea className="w-full">
-            <div className="min-w-[400px]">
+        <CardContent className="p-0 flex-1 overflow-hidden">
+          <ScrollArea className="w-full h-full">
+            <div className="min-w-[400px] p-4">
                 <Table>
                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                     <TableRow className="border-b border-primary/10">
-                        <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))]">Category Name</TableHead>
-                        <TableHead className="text-right pr-6 font-bold text-[hsl(var(--table-header-fg))]">Project Count</TableHead>
+                        <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] uppercase text-[10px] tracking-widest">Category Name</TableHead>
+                        <TableHead className="text-right pr-6 font-bold text-[hsl(var(--table-header-fg))] uppercase text-[10px] tracking-widest">Project Count</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -96,10 +96,10 @@ export function LeadAndCampaignSummary() {
         </CardContent>
       </Card>
 
-      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md overflow-hidden" style={{ animationDelay: '1100ms', animationFillMode: 'backwards' }}>
-        <CardHeader className="bg-primary/5 border-b">
+      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md overflow-hidden flex flex-col" style={{ animationDelay: '1100ms', animationFillMode: 'backwards' }}>
+        <CardHeader className="bg-primary/5 border-b shrink-0">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
+            <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight uppercase">
               <Lightbulb className="h-6 w-6 text-primary" />
               Verified Leads
             </CardTitle>
@@ -109,14 +109,14 @@ export function LeadAndCampaignSummary() {
             Current Support Appeals Organized By Purpose.
           </CardDescription>
         </CardHeader>
-        <CardContent className="p-0">
-          <ScrollArea className="w-full">
-            <div className="min-w-[400px]">
+        <CardContent className="p-0 flex-1 overflow-hidden">
+          <ScrollArea className="w-full h-full">
+            <div className="min-w-[400px] p-4">
                 <Table>
                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                     <TableRow className="border-b border-primary/10">
-                        <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))]">Appeal Purpose</TableHead>
-                        <TableHead className="text-right pr-6 font-bold text-[hsl(var(--table-header-fg))]">Case Count</TableHead>
+                        <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] uppercase text-[10px] tracking-widest">Appeal Purpose</TableHead>
+                        <TableHead className="text-right pr-6 font-bold text-[hsl(var(--table-header-fg))] uppercase text-[10px] tracking-widest">Case Count</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>

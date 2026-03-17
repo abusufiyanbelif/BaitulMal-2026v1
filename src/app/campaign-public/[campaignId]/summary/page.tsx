@@ -511,7 +511,7 @@ export default function PublicCampaignSummaryPage() {
                                                 </BarChart>
                                             </ResponsiveContainer>
                                         </ChartContainer>
-                                        ) : <Skeleton className="h-[250px] w-full"/>}
+                                        ) : <Skeleton className="h-[300px] w-full"/>}
                                     </CardContent>
                                 </Card>
                             )}

@@ -12,7 +12,6 @@ export function usePublicData() {
   const firestore = useFirestore();
   const { isLoading: isSessionLoading, user } = useSession();
 
-  // Public items - allow anonymous fetching but wait for Firebase initialization
   const campaignsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(
@@ -33,9 +32,6 @@ export function usePublicData() {
   
   const donationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
-    // We allow fetching verified donations for progress calculation.
-    // If user is not logged in, rules will gate sensitive fields if we structuralize,
-    // but for now, we gate the query start to prevent auth-null rule spamming.
     return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
   }, [firestore]);
 
@@ -75,7 +71,6 @@ export function usePublicData() {
     const yearlyData: Record<string, { totalGoalReceived: number; overallTotalReceived: number; totalTarget: number; }> = {};
 
     donations.forEach(donation => {
-      // Map donation to its RECEIVED year, not initiative start year
       const donationYear = donation.donationDate ? donation.donationDate.split('-')[0] : null;
       if (donationYear && !yearlyData[donationYear]) {
           yearlyData[donationYear] = { totalGoalReceived: 0, overallTotalReceived: 0, totalTarget: 0 };
@@ -111,7 +106,6 @@ export function usePublicData() {
         }, 0);
         
         const itemContribution = applicableAmountInDonation * proportionForThisItem;
-        
         const currentCollected = collectedAmounts.get(link.linkId) || 0;
         collectedAmounts.set(link.linkId, currentCollected + itemContribution);
 

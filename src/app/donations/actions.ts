@@ -23,7 +23,6 @@ export async function upsertDonationWithDonorAction(
         const donorPhone = donationData.donorPhone;
 
         // --- 1. Identity Resolution Logic (Auto-Discovery) ---
-        // If we don't have an ID but have a phone, try to find an existing donor
         if (!finalDonorId && donorPhone && donorPhone.length >= 10) {
             const donorsCol = adminDb.collection('donors');
             const foundDonorSnap = await donorsCol.where('phone', '==', donorPhone).limit(1).get();
@@ -31,8 +30,6 @@ export async function upsertDonationWithDonorAction(
             if (!foundDonorSnap.empty) {
                 finalDonorId = foundDonorSnap.docs[0].id;
             } else {
-                // Auto-create donor profile if phone is provided but no profile exists
-                // Note: Identity Resolver Hub also uses this path
                 const newDonorRef = donorsCol.doc();
                 const newDonor: Partial<Donor> = {
                     id: newDonorRef.id,
@@ -63,14 +60,13 @@ export async function upsertDonationWithDonorAction(
             ...( !donationId && { createdAt: FieldValue.serverTimestamp() } ),
         };
 
-        // Remove legacy fields if they exist
+        // Remove legacy fields if they exist to prevent query pollution
         if ((finalDonationData as any).campaignId) delete (finalDonationData as any).campaignId;
         if ((finalDonationData as any).campaignName) delete (finalDonationData as any).campaignName;
 
         await docRef.set(finalDonationData, { merge: true });
 
         // --- 3. Ripple Effect: Sync other donations for this donor ---
-        // If we identified a donor, find all other unlinked donations with this phone number and link them
         if (finalDonorId && donorPhone) {
             const unlinkedQuery = adminDb.collection('donations')
                 .where('donorPhone', '==', donorPhone)
@@ -100,7 +96,6 @@ export async function upsertDonationWithDonorAction(
 
 /**
  * Specifically used by the Resolver Hub to map a donation to a donor.
- * Handles the "Stitching" of a dummy record to a verified profile.
  */
 export async function linkDonationToDonorAction(
     donationId: string,
@@ -121,7 +116,6 @@ export async function linkDonationToDonorAction(
 
         const donationData = donationSnap.data() as Donation;
 
-        // 1. Link this specific donation
         await donationRef.update({
             donorId: donorId,
             updatedAt: FieldValue.serverTimestamp(),
@@ -129,8 +123,6 @@ export async function linkDonationToDonorAction(
             updatedById: updatedBy.id
         });
 
-        // 2. Ripple Effect: Link all other matching donations by phone or name
-        // This is the "Intelligent Sync" part
         const identifier = donationData.donorPhone || donationData.donorName;
         const field = donationData.donorPhone ? 'donorPhone' : 'donorName';
 
@@ -143,7 +135,6 @@ export async function linkDonationToDonorAction(
             if (!unlinkedSnap.empty) {
                 const batch = adminDb.batch();
                 unlinkedSnap.docs.forEach(d => {
-                    // Only update if it's actually unlinked
                     if (!d.data().donorId) {
                         batch.update(d.ref, { donorId: donorId, updatedAt: FieldValue.serverTimestamp() });
                     }
@@ -216,7 +207,7 @@ export async function bulkImportDonationsAction(
                 uploadedById: uploadedBy.id,
                 createdAt: record.createdAt || FieldValue.serverTimestamp(),
                 updatedAt: FieldValue.serverTimestamp(),
-                donorId: record.donorId || null, // Ensure field exists for Hub detection
+                donorId: record.donorId || null,
             };
 
             if (initiativeContext) {
@@ -259,7 +250,6 @@ export async function deleteDonationAction(donationId: string): Promise<{ succes
 
 /**
  * Migration utility to ensure all historical donations are detectable by the Hub.
- * It sets 'donorId: null' on records where the field is missing.
  */
 export async function syncAllDonationsToDonorsAction(): Promise<{ success: boolean; message: string; count: number }> {
     const { adminDb } = getAdminServices();
@@ -274,13 +264,11 @@ export async function syncAllDonationsToDonorsAction(): Promise<{ success: boole
         for (const docSnap of donationsSnap.docs) {
             const donation = docSnap.data() as Donation;
             
-            // Logic 1: Prepare missing field for Hub detection
             if (donation.donorId === undefined) {
                 batch.update(docSnap.ref, { donorId: null });
                 preparedCount++;
             }
 
-            // Logic 2: Auto-link by Phone if possible
             if (!donation.donorId && donation.donorPhone) {
                 const donorQuery = await adminDb.collection('donors')
                     .where('phone', '==', donation.donorPhone)
@@ -303,7 +291,7 @@ export async function syncAllDonationsToDonorsAction(): Promise<{ success: boole
         revalidatePath('/donors');
         return { 
             success: true, 
-            message: `Registry prepared. Linked ${count} matching records and initialized ${preparedCount} legacy entries for manual resolution.`, 
+            message: `Registry prepared. Linked ${count} matching records and initialized ${preparedCount} legacy entries.`, 
             count 
         };
     } catch (error: any) {

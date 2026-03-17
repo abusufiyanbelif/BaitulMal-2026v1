@@ -18,9 +18,9 @@ import { FolderKanban, Lightbulb, CheckCircle2, AlertTriangle, ArrowUpCircle, Mi
 
 const getPriorityIcon = (priority?: string) => {
   switch (priority) {
-    case 'Urgent': return <AlertTriangle className="h-5 w-5 text-red-600" />;
-    case 'High': return <ArrowUpCircle className="h-5 w-5 text-orange-500" />;
-    case 'Medium': return <MinusCircle className="h-5 w-5 text-yellow-500" />;
+    case 'Urgent': return <AlertTriangle className="h-4 w-4 text-red-600" />;
+    case 'High': return <ArrowUpCircle className="h-4 w-4 text-orange-500" />;
+    case 'Medium': return <MinusCircle className="h-4 w-4 text-yellow-500" />;
     case 'Low': return <ArrowDownCircle className="h-4 w-4 text-blue-500" />;
     default: return null;
   }
@@ -108,7 +108,7 @@ export default function Home() {
             {/* Hero Section */}
             {isHeroVisible && (
                 <section className="text-center py-12 md:py-20 animate-fade-in-zoom">
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter text-primary max-w-5xl mx-auto drop-shadow-sm leading-tight">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter text-primary max-w-5xl mx-auto drop-shadow-sm leading-tight uppercase">
                         {heroTitle}
                     </h1>
                     <p className="mt-6 max-w-3xl mx-auto text-lg text-muted-foreground font-normal leading-relaxed">

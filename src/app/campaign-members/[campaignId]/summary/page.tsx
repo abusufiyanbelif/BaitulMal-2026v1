@@ -160,7 +160,7 @@ export default function CampaignSummaryPage() {
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && campaignId) ? collection(firestore, `campaigns/${campaignId}/beneficiaries`) : null, [firestore, campaignId]);
     const allDonationsCollectionRef = useMemoFirebase(() => (firestore) ? collection(firestore, 'donations') : null, [firestore]);
 
-    const { data: campaign, isLoading: isCampaignLoading } = useDoc<Campaign>(campaignDocRef);
+    const { data: campaign, isLoading: isCampaignLoading, forceRefetch: forceRefetchCampaign } = useDoc<Campaign>(campaignDocRef);
     const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
     const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
     
@@ -437,12 +437,12 @@ export default function CampaignSummaryPage() {
                  <div className="space-y-1">
                     {editMode ? ( <Input id="name" value={editableCampaign.name || ''} onChange={(e) => handleFieldChange('name', e.target.value)} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary tracking-tight">{campaign?.name}</h1> )}
                     <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[10px] font-bold tracking-tight">{campaign?.status}</Badge>
-                        <Badge variant={campaign?.authenticityStatus === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold flex items-center gap-1">
+                        <Badge variant="outline" className="text-[10px] font-bold tracking-tight uppercase">{campaign?.status}</Badge>
+                        <Badge variant={campaign?.authenticityStatus === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold flex items-center gap-1 uppercase">
                             <ShieldCheck className="h-3 w-3" />
                             {campaign?.authenticityStatus}
                         </Badge>
-                        <Badge variant={campaign?.priority === 'Urgent' ? 'destructive' : 'outline'} className={cn("text-[10px] font-bold", campaign?.priority === 'Urgent' && "animate-in fade-in slide-in-from-left")}>
+                        <Badge variant={campaign?.priority === 'Urgent' ? 'destructive' : 'outline'} className={cn("text-[10px] font-bold uppercase", campaign?.priority === 'Urgent' && "animate-in fade-in slide-in-from-left")}>
                             {campaign?.priority || 'Low'} Priority
                         </Badge>
                     </div>
@@ -475,7 +475,7 @@ export default function CampaignSummaryPage() {
             <div className="space-y-6" ref={summaryRef}>
                 <Card className="animate-fade-in-up shadow-md border-primary/10 bg-white transition-all duration-300 hover:shadow-xl">
                     <CardHeader className="bg-primary/5 border-b">
-                        <CardTitle className="font-bold text-primary tracking-tight">Campaign Overview</CardTitle>
+                        <CardTitle className="font-bold text-primary tracking-tight uppercase">Campaign Overview</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6 text-foreground font-normal">
                         {editMode ? (
@@ -566,7 +566,7 @@ export default function CampaignSummaryPage() {
                                                         handleFieldChange('allowedDonationTypes', updated);
                                                     }}
                                                 />
-                                                <Label htmlFor={`edit-type-camp-${type}`} className="text-xs font-bold cursor-pointer">{type}</Label>
+                                                <Label htmlFor={`edit-type-camp-${type}`} className="text-xs font-bold cursor-pointer uppercase">{type}</Label>
                                             </div>
                                         ))}
                                     </div>
@@ -617,19 +617,19 @@ export default function CampaignSummaryPage() {
                                                 className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
                                                 onClick={() => router.push(`/campaign-members/${campaignId}/donations?status=Verified`)}
                                             >
-                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase group-hover:text-primary transition-colors">Raised For Goal</p>
-                                                <p className="text-3xl font-bold text-primary font-mono flex items-center gap-2">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase group-hover:text-primary transition-colors opacity-60">Raised For Goal</p>
+                                                <p className="text-3xl font-bold text-primary font-mono flex items-center justify-center md:justify-start gap-2">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
                                             </div>
                                             <div className="transition-transform hover:translate-x-1 duration-300">
-                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Target Goal</p>
-                                                <p className="text-3xl font-bold text-primary opacity-60 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Target Goal</p>
+                                                <p className="text-3xl font-bold text-primary opacity-40 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p>
                                             </div>
                                             <div 
                                                 className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
                                                 onClick={() => router.push(`/campaign-members/${campaignId}/donations?status=Verified`)}
                                             >
-                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase group-hover:text-primary transition-colors">Grand Total Received</p>
-                                                <p className="text-2xl font-bold text-primary font-mono flex items-center gap-2">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase group-hover:text-primary transition-colors opacity-60">Grand Total Received</p>
+                                                <p className="text-2xl font-bold text-primary font-mono flex items-center justify-center md:justify-start gap-2">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
                                             </div>
                                         </div>
                                     </div>
@@ -679,8 +679,8 @@ export default function CampaignSummaryPage() {
                         )}
 
                         {isVisible('beneficiary_groups') && (
-                            <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
-                                <CardHeader className="bg-primary/5 border-b">
+                            <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col">
+                                <CardHeader className="bg-primary/5 border-b shrink-0">
                                     <CardTitle className="font-bold text-primary tracking-tight uppercase">
                                         {isRationInitiative ? 'Beneficiary Categories' : 'Required Financial Allocation'}
                                     </CardTitle>
@@ -690,70 +690,72 @@ export default function CampaignSummaryPage() {
                                             : 'Itemized requirement breakdown for this initiative.'}
                                     </CardDescription>
                                 </CardHeader>
-                                <CardContent className="p-0 sm:p-6 font-normal">
-                                    <ScrollArea className="w-full">
-                                        <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[600px] border-primary/10">
-                                            {isRationInitiative ? (
-                                                <Table>
-                                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
-                                                        <TableRow>
-                                                            <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Category Name</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Beneficiaries</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Kit Amount</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Total Amount</TableHead>
-                                                        </TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
-                                                        {beneficiaryGroups.map((group) => (
-                                                            <TableRow key={group.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white border-b border-primary/5">
-                                                                <TableCell className="font-bold text-primary text-xs transition-transform group-hover:translate-x-1">{group.name}</TableCell>
-                                                                <TableCell className="text-right font-normal text-xs">{group.count}</TableCell>
-                                                                <TableCell className="text-right font-mono font-bold text-xs">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
-                                                                <TableCell className="text-right font-mono font-bold text-xs">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                <CardContent className="p-0 flex-1 overflow-hidden">
+                                    <ScrollArea className="w-full h-full">
+                                        <div className="p-4">
+                                            <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[600px] border-primary/10">
+                                                {isRationInitiative ? (
+                                                    <Table>
+                                                        <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                                                            <TableRow>
+                                                                <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Category Name</TableHead>
+                                                                <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Beneficiaries</TableHead>
+                                                                <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Kit Amount</TableHead>
+                                                                <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Total Amount</TableHead>
                                                             </TableRow>
-                                                        ))}
-                                                    </TableBody>
-                                                    {beneficiaryGroups.length > 0 && (
+                                                        </TableHeader>
+                                                        <TableBody>
+                                                            {beneficiaryGroups.map((group) => (
+                                                                <TableRow key={group.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white border-b border-primary/5">
+                                                                    <TableCell className="font-bold text-primary text-xs transition-transform group-hover:translate-x-1">{group.name}</TableCell>
+                                                                    <TableCell className="text-right font-normal text-xs">{group.count}</TableCell>
+                                                                    <TableCell className="text-right font-mono font-bold text-xs">₹{group.kitAmount.toLocaleString('en-IN')}</TableCell>
+                                                                    <TableCell className="text-right font-mono font-bold text-xs">₹{group.totalAmount.toLocaleString('en-IN')}</TableCell>
+                                                                </TableRow>
+                                                            ))}
+                                                        </TableBody>
+                                                        {beneficiaryGroups.length > 0 && (
+                                                            <TableFooter className="bg-primary/5 border-t font-bold">
+                                                                <TableRow>
+                                                                    <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Total Initiative Requirement</TableCell>
+                                                                    <TableCell className="text-right font-mono font-bold text-primary text-base">₹{calculatedRequirementTotal.toLocaleString('en-IN')}</TableCell>
+                                                                </TableRow>
+                                                            </TableFooter>
+                                                        )}
+                                                    </Table>
+                                                ) : (
+                                                    <Table>
+                                                        <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                                                            <TableRow>
+                                                                <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Requirement Description</TableHead>
+                                                                <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Quantity</TableHead>
+                                                                <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Unit Price</TableHead>
+                                                                <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Total Cost</TableHead>
+                                                            </TableRow>
+                                                        </TableHeader>
+                                                        <TableBody>
+                                                            {campaign?.itemCategories?.[0]?.items.map((item, idx) => (
+                                                                <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white border-b border-primary/5">
+                                                                    <TableCell className="font-medium text-xs transition-transform group-hover:translate-x-1">{item.name}</TableCell>
+                                                                    <TableCell className="text-right text-xs">{item.quantity} {item.quantityType}</TableCell>
+                                                                    <TableCell className="text-right font-mono font-bold text-xs">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
+                                                                    <TableCell className="text-right font-mono font-bold text-xs">₹{(item.price || 0).toLocaleString('en-IN')}</TableCell>
+                                                                </TableRow>
+                                                            ))}
+                                                        </TableBody>
                                                         <TableFooter className="bg-primary/5 border-t font-bold">
                                                             <TableRow>
-                                                                <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Total Initiative Requirement</TableCell>
-                                                                <TableCell className="text-right font-mono font-bold text-primary text-base">₹{calculatedRequirementTotal.toLocaleString('en-IN')}</TableCell>
+                                                                <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Single Unit Total</TableCell>
+                                                                <TableCell className="text-right font-mono font-bold text-primary text-lg">
+                                                                    ₹{(campaign?.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
+                                                                </TableCell>
                                                             </TableRow>
                                                         </TableFooter>
-                                                    )}
-                                                </Table>
-                                            ) : (
-                                                <Table>
-                                                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
-                                                        <TableRow>
-                                                            <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Requirement Description</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Quantity</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Unit Price</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Total Cost</TableHead>
-                                                        </TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
-                                                        {campaign?.itemCategories?.[0]?.items.map((item, idx) => (
-                                                            <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white border-b border-primary/5">
-                                                                <TableCell className="font-medium text-xs transition-transform group-hover:translate-x-1">{item.name}</TableCell>
-                                                                <TableCell className="text-right text-xs">{item.quantity} {item.quantityType}</TableCell>
-                                                                <TableCell className="text-right font-mono font-bold text-xs">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
-                                                                <TableCell className="text-right font-mono font-bold text-xs">₹{(item.price || 0).toLocaleString('en-IN')}</TableCell>
-                                                            </TableRow>
-                                                        ))}
-                                                    </TableBody>
-                                                    <TableFooter className="bg-primary/5 border-t font-bold">
-                                                        <TableRow>
-                                                            <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Single Unit Total</TableCell>
-                                                            <TableCell className="text-right font-mono font-bold text-primary text-lg">
-                                                                ₹{(campaign?.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    </TableFooter>
-                                                </Table>
-                                            )}
+                                                    </Table>
+                                                )}
+                                            </div>
                                         </div>
-                                        <ScrollBar orientation="horizontal" className="h-1.5" />
+                                        <ScrollBar orientation="horizontal" />
                                     </ScrollArea>
                                 </CardContent>
                             </Card>
@@ -766,7 +768,7 @@ export default function CampaignSummaryPage() {
                                     <CardContent className="space-y-2 pt-6 font-normal text-foreground">
                                         {donationCategories.map(cat => (
                                             <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded">
-                                                <span className="text-muted-foreground font-normal">{cat === 'Interest' ? 'Interest (For Disposal)' : cat === 'Loan' ? 'Loan (Qard-e-Hasana)' : cat}</span>
+                                                <span className="text-muted-foreground font-normal uppercase text-[10px] tracking-tight">{cat === 'Interest' ? 'Interest (For Disposal)' : cat === 'Loan' ? 'Loan (Qard-e-Hasana)' : cat}</span>
                                                 <span className="font-mono font-bold">₹{(fundingData.amountsByCategory[cat] || 0).toLocaleString('en-IN')}</span>
                                             </div>
                                         ))}
@@ -781,31 +783,31 @@ export default function CampaignSummaryPage() {
                                     <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Zakat Fund Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking of designated Zakat resources.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 pt-6 font-normal text-foreground">
                                         <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded">
-                                            <span className="text-muted-foreground tracking-tight font-normal">Total Zakat Collected</span>
+                                            <span className="text-muted-foreground tracking-tight font-normal uppercase text-[10px]">Total Zakat Collected</span>
                                             <span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span>
                                         </div>
                                         <Separator className="bg-primary/10" />
                                         <div className="pl-4 border-l-2 border-dashed border-primary/20 space-y-2 py-2 font-bold">
                                             <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
-                                                <span className="text-muted-foreground tracking-tight font-normal">Allocated As Assistance</span>
+                                                <span className="text-muted-foreground tracking-tight font-normal uppercase text-[10px]">Allocated As Assistance</span>
                                                 <span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span>
                                             </div>
                                             <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
-                                                <span className="font-normal opacity-60">Disbursed (Given)</span>
+                                                <span className="font-normal opacity-60 uppercase text-[9px]">Disbursed (Given)</span>
                                                 <span className="font-mono text-primary font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span>
                                             </div>
                                             <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
-                                                <span className="font-normal opacity-60">Reserved (Verified)</span>
+                                                <span className="font-normal opacity-60 uppercase text-[9px]">Reserved (Verified)</span>
                                                 <span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span>
                                             </div>
                                         </div>
                                         <Separator className="bg-primary/10" />
                                         <div className="space-y-2">
                                             <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded">
-                                                <span className="text-muted-foreground tracking-tight font-normal">Net Registry Balance</span>
+                                                <span className="text-muted-foreground tracking-tight font-normal uppercase text-[10px]">Net Registry Balance</span>
                                                 <span className="font-bold font-mono">₹{fundingData.totalZakatBalance.toLocaleString('en-IN')}</span>
                                             </div>
-                                            <div className="flex justify-between items-center text-[10px] font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded italic opacity-60">
+                                            <div className="flex justify-between items-center text-[10px] font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded italic opacity-60 uppercase">
                                                 <span>Contribution to Goal</span>
                                                 <span className="font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span>
                                             </div>
@@ -903,7 +905,7 @@ export default function CampaignSummaryPage() {
                                                             {isImg ? <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="(max-width: 768px) 100vw, 300px" className="object-cover transition-transform duration-500 group-hover:scale-110" /> : <File className="w-10 h-10 text-muted-foreground transition-transform duration-500 group-hover:scale-110" />}
                                                             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                                         </div>
-                                                        <div className="p-2 text-center text-[10px] font-bold text-primary tracking-tight truncate transition-colors group-hover:text-primary/80">{doc.name}</div>
+                                                        <div className="p-2 text-center text-[10px] font-bold text-primary tracking-tight truncate transition-colors group-hover:text-primary/80 uppercase">{doc.name}</div>
                                                     </div>
                                                     <CardFooter className="p-2 border-t mt-auto flex justify-center w-full gap-2 bg-muted/5" onClick={e => e.stopPropagation()}>
                                                         {canUpdateSummary ? ( 
@@ -928,7 +930,7 @@ export default function CampaignSummaryPage() {
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
                 <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden animate-fade-in-zoom border-primary/10">
-                    <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary tracking-tight text-sm">{imageToView?.name}</DialogTitle></DialogHeader>
+                    <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary tracking-tight text-sm uppercase">{imageToView?.name}</DialogTitle></DialogHeader>
                     <ScrollArea className="flex-1 bg-secondary/20">
                         <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
                             {imageToView && (
@@ -938,10 +940,10 @@ export default function CampaignSummaryPage() {
                         <ScrollBar orientation="vertical" />
                     </ScrollArea>
                     <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">
-                        <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><ZoomIn className="mr-1 h-4 w-4"/> In</Button>
-                        <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5))} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><ZoomOut className="mr-1 h-4 w-4"/> Out</Button>
-                        <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
-                        <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
+                        <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform uppercase"><ZoomIn className="mr-1 h-4 w-4"/> In</Button>
+                        <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5))} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform uppercase"><ZoomOut className="mr-1 h-4 w-4"/> Out</Button>
+                        <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform uppercase"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
+                        <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform uppercase"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

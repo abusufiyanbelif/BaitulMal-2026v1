@@ -42,13 +42,11 @@ import {
     ImageIcon, 
     Save, 
     X, 
-    UserSearch, 
-    UserCheck, 
-    ShieldCheck, 
     Search, 
+    ShieldCheck, 
     CheckCircle2, 
     AlertCircle,
-    Eye
+    Calendar
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Separator } from '@/components/ui/separator';
@@ -417,7 +415,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   };
 
   const renderLabel = (label: string, fieldName: string) => (
-    <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight">
+    <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">
         {label} {mandatoryFields[fieldName] ? '*' : ''}
     </FormLabel>
   );
@@ -429,7 +427,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
             <ScrollArea className="flex-1 w-full">
                 <div className="px-6 py-4 space-y-6 text-primary font-normal pb-24">
                     <FormField control={control} name="amount" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-primary tracking-tight">Total Amount Received (₹) *</FormLabel><FormControl><Input type="number" {...field} readOnly className="bg-primary/5 font-bold font-mono text-xl text-primary" /></FormControl><FormDescription className="font-normal text-[10px] opacity-70 italic">Aggregated Sum Of All Verified Transactions Documented Below.</FormDescription><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="font-bold text-primary tracking-tight uppercase">Total Amount Received (₹) *</FormLabel><FormControl><Input type="number" {...field} readOnly className="bg-primary/5 font-bold font-mono text-xl text-primary" /></FormControl><FormDescription className="font-normal text-[10px] opacity-70 italic">Aggregated Sum Of All Verified Transactions Documented Below.</FormDescription><FormMessage /></FormItem>
                     )}/>
 
                     <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm">
@@ -515,11 +513,11 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                                 <ScrollArea className="w-full">
                                     <div className="min-w-[600px]">
                                         <Table>
-                                            <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight">Designation</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight">Allocation (₹)</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight pr-4">Action</TableHead></TableRow></TableHeader>
+                                            <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Designation</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Allocation (₹)</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight pr-4 uppercase">Action</TableHead></TableRow></TableHeader>
                                             <TableBody>
                                                 {typeSplitFields.map((field, index) => (
                                                     <TableRow key={field.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
-                                                        <TableCell><FormField control={control} name={`typeSplit.${index}.category`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none h-8"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select>)}/>{watch(`typeSplit.${index}.category`) === 'Zakat' && <FormField control={control} name={`typeSplit.${index}.forFundraising`} render={({ field: checkboxField }) => (<div className="flex items-center space-x-2 px-2 mt-1"><Checkbox checked={checkboxField.value === true} onCheckedChange={(val) => checkboxField.onChange(val === true)} disabled={isReadOnly}/><Label className="text-[8px] font-bold text-muted-foreground tracking-tighter">Goal Contribution</Label></div>)}/>}</TableCell>
+                                                        <TableCell><FormField control={control} name={`typeSplit.${index}.category`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none h-8"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select>)}/>{watch(`typeSplit.${index}.category`) === 'Zakat' && <FormField control={control} name={`typeSplit.${index}.forFundraising`} render={({ field: checkboxField }) => (<div className="flex items-center space-x-2 px-2 mt-1"><Checkbox checked={checkboxField.value === true} onCheckedChange={(val) => checkboxField.onChange(val === true)} disabled={isReadOnly}/><Label className="text-[8px] font-bold text-muted-foreground tracking-tighter uppercase">Goal Contribution</Label></div>)}/>}</TableCell>
                                                         <TableCell><FormField control={control} name={`typeSplit.${index}.amount`} render={({ field }) => (<FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="border-none bg-transparent shadow-none font-bold font-mono h-8 text-primary"/></FormControl>)}/></TableCell>
                                                         <TableCell className="text-right pr-4">{!isReadOnly && <Button type="button" variant="ghost" size="icon" onClick={() => removeTypeSplit(index)} disabled={typeSplitFields.length <= 1} className="h-8 w-8 text-destructive transition-transform hover:scale-110"><Trash2 className="h-4 w-4"/></Button>}</TableCell>
                                                     </TableRow>
@@ -565,7 +563,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                                 <ScrollArea className="w-full">
                                     <div className="min-w-[600px]">
                                         <Table>
-                                            <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight">Target Initiative</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight">Value (₹)</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight pr-4">Action</TableHead></TableRow></TableHeader>
+                                            <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Target Initiative</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Value (₹)</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight pr-4 uppercase">Action</TableHead></TableRow></TableHeader>
                                             <TableBody>
                                                 {linkSplitFields.map((field, index) => (
                                                     <TableRow key={field.id} className="hover:bg-primary/[0.02] border-b border-primary/5">

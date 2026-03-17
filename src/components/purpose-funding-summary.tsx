@@ -54,9 +54,9 @@ export function PurposeFundingSummary() {
   if (purposeData.length === 0) return null;
 
   return (
-    <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden">
-      <CardHeader className="bg-primary/5 border-b">
-        <CardTitle className="text-xl font-bold text-primary flex items-center gap-2">
+    <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden flex flex-col">
+      <CardHeader className="bg-primary/5 border-b shrink-0">
+        <CardTitle className="text-xl font-bold text-primary flex items-center gap-2 uppercase tracking-tight">
           <Target className="h-6 w-6 text-primary" />
           Impact By Purpose
         </CardTitle>
@@ -64,14 +64,14 @@ export function PurposeFundingSummary() {
           Total Verified Funds Utilized Across Institutional Support Categories.
         </CardDescription>
       </CardHeader>
-      <CardContent className="p-0">
-        <ScrollArea className="w-full">
-            <div className="min-w-[450px]">
+      <CardContent className="p-0 flex-1 overflow-hidden">
+        <ScrollArea className="w-full h-full">
+            <div className="min-w-[450px] p-4">
                 <Table>
                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                         <TableRow className="border-b border-primary/10">
-                            <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))]">Purpose Type</TableHead>
-                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] pr-6">Amount Received</TableHead>
+                            <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] uppercase text-[10px] tracking-widest">Purpose Type</TableHead>
+                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] pr-6 uppercase text-[10px] tracking-widest">Amount Received</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
