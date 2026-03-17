@@ -367,8 +367,8 @@ export default function PublicCampaignSummaryPage() {
                                     </CardTitle>
                                     <CardDescription className="font-normal text-primary/70">
                                         {isRationInitiative 
-                                            ? 'Breakdown Of Requirements By Family Size Category.' 
-                                            : 'Itemized Requirement Breakdown For This Initiative.'}
+                                            ? 'Breakdown of requirements by family size category.' 
+                                            : 'Itemized requirement breakdown for this initiative.'}
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="p-0 sm:p-6 font-normal">
@@ -420,7 +420,7 @@ export default function PublicCampaignSummaryPage() {
                                                             </TableRow>
                                                         ))}
                                                     </TableBody>
-                                                    <TableFooter className="bg-primary/5 border-t">
+                                                    <TableFooter className="bg-primary/5 border-t font-bold">
                                                         <TableRow>
                                                             <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Single Unit Total</TableCell>
                                                             <TableCell className="text-right font-mono font-bold text-primary text-lg">
@@ -582,7 +582,7 @@ export default function PublicCampaignSummaryPage() {
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-                <DialogContent className="max-w-4xl animate-fade-in-zoom p-0 overflow-hidden rounded-[24px] border-primary/10 shadow-2xl">
+                <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden rounded-[24px] border-primary/10 shadow-2xl">
                     <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary tracking-tight text-sm">{imageToView?.name}</DialogTitle></DialogHeader>
                     <div className="p-4 bg-secondary/20 flex-1 overflow-hidden relative min-h-[70vh]">
                         {imageToView && (

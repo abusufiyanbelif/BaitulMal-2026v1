@@ -570,7 +570,7 @@ export default function PublicLeadSummaryPage() {
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-                <DialogContent className="max-w-4xl animate-fade-in-zoom p-0 overflow-hidden rounded-[24px] border-primary/10 shadow-2xl">
+                <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden rounded-[24px] border-primary/10 shadow-2xl">
                     <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary tracking-tight text-sm">{imageToView?.name}</DialogTitle></DialogHeader>
                     <div className="p-4 bg-secondary/20 flex-1 overflow-hidden relative min-h-[70vh]">
                         {imageToView && (
