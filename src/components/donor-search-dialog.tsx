@@ -122,7 +122,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] text-primary font-normal p-0 overflow-hidden rounded-[24px] border-primary/10 flex flex-col">
+      <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] text-primary font-normal p-0 overflow-hidden rounded-[24px] border-primary/10 flex flex-col shadow-2xl animate-fade-in-zoom">
         <DialogHeader className="px-6 py-6 bg-primary/5 border-b border-primary/10 shrink-0">
           <DialogTitle className="text-xl font-bold tracking-tight text-primary flex items-center gap-2">
             <Users className="h-5 w-5 opacity-40"/> Retrieve Donor Profile
@@ -159,7 +159,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
                             <div className="flex flex-col items-center justify-center py-16 text-center px-4">
                                 <AlertCircle className="h-12 w-12 mb-4 text-primary/20" />
                                 <p className="text-sm font-bold text-primary tracking-tight">No Matching Profiles Discovered</p>
-                                <p className="text-[10px] text-muted-foreground mt-1 mb-8 font-normal max-w-[200px]">Create A New Institutional Identity For This Contributor.</p>
+                                <p className="text-[10px] text-muted-foreground mt-1 mb-8 font-normal max-w-[200px]">Register A New Institutional Identity For This Contributor.</p>
                                 
                                 {currentFormData?.name && (
                                     <Button onClick={handleRegisterNewProfile} disabled={isCreating} className="font-bold shadow-md rounded-xl h-12 px-8 group active:scale-95 transition-transform w-full sm:w-auto">
@@ -184,7 +184,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
                                                 </Badge>
                                             </div>
                                             <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-primary/70">
-                                                <span className="flex items-center gap-1.5 font-mono"><Phone className="h-3 w-3 opacity-40"/> {donor.phone}</span>
+                                                <span className="flex items-center gap-1.5 font-mono font-bold"><Phone className="h-3 w-3 opacity-40"/> {donor.phone}</span>
                                                 {donor.email && <span className="flex items-center gap-1.5"><Mail className="h-3 w-3 opacity-40"/> {donor.email}</span>}
                                             </div>
                                         </div>
@@ -214,7 +214,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
             <p className="text-[10px] font-bold text-primary/60 tracking-tight flex items-center gap-2">
                 <CheckCircle2 className="h-3 w-3" /> Secure Institutional Identity Retrieval
             </p>
-            <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-primary/20 text-primary h-10 px-8 rounded-xl transition-transform active:scale-95 w-full sm:w-auto">
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-primary/20 text-primary h-10 px-10 rounded-xl transition-transform active:scale-95 w-full sm:w-auto">
                 Cancel
             </Button>
           </div>

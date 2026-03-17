@@ -58,7 +58,7 @@ export function DonationSummary() {
 
   return (
     <div className="grid gap-10">
-      <Card className="animate-fade-in-up border-primary/20 bg-white shadow-md transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '800ms', animationFillMode: 'backwards' }}>
+      <Card className="animate-fade-in-up border-primary/20 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden" style={{ animationDelay: '800ms', animationFillMode: 'backwards' }}>
         <CardHeader className="bg-primary/5 border-b">
           <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
@@ -71,7 +71,7 @@ export function DonationSummary() {
         </CardHeader>
         <CardContent className="p-0 pt-4">
             <ScrollArea className="w-full">
-                <div className="min-w-[650px] px-4">
+                <div className="min-w-[650px] px-4 pb-4">
                     <Table>
                         <TableHeader className="bg-primary/5">
                             <TableRow>
@@ -90,7 +90,7 @@ export function DonationSummary() {
                                     <TableCell className="font-bold text-primary">₹{totalGoalReceived.toLocaleString('en-IN')}</TableCell>
                                     <TableCell className="font-normal text-primary/60">₹{overallTotalReceived.toLocaleString('en-IN')}</TableCell>
                                     <TableCell className="text-right w-[150px] pr-6">
-                                        <div className="flex items-center gap-3">
+                                        <div className="flex items-center justify-end gap-3">
                                             <Progress value={progress} className="h-1.5 flex-1" />
                                             <span className="text-[10px] font-bold text-primary whitespace-nowrap">{Math.round(progress)}%</span>
                                         </div>
