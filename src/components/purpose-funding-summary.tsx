@@ -9,8 +9,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 /**
- * A branded component that displays verified donation totals aggregated by purpose.
+ * Purpose Funding Summary - Displays verified donation totals aggregated by purpose.
  * All labels follow the professional Title Case standard.
+ * Hardened for mobile with high-fidelity ScrollArea.
  */
 export function PurposeFundingSummary() {
   const { isLoading, campaignsWithProgress, leadsWithProgress } = usePublicData();
@@ -39,7 +40,7 @@ export function PurposeFundingSummary() {
 
   if (isLoading) {
     return (
-      <Card className="border-primary/20">
+      <Card className="border-primary/10">
         <CardHeader>
           <Skeleton className="h-6 w-1/2" />
         </CardHeader>
@@ -53,7 +54,7 @@ export function PurposeFundingSummary() {
   if (purposeData.length === 0) return null;
 
   return (
-    <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md transition-all duration-300 hover:shadow-xl">
+    <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden">
       <CardHeader className="bg-primary/5 border-b">
         <CardTitle className="text-xl font-bold text-primary flex items-center gap-2">
           <Target className="h-6 w-6 text-primary" />
@@ -67,10 +68,10 @@ export function PurposeFundingSummary() {
         <ScrollArea className="w-full">
             <div className="min-w-[450px]">
                 <Table>
-                    <TableHeader className="bg-primary/5">
-                        <TableRow>
-                        <TableHead className="pl-6 font-bold text-primary">Purpose Type</TableHead>
-                        <TableHead className="text-right font-bold text-primary pr-6">Amount Received</TableHead>
+                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                        <TableRow className="border-b border-primary/10">
+                            <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))]">Purpose Type</TableHead>
+                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] pr-6">Amount Received</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>

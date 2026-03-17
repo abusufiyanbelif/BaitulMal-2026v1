@@ -26,6 +26,10 @@ interface DonorSearchDialogProps {
   };
 }
 
+/**
+ * Donor Search Dialog - Re-engineered for high-fidelity mobile alignment.
+ * Compact buttons and scroll-enabled results zones.
+ */
 export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFormData }: DonorSearchDialogProps) {
   const firestore = useFirestore();
   const { userProfile } = useSession();
@@ -195,7 +199,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
                                 ))}
                                 
                                 <Separator className="my-6 bg-primary/10" />
-                                <div className="p-6 bg-primary/[0.03] rounded-2xl border border-dashed border-primary/20 flex flex-col items-center gap-4 text-center">
+                                <div className="p-6 bg-primary/[0.03] rounded-2xl border border-dashed border-primary/20 flex flex-col items-center gap-4 text-center mx-2">
                                     <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Entry Not Listed?</p>
                                     <Button variant="outline" size="sm" onClick={handleRegisterNewProfile} disabled={isCreating} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform h-10 px-8 rounded-xl bg-white shadow-sm w-full sm:w-auto">
                                         Register New Identity <ArrowRight className="ml-2 h-4 w-4" />
@@ -209,15 +213,13 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
             </div>
         </div>
 
-        <DialogFooter className="px-6 py-4 bg-primary/[0.02] border-t border-primary/10 shrink-0">
-          <div className="flex flex-col sm:flex-row justify-between items-center w-full gap-4">
+        <DialogFooter className="px-6 py-4 bg-primary/[0.02] border-t border-primary/10 shrink-0 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-[10px] font-bold text-primary/60 tracking-tight flex items-center gap-2">
                 <CheckCircle2 className="h-3 w-3" /> Secure Institutional Identity Retrieval
             </p>
             <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-primary/20 text-primary h-10 px-10 rounded-xl transition-transform active:scale-95 w-full sm:w-auto">
-                Cancel
+                Close Hub
             </Button>
-          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>

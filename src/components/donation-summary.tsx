@@ -40,14 +40,18 @@ const donationCategoryChartConfig = {
   MonthlyContribution: { label: "Monthly Contribution", color: "hsl(var(--chart-8))" },
 } satisfies ChartConfig;
 
+/**
+ * Donation Summary - Displays aggregate historical trends and category distributions.
+ * Hardened for mobile with high-fidelity ScrollArea and Title Case typography.
+ */
 export function DonationSummary() {
   const { isLoading, yearlySummary, categorySummary } = usePublicData();
 
   if (isLoading) {
     return (
       <div className="grid gap-6">
-        <Card className="border-primary/20"><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
-        <Card className="border-primary/20"><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
+        <Card className="border-primary/10"><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
+        <Card className="border-primary/10"><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
       </div>
     );
   }
@@ -58,7 +62,7 @@ export function DonationSummary() {
 
   return (
     <div className="grid gap-10">
-      <Card className="animate-fade-in-up border-primary/20 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden" style={{ animationDelay: '800ms', animationFillMode: 'backwards' }}>
+      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden" style={{ animationDelay: '800ms', animationFillMode: 'backwards' }}>
         <CardHeader className="bg-primary/5 border-b">
           <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
@@ -69,23 +73,23 @@ export function DonationSummary() {
           </div>
           <CardDescription className="font-normal text-primary/70">A Year-By-Year Breakdown Of Funds Received Against Fundraising Goals.</CardDescription>
         </CardHeader>
-        <CardContent className="p-0 pt-4">
+        <CardContent className="p-0">
             <ScrollArea className="w-full">
-                <div className="min-w-[650px] px-4 pb-4">
+                <div className="min-w-[650px] px-4 pb-4 pt-4">
                     <Table>
-                        <TableHeader className="bg-primary/5">
-                            <TableRow>
-                                <TableHead className="font-bold text-primary">Year</TableHead>
-                                <TableHead className="font-bold text-primary">Target Goal</TableHead>
-                                <TableHead className="font-bold text-primary">Raised For Goal</TableHead>
-                                <TableHead className="font-bold text-primary">Total Received</TableHead>
-                                <TableHead className="text-right font-bold text-primary pr-6">Progress</TableHead>
+                        <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                            <TableRow className="border-b border-primary/10">
+                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] pl-4">Year</TableHead>
+                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))]">Target Goal</TableHead>
+                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))]">Raised For Goal</TableHead>
+                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))]">Total Received</TableHead>
+                                <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] pr-6">Progress</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {yearlySummary.map(({ year, totalTarget, totalGoalReceived, overallTotalReceived, progress }) => (
-                                <TableRow key={year} className="hover:bg-primary/5 transition-colors border-b border-primary/5">
-                                    <TableCell className="font-bold text-primary">{year}</TableCell>
+                                <TableRow key={year} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5">
+                                    <TableCell className="font-bold text-primary pl-4">{year}</TableCell>
                                     <TableCell className="font-normal text-primary/80">₹{totalTarget.toLocaleString('en-IN')}</TableCell>
                                     <TableCell className="font-bold text-primary">₹{totalGoalReceived.toLocaleString('en-IN')}</TableCell>
                                     <TableCell className="font-normal text-primary/60">₹{overallTotalReceived.toLocaleString('en-IN')}</TableCell>
@@ -105,7 +109,7 @@ export function DonationSummary() {
         </CardContent>
       </Card>
       
-      <Card className="animate-fade-in-up border-primary/20 bg-white shadow-md transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '900ms', animationFillMode: 'backwards' }}>
+      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden" style={{ animationDelay: '900ms', animationFillMode: 'backwards' }}>
         <CardHeader className="bg-primary/5 border-b">
           <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
             <PieChartIcon className="h-6 w-6 text-primary" />

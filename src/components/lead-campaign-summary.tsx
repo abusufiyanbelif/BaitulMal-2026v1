@@ -18,6 +18,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 /**
  * Lead And Campaign Summary - Displays combined counts.
  * Labels follow the professional Title Case typography standard.
+ * Wrapped in high-fidelity ScrollArea for mobile accessibility.
  */
 export function LeadAndCampaignSummary() {
   const { isLoading, campaignsWithProgress, leadsWithProgress } = usePublicData();
@@ -51,15 +52,15 @@ export function LeadAndCampaignSummary() {
   if (isLoading) {
     return (
       <div className="grid gap-6 md:grid-cols-2">
-        <Card><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
-        <Card><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
+        <Card className="border-primary/10"><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
+        <Card className="border-primary/10"><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
       </div>
     )
   }
 
   return (
     <div className="grid gap-10 lg:grid-cols-2">
-      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md" style={{ animationDelay: '1000ms', animationFillMode: 'backwards' }}>
+      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md overflow-hidden" style={{ animationDelay: '1000ms', animationFillMode: 'backwards' }}>
         <CardHeader className="bg-primary/5 border-b">
           <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
@@ -72,17 +73,17 @@ export function LeadAndCampaignSummary() {
         </CardHeader>
         <CardContent className="p-0">
           <ScrollArea className="w-full">
-            <div className="min-w-[450px]">
+            <div className="min-w-[400px]">
                 <Table>
-                    <TableHeader className="bg-primary/5">
-                    <TableRow>
-                        <TableHead className="pl-6 font-bold text-primary">Category Name</TableHead>
-                        <TableHead className="text-right pr-6 font-bold text-primary">Project Count</TableHead>
+                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                    <TableRow className="border-b border-primary/10">
+                        <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))]">Category Name</TableHead>
+                        <TableHead className="text-right pr-6 font-bold text-[hsl(var(--table-header-fg))]">Project Count</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
                     {campaignSummary?.chartData.map((entry) => (
-                        <TableRow key={entry.name} className="hover:bg-primary/5 transition-colors border-b border-primary/5 bg-white">
+                        <TableRow key={entry.name} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5 bg-white">
                         <TableCell className="font-bold text-primary text-sm pl-6">{entry.name}</TableCell>
                         <TableCell className="text-right font-normal pr-6">{entry.value}</TableCell>
                         </TableRow>
@@ -94,7 +95,8 @@ export function LeadAndCampaignSummary() {
           </ScrollArea>
         </CardContent>
       </Card>
-      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md" style={{ animationDelay: '1100ms', animationFillMode: 'backwards' }}>
+
+      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md overflow-hidden" style={{ animationDelay: '1100ms', animationFillMode: 'backwards' }}>
         <CardHeader className="bg-primary/5 border-b">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
@@ -109,17 +111,17 @@ export function LeadAndCampaignSummary() {
         </CardHeader>
         <CardContent className="p-0">
           <ScrollArea className="w-full">
-            <div className="min-w-[450px]">
+            <div className="min-w-[400px]">
                 <Table>
-                    <TableHeader className="bg-primary/5">
-                    <TableRow>
-                        <TableHead className="pl-6 font-bold text-primary">Appeal Purpose</TableHead>
-                        <TableHead className="text-right pr-6 font-bold text-primary">Case Count</TableHead>
+                    <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                    <TableRow className="border-b border-primary/10">
+                        <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))]">Appeal Purpose</TableHead>
+                        <TableHead className="text-right pr-6 font-bold text-[hsl(var(--table-header-fg))]">Case Count</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
                     {leadSummary?.chartData.map((entry) => (
-                        <TableRow key={entry.name} className="hover:bg-primary/5 transition-colors border-b border-primary/5 bg-white">
+                        <TableRow key={entry.name} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5 bg-white">
                         <TableCell className="font-bold text-primary text-sm pl-6">{entry.name}</TableCell>
                         <TableCell className="text-right font-normal pr-6">{entry.value}</TableCell>
                         </TableRow>
