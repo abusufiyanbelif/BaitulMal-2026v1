@@ -447,19 +447,24 @@ export default function DonationsSummaryPage() {
                             <CardDescription className="font-normal text-primary/70">A Breakdown Of All Collected Funds By Their Designated Purpose.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-2 pt-6 font-normal">
-                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Fitra</span><span className="font-mono">₹{summaryData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Zakat</span><span className="font-mono">₹{summaryData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Sadaqah</span><span className="font-mono">₹{summaryData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Fidiya</span><span className="font-mono">₹{summaryData?.fundTotals?.fidiya.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Lillah</span><span className="font-mono">₹{summaryData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Monthly Contribution</span><span className="font-mono">₹{summaryData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Interest (For Disposal)</span><span className="font-mono">₹{summaryData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Loan (Qard-e-Hasana)</span><span className="font-mono">₹{summaryData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
-                            <Separator className="bg-primary/10 my-2" />
-                            <div className="flex justify-between items-center text-lg font-bold text-primary px-2">
-                                <span>Grand Total</span>
-                                <span className="font-mono text-primary">₹{summaryData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span>
-                            </div>
+                            <ScrollArea className="w-full">
+                                <div className="space-y-2 min-w-[300px]">
+                                    <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Fitra</span><span className="font-mono">₹{summaryData?.fundTotals?.fitra.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                                    <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Zakat</span><span className="font-mono">₹{summaryData?.fundTotals?.zakat.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                                    <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Sadaqah</span><span className="font-mono">₹{summaryData?.fundTotals?.sadaqah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                                    <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Fidiya</span><span className="font-mono">₹{summaryData?.fundTotals?.fidiya.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                                    <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Lillah</span><span className="font-mono">₹{summaryData?.fundTotals?.lillah.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                                    <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Monthly Contribution</span><span className="font-mono">₹{summaryData?.fundTotals?.monthlyContribution.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                                    <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Interest (For Disposal)</span><span className="font-mono">₹{summaryData?.fundTotals?.interest.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                                    <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded"><span className="text-muted-foreground font-normal">Loan (Qard-e-Hasana)</span><span className="font-mono">₹{summaryData?.fundTotals?.loan.toLocaleString('en-IN') ?? '0.00'}</span></div>
+                                    <Separator className="bg-primary/10 my-2" />
+                                    <div className="flex justify-between items-center text-lg font-bold text-primary px-2">
+                                        <span>Grand Total</span>
+                                        <span className="font-mono text-primary">₹{summaryData?.fundTotals?.grandTotal.toLocaleString('en-IN') ?? '0.00'}</span>
+                                    </div>
+                                </div>
+                                <ScrollBar orientation="horizontal" className="hidden" />
+                            </ScrollArea>
                         </CardContent>
                     </Card>
                     <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
@@ -487,15 +492,25 @@ export default function DonationsSummaryPage() {
                         <CardContent className="pt-6">
                           {isClient ? (
                             <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                <PieChart>
-                                    <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                                    <Pie data={summaryData?.donationCategoryChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} strokeWidth={5} paddingAngle={2} className="transition-all duration-1000 ease-out focus:outline-none">
-                                        {summaryData?.donationCategoryChartData?.map((entry) => (
-                                            <Cell key={`cell-cat-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />
+                                <BarChart data={Object.entries(summaryData?.amountsByCategory || {}).map(([name, value]) => ({ name, value }))}>
+                                    <CartesianGrid vertical={false} />
+                                    <XAxis
+                                        dataKey="name"
+                                        tickLine={false}
+                                        tickMargin={10}
+                                        axisLine={false}
+                                        angle={-45}
+                                        textAnchor="end"
+                                        height={60}
+                                    />
+                                    <YAxis tickFormatter={(value) => `₹${new Intl.NumberFormat('en-IN', { notation: 'compact' }).format(value)}`} />
+                                    <ChartTooltip content={<ChartTooltipContent />} />
+                                    <Bar dataKey="value" radius={4}>
+                                        {Object.keys(summaryData?.amountsByCategory || {}).map((name) => (
+                                            <Cell key={name} fill={`var(--color-${name.replace(/\s+/g, '')})`} />
                                         ))}
-                                    </Pie>
-                                    <ChartLegend content={<ChartLegendContent />} />
-                                </PieChart>
+                                    </Bar>
+                                </BarChart>
                             </ChartContainer>
                           ) : <Skeleton className="h-[300px] w-full rounded-md"/>}
                         </CardContent>

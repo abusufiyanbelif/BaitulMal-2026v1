@@ -188,7 +188,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
                                                 {donor.email && <span className="flex items-center gap-1.5"><Mail className="h-3 w-3 opacity-40"/> {donor.email}</span>}
                                             </div>
                                         </div>
-                                        <Button size="sm" className="mt-3 sm:mt-0 font-bold bg-primary hover:bg-primary/90 text-white rounded-lg h-8 px-4 opacity-0 sm:opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow-sm shrink-0">
+                                        <Button size="sm" className="mt-3 sm:mt-0 font-bold bg-primary hover:bg-primary/90 text-white rounded-lg h-8 px-4 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow-sm shrink-0">
                                             Load Profile
                                         </Button>
                                     </div>

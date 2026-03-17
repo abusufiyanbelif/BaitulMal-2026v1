@@ -2,6 +2,7 @@
 
 import { usePublicData } from '@/hooks/use-public-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Skeleton } from './ui/skeleton';
 import { Calendar, PieChart as PieChartIcon, IndianRupee } from 'lucide-react';
 import {
   PieChart,
@@ -17,7 +18,6 @@ import {
 } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { donationCategories } from '@/lib/modules';
-import { Skeleton } from './ui/skeleton';
 import { Progress } from '@/components/ui/progress';
 import {
   Table,

@@ -178,7 +178,7 @@ export default function DonationDetailsPage() {
         );
     }
 
-    const typeSplit = donation.typeSplit && donation.typeSplit.length > 0
+    const typeSplit = (donation.typeSplit && donation.typeSplit.length > 0)
       ? donation.typeSplit
       : (donation.type ? [{ category: donation.type, amount: donation.amount }] : []);
 
@@ -410,6 +410,8 @@ export default function DonationDetailsPage() {
                 </div>
             </div>
 
+            <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={{ title: 'Thank you!', text: `Verified donation of ₹${donation.amount.toFixed(2)} received.`, url: window.location.href }} />
+
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                 <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
                     <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight">Modify Donation Record</DialogTitle></DialogHeader>
@@ -441,15 +443,6 @@ export default function DonationDetailsPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-            <ShareDialog 
-                open={isShareDialogOpen} 
-                onOpenChange={setIsShareDialogOpen} 
-                shareData={{
-                    title: `JazakAllah Khair!`,
-                    text: `Thank you for your generous contribution of ₹${donation.amount.toFixed(2)}. May Allah accept it and reward you abundantly.`,
-                    url: typeof window !== 'undefined' ? window.location.href : '',
-                }} 
-            />
         </main>
     );
 }

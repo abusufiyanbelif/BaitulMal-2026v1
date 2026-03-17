@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -54,7 +53,8 @@ import {
     LifeBuoy,
     HandHelping,
     ShieldCheck,
-    ChevronRight
+    ChevronRight,
+    Calendar
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
@@ -298,7 +298,7 @@ export default function CampaignSummaryPage() {
 
     useEffect(() => {
         if (campaign && !editMode) {
-             setEditableLead({
+             setEditableCampaign({
                 name: campaign.name || '',
                 description: campaign.description || '',
                 startDate: campaign.startDate || '',
@@ -510,7 +510,7 @@ export default function CampaignSummaryPage() {
                                     </div>
                                     <div className="space-y-1">
                                         <Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Operational Status</Label>
-                                        <Select value={editableCampaign.status} onValueChange={(value) => handleFieldChange('status', value)}>
+                                        <Select value={campaign?.status} onValueChange={(value) => handleFieldChange('status', value)}>
                                             <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
                                                 <SelectItem value="Upcoming" className="font-normal">Upcoming</SelectItem>
