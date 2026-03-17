@@ -238,15 +238,15 @@ export default function DonorProfilePage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
-            <div className="flex items-center justify-between">
-                <Button variant="outline" asChild className="font-bold border-primary/10 text-primary transition-transform active:scale-95">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
+                <Button variant="outline" asChild className="font-bold border-primary/10 text-primary transition-transform active:scale-95 shrink-0">
                     <Link href="/donors"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Registry</Link>
                 </Button>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
                     <Badge variant={donor.status === 'Active' ? 'active' : 'outline'} className="font-bold text-[10px]">{donor.status}</Badge>
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 shrink-0">
                         {canUpdate && !isEditMode && (
-                            <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-sm active:scale-95 transition-transform h-9">
+                            <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-sm active:scale-95 transition-transform h-9 px-4">
                                 <Edit className="mr-2 h-4 w-4"/> Edit Profile
                             </Button>
                         )}
@@ -410,9 +410,9 @@ export default function DonorProfilePage() {
                                             <Textarea name="notes" defaultValue={donor.notes} rows={4} className="font-normal" placeholder="Donor preferences, historical notes, etc."/>
                                         </div>
 
-                                        <div className="flex justify-end gap-3 pt-6 border-t">
-                                            <Button type="button" variant="outline" onClick={() => setIsEditMode(false)} className="font-bold border-primary/20 text-primary">Cancel</Button>
-                                            <Button type="submit" disabled={isSubmitting} className="font-bold shadow-md px-10">
+                                        <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t mt-auto">
+                                            <Button type="button" variant="outline" onClick={() => setIsEditMode(false)} className="w-full sm:w-auto font-bold border-primary/20 text-primary h-11 px-8">Discard</Button>
+                                            <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto font-bold shadow-md px-10 h-11 bg-primary text-white">
                                                 {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>} Secure Profile
                                             </Button>
                                         </div>
@@ -472,7 +472,7 @@ export default function DonorProfilePage() {
                     <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                         <CardHeader className="bg-primary/5 border-b px-6 py-4">
                             <CardTitle className="text-lg font-bold">Contribution History Across Causes</CardTitle>
-                            <CardDescription className="font-normal">Verified and pending donations linked to this donor profile.</CardDescription>
+                            <CardDescription className="font-normal text-primary/70">Verified And Pending Donations Linked To This Donor Profile.</CardDescription>
                         </CardHeader>
                         <CardContent className="p-0">
                             <ScrollArea className="w-full">

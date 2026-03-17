@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useFirestore, useMemoFirebase, useCollection, collection } from '@/firebase';
@@ -361,7 +361,7 @@ export default function DonorRegistryPage() {
                                 <TableCell className="text-right pr-6" onClick={e => e.stopPropagation()}>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
+                                        <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown border-primary/10">
                                             <DropdownMenuItem onClick={() => router.push(`/donors/${donor.id}`)} className="text-primary font-normal cursor-pointer"><Eye className="mr-2 h-4 w-4 opacity-60"/> View Details</DropdownMenuItem>
                                             {canUpdate && <DropdownMenuItem onClick={() => router.push(`/donors/${donor.id}?edit=true`)} className="text-primary font-normal cursor-pointer"><Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Profile</DropdownMenuItem>}
                                             {canDelete && (
@@ -400,13 +400,50 @@ export default function DonorRegistryPage() {
             </DialogHeader>
             <form onSubmit={handleSaveDonor} className="flex flex-col h-full overflow-hidden bg-white">
                 <ScrollArea className="flex-1">
-                    <div className="p-6 space-y-8 font-normal text-primary">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Full Name *</Label><Input name="name" required className="font-bold h-11 rounded-xl" placeholder="Full Legal Name"/></div>
-                            <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Primary Contact *</Label><Input name="phone" required className="font-mono h-11 rounded-xl" placeholder="10-Digit Mobile"/></div>
+                    <div className="p-6 space-y-8 font-normal text-primary pb-20">
+                        <div className="space-y-4">
+                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Core Identity</h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Full Name *</Label><Input name="name" required className="font-bold h-11 rounded-xl" placeholder="Full Legal Name"/></div>
+                                <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Primary Contact *</Label><Input name="phone" required className="font-mono h-11 rounded-xl" placeholder="10-Digit Mobile"/></div>
+                            </div>
+                            <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Email Identity</Label><Input name="email" type="email" className="font-normal h-11 rounded-xl" placeholder="email@address.com"/></div>
+                            <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Residential Address</Label><Input name="address" className="font-normal h-11 rounded-xl" placeholder="Full Postal Address"/></div>
                         </div>
-                        <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Email Identity</Label><Input name="email" type="email" className="font-normal h-11 rounded-xl" placeholder="email@address.com"/></div>
-                        <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Residential Address</Label><Input name="address" className="font-normal h-11 rounded-xl" placeholder="Full Postal Address"/></div>
+
+                        <div className="space-y-6">
+                            <div className="flex items-center justify-between border-b pb-2">
+                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Verified Bank Accounts</h4>
+                                <Button type="button" variant="outline" size="sm" onClick={() => setBankDetails([...bankDetails, { bankName: '', accountNumber: '', ifscCode: '' }])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add Account</Button>
+                            </div>
+                            {bankDetails.map((bank, idx) => (
+                                <div key={idx} className="relative p-4 rounded-xl border border-dashed border-primary/20 bg-primary/[0.01] grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    {bankDetails.length > 1 && (
+                                        <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-6 w-6 text-destructive" onClick={() => setBankDetails(bankDetails.filter((_, i) => i !== idx))}><Trash2 className="h-3 w-3"/></Button>
+                                    )}
+                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">Bank Name</Label><Input value={bank.bankName} onChange={(e) => { const newB = [...bankDetails]; newB[idx].bankName = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-bold"/></div>
+                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">Account No.</Label><Input value={bank.accountNumber} onChange={(e) => { const newB = [...bankDetails]; newB[idx].accountNumber = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
+                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">IFSC Code</Label><Input value={bank.ifscCode} onChange={(e) => { const newB = [...bankDetails]; newB[idx].ifscCode = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
+                                </div>
+                            ))}
+                        </div>
+
+                        <div className="space-y-4">
+                            <div className="flex items-center justify-between border-b pb-2">
+                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Digital UPI Handles</h4>
+                                <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ''])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add UPI</Button>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {upiIds.map((upi, idx) => (
+                                    <div key={idx} className="flex gap-2 items-center">
+                                        <Input value={upi} onChange={(e) => { const newU = [...upiIds]; newU[idx] = e.target.value; setUpiIds(newU); }} placeholder="name@upi" className="font-mono text-xs h-9" />
+                                        {upiIds.length > 1 && (
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => setUpiIds(upiIds.filter((_, i) => i !== idx))}><Trash2 className="h-4 w-4 text-destructive"/></Button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                         
                         <Separator className="bg-primary/10" />
                         
@@ -418,8 +455,8 @@ export default function DonorRegistryPage() {
                     <ScrollBar orientation="vertical" />
                 </ScrollArea>
                 <DialogFooter className="px-6 py-4 bg-primary/5 border-t shrink-0 flex flex-col sm:flex-row gap-2">
-                    <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary px-8 rounded-xl h-11">Discard</Button>
-                    <Button type="submit" disabled={isSubmitting} className="font-bold shadow-md px-10 h-11 rounded-xl active:scale-95 transition-transform bg-primary text-white">
+                    <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)} className="w-full sm:w-auto font-bold border-primary/20 text-primary px-8 rounded-xl h-11">Discard</Button>
+                    <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto font-bold shadow-md px-10 h-11 rounded-xl active:scale-95 transition-transform bg-primary text-white">
                         {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>} Secure Profile
                     </Button>
                 </DialogFooter>

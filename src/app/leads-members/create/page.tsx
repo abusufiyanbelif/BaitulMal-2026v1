@@ -492,7 +492,7 @@ export default function CreateLeadPage() {
                 <div className="space-y-4">
                     <div>
                         <FormLabel className="text-base font-bold text-primary">Qualified Donation Types</FormLabel>
-                        <FormDescription className="text-xs font-normal opacity-70">Select Which Fund Types Count Toward The Target Goal Metrics.</FormDescription>
+                        <FormDescription className="font-normal text-xs opacity-70">Select Which Fund Types Count Toward The Target Goal Metrics.</FormDescription>
                     </div>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 border rounded-xl bg-primary/5 border-primary/10">
                         <div className="flex items-center space-x-2">
@@ -574,10 +574,10 @@ export default function CreateLeadPage() {
                       <FormMessage />
                   </FormItem>
               )}/>
-              <div className="flex justify-end gap-3 pt-6 border-t mt-6 bg-background/80 backdrop-blur-sm sticky bottom-0 p-4 z-50">
-                  <Button type="button" variant="outline" onClick={() => router.push('/leads-members')} disabled={isLoading} className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Discard</Button>
-                  <Button type="button" variant="secondary" onClick={() => { form.reset(); setDocumentsToUpload([]); }} disabled={isLoading} className="font-bold transition-transform active:scale-95"><RotateCcw className="mr-2 h-4 w-4"/> Reset Form</Button>
-                  <Button type="submit" disabled={isLoading} className="font-bold bg-primary text-white hover:bg-primary/90 shadow-md transition-transform active:scale-95">
+              <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t mt-6 bg-background/80 backdrop-blur-sm sticky bottom-0 p-4 z-50 shrink-0">
+                  <Button type="button" variant="outline" onClick={() => router.push('/leads-members')} disabled={isLoading} className="w-full sm:w-auto font-bold border-primary/20 text-primary transition-transform active:scale-95">Discard</Button>
+                  <Button type="button" variant="secondary" onClick={() => { form.reset(); setDocumentsToUpload([]); }} disabled={isLoading} className="w-full sm:w-auto font-bold transition-transform active:scale-95"><RotateCcw className="mr-2 h-4 w-4"/> Reset Form</Button>
+                  <Button type="submit" disabled={isLoading} className="w-full sm:w-auto font-bold bg-primary text-white hover:bg-primary/90 shadow-md transition-transform active:scale-95 px-8">
                       {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                       Register Lead Appeal
                   </Button>
