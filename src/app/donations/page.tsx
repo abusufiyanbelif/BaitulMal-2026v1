@@ -117,7 +117,7 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
         >
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -256,7 +256,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                         </TableRow>
                                                     ))}
                                                     {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
-                                                        <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated / General Institutional Fund</TableCell></TableRow>
+                                                        <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated General Fund</TableCell></TableRow>
                                                     )}
                                                 </TableBody>
                                             </Table>
@@ -581,7 +581,7 @@ export default function DonationsPage() {
 
   const isLoading = areDonationsLoading || isProfileLoading || isSubmitting;
   
-  if (isLoading && !donations) return <SectionLoader label="Loading Donation Records..." description="Retrieving Institutional Logs." />;
+  if (isLoading && !donations) return <SectionLoader label="Loading Donation Records..." description="Retrieving Organization Database." />;
 
   return (
     <main className="container mx-auto p-4 md:p-8 font-normal text-primary relative">

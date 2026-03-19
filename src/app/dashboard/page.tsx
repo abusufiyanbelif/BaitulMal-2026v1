@@ -31,91 +31,91 @@ export default function Home() {
     const allCards = [
         {
             title: "Campaigns",
-            description: "Manage Ration, Relief, And General Campaigns.",
+            description: "Manage Group Ration, Relief, And Special Projects.",
             href: "/campaign-members",
             icon: FolderKanban,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.read', false),
         },
         {
-            title: "Leads",
-            description: "Track And Convert New Initiatives And Individual Leads.",
+            title: "Public Appeals",
+            description: "Track And Manage Individual Support Cases.",
             href: "/leads-members",
             icon: Lightbulb,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.read', false),
         },
         {
-            title: "Beneficiaries",
-            description: "Manage A Comprehensive List Of All Aid Recipients.",
+            title: "Beneficiary Registry",
+            description: "A Comprehensive List Of All Aid Recipients.",
             href: "/beneficiaries",
             icon: Users,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.beneficiaries.read', false),
         },
         {
-            title: "Donors",
-            description: "Manage Contributor Profiles And Donation History.",
+            title: "Donor Profiles",
+            description: "Manage Community Contributor Vetting And Identity.",
             href: "/donors",
             icon: HeartHandshake,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donors.read', false),
         },
         {
-            title: "Donations",
-            description: "View And Manage All Verified Incoming Donations.",
+            title: "Donation Records",
+            description: "View And Manage All Verified Contributions.",
             href: "/donations",
             icon: IndianRupee,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations.read', false),
         },
         {
-            title: "Guidance Hub",
-            description: "Manage External Help Resources And Regional Schemes.",
+            title: "Guidance Directory",
+            description: "Manage Help Resources And Community Schemes.",
             href: "/guidance",
             icon: BookOpen,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.guidance.read', false),
         },
          {
             title: "Public Preview",
-            description: "Review Public-Facing Pages And Summaries.",
+            description: "Review Live Informational Pages And Summary Metrics.",
             href: "/public-summary",
             icon: Eye,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.read', false) || !!getNestedValue(userProfile, 'permissions.leads-members.read', false),
         },
         {
-            title: "Extractor",
-            description: "Scan And Extract Key Information From Documents.",
+            title: "Document Extractor",
+            description: "AI-Powered Text And Data Extraction Hub.",
             href: "/extractor",
             icon: ScanSearch,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.extractor.read', false),
         },
         {
             title: "Story Creator",
-            description: "Generate Impact Narratives From Verified Data.",
+            description: "Generate Impact Narratives From Verified Reports.",
             href: "/story-creator",
             icon: MessageSquare,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.storyCreator.read', false),
         },
         {
             title: "User Management",
-            description: "Manage Organization User Accounts And Permissions.",
+            description: "Manage Staff Accounts And Role Permissions.",
             href: "/users",
             icon: Users,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.users.read', false),
         },
         {
-            title: "Settings",
-            description: "Configure Branding, Payments, And Module Rules.",
+            title: "System Settings",
+            description: "Configure Branding, Payments, And Compliance Rules.",
             href: "/settings",
             icon: Settings,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.read', false),
         },
         {
-            title: "Analytics",
-            description: "View Organization Metrics And Usage Statistics.",
+            title: "Data Analytics",
+            description: "In-Depth Usage Metrics And Historical Trends.",
             href: "/analytics",
             icon: BarChart,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.analytics.read', false),
         },
         {
-            title: "Diagnostics",
-            description: "Perform Health Checks On All Critical Resources.",
+            title: "System Health",
+            description: "Perform Diagnostic Checks On All Essential Services.",
             href: "/diagnostics",
             icon: FlaskConical,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.diagnostics.read', false),
@@ -135,7 +135,7 @@ export default function Home() {
             ) : userProfile ? (
             <div className="space-y-8 animate-fade-in-zoom">
                 <h2 className="text-3xl font-bold tracking-tight mb-4 text-primary">
-                    Welcome Back, {userProfile.name}!
+                    Assalamu Alaikum, {userProfile.name}!
                 </h2>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
@@ -153,7 +153,7 @@ export default function Home() {
             </div>
             ) : (
              <div className="text-center py-20">
-                <p className="text-primary font-bold text-lg">Could Not Load User Profile Document.</p>
+                <p className="text-primary font-bold text-lg">Profile Could Not Be Retrieved.</p>
              </div>
             )}
         </div>

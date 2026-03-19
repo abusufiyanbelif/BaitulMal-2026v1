@@ -35,8 +35,8 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
 
 /**
- * App Footer - Fully reactive to logo settings.
- * Clean Title Case typography enforced.
+ * App Footer - Organization profile and contribution hub.
+ * strictly Title Case typography enforced.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
@@ -63,12 +63,12 @@ export function AppFooter() {
     if (!validQrUrl) return;
     try {
       const response = await fetch(`/api/image-proxy?url=${encodeURIComponent(validQrUrl)}`);
-      if (!response.ok) throw new Error('Failed to fetch image');
+      if (!response.ok) throw new Error('Failed To Fetch Image');
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `Organization-Qr.png`;
+      link.download = `Organization-QR.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -102,8 +102,8 @@ export function AppFooter() {
                   />
                 </div>
               )}
-              <span className="text-2xl font-bold tracking-tighter text-primary">
-                {brandingSettings?.name || 'Baitulmal Samajik Sanstha'}
+              <span className="text-2xl font-bold tracking-tight text-primary">
+                {brandingSettings?.name || 'Community Organization'}
               </span>
             </Link>
             <div className="space-y-3 text-sm text-muted-foreground leading-relaxed font-normal">
@@ -130,7 +130,7 @@ export function AppFooter() {
 
           <div className="space-y-6 md:pl-10">
             <h3 className="text-[10px] font-bold text-primary/40 tracking-widest uppercase">
-              Resources & Info
+              Resources And Information
             </h3>
             <nav className="flex flex-col gap-4">
               <Link href="/info/organization" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal">
@@ -150,7 +150,7 @@ export function AppFooter() {
 
           <div className="flex flex-col md:items-end gap-6">
             <h3 className="text-[10px] font-bold text-primary/40 tracking-widest uppercase">
-              Support Us
+              Support Our Mission
             </h3>
             <div className="w-full sm:w-auto">
                 <Button 
@@ -162,7 +162,7 @@ export function AppFooter() {
                     Donation Channel Details
                 </Button>
                 <p className="text-[9px] text-muted-foreground mt-3 font-normal italic md:text-right tracking-tight opacity-60">
-                    Scan Our Quick Codes Or Use Bank Transfer.
+                    Scan Quick Codes Or Use Direct Bank Transfer.
                 </p>
             </div>
           </div>
@@ -184,7 +184,7 @@ export function AppFooter() {
             )}
           </div>
           <p className="text-center sm:text-right font-normal text-muted-foreground opacity-80">
-            {paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'}. All Rights Reserved.`}
+            {paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Organization Name'}. All Rights Reserved.`}
           </p>
         </div>
       </div>
@@ -204,7 +204,7 @@ export function AppFooter() {
                 <div className="space-y-6">
                     <div className="flex items-center gap-2 text-primary font-bold">
                         <QrCode className="h-5 w-5" />
-                        <h3 className="text-lg">Scan & Pay Via QR Code</h3>
+                        <h3 className="text-lg">Scan And Pay Via QR Code</h3>
                     </div>
                     <div className="flex flex-col md:flex-row items-center gap-8 p-6 rounded-2xl border border-primary/10 bg-primary/[0.02]">
                         <div className="relative w-48 h-48 bg-white p-3 rounded-2xl border-4 border-primary shadow-xl">
@@ -254,7 +254,7 @@ export function AppFooter() {
                     <div className="grid grid-cols-1 gap-4 p-6 rounded-2xl border border-primary/10 bg-primary/[0.02]">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div className="space-y-1">
-                                <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Account Name</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Account Holder Name</Label>
                                 <p className="text-sm font-bold text-primary">{paymentSettings?.bankAccountName || 'N/A'}</p>
                             </div>
                             <div className="space-y-1">

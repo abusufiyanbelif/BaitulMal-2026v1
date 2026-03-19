@@ -14,8 +14,7 @@ import { useMemo } from 'react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 /**
- * Overall Funding Summary - Displays aggregate organizational metrics.
- * Labels follow the professional Title Case standard.
+ * Overall Funding Summary - Aggregate organizational impact reporting.
  */
 export function OverallFundingSummary() {
   const { isLoading, overallSummary } = usePublicData();
@@ -38,7 +37,7 @@ export function OverallFundingSummary() {
   }
 
   if (!overallSummary) {
-    return <p className="font-bold text-primary text-center py-10">Atiyat Ka Khulasa Load Nahi Ho Pa Raha.</p>
+    return <p className="font-bold text-primary text-center py-10">Impact Summary Currently Unavailable.</p>
   }
 
   return (
@@ -46,9 +45,9 @@ export function OverallFundingSummary() {
       <CardHeader className="bg-primary/5 border-b">
         <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight uppercase">
             <Target className="h-6 w-6 text-primary" />
-            Atiyat Ka Kul Khulasa
+            Overall Funding Impact
         </CardTitle>
-        <CardDescription className="font-normal text-primary/70">Verified Atiyat Ka Maqsad Aur Milni Wali Raqam Ki Tafseel.</CardDescription>
+        <CardDescription className="font-normal text-primary/70">A Lifetime Summary Of Verified Goal Contributions Across All Projects.</CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
         <ScrollArea className="w-full">
@@ -92,19 +91,19 @@ export function OverallFundingSummary() {
                 </div>
                 <div className="space-y-4 text-center md:text-left font-bold text-primary">
                     <div>
-                        <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Maqsad Ke Liye Mili Raqam</p>
+                        <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Raised For Goals</p>
                         <p className="text-3xl font-bold font-mono">
                         ₹{(overallSummary.totalCollectedForGoals || 0).toLocaleString('en-IN')}
                         </p>
                     </div>
                     <div>
-                        <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Kul Target</p>
+                        <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Combined Target Goal</p>
                         <p className="text-3xl font-bold font-mono opacity-40">
                         ₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}
                         </p>
                     </div>
                     <div>
-                        <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Kul Atiyat (Sab Milakar)</p>
+                        <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase group-hover:text-primary transition-colors opacity-60">Lifetime Funds Received</p>
                         <p className="text-3xl font-bold font-mono">
                         ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}
                         </p>

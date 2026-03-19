@@ -18,11 +18,14 @@ function getRandomItem<T>(arr: T[]): T {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
+/**
+ * Wisdom And Reflection - Displays Islamic religious guidance.
+ * All headers and labels follow the professional Title Case standard.
+ */
 export function WisdomAndReflection() {
   const [selectedWisdom, setSelectedWisdom] = useState<{ quran: any; reflection: any; } | null>(null);
 
   useEffect(() => {
-    // This effect now runs only once after the component mounts on the client.
     const reflections = [
         ...(typedWisdomData.hadith || []),
         ...(typedWisdomData.scholars || []),
@@ -32,7 +35,7 @@ export function WisdomAndReflection() {
       quran: getRandomItem(typedWisdomData.quran),
       reflection: reflections.length > 0 ? getRandomItem(reflections) : null,
     });
-  }, []); // Empty dependency array ensures this runs only once.
+  }, []);
 
   if (!selectedWisdom) {
     return (
@@ -40,7 +43,7 @@ export function WisdomAndReflection() {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2 font-bold text-primary">
                     <Quote className="h-6 w-6 text-primary" />
-                    Hikmat Aur Fikr
+                    Wisdom And Reflection
                 </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6 pl-10">
@@ -52,16 +55,16 @@ export function WisdomAndReflection() {
   }
 
   return (
-    <Card className="animate-fade-in-up border-primary/20" style={{ animationDelay: '600ms', animationFillMode: 'backwards' }}>
+    <Card className="animate-fade-in-up border-primary/20 bg-white shadow-md" style={{ animationDelay: '600ms', animationFillMode: 'backwards' }}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 font-bold text-primary">
+        <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
           <Quote className="h-6 w-6 text-primary" />
-          Hikmat Aur Fikr
+          Wisdom And Reflection
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6 pl-10">
         {selectedWisdom.quran && (
-            <blockquote className="border-l-2 border-primary/30 pl-4 italic text-muted-foreground relative font-normal">
+            <blockquote className="border-l-2 border-primary/30 pl-4 italic text-muted-foreground relative font-normal leading-relaxed">
                 "{selectedWisdom.quran.text}"
                 <cite className="block text-right not-italic text-sm font-bold text-primary mt-2">
                     — {selectedWisdom.quran.source}
@@ -69,7 +72,7 @@ export function WisdomAndReflection() {
             </blockquote>
         )}
         {selectedWisdom.reflection && (
-            <blockquote className="border-l-2 border-primary/30 pl-4 italic text-muted-foreground relative font-normal">
+            <blockquote className="border-l-2 border-primary/30 pl-4 italic text-muted-foreground relative font-normal leading-relaxed">
                 "{selectedWisdom.reflection.text}"
                 <cite className="block text-right not-italic text-sm font-bold text-primary mt-2">
                     — {selectedWisdom.reflection.source}

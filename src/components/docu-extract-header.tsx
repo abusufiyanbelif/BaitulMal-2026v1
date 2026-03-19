@@ -23,10 +23,6 @@ import { Badge } from '@/components/ui/badge';
 import { getInitials } from '@/lib/utils';
 import { NotificationBell } from './notification-bell';
 
-/**
- * Main Header - Fully theme-reactive.
- * Removed all background boxes and borders to ensure clean scaling.
- */
 export function DocuExtractHeader() {
   const session = useSession();
   const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
@@ -75,8 +71,8 @@ export function DocuExtractHeader() {
                 )
             )}
             </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-primary tracking-tighter leading-tight transition-colors group-hover:opacity-80">
-            {isBrandingLoading ? <Skeleton className="h-6 w-48" /> : (brandingSettings?.name || "Baitulmal Samajik Sanstha Solapur")}
+          <h1 className="text-xl sm:text-2xl font-bold text-primary tracking-tight leading-tight transition-colors group-hover:opacity-80">
+            {isBrandingLoading ? <Skeleton className="h-6 w-48" /> : (brandingSettings?.name || "Community Support Organization")}
           </h1>
         </Link>
 

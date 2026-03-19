@@ -63,7 +63,7 @@ export default function Home() {
                 const isHigh = l.priority === 'High';
                 return {
                     id: l.id,
-                    text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
+                    text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Appeal: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
                     href: `/leads-public/${l.id}/summary`,
                     priority: l.priority || 'Medium',
                     priorityIcon: getPriorityIcon(l.priority),
@@ -84,13 +84,13 @@ export default function Home() {
         
         const completedLeads = (leadsWithProgress || [])
             .filter(l => l.status === 'Completed')
-            .map(l => ({ id: l.id, text: `Lead: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
+            .map(l => ({ id: l.id, text: `Appeal: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
 
         return [...completedCampaigns, ...completedLeads];
     }, [campaignsWithProgress, leadsWithProgress]);
 
     const heroTitle = brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.';
-    const heroDescription = brandingSettings?.heroDescription || `Join ${brandingSettings?.name || 'Baitulmal Samajik Sanstha'} to make a lasting impact. Your contribution brings hope, changes lives, and empowers our community.`;
+    const heroDescription = brandingSettings?.heroDescription || `Join ${brandingSettings?.name || 'Our Community'} to make a lasting impact. Your contribution brings hope and changes lives.`;
     
     const isHeroVisible = brandingSettings?.isHeroVisible !== false;
     const isNewsTickerVisible = brandingSettings?.isNewsTickerVisible !== false;
@@ -105,10 +105,9 @@ export default function Home() {
 
     return (
         <div className="container mx-auto p-4 md:p-8 space-y-10 text-primary transition-colors duration-500 pb-20">
-            {/* Hero Section */}
             {isHeroVisible && (
                 <section className="text-center py-12 md:py-20 animate-fade-in-zoom">
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter text-primary max-w-5xl mx-auto drop-shadow-sm leading-tight uppercase">
+                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-primary max-w-5xl mx-auto drop-shadow-sm leading-tight">
                         {heroTitle}
                     </h1>
                     <p className="mt-6 max-w-3xl mx-auto text-lg text-muted-foreground font-normal leading-relaxed">
@@ -131,7 +130,6 @@ export default function Home() {
                 </section>
             )}
 
-            {/* News & Updates */}
             {showTickers && (
                 <div className="space-y-2 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                     {activeTickerItems.length > 0 && <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />}
