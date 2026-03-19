@@ -79,9 +79,9 @@ const formSchema = z.object({
     category: z.enum(donationCategories),
     amount: z.coerce.number().min(0, { message: 'Amount Cannot Be Negative.' }),
     forFundraising: z.boolean().default(false),
-  })).min(1, { message: 'At Least One Donation Category Is Required.'}),
+  })).min(1, { message: 'At Least One Category Is Required.'}),
   donationType: z.enum(['Cash', 'Online Payment', 'Check', 'Other']),
-  donationDate: z.string().min(1, { message: "Donation Date Is Required."}),
+  donationDate: z.string().min(1, { message: "Date Is Required."}),
   contributionFromDate: z.string().optional(),
   contributionToDate: z.string().optional(),
   status: z.enum(['Verified', 'Pending', 'Canceled']),
@@ -90,7 +90,7 @@ const formSchema = z.object({
   isTypeSplit: z.boolean().default(false),
   transactions: z.array(z.object({
       id: z.string(),
-      amount: z.coerce.number().min(0, "Transaction Amount Can't Be Negative."),
+      amount: z.coerce.number().min(0, "Amount Can't Be Negative."),
       transactionId: z.string().optional(),
       date: z.string().optional(),
       upiId: z.string().optional(),
@@ -166,9 +166,9 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                 if (response.date) setValue(`transactions.${index}.date`, response.date, { shouldDirty: true });
                 if (response.upiId) setValue(`transactions.${index}.upiId`, response.upiId, { shouldDirty: true });
                 if (response.receiverName && !getValues('receiverName')) setValue('receiverName', response.receiverName, { shouldDirty: true });
-                toast({ title: 'Scan Complete', description: 'Transaction Details Populated.', variant: "success"});
+                toast({ title: 'Tasdeeq Mukammal', description: 'Transaction Ki Tafseel Mil Gayi Hai.', variant: "success"});
             } catch (error: any) {
-                toast({ title: 'Scan Failed', variant: 'destructive'});
+                toast({ title: 'Scan Nakam Raha', variant: 'destructive'});
             } finally { setIsScanning(false); }
         };
         reader.readAsDataURL(file);
@@ -183,28 +183,28 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
             )}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <FormField control={control} name={`transactions.${index}.amount`} render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight">Amount (₹) *</FormLabel><FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="font-bold font-mono" /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Raqam (₹) *</FormLabel><FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="font-bold font-mono" /></FormControl><FormMessage /></FormItem>
                 )}/>
                 <FormField control={control} name={`transactions.${index}.date`} render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight">Transaction Date</FormLabel><FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold" /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Bhejne Ki Tareekh</FormLabel><FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold" /></FormControl><FormMessage /></FormItem>
                 )}/>
             </div>
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                  <FormField control={control} name={`transactions.${index}.transactionId`} render={({ field }) => (
                     <FormItem>
-                        <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight">Reference ID (e.g. UPI / UTR)</FormLabel>
-                        <FormControl><Input placeholder="Unique Transaction Ref" {...field} disabled={isReadOnly} className="font-normal" /></FormControl>
+                        <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Ref ID (UPI / UTR)</FormLabel>
+                        <FormControl><Input placeholder="Unique ID" {...field} disabled={isReadOnly} className="font-normal" /></FormControl>
                         <FormMessage />
                     </FormItem>
                 )}/>
                  <FormField control={control} name={`transactions.${index}.upiId`} render={({ field }) => (
-                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight">Sender UPI ID</FormLabel><FormControl><Input placeholder="e.g. sender@upi" {...field} disabled={isReadOnly} className="font-normal" /></FormControl><FormMessage /></FormItem>
+                    <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Bhejne Wala UPI ID</FormLabel><FormControl><Input placeholder="e.g. name@upi" {...field} disabled={isReadOnly} className="font-normal" /></FormControl><FormMessage /></FormItem>
                 )}/>
             </div>
             <div className="space-y-2">
                 {!isReadOnly && (
                     <FormField control={control} name={`transactions.${index}.screenshotFile`} render={() => (
-                        <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight">Upload Evidence {mandatoryFields.screenshot ? '*' : ''}</FormLabel><FormControl><Input id={`tx-screenshot-upload-${index}`} type="file" accept="image/*" {...register(`transactions.${index}.screenshotFile`)} className="font-normal" /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Tasveer Upload Karein {mandatoryFields.screenshot ? '*' : ''}</FormLabel><FormControl><Input id={`tx-screenshot-upload-${index}`} type="file" accept="image/*" {...register(`transactions.${index}.screenshotFile`)} className="font-normal" /></FormControl><FormMessage /></FormItem>
                     )}/>
                 )}
                 {preview && (
@@ -216,17 +216,17 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                                     <Button type="button" size="icon" variant="outline" className="h-8 w-8 text-white border-white hover:bg-white/20 transition-transform active:scale-95"><ZoomIn className="h-4 w-4" /></Button>
                                 </DialogTrigger>
                                 <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
-                                    <DialogHeader className="px-6 py-4 bg-primary/5 border-b"><DialogTitle className="font-bold text-primary tracking-tight text-sm">Transaction Artifact</DialogTitle></DialogHeader>
+                                    <DialogHeader className="px-6 py-4 bg-primary/5 border-b"><DialogTitle className="font-bold text-primary tracking-tight text-sm">Len-Den Ka Saboot</DialogTitle></DialogHeader>
                                     <ScrollArea className="flex-1 bg-secondary/20 p-4">
                                         <div className="relative min-h-[60vh] w-full flex items-center justify-center">
-                                            <Image src={preview.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(preview)}` : preview} alt="Full Screenshot" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                                            <Image src={preview.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(preview)}` : preview} alt="Saboot" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                                         </div>
                                         <ScrollBar orientation="vertical" /><ScrollBar orientation="horizontal" />
                                     </ScrollArea>
                                     <DialogFooter className="sm:justify-center p-4 bg-white border-t flex-wrap gap-2">
-                                        <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-primary border-primary/20"><ZoomIn className="mr-2 h-4 w-4"/> In</Button>
-                                        <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5))} className="font-bold text-primary border-primary/20"><ZoomOut className="mr-2 h-4 w-4"/> Out</Button>
-                                        <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-primary border-primary/20"><RotateCw className="mr-2 h-4 w-4"/> Rotate</Button>
+                                        <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-primary border-primary/20"><ZoomIn className="mr-2 h-4 w-4"/> Bada Karein</Button>
+                                        <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5))} className="font-bold text-primary border-primary/20"><ZoomOut className="mr-2 h-4 w-4"/> Chota Karein</Button>
+                                        <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-primary border-primary/20"><RotateCw className="mr-2 h-4 w-4"/> Ghumayein</Button>
                                         <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-primary border-primary/20"><RefreshCw className="mr-2 h-4 w-4"/> Reset</Button>
                                     </DialogFooter>
                                 </DialogContent>
@@ -243,7 +243,7 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                  {!isReadOnly && fileList && fileList.length > 0 && (
                     <Button type="button" onClick={handleScanScreenshot} disabled={isScanning} className="w-full mt-2 font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-all active:scale-95 shadow-sm">
                         {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />}
-                        Scan Artifact With AI
+                        AI Se Scan Karein
                     </Button>
                 )}
             </div>
@@ -345,7 +345,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
         if (isMandatory) {
             if (field === 'screenshot') {
                 const hasScreenshot = data.transactions.some(tx => tx.screenshotUrl || (tx.screenshotFile && tx.screenshotFile.length > 0));
-                if (!hasScreenshot) missingFields.push('Transaction Artifact');
+                if (!hasScreenshot) missingFields.push('Tasdeeq Ka Saboot');
             } else if (!data[field as keyof DonationFormData]) {
                 missingFields.push(field);
             }
@@ -353,7 +353,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     });
 
     if (missingFields.length > 0) {
-        toast({ title: "Incomplete Record", description: `Required Fields Missing: ${missingFields.join(', ')}`, variant: "destructive" });
+        toast({ title: "Form Adhoora Hai", description: `Zaroori Cheezein Bharein: ${missingFields.join(', ')}`, variant: "destructive" });
         return;
     }
 
@@ -371,7 +371,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     setValue('donorName', donor.name, { shouldDirty: true, shouldValidate: true });
     setValue('donorPhone', donor.phone, { shouldDirty: true, shouldValidate: true });
     setValue('donorId', donor.id, { shouldDirty: true });
-    toast({ title: 'Identity Verified', variant: 'success' });
+    toast({ title: 'Tasdeeq Ho Gayi', variant: 'success' });
   };
 
   const verifyDonorByPhone = useCallback(async () => {
@@ -384,7 +384,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
             const donor = { id: snap.docs[0].id, ...snap.docs[0].data() } as Donor;
             handleSelectDonorProfile(donor);
         } else {
-            toast({ title: 'New Contributor', description: 'No Matching Profile Found. A New One Will Be Created.', variant: 'info' });
+            toast({ title: 'Naya Donor', description: 'Pehle Se Koi Record Nahi Mila. Naya Profile Banega.', variant: 'info' });
         }
     } finally {
         setIsVerifying(false);
@@ -402,14 +402,14 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
         phone: donorPhone || '',
         status: 'Active',
         upiIds: Array.from(new Set(currentUpis)),
-        notes: `Profile Registered Directly From Donation Hub For Verification.`
+        notes: `Profile Jamaat Ke Atiyat Registry Se Banaya Gaya.`
     }, { id: userProfile.id, name: userProfile.name });
 
     if (res.success && res.id) {
         setValue('donorId', res.id, { shouldDirty: true });
-        toast({ title: 'Profile Secured', description: 'Identity Now Linked To Institutional Registry.', variant: 'success' });
+        toast({ title: 'Profile Pakka Hua', description: 'Sanstha Ke Record Mein Naam Aa Gaya Hai.', variant: 'success' });
     } else {
-        toast({ title: 'Registration Failed', description: res.message, variant: 'destructive' });
+        toast({ title: 'Nahi Ban Paya', description: res.message, variant: 'destructive' });
     }
     setIsSubmitting(false);
   };
@@ -427,22 +427,22 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
             <ScrollArea className="flex-1 w-full">
                 <div className="px-6 py-4 space-y-6 text-primary font-normal pb-24">
                     <FormField control={control} name="amount" render={({ field }) => (
-                        <FormItem><FormLabel className="font-bold text-primary tracking-tight uppercase">Total Amount Received (₹) *</FormLabel><FormControl><Input type="number" {...field} readOnly className="bg-primary/5 font-bold font-mono text-xl text-primary" /></FormControl><FormDescription className="font-normal text-[10px] opacity-70 italic">Aggregated Sum Of All Verified Transactions Documented Below.</FormDescription><FormMessage /></FormItem>
+                        <FormItem><FormLabel className="font-bold text-primary tracking-tight uppercase">Kul Jama Raqam (₹) *</FormLabel><FormControl><Input type="number" {...field} readOnly className="bg-primary/5 font-bold font-mono text-xl text-primary" /></FormControl><FormDescription className="font-normal text-[10px] opacity-70 italic">Niche Diye Gaye Sab Len-Den Ka Kul Jod.</FormDescription><FormMessage /></FormItem>
                     )}/>
 
                     <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm">
                         <div className="flex items-center justify-between">
-                            <h3 className="text-sm font-bold text-primary tracking-tight">Verification Hub</h3>
+                            <h3 className="text-sm font-bold text-primary tracking-tight">Tasdeeq Ka Markaz</h3>
                             {!isReadOnly && (
                                 <div className="flex gap-2">
                                     <Button type="button" variant="outline" size="sm" onClick={() => setIsDonorSearchOpen(true)} className="h-8 font-bold border-primary/20 text-primary active:scale-95 transition-transform">
-                                        <Search className="mr-2 h-3.5 w-3.5"/> Manual Search
+                                        <Search className="mr-2 h-3.5 w-3.5"/> Donor Dhundein
                                     </Button>
                                 </div>
                             )}
                         </div>
                         <FormField control={control} name="donationType" render={({ field }) => (
-                            <FormItem>{renderLabel('Payment Method', 'donationType')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Method" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="Online Payment" className="font-normal">Online Payment</SelectItem><SelectItem value="Cash" className="font-normal">Cash</SelectItem><SelectItem value="Check" className="font-normal">Check</SelectItem><SelectItem value="Other" className="font-normal">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                            <FormItem>{renderLabel('Kaise Diya Gaya', 'donationType')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Chunein" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="Online Payment" className="font-normal">Online (Digital)</SelectItem><SelectItem value="Cash" className="font-normal">Cash (Naqad)</SelectItem><SelectItem value="Check" className="font-normal">Check</SelectItem><SelectItem value="Other" className="font-normal">Doosra</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                         )}/>
                         <div className="space-y-4">
                             {transactionFields.map((field, index) => (
@@ -450,7 +450,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                             ))}
                         </div>
                         {!isReadOnly && (
-                            <Button type="button" variant="outline" size="sm" onClick={() => appendTransaction({ id: `tx_${Date.now()}`, amount: 0, transactionId: '', date: new Date().toISOString().split('T')[0], upiId: '' })} className="font-bold text-primary border-primary/20 transition-transform active:scale-95 shadow-none w-full"><Plus className="mr-2 h-4 w-4"/> Record Another Transaction</Button>
+                            <Button type="button" variant="outline" size="sm" onClick={() => appendTransaction({ id: `tx_${Date.now()}`, amount: 0, transactionId: '', date: new Date().toISOString().split('T')[0], upiId: '' })} className="font-bold text-primary border-primary/20 transition-transform active:scale-95 shadow-none w-full"><Plus className="mr-2 h-4 w-4"/> Ek Aur Entry Karein</Button>
                         )}
                     </div>
                     
@@ -460,22 +460,22 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                         <FormField control={control} name="donorName" render={({ field }) => (
                             <FormItem>
                                 <div className="flex items-center justify-between">
-                                    {renderLabel('Donor Name', 'donorName')}
+                                    {renderLabel('Donor Ka Naam', 'donorName')}
                                     {donorId ? (
-                                        <Badge variant="eligible" className="h-4 text-[8px] font-black uppercase"><ShieldCheck className="h-2.5 w-2.5 mr-1"/> Identified Profile</Badge>
+                                        <Badge variant="eligible" className="h-4 text-[8px] font-black uppercase"><ShieldCheck className="h-2.5 w-2.5 mr-1"/> Verified Profile</Badge>
                                     ) : !isReadOnly && donorName.length > 2 && (
-                                        <Button type="button" variant="link" onClick={handleRegisterDonorProfile} className="h-4 text-[8px] font-black uppercase p-0 text-primary underline">Create Donor Profile</Button>
+                                        <Button type="button" variant="link" onClick={handleRegisterDonorProfile} className="h-4 text-[8px] font-black uppercase p-0 text-primary underline">Naya Profile Banayein</Button>
                                     )}
                                 </div>
-                                <FormControl><Input placeholder="e.g. Saleem Khan" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl>
+                                <FormControl><Input placeholder="Naam Likhein" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl>
                                 <FormMessage />
                             </FormItem>
                         )}/>
                         <FormField control={control} name="donorPhone" render={({ field }) => (
                             <FormItem>
-                                {renderLabel('Donor Phone', 'donorPhone')}
+                                {renderLabel('Donor Ka Mobile', 'donorPhone')}
                                 <div className="flex gap-2">
-                                    <FormControl><Input placeholder="10-Digit Mobile" {...field} disabled={isReadOnly} className="font-mono text-primary flex-1"/></FormControl>
+                                    <FormControl><Input placeholder="10 Digits" {...field} disabled={isReadOnly} className="font-mono text-primary flex-1"/></FormControl>
                                     {!isReadOnly && !donorId && donorPhone?.length === 10 && (
                                         <Button type="button" variant="secondary" size="sm" onClick={verifyDonorByPhone} disabled={isVerifying} className="h-10 font-bold px-3">
                                             {isVerifying ? <Loader2 className="h-4 w-4 animate-spin"/> : <CheckCircle2 className="h-4 w-4"/>}
@@ -488,24 +488,24 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <FormField control={control} name="receiverName" render={({ field }) => (
-                            <FormItem>{renderLabel('Receiver Name', 'receiverName')}<FormControl><Input placeholder="Institutional Representative" {...field} disabled={isReadOnly} className="font-normal text-primary"/></FormControl><FormMessage /></FormItem>
+                            <FormItem>{renderLabel('Lene Wala (Worker)', 'receiverName')}<FormControl><Input placeholder="Sanstha Ka Member" {...field} disabled={isReadOnly} className="font-normal text-primary"/></FormControl><FormMessage /></FormItem>
                         )}/>
                         <FormField control={control} name="referral" render={({ field }) => (
-                            <FormItem>{renderLabel('Referral', 'referral')}<FormControl><Input placeholder="e.g. Local Volunteer" {...field} disabled={isReadOnly} className="font-normal text-primary"/></FormControl><FormMessage /></FormItem>
+                            <FormItem>{renderLabel('Zariye (Referral)', 'referral')}<FormControl><Input placeholder="Kiske Zariye Aya" {...field} disabled={isReadOnly} className="font-normal text-primary"/></FormControl><FormMessage /></FormItem>
                         )}/>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <FormField control={control} name="donationDate" render={({ field }) => (
-                            <FormItem>{renderLabel('Entry Date', 'donationDate')}<FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl><FormMessage /></FormItem>
+                            <FormItem>{renderLabel('Tareekh', 'donationDate')}<FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl><FormMessage /></FormItem>
                         )}/>
                         <FormField control={control} name="status" render={({ field }) => (
-                            <FormItem>{renderLabel('Verification Status', 'status')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="Pending" className="font-normal">Pending</SelectItem><SelectItem value="Verified" className="font-normal text-primary">Verified</SelectItem><SelectItem value="Canceled" className="font-normal text-destructive">Canceled</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                            <FormItem>{renderLabel('Tasdeeq Ka Status', 'status')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="Pending" className="font-normal">Adhoora (Pending)</SelectItem><SelectItem value="Verified" className="font-normal text-primary">Pakka (Verified)</SelectItem><SelectItem value="Canceled" className="font-normal text-destructive">Khatam (Canceled)</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                         )}/>
                     </div>
                     
                     <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm">
                         <FormField control={control} name="isTypeSplit" render={({ field }) => (
-                            <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value === true} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Split Contribution By Designation</FormLabel></FormItem>
+                            <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value === true} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Atiyat Ko Alag Alag Chunein (Split)</FormLabel></FormItem>
                         )}/>
                     {isTypeSplit ? (
                         <div className="space-y-4 animate-fade-in-up">
@@ -513,11 +513,11 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                                 <ScrollArea className="w-full">
                                     <div className="min-w-[600px]">
                                         <Table>
-                                            <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Designation</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Allocation (₹)</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight pr-4 uppercase">Action</TableHead></TableRow></TableHeader>
+                                            <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Kism (Type)</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Raqam (₹)</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight pr-4 uppercase">Action</TableHead></TableRow></TableHeader>
                                             <TableBody>
                                                 {typeSplitFields.map((field, index) => (
                                                     <TableRow key={field.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
-                                                        <TableCell><FormField control={control} name={`typeSplit.${index}.category`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none h-8"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select>)}/>{watch(`typeSplit.${index}.category`) === 'Zakat' && <FormField control={control} name={`typeSplit.${index}.forFundraising`} render={({ field: checkboxField }) => (<div className="flex items-center space-x-2 px-2 mt-1"><Checkbox checked={checkboxField.value === true} onCheckedChange={(val) => checkboxField.onChange(val === true)} disabled={isReadOnly}/><Label className="text-[8px] font-bold text-muted-foreground tracking-tighter uppercase">Goal Contribution</Label></div>)}/>}</TableCell>
+                                                        <TableCell><FormField control={control} name={`typeSplit.${index}.category`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none h-8"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select>)}/>{watch(`typeSplit.${index}.category`) === 'Zakat' && <FormField control={control} name={`typeSplit.${index}.forFundraising`} render={({ field: checkboxField }) => (<div className="flex items-center space-x-2 px-2 mt-1"><Checkbox checked={checkboxField.value === true} onCheckedChange={(val) => checkboxField.onChange(val === true)} disabled={isReadOnly}/><Label className="text-[8px] font-bold text-muted-foreground tracking-tighter uppercase">Shamil Karein Fundraising Mein</Label></div>)}/>}</TableCell>
                                                         <TableCell><FormField control={control} name={`typeSplit.${index}.amount`} render={({ field }) => (<FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="border-none bg-transparent shadow-none font-bold font-mono h-8 text-primary"/></FormControl>)}/></TableCell>
                                                         <TableCell className="text-right pr-4">{!isReadOnly && <Button type="button" variant="ghost" size="icon" onClick={() => removeTypeSplit(index)} disabled={typeSplitFields.length <= 1} className="h-8 w-8 text-destructive transition-transform hover:scale-110"><Trash2 className="h-4 w-4"/></Button>}</TableCell>
                                                     </TableRow>
@@ -528,18 +528,18 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                                     <ScrollBar orientation="horizontal" className="h-1.5" />
                                 </ScrollArea>
                             </div>
-                            {!isReadOnly && <Button type="button" variant="outline" size="sm" onClick={() => appendTypeSplit({ category: 'Sadaqah', amount: 0, forFundraising: false })} className="font-bold text-primary border-primary/20 transition-transform active:scale-95 shadow-none w-full"><Plus className="mr-2 h-4 w-4"/> Add Split Designation</Button>}
+                            {!isReadOnly && <Button type="button" variant="outline" size="sm" onClick={() => appendTypeSplit({ category: 'Sadaqah', amount: 0, forFundraising: false })} className="font-bold text-primary border-primary/20 transition-transform active:scale-95 shadow-none w-full"><Plus className="mr-2 h-4 w-4"/> Ek Aur Category Jodein</Button>}
                         </div>
                     ) : (
                         <div className="pl-6 space-y-4">
                             <FormField control={control} name={`typeSplit.0.category`} render={({ field }) => (
-                                <FormItem>{renderLabel('Primary Designation', 'typeSplit.0.category')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
+                                <FormItem>{renderLabel('Maqsad (Category)', 'typeSplit.0.category')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                             )}/>
                             {watch(`typeSplit.0.category`) === 'Zakat' && (
                                 <FormField control={control} name={`typeSplit.0.forFundraising`} render={({ field: checkboxField }) => (
                                     <div className="flex items-center space-x-2 animate-fade-in-zoom">
                                         <Checkbox id="goal-contribution-single" checked={checkboxField.value === true} onCheckedChange={(val) => checkboxField.onChange(val === true)} disabled={isReadOnly}/>
-                                        <Label htmlFor="goal-contribution-single" className="text-xs font-bold text-primary tracking-tight cursor-pointer">Include In Fundraising Progress</Label>
+                                        <Label htmlFor="goal-contribution-single" className="text-xs font-bold text-primary tracking-tight cursor-pointer">Ise Fundraising Ke Target Mein Giniye</Label>
                                     </div>
                                 )}/>
                             )}
@@ -549,13 +549,13 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                     
                     {watch(`typeSplit.0.category`) === 'Monthly Contribution' && (
                     <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm animate-fade-in-zoom">
-                        <h3 className="text-sm font-bold text-primary tracking-tight">Contribution Cycle</h3>
+                        <h3 className="text-sm font-bold text-primary tracking-tight">Mahina Waari Cycle</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <FormField control={control} name="contributionFromDate" render={({ field }) => (
-                            <FormItem>{renderLabel('Period Start', 'contributionFromDate')}<FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl></FormItem>
+                            <FormItem>{renderLabel('Kab Se', 'contributionFromDate')}<FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl></FormItem>
                         )}/>
                         <FormField control={control} name="contributionToDate" render={({ field }) => (
-                            <FormItem>{renderLabel('Period End', 'contributionToDate')}<FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl></FormItem>
+                            <FormItem>{renderLabel('Kab Tak', 'contributionToDate')}<FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl></FormItem>
                         )}/>
                         </div>
                     </div>
@@ -563,7 +563,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
 
                     <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-white shadow-sm">
                         <FormField control={control} name="isSplit" render={({ field }) => (
-                            <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value === true} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Allocate Across Multiple Initiatives</FormLabel></FormItem>
+                            <FormItem className="flex flex-row items-center space-x-2 space-y-0"><FormControl><Checkbox checked={field.value === true} onCheckedChange={(val) => field.onChange(val === true)} disabled={isReadOnly}/></FormControl><FormLabel className="font-bold text-primary cursor-pointer tracking-tight">Ise Ek Se Zyada Jagah Baantein</FormLabel></FormItem>
                         )}/>
                     {isLinkSplit ? (
                         <div className="space-y-4 animate-fade-in-up">
@@ -571,11 +571,11 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                                 <ScrollArea className="w-full">
                                     <div className="min-w-[600px]">
                                         <Table>
-                                            <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Target Initiative</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Value (₹)</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight pr-4 uppercase">Action</TableHead></TableRow></TableHeader>
+                                            <TableHeader className="bg-primary/5"><TableRow><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Tehreek / Appeal</TableHead><TableHead className="font-bold text-primary text-[9px] tracking-tight uppercase">Raqam (₹)</TableHead><TableHead className="text-right font-bold text-primary text-[9px] tracking-tight pr-4 uppercase">Action</TableHead></TableRow></TableHeader>
                                             <TableBody>
                                                 {linkSplitFields.map((field, index) => (
                                                     <TableRow key={field.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
-                                                        <TableCell><FormField control={control} name={`linkSplit.${index}.linkId`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none min-w-[200px] h-8"><SelectValue placeholder="Select Target..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectGroup><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2">Campaigns</SelectLabel>{filteredCampaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`} className="font-normal">{c.name}</SelectItem>)}</SelectGroup><SelectGroup><Separator className="my-1 opacity-10"/><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2">Individual Appeals</SelectLabel>{filteredLeads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`} className="font-normal">{l.name}</SelectItem>)}</SelectGroup></SelectContent></Select>)}/></TableCell>
+                                                        <TableCell><FormField control={control} name={`linkSplit.${index}.linkId`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none min-w-[200px] h-8"><SelectValue placeholder="Chunein..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectGroup><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 uppercase">Tehreekein (Campaigns)</SelectLabel>{filteredCampaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`} className="font-normal">{c.name}</SelectItem>)}</SelectGroup><SelectGroup><Separator className="my-1 opacity-10"/><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 uppercase">Aappeals (Leads)</SelectLabel>{filteredLeads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`} className="font-normal">{l.name}</SelectItem>)}</SelectGroup></SelectContent></Select>)}/></TableCell>
                                                         <TableCell><FormField control={control} name={`linkSplit.${index}.amount`} render={({ field }) => (<FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="border-none bg-transparent shadow-none font-bold font-mono h-8 text-primary"/></FormControl>)}/></TableCell>
                                                         <TableCell className="text-right pr-4">{!isReadOnly && <Button type="button" variant="ghost" size="icon" onClick={() => removeLinkSplit(index)} disabled={linkSplitFields.length <= 1} className="h-8 w-8 text-destructive transition-transform hover:scale-110"><Trash2 className="h-4 w-4"/></Button>}</TableCell>
                                                     </TableRow>
@@ -586,21 +586,21 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                                     <ScrollBar orientation="horizontal" className="h-1.5" />
                                 </ScrollArea>
                             </div>
-                            {!isReadOnly && <Button type="button" variant="outline" size="sm" onClick={() => appendLinkSplit({ linkId: 'unlinked', amount: 0 })} className="font-bold text-primary border-primary/20 transition-transform active:scale-95 shadow-none w-full"><Plus className="mr-2 h-4 w-4"/> Allocate Another Initiative</Button>}
+                            {!isReadOnly && <Button type="button" variant="outline" size="sm" onClick={() => appendLinkSplit({ linkId: 'unlinked', amount: 0 })} className="font-bold text-primary border-primary/20 transition-transform active:scale-95 shadow-none w-full"><Plus className="mr-2 h-4 w-4"/> Doosri Jagah Jodein</Button>}
                         </div>
                     ) : (
                         <FormField control={control} name={`linkSplit.0.linkId`} render={({ field }) => (
-                            <FormItem className="pl-6">{renderLabel('Primary Allocation Target', 'linkSplit.0.linkId')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold text-primary"><SelectValue placeholder="No Initiative Linked"/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="unlinked" className="font-normal italic">-- Institutional General Fund --</SelectItem><SelectGroup><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2">Campaigns</SelectLabel>{filteredCampaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`} className="font-normal">{c.name}</SelectItem>)}</SelectGroup><SelectGroup><Separator className="my-1 opacity-10"/><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2">Individual Appeals</SelectLabel>{filteredLeads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`} className="font-normal">{l.name}</SelectItem>)}</SelectGroup></SelectContent></Select></FormItem>
+                            <FormItem className="pl-6">{renderLabel('Kahan Lagana Hai', 'linkSplit.0.linkId')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold text-primary"><SelectValue placeholder="Abhi Kahin Nahi Linked"/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="unlinked" className="font-normal italic">-- Sanstha Ka General Fund --</SelectItem><SelectGroup><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 uppercase">Tehreekein</SelectLabel>{filteredCampaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`} className="font-normal">{c.name}</SelectItem>)}</SelectGroup><SelectGroup><Separator className="my-1 opacity-10"/><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 uppercase">Appeals</SelectLabel>{filteredLeads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`} className="font-normal">{l.name}</SelectItem>)}</SelectGroup></SelectContent></Select></FormItem>
                         )}/>
                     )}
                     </div>
 
                     <div className="space-y-6">
                         <FormField control={control} name="comments" render={({ field }) => (
-                            <FormItem>{renderLabel('Donor Verification Comments', 'comments')}<FormControl><Textarea placeholder="Verification Notes Provided By The Donor..." {...field} disabled={isReadOnly} className="font-normal text-primary" /></FormControl></FormItem>
+                            <FormItem>{renderLabel('Donor Ki Kuch Baat', 'comments')}<FormControl><Textarea placeholder="Vetting Notes..." {...field} disabled={isReadOnly} className="font-normal text-primary" /></FormControl></FormItem>
                         )}/>
                         <FormField control={control} name="suggestions" render={({ field }) => (
-                            <FormItem>{renderLabel('Internal Staff Vetting Suggestions', 'suggestions')}<FormControl><Textarea placeholder="Staff Suggestions For Future Vetting..." {...field} disabled={isReadOnly} className="font-normal text-primary" /></FormControl></FormItem>
+                            <FormItem>{renderLabel('Worker Ke Mashware', 'suggestions')}<FormControl><Textarea placeholder="Aage Ke Liye Mashware..." {...field} disabled={isReadOnly} className="font-normal text-primary" /></FormControl></FormItem>
                         )}/>
                     </div>
                 </div>
@@ -610,10 +610,10 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
 
         {!isReadOnly && (
             <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 sticky bottom-0 bg-background/95 backdrop-blur-sm p-4 border-t z-50 shrink-0">
-                <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="w-full sm:w-auto font-bold text-primary border-primary/20 transition-transform active:scale-95">Discard Changes</Button>
+                <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="w-full sm:w-auto font-bold text-primary border-primary/20 transition-transform active:scale-95">Radd Karein</Button>
                 <Button type="submit" disabled={isSubmitting || (!!donation && !isDirty)} className="w-full sm:w-auto font-bold px-10 transition-transform active:scale-95 shadow-md">
                     {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
-                    {isSubmitting ? 'Securing Data...' : 'Confirm & Secure Record'}
+                    {isSubmitting ? 'Mehfooz Ho Raha Hai...' : 'Record Pakka Karein'}
                 </Button>
             </div>
         )}
