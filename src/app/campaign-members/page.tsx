@@ -48,7 +48,6 @@ import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { parseISO, startOfDay, endOfDay } from 'date-fns';
-import { NewsTicker } from '@/components/news-ticker';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -69,7 +68,7 @@ const getPriorityIcon = (priority?: string) => {
     case 'High': return <ArrowUpCircle className="h-4 w-4 text-orange-500" />;
     case 'Medium': return <MinusCircle className="h-4 w-4 text-yellow-500" />;
     case 'Low': return <ArrowDownCircle className="h-4 w-4 text-blue-500" />;
-    default: return <MinusCircle className="h-4 w-4 text-yellow-500" />;
+    default: return null;
   }
 };
 
@@ -104,8 +103,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
             className={cn(
                 "flex flex-col overflow-hidden h-full group border-primary/10 bg-white shadow-none animate-fade-in-up transition-all duration-500",
                 isUrgent && "animate-urgent-pulse border-red-500/50",
-                isHigh && "animate-high-pulse border-orange-500/50",
-                isCompleted && "hover:shadow-none hover:-translate-y-0"
+                isHigh && "animate-high-pulse border-orange-500/50"
             )}
             style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
             onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}
@@ -261,7 +259,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
           <CardFooter className="p-2 border-t bg-primary/5">
             <Button asChild className="w-full text-xs font-bold tracking-tight shadow-none" size="sm" variant="ghost">
                 <Link href={`/campaign-members/${campaign.id}/summary`}>
-                    View Detailed Summary
+                    View Summary
                 </Link>
             </Button>
           </CardFooter>
@@ -290,7 +288,6 @@ export default function CampaignPage() {
 
   const { userProfile, isLoading: isProfileLoading } = useSession();
 
-  // Full Internal Access: Fetch ALL campaigns for management
   const allCampaignsRef = useMemoFirebase(() => firestore ? collection(firestore, 'campaigns') : null, [firestore]);
   const donationsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
 
@@ -354,7 +351,7 @@ export default function CampaignPage() {
     const docRef = doc(firestore, 'campaigns', campaignToUpdate.id);
     const updateData = { [field]: value };
     updateDoc(docRef, updateData)
-        .then(() => toast({ title: 'Success', description: `Campaign Details Updated.`, variant: 'success' }))
+        .then(() => toast({ title: 'Success', description: `Status Updated Successfully.`, variant: 'success' }))
         .catch((serverError: any) => {
             const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData });
             errorEmitter.emit('permission-error', permissionError);
@@ -385,32 +382,14 @@ export default function CampaignPage() {
   }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter, authenticityFilter, visibilityFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => {
-    // 1. Critical Section
-    const priorityItems = filteredCampaigns.filter(c => (c.priority === 'Urgent' || c.priority === 'High') && c.status !== 'Completed' && c.authenticityStatus === 'Verified' && c.publicVisibility === 'Published');
-    
-    // 2. Ongoing Section (Verified & Published)
-    const ongoingItems = filteredCampaigns.filter(c => 
-        (c.status === 'Active' || c.status === 'Upcoming') && 
-        c.authenticityStatus === 'Verified' && 
-        c.publicVisibility === 'Published' &&
-        !priorityItems.find(p => p.id === c.id)
-    );
+    const published = filteredCampaigns.filter(c => c.publicVisibility === 'Published');
+    const internal = filteredCampaigns.filter(c => c.publicVisibility !== 'Published');
 
-    // 3. Private & Hold Section (Verified but visibility Hold, or Pending Verification)
-    const privateItems = filteredCampaigns.filter(c => 
-        c.status !== 'Completed' && 
-        (c.publicVisibility !== 'Published' || c.authenticityStatus !== 'Verified') &&
-        !priorityItems.find(p => p.id === c.id)
-    );
-
-    // 4. Archive
-    const completedItems = filteredCampaigns.filter(c => c.status === 'Completed');
+    const sortByPriority = (list: any[]) => [...list].sort((a, b) => (priorityWeight[b.priority || 'Medium'] || 0) - (priorityWeight[a.priority || 'Medium'] || 0));
 
     return [
-      { id: 'priority', title: 'Critical Initiatives (Urgent & High)', icon: AlertTriangle, items: priorityItems, color: 'text-red-600' },
-      { id: 'ongoing', title: 'Public & Ongoing Campaigns', icon: Clock, items: ongoingItems, color: 'text-primary' },
-      { id: 'private', title: 'Private & Draft Hub (Internal)', icon: FileLock, items: privateItems, color: 'text-amber-600' },
-      { id: 'completed', title: 'Institutional Archive (Completed)', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
+      { id: 'published', title: 'Published Campaigns', icon: Globe, items: sortByPriority(published), color: 'text-primary' },
+      { id: 'internal', title: 'Internal & Draft Hub', icon: FileLock, items: sortByPriority(internal), color: 'text-amber-600' }
     ].filter(s => s.items.length > 0);
   }, [filteredCampaigns]);
 
@@ -468,12 +447,12 @@ export default function CampaignPage() {
           </CardHeader>
           <CardContent className="p-4 sm:p-6 bg-card/30">
             {sections.length > 0 ? (
-              <Accordion type="multiple" defaultValue={['priority', 'ongoing', 'private']} className="space-y-6">
+              <Accordion type="multiple" defaultValue={['published', 'internal']} className="space-y-6">
                 {sections.map(section => (
                   <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-none overflow-hidden">
                     <AccordionTrigger className="hover:no-underline py-5 group font-bold">
                       <div className="flex items-center gap-4">
-                        <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'priority' ? 'bg-red-600' : section.id === 'private' ? 'bg-amber-600' : 'bg-primary')} />
+                        <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'published' ? 'bg-primary' : 'bg-amber-600')} />
                         <div className="flex items-center gap-2">
                             <section.icon className={cn("h-5 w-5", section.color || "text-primary")} />
                             <span className={cn("text-lg font-bold tracking-tight", section.color || "text-primary")}>{section.title}</span>

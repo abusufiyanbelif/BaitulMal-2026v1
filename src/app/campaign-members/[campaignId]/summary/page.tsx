@@ -327,7 +327,7 @@ export default function CampaignSummaryPage() {
 
     if (isLoadingPage) return <BrandedLoader />;
 
-    if (!campaign) return <p className="text-center mt-20 text-primary font-bold">Maazrat, Tehreek Nahi Mili.</p>;
+    if (!campaign) return <p className="text-center mt-20 text-primary font-bold">Campaign Record Not Found.</p>;
 
     const handleFieldChange = (field: keyof Campaign, value: any) => {
         setEditableCampaign(p => ({...p, [field]: value}));
@@ -414,11 +414,11 @@ export default function CampaignSummaryPage() {
         };
         updateDoc(campaignDocRef, saveData)
             .catch(async (serverError: any) => { errorEmitter.emit('permission-error', new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: saveData })); })
-            .finally(() => { toast({ title: 'Kamyabi', description: 'Tehreek Ki Tafseel Save Ho Gayi.', variant: 'success' }); setEditMode(false); });
+            .finally(() => { toast({ title: 'Success', description: 'Campaign Details Secured.', variant: 'success' }); setEditMode(false); });
     };
     
     const handleDownload = (format: 'png' | 'pdf') => {
-        download(format, { contentRef: summaryRef, documentTitle: `Tehreek Khulasa: ${campaign?.name}`, documentName: `campaign-summary-${campaignId}`, brandingSettings, paymentSettings });
+        download(format, { contentRef: summaryRef, documentTitle: `Campaign Summary: ${campaign?.name}`, documentName: `campaign-summary-${campaignId}`, brandingSettings, paymentSettings });
     };
 
     const handleViewImage = (url: string, name: string) => {
@@ -433,7 +433,7 @@ export default function CampaignSummaryPage() {
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
              <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95 text-primary">
-                <Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Sab Tehreekein</Link></Button>
+                <Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> All Campaigns</Link></Button>
             </div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2 animate-fade-in-up">
                  <div className="space-y-1">
@@ -454,21 +454,21 @@ export default function CampaignSummaryPage() {
                         <>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild><Button variant="outline" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md border-primary/20 text-primary"><Download className="mr-2 h-4 w-4" /> Download</Button></DropdownMenuTrigger>
-                                <DropdownMenuContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown"><DropdownMenuItem onClick={() => handleDownload('png')} className="font-normal text-primary">Tasveer (PNG)</DropdownMenuItem><DropdownMenuItem onClick={() => handleDownload('pdf')} className="font-normal text-primary">PDF File</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
-                            <Button onClick={() => { if(campaign) setShareDialogData({ title: `Tehreek: ${campaign.name}`, text: campaign.description || '', url: window.location.origin + `/campaign-public/${campaignId}/summary` }); setIsShareDialogOpen(true); }} variant="outline" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md border-primary/20 text-primary"><Share2 className="mr-2 h-4 w-4" /> Share</Button>
+                                <DropdownMenuContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown"><DropdownMenuItem onClick={() => handleDownload('png')} className="font-normal text-primary">Image (PNG)</DropdownMenuItem><DropdownMenuItem onClick={() => handleDownload('pdf')} className="font-normal text-primary">PDF File</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
+                            <Button onClick={() => { if(campaign) setShareDialogData({ title: `Campaign: ${campaign.name}`, text: campaign.description || '', url: window.location.origin + `/campaign-public/${campaignId}/summary` }); setIsShareDialogOpen(true); }} variant="outline" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md border-primary/20 text-primary"><Share2 className="mr-2 h-4 w-4" /> Share</Button>
                         </>
                     )}
-                    {canUpdateSummary && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)} className="font-bold border-primary/20 text-primary transition-transform">Radd Karein</Button><Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Save className="mr-2 h-4 w-4" /> Pakka Karein</Button></div> ) )}
+                    {canUpdateSummary && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)} className="font-bold border-primary/20 text-primary transition-transform">Cancel</Button><Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Save className="mr-2 h-4 w-4" /> Secure Changes</Button></div> ) )}
                 </div>
             </div>
 
              <div className="mb-6 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 <ScrollArea className="w-full">
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 w-full bg-transparent p-0 border-b border-primary/10 pb-4">
-                        <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Khulasa</Link>
+                        <Link href={`/campaign-members/${campaignId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}/summary` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
                         {canReadRation && ( <Link href={`/campaign-members/${campaignId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/campaign-members/${campaignId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Item Lists</Link> )}
-                        {canReadBeneficiaries && ( <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Mustahiqeen</Link> )}
-                         {canReadDonations && ( <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Atiyat Log</Link> )}
+                        {canReadBeneficiaries && ( <Link href={`/campaign-members/${campaignId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/campaign-members/${campaignId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Beneficiaries</Link> )}
+                         {canReadDonations && ( <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donation Log</Link> )}
                     </div>
                     <ScrollBar orientation="horizontal" className="hidden" />
                 </ScrollArea>
@@ -477,7 +477,7 @@ export default function CampaignSummaryPage() {
             <div className="space-y-6" ref={summaryRef}>
                 <Card className="animate-fade-in-up shadow-md border-primary/10 bg-white transition-all duration-300 hover:shadow-xl">
                     <CardHeader className="bg-primary/5 border-b">
-                        <CardTitle className="font-bold text-primary tracking-tight uppercase">Tehreek Ki Tafseel</CardTitle>
+                        <CardTitle className="font-bold text-primary tracking-tight uppercase">Campaign Details</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6 text-foreground font-normal">
                         {editMode ? (
@@ -515,9 +515,9 @@ export default function CampaignSummaryPage() {
                                         <Select value={editableCampaign.status} onValueChange={(value) => handleFieldChange('status', value)}>
                                             <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
-                                                <SelectItem value="Upcoming" className="font-normal">Aane Wali</SelectItem>
-                                                <SelectItem value="Active" className="font-bold text-primary">Chalu</SelectItem>
-                                                <SelectItem value="Completed" className="font-normal">Puri Ho Gayi</SelectItem>
+                                                <SelectItem value="Upcoming" className="font-normal">Upcoming</SelectItem>
+                                                <SelectItem value="Active" className="font-bold text-primary">Active</SelectItem>
+                                                <SelectItem value="Completed" className="font-normal">Completed</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -526,11 +526,11 @@ export default function CampaignSummaryPage() {
                                         <Select value={editableCampaign.authenticityStatus} onValueChange={(value) => handleFieldChange('authenticityStatus', value)}>
                                             <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
-                                                <SelectItem value="Pending Verification" className="font-normal">Baki Hai</SelectItem>
-                                                <SelectItem value="Verified" className="font-bold text-primary">Tasdeeq Ho Gayi</SelectItem>
-                                                <SelectItem value="On Hold" className="font-normal">Ruki Hui</SelectItem>
+                                                <SelectItem value="Pending Verification" className="font-normal">Pending</SelectItem>
+                                                <SelectItem value="Verified" className="font-bold text-primary">Verified</SelectItem>
+                                                <SelectItem value="On Hold" className="font-normal">On Hold</SelectItem>
                                                 <SelectItem value="Rejected" className="font-bold text-destructive">Rejected</SelectItem>
-                                                <SelectItem value="Need More Details" className="font-bold">Info Chahiye</SelectItem>
+                                                <SelectItem value="Need More Details" className="font-bold">Needs Details</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -542,17 +542,17 @@ export default function CampaignSummaryPage() {
                                             <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
                                                 <SelectItem value="Hold" className="font-normal">Hold (Private)</SelectItem>
-                                                <SelectItem value="Ready to Publish" className="font-normal">Taiyar Hai</SelectItem>
+                                                <SelectItem value="Ready to Publish" className="font-normal">Ready to Publish</SelectItem>
                                                 <SelectItem value="Published" className="font-bold text-primary">Published</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Maqsad Amount (₹)</Label><Input type="number" value={editableCampaign.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md border-primary/10" /></div>
+                                    <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Target Amount (₹)</Label><Input type="number" value={editableCampaign.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md border-primary/10" /></div>
                                 </div>
-                                <div><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Maqsad / Description</Label><Textarea id="description" value={editableCampaign.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1 text-foreground font-normal transition-all duration-300 focus:shadow-md border-primary/10" rows={4} /></div>
+                                <div><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Description</Label><Textarea id="description" value={editableCampaign.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1 text-foreground font-normal transition-all duration-300 focus:shadow-md border-primary/10" rows={4} /></div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Shuruat</Label><Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="text-foreground font-bold border-primary/10" /></div>
-                                    <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Khatam</Label><Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="text-foreground font-bold border-primary/10" /></div>
+                                    <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Start Date</Label><Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="text-foreground font-bold border-primary/10" /></div>
+                                    <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">End Date</Label><Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="text-foreground font-bold border-primary/10" /></div>
                                 </div>
                                 <div className="space-y-2">
                                     <Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Allowed Donation Types For Goal</Label>
@@ -585,8 +585,8 @@ export default function CampaignSummaryPage() {
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                 </div>
                                 <div className="space-y-2 font-normal text-foreground">
-                                    <Label className="text-muted-foreground text-[10px] font-bold tracking-tight uppercase">Tehreek Khulasa</Label>
-                                    <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{campaign?.description || 'Tafseel Maujood Nahi Hai.'}</p>
+                                    <Label className="text-muted-foreground text-[10px] font-bold tracking-tight uppercase">Campaign Description</Label>
+                                    <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{campaign?.description || 'No detailed description available.'}</p>
                                 </div>
                             </>
                         )}
@@ -598,8 +598,8 @@ export default function CampaignSummaryPage() {
                         {isVisible('funding_progress') && (
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
                                 <CardHeader className="bg-primary/5 border-b">
-                                    <CardTitle className="flex items-center gap-2 font-bold text-primary uppercase"><Target className="h-6 w-6 text-primary" /> Atiyat Ka Maqsad</CardTitle>
-                                    <CardDescription className="font-normal text-primary/70">Verified Atiyat Is Tehreek Ke Liye.</CardDescription>
+                                    <CardTitle className="flex items-center gap-2 font-bold text-primary uppercase"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
+                                    <CardDescription className="font-normal text-primary/70">Verified Donations For This Campaign.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="pt-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center font-normal">
@@ -612,14 +612,14 @@ export default function CampaignSummaryPage() {
                                                     </RadialBarChart>
                                                 </ChartContainer>
                                             ) : <Skeleton className="w-full h-full rounded-full" />}
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold tracking-tight uppercase">Pura Hua</span></div>
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold tracking-tight uppercase">Funded</span></div>
                                         </div>
                                         <div className="space-y-4 text-center md:text-left text-primary font-bold animate-fade-in-up" style={{ animationDelay: '300ms' }}>
                                             <div 
                                                 className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
                                                 onClick={() => router.push(`/campaign-members/${campaignId}/donations?status=Verified`)}
                                             >
-                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase group-hover:text-primary transition-colors opacity-60">Maqsad Tak Pahonche</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase group-hover:text-primary transition-colors opacity-60">Raised For Goal</p>
                                                 <p className="text-3xl font-bold text-primary font-mono flex items-center justify-center md:justify-start gap-2">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
                                             </div>
                                             <div className="transition-transform hover:translate-x-1 duration-300">
@@ -630,7 +630,7 @@ export default function CampaignSummaryPage() {
                                                 className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
                                                 onClick={() => router.push(`/campaign-members/${campaignId}/donations?status=Verified`)}
                                             >
-                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase group-hover:text-primary transition-colors opacity-60">Kul Jama Raqam</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase group-hover:text-primary transition-colors opacity-60">Grand Total Received</p>
                                                 <p className="text-2xl font-bold text-primary font-mono flex items-center justify-center md:justify-start gap-2">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
                                             </div>
                                         </div>
@@ -646,7 +646,7 @@ export default function CampaignSummaryPage() {
                                     onClick={() => router.push(`/campaign-members/${campaignId}/beneficiaries`)}
                                 >
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-[10px] font-bold text-primary tracking-tight uppercase">Mustahiqeen</CardTitle>
+                                        <CardTitle className="text-[10px] font-bold text-primary tracking-tight uppercase">Beneficiaries</CardTitle>
                                         <Users className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                                     </CardHeader>
                                     <CardContent>
@@ -684,10 +684,10 @@ export default function CampaignSummaryPage() {
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col">
                                 <CardHeader className="bg-primary/5 border-b shrink-0">
                                     <CardTitle className="font-bold text-primary tracking-tight uppercase">
-                                        Zarooratmand Group
+                                        Beneficiary Categories
                                     </CardTitle>
                                     <CardDescription className="font-normal text-primary/70">
-                                        Requirement Ka Batwara Family Ke Hisab Se.
+                                        Breakdown Of Requirements Based On Family Size.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="p-0 flex-1 overflow-hidden">
@@ -697,10 +697,10 @@ export default function CampaignSummaryPage() {
                                                 <Table>
                                                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                         <TableRow>
-                                                            <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Group Naam</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Log</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Kit Raqam</TableHead>
-                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Kul Jama</TableHead>
+                                                            <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Category Name</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Beneficiaries</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Kit Amount</TableHead>
+                                                            <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Total Amount</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
@@ -716,7 +716,7 @@ export default function CampaignSummaryPage() {
                                                     {beneficiaryGroups.length > 0 && (
                                                         <TableFooter className="bg-primary/5 border-t font-bold">
                                                             <TableRow>
-                                                                <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Tehreek Ki Kul Zaroorat</TableCell>
+                                                                <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Total Requirement</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-primary text-base">₹{calculatedRequirementTotal.toLocaleString('en-IN')}</TableCell>
                                                             </TableRow>
                                                         </TableFooter>
@@ -733,7 +733,7 @@ export default function CampaignSummaryPage() {
                         <div className="grid gap-6 lg:grid-cols-2 font-normal">
                             {isVisible('fund_totals') && (
                                 <Card className="shadow-sm border-primary/5 bg-white transition-all duration-300 hover:shadow-lg">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Designation Ke Hisab Se Atiyat</CardTitle></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Fund Allocation By Type</CardTitle></CardHeader>
                                     <CardContent className="space-y-2 pt-6 font-normal text-foreground">
                                         {donationCategories.map(cat => (
                                             <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded">
@@ -749,24 +749,24 @@ export default function CampaignSummaryPage() {
 
                             {isVisible('zakat_utilization') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-lg">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Zakat Fund Ka Kharch</CardTitle><CardDescription className="font-normal text-primary/70">Zakat Ke Atiyat Ki Tafseel.</CardDescription></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Zakat Fund Utilization</CardTitle><CardDescription className="font-normal text-primary/70">Tracking Of Designated Zakat Resources.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 pt-6 font-normal text-foreground">
                                         <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded">
-                                            <span className="text-muted-foreground tracking-tight font-normal uppercase text-[10px]">Kul Zakat Jama</span>
+                                            <span className="text-muted-foreground tracking-tight font-normal uppercase text-[10px]">Total Zakat Collected</span>
                                             <span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span>
                                         </div>
                                         <Separator className="bg-primary/10" />
                                         <div className="pl-4 border-l-2 border-dashed border-primary/20 space-y-2 py-2 font-bold">
                                             <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
-                                                <span className="text-muted-foreground tracking-tight font-normal uppercase text-[10px]">Mustahiqeen Ko Di Gayi</span>
+                                                <span className="text-muted-foreground tracking-tight font-normal uppercase text-[10px]">Allocated For Support</span>
                                                 <span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span>
                                             </div>
                                             <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
-                                                <span className="font-normal opacity-60 uppercase text-[9px]">Di Gayi (Given)</span>
+                                                <span className="font-normal opacity-60 uppercase text-[9px]">Disbursed (Given)</span>
                                                 <span className="font-mono text-primary font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span>
                                             </div>
                                             <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
-                                                <span className="font-normal opacity-60 uppercase text-[9px]">Baki Hai (Verified)</span>
+                                                <span className="font-normal opacity-60 uppercase text-[9px]">Reserved (Verified)</span>
                                                 <span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span>
                                             </div>
                                         </div>
@@ -786,14 +786,14 @@ export default function CampaignSummaryPage() {
 
                 {isVisible('documents') && (
                     <Card className="animate-fade-in-up bg-white shadow-sm border-primary/10 transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '400ms' }}>
-                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Zaroori Kagzat (Documents)</CardTitle></CardHeader>
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Required Documents</CardTitle></CardHeader>
                         <CardContent className="font-normal text-primary pt-6">
                         {editMode ? (
                                 <div className="space-y-4 animate-fade-in-zoom">
-                                    <Label className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Naye Kagzat Upload Karein</Label>
+                                    <Label className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Upload New Artifacts</Label>
                                     <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf" />
                                     <Separator className="bg-primary/10 my-6" />
-                                    <Label className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Purane Kagzat Manage Karein</Label>
+                                    <Label className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Manage Existing Documents</Label>
                                     {existingDocuments.length > 0 ? (
                                         <div className="space-y-3 font-normal text-foreground">
                                             {existingDocuments.map((doc) => (
@@ -808,7 +808,7 @@ export default function CampaignSummaryPage() {
                                                 </div>
                                             ))}
                                         </div>
-                                    ) : <p className="text-[10px] text-muted-foreground font-bold tracking-tight italic opacity-60 uppercase">Koi Document Nahi Hai.</p>}
+                                    ) : <p className="text-[10px] text-muted-foreground font-bold tracking-tight italic opacity-60 uppercase">No Documents Attached.</p>}
                                 </div>
                             ) : (
                                 campaign?.documents && campaign?.documents.length > 0 ? (
@@ -836,7 +836,7 @@ export default function CampaignSummaryPage() {
                                             );
                                         })}
                                     </div>
-                                ) : <p className="text-[10px] text-muted-foreground font-bold tracking-tight italic opacity-60 uppercase">Koi Document Maujood Nahi Hai.</p>
+                                ) : <p className="text-[10px] text-muted-foreground font-bold tracking-tight italic opacity-60 uppercase">No Verification Artifacts Available.</p>
                             )}
                         </CardContent>
                     </Card>
@@ -844,7 +844,7 @@ export default function CampaignSummaryPage() {
 
                 <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                     <CardHeader className="bg-primary/5 border-b pb-3">
-                        <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight uppercase"><History className="h-4 w-4 opacity-40"/> Tasdeeq Ka Record</CardTitle>
+                        <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight uppercase"><History className="h-4 w-4 opacity-40"/> Organization Audit Log</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-6 space-y-4">
                         <div className="flex items-start gap-3">
@@ -852,7 +852,7 @@ export default function CampaignSummaryPage() {
                             <div>
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Registry Entry Secured</p>
                                 <p className="text-xs font-bold text-primary">{campaign?.createdByName || 'System'}</p>
-                                <p className="text-[9px] font-mono opacity-60">ID: {campaign?.createdById || 'Baitulmal'}</p>
+                                <p className="text-[9px] font-mono opacity-60">ID: {campaign?.createdById || 'Organization'}</p>
                             </div>
                         </div>
                         {campaign?.createdAt && (

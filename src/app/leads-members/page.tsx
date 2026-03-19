@@ -27,7 +27,6 @@ import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { parseISO, startOfDay, endOfDay } from 'date-fns';
-import { NewsTicker } from '@/components/news-ticker';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -44,9 +43,9 @@ import Autoplay from "embla-carousel-autoplay";
 const getPriorityIcon = (priority?: string) => {
   const p = priority || 'Medium';
   switch (p) {
-    case 'Urgent': return <AlertTriangle className="h-5 w-5 text-red-600" />;
-    case 'High': return <ArrowUpCircle className="h-5 w-5 text-orange-500" />;
-    case 'Medium': return <MinusCircle className="h-5 w-5 text-yellow-500" />;
+    case 'Urgent': return <AlertTriangle className="h-4 w-4 text-red-600" />;
+    case 'High': return <ArrowUpCircle className="h-4 w-4 text-orange-500" />;
+    case 'Medium': return <MinusCircle className="h-4 w-4 text-yellow-500" />;
     case 'Low': return <ArrowDownCircle className="h-4 w-4 text-blue-500" />;
     default: return null;
   }
@@ -86,8 +85,7 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
             className={cn(
                 "flex flex-col overflow-hidden h-full group border-primary/10 bg-white shadow-none animate-fade-in-up transition-all duration-500",
                 isUrgent && "animate-urgent-pulse border-red-500/50",
-                isHigh && "animate-high-pulse border-orange-500/50",
-                isCompleted && "hover:shadow-none hover:-translate-y-0"
+                isHigh && "animate-high-pulse border-orange-500/50"
             )}
             style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
             onClick={() => router.push(`/leads-members/${lead.id}/summary`)}
@@ -239,9 +237,9 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
             </div>
         </CardContent>
          <CardFooter className="p-2 border-t bg-primary/5">
-            <Button asChild className="w-full text-xs font-bold tracking-tight hover:bg-primary hover:text-white text-primary shadow-none" size="sm" variant="ghost">
+            <Button asChild className="w-full text-xs font-bold tracking-tight text-primary shadow-none" size="sm" variant="ghost">
                 <Link href={`/leads-members/${lead.id}/summary`}>
-                    View Detailed Summary
+                    View Summary
                 </Link>
             </Button>
         </CardFooter>
@@ -270,7 +268,6 @@ export default function LeadPage() {
   
   const { userProfile, isLoading: isProfileLoading } = useSession();
 
-  // Management Fetch: Get all leads internally
   const allLeadsRef = useMemoFirebase(() => firestore ? collection(firestore, 'leads') : null, [firestore]);
   const donationsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
 
@@ -363,32 +360,14 @@ export default function LeadPage() {
   }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, authenticityFilter, visibilityFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => {
-    // 1. Critical Items (Verified & Published)
-    const priorityItems = filteredLeads.filter(l => (l.priority === 'Urgent' || l.priority === 'High') && l.status !== 'Completed' && l.authenticityStatus === 'Verified' && l.publicVisibility === 'Published');
-    
-    // 2. Ongoing Items (Verified & Published)
-    const ongoingItems = filteredLeads.filter(l => 
-        (l.status === 'Active' || l.status === 'Upcoming') && 
-        l.authenticityStatus === 'Verified' && 
-        l.publicVisibility === 'Published' &&
-        !priorityItems.find(p => p.id === l.id)
-    );
+    const published = filteredLeads.filter(l => l.publicVisibility === 'Published');
+    const internal = filteredLeads.filter(l => l.publicVisibility !== 'Published');
 
-    // 3. Private & Hold Items (Verified but visibility Hold, or Pending Verification)
-    const privateItems = filteredLeads.filter(l => 
-        l.status !== 'Completed' && 
-        (l.publicVisibility !== 'Published' || l.authenticityStatus !== 'Verified') &&
-        !priorityItems.find(p => p.id === l.id)
-    );
-
-    // 4. Closed Archive
-    const completedItems = filteredLeads.filter(l => l.status === 'Completed');
+    const sortByPriority = (list: any[]) => [...list].sort((a, b) => (priorityWeight[b.priority || 'Medium'] || 0) - (priorityWeight[a.priority || 'Medium'] || 0));
 
     return [
-      { id: 'priority', title: 'Critical Appeals (Urgent & High)', icon: AlertTriangle, items: priorityItems, color: 'text-red-600' },
-      { id: 'ongoing', title: 'Public & Ongoing Leads', icon: Clock, items: ongoingItems, color: 'text-primary' },
-      { id: 'private', title: 'Private & Draft Hub (Internal)', icon: FileLock, items: privateItems, color: 'text-amber-600' },
-      { id: 'completed', title: 'Closed Appeals (Archive)', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
+      { id: 'published', title: 'Published Appeals', icon: Globe, items: sortByPriority(published), color: 'text-primary' },
+      { id: 'internal', title: 'Internal & Draft Hub', icon: FileLock, items: sortByPriority(internal), color: 'text-amber-600' }
     ].filter(s => s.items.length > 0);
   }, [filteredLeads]);
 
@@ -442,12 +421,12 @@ export default function LeadPage() {
           </CardHeader>
           <CardContent className="p-4 sm:p-6 bg-card/30">
             {(sections && sections.length > 0) ? (
-              <Accordion type="multiple" defaultValue={['priority', 'ongoing', 'private']} className="space-y-6">
+              <Accordion type="multiple" defaultValue={['published', 'internal']} className="space-y-6">
                 {sections.map(section => (
                   <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-none overflow-hidden">
                     <AccordionTrigger className="hover:no-underline py-5 group font-bold">
                       <div className="flex items-center gap-4">
-                        <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'priority' ? 'bg-red-600' : section.id === 'private' ? 'bg-amber-600' : 'bg-primary')} />
+                        <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'published' ? 'bg-primary' : 'bg-amber-600')} />
                         <div className="flex items-center gap-2">
                             <section.icon className={cn("h-5 w-5", section.color || "text-primary")} />
                             <span className={cn("text-lg font-bold tracking-tight", section.color || "text-primary")}>{section.title}</span>

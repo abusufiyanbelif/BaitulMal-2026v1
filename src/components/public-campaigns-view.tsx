@@ -36,7 +36,7 @@ const getPriorityIcon = (priority?: string) => {
     case 'High': return <ArrowUpCircle className="h-4 w-4 text-orange-500" />;
     case 'Medium': return <MinusCircle className="h-4 w-4 text-yellow-500" />;
     case 'Low': return <ArrowDownCircle className="h-4 w-4 text-blue-500" />;
-    default: return <MinusCircle className="h-4 w-4 text-yellow-500" />;
+    default: return null;
   }
 };
 
@@ -90,7 +90,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                                 </div>
                                 <CardHeader className="p-4">
                                     <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 text-primary">
-                                        {campaign.campaignNumber && <span className="text-primary font-bold">#{campaign.campaignNumber} </span>}{campaign.name}
+                                        {campaign.name}
                                     </CardTitle>
                                     <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground uppercase">{campaign.startDate} To {campaign.endDate}</CardDescription>
                                 </CardHeader>
@@ -156,7 +156,6 @@ export function PublicCampaignsView() {
   const [statusFilter, setStatusFilter] = useState('All');
   const [categoryFilter, setCategoryFilter] = useState('All');
   const [selectedYear, setSelectedYear] = useState('All');
-  const [selectedMonth, setSelectedMonth] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
   const { isLoading, campaignsWithProgress, leadsWithProgress, recentDonationsFormatted } = usePublicData();
@@ -236,10 +235,9 @@ export function PublicCampaignsView() {
         });
     } else if (selectedYear !== 'All') {
         items = items.filter(c => c.startDate?.startsWith(selectedYear));
-        if (selectedMonth !== 'All') items = items.filter(c => c.startDate?.split('-')[1] === selectedMonth);
     }
     return items.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-  }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter, dateRange, selectedYear, selectedMonth]);
+  }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => {
     const priorityItems = filteredCampaigns.filter(c => (c.priority === 'Urgent' || c.priority === 'High') && c.status !== 'Completed');
@@ -247,9 +245,9 @@ export function PublicCampaignsView() {
     const completedItems = filteredCampaigns.filter(c => c.status === 'Completed');
 
     return [
-      { id: 'priority', title: 'Critical Initiatives (Urgent & High Priority)', icon: AlertTriangle, items: priorityItems, color: 'text-red-600' },
-      { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Campaigns', icon: Clock, items: ongoingItems, color: 'text-primary' },
-      { id: 'completed', title: 'Project Archive (Completed)', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
+      { id: 'priority', title: 'Critical Initiatives', icon: AlertTriangle, items: priorityItems, color: 'text-red-600' },
+      { id: 'ongoing_upcoming', title: 'Ongoing Campaigns', icon: Clock, items: ongoingItems, color: 'text-primary' },
+      { id: 'completed', title: 'Project Archive', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
     ].filter(s => s.items.length > 0);
   }, [filteredCampaigns]);
 

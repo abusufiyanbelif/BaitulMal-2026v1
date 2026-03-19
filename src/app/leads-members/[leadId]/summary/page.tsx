@@ -403,13 +403,13 @@ export default function LeadSummaryPage() {
                 errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadDocRef.path, operation: 'update', requestResourceData: saveData })); 
             })
             .finally(() => { 
-                toast({ title: 'Kamyabi', description: 'Appeal Ki Tafseel Save Ho Gayi.', variant: 'success' }); 
+                toast({ title: 'Success', description: 'Appeal Summary Secured.', variant: 'success' }); 
                 setEditMode(false); 
             });
     };
     
     const handleDownload = (format: 'png' | 'pdf') => {
-        download(format, { contentRef: summaryRef, documentTitle: `Appeal Khulasa: ${lead?.name}`, documentName: `lead-summary-${leadId}`, brandingSettings, paymentSettings });
+        download(format, { contentRef: summaryRef, documentTitle: `Appeal Summary: ${lead?.name}`, documentName: `lead-summary-${leadId}`, brandingSettings, paymentSettings });
     };
 
     const handleViewImage = (url: string, name: string) => {
@@ -429,12 +429,12 @@ export default function LeadSummaryPage() {
 
     if (isLoadingPage) return <BrandedLoader />;
 
-    if (!lead) return <p className="text-center mt-20 text-primary font-bold">Maazrat, Yeh Appeal Nahi Mili.</p>;
+    if (!lead) return <p className="text-center mt-20 text-primary font-bold">Lead Record Not Found.</p>;
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
              <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95 text-primary">
-                <Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Sab Appeals</Link></Button>
+                <Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> All Appeals</Link></Button>
             </div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2 animate-fade-in-up">
                  <div className="space-y-1">
@@ -461,7 +461,7 @@ export default function LeadSummaryPage() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
                                     <DropdownMenuItem onClick={() => handleDownload('png')} className="font-normal text-primary">
-                                        Tasveer (PNG)
+                                        Image (PNG)
                                     </DropdownMenuItem>
                                     <DropdownMenuItem onClick={() => handleDownload('pdf')} className="font-normal text-primary">
                                         PDF File
@@ -473,7 +473,7 @@ export default function LeadSummaryPage() {
                             </Button>
                         </>
                     )}
-                    {canUpdateSummary && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)} className="font-bold border-primary/20 text-primary transition-transform">Radd Karein</Button><Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Save className="mr-2 h-4 w-4" /> Pakka Karein</Button></div>) )}
+                    {canUpdateSummary && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)} className="font-bold border-primary/20 text-primary transition-transform">Cancel</Button><Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Save className="mr-2 h-4 w-4" /> Secure Changes</Button></div>) )}
                 </div>
             </div>
 
@@ -481,11 +481,11 @@ export default function LeadSummaryPage() {
               <ScrollArea className="w-full">
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 w-full bg-transparent p-0 border-b border-primary/10 pb-4">
                       {canReadSummary && (
-                        <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/leads-members/${leadId}/summary` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Khulasa</Link>
+                        <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/leads-members/${leadId}/summary` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
                       )}
                       <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10 active:scale-95", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Item List</Link>
-                      {canReadBeneficiaries && ( <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Mustahiqeen</Link> )}
-                      {canReadDonations && ( <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Atiyat Log</Link> )}
+                      {canReadBeneficiaries && ( <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Beneficiaries</Link> )}
+                      {canReadDonations && ( <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donation Log</Link> )}
                   </div>
                   <ScrollBar orientation="horizontal" className="hidden" />
               </ScrollArea>
@@ -493,7 +493,7 @@ export default function LeadSummaryPage() {
 
             <div className="space-y-6" ref={summaryRef}>
                 <Card className="animate-fade-in-up shadow-md border-primary/10 bg-white transition-all duration-300 hover:shadow-xl">
-                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary tracking-tight uppercase">Appeal Ki Tafseel</CardTitle></CardHeader>
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary tracking-tight uppercase">Appeal Details</CardTitle></CardHeader>
                         <CardContent className="space-y-4 pt-6 text-foreground font-normal">
                             {editMode ? (
                                 <div className="space-y-6 font-normal animate-fade-in-zoom">
@@ -526,9 +526,9 @@ export default function LeadSummaryPage() {
                                             <Select value={editableLead.status} onValueChange={(value) => handleFieldChange('status', value)}>
                                                 <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                                 <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
-                                                    <SelectItem value="Upcoming" className="font-normal">Aane Wali</SelectItem>
-                                                    <SelectItem value="Active" className="font-bold text-primary">Chalu</SelectItem>
-                                                    <SelectItem value="Completed" className="font-normal">Puri Ho Gayi</SelectItem>
+                                                    <SelectItem value="Upcoming" className="font-normal">Upcoming</SelectItem>
+                                                    <SelectItem value="Active" className="font-bold text-primary">Active</SelectItem>
+                                                    <SelectItem value="Completed" className="font-normal">Completed</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -537,11 +537,11 @@ export default function LeadSummaryPage() {
                                             <Select value={editableLead.authenticityStatus} onValueChange={(value) => handleFieldChange('authenticityStatus', value)}>
                                                 <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                                 <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
-                                                    <SelectItem value="Pending Verification" className="font-normal">Baki Hai</SelectItem>
-                                                    <SelectItem value="Verified" className="font-bold text-primary">Tasdeeq Ho Gayi</SelectItem>
-                                                    <SelectItem value="On Hold" className="font-normal">Ruki Hui</SelectItem>
+                                                    <SelectItem value="Pending Verification" className="font-normal">Pending</SelectItem>
+                                                    <SelectItem value="Verified" className="font-bold text-primary">Verified</SelectItem>
+                                                    <SelectItem value="On Hold" className="font-normal">On Hold</SelectItem>
                                                     <SelectItem value="Rejected" className="font-bold text-destructive">Rejected</SelectItem>
-                                                    <SelectItem value="Need More Details" className="font-normal">Info Chahiye</SelectItem>
+                                                    <SelectItem value="Need More Details" className="font-normal">Needs Details</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -553,7 +553,7 @@ export default function LeadSummaryPage() {
                                                 <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                                 <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
                                                     <SelectItem value="Hold" className="font-normal">Hold (Private)</SelectItem>
-                                                    <SelectItem value="Ready to Publish" className="font-normal">Taiyar Hai</SelectItem>
+                                                    <SelectItem value="Ready to Publish" className="font-normal">Ready to Publish</SelectItem>
                                                     <SelectItem value="Published" className="font-bold text-primary">Published</SelectItem>
                                                 </SelectContent>
                                             </Select>
@@ -576,14 +576,14 @@ export default function LeadSummaryPage() {
                                         </div>
                                     )}
 
-                                    <div><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Objective Summary</Label><Textarea id="description" value={editableLead.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} rows={4} className="text-primary font-normal transition-all duration-300 focus:shadow-md border-primary/10" /></div>
+                                    <div><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Description</Label><Textarea id="description" value={editableLead.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} rows={4} className="text-primary font-normal transition-all duration-300 focus:shadow-md border-primary/10" /></div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Required Amount (₹)</Label><Input type="number" value={editableLead.requiredAmount || 0} onChange={(e) => handleFieldChange('requiredAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md border-primary/10" /></div>
-                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Maqsad Amount (₹)</Label><Input type="number" value={editableLead.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md border-primary/10" /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Target Amount (₹)</Label><Input type="number" value={editableLead.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md border-primary/10" /></div>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Shuruat</Label><Input id="startDate" type="date" value={editableLead.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
-                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Khatam</Label><Input id="endDate" type="date" value={editableLead.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Start Date</Label><Input id="startDate" type="date" value={editableLead.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">End Date</Label><Input id="endDate" type="date" value={editableLead.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
                                     </div>
                                     
                                     <div className="space-y-2">
@@ -613,14 +613,14 @@ export default function LeadSummaryPage() {
                                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                     </div>
                                     <div className="space-y-2 font-normal text-foreground">
-                                        <Label className="text-muted-foreground text-[10px] font-bold tracking-tight uppercase">Khulasa (Description)</Label>
-                                        <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{lead?.description || 'Tafseel Nahi Hai.'}</p>
+                                        <Label className="text-muted-foreground text-[10px] font-bold tracking-tight uppercase">Description</Label>
+                                        <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{lead?.description || 'No description provided.'}</p>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-6">
                                         <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm"><p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Purpose</p><p className="font-bold tracking-tight text-primary text-sm">{lead?.purpose} {lead?.category && `(${lead.category})`}</p></div>
                                         <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm">
                                             <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">
-                                                Atiyat Maqsad
+                                                Target Goal
                                             </p>
                                             <p className="font-bold font-mono text-primary text-sm">₹{(fundingData?.targetAmount || 0).toLocaleString('en-IN')}</p>
                                         </div>
@@ -654,8 +654,8 @@ export default function LeadSummaryPage() {
                         {isVisible('funding_progress') && (
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
                                 <CardHeader className="bg-primary/5 border-b">
-                                    <CardTitle className="flex items-center gap-2 font-bold text-primary uppercase"><Target className="h-6 w-6 text-primary" /> Atiyat Ka Maqsad</CardTitle>
-                                    <CardDescription className="font-normal text-primary/70">Verified Atiyat Is Case Ke Liye.</CardDescription>
+                                    <CardTitle className="flex items-center gap-2 font-bold text-primary uppercase"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
+                                    <CardDescription className="font-normal text-primary/70">Verified Donations For This Individual Case.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="pt-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -675,7 +675,7 @@ export default function LeadSummaryPage() {
                                                 className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
                                                 onClick={() => router.push(`/leads-members/${leadId}/donations?status=Verified`)}
                                             >
-                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase group-hover:text-primary transition-colors opacity-60">Maqsad Tak Pahonche</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase group-hover:text-primary transition-colors opacity-60">Raised For Goal</p>
                                                 <p className="text-3xl font-bold text-primary font-mono flex items-center justify-center md:justify-start gap-2">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
                                             </div>
                                             <div className="transition-transform hover:translate-x-1 duration-300">
@@ -702,7 +702,7 @@ export default function LeadSummaryPage() {
                                     onClick={() => router.push(`/leads-members/${leadId}/beneficiaries`)}
                                 >
                                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                        <CardTitle className="text-[10px] font-bold text-primary tracking-tight uppercase">Mustahiqeen</CardTitle>
+                                        <CardTitle className="text-[10px] font-bold text-primary tracking-tight uppercase">Beneficiaries</CardTitle>
                                         <Users className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
                                     </CardHeader>
                                     <CardContent>
@@ -740,10 +740,10 @@ export default function LeadSummaryPage() {
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col">
                                 <CardHeader className="bg-primary/5 border-b shrink-0">
                                     <CardTitle className="font-bold text-primary tracking-tight uppercase">
-                                        Zarooratmand Group
+                                        Requirement Allocation
                                     </CardTitle>
                                     <CardDescription className="font-normal text-primary/70">
-                                        Raqam Ka Batwara Case Ke Mutabiq.
+                                        Breakdown Of Resource Requirements For This Individual Case.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="p-0 flex-1 overflow-hidden">
@@ -754,10 +754,10 @@ export default function LeadSummaryPage() {
                                                     <Table>
                                                         <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                             <TableRow>
-                                                                <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Group Naam</TableHead>
-                                                                <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Log</TableHead>
-                                                                <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Kit Raqam</TableHead>
-                                                                <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Kul Jama</TableHead>
+                                                                <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Category Name</TableHead>
+                                                                <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Beneficiaries</TableHead>
+                                                                <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Kit Amount</TableHead>
+                                                                <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Total Amount</TableHead>
                                                             </TableRow>
                                                         </TableHeader>
                                                         <TableBody>
@@ -773,7 +773,7 @@ export default function LeadSummaryPage() {
                                                         {beneficiaryGroups.length > 0 && (
                                                             <TableFooter className="bg-primary/5 border-t font-bold">
                                                                 <TableRow>
-                                                                    <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Kul Requirement</TableCell>
+                                                                    <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Total Requirement</TableCell>
                                                                     <TableCell className="text-right font-mono font-bold text-primary text-base">₹{calculatedRequirementTotal.toLocaleString('en-IN')}</TableCell>
                                                                 </TableRow>
                                                             </TableFooter>
@@ -783,7 +783,7 @@ export default function LeadSummaryPage() {
                                                     <Table>
                                                         <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                             <TableRow>
-                                                                <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Kaam Ki Tafseel</TableHead>
+                                                                <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Item Description</TableHead>
                                                                 <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Quantity</TableHead>
                                                                 <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Unit Price</TableHead>
                                                                 <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Total Cost</TableHead>
@@ -801,7 +801,7 @@ export default function LeadSummaryPage() {
                                                         </TableBody>
                                                         <TableFooter className="bg-primary/5 border-t font-bold">
                                                             <TableRow>
-                                                                <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Ek Unit Ka Kharch</TableCell>
+                                                                <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight uppercase">Single Unit Total</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-primary text-lg">
                                                                     ₹{(lead?.itemCategories?.[0]?.items.reduce((sum, i) => sum + i.price, 0) || 0).toLocaleString('en-IN')}
                                                                 </TableCell>
@@ -820,7 +820,7 @@ export default function LeadSummaryPage() {
                         <div className="grid gap-6 lg:grid-cols-2 font-normal">
                             {isVisible('fund_totals') && (
                                 <Card className="shadow-sm border-primary/5 bg-white transition-all duration-300 hover:shadow-lg">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Category Ke Hisab Se Atiyat</CardTitle></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Donations By Designation</CardTitle></CardHeader>
                                     <CardContent className="space-y-2 pt-6 font-normal text-foreground">
                                         {donationCategories.map(cat => (
                                             <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded">
@@ -836,24 +836,24 @@ export default function LeadSummaryPage() {
 
                             {isVisible('zakat_utilization') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-lg">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Zakat Fund Ka Kharch</CardTitle><CardDescription className="font-normal text-primary/70">Zakat Ke Atiyat Ki Tafseel.</CardDescription></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Zakat Fund Tracking</CardTitle><CardDescription className="font-normal text-primary/70">Verified Allocation Of Zakat Resources.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 pt-6 font-normal text-foreground">
                                         <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded">
-                                            <span className="text-muted-foreground tracking-tight font-normal uppercase text-[10px]">Kul Zakat Jama</span>
+                                            <span className="text-muted-foreground tracking-tight font-normal uppercase text-[10px]">Total Zakat Received</span>
                                             <span className="font-bold font-mono">₹{fundingData.amountsByCategory.Zakat.toLocaleString('en-IN')}</span>
                                         </div>
                                         <Separator className="bg-primary/10" />
                                         <div className="pl-4 border-l-2 border-dashed border-primary/20 space-y-2 py-2 font-bold">
                                             <div className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
-                                                <span className="text-muted-foreground tracking-tight font-normal uppercase text-[10px]">Zaroorat Ke Liye Allocated</span>
+                                                <span className="text-muted-foreground tracking-tight font-normal uppercase text-[10px]">Allocated To Case</span>
                                                 <span className="font-bold font-mono">₹{fundingData.zakatAllocated.toLocaleString('en-IN')}</span>
                                             </div>
                                             <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
-                                                <span className="font-normal opacity-60 uppercase text-[9px]">Di Gayi (Given)</span>
+                                                <span className="font-normal opacity-60 uppercase text-[9px]">Disbursed (Given)</span>
                                                 <span className="font-mono text-primary font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span>
                                             </div>
                                             <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
-                                                <span className="font-normal opacity-60 uppercase text-[9px]">Baki Hai (Verified)</span>
+                                                <span className="font-normal opacity-60 uppercase text-[9px]">Pending (Verified)</span>
                                                 <span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span>
                                             </div>
                                         </div>
@@ -872,7 +872,7 @@ export default function LeadSummaryPage() {
                         <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 font-normal text-primary">
                             {isVisible('donations_by_category') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Atiyat Category Ke Hisab Se</CardTitle></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Donations By Category</CardTitle></CardHeader>
                                     <CardContent className="p-0 sm:p-6">
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
@@ -921,14 +921,14 @@ export default function LeadSummaryPage() {
 
                 {isVisible('documents') && (
                     <Card className="animate-fade-in-up bg-white shadow-sm border-primary/10 transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '400ms' }}>
-                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Zaroori Kagzat (Documents)</CardTitle></CardHeader>
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Verification Artifacts</CardTitle></CardHeader>
                         <CardContent className="font-normal text-primary pt-6">
                         {editMode ? (
                                 <div className="space-y-4 animate-fade-in-zoom">
-                                    <Label className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Naye Kagzat Upload Karein</Label>
+                                    <Label className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Upload New Documents</Label>
                                     <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf" />
                                     <Separator className="bg-primary/10 my-6" />
-                                    <Label className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Purane Kagzat Manage Karein</Label>
+                                    <Label className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Manage Current Documents</Label>
                                     {existingDocuments.length > 0 ? (
                                         <div className="space-y-3 font-normal text-foreground">
                                             {existingDocuments.map((doc) => (
@@ -943,7 +943,7 @@ export default function LeadSummaryPage() {
                                                 </div>
                                             ))}
                                         </div>
-                                    ) : <p className="text-[10px] text-muted-foreground font-bold tracking-tight italic uppercase opacity-60">Koi Document Nahi Hai.</p>}
+                                    ) : <p className="text-[10px] text-muted-foreground font-bold tracking-tight italic uppercase opacity-60">No Documents Found.</p>}
                                 </div>
                             ) : (
                                 lead?.documents && lead?.documents.length > 0 ? (
@@ -971,7 +971,7 @@ export default function LeadSummaryPage() {
                                             );
                                         })}
                                     </div>
-                                ) : <p className="text-[10px] text-muted-foreground font-bold tracking-tight italic uppercase opacity-60">Koi Document Maujood Nahi Hai.</p>
+                                ) : <p className="text-[10px] text-muted-foreground font-bold tracking-tight italic uppercase opacity-60">No Verification Artifacts Available.</p>
                             )}
                         </CardContent>
                     </Card>
@@ -979,7 +979,7 @@ export default function LeadSummaryPage() {
 
                 <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                     <CardHeader className="bg-primary/5 border-b pb-3">
-                        <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight uppercase"><History className="h-4 w-4 opacity-40"/> Tasdeeq Ka Record</CardTitle>
+                        <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight uppercase"><History className="h-4 w-4 opacity-40"/> Organization Audit Log</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-6 space-y-4">
                         <div className="flex items-start gap-3">
@@ -987,7 +987,7 @@ export default function LeadSummaryPage() {
                             <div>
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Registry Entry Secured</p>
                                 <p className="text-xs font-bold text-primary">{lead?.createdByName || 'System'}</p>
-                                <p className="text-[9px] font-mono opacity-60">ID: {lead?.createdById || 'Baitulmal'}</p>
+                                <p className="text-[9px] font-mono opacity-60">ID: {lead?.createdById || 'Organization'}</p>
                             </div>
                         </div>
                         {lead?.createdAt && (
