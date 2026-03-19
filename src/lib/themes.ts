@@ -11,6 +11,7 @@ export interface ThemeSuggestion {
 export const THEME_SUGGESTIONS: ThemeSuggestion[] = [
   { id: 'bms3-a', name: 'BMS3 A (Modern Green)', isDark: false },
   { id: 'bms3', name: 'BMS3 (Official Deep Green)', isDark: false },
+  { id: 'steel-blue', name: 'Steel Blue (Institutional Reference)', isDark: false },
   { id: 'green-warm', name: 'Green Warm (Earthy Tint)', isDark: false },
   { id: 'bmss-brand-warm', name: 'Warm Orange Tone', isDark: false },
   { id: 'ocean-blue', name: 'Ocean Blue (Professional)', isDark: false },

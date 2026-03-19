@@ -54,7 +54,8 @@ import {
     HandHelping,
     ShieldCheck,
     ChevronRight,
-    Calendar
+    Calendar,
+    Clock
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
@@ -510,7 +511,7 @@ export default function CampaignSummaryPage() {
                                     </div>
                                     <div className="space-y-1">
                                         <Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Operational Status</Label>
-                                        <Select value={campaign?.status} onValueChange={(value) => handleFieldChange('status', value)}>
+                                        <Select value={editableCampaign.status} onValueChange={(value) => handleFieldChange('status', value)}>
                                             <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
                                                 <SelectItem value="Upcoming" className="font-normal">Upcoming</SelectItem>
@@ -924,6 +925,31 @@ export default function CampaignSummaryPage() {
                         </CardContent>
                     </Card>
                 )}
+
+                <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+                    <CardHeader className="bg-primary/5 border-b pb-3">
+                        <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight uppercase"><History className="h-4 w-4 opacity-40"/> Institutional Audit Log</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-6 space-y-4">
+                        <div className="flex items-start gap-3">
+                            <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Clock className="h-3.5 w-3.5"/></div>
+                            <div>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Registry Entry Secured</p>
+                                <p className="text-xs font-bold text-primary">{campaign?.createdByName || 'System'}</p>
+                                <p className="text-[9px] font-mono opacity-60">ID: {campaign?.createdById || 'Institutional'}</p>
+                            </div>
+                        </div>
+                        {campaign?.createdAt && (
+                            <div className="flex items-start gap-3">
+                                <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Calendar className="h-3.5 w-3.5"/></div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Creation Timestamp</p>
+                                    <p className="text-xs font-bold text-primary">{(campaign.createdAt as any).toDate?.().toLocaleString() || new Date(campaign.createdAt as any).toLocaleString()}</p>
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
 
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />

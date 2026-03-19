@@ -46,6 +46,48 @@
     --chart-8: 24 95% 53%;
   }
 
+  [data-theme='steel-blue'] {
+    --background: 210 40% 98%;
+    --foreground: 221 83% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 221 83% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 221 83% 20%;
+    --primary: 221 83% 33%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 100% 96%;
+    --secondary-foreground: 221 83% 20%;
+    --muted: 210 40% 98%;
+    --muted-foreground: 215 20% 50%;
+    --accent: 210 100% 96%;
+    --accent-foreground: 221 83% 20%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 221 83% 33%;
+    
+    --table-header-bg: 210 100% 94%;
+    --table-header-fg: 221 83% 25%;
+    --table-row-hover: 210 100% 98%;
+
+    --badge-eligible-bg: 210 100% 92%;
+    --badge-eligible-fg: 221 83% 25%;
+    --badge-given-bg: 210 40% 90%;
+    --badge-given-fg: 221 83% 20%;
+    --badge-active-bg: 210 100% 96%;
+    --badge-active-fg: 221 83% 33%;
+
+    --chart-1: 221 83% 33%;
+    --chart-2: 199 89% 48%;
+    --chart-3: 210 100% 94%;
+    --chart-4: 221 83% 25%;
+    --chart-5: 215 20% 50%;
+    --chart-6: 221 83% 40%;
+    --chart-7: 210 100% 90%;
+    --chart-8: 221 83% 15%;
+  }
+
   [data-theme='midnight-dark'], .dark {
     --background: 240 10% 4%;
     --foreground: 0 0% 98%;

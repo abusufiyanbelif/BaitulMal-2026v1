@@ -55,7 +55,10 @@ import {
     HandHelping,
     ShieldCheck,
     LifeBuoy,
-    ChevronRight
+    ChevronRight,
+    History,
+    Clock,
+    Calendar
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
@@ -481,7 +484,7 @@ export default function LeadSummaryPage() {
                         <Link href={`/leads-members/${leadId}/summary`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname === `/leads-members/${leadId}/summary` ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Summary</Link>
                       )}
                       <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10 active:scale-95", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Item List</Link>
-                      {canReadBeneficiaries && ( <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link> )}
+                      {canReadBeneficiaries && ( <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Beneficiary List</Link> )}
                       {canReadDonations && ( <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link> )}
                   </div>
                   <ScrollBar orientation="horizontal" className="hidden" />
@@ -490,7 +493,7 @@ export default function LeadSummaryPage() {
 
             <div className="space-y-6" ref={summaryRef}>
                 <Card className="animate-fade-in-up shadow-md border-primary/10 bg-white transition-all duration-300 hover:shadow-xl">
-                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary tracking-tight uppercase">Lead Overview</CardTitle></CardHeader>
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary tracking-tight uppercase">Appeal Objectives</CardTitle></CardHeader>
                         <CardContent className="space-y-4 pt-6 text-foreground font-normal">
                             {editMode ? (
                                 <div className="space-y-6 font-normal animate-fade-in-zoom">
@@ -506,7 +509,7 @@ export default function LeadSummaryPage() {
                                             <Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Purpose Type</Label>
                                             <Select value={editableLead.purpose} onValueChange={(val) => handleFieldChange('purpose', val)}>
                                                 <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
-                                                <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id} className="font-bold">{p.name}</SelectItem>)}</SelectContent>
+                                                <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id} className="font-normal">{p.name}</SelectItem>)}</SelectContent>
                                             </Select>
                                         </div>
                                         <div className="space-y-1">
@@ -514,13 +517,13 @@ export default function LeadSummaryPage() {
                                             <Select value={editableLead.priority} onValueChange={(val) => handleFieldChange('priority', val)}>
                                                 <SelectTrigger className="font-bold text-primary border-primary/10"><SelectValue/></SelectTrigger>
                                                 <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
-                                                    {priorityLevels.map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}
+                                                    {priorityLevels.map(p => <SelectItem key={p} value={p} className="font-normal">{p}</SelectItem>)}
                                                 </SelectContent>
                                             </Select>
                                         </div>
                                         <div className="space-y-1">
                                             <Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Operational Status</Label>
-                                            <Select value={lead.status} onValueChange={(value) => handleFieldChange('status', value)}>
+                                            <Select value={editableLead.status} onValueChange={(value) => handleFieldChange('status', value)}>
                                                 <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                                 <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
                                                     <SelectItem value="Upcoming" className="font-normal">Upcoming</SelectItem>
@@ -559,9 +562,9 @@ export default function LeadSummaryPage() {
                                     
                                     {editableLead.purpose === 'Education' && (
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5 animate-fade-in-up border-primary/10">
-                                            <div className="space-y-1"><Label className="font-bold text-xs uppercase">Degree</Label><Select value={editableLead.degree} onValueChange={(val) => handleFieldChange('degree', val)}><SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{educationDegrees.map(d=><SelectItem key={d} value={d} className="font-bold">{d}</SelectItem>)}</SelectContent></Select></div>
-                                            <div className="space-y-1"><Label className="font-bold text-xs uppercase">Year</Label><Select value={editableLead.year} onValueChange={(val) => handleFieldChange('year', val)}><SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{educationYears.map(y=><SelectItem key={y} value={y} className="font-bold">{y}</SelectItem>)}</SelectContent></Select></div>
-                                            <div className="space-y-1"><Label className="font-bold text-xs uppercase">Semester</Label><Select value={editableLead.semester} onValueChange={(val) => handleFieldChange('semester', val)}><SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{educationSemesters.map(s=><SelectItem key={s} value={s} className="font-bold">{s}</SelectItem>)}</SelectContent></Select></div>
+                                            <div className="space-y-1"><Label className="font-bold text-xs uppercase">Degree</Label><Select value={editableLead.degree} onValueChange={(val) => handleFieldChange('degree', val)}><SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{educationDegrees.map(d=><SelectItem key={d} value={d} className="font-normal">{d}</SelectItem>)}</SelectContent></Select></div>
+                                            <div className="space-y-1"><Label className="font-bold text-xs uppercase">Year</Label><Select value={editableLead.year} onValueChange={(val) => handleFieldChange('year', val)}><SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{educationYears.map(y=><SelectItem key={y} value={y} className="font-normal">{y}</SelectItem>)}</SelectContent></Select></div>
+                                            <div className="space-y-1"><Label className="font-bold text-xs uppercase">Semester</Label><Select value={editableLead.semester} onValueChange={(val) => handleFieldChange('semester', val)}><SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{educationSemesters.map(s=><SelectItem key={s} value={s} className="font-normal">{s}</SelectItem>)}</SelectContent></Select></div>
                                         </div>
                                     )}
 
@@ -569,7 +572,7 @@ export default function LeadSummaryPage() {
                                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5 border-primary/10 animate-fade-in-up">
                                             <div className="space-y-1"><Label className="font-bold text-xs uppercase">Disease</Label><Input value={editableLead.diseaseIdentified || ''} onChange={(e) => handleFieldChange('diseaseIdentified', e.target.value)} className="font-bold text-primary border-primary/10"/></div>
                                             <div className="space-y-1"><Label className="font-bold text-xs uppercase">Stage</Label><Input value={editableLead.diseaseStage || ''} onChange={(e) => handleFieldChange('diseaseStage', e.target.value)} className="font-bold text-primary border-primary/10"/></div>
-                                            <div className="space-y-1"><Label className="font-bold text-xs uppercase">Seriousness</Label><Select value={editableLead.seriousness || ''} onValueChange={(val) => handleFieldChange('seriousness', val)}><SelectTrigger className="font-bold text-primary border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{leadSeriousnessLevels.map(l=><SelectItem key={l} value={l} className="font-bold">{l}</SelectItem>)}</SelectContent></Select></div>
+                                            <div className="space-y-1"><Label className="font-bold text-xs uppercase">Seriousness</Label><Select value={editableLead.seriousness || ''} onValueChange={(val) => handleFieldChange('seriousness', val)}><SelectTrigger className="font-bold text-primary border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{leadSeriousnessLevels.map(l=><SelectItem key={l} value={l} className="font-normal">{l}</SelectItem>)}</SelectContent></Select></div>
                                         </div>
                                     )}
 
@@ -789,7 +792,7 @@ export default function LeadSummaryPage() {
                                                             </TableRow>
                                                         </TableHeader>
                                                         <TableBody>
-                                                            {lead.itemCategories?.[0]?.items.map((item, idx) => (
+                                                            {lead?.itemCategories?.[0]?.items.map((item, idx) => (
                                                                 <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white border-b border-primary/5">
                                                                     <TableCell className="font-medium text-xs transition-transform group-hover:translate-x-1">{item.name}</TableCell>
                                                                     <TableCell className="text-right text-xs">{item.quantity} {item.quantityType}</TableCell>
@@ -979,6 +982,31 @@ export default function LeadSummaryPage() {
                         </CardContent>
                     </Card>
                 )}
+
+                <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+                    <CardHeader className="bg-primary/5 border-b pb-3">
+                        <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight uppercase"><History className="h-4 w-4 opacity-40"/> Institutional Audit Log</CardTitle>
+                    </CardHeader>
+                    <CardContent className="pt-6 space-y-4">
+                        <div className="flex items-start gap-3">
+                            <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Clock className="h-3.5 w-3.5"/></div>
+                            <div>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Registry Entry Secured</p>
+                                <p className="text-xs font-bold text-primary">{lead?.createdByName || 'System'}</p>
+                                <p className="text-[9px] font-mono opacity-60">ID: {lead?.createdById || 'Institutional'}</p>
+                            </div>
+                        </div>
+                        {lead?.createdAt && (
+                            <div className="flex items-start gap-3">
+                                <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Calendar className="h-3.5 w-3.5"/></div>
+                                <div>
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Creation Timestamp</p>
+                                    <p className="text-xs font-bold text-primary">{(lead.createdAt as any).toDate?.().toLocaleString() || new Date(lead.createdAt as any).toLocaleString()}</p>
+                                </div>
+                            </div>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
 
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />

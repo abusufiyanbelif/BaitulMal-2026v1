@@ -80,7 +80,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { DonationSearchDialog } from '@/components/donation-search-dialog';
@@ -216,6 +215,24 @@ function LeadDonationListContent() {
     setIsUnlinkDialogOpen(true);
   };
 
+  const handleUnlinkConfirm = async () => {
+    if (!donationToUnlink || !firestore || !canUpdate || !donations || !leadId) return;
+    const donationData = donations.find(d => d.id === donationToUnlink);
+    if (!donationData) return;
+    setIsUnlinkDialogOpen(false);
+    const docRef = doc(firestore, 'donations', donationToUnlink);
+    const newLinkSplit = (donationData.linkSplit || []).filter(link => link.linkId !== leadId || link.linkType !== 'lead');
+    const updateData = { linkSplit: newLinkSplit };
+    updateDoc(docRef, updateData)
+        .catch(async (serverError: any) => {
+            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData }));
+        })
+        .finally(() => {
+            toast({ title: 'Success', description: 'Donation Unlinked Successfully.', variant: 'success' });
+            setDonationToUnlink(null);
+        });
+  };
+
   const donations = useMemo(() => {
     if (!allDonations || !leadId) return [];
     return allDonations
@@ -295,24 +312,6 @@ function LeadDonationListContent() {
     setZoom(1);
     setRotation(0);
     setIsImageViewerOpen(true);
-  };
-
-  const handleUnlinkConfirm = async () => {
-    if (!donationToUnlink || !firestore || !canUpdate || !donations || !leadId) return;
-    const donationData = donations.find(d => d.id === donationToUnlink);
-    if (!donationData) return;
-    setIsUnlinkDialogOpen(false);
-    const docRef = doc(firestore, 'donations', donationToUnlink);
-    const newLinkSplit = (donationData.linkSplit || []).filter(link => link.linkId !== leadId || link.linkType !== 'lead');
-    const updateData = { linkSplit: newLinkSplit };
-    updateDoc(docRef, updateData)
-        .catch(async (serverError: any) => {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData }));
-        })
-        .finally(() => {
-            toast({ title: 'Success', description: 'Donation Unlinked Successfully.', variant: 'success' });
-            setDonationToUnlink(null);
-        });
   };
   
   const handleFormSubmit = async (data: DonationFormData) => {
@@ -639,47 +638,86 @@ function LeadDonationListContent() {
                         <div className="text-right pr-4 font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Actions</div>
                     </div>
                     <div className="w-full max-h-[70vh]">
-                        {paginatedDonations.map((donation, index) => (
-                            <div key={donation.id} className={cn("hover:bg-[hsl(var(--table-row-hover))] transition-colors cursor-pointer border-b border-primary/10 bg-white items-center", donationGridClass)} onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)}>
-                                <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
-                                    <Checkbox 
-                                        checked={selectedIds.includes(donation.id)}
-                                        onCheckedChange={() => toggleSelect(donation.id)}
-                                        className="border-primary/40 data-[state=checked]:bg-primary"
-                                    />
-                                </div>
-                                <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</div>
-                                <div className="min-w-0">
-                                    <div className="flex items-center gap-2">
-                                        <div className="font-bold text-sm text-primary truncate">{donation.donorName}</div>
-                                        {!donation.donorId && <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
+                        {paginatedDonations.map((donation, index) => {
+                            const isOpen = openRows[donation.id] || false;
+                            const isSelected = selectedIds.includes(donation.id);
+                            return (
+                                <React.Fragment key={donation.id}>
+                                    <div className={cn("hover:bg-[hsl(var(--table-row-hover))] transition-colors cursor-pointer border-b border-primary/10 bg-white items-center", donationGridClass)} onClick={() => setOpenRows(prev => ({...prev, [donation.id]: !prev[donation.id]}))}>
+                                        <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+                                            <Checkbox 
+                                                checked={isSelected}
+                                                onCheckedChange={() => toggleSelect(donation.id)}
+                                                className="border-primary/40 data-[state=checked]:bg-primary"
+                                            />
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" disabled={!donation.transactions || donation.transactions.length === 0}>{isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}</Button>
+                                            <span className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</span>
+                                        </div>
+                                        <div className="min-w-0">
+                                            <div className="flex items-center gap-2">
+                                                <div className="font-bold text-sm text-primary truncate">{donation.donorName}</div>
+                                                {!donation.donorId && <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
+                                            </div>
+                                            <div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone}</div>
+                                        </div>
+                                        <div className="text-right font-bold font-mono text-primary text-sm">₹{donation.amountForThisLead.toFixed(2)}</div>
+                                        <div className="text-xs font-normal text-primary/80 text-center">{donation.donationDate}</div>
+                                        <div className="text-center"><Badge variant="secondary" className="text-[9px] font-bold">{donation.donationType}</Badge></div>
+                                        <div className="text-center"><Badge variant={donation.status === 'Verified' ? 'eligible' : 'outline'} className="text-[9px] font-bold">{donation.status}</Badge></div>
+                                        <div className="text-right pr-4" onClick={e => e.stopPropagation()}>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
+                                                    <DropdownMenuItem onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)} className="text-primary font-normal cursor-pointer"><Eye className="mr-2 h-4 w-4 opacity-60" /> Details</DropdownMenuItem>
+                                                    {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60" /> Edit Record</DropdownMenuItem>}
+                                                    {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive font-normal"><Link2Off className="mr-2 h-4 w-4 opacity-60" /> Unlink From Project</DropdownMenuItem>}
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
                                     </div>
-                                    <div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone}</div>
-                                </div>
-                                <div className="text-right font-bold font-mono text-primary text-sm">₹{donation.amountForThisLead.toFixed(2)}</div>
-                                <div className="text-xs font-normal text-primary/80 text-center">{donation.donationDate}</div>
-                                <div className="text-center"><Badge variant="secondary" className="text-[9px] font-bold">{donation.donationType}</Badge></div>
-                                <div className="text-center"><Badge variant={donation.status === 'Verified' ? 'eligible' : 'outline'} className="text-[9px] font-bold">{donation.status}</Badge></div>
-                                <div className="text-right pr-4" onClick={e => e.stopPropagation()}>
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
-                                            <DropdownMenuItem onClick={() => router.push(`/leads-members/${leadId}/donations/${donation.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4 opacity-60" /> Details</DropdownMenuItem>
-                                            {canUpdate && <DropdownMenuItem onClick={() => handleEdit(donation)} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60" /> Edit Record</DropdownMenuItem>}
-                                            {canUpdate && <DropdownMenuItem onClick={() => handleUnlinkClick(donation.id)} className="text-destructive font-normal"><Link2Off className="mr-2 h-4 w-4 opacity-60" /> Unlink From Project</DropdownMenuItem>}
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-                            </div>
-                        ))}
-                        {paginatedDonations.length === 0 && <div className="h-32 text-center text-muted-foreground font-normal italic bg-primary/[0.02] py-20 tracking-widest">No Donation Records Found.</div>}
+                                    {isOpen && (
+                                        <div className="bg-primary/[0.01] border-b border-primary/10 p-4 animate-fade-in-up">
+                                            <div className="max-w-4xl mx-auto space-y-4">
+                                                <h4 className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-2"><IndianRupee className="h-3.5 w-3.5"/> Linked Transactions</h4>
+                                                <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
+                                                    <ScrollArea className="w-full">
+                                                        <Table>
+                                                            <TableHeader className="bg-primary/5">
+                                                                <TableRow>
+                                                                    <TableHead className="text-[9px] font-bold text-primary tracking-tight uppercase">Value (₹)</TableHead>
+                                                                    <TableHead className="text-[9px] font-bold text-primary tracking-tight uppercase">Reference</TableHead>
+                                                                    <TableHead className="text-right text-[9px] font-bold text-primary tracking-tight pr-6 uppercase">Proof</TableHead>
+                                                                </TableRow>
+                                                            </TableHeader>
+                                                            <TableBody>
+                                                                {(donation.transactions || []).map((tx) => (
+                                                                    <TableRow key={tx.id} className="hover:bg-primary/[0.02]">
+                                                                        <TableCell className="font-bold font-mono text-sm text-primary">₹{tx.amount.toFixed(2)}</TableCell>
+                                                                        <TableCell className="font-mono text-xs opacity-70 text-primary">{tx.transactionId || 'N/A'}</TableCell>
+                                                                        <TableCell className="text-right pr-6">{tx.screenshotUrl ? (<Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }} className="font-bold text-[10px] h-7 border-primary/20 text-primary hover:bg-primary/5 transition-transform active:scale-95 shadow-none"><ImageIcon className="mr-1 h-3 w-3" /> View Artifact</Button>) : <span className="text-muted-foreground text-[10px] uppercase opacity-40">None</span>}</TableCell>
+                                                                    </TableRow>
+                                                                ))}
+                                                            </TableBody>
+                                                        </Table>
+                                                        <ScrollBar orientation="horizontal" />
+                                                    </ScrollArea>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </React.Fragment>
+                            );
+                        })}
+                        {paginatedDonations.length === 0 && <div className="h-32 text-center text-muted-foreground font-normal italic bg-primary/[0.02] py-20 tracking-widest uppercase">No Donation Records Found.</div>}
                     </div>
                     <ScrollBar orientation="horizontal" />
                     <ScrollBar orientation="vertical" />
                 </ScrollArea>
             </CardContent>
             {totalPages > 1 && (
-                <CardFooter className="flex items-center justify-between border-t bg-primary/5 px-4">
+                <CardFooter className="flex items-center justify-between border-t bg-primary/5 px-4 py-4">
                     <p className="text-[10px] font-bold text-muted-foreground">Page {currentPage} Of {totalPages}</p>
                     <div className="flex items-center gap-2">
                         <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold border-primary/20 h-8 text-primary transition-transform active:scale-95">Previous</Button>
