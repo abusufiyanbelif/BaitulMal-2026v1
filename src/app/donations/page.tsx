@@ -105,19 +105,31 @@ type SortKey = keyof Donation | 'srNo';
 
 const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1100px]";
 
-function StatCard({ title, count, description, icon: Icon, delay, isCurrency = false, onClick }: { title: string, count: number | string, description: string, icon: any, delay: string, isCurrency?: boolean, onClick?: () => void }) {
+interface StatCardProps {
+    title: string;
+    count: number | string;
+    description: string;
+    icon: any;
+    delay: string;
+    isCurrency?: boolean;
+    colorClass?: string;
+    onClick?: () => void;
+}
+
+function StatCard({ title, count, description, icon: Icon, delay, isCurrency = false, colorClass, onClick }: StatCardProps) {
     return (
         <Card 
             onClick={onClick}
             className={cn(
                 "flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", 
-                onClick && "cursor-pointer hover:-translate-y-1 active:scale-95"
+                onClick && "cursor-pointer hover:-translate-y-1 active:scale-95",
+                colorClass
             )} 
             style={{ animationDelay: delay, animationFillMode: 'backwards' }}
         >
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -258,9 +270,8 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                     {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
                                                         <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated General Fund</TableCell></TableRow>
                                                     )}
-                                                </TableBody>
-                                            </Table>
-                                        </div>
+                                                </Table>
+                                            </div>
                                         <ScrollBar orientation="horizontal" className="h-1.5" />
                                     </ScrollArea>
                                 </div>

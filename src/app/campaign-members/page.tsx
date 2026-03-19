@@ -7,7 +7,7 @@ import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandH
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { doc, updateDoc, collection } from 'firebase/firestore';
-import type { Campaign } from '@/lib/types';
+import type { Campaign, Donation } from '@/lib/types';
 import { useMemo, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -307,14 +307,14 @@ export default function CampaignPage() {
         );
 
         const collected = campaignDonations.reduce((sum, d) => {
-            const link = d.linkSplit?.find(l => l.linkId === campaign.id);
+            const link = d.linkSplit?.find((l: any) => l.linkId === campaign.id);
             const amountForThis = link ? link.amount : ( (d as any).campaignId === campaign.id ? d.amount : 0 );
             
             const totalDonation = d.amount || 1;
             const proportion = amountForThis / totalDonation;
             const typeSplits = d.typeSplit || [];
             
-            const eligibleSum = typeSplits.reduce((acc, split) => {
+            const eligibleSum = typeSplits.reduce((acc: number, split: any) => {
                 const isAllowed = campaign.allowedDonationTypes?.includes(split.category);
                 const isForGoal = split.category !== 'Zakat' || split.forFundraising === true;
                 return (isAllowed && isForGoal) ? acc + split.amount : acc;

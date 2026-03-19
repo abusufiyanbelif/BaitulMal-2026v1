@@ -57,7 +57,7 @@ export default function DonationDetailsPage() {
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     
     const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
-    const [imageToView, setImageToView] = useState<string | null>(null);
+    const [imageToView, setImageToView] = useState<{ url: string; title: string } | null>(null);
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0);
 
@@ -78,7 +78,7 @@ export default function DonationDetailsPage() {
     const handleFormSubmit = async (data: DonationFormData) => {
         const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
         if (hasFilesToUpload && !auth?.currentUser) {
-            toast({ title: "Authentication error", description: "User session expired.", variant: "destructive" });
+            toast({ title: "Authentication Error", description: "User Session Expired.", variant: "destructive" });
             return;
         }
 
@@ -127,7 +127,7 @@ export default function DonationDetailsPage() {
                 const source = linkType === 'campaign' ? allCampaigns : allLeads;
                 const linkedItem = source?.find((item: Campaign | Lead) => item.id === id);
 
-                return { linkId: id, linkName: linkedItem?.name || 'Unknown initiative', linkType: linkType, amount: split.amount };
+                return { linkId: id, linkName: linkedItem?.name || 'Unknown Initiative', linkType: linkType, amount: split.amount };
             }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
 
             const processedDonationData = {
@@ -146,7 +146,7 @@ export default function DonationDetailsPage() {
             if (result.success) {
                 toast({ title: 'Success', description: result.message, variant: 'success' });
             } else {
-                toast({ title: 'Save failed', description: result.message, variant: 'destructive' });
+                toast({ title: 'Save Failed', description: result.message, variant: 'destructive' });
             }
         } catch (error: any) {
             toast({ title: 'Operation Error', description: error.message || 'An Unexpected Error Occurred.', variant: 'destructive' });
@@ -156,11 +156,11 @@ export default function DonationDetailsPage() {
     const handleShare = () => { if (donation) setIsShareDialogOpen(true); };
 
     const handleDownload = (format: 'png' | 'pdf') => {
-        download(format, { contentRef: summaryRef, documentTitle: 'Donation receipt', documentName: `donation-receipt-${donationId}`, brandingSettings, paymentSettings });
+        download(format, { contentRef: summaryRef, documentTitle: 'Donation Receipt', documentName: `donation-receipt-${donationId}`, brandingSettings, paymentSettings });
     };
 
-    const handleViewImage = (url: string) => {
-        setImageToView(url);
+    const handleViewImage = (url: string, title: string = 'Verification Artifact') => {
+        setImageToView({ url, title });
         setZoom(1);
         setRotation(0);
         setIsImageViewerOpen(true);
@@ -228,7 +228,7 @@ export default function DonationDetailsPage() {
                         <AlertCircle className="h-4 w-4 text-amber-600" />
                         <AlertTitle className="font-bold">Identity Mapping Required</AlertTitle>
                         <AlertDescription className="font-normal text-sm flex items-center justify-between gap-4 flex-wrap">
-                            This donation is currently an unlinked "dummy" record. Please map it to a verified Donor Profile.
+                            This Donation Is Currently An Unlinked "Dummy" Record. Please Map It To A Verified Donor Profile.
                             <Button variant="link" asChild className="font-bold text-amber-800 p-0 h-auto underline tracking-tighter">
                                 <Link href="/donors">Open Resolver Hub</Link>
                             </Button>
@@ -239,7 +239,7 @@ export default function DonationDetailsPage() {
                 {donation.donorId && (
                     <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-100 rounded-xl text-green-800 text-xs font-bold animate-fade-in-down">
                         <ShieldCheck className="h-4 w-4 text-green-600" />
-                        Institutional Identity Securely Mapped To Registry
+                        Donor Identity Securely Mapped To Institutional Registry.
                     </div>
                 )}
 
@@ -321,13 +321,13 @@ export default function DonationDetailsPage() {
                                     />
                                     <DetailItem label="Contact Identity" value={donation.donorPhone} isMono />
                                     <DetailItem label="Receiving Agent" value={donation.receiverName} />
-                                    <DetailItem label="Referral Logic" value={donation.referral} />
+                                    <DetailItem label="Referral Source" value={donation.referral} />
                                 </CardContent>
                             </Card>
 
                             <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                                 <CardHeader className="bg-primary/5 border-b pb-3">
-                                    <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight uppercase"><History className="h-4 w-4 opacity-40"/> Institutional Audit Log</CardTitle>
+                                    <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight uppercase"><History className="h-4 w-4 opacity-40"/> Organization Audit Log</CardTitle>
                                 </CardHeader>
                                 <CardContent className="pt-6 space-y-4">
                                     <div className="flex items-start gap-3">
@@ -366,7 +366,7 @@ export default function DonationDetailsPage() {
                                                         <TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Reference ID</TableHead>
                                                         <TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Date Record</TableHead>
                                                         <TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Sender UPI</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary text-[9px] uppercase tracking-tighter pr-6">Institutional Artifact</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary text-[9px] uppercase tracking-tighter pr-6">Validation Artifact</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
@@ -397,13 +397,13 @@ export default function DonationDetailsPage() {
 
                     {(donation.comments || donation.suggestions) && (
                         <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
-                            <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Institutional Observations</CardTitle></CardHeader>
+                            <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Organizational Observations</CardTitle></CardHeader>
                             <CardContent className="space-y-6 pt-6">
                                 {donation.comments && (
                                     <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Donor Comments</p><p className="text-sm font-normal bg-primary/[0.02] p-4 rounded-lg italic border border-primary/5 leading-relaxed">"{donation.comments}"</p></div>
                                 )}
                                 {donation.suggestions && (
-                                    <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Staff Recommendations</p><p className="text-sm font-normal bg-primary/[0.02] p-4 rounded-lg italic border border-primary/5 leading-relaxed">"{donation.suggestions}"</p></div>
+                                    <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Member Recommendations</p><p className="text-sm font-normal bg-primary/[0.02] p-4 rounded-lg italic border border-primary/5 leading-relaxed">"{donation.suggestions}"</p></div>
                                 )}
                             </CardContent>
                         </Card>
@@ -423,7 +423,7 @@ export default function DonationDetailsPage() {
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
                 <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 rounded-[12px] border-primary/10 overflow-hidden shadow-2xl animate-fade-in-zoom">
                     <DialogHeader className="px-6 py-4 bg-primary/5 border-b">
-                        <DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">{imageToView ? imageToView.title : 'Evidence Viewer'}</DialogTitle>
+                        <DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">{imageToView?.title || 'Evidence Viewer'}</DialogTitle>
                     </DialogHeader>
                     <ScrollArea className="flex-1 bg-secondary/20">
                         <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
@@ -446,8 +446,8 @@ export default function DonationDetailsPage() {
                 open={isShareDialogOpen} 
                 onOpenChange={setIsShareDialogOpen} 
                 shareData={{
-                    title: `JazakAllah Khair!`,
-                    text: `Thank you for your generous contribution of ₹${donation.amount.toFixed(2)}. May Allah accept it and reward you abundantly.`,
+                    title: `Thank You For Your Support!`,
+                    text: `JazakAllah Khair! We have secured your contribution of ₹${donation.amount.toLocaleString('en-IN')}. May Allah reward you abundantly.`,
                     url: typeof window !== 'undefined' ? window.location.href : '',
                 }} 
             />

@@ -104,13 +104,25 @@ import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1100px]";
 
-function StatCard({ title, count, description, icon: Icon, delay, isCurrency = false, onClick }: { title: string, count: number | string, description: string, icon: any, delay: string, isCurrency?: boolean, onClick?: () => void }) {
+interface StatCardProps {
+    title: string;
+    count: number | string;
+    description: string;
+    icon: any;
+    delay: string;
+    isCurrency?: boolean;
+    colorClass?: string;
+    onClick?: () => void;
+}
+
+function StatCard({ title, count, description, icon: Icon, delay, isCurrency = false, colorClass, onClick }: StatCardProps) {
     return (
         <Card 
             onClick={onClick}
             className={cn(
                 "flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", 
-                onClick && "cursor-pointer hover:-translate-y-1 active:scale-95"
+                onClick && "cursor-pointer hover:-translate-y-1 active:scale-95",
+                colorClass
             )} 
             style={{ animationDelay: delay, animationFillMode: 'backwards' }}
         >
@@ -319,7 +331,7 @@ function LeadDonationListContent() {
     
     const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
     if (hasFilesToUpload && !auth?.currentUser) {
-        toast({ title: "Authentication Error", description: "Authorization Session Expired.", variant: "destructive" });
+        toast({ title: "Authentication Error", description: "Authorization Session Expired. Please Re-Login.", variant: "destructive" });
         return;
     }
 
