@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -12,8 +11,9 @@ import {
     CheckCircle2,
     ChevronRight,
     AlertCircle,
-    ShieldAlert,
-    DatabaseZap
+    DatabaseZap,
+    FileLock,
+    ShieldAlert
 } from 'lucide-react';
 import Link from 'next/link';
 import { 
@@ -96,42 +96,38 @@ export function NotificationBell() {
     [firestore, user]);
     const { data: unverifiedDonations } = useCollection<Donation>(unverifiedDonationsQuery);
 
-    // 3. Unlinked Donations (Verified but donorId is null - Identity Resolution)
+    // 3. Unlinked & Unallocated
     const verifiedDonationsQuery = useMemoFirebase(() => 
         (firestore && user) ? query(collection(firestore, 'donations'), where('status', '==', 'Verified')) : null, 
     [firestore, user]);
     const { data: verifiedDonations } = useCollection<Donation>(verifiedDonationsQuery);
 
-    const unlinkedDonations = useMemo(() => {
-        if (!verifiedDonations) return [];
-        return verifiedDonations.filter(d => !d.donorId);
-    }, [verifiedDonations]);
+    const unlinkedDonations = useMemo(() => verifiedDonations?.filter(d => !d.donorId) || [], [verifiedDonations]);
+    const unallocatedCount = useMemo(() => verifiedDonations?.filter(d => (d.amount - (d.linkSplit?.reduce((s, l) => s + l.amount, 0) || 0)) > 0.01).length || 0, [verifiedDonations]);
 
-    const unallocatedCount = useMemo(() => {
-        if (!verifiedDonations) return 0;
-        return verifiedDonations.filter(d => {
-            const allocatedSum = d.linkSplit?.reduce((sum, link) => sum + link.amount, 0) || 0;
-            return (d.amount - allocatedSum) > 0.01;
-        }).length;
-    }, [verifiedDonations]);
+    // 4. Initiatives Needing Approval (Pending Verification)
+    const pendingCampaignsRef = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'campaigns'), where('authenticityStatus', '==', 'Pending Verification')) : null, [firestore, user]);
+    const { data: pendingCampaigns } = useCollection<Campaign>(pendingCampaignsRef);
 
-    // 4. Unverified Initiatives (Leads & Campaigns)
-    const unverifiedLeadsQuery = useMemoFirebase(() => 
-        (firestore && user) ? query(collection(firestore, 'leads'), where('authenticityStatus', '!=', 'Verified')) : null, 
-    [firestore, user]);
-    const { data: unverifiedLeads } = useCollection<Lead>(unverifiedLeadsQuery);
+    const pendingLeadsRef = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'leads'), where('authenticityStatus', '==', 'Pending Verification')) : null, [firestore, user]);
+    const { data: pendingLeads } = useCollection<Lead>(pendingLeadsRef);
 
-    const unverifiedCampaignsQuery = useMemoFirebase(() => 
-        (firestore && user) ? query(collection(firestore, 'campaigns'), where('authenticityStatus', '!=', 'Verified')) : null, 
-    [firestore, user]);
-    const { data: unverifiedCampaigns } = useCollection<Campaign>(unverifiedCampaignsQuery);
+    // 5. Initiatives Private / On Hold (Verified but Visibility Hold)
+    const privateCampaignsRef = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'campaigns'), where('publicVisibility', '==', 'Hold'), where('authenticityStatus', '==', 'Verified')) : null, [firestore, user]);
+    const { data: privateCampaigns } = useCollection<Campaign>(privateCampaignsRef);
+
+    const privateLeadsRef = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'leads'), where('publicVisibility', '==', 'Hold'), where('authenticityStatus', '==', 'Verified')) : null, [firestore, user]);
+    const { data: privateLeads } = useCollection<Lead>(privateLeadsRef);
+
+    const approvalCount = (pendingCampaigns?.length || 0) + (pendingLeads?.length || 0);
+    const holdCount = (privateCampaigns?.length || 0) + (privateLeads?.length || 0);
 
     const totalAlerts = (unverifiedBeneficiaries?.length || 0) + 
                         (unverifiedDonations?.length || 0) + 
-                        (unlinkedDonations.length) +
-                        (unallocatedCount) + 
-                        (unverifiedLeads?.length || 0) + 
-                        (unverifiedCampaigns?.length || 0);
+                        unlinkedDonations.length +
+                        unallocatedCount + 
+                        approvalCount + 
+                        holdCount;
 
     if (!user || !userProfile) return null;
 
@@ -157,10 +153,10 @@ export function NotificationBell() {
                 <div className="bg-primary/5 p-4 border-b">
                     <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
-                            <h3 className="text-sm font-bold text-primary tracking-tight">Pending Tasks</h3>
-                            <p className="text-[9px] text-muted-foreground font-medium tracking-tight opacity-60">Action Required For Review</p>
+                            <h3 className="text-sm font-bold text-primary tracking-tight">Organization Tasks</h3>
+                            <p className="text-[9px] text-muted-foreground font-medium tracking-tight opacity-60">Action Required For Registry Health</p>
                         </div>
-                        {totalAlerts > 0 && <Badge className="bg-primary text-white border-none font-bold text-[9px] px-2 h-5">Action Items</Badge>}
+                        {totalAlerts > 0 && <Badge className="bg-primary text-white border-none font-bold text-[9px] px-2 h-5">Updates</Badge>}
                     </div>
                 </div>
                 
@@ -171,122 +167,67 @@ export function NotificationBell() {
                                 <div className="p-4 rounded-full bg-primary/5 text-primary/20 mb-4 animate-fade-in-zoom">
                                     <CheckCircle2 className="h-10 w-10" />
                                 </div>
-                                <p className="text-sm font-bold text-primary tracking-tight">Everything Is Verified</p>
-                                <p className="text-[10px] text-muted-foreground font-normal">All Data Has Been Reviewed And Allocated.</p>
+                                <p className="text-sm font-bold text-primary tracking-tight">Registry Is Secure</p>
+                                <p className="text-[10px] text-muted-foreground font-normal">All Data Has Been Verified And Allocated.</p>
                             </div>
                         ) : (
                             <div className="space-y-4">
-                                {/* Resolve Identities Section */}
+                                {approvalCount > 0 && (
+                                    <div className="space-y-1">
+                                        <SectionHeader title="Needs Approval" count={approvalCount} icon={ShieldAlert} />
+                                        <div className="space-y-1">
+                                            {pendingCampaigns?.slice(0, 2).map(c => (
+                                                <NotificationItem key={`pending_camp_${c.id}`} icon={FolderKanban} title={c.name} subtitle="Action: Verify Campaign Authenticity" href={`/campaign-members/${c.id}/summary`} variant="warning" />
+                                            ))}
+                                            {pendingLeads?.slice(0, 2).map(l => (
+                                                <NotificationItem key={`pending_lead_${l.id}`} icon={Lightbulb} title={l.name} subtitle="Action: Verify Appeal Authenticity" href={`/leads-members/${l.id}/summary`} variant="warning" />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {holdCount > 0 && (
+                                    <div className="space-y-1">
+                                        <SectionHeader title="Private / Drafts" count={holdCount} icon={FileLock} />
+                                        <div className="space-y-1">
+                                            {privateCampaigns?.slice(0, 2).map(c => (
+                                                <NotificationItem key={`hold_camp_${c.id}`} icon={FolderKanban} title={c.name} subtitle="Status: Verified But Private" href={`/campaign-members/${c.id}/summary`} variant="info" />
+                                            ))}
+                                            {privateLeads?.slice(0, 2).map(l => (
+                                                <NotificationItem key={`hold_lead_${l.id}`} icon={Lightbulb} title={l.name} subtitle="Status: Verified But Private" href={`/leads-members/${l.id}/summary`} variant="info" />
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
                                 {unlinkedDonations.length > 0 && (
                                     <div className="space-y-1">
                                         <SectionHeader title="Map Identities" count={unlinkedDonations.length} icon={DatabaseZap} />
                                         <div className="space-y-1">
-                                            {unlinkedDonations.slice(0, 3).map(d => (
-                                                <NotificationItem 
-                                                    key={`unlinked_${d.id}`}
-                                                    icon={AlertCircle}
-                                                    title={d.donorName}
-                                                    subtitle="Action: Map Identity To Profile"
-                                                    href={`/donations/${d.id}`}
-                                                    variant="warning"
-                                                />
+                                            {unlinkedDonations.slice(0, 2).map(d => (
+                                                <NotificationItem key={`unlinked_${d.id}`} icon={AlertCircle} title={d.donorName} subtitle="Action: Resolve Donor Identity" href={`/donations/${d.id}`} variant="warning" />
                                             ))}
-                                            <Link href="/donors" className="block text-[9px] font-black text-center text-amber-600 py-2 hover:underline uppercase tracking-tighter">Open Resolver Hub</Link>
                                         </div>
                                     </div>
                                 )}
 
-                                {/* Beneficiaries Section */}
                                 {unverifiedBeneficiaries && unverifiedBeneficiaries.length > 0 && (
                                     <div className="space-y-1">
-                                        <SectionHeader title="Verify Profiles" count={unverifiedBeneficiaries.length} icon={Users} />
+                                        <SectionHeader title="Verify Beneficiaries" count={unverifiedBeneficiaries.length} icon={Users} />
                                         <div className="space-y-1">
                                             {unverifiedBeneficiaries.slice(0, 3).map(b => (
-                                                <NotificationItem 
-                                                    key={b.id}
-                                                    icon={Users}
-                                                    title={b.name}
-                                                    subtitle="Action: Review Details & Verify"
-                                                    href={`/beneficiaries/${b.id}`}
-                                                    variant="destructive"
-                                                />
+                                                <NotificationItem key={b.id} icon={Users} title={b.name} subtitle="Action: Review Profile Details" href={`/beneficiaries/${b.id}`} variant="destructive" />
                                             ))}
-                                            {unverifiedBeneficiaries.length > 3 && (
-                                                <Link href="/beneficiaries" className="block text-[9px] font-bold text-center text-primary py-2 hover:underline uppercase">Manage All Vetting</Link>
-                                            )}
                                         </div>
                                     </div>
                                 )}
 
-                                {/* Unverified Donations Section */}
                                 {unverifiedDonations && unverifiedDonations.length > 0 && (
                                     <div className="space-y-1">
                                         <SectionHeader title="Confirm Donations" count={unverifiedDonations.length} icon={IndianRupee} />
                                         <div className="space-y-1">
                                             {unverifiedDonations.slice(0, 3).map(d => (
-                                                <NotificationItem 
-                                                    key={d.id}
-                                                    icon={IndianRupee}
-                                                    title={`From: ${d.donorName}`}
-                                                    subtitle="Action: Confirm Receipt Of Funds"
-                                                    href={`/donations/${d.id}`}
-                                                    variant="destructive"
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Unallocated Funds Section */}
-                                {unallocatedCount > 0 && (
-                                    <div className="space-y-1">
-                                        <SectionHeader title="Allocate Funds" count={unallocatedCount} icon={Wallet} />
-                                        <div className="space-y-1">
-                                            {verifiedDonations?.filter(d => {
-                                                const allocated = d.linkSplit?.reduce((s, l) => s + l.amount, 0) || 0;
-                                                return (d.amount - allocated) > 0.01;
-                                            }).slice(0, 3).map(d => {
-                                                const allocated = d.linkSplit?.reduce((s, l) => s + l.amount, 0) || 0;
-                                                const balance = d.amount - allocated;
-                                                return (
-                                                    <NotificationItem 
-                                                        key={`alloc_${d.id}`}
-                                                        icon={Wallet}
-                                                        title={`Balance: ₹${balance.toLocaleString()}`}
-                                                        subtitle="Action: Link Remaining Funds"
-                                                        href={`/donations/${d.id}`}
-                                                        variant="info"
-                                                    />
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Initiatives Section */}
-                                {( (unverifiedLeads?.length || 0) + (unverifiedCampaigns?.length || 0) ) > 0 && (
-                                    <div className="space-y-1">
-                                        <SectionHeader title="Approve Appeals" count={(unverifiedLeads?.length || 0) + (unverifiedCampaigns?.length || 0)} icon={Lightbulb} />
-                                        <div className="space-y-1">
-                                            {unverifiedCampaigns?.slice(0, 2).map(c => (
-                                                <NotificationItem 
-                                                    key={c.id}
-                                                    icon={FolderKanban}
-                                                    title={c.name}
-                                                    subtitle="Action: Verify Authenticity"
-                                                    href={`/campaign-members/${c.id}/summary`}
-                                                    variant="info"
-                                                />
-                                            ))}
-                                            {unverifiedLeads?.slice(0, 2).map(l => (
-                                                <NotificationItem 
-                                                    key={l.id}
-                                                    icon={Lightbulb}
-                                                    title={l.name}
-                                                    subtitle="Action: Verify Authenticity"
-                                                    href={`/leads-members/${l.id}/summary`}
-                                                    variant="info"
-                                                />
+                                                <NotificationItem key={d.id} icon={IndianRupee} title={`From: ${d.donorName}`} subtitle="Action: Verify Transaction" href={`/donations/${d.id}`} variant="destructive" />
                                             ))}
                                         </div>
                                     </div>
@@ -301,7 +242,7 @@ export function NotificationBell() {
                     <div className="p-3 bg-muted/20 border-t flex justify-center">
                         <Button variant="ghost" size="sm" asChild className="h-7 text-[9px] font-bold text-primary tracking-tighter hover:bg-primary/5 uppercase">
                             <Link href="/dashboard" className="flex items-center">
-                                Return To Dashboard <ChevronRight className="ml-1 h-3 w-3" />
+                                View Management Dashboard <ChevronRight className="ml-1 h-3 w-3" />
                             </Link>
                         </Button>
                     </div>

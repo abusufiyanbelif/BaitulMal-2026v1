@@ -8,10 +8,15 @@ import { donationCategories } from '@/lib/modules';
 
 const RECENT_UPDATE_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 
+/**
+ * usePublicData - Strict filtering for public-facing institutional reporting.
+ * Only retrieves data that is both Verified AND Published.
+ */
 export function usePublicData() {
   const firestore = useFirestore();
-  const { isLoading: isSessionLoading, user } = useSession();
+  const { isLoading: isSessionLoading } = useSession();
 
+  // Strict Query: Authenticity Verified AND Visibility Published
   const campaignsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(
@@ -30,6 +35,7 @@ export function usePublicData() {
     );
   }, [firestore]);
   
+  // Donations must be Verified to appear in aggregates or tickers
   const donationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
@@ -97,9 +103,6 @@ export function usePublicData() {
         const applicableAmountInDonation = typeSplits.reduce((acc, split) => {
           const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
           const isAllowed = item.allowedDonationTypes?.includes(category as DonationCategory);
-          
-          // CRITICAL: Zakat donations only count toward goal if explicitly checked.
-          // Other categories count by default if allowed by the cause.
           const isForGoal = category !== 'Zakat' || split.forFundraising === true;
 
           if (isAllowed && isForGoal) {

@@ -3,10 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, Utensils, LifeBuoy, ChevronDown, Globe, ShieldCheck, Clock, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle } from 'lucide-react';
-import { useFirestore, useMemoFirebase } from '@/firebase/provider';
+import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, Utensils, LifeBuoy, ChevronDown, Globe, ShieldCheck, Clock, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle, FileLock } from 'lucide-react';
+import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, collection } from 'firebase/firestore';
 import type { Campaign } from '@/lib/types';
 import { useMemo, useState } from 'react';
 import { Input } from '@/components/ui/input';
@@ -49,10 +49,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { parseISO, startOfDay, endOfDay } from 'date-fns';
 import { NewsTicker } from '@/components/news-ticker';
-import { RecentVerificationTicker } from '@/components/recent-verification-ticker';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
-import { usePublicData } from '@/hooks/use-public-data';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
 import {
@@ -128,7 +126,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
           <CardHeader className="p-4 space-y-3">
             <div className="flex justify-between items-start gap-2">
                 <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight text-primary">
-                    {campaign.campaignNumber && <span className="text-primary font-bold">#{campaign.campaignNumber} </span>}{campaign.name}
+                    {campaign.name}
                 </CardTitle>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -206,7 +204,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         {canDelete && (
                             <>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(campaign); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive cursor-pointer font-normal">
+                                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); handleDeleteClick(campaign); }} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal cursor-pointer">
                                     <Trash2 className="mr-2 h-4 w-4" />
                                     Delete
                                 </DropdownMenuItem>
@@ -237,7 +235,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                 </div>
                 <div className={cn(
                     "text-[10px] font-bold tracking-tight flex items-center gap-1.5", 
-                    isUrgent ? 'text-red-600 animate-in fade-in slide-in-from-left' : isHigh ? 'text-orange-600' : 'text-primary'
+                    isUrgent ? 'text-red-600' : isHigh ? 'text-orange-600' : 'text-primary'
                 )}>
                     {getPriorityIcon(priorityLabel)}
                     {priorityLabel} Priority
@@ -291,47 +289,44 @@ export default function CampaignPage() {
   const [campaignToCopy, setCampaignToCopy] = useState<Campaign | null>(null);
 
   const { userProfile, isLoading: isProfileLoading } = useSession();
-  const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted, isLoading: isDataLoading } = usePublicData();
 
-  const activeTickerItems = useMemo(() => {
-    const activeCampaigns = (campaignsWithProgress || [])
-      .filter(c => c.status === 'Active' || c.status === 'Upcoming')
-      .map(c => {
-          const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
-          const isUrgent = c.priority === 'Urgent';
-          const isHigh = c.priority === 'High';
-          return {
-              id: c.id,
-              text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
-              href: `/campaign-members/${c.id}/summary`,
-              priority: c.priority || 'Medium',
-              priorityIcon: getPriorityIcon(c.priority),
-              isUrgent,
-              isHigh
-          };
-      });
+  // Full Internal Access: Fetch ALL campaigns for management
+  const allCampaignsRef = useMemoFirebase(() => firestore ? collection(firestore, 'campaigns') : null, [firestore]);
+  const donationsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
+
+  const { data: rawCampaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(allCampaignsRef);
+  const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsRef);
+
+  const campaignsWithProgress = useMemo(() => {
+    if (!rawCampaigns || !donations) return [];
     
-    const activeLeads = (leadsWithProgress || [])
-      .filter(l => l.status === 'Active' || l.status === 'Upcoming')
-      .map(l => {
-          const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
-          const isUrgent = l.priority === 'Urgent';
-          const isHigh = l.priority === 'High';
-          return {
-              id: l.id,
-              text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
-              href: `/leads-members/${l.id}/summary`,
-              priority: l.priority || 'Medium',
-              priorityIcon: getPriorityIcon(l.priority),
-              isUrgent,
-              isHigh
-          };
-      });
+    return rawCampaigns.map(campaign => {
+        const campaignDonations = donations.filter(d => 
+            d.status === 'Verified' && 
+            (d.linkSplit?.some(l => l.linkId === campaign.id && l.linkType === 'campaign') || (d as any).campaignId === campaign.id)
+        );
 
-    return [...activeCampaigns, ...activeLeads].sort((a, b) => 
-        (priorityWeight[b.priority] || 0) - (priorityWeight[a.priority] || 0)
-    );
-  }, [campaignsWithProgress, leadsWithProgress]);
+        const collected = campaignDonations.reduce((sum, d) => {
+            const link = d.linkSplit?.find(l => l.linkId === campaign.id);
+            const amountForThis = link ? link.amount : ( (d as any).campaignId === campaign.id ? d.amount : 0 );
+            
+            const totalDonation = d.amount || 1;
+            const proportion = amountForThis / totalDonation;
+            const typeSplits = d.typeSplit || [];
+            
+            const eligibleSum = typeSplits.reduce((acc, split) => {
+                const isAllowed = campaign.allowedDonationTypes?.includes(split.category);
+                const isForGoal = split.category !== 'Zakat' || split.forFundraising === true;
+                return (isAllowed && isForGoal) ? acc + split.amount : acc;
+            }, 0);
+
+            return sum + (eligibleSum * proportion);
+        }, 0);
+
+        const progress = campaign.targetAmount ? (collected / campaign.targetAmount) * 100 : 0;
+        return { ...campaign, collected, progress };
+    });
+  }, [rawCampaigns, donations]);
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
@@ -390,20 +385,38 @@ export default function CampaignPage() {
   }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter, authenticityFilter, visibilityFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => {
-    const priorityItems = filteredCampaigns.filter(c => (c.priority === 'Urgent' || c.priority === 'High') && c.status !== 'Completed');
-    const ongoingItems = filteredCampaigns.filter(c => (c.status === 'Active' || c.status === 'Upcoming') && !priorityItems.find(p => p.id === c.id));
+    // 1. Critical Section
+    const priorityItems = filteredCampaigns.filter(c => (c.priority === 'Urgent' || c.priority === 'High') && c.status !== 'Completed' && c.authenticityStatus === 'Verified' && c.publicVisibility === 'Published');
+    
+    // 2. Ongoing Section (Verified & Published)
+    const ongoingItems = filteredCampaigns.filter(c => 
+        (c.status === 'Active' || c.status === 'Upcoming') && 
+        c.authenticityStatus === 'Verified' && 
+        c.publicVisibility === 'Published' &&
+        !priorityItems.find(p => p.id === c.id)
+    );
+
+    // 3. Private & Hold Section (Verified but visibility Hold, or Pending Verification)
+    const privateItems = filteredCampaigns.filter(c => 
+        c.status !== 'Completed' && 
+        (c.publicVisibility !== 'Published' || c.authenticityStatus !== 'Verified') &&
+        !priorityItems.find(p => p.id === c.id)
+    );
+
+    // 4. Archive
     const completedItems = filteredCampaigns.filter(c => c.status === 'Completed');
 
     return [
-      { id: 'priority', title: 'Critical Initiatives (Urgent & High Priority)', icon: AlertTriangle, items: priorityItems, color: 'text-red-600' },
-      { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Campaigns', icon: Clock, items: ongoingItems, color: 'text-primary' },
-      { id: 'completed', title: 'Project Archive (Completed)', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
+      { id: 'priority', title: 'Critical Initiatives (Urgent & High)', icon: AlertTriangle, items: priorityItems, color: 'text-red-600' },
+      { id: 'ongoing', title: 'Public & Ongoing Campaigns', icon: Clock, items: ongoingItems, color: 'text-primary' },
+      { id: 'private', title: 'Private & Draft Hub (Internal)', icon: FileLock, items: privateItems, color: 'text-amber-600' },
+      { id: 'completed', title: 'Institutional Archive (Completed)', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
     ].filter(s => s.items.length > 0);
   }, [filteredCampaigns]);
 
-  const isLoading = isProfileLoading || isDeleting || isDataLoading;
+  const isLoading = isProfileLoading || isDeleting || areCampaignsLoading || areDonationsLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Campaigns..." description="Fetching active and historical initiatives." />;
+  if (isLoading) return <SectionLoader label="Loading Campaigns..." description="Fetching institutional records and verifying progress." />;
 
   if (!isLoading && userProfile && !canViewCampaigns) {
     return (
@@ -431,20 +444,15 @@ export default function CampaignPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Campaigns</h1>
-          <p className="text-sm max-w-2xl font-bold leading-relaxed opacity-70">Initiatives, budget vetting, and strategic tracking.</p>
-        </div>
-
-        <div className="space-y-2">
-          <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
-          <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
+          <h1 className="text-3xl font-bold tracking-tight text-primary">Campaign Management</h1>
+          <p className="text-sm max-w-2xl font-bold leading-relaxed opacity-70">Monitor fundraising goals, authenticity vetting, and internal drafts.</p>
         </div>
 
         <Card className="animate-fade-in-zoom shadow-none border-primary/10 bg-white/30 overflow-hidden">
           <CardHeader className="p-4 sm:p-6 border-b bg-primary/5">
             <ScrollArea className="w-full">
                 <div className="flex flex-nowrap items-center gap-3 pb-2">
-                    <Input placeholder="Search Initiatives..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-normal" disabled={isLoading}/>
+                    <Input placeholder="Search Campaigns..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-normal" disabled={isLoading}/>
                     <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Statuses</SelectItem><SelectItem value="Active" className="font-normal">Active</SelectItem><SelectItem value="Completed" className="font-normal">Completed</SelectItem><SelectItem value="Upcoming" className="font-normal">Upcoming</SelectItem></SelectContent></Select>
                     <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-normal border-primary/20 text-primary"><SelectValue placeholder="All Categories" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Categories</SelectItem><SelectItem value="Ration" className="font-normal">Ration</SelectItem><SelectItem value="Relief" className="font-normal">Relief</SelectItem><SelectItem value="General" className="font-normal">General</SelectItem></SelectContent></Select>
                     <Select value={authenticityFilter} onValueChange={setAuthenticityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Authenticity" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Authenticity</SelectItem><SelectItem value="Pending Verification" className="font-normal">Pending</SelectItem><SelectItem value="Verified" className="font-normal text-primary">Verified</SelectItem><SelectItem value="On Hold" className="font-normal">On Hold</SelectItem><SelectItem value="Rejected" className="font-normal text-destructive">Rejected</SelectItem><SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem></SelectContent></Select>
@@ -460,12 +468,12 @@ export default function CampaignPage() {
           </CardHeader>
           <CardContent className="p-4 sm:p-6 bg-card/30">
             {sections.length > 0 ? (
-              <Accordion type="multiple" defaultValue={['priority', 'ongoing_upcoming', 'completed']} className="space-y-6">
+              <Accordion type="multiple" defaultValue={['priority', 'ongoing', 'private']} className="space-y-6">
                 {sections.map(section => (
                   <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-none overflow-hidden">
                     <AccordionTrigger className="hover:no-underline py-5 group font-bold">
                       <div className="flex items-center gap-4">
-                        <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'priority' ? 'bg-red-600' : 'bg-primary')} />
+                        <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'priority' ? 'bg-red-600' : section.id === 'private' ? 'bg-amber-600' : 'bg-primary')} />
                         <div className="flex items-center gap-2">
                             <section.icon className={cn("h-5 w-5", section.color || "text-primary")} />
                             <span className={cn("text-lg font-bold tracking-tight", section.color || "text-primary")}>{section.title}</span>

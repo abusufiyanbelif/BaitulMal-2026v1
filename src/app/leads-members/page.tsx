@@ -2,11 +2,11 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info, Lightbulb, Globe, ShieldCheck, Clock, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle } from 'lucide-react';
-import { useFirestore, useMemoFirebase } from '@/firebase/provider';
+import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info, Lightbulb, Globe, ShieldCheck, Clock, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle, FileLock } from 'lucide-react';
+import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import { doc, updateDoc } from 'firebase/firestore';
-import type { Lead } from '@/lib/types';
+import { doc, updateDoc, collection } from 'firebase/firestore';
+import type { Lead, Donation } from '@/lib/types';
 import { useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
@@ -28,7 +28,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { parseISO, startOfDay, endOfDay } from 'date-fns';
 import { NewsTicker } from '@/components/news-ticker';
-import { usePublicData } from '@/hooks/use-public-data';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -216,7 +215,7 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
                 </div>
                 <div className={cn(
                     "text-[10px] font-bold tracking-tight flex items-center gap-1.5", 
-                    isUrgent ? 'text-red-600 animate-in fade-in slide-in-from-left' : isHigh ? 'text-orange-600' : 'text-primary'
+                    isUrgent ? 'text-red-600' : isHigh ? 'text-orange-600' : 'text-primary'
                 )}>
                     {getPriorityIcon(priorityLabel)}
                     {priorityLabel} Priority
@@ -270,47 +269,42 @@ export default function LeadPage() {
   const [leadToCopy, setLeadToCopy] = useState<Lead | null>(null);
   
   const { userProfile, isLoading: isProfileLoading } = useSession();
-  const { leadsWithProgress, campaignsWithProgress, recentDonationsFormatted, isLoading: isDataLoading } = usePublicData();
 
-  const activeTickerItems = useMemo(() => {
-    const activeCampaignsList = (campaignsWithProgress || [])
-      .filter(c => c.status === 'Active' || c.status === 'Upcoming')
-      .map(c => {
-          const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
-          const isUrgent = c.priority === 'Urgent';
-          const isHigh = c.priority === 'High';
-          return {
-              id: c.id,
-              text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
-              priority: c.priority || 'Medium',
-              priorityIcon: getPriorityIcon(c.priority),
-              isUrgent,
-              isHigh,
-              href: `/campaign-members/${c.id}/summary`,
-          };
-      });
+  // Management Fetch: Get all leads internally
+  const allLeadsRef = useMemoFirebase(() => firestore ? collection(firestore, 'leads') : null, [firestore]);
+  const donationsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
+
+  const { data: rawLeads, isLoading: areLeadsLoading } = useCollection<Lead>(allLeadsRef);
+  const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsRef);
+
+  const leadsWithProgress = useMemo(() => {
+    if (!rawLeads || !donations) return [];
     
-    const activeLeadsList = (leadsWithProgress || [])
-      .filter(l => l.status === 'Active' || l.status === 'Upcoming')
-      .map(l => {
-          const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
-          const isUrgent = l.priority === 'Urgent';
-          const isHigh = l.priority === 'High';
-          return {
-              id: l.id,
-              text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Lead: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
-              priority: l.priority || 'Medium',
-              priorityIcon: getPriorityIcon(l.priority),
-              isUrgent,
-              isHigh,
-              href: `/leads-members/${l.id}/summary`,
-          };
-      });
+    return rawLeads.map(lead => {
+        const leadDonations = donations.filter(d => 
+            d.status === 'Verified' && 
+            d.linkSplit?.some(l => l.linkId === lead.id && l.linkType === 'lead')
+        );
 
-    return [...activeCampaignsList, ...activeLeadsList].sort((a, b) => 
-        (priorityWeight[b.priority] || 0) - (priorityWeight[a.priority] || 0)
-    );
-  }, [campaignsWithProgress, leadsWithProgress]);
+        const collected = leadDonations.reduce((sum, d) => {
+            const link = d.linkSplit?.find(l => l.linkId === lead.id);
+            const amountForThis = link ? link.amount : 0;
+            const totalDonation = d.amount || 1;
+            const proportion = amountForThis / totalDonation;
+            
+            const eligibleSum = (d.typeSplit || []).reduce((acc, split) => {
+                const isAllowed = lead.allowedDonationTypes?.includes(split.category);
+                const isForGoal = split.category !== 'Zakat' || split.forFundraising === true;
+                return (isAllowed && isForGoal) ? acc + split.amount : acc;
+            }, 0);
+
+            return sum + (eligibleSum * proportion);
+        }, 0);
+
+        const progress = lead.targetAmount ? (collected / lead.targetAmount) * 100 : 0;
+        return { ...lead, collected, progress };
+    });
+  }, [rawLeads, donations]);
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
@@ -369,20 +363,38 @@ export default function LeadPage() {
   }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, authenticityFilter, visibilityFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => {
-    const priorityItems = filteredLeads.filter(l => (l.priority === 'Urgent' || l.priority === 'High') && l.status !== 'Completed');
-    const ongoingItems = filteredLeads.filter(l => (l.status === 'Active' || l.status === 'Upcoming') && !priorityItems.find(p => p.id === l.id));
+    // 1. Critical Items (Verified & Published)
+    const priorityItems = filteredLeads.filter(l => (l.priority === 'Urgent' || l.priority === 'High') && l.status !== 'Completed' && l.authenticityStatus === 'Verified' && l.publicVisibility === 'Published');
+    
+    // 2. Ongoing Items (Verified & Published)
+    const ongoingItems = filteredLeads.filter(l => 
+        (l.status === 'Active' || l.status === 'Upcoming') && 
+        l.authenticityStatus === 'Verified' && 
+        l.publicVisibility === 'Published' &&
+        !priorityItems.find(p => p.id === l.id)
+    );
+
+    // 3. Private & Hold Items (Verified but visibility Hold, or Pending Verification)
+    const privateItems = filteredLeads.filter(l => 
+        l.status !== 'Completed' && 
+        (l.publicVisibility !== 'Published' || l.authenticityStatus !== 'Verified') &&
+        !priorityItems.find(p => p.id === l.id)
+    );
+
+    // 4. Closed Archive
     const completedItems = filteredLeads.filter(l => l.status === 'Completed');
 
     return [
-      { id: 'priority', title: 'Critical Appeals (Urgent & High Priority)', icon: AlertTriangle, items: priorityItems, color: 'text-red-600' },
-      { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Leads', icon: Clock, items: ongoingItems, color: 'text-primary' },
+      { id: 'priority', title: 'Critical Appeals (Urgent & High)', icon: AlertTriangle, items: priorityItems, color: 'text-red-600' },
+      { id: 'ongoing', title: 'Public & Ongoing Leads', icon: Clock, items: ongoingItems, color: 'text-primary' },
+      { id: 'private', title: 'Private & Draft Hub (Internal)', icon: FileLock, items: privateItems, color: 'text-amber-600' },
       { id: 'completed', title: 'Closed Appeals (Archive)', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
     ].filter(s => s.items.length > 0);
   }, [filteredLeads]);
 
-  const isLoading = isProfileLoading || isDeleting || isDataLoading;
+  const isLoading = isProfileLoading || isDeleting || areLeadsLoading || areDonationsLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Individual Leads..." description="Retrieving Support Appeals And Vetting Status." />;
+  if (isLoading) return <SectionLoader label="Loading Individual Leads..." description="Retrieving support appeals and verifying progress." />;
 
   if (!isLoading && userProfile && !canViewLeads) {
     return (
@@ -406,13 +418,8 @@ export default function LeadPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Individual Leads</h1>
-          <p className="text-sm max-w-2xl font-bold leading-relaxed opacity-70">Vetting And Managing Individual Cases Requiring Organizational Support.</p>
-        </div>
-
-        <div className="space-y-2">
-          <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
-          <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />
+          <h1 className="text-3xl font-bold tracking-tight text-primary">Lead Management</h1>
+          <p className="text-sm max-w-2xl font-bold leading-relaxed opacity-70">Review individual support appeals, authenticate evidence, and manage draft cases.</p>
         </div>
 
         <Card className="animate-fade-in-zoom shadow-none border-primary/5 bg-white/30 overflow-hidden">
@@ -435,12 +442,12 @@ export default function LeadPage() {
           </CardHeader>
           <CardContent className="p-4 sm:p-6 bg-card/30">
             {(sections && sections.length > 0) ? (
-              <Accordion type="multiple" defaultValue={['priority', 'ongoing_upcoming', 'completed']} className="space-y-6">
+              <Accordion type="multiple" defaultValue={['priority', 'ongoing', 'private']} className="space-y-6">
                 {sections.map(section => (
                   <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-none overflow-hidden">
                     <AccordionTrigger className="hover:no-underline py-5 group font-bold">
                       <div className="flex items-center gap-4">
-                        <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'priority' ? 'bg-red-600' : 'bg-primary')} />
+                        <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'priority' ? 'bg-red-600' : section.id === 'private' ? 'bg-amber-600' : 'bg-primary')} />
                         <div className="flex items-center gap-2">
                             <section.icon className={cn("h-5 w-5", section.color || "text-primary")} />
                             <span className={cn("text-lg font-bold tracking-tight", section.color || "text-primary")}>{section.title}</span>
