@@ -535,6 +535,14 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                             <FormField control={control} name={`typeSplit.0.category`} render={({ field }) => (
                                 <FormItem>{renderLabel('Primary Designation', 'typeSplit.0.category')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">{donationCategories.map(cat => <SelectItem key={cat} value={cat} className="font-normal">{cat}</SelectItem>)}</SelectContent></Select><FormMessage /></FormItem>
                             )}/>
+                            {watch(`typeSplit.0.category`) === 'Zakat' && (
+                                <FormField control={control} name={`typeSplit.0.forFundraising`} render={({ field: checkboxField }) => (
+                                    <div className="flex items-center space-x-2 animate-fade-in-zoom">
+                                        <Checkbox id="goal-contribution-single" checked={checkboxField.value === true} onCheckedChange={(val) => checkboxField.onChange(val === true)} disabled={isReadOnly}/>
+                                        <Label htmlFor="goal-contribution-single" className="text-xs font-bold text-primary tracking-tight cursor-pointer">Include In Fundraising Progress</Label>
+                                    </div>
+                                )}/>
+                            )}
                         </div>
                     )}
                     </div>

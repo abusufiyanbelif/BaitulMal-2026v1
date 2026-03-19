@@ -97,7 +97,10 @@ export function usePublicData() {
         const applicableAmountInDonation = typeSplits.reduce((acc, split) => {
           const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
           const isAllowed = item.allowedDonationTypes?.includes(category as DonationCategory);
-          const isForGoal = category !== 'Zakat' || split.forFundraising !== false;
+          
+          // CRITICAL: Zakat donations only count toward goal if explicitly checked.
+          // Other categories count by default if allowed by the cause.
+          const isForGoal = category !== 'Zakat' || split.forFundraising === true;
 
           if (isAllowed && isForGoal) {
             return acc + split.amount;
