@@ -62,6 +62,22 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLe
 import type { ChartConfig } from '@/components/ui/chart';
 import { format, parseISO } from 'date-fns';
 
+function DetailItem({ icon: Icon, label, value, isMono = false }: { icon: any, label: string, value?: string, isMono?: boolean }) {
+    return (
+        <div className="flex items-start gap-4 p-4 rounded-xl bg-primary/[0.02] border border-primary/5 transition-all hover:bg-white hover:shadow-sm">
+            <div className="p-2 rounded-lg bg-primary/10 text-primary">
+                <Icon className="h-5 w-5" />
+            </div>
+            <div className="flex-1 min-w-0 space-y-0.5">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</p>
+                <p className={cn("text-base font-bold text-primary truncate", isMono && "font-mono")}>
+                    {value || <span className="italic opacity-30 font-normal">Not Provided</span>}
+                </p>
+            </div>
+        </div>
+    );
+}
+
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-3))" },
     Zakat: { label: "Zakat", color: "hsl(var(--chart-1))" },
@@ -79,22 +95,6 @@ const monthlyTrendChartConfig = {
     color: "hsl(var(--chart-1))",
   },
 } satisfies ChartConfig;
-
-function DetailItem({ icon: Icon, label, value, isMono = false }: { icon: any, label: string, value?: string, isMono?: boolean }) {
-    return (
-        <div className="flex items-start gap-4 p-4 rounded-xl bg-primary/[0.02] border border-primary/5 transition-all hover:bg-white hover:shadow-sm">
-            <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                <Icon className="h-5 w-5" />
-            </div>
-            <div className="flex-1 min-w-0 space-y-0.5">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</p>
-                <p className={cn("text-base font-bold text-primary truncate", isMono && "font-mono")}>
-                    {value || <span className="italic opacity-30 font-normal">Not Provided</span>}
-                </p>
-            </div>
-        </div>
-    );
-}
 
 export default function DonorProfilePage() {
     const params = useParams();
@@ -198,7 +198,7 @@ export default function DonorProfilePage() {
 
         const res = await updateDonorAction(donorId, updates, { id: userProfile.id, name: userProfile.name });
         if (res.success) {
-            toast({ title: 'Success', description: res.message, variant: 'success' });
+            toast({ title: 'Success', description: 'Donor Profile Updated Successfully.', variant: 'success' });
             setIsEditMode(false);
             forceRefetch();
         } else {
@@ -209,7 +209,7 @@ export default function DonorProfilePage() {
 
     const handleDelete = async () => {
         if (!userProfile || !donor) return;
-        const confirmMessage = `Permanently Remove Profile For ${donor.name}? Institutional financial history will be preserved as unlinked "dummy" records. This action cannot be undone.`;
+        const confirmMessage = `Permanently Remove Profile For ${donor.name}? Financial history will be preserved as unlinked records. This action cannot be undone.`;
         
         if (!confirm(confirmMessage)) return;
         
@@ -224,7 +224,7 @@ export default function DonorProfilePage() {
                 setIsSubmitting(false);
             }
         } catch (e: any) {
-            toast({ title: 'System Error', description: e.message || 'Purge failed.', variant: 'destructive' });
+            toast({ title: 'System Error', description: e.message || 'Removal failed.', variant: 'destructive' });
             setIsSubmitting(false);
         }
     };
@@ -278,7 +278,7 @@ export default function DonorProfilePage() {
                     <p className="text-sm font-bold text-primary mt-2 flex items-center gap-2"><Clock className="h-3 w-3 opacity-40"/> {analytics.latestDate}</p>
                 </Card>
                 <Card className="p-4 bg-white border-primary/5 shadow-sm">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Pending Vetting</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Pending Verification</p>
                     <p className="text-lg font-bold text-amber-600 font-mono mt-1">₹{analytics.pendingSum.toLocaleString('en-IN')}</p>
                 </Card>
             </div>
@@ -298,7 +298,7 @@ export default function DonorProfilePage() {
                             <Card className="border-primary/10 bg-white overflow-hidden shadow-sm">
                                 <CardHeader className="bg-primary/5 border-b pb-3">
                                     <CardTitle className="text-sm font-bold text-primary flex items-center gap-2">
-                                        <PieChartIcon className="h-4 w-4 opacity-40"/> Impact by Designation
+                                        <PieChartIcon className="h-4 w-4 opacity-40"/> Impact By Category
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="pt-6">
@@ -323,7 +323,7 @@ export default function DonorProfilePage() {
                             <Card className="border-primary/10 bg-white overflow-hidden shadow-sm">
                                 <CardHeader className="bg-primary/5 border-b pb-3">
                                     <CardTitle className="text-sm font-bold text-primary flex items-center gap-2">
-                                        <TrendingUp className="h-4 w-4 opacity-40"/> Monthly Contribution Trends
+                                        <TrendingUp className="h-4 w-4 opacity-40"/> Monthly Giving Trends
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="pt-6">
@@ -353,7 +353,7 @@ export default function DonorProfilePage() {
 
                         <Card className="lg:col-span-8 border-primary/10 shadow-sm bg-white overflow-hidden">
                             <CardHeader className="bg-primary/5 border-b px-6 py-4">
-                                <CardTitle className="text-lg font-bold">Institutional Record & Identity</CardTitle>
+                                <CardTitle className="text-lg font-bold">Profile Identity & Details</CardTitle>
                             </CardHeader>
                             <CardContent className="p-6">
                                 {isEditMode ? (
@@ -406,14 +406,14 @@ export default function DonorProfilePage() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Institutional Observations</Label>
+                                            <Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Team Observations</Label>
                                             <Textarea name="notes" defaultValue={donor.notes} rows={4} className="font-normal" placeholder="Donor preferences, historical notes, etc."/>
                                         </div>
 
                                         <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t mt-auto">
                                             <Button type="button" variant="outline" onClick={() => setIsEditMode(false)} className="w-full sm:w-auto font-bold border-primary/20 text-primary h-11 px-8">Discard</Button>
                                             <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto font-bold shadow-md px-10 h-11 bg-primary text-white">
-                                                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>} Secure Profile
+                                                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>} Save Profile
                                             </Button>
                                         </div>
                                     </form>
@@ -421,12 +421,12 @@ export default function DonorProfilePage() {
                                     <div className="space-y-10">
                                         <div className="grid gap-4 md:grid-cols-3">
                                             <DetailItem icon={Phone} label="Primary Contact" value={donor.phone} isMono />
-                                            <DetailItem icon={Mail} label="Email Identity" value={donor.email} />
-                                            <DetailItem icon={MapPin} label="Residential Hub" value={donor.address} />
+                                            <DetailItem icon={Mail} label="Email Address" value={donor.email} />
+                                            <DetailItem icon={MapPin} label="Residential Address" value={donor.address} />
                                         </div>
 
                                         <div className="space-y-6">
-                                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Verified Financial Handles</h4>
+                                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Verified Financial Accounts</h4>
                                             <div className="grid gap-6 md:grid-cols-2">
                                                 <div className="space-y-3">
                                                     <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest flex items-center gap-2"><Landmark className="h-3 w-3"/> Bank Accounts</p>
@@ -435,7 +435,7 @@ export default function DonorProfilePage() {
                                                             <div key={idx} className="p-3 rounded-lg border border-primary/5 bg-primary/[0.01]">
                                                                 <p className="font-bold text-sm text-primary">{bank.bankName}</p>
                                                                 <div className="flex justify-between mt-1 text-[11px] font-mono opacity-60">
-                                                                    <span>A/C: {bank.accountNumber}</span>
+                                                                    <span>Acc: {bank.accountNumber}</span>
                                                                     <span>IFSC: {bank.ifscCode}</span>
                                                                 </div>
                                                             </div>
@@ -456,9 +456,9 @@ export default function DonorProfilePage() {
                                         </div>
 
                                         <div className="p-6 rounded-2xl border border-dashed border-primary/20 bg-muted/5">
-                                            <div className="flex items-center gap-2 text-primary font-bold mb-3"><History className="h-4 w-4 opacity-40"/> Institutional Observations</div>
+                                            <div className="flex items-center gap-2 text-primary font-bold mb-3"><History className="h-4 w-4 opacity-40"/> Team Observations</div>
                                             <p className="text-sm italic font-normal text-primary/80 whitespace-pre-wrap leading-relaxed">
-                                                {donor.notes || 'No vetted observations recorded for this profile.'}
+                                                {donor.notes || 'No notes recorded for this profile.'}
                                             </p>
                                         </div>
                                     </div>
@@ -471,8 +471,8 @@ export default function DonorProfilePage() {
                 <TabsContent value="donations" className="animate-fade-in-up mt-0">
                     <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                         <CardHeader className="bg-primary/5 border-b px-6 py-4">
-                            <CardTitle className="text-lg font-bold">Contribution History Across Causes</CardTitle>
-                            <CardDescription className="font-normal text-primary/70">Verified And Pending Donations Linked To This Donor Profile.</CardDescription>
+                            <CardTitle className="text-lg font-bold">Contribution History</CardTitle>
+                            <CardDescription className="font-normal text-primary/70">List Of All Verified And Pending Donations Linked To This Donor.</CardDescription>
                         </CardHeader>
                         <CardContent className="p-0">
                             <ScrollArea className="w-full">
@@ -484,14 +484,14 @@ export default function DonorProfilePage() {
                                                 <TableHead className="font-bold text-[10px] tracking-tight uppercase text-primary/60">Donation Value (₹)</TableHead>
                                                 <TableHead className="font-bold text-[10px] tracking-tight uppercase text-primary/60">Designation</TableHead>
                                                 <TableHead className="font-bold text-[10px] tracking-tight uppercase text-primary/60">Date Record</TableHead>
-                                                <TableHead className="text-center font-bold text-[10px] tracking-tight uppercase text-primary/60">Vetting Status</TableHead>
+                                                <TableHead className="text-center font-bold text-[10px] tracking-tight uppercase text-primary/60">Status</TableHead>
                                                 <TableHead className="text-right pr-6 font-bold text-[10px] tracking-tight uppercase text-primary/60">Action</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
                                             {donorDonations.map((donation) => {
                                                 const primaryLink = donation.linkSplit?.[0] || ( (donation as any).campaignId ? { linkName: (donation as any).campaignName || 'Campaign', linkId: (donation as any).campaignId, linkType: 'campaign', amount: donation.amount } : null );
-                                                const initiativeName = primaryLink?.linkName || 'General Institutional Fund';
+                                                const initiativeName = primaryLink?.linkName || 'General Organization Fund';
                                                 
                                                 return (
                                                     <TableRow key={donation.id} className="hover:bg-primary/[0.02] transition-colors border-b border-primary/5 last:border-0 bg-white group">
@@ -520,7 +520,7 @@ export default function DonorProfilePage() {
                                                         <TableCell className="text-right pr-6">
                                                             <Button variant="ghost" size="sm" asChild className="h-8 font-bold text-[10px] active:scale-95 transition-transform text-primary hover:bg-primary/10">
                                                                 <Link href={primaryLink?.linkType === 'campaign' ? `/campaign-members/${primaryLink.linkId}/donations/${donation.id}` : `/leads-members/${primaryLink?.linkId}/donations/${donation.id}`}>
-                                                                    <ExternalLink className="mr-1.5 h-3 w-3"/> Details
+                                                                    <ExternalLink className="mr-1.5 h-3 w-3"/> View Details
                                                                 </Link>
                                                             </Button>
                                                         </TableCell>
@@ -528,7 +528,7 @@ export default function DonorProfilePage() {
                                                 )
                                             })}
                                             {donorDonations.length === 0 && (
-                                                <TableRow><TableCell colSpan={6} className="text-center py-24 text-primary/40 font-bold italic bg-primary/[0.01]">No Contribution Records Found Linked To This Identity.</TableCell></TableRow>
+                                                <TableRow><TableCell colSpan={6} className="text-center py-24 text-primary/40 font-bold italic bg-primary/[0.01]">No Contribution Records Linked To This Donor.</TableCell></TableRow>
                                             )}
                                         </TableBody>
                                     </Table>

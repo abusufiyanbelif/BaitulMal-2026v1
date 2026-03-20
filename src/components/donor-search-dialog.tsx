@@ -80,7 +80,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
 
   const handleRegisterNewProfile = async () => {
     if (!userProfile || !currentFormData?.name) {
-        toast({ title: 'Validation Error', description: 'At Least A Name Is Required To Create A Profile.', variant: 'destructive' });
+        toast({ title: 'Form Incomplete', description: 'At least a name is required to create a donor profile.', variant: 'destructive' });
         return;
     }
 
@@ -91,8 +91,8 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
 
     if (existing) {
         toast({ 
-            title: 'Profile Already Exists', 
-            description: `A Matching Profile For '${existing.name}' Was Discovered. Linking To That Instead.`, 
+            title: 'Profile Exists', 
+            description: `A matching profile for '${existing.name}' was found. Linking to that instead.`, 
             variant: 'info' 
         });
         onSelectDonor(existing);
@@ -106,15 +106,15 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
         phone: currentFormData.phone || '',
         upiIds: currentFormData.upiIds || [],
         status: 'Active',
-        notes: `Profile Established Via Identity Resolution During Donation Entry.`
+        notes: `Profile created during donation entry.`
     }, { id: userProfile.id, name: userProfile.name });
 
     if (res.success && res.id) {
-        toast({ title: 'New Profile Secured', description: 'Institutional Identity Registered.', variant: 'success' });
+        toast({ title: 'Success', description: 'New donor profile registered.', variant: 'success' });
         onSelectDonor({ id: res.id, name: currentFormData.name, phone: currentFormData.phone || '', status: 'Active' } as Donor);
         onOpenChange(false);
     } else {
-        toast({ title: 'Creation Failed', description: res.message, variant: 'destructive' });
+        toast({ title: 'Failed', description: res.message, variant: 'destructive' });
     }
     setIsCreating(false);
   };
@@ -129,10 +129,10 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
       <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] text-primary font-normal p-0 overflow-hidden rounded-[24px] border-primary/10 flex flex-col shadow-2xl animate-fade-in-zoom">
         <DialogHeader className="px-6 py-6 bg-primary/5 border-b border-primary/10 shrink-0">
           <DialogTitle className="text-xl font-bold tracking-tight text-primary flex items-center gap-2">
-            <Users className="h-5 w-5 opacity-40"/> Retrieve Donor Profile
+            <Users className="h-5 w-5 opacity-40"/> Find Donor Profile
           </DialogTitle>
           <DialogDescription className="text-sm font-normal text-primary/70 pr-6">
-            Select An Existing Donor Or Register A New Identity From This Hub.
+            Search For An Existing Donor Or Register A New Profile.
           </DialogDescription>
         </DialogHeader>
         
@@ -140,7 +140,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
             <div className="relative shrink-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
                 <Input
-                    placeholder="Search By Name, Mobile, Email, UPI, Or Account..."
+                    placeholder="Search name, phone, email, or UPI..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="pl-10 h-11 border-primary/10 focus-visible:ring-primary rounded-xl font-normal shadow-sm"
@@ -162,8 +162,8 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
                         ) : filteredResults.length === 0 ? (
                             <div className="flex flex-col items-center justify-center py-16 text-center px-4">
                                 <AlertCircle className="h-12 w-12 mb-4 text-primary/20" />
-                                <p className="text-sm font-bold text-primary tracking-tight">No Matching Profiles Discovered</p>
-                                <p className="text-[10px] text-muted-foreground mt-1 mb-8 font-normal max-w-[200px]">Register A New Institutional Identity For This Contributor.</p>
+                                <p className="text-sm font-bold text-primary tracking-tight">No Matching Profile Found</p>
+                                <p className="text-[10px] text-muted-foreground mt-1 mb-8 font-normal max-w-[200px]">Would you like to register this contributor as a new donor?</p>
                                 
                                 {currentFormData?.name && (
                                     <Button onClick={handleRegisterNewProfile} disabled={isCreating} className="font-bold shadow-md rounded-xl h-12 px-8 group active:scale-95 transition-transform w-full sm:w-auto">
@@ -193,16 +193,16 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
                                             </div>
                                         </div>
                                         <Button size="sm" className="mt-3 sm:mt-0 font-bold bg-primary hover:bg-primary/90 text-white rounded-lg h-8 px-4 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow-sm shrink-0">
-                                            Load Profile
+                                            Select Profile
                                         </Button>
                                     </div>
                                 ))}
                                 
                                 <Separator className="my-6 bg-primary/10" />
                                 <div className="p-6 bg-primary/[0.03] rounded-2xl border border-dashed border-primary/20 flex flex-col items-center gap-4 text-center mx-2">
-                                    <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Entry Not Listed?</p>
+                                    <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Donor Not Listed?</p>
                                     <Button variant="outline" size="sm" onClick={handleRegisterNewProfile} disabled={isCreating} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform h-10 px-8 rounded-xl bg-white shadow-sm w-full sm:w-auto">
-                                        Register New Identity <ArrowRight className="ml-2 h-4 w-4" />
+                                        Register New Donor <ArrowRight className="ml-2 h-4 w-4" />
                                     </Button>
                                 </div>
                             </div>
@@ -215,10 +215,10 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
 
         <DialogFooter className="px-6 py-4 bg-primary/[0.02] border-t border-primary/10 shrink-0 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-[10px] font-bold text-primary/60 tracking-tight flex items-center gap-2">
-                <CheckCircle2 className="h-3 w-3" /> Secure Institutional Identity Retrieval
+                <CheckCircle2 className="h-3 w-3" /> Secure Donor Profile Retrieval
             </p>
             <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-primary/20 text-primary h-10 px-10 rounded-xl transition-transform active:scale-95 w-full sm:w-auto">
-                Close Hub
+                Close
             </Button>
         </DialogFooter>
       </DialogContent>

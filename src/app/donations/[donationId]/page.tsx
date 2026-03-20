@@ -75,7 +75,7 @@ export default function UnlinkedDonationDetailsPage() {
     const handleFormSubmit = async (data: DonationFormData) => {
         const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
         if (hasFilesToUpload && !auth?.currentUser) {
-            toast({ title: "Authentication Error", description: "Authorization Session Expired.", variant: "destructive" });
+            toast({ title: "Verification Error", description: "Authorization Session Expired.", variant: "destructive" });
             return;
         }
 
@@ -146,7 +146,7 @@ export default function UnlinkedDonationDetailsPage() {
                 toast({ title: 'Save Failed', description: result.message, variant: 'destructive' });
             }
         } catch (error: any) {
-            toast({ title: 'Operation Error', description: error.message || 'An Unexpected Error Occurred.', variant: 'destructive' });
+            toast({ title: 'System Error', description: error.message || 'An Unexpected Error Occurred.', variant: 'destructive' });
         }
     };
     
@@ -156,7 +156,7 @@ export default function UnlinkedDonationDetailsPage() {
         download(format, { contentRef: summaryRef, documentTitle: 'Donation Receipt', documentName: `donation-receipt-${donationId}`, brandingSettings, paymentSettings });
     };
 
-    const handleViewImage = (url: string, title: string = 'Evidence Artifact') => {
+    const handleViewImage = (url: string, title: string = 'Evidence Document') => {
         setImageToView({ url, title });
         setZoom(1);
         setRotation(0);
@@ -170,7 +170,7 @@ export default function UnlinkedDonationDetailsPage() {
     if (!donation) {
         return (
             <main className="container mx-auto p-4 md:p-8 text-center font-normal">
-                <p className="text-lg text-primary font-bold opacity-60">Sorry, Record Not Found.</p>
+                <p className="text-lg text-primary font-bold opacity-60">Record Not Found.</p>
                 <Button asChild className="mt-4 font-bold border-primary/20 text-primary transition-transform active:scale-95" variant="outline"><Link href="/donations"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Registry</Link></Button>
             </main>
         );
@@ -224,11 +224,11 @@ export default function UnlinkedDonationDetailsPage() {
                 {!donation.donorId && (
                     <Alert className="bg-amber-50 border-amber-200 text-amber-800 animate-fade-in-down">
                         <AlertCircle className="h-4 w-4 text-amber-600" />
-                        <AlertTitle className="font-bold">Identity Mapping Required</AlertTitle>
+                        <AlertTitle className="font-bold">Donor Identity Required</AlertTitle>
                         <AlertDescription className="font-normal text-sm flex items-center justify-between gap-4 flex-wrap">
-                            This Donation Is Currently An Unlinked Record. Please Map It To A Verified Profile.
+                            This Donation Is Currently Unlinked. Please Connect It To A Donor Profile.
                             <Button onClick={() => setIsResolverOpen(true)} variant="secondary" size="sm" className="font-bold bg-amber-600 text-white hover:bg-amber-700 active:scale-95 transition-transform shrink-0 shadow-sm">
-                                <DatabaseZap className="mr-2 h-4 w-4"/> Resolve Identity Now
+                                <DatabaseZap className="mr-2 h-4 w-4"/> Link To Profile
                             </Button>
                         </AlertDescription>
                     </Alert>
@@ -237,7 +237,7 @@ export default function UnlinkedDonationDetailsPage() {
                 {donation.donorId && (
                     <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-100 rounded-xl text-green-800 text-xs font-bold animate-fade-in-down">
                         <ShieldCheck className="h-4 w-4 text-green-600" />
-                        Donor Identity Successfully Mapped To Registry.
+                        Donor Identity Successfully Verified And Linked.
                     </div>
                 )}
 
@@ -255,10 +255,10 @@ export default function UnlinkedDonationDetailsPage() {
                             </Card>
 
                             <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
-                                <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Allocation Breakdown</CardTitle></CardHeader>
+                                <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Allocation Details</CardTitle></CardHeader>
                                 <CardContent className="grid gap-6 md:grid-cols-2 pt-6">
                                     <div className="space-y-3">
-                                        <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Category Designation</h3>
+                                        <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Category Distribution</h3>
                                         <div className="border border-primary/5 rounded-xl overflow-hidden shadow-inner">
                                             <ScrollArea className="w-full">
                                                 <Table>
@@ -276,12 +276,12 @@ export default function UnlinkedDonationDetailsPage() {
                                         </div>
                                     </div>
                                     <div className="space-y-3">
-                                        <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Initiative Allocation</h3>
+                                        <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Target Initiatives</h3>
                                         <div className="border border-primary/5 rounded-xl overflow-hidden shadow-inner">
                                             <ScrollArea className="w-full">
                                                 <Table>
                                                     <TableHeader className="bg-primary/5">
-                                                        <TableRow><TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Initiative</TableHead><TableHead className="text-right font-bold text-primary text-[9px] uppercase tracking-tighter">Amount</TableHead></TableRow>
+                                                        <TableRow><TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Target</TableHead><TableHead className="text-right font-bold text-primary text-[9px] uppercase tracking-tighter">Amount</TableHead></TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {donation.linkSplit && donation.linkSplit.length > 0 ? donation.linkSplit.map((link: DonationLink) => (
@@ -293,7 +293,7 @@ export default function UnlinkedDonationDetailsPage() {
                                                                 <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{link.amount.toFixed(2)}</TableCell>
                                                             </TableRow>
                                                         )) : (
-                                                            <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated General Fund</TableCell></TableRow>
+                                                            <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated General Funds</TableCell></TableRow>
                                                         )}
                                                     </TableBody>
                                                 </Table>
@@ -307,7 +307,7 @@ export default function UnlinkedDonationDetailsPage() {
 
                         <div className="lg:col-span-4 space-y-6">
                             <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
-                                <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Identity Hub</CardTitle></CardHeader>
+                                <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Donor Info</CardTitle></CardHeader>
                                 <CardContent className="space-y-4 pt-6">
                                     <DetailItem 
                                         label="Donor Profile" 
@@ -317,30 +317,30 @@ export default function UnlinkedDonationDetailsPage() {
                                             </Link>
                                         ) : donation.donorName} 
                                     />
-                                    <DetailItem label="Contact Identity" value={donation.donorPhone} isMono />
-                                    <DetailItem label="Receiving Agent" value={donation.receiverName} />
-                                    <DetailItem label="Referral Logic" value={donation.referral} />
+                                    <DetailItem label="Contact Details" value={donation.donorPhone} isMono />
+                                    <DetailItem label="Received By" value={donation.receiverName} />
+                                    <DetailItem label="Referral Notes" value={donation.referral} />
                                 </CardContent>
                             </Card>
 
                             <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                                 <CardHeader className="bg-primary/5 border-b pb-3">
-                                    <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight uppercase"><History className="h-4 w-4 opacity-40"/> Organization Audit History</CardTitle>
+                                    <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight uppercase"><History className="h-4 w-4 opacity-40"/> Activity History Log</CardTitle>
                                 </CardHeader>
                                 <CardContent className="pt-6 space-y-4">
                                     <div className="flex items-start gap-3">
                                         <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Clock className="h-3.5 w-3.5"/></div>
                                         <div>
-                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Registry Entry Secured</p>
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Record Saved By</p>
                                             <p className="text-xs font-bold text-primary">{donation.uploadedBy}</p>
-                                            <p className="text-[9px] font-mono opacity-60">ID: {donation.uploadedById}</p>
+                                            <p className="text-[9px] font-mono opacity-60">Staff ID: {donation.uploadedById}</p>
                                         </div>
                                     </div>
                                     {donation.createdAt && (
                                         <div className="flex items-start gap-3">
                                             <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Calendar className="h-3.5 w-3.5"/></div>
                                             <div>
-                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Creation Timestamp</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Date Recorded</p>
                                                 <p className="text-xs font-bold text-primary">{(donation.createdAt as any).toDate?.().toLocaleString() || new Date(donation.createdAt as any).toLocaleString()}</p>
                                             </div>
                                         </div>
@@ -364,7 +364,7 @@ export default function UnlinkedDonationDetailsPage() {
                                                         <TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Reference ID</TableHead>
                                                         <TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Date Record</TableHead>
                                                         <TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Sender UPI</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary text-[9px] uppercase tracking-tighter pr-6">Validation Artifact</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary text-[9px] uppercase tracking-tighter pr-6">Documents</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
@@ -377,9 +377,9 @@ export default function UnlinkedDonationDetailsPage() {
                                                             <TableCell className="text-right pr-6">
                                                                 {tx.screenshotUrl ? (
                                                                     <Button variant="outline" size="sm" className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform" onClick={() => handleViewImage(tx.screenshotUrl!, 'Transaction Evidence')}>
-                                                                        <ImageIcon className="mr-1.5 h-3 w-3"/> View Evidence
+                                                                        <ImageIcon className="mr-1.5 h-3 w-3"/> View Document
                                                                     </Button>
-                                                                ) : <span className="text-muted-foreground text-[10px] italic">No Artifact Attached</span>}
+                                                                ) : <span className="text-muted-foreground text-[10px] italic">No document attached</span>}
                                                             </TableCell>
                                                         </TableRow>
                                                     ))}
@@ -395,13 +395,13 @@ export default function UnlinkedDonationDetailsPage() {
 
                     {(donation.comments || donation.suggestions) && (
                         <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
-                            <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Organizational Observations</CardTitle></CardHeader>
+                            <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Team Notes & Remarks</CardTitle></CardHeader>
                             <CardContent className="space-y-6 pt-6">
                                 {donation.comments && (
                                     <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Donor Remarks</p><p className="text-sm font-normal bg-primary/[0.02] p-4 rounded-lg italic border border-primary/5 leading-relaxed">"{donation.comments}"</p></div>
                                 )}
                                 {donation.suggestions && (
-                                    <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Member Insights</p><p className="text-sm font-normal bg-primary/[0.02] p-4 rounded-lg italic border border-primary/5 leading-relaxed">"{donation.suggestions}"</p></div>
+                                    <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Staff Suggestions</p><p className="text-sm font-normal bg-primary/[0.02] p-4 rounded-lg italic border border-primary/5 leading-relaxed">"{donation.suggestions}"</p></div>
                                 )}
                             </CardContent>
                         </Card>
@@ -411,7 +411,7 @@ export default function UnlinkedDonationDetailsPage() {
 
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                 <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
-                    <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight">Modify Donation Record</DialogTitle></DialogHeader>
+                    <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight">Edit Donation Record</DialogTitle></DialogHeader>
                     <div className="flex-1 overflow-hidden relative">
                         <DonationForm donation={donation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} campaigns={allCampaigns || []} leads={allLeads || []} defaultLinkId={'unlinked'} />
                     </div>
@@ -421,7 +421,7 @@ export default function UnlinkedDonationDetailsPage() {
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
                 <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 rounded-[12px] border-primary/10 overflow-hidden shadow-2xl animate-fade-in-zoom">
                     <DialogHeader className="px-6 py-4 bg-primary/5 border-b">
-                        <DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">{imageToView ? imageToView.title : 'Artifact Viewer'}</DialogTitle>
+                        <DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">{imageToView ? imageToView.title : 'Document Viewer'}</DialogTitle>
                     </DialogHeader>
                     <ScrollArea className="flex-1 bg-secondary/20">
                         <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">

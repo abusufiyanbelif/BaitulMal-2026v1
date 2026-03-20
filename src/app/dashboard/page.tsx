@@ -30,92 +30,92 @@ export default function Home() {
 
     const allCards = [
         {
-            title: "Campaigns",
-            description: "Manage Group Ration, Relief, And Special Projects.",
+            title: "Organization Campaigns",
+            description: "Manage Team Projects, Relief Efforts, And Charity Programs.",
             href: "/campaign-members",
             icon: FolderKanban,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.read', false),
         },
         {
-            title: "Public Appeals",
-            description: "Track And Manage Individual Support Cases.",
+            title: "Public Appeals Hub",
+            description: "Track And Manage Individual Aid Cases And Community Requests.",
             href: "/leads-members",
             icon: Lightbulb,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.read', false),
         },
         {
             title: "Beneficiary Registry",
-            description: "A Comprehensive List Of All Aid Recipients.",
+            description: "Maintain The Master List Of All Deserving Families And Recipients.",
             href: "/beneficiaries",
             icon: Users,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.beneficiaries.read', false),
         },
         {
             title: "Donor Profiles",
-            description: "Manage Community Contributor Vetting And Identity.",
+            description: "Manage Donor Identity, History, And Community Relationships.",
             href: "/donors",
             icon: HeartHandshake,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donors.read', false),
         },
         {
             title: "Donation Records",
-            description: "View And Manage All Verified Contributions.",
+            description: "Secure Access To All Verified Contributions and Payment Vouchers.",
             href: "/donations",
             icon: IndianRupee,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations.read', false),
         },
         {
-            title: "Guidance Directory",
-            description: "Manage Help Resources And Community Schemes.",
+            title: "Guidance Center",
+            description: "Manage Help Documents, Local Schemes, And Support Resources.",
             href: "/guidance",
             icon: BookOpen,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.guidance.read', false),
         },
          {
-            title: "Public Preview",
-            description: "Review Live Informational Pages And Summary Metrics.",
+            title: "Public Page Preview",
+            description: "Review Live Informational Content And Community Dashboards.",
             href: "/public-summary",
             icon: Eye,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.read', false) || !!getNestedValue(userProfile, 'permissions.leads-members.read', false),
         },
         {
-            title: "Document Extractor",
-            description: "AI-Powered Text And Data Extraction Hub.",
+            title: "Smart Document Scanner",
+            description: "AI Tools For Scanning Forms, Bills, And Identity Proofs.",
             href: "/extractor",
             icon: ScanSearch,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.extractor.read', false),
         },
         {
-            title: "Story Creator",
-            description: "Generate Impact Narratives From Verified Reports.",
+            title: "Case Story Creator",
+            description: "Automatically Generate Impact Narratives For Donor Transparency.",
             href: "/story-creator",
             icon: MessageSquare,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.storyCreator.read', false),
         },
         {
-            title: "User Management",
-            description: "Manage Staff Accounts And Role Permissions.",
+            title: "User & Team Management",
+            description: "Control Team Access, Roles, And Member Account Settings.",
             href: "/users",
             icon: Users,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.users.read', false),
         },
         {
             title: "System Settings",
-            description: "Configure Branding, Payments, And Compliance Rules.",
+            description: "Update Organization Name, Payments, And Branding Themes.",
             href: "/settings",
             icon: Settings,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.read', false),
         },
         {
-            title: "Data Analytics",
-            description: "In-Depth Usage Metrics And Historical Trends.",
+            title: "Impact Analytics",
+            description: "Explore Visual Reports On Growth And Data Usage Trends.",
             href: "/analytics",
             icon: BarChart,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.analytics.read', false),
         },
         {
-            title: "System Health",
-            description: "Perform Diagnostic Checks On All Essential Services.",
+            title: "System Health Checks",
+            description: "Verify Real-Time Connection Status Of All Organization Services.",
             href: "/diagnostics",
             icon: FlaskConical,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.diagnostics.read', false),
@@ -153,7 +153,7 @@ export default function Home() {
             </div>
             ) : (
              <div className="text-center py-20">
-                <p className="text-primary font-bold text-lg">Profile Could Not Be Retrieved.</p>
+                <p className="text-primary font-bold text-lg">Your Profile Record Could Not Be Found.</p>
              </div>
             )}
         </div>

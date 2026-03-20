@@ -137,10 +137,10 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
         setIsResolving(selectedDonation.id);
         const res = await linkDonationToDonorAction(selectedDonation.id, donor.id, { id: userProfile.id, name: userProfile.name });
         if (res.success) {
-            toast({ title: 'Identity Mapped', description: `Successfully Consolidated Records For ${donor.name}.`, variant: 'success' });
+            toast({ title: 'Donor Linked', description: `Successfully Linked Records To ${donor.name}.`, variant: 'success' });
             setSelectedDonation(null);
         } else {
-            toast({ title: 'Mapping Failed', description: res.message, variant: 'destructive' });
+            toast({ title: 'Linking Failed', description: res.message, variant: 'destructive' });
         }
         setIsResolving(null);
     };
@@ -156,13 +156,13 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
             phone: selectedDonation.donorPhone || '',
             upiIds: Array.from(new Set(donorUpis)),
             status: 'Active',
-            notes: `Profile Established Via Identity Resolution Hub For Contribution Entry.`
+            notes: `Donor profile created through resolution center.`
         }, { id: userProfile.id, name: userProfile.name });
 
         if (res.success && res.id) {
             const linkRes = await linkDonationToDonorAction(selectedDonation.id, res.id, { id: userProfile.id, name: userProfile.name });
             if (linkRes.success) {
-                toast({ title: 'New Profile Registered', description: 'Institutional Identity Secured And Linked.', variant: 'success' });
+                toast({ title: 'Profile Created', description: 'New Donor profile registered and linked.', variant: 'success' });
                 setSelectedDonation(null);
             }
         } else {
@@ -175,9 +175,9 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="w-[95vw] sm:max-w-5xl h-[85vh] flex flex-col p-0 overflow-hidden rounded-[24px] border-primary/10 shadow-2xl animate-fade-in-zoom">
                 <DialogHeader className="bg-primary/5 px-6 py-6 border-b shrink-0">
-                    <DialogTitle className="text-2xl font-bold text-primary tracking-tight">Identity Resolver Hub</DialogTitle>
+                    <DialogTitle className="text-2xl font-bold text-primary tracking-tight">Donor Resolution Hub</DialogTitle>
                     <DialogDescription className="font-normal text-primary/70">
-                        Map Unlinked Contributions To Verified Institutional Donor Profiles.
+                        Link Unverified Donations To Verified Donor Profiles.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -195,7 +195,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                 ) : unlinkedDonations.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-20 text-center opacity-30">
                                         <CheckCircle2 className="h-10 w-10 mb-2"/>
-                                        <p className="text-xs font-bold uppercase tracking-widest">Registry Secure</p>
+                                        <p className="text-xs font-bold uppercase tracking-widest">All Records Linked</p>
                                     </div>
                                 ) : (
                                     paginatedDonations.map(d => (
@@ -270,15 +270,15 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
 
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <h4 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Identify Profile</h4>
-                                            <Badge variant="outline" className="text-[9px] font-bold border-primary/10 text-primary/60">Heuristic Mapping</Badge>
+                                            <h4 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Select Donor Profile</h4>
+                                            <Badge variant="outline" className="text-[9px] font-bold border-primary/10 text-primary/60">Profile Mapping</Badge>
                                         </div>
                                         
                                         <div className="grid gap-4">
                                             <Button onClick={handleCreateNewProfile} disabled={!!isResolving} className="h-12 font-bold justify-between px-6 rounded-xl shadow-md transition-all active:scale-95 group bg-primary text-white w-full sm:w-auto">
                                                 <div className="flex items-center gap-3">
                                                     <UserPlus className="h-5 w-5 group-hover:scale-110 transition-transform" />
-                                                    Establish New Profile
+                                                    Register New Profile
                                                 </div>
                                                 <ArrowRight className="h-4 w-4 opacity-40" />
                                             </Button>
@@ -286,7 +286,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                             <div className="relative pt-2">
                                                 <Search className="absolute left-3 bottom-3 h-4 w-4 text-primary/40" />
                                                 <Input 
-                                                    placeholder="Search Database For Matches..." 
+                                                    placeholder="Search database for matches..." 
                                                     value={searchTerm}
                                                     onChange={e => setSearchTerm(e.target.value)}
                                                     className="pl-10 h-10 rounded-xl border-primary/10 text-sm font-normal"
@@ -311,7 +311,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                                         </div>
                                                     ))
                                                 ) : searchTerm.length > 2 && (
-                                                    <p className="text-center text-[10px] text-muted-foreground font-normal italic py-4">No Matching Profiles Discovered.</p>
+                                                    <p className="text-center text-[10px] text-muted-foreground font-normal italic py-4">No matching profiles found.</p>
                                                 )}
                                             </div>
                                         </div>
@@ -330,7 +330,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
 
                 <DialogFooter className="px-6 py-4 bg-primary/5 border-t shrink-0 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <p className="text-[10px] font-bold text-primary/60 tracking-tight flex items-center gap-2">
-                        <CheckCircle2 className="h-3 w-3" /> Secure Institutional Identity Consolidation
+                        <CheckCircle2 className="h-3 w-3" /> Secure Organization Identity Resolution
                     </p>
                     <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-primary/20 text-primary px-10 rounded-xl transition-transform active:scale-95 w-full sm:w-auto">
                         Close Resolver
