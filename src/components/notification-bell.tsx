@@ -7,13 +7,13 @@ import {
     Users, 
     Lightbulb, 
     FolderKanban, 
-    Wallet,
-    CheckCircle2,
     ChevronRight,
     AlertCircle,
     DatabaseZap,
     FileLock,
-    ShieldAlert
+    ShieldAlert,
+    CheckCircle2,
+    HeartHandshake
 } from 'lucide-react';
 import Link from 'next/link';
 import { 
@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/popover";
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from '@/lib/utils';
 import type { Donation, Beneficiary, Lead, Campaign } from '@/lib/types';
 
@@ -68,66 +69,53 @@ function NotificationItem({ icon: Icon, title, subtitle, href, variant = 'info' 
     );
 }
 
-function SectionHeader({ title, count, icon: Icon }: { title: string, count: number, icon: any }) {
-    return (
-        <div className="flex items-center justify-between px-3 py-2 mt-2 first:mt-0">
-            <div className="flex items-center gap-2">
-                <Icon className="h-3 w-3 text-primary/40" />
-                <span className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</span>
-            </div>
-            <Badge variant="secondary" className="h-4 px-1.5 text-[9px] font-bold rounded-full">{count}</Badge>
-        </div>
-    );
-}
-
 export function NotificationBell() {
     const firestore = useFirestore();
     const { user, userProfile } = useSession();
 
-    // 1. Unverified Beneficiaries
-    const unverifiedBeneficiariesQuery = useMemoFirebase(() => 
+    // 1. Beneficiaries
+    const unverifiedBenQuery = useMemoFirebase(() => 
         (firestore && user) ? query(collection(firestore, 'beneficiaries'), where('status', '!=', 'Verified')) : null, 
     [firestore, user]);
-    const { data: unverifiedBeneficiaries } = useCollection<Beneficiary>(unverifiedBeneficiariesQuery);
+    const { data: unverifiedBeneficiaries } = useCollection<Beneficiary>(unverifiedBenQuery);
 
-    // 2. Unverified Donations (Pending status)
-    const unverifiedDonationsQuery = useMemoFirebase(() => 
+    // 2. Donations
+    const unverifiedDonQuery = useMemoFirebase(() => 
         (firestore && user) ? query(collection(firestore, 'donations'), where('status', '==', 'Pending')) : null, 
     [firestore, user]);
-    const { data: unverifiedDonations } = useCollection<Donation>(unverifiedDonationsQuery);
+    const { data: unverifiedDonations } = useCollection<Donation>(unverifiedDonQuery);
 
-    // 3. Unlinked & Unallocated
-    const verifiedDonationsQuery = useMemoFirebase(() => 
+    // 3. Identity Resolution (Unlinked & Unallocated)
+    const verifiedDonQuery = useMemoFirebase(() => 
         (firestore && user) ? query(collection(firestore, 'donations'), where('status', '==', 'Verified')) : null, 
     [firestore, user]);
-    const { data: verifiedDonations } = useCollection<Donation>(verifiedDonationsQuery);
+    const { data: verifiedDonations } = useCollection<Donation>(verifiedDonQuery);
 
     const unlinkedDonations = useMemo(() => verifiedDonations?.filter(d => !d.donorId) || [], [verifiedDonations]);
     const unallocatedCount = useMemo(() => verifiedDonations?.filter(d => (d.amount - (d.linkSplit?.reduce((s, l) => s + l.amount, 0) || 0)) > 0.01).length || 0, [verifiedDonations]);
 
-    // 4. Initiatives Needing Approval (Pending Verification)
-    const pendingCampaignsRef = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'campaigns'), where('authenticityStatus', '==', 'Pending Verification')) : null, [firestore, user]);
-    const { data: pendingCampaigns } = useCollection<Campaign>(pendingCampaignsRef);
+    // 4. Campaigns
+    const pendingCampsQuery = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'campaigns'), where('authenticityStatus', '==', 'Pending Verification')) : null, [firestore, user]);
+    const { data: pendingCampaigns } = useCollection<Campaign>(pendingCampsQuery);
 
-    const pendingLeadsRef = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'leads'), where('authenticityStatus', '==', 'Pending Verification')) : null, [firestore, user]);
-    const { data: pendingLeads } = useCollection<Lead>(pendingLeadsRef);
+    const holdCampsQuery = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'campaigns'), where('publicVisibility', '==', 'Hold'), where('authenticityStatus', '==', 'Verified')) : null, [firestore, user]);
+    const { data: privateCampaigns } = useCollection<Campaign>(holdCampsQuery);
 
-    // 5. Initiatives Private / On Hold (Verified but Visibility Hold)
-    const privateCampaignsRef = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'campaigns'), where('publicVisibility', '==', 'Hold'), where('authenticityStatus', '==', 'Verified')) : null, [firestore, user]);
-    const { data: privateCampaigns } = useCollection<Campaign>(privateCampaignsRef);
+    // 5. Leads
+    const pendingLeadsQuery = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'leads'), where('authenticityStatus', '==', 'Pending Verification')) : null, [firestore, user]);
+    const { data: pendingLeads } = useCollection<Lead>(pendingLeadsQuery);
 
-    const privateLeadsRef = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'leads'), where('publicVisibility', '==', 'Hold'), where('authenticityStatus', '==', 'Verified')) : null, [firestore, user]);
-    const { data: privateLeads } = useCollection<Lead>(privateLeadsRef);
-
-    const approvalCount = (pendingCampaigns?.length || 0) + (pendingLeads?.length || 0);
-    const holdCount = (privateCampaigns?.length || 0) + (privateLeads?.length || 0);
+    const holdLeadsQuery = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'leads'), where('publicVisibility', '==', 'Hold'), where('authenticityStatus', '==', 'Verified')) : null, [firestore, user]);
+    const { data: privateLeads } = useCollection<Lead>(holdLeadsQuery);
 
     const totalAlerts = (unverifiedBeneficiaries?.length || 0) + 
                         (unverifiedDonations?.length || 0) + 
                         unlinkedDonations.length +
                         unallocatedCount + 
-                        approvalCount + 
-                        holdCount;
+                        (pendingCampaigns?.length || 0) + 
+                        (pendingLeads?.length || 0) +
+                        (privateCampaigns?.length || 0) +
+                        (privateLeads?.length || 0);
 
     if (!user || !userProfile) return null;
 
@@ -135,10 +123,7 @@ export function NotificationBell() {
         <Popover>
             <PopoverTrigger asChild>
                 <Button variant="ghost" size="icon" className="relative h-10 w-10 rounded-full hover:bg-primary/10 group transition-all active:scale-95 shadow-none border-none">
-                    <Bell className={cn(
-                        "h-5 w-5 text-primary transition-transform group-hover:rotate-12",
-                        totalAlerts > 0 && "animate-shake"
-                    )} />
+                    <Bell className="h-5 w-5 text-primary transition-transform group-hover:rotate-12" />
                     {totalAlerts > 0 && (
                         <span className="absolute top-2 right-2 flex h-4 w-4">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-destructive opacity-75"></span>
@@ -149,21 +134,21 @@ export function NotificationBell() {
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-80 p-0 overflow-hidden rounded-2xl border-primary/10 shadow-2xl animate-fade-in-zoom bg-white" align="end" sideOffset={12}>
+            <PopoverContent className="w-80 p-0 overflow-hidden rounded-[20px] border-primary/10 shadow-2xl animate-fade-in-zoom bg-white" align="end" sideOffset={12}>
                 <div className="bg-primary/5 p-4 border-b">
                     <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
-                            <h3 className="text-sm font-bold text-primary tracking-tight">Organization Tasks</h3>
+                            <h3 className="text-sm font-bold text-primary tracking-tight">Pending Tasks</h3>
                             <p className="text-[9px] text-muted-foreground font-medium tracking-tight opacity-60">Action Required For Registry Health</p>
                         </div>
                         {totalAlerts > 0 && <Badge className="bg-primary text-white border-none font-bold text-[9px] px-2 h-5">Updates</Badge>}
                     </div>
                 </div>
                 
-                <ScrollArea className="h-full max-h-[450px]">
-                    <div className="p-2 space-y-4 pb-6">
+                <ScrollArea className="h-full max-h-[500px]">
+                    <div className="p-2 pb-6">
                         {totalAlerts === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-12 text-center px-6">
+                            <div className="flex flex-col items-center justify-center py-16 text-center px-6">
                                 <div className="p-4 rounded-full bg-primary/5 text-primary/20 mb-4 animate-fade-in-zoom">
                                     <CheckCircle2 className="h-10 w-10" />
                                 </div>
@@ -171,71 +156,112 @@ export function NotificationBell() {
                                 <p className="text-[10px] text-muted-foreground font-normal">All Data Has Been Verified And Allocated.</p>
                             </div>
                         ) : (
-                            <div className="space-y-4">
-                                {approvalCount > 0 && (
-                                    <div className="space-y-1">
-                                        <SectionHeader title="Needs Approval" count={approvalCount} icon={ShieldAlert} />
-                                        <div className="space-y-1">
-                                            {pendingCampaigns?.slice(0, 2).map(c => (
-                                                <NotificationItem key={`pending_camp_${c.id}`} icon={FolderKanban} title={c.name} subtitle="Action: Verify Campaign Authenticity" href={`/campaign-members/${c.id}/summary`} variant="warning" />
-                                            ))}
-                                            {pendingLeads?.slice(0, 2).map(l => (
-                                                <NotificationItem key={`pending_lead_${l.id}`} icon={Lightbulb} title={l.name} subtitle="Action: Verify Appeal Authenticity" href={`/leads-members/${l.id}/summary`} variant="warning" />
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
-                                {holdCount > 0 && (
-                                    <div className="space-y-1">
-                                        <SectionHeader title="Private / Drafts" count={holdCount} icon={FileLock} />
-                                        <div className="space-y-1">
-                                            {privateCampaigns?.slice(0, 2).map(c => (
-                                                <NotificationItem key={`hold_camp_${c.id}`} icon={FolderKanban} title={c.name} subtitle="Status: Verified But Private" href={`/campaign-members/${c.id}/summary`} variant="info" />
-                                            ))}
-                                            {privateLeads?.slice(0, 2).map(l => (
-                                                <NotificationItem key={`hold_lead_${l.id}`} icon={Lightbulb} title={l.name} subtitle="Status: Verified But Private" href={`/leads-members/${l.id}/summary`} variant="info" />
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
+                            <Accordion type="multiple" className="w-full space-y-1">
+                                
+                                {/* Donors Category */}
                                 {unlinkedDonations.length > 0 && (
-                                    <div className="space-y-1">
-                                        <SectionHeader title="Map Identities" count={unlinkedDonations.length} icon={DatabaseZap} />
-                                        <div className="space-y-1">
-                                            {unlinkedDonations.slice(0, 2).map(d => (
+                                    <AccordionItem value="donors" className="border rounded-xl bg-white shadow-sm border-primary/5">
+                                        <AccordionTrigger className="px-3 py-2 hover:no-underline font-bold text-[10px] uppercase text-primary/60">
+                                            <div className="flex items-center gap-2">
+                                                <HeartHandshake className="h-3.5 w-3.5"/>
+                                                Donor Identity ({unlinkedDonations.length})
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent className="px-1 pb-2">
+                                            {unlinkedDonations.slice(0, 3).map(d => (
                                                 <NotificationItem key={`unlinked_${d.id}`} icon={AlertCircle} title={d.donorName} subtitle="Action: Resolve Donor Identity" href={`/donations/${d.id}`} variant="warning" />
                                             ))}
-                                        </div>
-                                    </div>
+                                            {unlinkedDonations.length > 3 && (
+                                                <Button variant="ghost" asChild className="w-full h-8 text-[9px] font-bold text-primary/40 uppercase"><Link href="/donors">View All Unlinked</Link></Button>
+                                            )}
+                                        </AccordionContent>
+                                    </AccordionItem>
                                 )}
 
-                                {unverifiedBeneficiaries && unverifiedBeneficiaries.length > 0 && (
-                                    <div className="space-y-1">
-                                        <SectionHeader title="Verify Beneficiaries" count={unverifiedBeneficiaries.length} icon={Users} />
-                                        <div className="space-y-1">
-                                            {unverifiedBeneficiaries.slice(0, 3).map(b => (
-                                                <NotificationItem key={b.id} icon={Users} title={b.name} subtitle="Action: Review Profile Details" href={`/beneficiaries/${b.id}`} variant="destructive" />
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-
+                                {/* Donations Category */}
                                 {unverifiedDonations && unverifiedDonations.length > 0 && (
-                                    <div className="space-y-1">
-                                        <SectionHeader title="Confirm Donations" count={unverifiedDonations.length} icon={IndianRupee} />
-                                        <div className="space-y-1">
+                                    <AccordionItem value="donations" className="border rounded-xl bg-white shadow-sm border-primary/5">
+                                        <AccordionTrigger className="px-3 py-2 hover:no-underline font-bold text-[10px] uppercase text-primary/60">
+                                            <div className="flex items-center gap-2">
+                                                <IndianRupee className="h-3.5 w-3.5"/>
+                                                Donations ({unverifiedDonations.length})
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent className="px-1 pb-2">
                                             {unverifiedDonations.slice(0, 3).map(d => (
                                                 <NotificationItem key={d.id} icon={IndianRupee} title={`From: ${d.donorName}`} subtitle="Action: Verify Transaction" href={`/donations/${d.id}`} variant="destructive" />
                                             ))}
-                                        </div>
-                                    </div>
+                                            {unverifiedDonations.length > 3 && (
+                                                <Button variant="ghost" asChild className="w-full h-8 text-[9px] font-bold text-primary/40 uppercase"><Link href="/donations?status=Pending">View All Pending</Link></Button>
+                                            )}
+                                        </AccordionContent>
+                                    </AccordionItem>
                                 )}
-                            </div>
+
+                                {/* Beneficiaries Category */}
+                                {unverifiedBeneficiaries && unverifiedBeneficiaries.length > 0 && (
+                                    <AccordionItem value="beneficiaries" className="border rounded-xl bg-white shadow-sm border-primary/5">
+                                        <AccordionTrigger className="px-3 py-2 hover:no-underline font-bold text-[10px] uppercase text-primary/60">
+                                            <div className="flex items-center gap-2">
+                                                <Users className="h-3.5 w-3.5"/>
+                                                Beneficiaries ({unverifiedBeneficiaries.length})
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent className="px-1 pb-2">
+                                            {unverifiedBeneficiaries.slice(0, 3).map(b => (
+                                                <NotificationItem key={b.id} icon={Users} title={b.name} subtitle="Action: Review Profile Details" href={`/beneficiaries/${b.id}`} variant="destructive" />
+                                            ))}
+                                            {unverifiedBeneficiaries.length > 3 && (
+                                                <Button variant="ghost" asChild className="w-full h-8 text-[9px] font-bold text-primary/40 uppercase"><Link href="/beneficiaries?status=Pending">View All Unverified</Link></Button>
+                                            )}
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                )}
+
+                                {/* Campaigns Category */}
+                                {((pendingCampaigns?.length || 0) + (privateCampaigns?.length || 0)) > 0 && (
+                                    <AccordionItem value="campaigns" className="border rounded-xl bg-white shadow-sm border-primary/5">
+                                        <AccordionTrigger className="px-3 py-2 hover:no-underline font-bold text-[10px] uppercase text-primary/60">
+                                            <div className="flex items-center gap-2">
+                                                <FolderKanban className="h-3.5 w-3.5"/>
+                                                Campaign Tasks ({(pendingCampaigns?.length || 0) + (privateCampaigns?.length || 0)})
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent className="px-1 pb-2">
+                                            {pendingCampaigns?.slice(0, 2).map(c => (
+                                                <NotificationItem key={`pc_${c.id}`} icon={ShieldAlert} title={c.name} subtitle="Action: Verify Authenticity" href={`/campaign-members/${c.id}/summary`} variant="warning" />
+                                            ))}
+                                            {privateCampaigns?.slice(0, 2).map(c => (
+                                                <NotificationItem key={`hc_${c.id}`} icon={FileLock} title={c.name} subtitle="Visibility: Private (On Hold)" href={`/campaign-members/${c.id}/summary`} variant="info" />
+                                            ))}
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                )}
+
+                                {/* Leads Category */}
+                                {((pendingLeads?.length || 0) + (privateLeads?.length || 0)) > 0 && (
+                                    <AccordionItem value="leads" className="border rounded-xl bg-white shadow-sm border-primary/5">
+                                        <AccordionTrigger className="px-3 py-2 hover:no-underline font-bold text-[10px] uppercase text-primary/60">
+                                            <div className="flex items-center gap-2">
+                                                <Lightbulb className="h-3.5 w-3.5"/>
+                                                Lead Tasks ({(pendingLeads?.length || 0) + (privateLeads?.length || 0)})
+                                            </div>
+                                        </AccordionTrigger>
+                                        <AccordionContent className="px-1 pb-2">
+                                            {pendingLeads?.slice(0, 2).map(l => (
+                                                <NotificationItem key={`pl_${l.id}`} icon={ShieldAlert} title={l.name} subtitle="Action: Verify Authenticity" href={`/leads-members/${l.id}/summary`} variant="warning" />
+                                            ))}
+                                            {privateLeads?.slice(0, 2).map(l => (
+                                                <NotificationItem key={`hl_${l.id}`} icon={FileLock} title={l.name} subtitle="Visibility: Private (On Hold)" href={`/leads-members/${l.id}/summary`} variant="info" />
+                                            ))}
+                                        </AccordionContent>
+                                    </AccordionItem>
+                                )}
+
+                            </Accordion>
                         )}
                     </div>
-                    <ScrollBar />
+                    <ScrollBar orientation="vertical" /><ScrollBar orientation="horizontal" />
                 </ScrollArea>
                 
                 {totalAlerts > 0 && (

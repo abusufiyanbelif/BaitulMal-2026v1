@@ -450,6 +450,6 @@ export default function UnlinkedDonationDetailsPage() {
                 }} 
             />
             <UnlinkedDonationResolver open={isResolverOpen} onOpenChange={setIsResolverOpen} initialDonationId={donationId} />
-        </main>
+        </DialogContent>
     );
 }
