@@ -411,7 +411,7 @@ export default function BeneficiaryDetailsPage() {
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
                     <CardHeader className="p-4 flex-row items-center justify-between space-y-0">
                         <CardTitle className="text-[10px] font-bold tracking-tight text-primary uppercase">Disbursed (Given)</CardTitle>
-                        <HeartHandshake className="h-4 w-4 text-primary opacity-40" />
+                        <CheckCircle2 className="h-4 w-4 text-primary opacity-40" />
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
                         <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.disbursed.toLocaleString('en-IN')}</div>

@@ -736,7 +736,7 @@ function DonationListContent() {
 export default function DonationsPage() {
     return (
         <Suspense fallback={<BrandedLoader message="Syncing Campaign Donations..." />}>
-            <DonationListContent />
+            <LeadDonationListContent />
         </Suspense>
     );
 }

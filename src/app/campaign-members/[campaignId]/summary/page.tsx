@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -305,7 +304,7 @@ export default function CampaignSummaryPage() {
 
     useEffect(() => {
         if (campaign && !editMode) {
-             setEditableCampaign({
+             setEditableLead({
                 name: campaign.name || '',
                 description: campaign.description || '',
                 startDate: campaign.startDate || '',
@@ -953,5 +952,3 @@ export default function CampaignSummaryPage() {
         </main>
     );
 }
-
-    
