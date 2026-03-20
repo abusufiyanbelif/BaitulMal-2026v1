@@ -270,8 +270,9 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                     {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
                                                         <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated General Fund</TableCell></TableRow>
                                                     )}
-                                                </Table>
-                                            </div>
+                                                </TableBody>
+                                            </Table>
+                                        </div>
                                         <ScrollBar orientation="horizontal" className="h-1.5" />
                                     </ScrollArea>
                                 </div>
@@ -655,7 +656,7 @@ export default function DonationsPage() {
                 count={stats.pendingAmount.toLocaleString('en-IN')} 
                 description="Awaiting Vetting" 
                 icon={Hourglass} 
-                delay="150ms" 
+                delay="200ms" 
                 isCurrency 
                 onClick={() => { setStatusFilter('Pending'); setIdentityFilter('All'); }}
             />
@@ -664,7 +665,7 @@ export default function DonationsPage() {
                 count={stats.unlinked} 
                 description="Needs Profile Mapping" 
                 icon={AlertCircle} 
-                delay="200ms" 
+                delay="250ms" 
                 colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} 
                 onClick={() => { setIdentityFilter('Unlinked'); setStatusFilter('All'); }}
             />
@@ -673,7 +674,7 @@ export default function DonationsPage() {
                 count={stats.online} 
                 description="Digital Transfers" 
                 icon={Smartphone} 
-                delay="250ms" 
+                delay="300ms" 
                 onClick={() => { setMethodFilter('Online Payment'); }}
             />
             <StatCard 
@@ -681,7 +682,7 @@ export default function DonationsPage() {
                 count={stats.cash} 
                 description="Physical Collections" 
                 icon={Wallet} 
-                delay="300ms" 
+                delay="350ms" 
                 onClick={() => { setMethodFilter('Cash'); }}
             />
         </div>
@@ -725,7 +726,7 @@ export default function DonationsPage() {
                         </Select>
 
                         <Select value={methodFilter} onValueChange={v => { setMethodFilter(v); setCurrentPage(1); }}>
-                            <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-primary/[0.02] font-normal shrink-0"><SelectValue placeholder="Payment Method"/></SelectTrigger>
+                            <SelectTrigger className="w-[160px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-primary/[0.02] font-normal shrink-0"><SelectValue placeholder="Payment Method"/></SelectTrigger>
                             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                 <SelectItem value="All" className="font-normal">All Methods</SelectItem>
                                 <SelectItem value="Online Payment" className="font-normal">Online Payment</SelectItem>

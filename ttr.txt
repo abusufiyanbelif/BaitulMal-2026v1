@@ -1,15 +1,2 @@
-src/app/campaign-members/[campaignId]/donations/[donationId]/page.tsx(381,261): error TS2554: Expected 1 arguments, but got 2.
-src/app/campaign-members/[campaignId]/donations/[donationId]/page.tsx(426,149): error TS2339: Property 'title' does not exist on type 'string'.
-src/app/campaign-members/[campaignId]/donations/[donationId]/page.tsx(431,100): error TS2339: Property 'url' does not exist on type 'string'.
-src/app/campaign-members/[campaignId]/donations/page.tsx(490,17): error TS2322: Type '{ title: string; count: number; description: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; delay: string; colorClass: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & { title: string; count: string | number; description: string; icon: any; delay: string; isCurrency?: boolean | undefined; onClick?: (() => void) | undefined; }'.
-  Property 'colorClass' does not exist on type 'IntrinsicAttributes & { title: string; count: string | number; description: string; icon: any; delay: string; isCurrency?: boolean | undefined; onClick?: (() => void) | undefined; }'.
-src/app/campaign-members/page.tsx(298,77): error TS2304: Cannot find name 'Donation'.
-src/app/campaign-members/page.tsx(306,32): error TS7006: Parameter 'l' implicitly has an 'any' type.
-src/app/campaign-members/page.tsx(310,44): error TS7006: Parameter 'l' implicitly has an 'any' type.
-src/app/campaign-members/page.tsx(317,52): error TS7006: Parameter 'acc' implicitly has an 'any' type.
-src/app/campaign-members/page.tsx(317,57): error TS7006: Parameter 'split' implicitly has an 'any' type.
-src/app/donations/page.tsx(657,17): error TS2322: Type '{ title: string; count: number; description: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; delay: string; colorClass: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & { title: string; count: string | number; description: string; icon: any; delay: string; isCurrency?: boolean | undefined; onClick?: (() => void) | undefined; }'.
-  Property 'colorClass' does not exist on type 'IntrinsicAttributes & { title: string; count: string | number; description: string; icon: any; delay: string; isCurrency?: boolean | undefined; onClick?: (() => void) | undefined; }'.
-src/app/leads-members/[leadId]/donations/page.tsx(515,17): error TS2322: Type '{ title: string; count: number; description: string; icon: ForwardRefExoticComponent<Omit<LucideProps, "ref"> & RefAttributes<SVGSVGElement>>; delay: string; colorClass: string; onClick: () => void; }' is not assignable to type 'IntrinsicAttributes & { title: string; count: string | number; description: string; icon: any; delay: string; isCurrency?: boolean | undefined; onClick?: (() => void) | undefined; }'.
-  Property 'colorClass' does not exist on type 'IntrinsicAttributes & { title: string; count: string | number; description: string; icon: any; delay: string; isCurrency?: boolean | undefined; onClick?: (() => void) | undefined; }'.
-src/components/public-campaigns-view.tsx(274,369): error TS17001: JSX elements cannot have multiple attributes with the same name.
+src/app/donations/[donationId]/page.tsx(453,11): error TS17002: Expected corresponding JSX closing tag for 'main'.
+src/app/donations/page.tsx(260,50): error TS17008: JSX element 'TableBody' has no corresponding closing tag.

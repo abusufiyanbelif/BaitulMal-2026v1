@@ -249,7 +249,7 @@ export default function CampaignSummaryPage() {
                 if (amountsByCategory.hasOwnProperty(category)) {
                     const allocatedAmount = split.amount * proportionForThisCampaign;
                     amountsByCategory[category as DonationCategory] += allocatedAmount;
-                    const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
+                    const isForFundraising = category !== 'Zakat' || split.forFundraising === true;
                     if (category === 'Zakat' && isForFundraising) zakatForGoalAmount += allocatedAmount;
                 }
             });
@@ -383,7 +383,9 @@ export default function CampaignSummaryPage() {
             imageUrlFilename = '';
         } else if (imageFile) {
             try {
-                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(imageFile, 1024, 1024, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
+                const resizedBlob = await new Promise<Blob>((resolve) => {
+                    (Resizer as any).imageFileResizer(imageFile, 1024, 1024, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                });
                 const filePath = `campaigns/${campaignId}/background.png`;
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);

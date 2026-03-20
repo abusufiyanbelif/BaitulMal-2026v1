@@ -47,7 +47,7 @@ const getPriorityIcon = (priority?: string) => {
     case 'High': return <ArrowUpCircle className="h-4 w-4 text-orange-500" />;
     case 'Medium': return <MinusCircle className="h-4 w-4 text-yellow-500" />;
     case 'Low': return <ArrowDownCircle className="h-4 w-4 text-blue-500" />;
-    default: return null;
+    default: return <MinusCircle className="h-4 w-4 text-yellow-500" />;
   }
 };
 
@@ -338,7 +338,7 @@ export default function LeadPage() {
 
   const filteredLeads = useMemo(() => {
     if (!leadsWithProgress) return [];
-    let items = leadsWithProgress.filter(l => 
+    let items = [...leadsWithProgress].filter(l => 
         (statusFilter === 'All' || l.status === statusFilter) &&
         (purposeFilter === 'All' || l.purpose === purposeFilter) &&
         (authenticityFilter === 'All' || l.authenticityStatus === authenticityFilter) &&
