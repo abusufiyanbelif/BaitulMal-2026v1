@@ -781,6 +781,58 @@ export default function CampaignSummaryPage() {
                                 </Card>
                             )}
                         </div>
+
+                        <div className="grid gap-6 lg:grid-cols-2 font-normal">
+                            {isVisible('donations_by_category') && (
+                                <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Donations By Category</CardTitle></CardHeader>
+                                    <CardContent className="p-0 sm:p-6">
+                                        {isClient ? (
+                                        <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={chartDataValues} layout="vertical" margin={{ right: 20 }}>
+                                                    <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartDataValues.map((entry) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
+                                                </BarChart>
+                                            </ResponsiveContainer>
+                                        </ChartContainer>
+                                        ) : <Skeleton className="h-[300px] w-full"/>}
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {isVisible('donations_by_payment_type') && (
+                                <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-sm tracking-tight uppercase">Donations By Payment Type</CardTitle></CardHeader>
+                                    <CardContent className="p-0 sm:p-6">
+                                        {isClient ? (
+                                            <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <PieChart>
+                                                        <ChartTooltip 
+                                                            content={
+                                                                <ChartTooltipContent 
+                                                                    nameKey="name" 
+                                                                    formatter={(value, name, item) => (
+                                                                        <div className="flex flex-col">
+                                                                            <span className="font-bold">Total: ₹{Number(value).toLocaleString()}</span>
+                                                                            <span className="text-[10px] opacity-70">{(item as any).payload.count} Donations</span>
+                                                                        </div>
+                                                                    )}
+                                                                />
+                                                            } 
+                                                        />
+                                                        <Pie data={paymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={5} className="transition-all duration-1000 ease-out focus:outline-none">
+                                                            {paymentTypeChartData.map((entry) => (<Cell key={`cell-pay-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />))}
+                                                        </Pie>
+                                                        <ChartLegend content={<ChartLegendContent />} />
+                                                    </PieChart>
+                                                </ResponsiveContainer>
+                                            </ChartContainer>
+                                        ) : <Skeleton className="h-[250px] w-full"/>}
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
                     </div>
                 )}
 

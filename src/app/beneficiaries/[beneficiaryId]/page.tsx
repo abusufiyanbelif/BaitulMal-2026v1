@@ -1,9 +1,20 @@
 'use client';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useParams, useSearchParams } from 'next/navigation';
-import { useFirestore, useStorage, useMemoFirebase, useDoc, getDocs, getDoc, doc, type DocumentReference, collection, storageRef, uploadBytes, getDownloadURL } from '@/firebase';
-import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
-import Resizer from 'react-image-file-resizer';
+import { 
+    useFirestore, 
+    useStorage, 
+    useMemoFirebase, 
+    useDoc, 
+    doc, 
+    getDocs, 
+    getDoc, 
+    collection, 
+    storageRef, 
+    uploadBytes, 
+    getDownloadURL,
+    type DocumentReference 
+} from '@/firebase';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 
 import { Button } from '@/components/ui/button';
@@ -427,46 +438,43 @@ export default function BeneficiaryDetailsPage() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {linkedInitiatives.map((link) => {
-                                            const communityFund = link.kitAmount - link.zakatAllocation;
-                                            return (
-                                                <TableRow key={`fin_${link.type}_${link.id}`} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5 bg-white">
-                                                    <TableCell className="pl-6 py-4">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="p-1.5 rounded-md bg-primary/5 text-primary">
-                                                                {link.type === 'Campaign' ? <FolderKanban className="h-3.5 w-3.5"/> : <Lightbulb className="h-3.5 w-3.5"/>}
-                                                            </div>
-                                                            <p className="font-bold text-sm text-primary">{link.name}</p>
+                                        {linkedInitiatives.map((link) => (
+                                            <TableRow key={`fin_${link.type}_${link.id}`} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5 bg-white">
+                                                <TableCell className="pl-6 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <div className="p-1.5 rounded-md bg-primary/5 text-primary">
+                                                            {link.type === 'Campaign' ? <FolderKanban className="h-3.5 w-3.5"/> : <Lightbulb className="h-3.5 w-3.5"/>}
                                                         </div>
-                                                    </TableCell>
-                                                    <TableCell className="text-right font-mono text-xs opacity-60">₹{link.kitAmount.toLocaleString('en-IN')}</TableCell>
-                                                    <TableCell className="text-right">
-                                                        <p className="font-bold font-mono text-sm text-primary">₹{link.zakatAllocation.toLocaleString('en-IN')}</p>
-                                                        <p className="text-[8px] font-bold text-muted-foreground tracking-tight uppercase">Reserved</p>
-                                                    </TableCell>
-                                                    <TableCell className="text-right">
-                                                        <p className="font-bold font-mono text-sm text-primary">₹{communityFund.toLocaleString('en-IN')}</p>
-                                                        <p className="text-[8px] font-bold text-muted-foreground tracking-tight uppercase">Lillah / Sadaqah</p>
-                                                    </TableCell>
-                                                    <TableCell className="text-center">
-                                                        <Badge 
-                                                            variant={link.beneficiaryStatus === 'Given' ? 'given' : link.beneficiaryStatus === 'Verified' ? 'eligible' : 'outline'} 
-                                                            className="font-bold text-[9px]"
-                                                        >
-                                                            {link.beneficiaryStatus === 'Given' ? 'Disbursed' : link.beneficiaryStatus === 'Verified' ? 'Secured' : 'Evaluation'}
-                                                        </Badge>
-                                                    </TableCell>
-                                                    <TableCell className="text-right pr-6">
-                                                        <div className="flex flex-col items-end">
-                                                            <span className={cn("font-bold font-mono text-sm text-primary")}>
-                                                                ₹{link.kitAmount.toLocaleString('en-IN')}
-                                                            </span>
-                                                            <span className="text-[8px] font-bold text-muted-foreground tracking-tight uppercase">Net Value</span>
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-                                            );
-                                        })}
+                                                        <p className="font-bold text-sm text-primary">{link.name}</p>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell className="text-right font-mono text-xs opacity-60">₹{link.kitAmount.toLocaleString('en-IN')}</TableCell>
+                                                <TableCell className="text-right">
+                                                    <p className="font-bold font-mono text-sm text-primary">₹{link.zakatAllocation.toLocaleString('en-IN')}</p>
+                                                    <p className="text-[8px] font-bold text-muted-foreground tracking-tight uppercase">Reserved</p>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <p className="font-bold font-mono text-sm text-primary">₹{(link.kitAmount - link.zakatAllocation).toLocaleString('en-IN')}</p>
+                                                    <p className="text-[8px] font-bold text-muted-foreground tracking-tight uppercase">Lillah / Sadaqah</p>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Badge 
+                                                        variant={link.beneficiaryStatus === 'Given' ? 'given' : link.beneficiaryStatus === 'Verified' ? 'eligible' : 'outline'} 
+                                                        className="font-bold text-[9px]"
+                                                    >
+                                                        {link.beneficiaryStatus === 'Given' ? 'Disbursed' : link.beneficiaryStatus === 'Verified' ? 'Secured' : 'Evaluation'}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-right pr-6">
+                                                    <div className="flex flex-col items-end">
+                                                        <span className={cn("font-bold font-mono text-sm text-primary")}>
+                                                            ₹{link.kitAmount.toLocaleString('en-IN')}
+                                                        </span>
+                                                        <span className="text-[8px] font-bold text-muted-foreground tracking-tight uppercase">Net Value</span>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
                                         {linkedInitiatives.length === 0 && (
                                             <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground italic font-normal">No financial records available.</TableCell></TableRow>
                                         )}
