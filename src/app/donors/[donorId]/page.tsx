@@ -181,30 +181,33 @@ export default function DonorProfilePage() {
         setIsSubmitting(true);
         const formData = new FormData(e.currentTarget);
         
-        const validBanks = bankDetails.filter(b => b.bankName || b.accountNumber);
-        const validUpis = upiIds.filter(u => u.trim() !== '');
+        try {
+            const validBanks = bankDetails.filter(b => b.bankName || b.accountNumber);
+            const validUpis = upiIds.filter(u => u.trim() !== '');
 
-        const updates: Partial<Donor> = {
-            name: formData.get('name') as string,
-            phone: formData.get('phone') as string,
-            email: formData.get('email') as string,
-            address: formData.get('address') as string,
-            bankDetails: validBanks,
-            accountNumbers: validBanks.map(b => b.accountNumber).filter(Boolean),
-            upiIds: validUpis,
-            status: formData.get('status') as any,
-            notes: formData.get('notes') as string,
-        };
+            const updates: Partial<Donor> = {
+                name: formData.get('name') as string,
+                phone: formData.get('phone') as string,
+                email: formData.get('email') as string,
+                address: formData.get('address') as string,
+                bankDetails: validBanks,
+                accountNumbers: validBanks.map(b => b.accountNumber).filter(Boolean),
+                upiIds: validUpis,
+                status: formData.get('status') as any,
+                notes: formData.get('notes') as string,
+            };
 
-        const res = await updateDonorAction(donorId, updates, { id: userProfile.id, name: userProfile.name });
-        if (res.success) {
-            toast({ title: 'Success', description: 'Donor Profile Updated Successfully.', variant: 'success' });
-            setIsEditMode(false);
-            forceRefetch();
-        } else {
-            toast({ title: 'Update Failed', description: res.message, variant: 'destructive' });
+            const res = await updateDonorAction(donorId, updates, { id: userProfile.id, name: userProfile.name });
+            if (res.success) {
+                toast({ title: 'Success', description: 'Donor Profile Updated Successfully.', variant: 'success' });
+                setIsEditMode(false);
+                forceRefetch();
+            } else {
+                toast({ title: 'Update Failed', description: res.message, variant: 'destructive' });
+            }
+        } finally {
+            setIsSubmitting(false);
         }
-        setIsSubmitting(false);
     };
 
     const handleDelete = async () => {
@@ -238,6 +241,7 @@ export default function DonorProfilePage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
+            {isSubmitting && <BrandedLoader message="Updating Donor Profile..." />}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
                 <Button variant="outline" asChild className="font-bold border-primary/10 text-primary transition-transform active:scale-95 shrink-0">
                     <Link href="/donors"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Registry</Link>

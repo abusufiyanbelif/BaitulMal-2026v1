@@ -134,106 +134,103 @@ export default function CreateCampaignPage() {
     setProgress(5);
     setLoadingMessage('Initializing creation...');
 
-    const { imageFile, ...campaignCoreData } = data;
-    
-    const hasImageToUpload = imageFile && imageFile.length > 0;
-    if ((hasImageToUpload || documentsToUpload.length > 0) && !auth?.currentUser) {
-        toast({ title: 'Authentication Error', description: 'User Not Authenticated Yet. Please Wait.', variant: 'destructive' });
-        setIsLoading(false);
-        return;
-    }
-    
-    const newCampaignRef = doc(collection(firestore, 'campaigns'));
-    const newCampaignId = newCampaignRef.id;
-
-    let imageUrl = '';
-    let imageUrlFilename = '';
-    
-    if (hasImageToUpload) {
-        setProgress(15);
-        setLoadingMessage('Optimizing header image...');
-        try {
-            const file = imageFile[0];
-            const resizedBlob = await new Promise<Blob>((resolve) => {
-                Resizer.imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
-            });
-            
-            setProgress(35);
-            setLoadingMessage('Uploading background artifacts...');
-            const filePath = `campaigns/${newCampaignId}/background.png`;
-            const fileRef = storageRef(storage, filePath);
-            await uploadBytes(fileRef, resizedBlob);
-            imageUrl = await getDownloadURL(fileRef);
-            const dateStr = new Date().toISOString().split('T')[0];
-            imageUrlFilename = `campaign_${data.name.replace(/\s+/g, '_')}_${dateStr}.png`;
-        } catch (uploadError: any) {
-            console.error("Image Upload Failed:", uploadError);
-            toast({ title: 'Image Upload Failed', description: 'Campaign was not created.', variant: 'destructive'});
+    try {
+        const { imageFile, ...campaignCoreData } = data;
+        
+        const hasImageToUpload = imageFile && imageFile.length > 0;
+        if ((hasImageToUpload || documentsToUpload.length > 0) && !auth?.currentUser) {
+            toast({ title: 'Authentication Error', description: 'User Not Authenticated Yet. Please Wait.', variant: 'destructive' });
             setIsLoading(false);
             return;
         }
-    }
-    
-    setProgress(55);
-    setLoadingMessage('Synchronizing campaign documents...');
-    const documentUploadPromises = documentsToUpload.map(async (file, idx) => {
-        const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-        const fileRef = storageRef(storage, `campaigns/${newCampaignId}/documents/${safeFileName}`);
-        await uploadBytes(fileRef, file);
-        const url = await getDownloadURL(fileRef);
-        const perDocProgress = 25 / Math.max(1, documentsToUpload.length);
-        setProgress(prev => Math.min(prev + perDocProgress, 80));
-        return { name: file.name, url: url, uploadedAt: new Date().toISOString(), isPublic: false };
-    });
+        
+        const newCampaignRef = doc(collection(firestore, 'campaigns'));
+        const newCampaignId = newCampaignRef.id;
 
-    const documents = await Promise.all(documentUploadPromises);
+        let imageUrl = '';
+        let imageUrlFilename = '';
+        
+        if (hasImageToUpload) {
+            setProgress(15);
+            setLoadingMessage('Optimizing header image...');
+            try {
+                const file = imageFile[0];
+                const resizedBlob = await new Promise<Blob>((resolve) => {
+                    Resizer.imageFileResizer(file, 1280, 400, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                });
+                
+                setProgress(35);
+                setLoadingMessage('Uploading background artifacts...');
+                const filePath = `campaigns/${newCampaignId}/background.png`;
+                const fileRef = storageRef(storage, filePath);
+                await uploadBytes(fileRef, resizedBlob);
+                imageUrl = await getDownloadURL(fileRef);
+                const dateStr = new Date().toISOString().split('T')[0];
+                imageUrlFilename = `campaign_${data.name.replace(/\s+/g, '_')}_${dateStr}.png`;
+            } catch (uploadError: any) {
+                console.error("Image Upload Failed:", uploadError);
+                toast({ title: 'Image Upload Failed', description: 'Campaign was not created.', variant: 'destructive'});
+                setIsLoading(false);
+                return;
+            }
+        }
+        
+        setProgress(55);
+        setLoadingMessage('Synchronizing campaign documents...');
+        const documentUploadPromises = documentsToUpload.map(async (file, idx) => {
+            const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+            const fileRef = storageRef(storage, `campaigns/${newCampaignId}/documents/${safeFileName}`);
+            await uploadBytes(fileRef, file);
+            const url = await getDownloadURL(fileRef);
+            const perDocProgress = 25 / Math.max(1, documentsToUpload.length);
+            setProgress(prev => Math.min(prev + perDocProgress, 80));
+            return { name: file.name, url: url, uploadedAt: new Date().toISOString(), isPublic: false };
+        });
 
-    setProgress(85);
-    setLoadingMessage('Finalizing database registration...');
-    const newCampaignData: Partial<Campaign> = {
-      ...(campaignCoreData as any),
-      targetAmount: data.targetAmount || 0,
-      description: data.description || '',
-      createdAt: serverTimestamp(),
-      createdById: userProfile.id,
-      createdByName: userProfile.name,
-      priceDate: new Date().toISOString().split('T')[0],
-      shopName: '',
-      shopContact: '',
-      shopAddress: '',
-      itemCategories: data.category === 'Ration' ? [{ id: 'item-price-list', name: 'Item Price List', items: [] }] : [],
-      allowedDonationTypes: data.allowedDonationTypes as DonationCategory[],
-    };
-    
-    if (imageUrl) {
-      newCampaignData.imageUrl = imageUrl;
-      newCampaignData.imageUrlFilename = imageUrlFilename;
-    }
+        const documents = await Promise.all(documentUploadPromises);
 
-    if (documents && documents.length > 0) {
-        newCampaignData.documents = documents;
-    }
+        setProgress(85);
+        setLoadingMessage('Finalizing database registration...');
+        const newCampaignData: Partial<Campaign> = {
+          ...(campaignCoreData as any),
+          targetAmount: data.targetAmount || 0,
+          description: data.description || '',
+          createdAt: serverTimestamp(),
+          createdById: userProfile.id,
+          createdByName: userProfile.name,
+          priceDate: new Date().toISOString().split('T')[0],
+          shopName: '',
+          shopContact: '',
+          shopAddress: '',
+          itemCategories: data.category === 'Ration' ? [{ id: 'item-price-list', name: 'Item Price List', items: [] }] : [],
+          allowedDonationTypes: data.allowedDonationTypes as DonationCategory[],
+        };
+        
+        if (imageUrl) {
+          newCampaignData.imageUrl = imageUrl;
+          newCampaignData.imageUrlFilename = imageUrlFilename;
+        }
 
-    setDoc(newCampaignRef, newCampaignData)
-      .then(() => {
+        if (documents && documents.length > 0) {
+            newCampaignData.documents = documents;
+        }
+
+        await setDoc(newCampaignRef, newCampaignData);
         setProgress(100);
         setLoadingMessage('Creation successful.');
         toast({ title: 'Success', description: 'Campaign Created Successfully.', variant: 'success' });
         router.push(`/campaign-members`);
-      })
-      .catch((serverError: any) => {
-        const permissionError = new FirestorePermissionError({
+    } catch (serverError: any) {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({
             path: 'campaigns',
             operation: 'create',
-            requestResourceData: { ...newCampaignData, createdAt: '[SERVER_TIMESTAMP]' },
-        });
-        errorEmitter.emit('permission-error', permissionError);
-      })
-      .finally(() => {
+            requestResourceData: { note: 'Failed during campaign registration.' },
+        }));
+    } finally {
         setIsLoading(false);
         setCampaignDataToCreate(null);
         setIsDuplicateAlertOpen(false);
-      });
+    }
   }
 
   const onSubmit = (data: CampaignFormValues) => {
@@ -378,7 +375,7 @@ export default function CreateCampaignPage() {
                     <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem>{renderLabel('End Date', 'endDate')}<FormControl><Input type="date" {...field} className="font-bold text-primary"/></FormControl><FormMessage /></FormItem>)}/>
                 </div>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="status" render={({ field }) => (<FormItem>{renderLabel('Status', 'status')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Status" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></SelectContent></Select><FormMessage /></FormItem>)}/>
+                    <FormField control={form.control} name="status" render={({ field }) => (<FormItem>{renderLabel('Status', 'status')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Status" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></Select><FormMessage /></FormItem>)}/>
                     <FormField control={form.control} name="authenticityStatus" render={({ field }) => (
                         <FormItem>{renderLabel('Verification Level', 'authenticityStatus')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Authenticity" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Pending Verification" className="font-normal">Pending</SelectItem><SelectItem value="Verified" className="font-bold text-primary">Verified</SelectItem><SelectItem value="On Hold" className="font-normal">On Hold</SelectItem><SelectItem value="Rejected" className="font-bold text-destructive">Rejected</SelectItem><SelectItem value="Need More Details" className="font-bold">Need Details</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                     )}/>

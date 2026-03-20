@@ -128,7 +128,7 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
         >
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -232,17 +232,19 @@ function LeadDonationListContent() {
     const donationData = donations.find(d => d.id === donationToUnlink);
     if (!donationData) return;
     setIsUnlinkDialogOpen(false);
+    setIsSubmitting(true);
     const docRef = doc(firestore, 'donations', donationToUnlink);
     const newLinkSplit = (donationData.linkSplit || []).filter(link => link.linkId !== leadId || link.linkType !== 'lead');
     const updateData = { linkSplit: newLinkSplit };
-    updateDoc(docRef, updateData)
-        .catch(async (serverError: any) => {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData }));
-        })
-        .finally(() => {
-            toast({ title: 'Success', description: 'Donation Unlinked Successfully.', variant: 'success' });
-            setDonationToUnlink(null);
-        });
+    try {
+        await updateDoc(docRef, updateData);
+        toast({ title: 'Success', description: 'Donation Unlinked Successfully.', variant: 'success' });
+        setDonationToUnlink(null);
+    } catch (serverError: any) {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData }));
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   const donations = useMemo(() => {
@@ -422,14 +424,19 @@ function LeadDonationListContent() {
   const handleBulkStatusChange = async (newStatus: Donation['status']) => {
     if (selectedIds.length === 0) return;
     setIsBulkUpdating(true);
-    const res = await bulkUpdateDonationStatusAction(selectedIds, newStatus);
-    if (res.success) {
-        toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
-        setSelectedIds([]);
-    } else {
-        toast({ title: "Update Failed", description: res.message, variant: "destructive" });
+    setIsSubmitting(true);
+    try {
+        const res = await bulkUpdateDonationStatusAction(selectedIds, newStatus);
+        if (res.success) {
+            toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
+            setSelectedIds([]);
+        } else {
+            toast({ title: "Update Failed", description: res.message, variant: "destructive" });
+        }
+    } finally {
+        setIsBulkUpdating(false);
+        setIsSubmitting(false);
     }
-    setIsBulkUpdating(false);
   };
 
   const handleExport = () => {
@@ -460,13 +467,18 @@ function LeadDonationListContent() {
 
   const handleImport = async (records: Partial<Donation>[]) => {
     if (!userProfile || !lead) return;
-    const res = await bulkImportDonationsAction(
-        records, 
-        { id: userProfile.id, name: userProfile.name },
-        { type: 'lead', id: lead.id, name: lead.name }
-    );
-    if (res && res.success) toast({ title: 'Import Complete', description: res.message, variant: 'success' });
-    else toast({ title: 'Import Failed', description: res?.message || "Import Failed.", variant: 'destructive' });
+    setIsSubmitting(true);
+    try {
+        const res = await bulkImportDonationsAction(
+            records, 
+            { id: userProfile.id, name: userProfile.name },
+            { type: 'lead', id: lead.id, name: lead.name }
+        );
+        if (res && res.success) toast({ title: 'Import Complete', description: res.message, variant: 'success' });
+        else toast({ title: 'Import Failed', description: res?.message || "Import Failed.", variant: 'destructive' });
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   const isLoading = isLeadLoading || areDonationsLoading || isProfileLoading || isSubmitting;
@@ -476,6 +488,7 @@ function LeadDonationListContent() {
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative overflow-hidden">
+        {isSubmitting && <BrandedLoader message="Processing Appeal Action..." />}
         <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/10 text-primary transition-transform active:scale-95 text-primary"><Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
         <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold tracking-tight text-primary">{lead.name}</h1></div>
         
@@ -609,7 +622,7 @@ function LeadDonationListContent() {
 
                     <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}>
                         <SelectTrigger className="w-[140px] h-9 text-xs text-primary font-bold border-primary/20"><SelectValue placeholder="Status"/></SelectTrigger>
-                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Verified" className="font-bold">Verified</SelectItem><SelectItem value="Pending" className="font-bold">Pending</SelectItem><SelectItem value="Canceled" className="font-bold">Canceled</SelectItem></SelectContent>
+                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="All" className="font-normal">All Statuses</SelectItem><SelectItem value="Verified" className="font-bold">Verified</SelectItem><SelectItem value="Pending" className="font-bold">Pending</SelectItem><SelectItem value="Canceled" className="font-bold">Canceled</SelectItem></SelectContent>
                     </Select>
                     <Select value={identityFilter} onValueChange={v => { setIdentityFilter(v); setCurrentPage(1); }}>
                         <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-white font-normal shrink-0"><SelectValue placeholder="Identity Linkage"/></SelectTrigger>

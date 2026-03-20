@@ -332,14 +332,19 @@ function DonationListContent() {
   const handleBulkStatusChange = async (newStatus: Donation['status']) => {
     if (selectedIds.length === 0) return;
     setIsBulkUpdating(true);
-    const res = await bulkUpdateDonationStatusAction(selectedIds, newStatus);
-    if (res.success) {
-        toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
-        setSelectedIds([]);
-    } else {
-        toast({ title: "Update Failed", description: res.message, variant: "destructive" });
+    setIsSubmitting(true);
+    try {
+        const res = await bulkUpdateDonationStatusAction(selectedIds, newStatus);
+        if (res.success) {
+            toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
+            setSelectedIds([]);
+        } else {
+            toast({ title: "Update Failed", description: res.message, variant: "destructive" });
+        }
+    } finally {
+        setIsBulkUpdating(false);
+        setIsSubmitting(false);
     }
-    setIsBulkUpdating(false);
   };
 
   const handleUnlinkConfirm = async () => {
@@ -347,17 +352,19 @@ function DonationListContent() {
     const donationData = donations.find(d => d.id === donationToUnlink);
     if (!donationData) return;
     setIsUnlinkDialogOpen(false);
+    setIsSubmitting(true);
     const docRef = doc(firestore, 'donations', donationToUnlink);
     const newLinkSplit = (donationData.linkSplit || []).filter(link => link.linkId !== campaignId || link.linkType !== 'campaign');
     const updateData = { linkSplit: newLinkSplit };
-    updateDoc(docRef, updateData)
-        .catch(async (serverError: any) => {
-            errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData }));
-        })
-        .finally(() => {
-            toast({ title: 'Success', description: 'Donation Unlinked Successfully.', variant: 'success' });
-            setDonationToUnlink(null);
-        });
+    try {
+        await updateDoc(docRef, updateData);
+        toast({ title: 'Success', description: 'Donation Unlinked Successfully.', variant: 'success' });
+        setDonationToUnlink(null);
+    } catch (serverError: any) {
+        errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData }));
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   const handleFormSubmit = async (data: DonationFormData) => {
@@ -439,18 +446,24 @@ function DonationListContent() {
 
   const handleImport = async (records: Partial<Donation>[]) => {
     if (!userProfile) return;
-    const res = await bulkImportDonationsAction(records, { id: userProfile.id, name: userProfile.name }, { type: 'campaign', id: campaignId, name: campaign?.name || 'Campaign' });
-    if (res && res.success) toast({ title: 'Import Complete', description: res.message, variant: 'success' });
-    else toast({ title: 'Import Failed', description: res?.message || "Import Operation Failed.", variant: 'destructive' });
+    setIsSubmitting(true);
+    try {
+        const res = await bulkImportDonationsAction(records, { id: userProfile.id, name: userProfile.name }, { type: 'campaign', id: campaignId, name: campaign?.name || 'Campaign' });
+        if (res && res.success) toast({ title: 'Import Complete', description: res.message, variant: 'success' });
+        else toast({ title: 'Import Failed', description: res?.message || "Import Operation Failed.", variant: 'destructive' });
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
-  const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading || isSubmitting;
+  const isLoading = isCampaignLoading || areDonationsLoading || isProfileLoading;
   
   if (isLoading && !campaign) return <BrandedLoader />;
   if (!campaign) return <div className="p-8 text-center text-primary font-bold"><p>Campaign Not Found.</p><Button asChild variant="outline" className="mt-4 border-primary/20 text-primary"><Link href="/campaign-members"><ArrowLeft className="mr-2"/>Back</Link></Button></div>;
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative overflow-hidden">
+        {isSubmitting && <BrandedLoader message="Processing Campaign Records..." />}
         <div className="mb-4"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95 text-primary"><Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button></div>
         <div className="flex justify-between items-center mb-4"><h1 className="text-3xl font-bold tracking-tight text-primary">{campaign.name}</h1></div>
         
@@ -736,7 +749,7 @@ function DonationListContent() {
 export default function DonationsPage() {
     return (
         <Suspense fallback={<BrandedLoader message="Syncing Campaign Donations..." />}>
-            <LeadDonationListContent />
+            <DonationListContent />
         </Suspense>
     );
 }

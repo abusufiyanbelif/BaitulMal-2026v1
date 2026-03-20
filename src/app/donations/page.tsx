@@ -129,7 +129,7 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
         >
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -475,14 +475,19 @@ export default function DonationsPage() {
   const handleBulkStatusChange = async (newStatus: Donation['status']) => {
     if (selectedIds.length === 0) return;
     setIsBulkUpdating(true);
-    const res = await bulkUpdateDonationStatusAction(selectedIds, newStatus);
-    if (res && res.success) {
-        toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
-        setSelectedIds([]);
-    } else {
-        toast({ title: "Update Failed", description: res?.message || "Failed To Update Status.", variant: "destructive" });
+    setIsSubmitting(true);
+    try {
+        const res = await bulkUpdateDonationStatusAction(selectedIds, newStatus);
+        if (res && res.success) {
+            toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
+            setSelectedIds([]);
+        } else {
+            toast({ title: "Update Failed", description: res?.message || "Failed To Update Status.", variant: "destructive" });
+        }
+    } finally {
+        setIsBulkUpdating(false);
+        setIsSubmitting(false);
     }
-    setIsBulkUpdating(false);
   };
 
   const handleFormSubmit = async (data: DonationFormData) => {
@@ -565,13 +570,18 @@ export default function DonationsPage() {
   const handleDeleteConfirm = async () => {
     if (!donationToDelete) return;
     setIsDeleteDialogOpen(false);
-    const res = await deleteDonationAction(donationToDelete);
-    if (res && res.success) {
-        toast({ title: 'Deleted', description: res.message, variant: 'success' });
-    } else {
-        toast({ title: 'Error', description: res?.message || 'Delete Failed.', variant: 'destructive' });
+    setIsSubmitting(true);
+    try {
+        const res = await deleteDonationAction(donationToDelete);
+        if (res && res.success) {
+            toast({ title: 'Deleted', description: res.message, variant: 'success' });
+        } else {
+            toast({ title: 'Error', description: res?.message || 'Delete Failed.', variant: 'destructive' });
+        }
+    } finally {
+        setDonationToDelete(null);
+        setIsSubmitting(false);
     }
-    setDonationToDelete(null);
   };
 
   const handleViewImage = (url: string) => {
@@ -583,11 +593,16 @@ export default function DonationsPage() {
 
   const handleImport = async (records: Partial<Donation>[]) => {
     if (!userProfile) return;
-    const res = await bulkImportDonationsAction(records, { id: userProfile.id, name: userProfile.name });
-    if (res && res.success) {
-        toast({ title: 'Import Complete', description: res.message, variant: 'success' });
-    } else {
-        toast({ title: 'Import Failed', description: res?.message || "Operation Failed.", variant: 'destructive' });
+    setIsSubmitting(true);
+    try {
+        const res = await bulkImportDonationsAction(records, { id: userProfile.id, name: userProfile.name });
+        if (res && res.success) {
+            toast({ title: 'Import Complete', description: res.message, variant: 'success' });
+        } else {
+            toast({ title: 'Import Failed', description: res?.message || "Operation Failed.", variant: 'destructive' });
+        }
+    } finally {
+        setIsSubmitting(false);
     }
   };
 
@@ -597,6 +612,7 @@ export default function DonationsPage() {
 
   return (
     <main className="container mx-auto p-4 md:p-8 font-normal text-primary relative">
+        {isSubmitting && <BrandedLoader message="Processing Registry Action..." />}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div className="flex flex-col gap-2">
                 <Button variant="outline" asChild className="w-fit font-bold border-primary/20 text-primary transition-transform active:scale-95">

@@ -13,6 +13,7 @@ import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/benefici
 import { createMasterBeneficiaryAction } from '../actions';
 import type { Beneficiary } from '@/lib/types';
 import { useAuth } from '@/firebase/provider';
+import { BrandedLoader } from '@/components/branded-loader';
 
 export default function CreateBeneficiaryPage() {
   const router = useRouter();
@@ -28,13 +29,11 @@ export default function CreateBeneficiaryPage() {
       toast({ title: 'Permission Denied', description: 'You Do Not Have Permission To Create Beneficiaries.', variant: 'destructive' });
       return;
     }
-    setIsSubmitting(true);
     
     const fileList = data.idProofFile as FileList | undefined;
     if (fileList && fileList.length > 0) {
       if (isProfileLoading) {
         toast({ title: 'Please Wait', description: 'Authentication Is Still Loading. Please Try Again In A Moment.' });
-        setIsSubmitting(false);
         return;
       }
       if (!auth?.currentUser) {
@@ -43,31 +42,33 @@ export default function CreateBeneficiaryPage() {
               description: "User Not Authenticated Yet. Please Wait.",
               variant: "destructive",
           });
-          setIsSubmitting(false);
           return;
       }
     }
 
-    const { idProofFile, idProofDeleted, ...beneficiaryData } = data;
+    setIsSubmitting(true);
+    try {
+        const { idProofFile, idProofDeleted, ...beneficiaryData } = data;
 
-    const newBeneficiary: Partial<Beneficiary> = {
-        ...beneficiaryData,
-        addedDate: new Date().toISOString().split('T')[0],
-    };
+        const newBeneficiary: Partial<Beneficiary> = {
+            ...beneficiaryData,
+            addedDate: new Date().toISOString().split('T')[0],
+        };
 
-    const result = await createMasterBeneficiaryAction(
-        newBeneficiary as any,
-        { id: userProfile.id, name: userProfile.name }
-    );
-    
-    if (result.success) {
-        toast({ title: 'Success', description: result.message, variant: 'success' });
-        router.push(`/beneficiaries`);
-    } else {
-        toast({ title: 'Creation Failed', description: result.message, variant: 'destructive' });
+        const result = await createMasterBeneficiaryAction(
+            newBeneficiary as any,
+            { id: userProfile.id, name: userProfile.name }
+        );
+        
+        if (result.success) {
+            toast({ title: 'Success', description: result.message, variant: 'success' });
+            router.push(`/beneficiaries`);
+        } else {
+            toast({ title: 'Creation Failed', description: result.message, variant: 'destructive' });
+        }
+    } finally {
+        setIsSubmitting(false);
     }
-
-    setIsSubmitting(false);
   };
 
   if (isProfileLoading) {
@@ -102,6 +103,7 @@ export default function CreateBeneficiaryPage() {
 
   return (
     <>
+      {isSubmitting && <BrandedLoader message="Registering New Beneficiary Profile..." />}
       <main className="container mx-auto p-4 md:p-8">
         <div className="mb-4">
           <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">

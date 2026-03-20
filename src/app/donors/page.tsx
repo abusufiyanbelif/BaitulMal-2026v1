@@ -62,6 +62,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 import { Separator } from '@/components/ui/separator';
+import { BrandedLoader } from '@/components/branded-loader';
 
 function StatCard({ title, count, description, icon: Icon, delay, onClick }: { title: string, count: number, description: string, icon: any, delay: string, onClick?: () => void }) {
     return (
@@ -75,7 +76,7 @@ function StatCard({ title, count, description, icon: Icon, delay, onClick }: { t
         >
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">{count}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">
@@ -174,32 +175,35 @@ export default function DonorRegistryPage() {
     if (!canCreate || !userProfile) return;
     setIsSubmitting(true);
 
-    const formData = new FormData(e.currentTarget);
-    const validBanks = bankDetails.filter(b => b.bankName || b.accountNumber);
-    const validUpis = upiIds.filter(u => u.trim() !== '');
+    try {
+        const formData = new FormData(e.currentTarget);
+        const validBanks = bankDetails.filter(b => b.bankName || b.accountNumber);
+        const validUpis = upiIds.filter(u => u.trim() !== '');
 
-    const data: Partial<Donor> = {
-        name: formData.get('name') as string,
-        phone: formData.get('phone') as string,
-        email: formData.get('email') as string,
-        address: formData.get('address') as string,
-        bankDetails: validBanks,
-        accountNumbers: validBanks.map(b => b.accountNumber).filter(Boolean),
-        upiIds: validUpis,
-        status: (formData.get('status') as any) || 'Active',
-        notes: formData.get('notes') as string,
-    };
+        const data: Partial<Donor> = {
+            name: formData.get('name') as string,
+            phone: formData.get('phone') as string,
+            email: formData.get('email') as string,
+            address: formData.get('address') as string,
+            bankDetails: validBanks,
+            accountNumbers: validBanks.map(b => b.accountNumber).filter(Boolean),
+            upiIds: validUpis,
+            status: (formData.get('status') as any) || 'Active',
+            notes: formData.get('notes') as string,
+        };
 
-    const res = await createDonorAction(data, { id: userProfile.id, name: userProfile.name });
-    if (res.success) {
-        toast({ title: 'Donor Registered', description: res.message, variant: 'success' });
-        setIsFormOpen(false);
-        setBankDetails([{ bankName: '', accountNumber: '', ifscCode: '' }]);
-        setUpiIds(['']);
-    } else {
-        toast({ title: 'Registration Failed', description: res.message, variant: 'destructive' });
+        const res = await createDonorAction(data, { id: userProfile.id, name: userProfile.name });
+        if (res.success) {
+            toast({ title: 'Donor Registered', description: res.message, variant: 'success' });
+            setIsFormOpen(false);
+            setBankDetails([{ bankName: '', accountNumber: '', ifscCode: '' }]);
+            setUpiIds(['']);
+        } else {
+            toast({ title: 'Registration Failed', description: res.message, variant: 'destructive' });
+        }
+    } finally {
+        setIsSubmitting(false);
     }
-    setIsSubmitting(false);
   };
 
   const handleDelete = async (donor: Donor) => {
@@ -222,7 +226,7 @@ export default function DonorRegistryPage() {
 
   const isLoading = areDonorsLoading || isProfileLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Donor Registry..." description="Synchronizing Team Contacts." />;
+  if (isLoading && !donors) return <SectionLoader label="Loading Donor Registry..." description="Synchronizing Team Contacts." />;
   
   if (!canRead) return (
     <main className="container mx-auto p-8">
@@ -235,6 +239,7 @@ export default function DonorRegistryPage() {
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal relative">
+      {isSubmitting && <BrandedLoader message="Updating Donor Registry..." />}
       <div className="flex flex-col gap-2">
         <Button variant="outline" asChild className="w-fit font-bold border-primary/10 text-primary transition-transform active:scale-95">
           <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Dashboard</Link>

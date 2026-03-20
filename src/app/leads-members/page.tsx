@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info, Lightbulb, Globe, ShieldCheck, Clock, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle, FileLock } from 'lucide-react';
+import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info, Lightbulb, Globe, ShieldCheck, Clock, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle, FileLock, Loader2 } from 'lucide-react';
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { doc, updateDoc, collection } from 'firebase/firestore';
@@ -31,6 +31,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
+import { BrandedLoader } from '@/components/branded-loader';
 import {
   Carousel,
   CarouselContent,
@@ -260,7 +261,7 @@ export default function LeadPage() {
   const [selectedYear, setSelectedYear] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [leadToDelete, setLeadToDelete] = useState<Lead | null>(null);
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
@@ -317,23 +318,30 @@ export default function LeadPage() {
   const handleDeleteConfirm = async () => {
     if (!leadToDelete || !canDelete) return;
     setIsDeleteDialogOpen(false);
-    setIsDeleting(true);
-    const result = await deleteLeadAction(leadToDelete.id);
-    toast({ title: result.success ? 'Success' : 'Error', description: result.message, variant: result.success ? 'success' : 'destructive' });
-    setIsDeleting(false);
-    setLeadToDelete(null);
+    setIsSubmitting(true);
+    try {
+        const result = await deleteLeadAction(leadToDelete.id);
+        toast({ title: result.success ? 'Success' : 'Error', description: result.message, variant: result.success ? 'success' : 'destructive' });
+    } finally {
+        setIsSubmitting(false);
+        setLeadToDelete(null);
+    }
   };
 
   const handleStatusUpdate = async (leadToUpdate: Lead, field: 'status' | 'authenticityStatus' | 'publicVisibility' | 'priority', value: string) => {
     if (!firestore || !canUpdate) return;
+    setIsSubmitting(true);
     const docRef = doc(firestore, 'leads', leadToUpdate.id);
     const updateData = { [field]: value };
-    updateDoc(docRef, updateData)
-        .then(() => toast({ title: 'Success', description: `Lead Details Updated.`, variant: 'success' }))
-        .catch((serverError: any) => {
-            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData });
-            errorEmitter.emit('permission-error', permissionError);
-        });
+    try {
+        await updateDoc(docRef, updateData);
+        toast({ title: 'Success', description: `Lead Details Updated.`, variant: 'success' });
+    } catch (serverError: any) {
+        const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData });
+        errorEmitter.emit('permission-error', permissionError);
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   const filteredLeads = useMemo(() => {
@@ -371,9 +379,9 @@ export default function LeadPage() {
     ].filter(s => s.items.length > 0);
   }, [filteredLeads]);
 
-  const isLoading = isProfileLoading || isDeleting || areLeadsLoading || areDonationsLoading;
+  const isLoading = isProfileLoading || areLeadsLoading || areDonationsLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Individual Leads..." description="Retrieving support appeals and verifying progress." />;
+  if (isLoading && !isSubmitting) return <SectionLoader label="Loading Individual Leads..." description="Retrieving support appeals and verifying progress." />;
 
   if (!isLoading && userProfile && !canViewLeads) {
     return (
@@ -390,6 +398,7 @@ export default function LeadPage() {
 
   return (
     <>
+      {(isSubmitting || isLoading) && <BrandedLoader message={isSubmitting ? "Updating Appeal Hub..." : "Syncing Registry Data..."} />}
       <main className="container mx-auto p-4 sm:p-6 space-y-6 text-primary font-normal">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <Button variant="secondary" asChild size="sm" className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
@@ -470,7 +479,7 @@ export default function LeadPage() {
         <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Delete Appeal?</AlertDialogTitle><AlertDialogDescription className="font-bold opacity-80 text-primary/70">Permanently Erase All Data For '{leadToDelete?.name}'? This Action Cannot Be Undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 transition-transform active:scale-95">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
         
-      <CopyLeadDialog open={!!leadToCopy} onOpenChange={() => setLeadToCopy(null)} lead={leadToCopy} onCopyConfirm={async (opt) => { const res = await copyLeadAction({ sourceLeadId: leadToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); setLeadToCopy(null); }}/>
+      <CopyLeadDialog open={!!leadToCopy} onOpenChange={() => setLeadToCopy(null)} lead={leadToCopy} onCopyConfirm={async (opt) => { setIsSubmitting(true); try { const res = await copyLeadAction({ sourceLeadId: leadToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); } finally { setIsSubmitting(false); setLeadToCopy(null); } }}/>
     </>
   );
 }

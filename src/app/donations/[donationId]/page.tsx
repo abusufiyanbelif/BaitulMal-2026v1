@@ -60,6 +60,7 @@ export default function UnlinkedDonationDetailsPage() {
     const [imageToView, setImageToView] = useState<{ url: string; title: string } | null>(null);
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const donationDocRef = useMemoFirebase(() => (firestore && donationId) ? doc(firestore, 'donations', donationId) as DocumentReference<Donation> : null, [firestore, donationId]);
     const { data: donation, isLoading: isDonationLoading } = useDoc<Donation>(donationDocRef);
@@ -82,6 +83,7 @@ export default function UnlinkedDonationDetailsPage() {
         if (!firestore || !storage || !userProfile || !canUpdate || !donation || !allCampaigns || !allLeads) return;
 
         setIsFormOpen(false);
+        setIsSubmitting(true);
 
         try {
             const transactionPromises = data.transactions.map(async (transaction) => {
@@ -147,6 +149,8 @@ export default function UnlinkedDonationDetailsPage() {
             }
         } catch (error: any) {
             toast({ title: 'System Error', description: error.message || 'An Unexpected Error Occurred.', variant: 'destructive' });
+        } finally {
+            setIsSubmitting(false);
         }
     };
     
@@ -183,6 +187,7 @@ export default function UnlinkedDonationDetailsPage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal animate-fade-in-up">
+            {isSubmitting && <BrandedLoader message="Securing Donation Changes..." />}
             <div className="flex items-center justify-between flex-wrap gap-4 mb-4">
                 <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
                     <Link href="/donations">
@@ -409,6 +414,8 @@ export default function UnlinkedDonationDetailsPage() {
                 </div>
             </div>
 
+            <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={{ title: 'Thank you!', text: `Verified donation of ₹${donation.amount.toFixed(2)} received.`, url: window.location.href }} />
+
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                 <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
                     <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0"><DialogTitle className="text-xl font-bold text-primary tracking-tight">Edit Donation Record</DialogTitle></DialogHeader>
@@ -440,15 +447,6 @@ export default function UnlinkedDonationDetailsPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
-            <ShareDialog 
-                open={isShareDialogOpen} 
-                onOpenChange={setIsShareDialogOpen} 
-                shareData={{
-                    title: `JazakAllah Khair!`,
-                    text: `Thank you for your generous contribution of ₹${donation.amount.toFixed(2)}. May Allah accept it and reward you abundantly.`,
-                    url: typeof window !== 'undefined' ? window.location.href : '',
-                }} 
-            />
             <UnlinkedDonationResolver open={isResolverOpen} onOpenChange={setIsResolverOpen} initialDonationId={donationId} />
         </main>
     );

@@ -174,36 +174,46 @@ export default function BeneficiaryDetailsPage() {
     if (!beneficiaryId || !canUpdate || !currentUserProfile || !storage) return;
     setIsSubmitting(true);
     
-    let idProofUrl = beneficiary?.idProofUrl || '';
-    const fileList = data.idProofFile as FileList | undefined;
-    if (fileList && fileList.length > 0) {
-        const file = fileList[0];
-        const resized = await new Promise<Blob>((res) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (b: any) => res(b as Blob), 'blob'); });
-        const fRef = storageRef(storage, `beneficiaries/${beneficiaryId}/id_proof.png`);
-        await uploadBytes(fRef, resized);
-        idProofUrl = await getDownloadURL(fRef);
-    }
+    try {
+        let idProofUrl = beneficiary?.idProofUrl || '';
+        const fileList = data.idProofFile as FileList | undefined;
+        if (fileList && fileList.length > 0) {
+            const file = fileList[0];
+            const resized = await new Promise<Blob>((res) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (b: any) => res(b as Blob), 'blob'); });
+            const fRef = storageRef(storage, `beneficiaries/${beneficiaryId}/id_proof.png`);
+            await uploadBytes(fRef, resized);
+            idProofUrl = await getDownloadURL(fRef);
+        }
 
-    const { idProofFile, idProofDeleted, ...formData } = data;
-    const { status, kitAmount, zakatAllocation, ...masterData } = formData;
-    
-    await updateMasterBeneficiaryAction(beneficiaryId, { ...masterData, idProofUrl, addedDate: beneficiary?.addedDate || new Date().toISOString().split('T')[0] }, { id: currentUserProfile.id, name: currentUserProfile.name });
-    
-    if (initiativeContext) {
-        await updateInitiativeBeneficiaryDetailsAction(initiativeContext.type, initiativeContext.id, beneficiaryId, { ...formData, idProofUrl, id: beneficiaryId });
-    }
+        const { idProofFile, idProofDeleted, ...formData } = data;
+        const { status, kitAmount, zakatAllocation, ...masterData } = formData;
+        
+        await updateMasterBeneficiaryAction(beneficiaryId, { ...masterData, idProofUrl, addedDate: beneficiary?.addedDate || new Date().toISOString().split('T')[0] }, { id: currentUserProfile.id, name: currentUserProfile.name });
+        
+        if (initiativeContext) {
+            await updateInitiativeBeneficiaryDetailsAction(initiativeContext.type, initiativeContext.id, beneficiaryId, { ...formData, idProofUrl, id: beneficiaryId });
+        }
 
-    toast({ title: 'Success', description: 'Beneficiary record updated successfully.' });
-    if (redirectUrl) router.push(redirectUrl);
-    else { forceRefetchMaster(); setIsEditMode(false); }
-    setIsSubmitting(false);
+        toast({ title: 'Success', description: 'Beneficiary record updated successfully.', variant: 'success' });
+        if (redirectUrl) router.push(redirectUrl);
+        else { forceRefetchMaster(); setIsEditMode(false); }
+    } catch (error: any) {
+        toast({ title: 'Update Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   const handleInitiativeStatusChange = async (initiative: LinkedInitiative, newStatus: Beneficiary['status']) => {
-    const res = await updateBeneficiaryStatusInInitiativeAction(initiative.type.toLowerCase() as any, initiative.id, beneficiaryId, newStatus);
-    if (res && res.success) { 
-        fetchLinkedInitiatives(); 
-        toast({ title: "Status Updated", description: `Disbursement status set to ${newStatus}.`, variant: "success" }); 
+    setIsSubmitting(true);
+    try {
+        const res = await updateBeneficiaryStatusInInitiativeAction(initiative.type.toLowerCase() as any, initiative.id, beneficiaryId, newStatus);
+        if (res && res.success) { 
+            fetchLinkedInitiatives(); 
+            toast({ title: "Status Updated", description: `Disbursement status set to ${newStatus}.`, variant: "success" }); 
+        }
+    } finally {
+        setIsSubmitting(false);
     }
   };
 
@@ -231,6 +241,7 @@ export default function BeneficiaryDetailsPage() {
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
+      {isSubmitting && <BrandedLoader message="Updating Beneficiary Records..." />}
       <div className="flex items-center justify-between">
         <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
             <Link href={backHref}><ArrowLeft className="mr-2 h-4 w-4" /> Back To List</Link>
@@ -261,7 +272,7 @@ export default function BeneficiaryDetailsPage() {
                 <CardHeader className="flex flex-row items-center justify-between border-b bg-primary/5 px-6 py-4">
                     <div className="space-y-0.5">
                         <CardTitle className="text-lg font-bold text-primary tracking-tight">Beneficiary Master Record</CardTitle>
-                        <CardDescription className="text-xs font-normal">Personal details and identification Artifacts.</CardDescription>
+                        <CardDescription className="text-xs font-normal">Personal details and identification Documents.</CardDescription>
                     </div>
                     {canUpdate && !isEditMode && ( 
                         <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md active:scale-95 transition-transform">

@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, Utensils, LifeBuoy, ChevronDown, Globe, ShieldCheck, Clock, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle, FileLock } from 'lucide-react';
+import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, CalendarIcon, X, Utensils, LifeBuoy, ChevronDown, Globe, ShieldCheck, Clock, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle, FileLock, Loader2 } from 'lucide-react';
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { doc, updateDoc, collection } from 'firebase/firestore';
@@ -52,6 +52,7 @@ import { FirestorePermissionError } from '@/firebase/errors';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
+import { BrandedLoader } from '@/components/branded-loader';
 import {
   Carousel,
   CarouselContent,
@@ -280,7 +281,7 @@ export default function CampaignPage() {
   const [selectedYear, setSelectedYear] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
-  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [campaignToDelete, setCampaignToDelete] = useState<Campaign | null>(null);
   const [isCopyDialogOpen, setIsCopyDialogOpen] = useState(false);
@@ -339,23 +340,30 @@ export default function CampaignPage() {
   const handleDeleteConfirm = async () => {
     if (!campaignToDelete || !canDelete) return;
     setIsDeleteDialogOpen(false);
-    setIsDeleting(true);
-    const result = await deleteCampaignAction(campaignToDelete.id);
-    toast({ title: result.success ? 'Campaign Deleted' : 'Deletion Failed', description: result.message, variant: result.success ? 'success' : 'destructive' });
-    setIsDeleting(false);
-    setCampaignToDelete(null);
+    setIsSubmitting(true);
+    try {
+        const result = await deleteCampaignAction(campaignToDelete.id);
+        toast({ title: result.success ? 'Campaign Deleted' : 'Deletion Failed', description: result.message, variant: result.success ? 'success' : 'destructive' });
+    } finally {
+        setIsSubmitting(false);
+        setCampaignToDelete(null);
+    }
   };
   
   const handleStatusUpdate = async (campaignToUpdate: Campaign, field: 'status' | 'authenticityStatus' | 'publicVisibility' | 'priority', value: string) => {
     if (!firestore || !canUpdate) return;
+    setIsSubmitting(true);
     const docRef = doc(firestore, 'campaigns', campaignToUpdate.id);
     const updateData = { [field]: value };
-    updateDoc(docRef, updateData)
-        .then(() => toast({ title: 'Success', description: `Status Updated Successfully.`, variant: 'success' }))
-        .catch((serverError: any) => {
-            const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData });
-            errorEmitter.emit('permission-error', permissionError);
-        });
+    try {
+        await updateDoc(docRef, updateData);
+        toast({ title: 'Success', description: `Status Updated Successfully.`, variant: 'success' });
+    } catch (serverError: any) {
+        const permissionError = new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: updateData });
+        errorEmitter.emit('permission-error', permissionError);
+    } finally {
+        setIsSubmitting(false);
+    }
   };
   
   const filteredCampaigns = useMemo(() => {
@@ -393,9 +401,9 @@ export default function CampaignPage() {
     ].filter(s => s.items.length > 0);
   }, [filteredCampaigns]);
 
-  const isLoading = isProfileLoading || isDeleting || areCampaignsLoading || areDonationsLoading;
+  const isLoading = isProfileLoading || areCampaignsLoading || areDonationsLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Campaigns..." description="Fetching institutional records and verifying progress." />;
+  if (isLoading && !isSubmitting) return <SectionLoader label="Loading Campaigns..." description="Fetching institutional records and verifying progress." />;
 
   if (!isLoading && userProfile && !canViewCampaigns) {
     return (
@@ -412,6 +420,7 @@ export default function CampaignPage() {
 
   return (
     <>
+      {(isSubmitting || isLoading) && <BrandedLoader message={isSubmitting ? "Updating Campaign Records..." : "Syncing With Database..."} />}
       <main className="container mx-auto p-4 sm:p-6 space-y-6 text-primary font-normal">
         <div className="flex items-center justify-between flex-wrap gap-4">
           <Button variant="secondary" asChild size="sm" className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
@@ -496,7 +505,7 @@ export default function CampaignPage() {
         <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Delete Initiative?</AlertDialogTitle><AlertDialogDescription className="font-bold opacity-80 text-primary/70">Permanently Erase All Data For '{campaignToDelete?.name}'? This Action Cannot Be Undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 transition-transform active:scale-95">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
 
-      <CopyCampaignDialog open={!!campaignToCopy} onOpenChange={() => setCampaignToCopy(null)} campaign={campaignToCopy} onCopyConfirm={async (opt) => { const res = await copyCampaignAction({ sourceCampaignId: campaignToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); setCampaignToCopy(null); }}/>
+      <CopyCampaignDialog open={!!campaignToCopy} onOpenChange={() => setCampaignToCopy(null)} campaign={campaignToCopy} onCopyConfirm={async (opt) => { setIsSubmitting(true); try { const res = await copyCampaignAction({ sourceCampaignId: campaignToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); } finally { setIsSubmitting(false); setCampaignToCopy(null); } }}/>
     </>
   );
 }
