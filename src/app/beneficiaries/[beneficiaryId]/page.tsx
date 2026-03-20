@@ -16,6 +16,7 @@ import {
     type DocumentReference 
 } from '@/firebase';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
+import Resizer from 'react-image-file-resizer';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
@@ -542,7 +543,7 @@ export default function BeneficiaryDetailsPage() {
                     </Card>
                 </div>
             </div>
-        </TabsContent>
+        </ScrollArea>
       </Tabs>
     </main>
   );

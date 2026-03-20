@@ -13,7 +13,9 @@ import {
     HeartHandshake,
     Database,
     ShieldAlert,
-    FileLock
+    FileLock,
+    X,
+    Filter
 } from 'lucide-react';
 import Link from 'next/link';
 import { 
@@ -131,26 +133,26 @@ export function NotificationBell() {
                     )}
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[90vw] sm:w-96 p-0 overflow-hidden rounded-[20px] border-primary/10 shadow-2xl animate-fade-in-zoom bg-white" align="end" sideOffset={12}>
-                <div className="bg-primary/5 p-4 border-b">
+            <PopoverContent className="w-[90vw] sm:w-96 p-0 overflow-hidden rounded-[24px] border-primary/10 shadow-2xl animate-fade-in-zoom bg-white flex flex-col max-h-[85vh]" align="end" sideOffset={12}>
+                <div className="bg-primary/5 p-4 border-b shrink-0">
                     <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
                             <h3 className="text-sm font-bold text-primary tracking-tight">Organization Task Center</h3>
-                            <p className="text-[9px] text-muted-foreground font-medium tracking-tight opacity-60">Pending Vetting & Identity Actions</p>
+                            <p className="text-[9px] text-muted-foreground font-medium tracking-tight opacity-60 uppercase">Pending Vetting & Identity Actions</p>
                         </div>
-                        {totalAlerts > 0 && <Badge className="bg-primary text-white border-none font-bold text-[9px] px-2 h-5">Review Required</Badge>}
+                        <Badge variant="eligible" className="text-[9px] font-black">{totalAlerts} Active</Badge>
                     </div>
                 </div>
                 
-                <ScrollArea className="h-full max-h-[500px]">
+                <ScrollArea className="flex-1 w-full">
                     <div className="p-2 pb-6 min-w-full">
                         {totalAlerts === 0 ? (
                             <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-                                <div className="p-4 rounded-full bg-primary/5 text-primary/20 mb-4 animate-fade-in-zoom">
+                                <div className="p-4 rounded-full bg-primary/5 text-primary/20 mb-4">
                                     <CheckCircle2 className="h-10 w-10" />
                                 </div>
-                                <p className="text-sm font-bold text-primary tracking-tight">All Tasks Completed</p>
-                                <p className="text-[10px] text-muted-foreground font-normal">All Data Has Been Verified And Secured.</p>
+                                <p className="text-sm font-bold text-primary tracking-tight">No Pending Tasks</p>
+                                <p className="text-[10px] text-muted-foreground font-normal">Everything Has Been Verified And Secured.</p>
                             </div>
                         ) : (
                             <Accordion type="multiple" className="w-full space-y-1">
@@ -259,7 +261,7 @@ export function NotificationBell() {
                 
                 {totalAlerts > 0 && (
                     <div className="p-3 bg-muted/20 border-t flex justify-center shrink-0">
-                        <Button variant="ghost" size="sm" asChild className="h-7 text-[9px] font-bold text-primary tracking-tighter hover:bg-primary/5 uppercase">
+                        <Button variant="ghost" size="sm" asChild className="h-7 text-[9px] font-black text-primary tracking-tighter hover:bg-primary/5 uppercase">
                             <Link href="/dashboard" className="flex items-center">
                                 Management Dashboard <ChevronRight className="ml-1 h-3 w-3" />
                             </Link>

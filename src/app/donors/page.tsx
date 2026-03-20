@@ -222,7 +222,7 @@ export default function DonorRegistryPage() {
 
   const isLoading = areDonorsLoading || isProfileLoading;
   
-  if (isLoading) return <SectionLoader label="Loading Donor Registry..." description="Synchronizing Institutional Contacts." />;
+  if (isLoading) return <SectionLoader label="Loading Donor Registry..." description="Synchronizing Team Contacts." />;
   
   if (!canRead) return (
     <main className="container mx-auto p-8">
@@ -263,7 +263,7 @@ export default function DonorRegistryPage() {
           <StatCard 
             title="Total Profiles" 
             count={stats.total} 
-            description="All Registered Institutional Donors" 
+            description="All Registered Team Donors" 
             icon={Users} 
             delay="100ms" 
             onClick={() => { setStatusFilter('All'); setDesignationFilter('All'); setSearchTerm(''); }}
@@ -448,7 +448,7 @@ export default function DonorRegistryPage() {
                         <Separator className="bg-primary/10" />
                         
                         <div className="space-y-2">
-                            <Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Institutional Observations</Label>
+                            <Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Team Observations</Label>
                             <Textarea name="notes" rows={4} className="font-normal rounded-xl leading-relaxed" placeholder="Mention donor preferences, background vetting details, or historical context..."/>
                         </div>
                     </div>

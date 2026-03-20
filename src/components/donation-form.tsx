@@ -600,7 +600,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                             <FormItem>{renderLabel('Donor remarks', 'comments')}<FormControl><Textarea placeholder="Any specific instructions from the donor..." {...field} disabled={isReadOnly} className="font-normal text-primary" /></FormControl></FormItem>
                         )}/>
                         <FormField control={control} name="suggestions" render={({ field }) => (
-                            <FormItem>{renderLabel('Member insights', 'suggestions')}<FormControl><Textarea placeholder="Verification notes or recommendations..." {...field} disabled={isReadOnly} className="font-normal text-primary" /></FormControl></FormItem>
+                            <FormItem>{renderLabel('Team insights', 'suggestions')}<FormControl><Textarea placeholder="Verification notes or recommendations..." {...field} disabled={isReadOnly} className="font-normal text-primary" /></FormControl></FormItem>
                         )}/>
                     </div>
                 </div>

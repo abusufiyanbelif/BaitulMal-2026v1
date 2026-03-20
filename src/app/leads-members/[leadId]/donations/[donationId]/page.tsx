@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
-import { useParams, useRouter } from 'navigation';
+import { useParams, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useDoc, useCollection, useMemoFirebase, useStorage, useAuth } from '@/firebase';
 import { useSession } from '@/hooks/use-session';

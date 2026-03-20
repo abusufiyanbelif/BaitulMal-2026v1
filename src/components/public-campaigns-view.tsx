@@ -110,7 +110,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                                     </div>
                                     <div className={cn(
                                         "text-[10px] font-bold tracking-tight flex items-center gap-1.5 uppercase", 
-                                        isUrgent ? 'text-red-600 animate-in fade-in slide-in-from-left' : isHigh ? 'text-orange-600' : 'text-primary'
+                                        isUrgent ? 'text-red-600' : isHigh ? 'text-orange-600' : 'text-primary'
                                     )}>
                                         {getPriorityIcon(priorityLabel)}
                                         {priorityLabel} Priority
