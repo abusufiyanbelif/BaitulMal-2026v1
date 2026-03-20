@@ -1,3 +1,7 @@
-src/app/beneficiaries/[beneficiaryId]/page.tsx(180,61): error TS2552: Cannot find name 'Resizer'. Did you mean 'resized'?
-src/app/leads-members/[leadId]/donations/[donationId]/page.tsx(4,38): error TS2307: Cannot find module 'navigation' or its corresponding type declarations.
+src/app/campaign-members/[campaignId]/summary/page.tsx(463,125): error TS2304: Cannot find name 'isLegacyData'.
+src/app/campaign-members/[campaignId]/summary/page.tsx(796,235): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(props: Props): YAxis', gave the following error.
+    Object literal may only specify known properties, and 'fontBold' does not exist in type 'SVGProps<SVGTextElement> | ReactElement<SVGElement, string | JSXElementConstructor<any>> | ((props: any) => ReactElement<...>)'.
+  Overload 2 of 2, '(props: Props, context: any): YAxis', gave the following error.
+    Object literal may only specify known properties, and 'fontBold' does not exist in type 'SVGProps<SVGTextElement> | ReactElement<SVGElement, string | JSXElementConstructor<any>> | ((props: any) => ReactElement<...>)'.
 src/components/public-campaigns-view.tsx(272,369): error TS17001: JSX elements cannot have multiple attributes with the same name.

@@ -1,9 +1,10 @@
+
 'use client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { FolderKanban, HandHelping, CalendarIcon, X, Utensils, LifeBuoy, Clock, CheckCircle2, ShieldCheck, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle } from 'lucide-react';
-import type { Campaign, Donation } from '@/lib/types';
+import { FolderKanban, HandHelping, Calendar as CalendarIcon, X, Utensils, LifeBuoy, Clock, CheckCircle2, ShieldCheck, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle } from 'lucide-react';
+import type { Campaign } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useMemo, useState } from 'react';
 import { Input } from '@/components/ui/input';
@@ -18,7 +19,7 @@ import { cn } from '@/lib/utils';
 import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
+import { parseISO, startOfDay, endOfDay } from 'date-fns';
 import { NewsTicker } from './news-ticker';
 import {
   Carousel,
@@ -308,3 +309,5 @@ export function PublicCampaignsView() {
     </div>
   );
 }
+
+    

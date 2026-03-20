@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -143,120 +144,122 @@ export function NotificationBell() {
                     </div>
                 </div>
                 
-                <ScrollArea className="flex-1 w-full">
-                    <div className="p-2 pb-6 min-w-full">
-                        {totalAlerts === 0 ? (
-                            <div className="flex flex-col items-center justify-center py-16 text-center px-6">
-                                <div className="p-4 rounded-full bg-primary/5 text-primary/20 mb-4">
-                                    <CheckCircle2 className="h-10 w-10" />
+                <div className="flex-1 overflow-hidden relative">
+                    <ScrollArea className="h-full w-full">
+                        <div className="p-2 pb-6 min-w-full">
+                            {totalAlerts === 0 ? (
+                                <div className="flex flex-col items-center justify-center py-16 text-center px-6">
+                                    <div className="p-4 rounded-full bg-primary/5 text-primary/20 mb-4">
+                                        <CheckCircle2 className="h-10 w-10" />
+                                    </div>
+                                    <p className="text-sm font-bold text-primary tracking-tight">No Pending Tasks</p>
+                                    <p className="text-[10px] text-muted-foreground font-normal">Everything Has Been Verified And Secured.</p>
                                 </div>
-                                <p className="text-sm font-bold text-primary tracking-tight">No Pending Tasks</p>
-                                <p className="text-[10px] text-muted-foreground font-normal">Everything Has Been Verified And Secured.</p>
-                            </div>
-                        ) : (
-                            <Accordion type="multiple" className="w-full space-y-1">
-                                
-                                {unlinkedDonations.length > 0 && (
-                                    <AccordionItem value="donors" className="border rounded-xl bg-white shadow-sm border-primary/5 overflow-hidden">
-                                        <AccordionTrigger className="px-3 py-2 hover:no-underline font-bold text-[10px] uppercase text-primary/60">
-                                            <div className="flex items-center gap-2">
-                                                <HeartHandshake className="h-3.5 w-3.5"/>
-                                                Donor Profile Linking ({unlinkedDonations.length})
-                                            </div>
-                                        </AccordionTrigger>
-                                        <AccordionContent className="px-1 pb-2">
-                                            {unlinkedDonations.slice(0, 5).map(d => (
-                                                <NotificationItem key={`unlinked_${d.id}`} icon={AlertCircle} title={d.donorName} subtitle="Link to profile" href={`/donations/${d.id}`} variant="warning" />
-                                            ))}
-                                            {unlinkedDonations.length > 5 && (
-                                                <Button variant="ghost" asChild className="w-full h-8 text-[9px] font-bold text-primary/40 uppercase"><Link href="/donors">Open Resolver Center</Link></Button>
-                                            )}
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                )}
+                            ) : (
+                                <Accordion type="multiple" className="w-full space-y-1">
+                                    
+                                    {unlinkedDonations.length > 0 && (
+                                        <AccordionItem value="donors" className="border rounded-xl bg-white shadow-sm border-primary/5 overflow-hidden">
+                                            <AccordionTrigger className="px-3 py-2 hover:no-underline font-bold text-[10px] uppercase text-primary/60">
+                                                <div className="flex items-center gap-2">
+                                                    <HeartHandshake className="h-3.5 w-3.5"/>
+                                                    Donor Profile Linking ({unlinkedDonations.length})
+                                                </div>
+                                            </AccordionTrigger>
+                                            <AccordionContent className="px-1 pb-2">
+                                                {unlinkedDonations.slice(0, 5).map(d => (
+                                                    <NotificationItem key={`unlinked_${d.id}`} icon={AlertCircle} title={d.donorName} subtitle="Link to profile" href={`/donations/${d.id}`} variant="warning" />
+                                                ))}
+                                                {unlinkedDonations.length > 5 && (
+                                                    <Button variant="ghost" asChild className="w-full h-8 text-[9px] font-bold text-primary/40 uppercase"><Link href="/donors">Open Resolver Center</Link></Button>
+                                                )}
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    )}
 
-                                {unverifiedDonations && unverifiedDonations.length > 0 && (
-                                    <AccordionItem value="donations" className="border rounded-xl bg-white shadow-sm border-primary/5 overflow-hidden">
-                                        <AccordionTrigger className="px-3 py-2 hover:no-underline font-bold text-[10px] uppercase text-primary/60">
-                                            <div className="flex items-center gap-2">
-                                                <IndianRupee className="h-3.5 w-3.5"/>
-                                                Payment Verification ({unverifiedDonations.length})
-                                            </div>
-                                        </AccordionTrigger>
-                                        <AccordionContent className="px-1 pb-2">
-                                            {unverifiedDonations.slice(0, 5).map(d => (
-                                                <NotificationItem key={d.id} icon={IndianRupee} title={d.donorName} subtitle="Confirm contribution" href={`/donations/${d.id}`} variant="destructive" />
-                                            ))}
-                                            {unverifiedDonations.length > 5 && (
-                                                <Button variant="ghost" asChild className="w-full h-8 text-[9px] font-bold text-primary/40 uppercase"><Link href="/donations?status=Pending">View pending payments</Link></Button>
-                                            )}
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                )}
+                                    {unverifiedDonations && unverifiedDonations.length > 0 && (
+                                        <AccordionItem value="donations" className="border rounded-xl bg-white shadow-sm border-primary/5 overflow-hidden">
+                                            <AccordionTrigger className="px-3 py-2 hover:no-underline font-bold text-[10px] uppercase text-primary/60">
+                                                <div className="flex items-center gap-2">
+                                                    <IndianRupee className="h-3.5 w-3.5"/>
+                                                    Payment Verification ({unverifiedDonations.length})
+                                                </div>
+                                            </AccordionTrigger>
+                                            <AccordionContent className="px-1 pb-2">
+                                                {unverifiedDonations.slice(0, 5).map(d => (
+                                                    <NotificationItem key={d.id} icon={IndianRupee} title={d.donorName} subtitle="Confirm contribution" href={`/donations/${d.id}`} variant="destructive" />
+                                                ))}
+                                                {unverifiedDonations.length > 5 && (
+                                                    <Button variant="ghost" asChild className="w-full h-8 text-[9px] font-bold text-primary/40 uppercase"><Link href="/donations?status=Pending">View pending payments</Link></Button>
+                                                )}
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    )}
 
-                                {unverifiedBeneficiaries && unverifiedBeneficiaries.length > 0 && (
-                                    <AccordionItem value="beneficiaries" className="border rounded-xl bg-white shadow-sm border-primary/5 overflow-hidden">
-                                        <AccordionTrigger className="px-3 py-2 hover:no-underline font-bold text-[10px] uppercase text-primary/60">
-                                            <div className="flex items-center gap-2">
-                                                <Users className="h-3.5 w-3.5"/>
-                                                Beneficiary Verification ({unverifiedBeneficiaries.length})
-                                            </div>
-                                        </AccordionTrigger>
-                                        <AccordionContent className="px-1 pb-2">
-                                            {unverifiedBeneficiaries.slice(0, 5).map(b => (
-                                                <NotificationItem key={b.id} icon={Users} title={b.name} subtitle="Review case files" href={`/beneficiaries/${b.id}`} variant="destructive" />
-                                            ))}
-                                            {unverifiedBeneficiaries.length > 5 && (
-                                                <Button variant="ghost" asChild className="w-full h-8 text-[9px] font-bold text-primary/40 uppercase"><Link href="/beneficiaries?status=Pending">View all cases</Link></Button>
-                                            )}
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                )}
+                                    {unverifiedBeneficiaries && unverifiedBeneficiaries.length > 0 && (
+                                        <AccordionItem value="beneficiaries" className="border rounded-xl bg-white shadow-sm border-primary/5 overflow-hidden">
+                                            <AccordionTrigger className="px-3 py-2 hover:no-underline font-bold text-[10px] uppercase text-primary/60">
+                                                <div className="flex items-center gap-2">
+                                                    <Users className="h-3.5 w-3.5"/>
+                                                    Beneficiary Verification ({unverifiedBeneficiaries.length})
+                                                </div>
+                                            </AccordionTrigger>
+                                            <AccordionContent className="px-1 pb-2">
+                                                {unverifiedBeneficiaries.slice(0, 5).map(b => (
+                                                    <NotificationItem key={b.id} icon={Users} title={b.name} subtitle="Review case files" href={`/beneficiaries/${b.id}`} variant="destructive" />
+                                                ))}
+                                                {unverifiedBeneficiaries.length > 5 && (
+                                                    <Button variant="ghost" asChild className="w-full h-8 text-[9px] font-bold text-primary/40 uppercase"><Link href="/beneficiaries?status=Pending">View all cases</Link></Button>
+                                                )}
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    )}
 
-                                {((pendingCampaigns?.length || 0) + (pendingLeads?.length || 0)) > 0 && (
-                                    <AccordionItem value="initiative-approvals" className="border rounded-xl bg-white shadow-sm border-primary/5 overflow-hidden">
-                                        <AccordionTrigger className="px-3 py-2 hover:no-underline font-bold text-[10px] uppercase text-primary/60">
-                                            <div className="flex items-center gap-2">
-                                                <ShieldAlert className="h-3.5 w-3.5"/>
-                                                Pending Approvals ({(pendingCampaigns?.length || 0) + (pendingLeads?.length || 0)})
-                                            </div>
-                                        </AccordionTrigger>
-                                        <AccordionContent className="px-1 pb-2">
-                                            {pendingCampaigns?.slice(0, 3).map(c => (
-                                                <NotificationItem key={`pending_camp_${c.id}`} icon={FolderKanban} title={c.name} subtitle="Awaiting verification" href={`/campaign-members/${c.id}/summary`} variant="warning" />
-                                            ))}
-                                            {pendingLeads?.slice(0, 3).map(l => (
-                                                <NotificationItem key={`pending_lead_${l.id}`} icon={Lightbulb} title={l.name} subtitle="Awaiting verification" href={`/leads-members/${l.id}/summary`} variant="warning" />
-                                            ))}
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                )}
+                                    {((pendingCampaigns?.length || 0) + (pendingLeads?.length || 0)) > 0 && (
+                                        <AccordionItem value="initiative-approvals" className="border rounded-xl bg-white shadow-sm border-primary/5 overflow-hidden">
+                                            <AccordionTrigger className="px-3 py-2 hover:no-underline font-bold text-[10px] uppercase text-primary/60">
+                                                <div className="flex items-center gap-2">
+                                                    <ShieldAlert className="h-3.5 w-3.5"/>
+                                                    Pending Approvals ({(pendingCampaigns?.length || 0) + (pendingLeads?.length || 0)})
+                                                </div>
+                                            </AccordionTrigger>
+                                            <AccordionContent className="px-1 pb-2">
+                                                {pendingCampaigns?.slice(0, 3).map(c => (
+                                                    <NotificationItem key={`pending_camp_${c.id}`} icon={FolderKanban} title={c.name} subtitle="Awaiting verification" href={`/campaign-members/${c.id}/summary`} variant="warning" />
+                                                ))}
+                                                {pendingLeads?.slice(0, 3).map(l => (
+                                                    <NotificationItem key={`pending_lead_${l.id}`} icon={Lightbulb} title={l.name} subtitle="Awaiting verification" href={`/leads-members/${l.id}/summary`} variant="warning" />
+                                                ))}
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    )}
 
-                                {((privateCampaigns?.length || 0) + (privateLeads?.length || 0)) > 0 && (
-                                    <AccordionItem value="visibility-holds" className="border rounded-xl bg-white shadow-sm border-primary/5 overflow-hidden">
-                                        <AccordionTrigger className="px-3 py-2 hover:no-underline font-bold text-[10px] uppercase text-primary/60">
-                                            <div className="flex items-center gap-2">
-                                                <FileLock className="h-3.5 w-3.5"/>
-                                                Ready To Publish ({(privateCampaigns?.length || 0) + (privateLeads?.length || 0)})
-                                            </div>
-                                        </AccordionTrigger>
-                                        <AccordionContent className="px-1 pb-2">
-                                            {privateCampaigns?.slice(0, 3).map(c => (
-                                                <NotificationItem key={`hold_camp_${c.id}`} icon={FolderKanban} title={c.name} subtitle="Internal draft" href={`/campaign-members/${c.id}/summary`} variant="info" />
-                                            ))}
-                                            {privateLeads?.slice(0, 3).map(l => (
-                                                <NotificationItem key={`hold_lead_${l.id}`} icon={Lightbulb} title={l.name} subtitle="Internal draft" href={`/leads-members/${l.id}/summary`} variant="info" />
-                                            ))}
-                                        </AccordionContent>
-                                    </AccordionItem>
-                                )}
+                                    {((privateCampaigns?.length || 0) + (privateLeads?.length || 0)) > 0 && (
+                                        <AccordionItem value="visibility-holds" className="border rounded-xl bg-white shadow-sm border-primary/5 overflow-hidden">
+                                            <AccordionTrigger className="px-3 py-2 hover:no-underline font-bold text-[10px] uppercase text-primary/60">
+                                                <div className="flex items-center gap-2">
+                                                    <FileLock className="h-3.5 w-3.5"/>
+                                                    Ready To Publish ({(privateCampaigns?.length || 0) + (privateLeads?.length || 0)})
+                                                </div>
+                                            </AccordionTrigger>
+                                            <AccordionContent className="px-1 pb-2">
+                                                {privateCampaigns?.slice(0, 3).map(c => (
+                                                    <NotificationItem key={`hold_camp_${c.id}`} icon={FolderKanban} title={c.name} subtitle="Internal draft" href={`/campaign-members/${c.id}/summary`} variant="info" />
+                                                ))}
+                                                {privateLeads?.slice(0, 3).map(l => (
+                                                    <NotificationItem key={`hold_lead_${l.id}`} icon={Lightbulb} title={l.name} subtitle="Internal draft" href={`/leads-members/${l.id}/summary`} variant="info" />
+                                                ))}
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    )}
 
-                            </Accordion>
-                        )}
-                    </div>
-                    <ScrollBar orientation="vertical" />
-                    <ScrollBar orientation="horizontal" />
-                </ScrollArea>
+                                </Accordion>
+                            )}
+                        </div>
+                        <ScrollBar orientation="vertical" />
+                        <ScrollBar orientation="horizontal" />
+                    </ScrollArea>
+                </div>
                 
                 {totalAlerts > 0 && (
                     <div className="p-3 bg-muted/20 border-t flex justify-center shrink-0">
@@ -271,3 +274,5 @@ export function NotificationBell() {
         </Popover>
     );
 }
+
+    

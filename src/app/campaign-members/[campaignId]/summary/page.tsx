@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -170,6 +171,10 @@ export default function CampaignSummaryPage() {
     const { data: visibilitySettings } = useDoc<any>(visibilityRef);
 
     useEffect(() => { setIsClient(true); }, []);
+
+    const isLegacyData = useMemo(() => {
+        return !!(campaign && !campaign.itemCategories && (campaign as any).rationLists);
+    }, [campaign]);
 
     const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
     const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.update', false) || !!getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
@@ -608,10 +613,12 @@ export default function CampaignSummaryPage() {
                                         <div className="relative h-48 sm:h-64 w-full transition-transform duration-500 hover:scale-105">
                                             {isClient ? (
                                                 <ChartContainer config={{ progress: { label: 'Progress', color: 'hsl(var(--primary))' } }} className="mx-auto aspect-square h-full">
-                                                    <RadialBarChart data={[{ name: 'Progress', value: fundingData.fundingProgress || 0, fill: 'hsl(var(--primary))' }]} startAngle={-270} endAngle={90} innerRadius="75%" outerRadius="100%" barSize={20}>
-                                                        <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                                                        <RadialBar dataKey="value" background={{ fill: 'hsl(var(--muted))' }} cornerRadius={10} className="transition-all duration-1000 ease-out" />
-                                                    </RadialBarChart>
+                                                    <ResponsiveContainer width="100%" height="100%">
+                                                        <RadialBarChart data={[{ name: 'Progress', value: fundingData.fundingProgress || 0, fill: 'hsl(var(--primary))' }]} startAngle={-270} endAngle={90} innerRadius="75%" outerRadius="100%" barSize={20}>
+                                                            <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                                            <RadialBar dataKey="value" background={{ fill: 'hsl(var(--muted))' }} cornerRadius={10} className="transition-all duration-1000 ease-out" />
+                                                        </RadialBarChart>
+                                                    </ResponsiveContainer>
                                                 </ChartContainer>
                                             ) : <Skeleton className="w-full h-full rounded-full" />}
                                             <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold tracking-tight uppercase">Funded</span></div>
@@ -793,7 +800,7 @@ export default function CampaignSummaryPage() {
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
                                             <ResponsiveContainer width="100%" height="100%">
                                                 <BarChart data={chartDataValues} layout="vertical" margin={{ right: 20 }}>
-                                                    <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontBold: true, fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartDataValues.map((entry) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
+                                                    <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartDataValues.map((entry) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
                                                 </BarChart>
                                             </ResponsiveContainer>
                                         </ChartContainer>
@@ -946,3 +953,5 @@ export default function CampaignSummaryPage() {
         </main>
     );
 }
+
+    
