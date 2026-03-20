@@ -261,7 +261,7 @@ export default function BeneficiaryDetailsPage() {
                 <CardHeader className="flex flex-row items-center justify-between border-b bg-primary/5 px-6 py-4">
                     <div className="space-y-0.5">
                         <CardTitle className="text-lg font-bold text-primary tracking-tight">Beneficiary Master Record</CardTitle>
-                        <CardDescription className="text-xs font-normal">Personal details and identification artifacts.</CardDescription>
+                        <CardDescription className="text-xs font-normal">Personal details and identification Artifacts.</CardDescription>
                     </div>
                     {canUpdate && !isEditMode && ( 
                         <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md active:scale-95 transition-transform">
@@ -543,7 +543,7 @@ export default function BeneficiaryDetailsPage() {
                     </Card>
                 </div>
             </div>
-        </ScrollArea>
+        </TabsContent>
       </Tabs>
     </main>
   );

@@ -16,7 +16,6 @@ interface VerificationItem {
 
 /**
  * A specialized vertical ticker for Recent Verifications.
- * Labels follow the professional Title Case standard.
  */
 export function RecentVerificationTicker({ items }: { items: VerificationItem[] }) {
   const [startIndex, setStartIndex] = useState(0);
@@ -52,7 +51,7 @@ export function RecentVerificationTicker({ items }: { items: VerificationItem[] 
   }
 
   return (
-    <Card className="animate-fade-in-up border-primary/10 overflow-hidden bg-white shadow-md transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '600ms', animationFillMode: 'backwards' }}>
+    <Card className="animate-fade-in-up border-primary/10 overflow-hidden bg-white shadow-md transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '600ms' }}>
       <CardHeader className="bg-primary/5 border-b">
         <CardTitle className="text-xl font-bold tracking-tight text-primary flex items-center gap-2">
           <CheckCircle2 className="h-6 w-6 text-primary"/> Recent Verifications

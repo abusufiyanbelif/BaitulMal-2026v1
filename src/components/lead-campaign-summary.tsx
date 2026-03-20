@@ -17,8 +17,6 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 /**
  * Lead And Campaign Summary - Displays combined counts.
- * Labels follow the professional Title Case typography standard.
- * Wrapped in high-fidelity ScrollArea for mobile accessibility.
  */
 export function LeadAndCampaignSummary() {
   const { isLoading, campaignsWithProgress, leadsWithProgress } = usePublicData();
@@ -60,7 +58,7 @@ export function LeadAndCampaignSummary() {
 
   return (
     <div className="grid gap-10 lg:grid-cols-2">
-      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md overflow-hidden flex flex-col" style={{ animationDelay: '1000ms', animationFillMode: 'backwards' }}>
+      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md overflow-hidden flex flex-col" style={{ animationDelay: '1000ms' }}>
         <CardHeader className="bg-primary/5 border-b shrink-0">
           <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight uppercase">
@@ -96,7 +94,7 @@ export function LeadAndCampaignSummary() {
         </CardContent>
       </Card>
 
-      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md overflow-hidden flex flex-col" style={{ animationDelay: '1100ms', animationFillMode: 'backwards' }}>
+      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md overflow-hidden flex flex-col" style={{ animationDelay: '1100ms' }}>
         <CardHeader className="bg-primary/5 border-b shrink-0">
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight uppercase">

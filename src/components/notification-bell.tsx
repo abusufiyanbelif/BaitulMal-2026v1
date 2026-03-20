@@ -11,7 +11,6 @@ import {
     AlertCircle,
     CheckCircle2,
     HeartHandshake,
-    Database,
     ShieldAlert,
     FileLock,
     X,
@@ -75,13 +74,13 @@ export function NotificationBell() {
     const firestore = useFirestore();
     const { user, userProfile } = useSession();
 
-    // 1. Beneficiaries Vetting
+    // 1. Beneficiaries Verification
     const unverifiedBenQuery = useMemoFirebase(() => 
         (firestore && user) ? query(collection(firestore, 'beneficiaries'), where('status', '!=', 'Verified')) : null, 
     [firestore, user]);
     const { data: unverifiedBeneficiaries } = useCollection<Beneficiary>(unverifiedBenQuery);
 
-    // 2. Donation Vetting
+    // 2. Donation Verification
     const unverifiedDonQuery = useMemoFirebase(() => 
         (firestore && user) ? query(collection(firestore, 'donations'), where('status', '==', 'Pending')) : null, 
     [firestore, user]);
@@ -138,7 +137,7 @@ export function NotificationBell() {
                     <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
                             <h3 className="text-sm font-bold text-primary tracking-tight">Organization Task Center</h3>
-                            <p className="text-[9px] text-muted-foreground font-medium tracking-tight opacity-60 uppercase">Pending Vetting & Identity Actions</p>
+                            <p className="text-[9px] text-muted-foreground font-medium tracking-tight opacity-60 uppercase">Pending Verification & Identity Actions</p>
                         </div>
                         <Badge variant="eligible" className="text-[9px] font-black">{totalAlerts} Active</Badge>
                     </div>
@@ -200,7 +199,7 @@ export function NotificationBell() {
                                         <AccordionTrigger className="px-3 py-2 hover:no-underline font-bold text-[10px] uppercase text-primary/60">
                                             <div className="flex items-center gap-2">
                                                 <Users className="h-3.5 w-3.5"/>
-                                                Beneficiary Vetting ({unverifiedBeneficiaries.length})
+                                                Beneficiary Verification ({unverifiedBeneficiaries.length})
                                             </div>
                                         </AccordionTrigger>
                                         <AccordionContent className="px-1 pb-2">
@@ -224,10 +223,10 @@ export function NotificationBell() {
                                         </AccordionTrigger>
                                         <AccordionContent className="px-1 pb-2">
                                             {pendingCampaigns?.slice(0, 3).map(c => (
-                                                <NotificationItem key={`pending_camp_${c.id}`} icon={FolderKanban} title={c.name} subtitle="Awaiting vetting" href={`/campaign-members/${c.id}/summary`} variant="warning" />
+                                                <NotificationItem key={`pending_camp_${c.id}`} icon={FolderKanban} title={c.name} subtitle="Awaiting verification" href={`/campaign-members/${c.id}/summary`} variant="warning" />
                                             ))}
                                             {pendingLeads?.slice(0, 3).map(l => (
-                                                <NotificationItem key={`pending_lead_${l.id}`} icon={Lightbulb} title={l.name} subtitle="Awaiting vetting" href={`/leads-members/${l.id}/summary`} variant="warning" />
+                                                <NotificationItem key={`pending_lead_${l.id}`} icon={Lightbulb} title={l.name} subtitle="Awaiting verification" href={`/leads-members/${l.id}/summary`} variant="warning" />
                                             ))}
                                         </AccordionContent>
                                     </AccordionItem>

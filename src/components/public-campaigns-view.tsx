@@ -72,7 +72,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                                     isHigh && "animate-high-pulse border-orange-500/50",
                                     isCompleted && "hover:shadow-none hover:-translate-y-0"
                                 )}
-                                style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
+                                style={{ animationDelay: `${50 + index * 30}ms` }}
                                 onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}
                             >
                                 <div className="relative h-32 w-full bg-secondary flex items-center justify-center border-b border-primary/5">

@@ -158,7 +158,7 @@ export default function DonationDetailsPage() {
         download(format, { contentRef: summaryRef, documentTitle: 'Donation Receipt', documentName: `donation-receipt-${donationId}`, brandingSettings, paymentSettings });
     };
 
-    const handleViewImage = (url: string, title: string = 'Evidence Artifact') => {
+    const handleViewImage = (url: string, title: string = 'Evidence Document') => {
         setImageToView({ url, title });
         setZoom(1);
         setRotation(0);

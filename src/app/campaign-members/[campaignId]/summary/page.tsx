@@ -460,7 +460,7 @@ export default function CampaignSummaryPage() {
                             <Button onClick={() => { if(campaign) setShareDialogData({ title: `Campaign: ${campaign.name}`, text: campaign.description || '', url: window.location.origin + `/campaign-public/${campaignId}/summary` }); setIsShareDialogOpen(true); }} variant="outline" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md border-primary/20 text-primary"><Share2 className="mr-2 h-4 w-4" /> Share</Button>
                         </>
                     )}
-                    {canUpdateSummary && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)} className="font-bold border-primary/20 text-primary transition-transform">Cancel</Button><Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Save className="mr-2 h-4 w-4" /> Secure Changes</Button></div> ) )}
+                    {canUpdateSummary && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)} disabled={isLegacyData} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)} className="font-bold border-primary/20 text-primary transition-transform">Cancel</Button><Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Save className="mr-2 h-4 w-4" /> Save Modifications</Button></div> ) )}
                 </div>
             </div>
 
@@ -479,7 +479,7 @@ export default function CampaignSummaryPage() {
             <div className="space-y-6" ref={summaryRef}>
                 <Card className="animate-fade-in-up shadow-md border-primary/10 bg-white transition-all duration-300 hover:shadow-xl">
                     <CardHeader className="bg-primary/5 border-b">
-                        <CardTitle className="font-bold text-primary tracking-tight uppercase">Campaign Details</CardTitle>
+                        <CardTitle className="font-bold text-primary tracking-tight uppercase">Campaign Objectives</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6 text-foreground font-normal">
                         {editMode ? (
@@ -587,7 +587,7 @@ export default function CampaignSummaryPage() {
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                 </div>
                                 <div className="space-y-2 font-normal text-foreground">
-                                    <Label className="text-muted-foreground text-[10px] font-bold tracking-tight uppercase">Campaign Description</Label>
+                                    <Label className="text-muted-foreground text-[10px] font-bold tracking-tight uppercase">Mission Statement</Label>
                                     <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{campaign?.description || 'No detailed description available.'}</p>
                                 </div>
                             </>
@@ -793,7 +793,7 @@ export default function CampaignSummaryPage() {
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
                                             <ResponsiveContainer width="100%" height="100%">
                                                 <BarChart data={chartDataValues} layout="vertical" margin={{ right: 20 }}>
-                                                    <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartDataValues.map((entry) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
+                                                    <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontBold: true, fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartDataValues.map((entry) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
                                                 </BarChart>
                                             </ResponsiveContainer>
                                         </ChartContainer>
@@ -840,14 +840,14 @@ export default function CampaignSummaryPage() {
 
                 {isVisible('documents') && (
                     <Card className="animate-fade-in-up bg-white shadow-sm border-primary/10 transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '400ms' }}>
-                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Verification Documents</CardTitle></CardHeader>
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Case Verification Documents</CardTitle></CardHeader>
                         <CardContent className="font-normal text-primary pt-6">
                         {editMode ? (
                                 <div className="space-y-4 animate-fade-in-zoom">
                                     <Label className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Upload New Files</Label>
                                     <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf" />
                                     <Separator className="bg-primary/10 my-6" />
-                                    <Label className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Manage Current Documents</Label>
+                                    <Label className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Manage Saved Documents</Label>
                                     {existingDocuments.length > 0 ? (
                                         <div className="space-y-3 font-normal text-foreground">
                                             {existingDocuments.map((doc) => (

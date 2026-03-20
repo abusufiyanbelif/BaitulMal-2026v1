@@ -10,8 +10,6 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 /**
  * Purpose Funding Summary - Displays verified donation totals aggregated by purpose.
- * All labels follow the professional Title Case standard.
- * Hardened for mobile with high-fidelity ScrollArea.
  */
 export function PurposeFundingSummary() {
   const { isLoading, campaignsWithProgress, leadsWithProgress } = usePublicData();
@@ -61,7 +59,7 @@ export function PurposeFundingSummary() {
           Impact By Purpose
         </CardTitle>
         <CardDescription className="font-normal text-primary/70">
-          Total Verified Funds Utilized Across Institutional Support Categories.
+          Total Verified Funds Utilized Across Community Support Categories.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0 flex-1 overflow-hidden">

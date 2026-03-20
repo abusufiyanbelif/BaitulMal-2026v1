@@ -42,7 +42,6 @@ const donationCategoryChartConfig = {
 
 /**
  * Donation Summary - Displays aggregate historical trends and category distributions.
- * Hardened for mobile with high-fidelity ScrollArea and Title Case typography.
  */
 export function DonationSummary() {
   const { isLoading, yearlySummary, categorySummary } = usePublicData();
@@ -62,7 +61,7 @@ export function DonationSummary() {
 
   return (
     <div className="grid gap-10">
-      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden flex flex-col" style={{ animationDelay: '800ms', animationFillMode: 'backwards' }}>
+      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden flex flex-col" style={{ animationDelay: '800ms' }}>
         <CardHeader className="bg-primary/5 border-b shrink-0">
           <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight uppercase">
@@ -109,7 +108,7 @@ export function DonationSummary() {
         </CardContent>
       </Card>
       
-      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden" style={{ animationDelay: '900ms', animationFillMode: 'backwards' }}>
+      <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden" style={{ animationDelay: '900ms' }}>
         <CardHeader className="bg-primary/5 border-b">
           <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight uppercase">
             <PieChartIcon className="h-6 w-6 text-primary" />
