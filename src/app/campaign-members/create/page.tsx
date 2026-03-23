@@ -160,7 +160,7 @@ export default function CreateCampaignPage() {
                 });
                 
                 setProgress(35);
-                setLoadingMessage('Uploading background artifacts...');
+                setLoadingMessage('Uploading background evidence...');
                 const filePath = `campaigns/${newCampaignId}/background.png`;
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);
@@ -313,7 +313,7 @@ export default function CreateCampaignPage() {
                     <FormMessage />
                 </FormItem>
                  <FormItem>
-                    <FormLabel className="font-bold text-primary">Campaign Documents & Artifacts</FormLabel>
+                    <FormLabel className="font-bold text-primary">Campaign Documents & Evidence</FormLabel>
                     <FormControl>
                         <FileUploader
                             onFilesChange={setDocumentsToUpload}
@@ -321,11 +321,26 @@ export default function CreateCampaignPage() {
                             acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf"
                         />
                     </FormControl>
-                    <FormDescription className="font-normal text-xs opacity-70 italic">Upload Proposals, Vetted Reports, Or Verification Photos.</FormDescription>
+                    <FormDescription className="text-xs font-normal opacity-70 italic">Upload Proposals, Verified Reports, Or Verification Photos.</FormDescription>
                 </FormItem>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <FormField control={form.control} name="category" render={({ field }) => (
-                        <FormItem>{renderLabel('Campaign Category', 'category')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Category" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Ration" className="font-bold">Ration</SelectItem><SelectItem value="Relief" className="font-bold">Relief</SelectItem><SelectItem value="General" className="font-bold">General</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem>
+                            {renderLabel('Campaign Category', 'category')}
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger className="font-bold">
+                                        <SelectValue placeholder="Select Category" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="rounded-[12px] shadow-dropdown">
+                                    <SelectItem value="Ration" className="font-bold">Ration</SelectItem>
+                                    <SelectItem value="Relief" className="font-bold">Relief</SelectItem>
+                                    <SelectItem value="General" className="font-bold">General</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
                     )}/>
                     <FormField control={form.control} name="priority" render={({ field }) => (
                         <FormItem>{renderLabel('Priority Level', 'priority')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Priority" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{priorityLevels.map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}</Select><FormMessage /></FormItem>
@@ -375,13 +390,62 @@ export default function CreateCampaignPage() {
                     <FormField control={form.control} name="endDate" render={({ field }) => (<FormItem>{renderLabel('End Date', 'endDate')}<FormControl><Input type="date" {...field} className="font-bold text-primary"/></FormControl><FormMessage /></FormItem>)}/>
                 </div>
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <FormField control={form.control} name="status" render={({ field }) => (<FormItem>{renderLabel('Status', 'status')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Status" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem><SelectItem value="Active" className="font-bold">Active</SelectItem><SelectItem value="Completed" className="font-bold">Completed</SelectItem></Select><FormMessage /></FormItem>)}/>
+                    <FormField control={form.control} name="status" render={({ field }) => (
+                        <FormItem>
+                            {renderLabel('Status', 'status')}
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger className="font-bold">
+                                        <SelectValue placeholder="Select Status" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="rounded-[12px] shadow-dropdown">
+                                    <SelectItem value="Upcoming" className="font-bold">Upcoming</SelectItem>
+                                    <SelectItem value="Active" className="font-bold">Active</SelectItem>
+                                    <SelectItem value="Completed" className="font-bold">Completed</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}/>
                     <FormField control={form.control} name="authenticityStatus" render={({ field }) => (
-                        <FormItem>{renderLabel('Verification Level', 'authenticityStatus')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Authenticity" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Pending Verification" className="font-normal">Pending</SelectItem><SelectItem value="Verified" className="font-bold text-primary">Verified</SelectItem><SelectItem value="On Hold" className="font-normal">On Hold</SelectItem><SelectItem value="Rejected" className="font-bold text-destructive">Rejected</SelectItem><SelectItem value="Need More Details" className="font-bold">Need Details</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                        <FormItem>
+                            {renderLabel('Verification Level', 'authenticityStatus')}
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger className="font-bold">
+                                        <SelectValue placeholder="Select Authenticity" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="rounded-[12px] shadow-dropdown">
+                                    <SelectItem value="Pending Verification" className="font-normal">Pending</SelectItem>
+                                    <SelectItem value="Verified" className="font-bold text-primary">Verified</SelectItem>
+                                    <SelectItem value="On Hold" className="font-normal">On Hold</SelectItem>
+                                    <SelectItem value="Rejected" className="font-bold text-destructive">Rejected</SelectItem>
+                                    <SelectItem value="Need More Details" className="font-bold">Needs Details</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
                     )}/>
                 </div>
               <FormField control={form.control} name="publicVisibility" render={({ field }) => (
-                  <FormItem>{renderLabel('Public Visibility', 'publicVisibility')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Visibility" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="Hold" className="font-bold">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-bold">Ready To Publish</SelectItem><SelectItem value="Published" className="font-bold text-primary">Published</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                  <FormItem>
+                      {renderLabel('Public Visibility', 'publicVisibility')}
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                              <SelectTrigger className="font-bold">
+                                  <SelectValue placeholder="Select Visibility" />
+                              </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="rounded-[12px] shadow-dropdown">
+                              <SelectItem value="Hold" className="font-bold">Hold (Private)</SelectItem>
+                              <SelectItem value="Ready to Publish" className="font-bold">Ready To Publish</SelectItem>
+                              <SelectItem value="Published" className="font-bold text-primary">Published</SelectItem>
+                          </SelectContent>
+                      </Select>
+                      <FormMessage />
+                  </FormItem>
               )}/>
               <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 border-t mt-6 bg-background/80 backdrop-blur-sm sticky bottom-0 p-4 z-50 shrink-0">
                   <Button type="button" variant="outline" onClick={() => router.push('/campaign-members')} disabled={isLoading} className="w-full sm:w-auto font-bold border-primary/20 text-primary transition-transform active:scale-95">Discard</Button>
