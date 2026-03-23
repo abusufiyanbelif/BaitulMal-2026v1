@@ -135,7 +135,7 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
                     </p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">
-                    <Icon className="h-5 w-5" />
+                    <Icon className="h-4 w-4" />
                 </div>
             </div>
             <p className="text-[9px] font-medium text-muted-foreground mt-auto">{description}</p>
@@ -146,7 +146,7 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))] tracking-tight", className)} onClick={() => handleSort(sortKey)}>
+        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))] tracking-tight uppercase", className)} onClick={() => handleSort(sortKey)}>
             {children}
             <div className="flex flex-col opacity-40">
                 <ArrowUp className={cn("h-2.5 w-2.5 -mb-1", isSorted && sortConfig?.direction === 'ascending' && "text-primary opacity-100")} />

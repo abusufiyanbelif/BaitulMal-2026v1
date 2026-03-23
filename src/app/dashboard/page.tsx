@@ -59,7 +59,7 @@ export default function Home() {
         },
         {
             title: "Donation Records",
-            description: "Secure Access To All Verified Contributions and Payment Vouchers.",
+            description: "Secure Access To All Verified Contributions And Payment Vouchers.",
             href: "/donations",
             icon: IndianRupee,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations.read', false),

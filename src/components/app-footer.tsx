@@ -36,7 +36,7 @@ import { Label } from '@/components/ui/label';
 
 /**
  * App Footer - Organization profile and contribution hub.
- * strictly Title Case typography enforced.
+ * Strictly Title Case typography enforced.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
@@ -169,11 +169,11 @@ export function AppFooter() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-6 text-[10px] text-muted-foreground font-semibold">
-          <div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-2">
+          <div className="flex items-center justify-center gap-x-8 gap-y-2 flex-wrap">
             {paymentSettings?.regNo && (
               <span className="flex items-center gap-2">
                 <ShieldCheck className="h-3.5 w-3.5 text-primary/60" />
-                Registration: {paymentSettings.regNo}
+                Registration No: {paymentSettings.regNo}
               </span>
             )}
             {paymentSettings?.pan && (
