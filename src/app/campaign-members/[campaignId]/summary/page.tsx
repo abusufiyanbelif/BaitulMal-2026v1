@@ -304,7 +304,7 @@ export default function CampaignSummaryPage() {
 
     useEffect(() => {
         if (campaign && !editMode) {
-             setEditableLead({
+             setEditableCampaign({
                 name: campaign.name || '',
                 description: campaign.description || '',
                 startDate: campaign.startDate || '',
@@ -918,7 +918,7 @@ export default function CampaignSummaryPage() {
                         {campaign?.createdAt && (
                             <div className="flex items-start gap-3">
                                 <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Calendar className="h-3.5 w-3.5"/></div>
-                                <div>
+                               <div>
                                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Creation Date</p>
                                     <p className="text-xs font-bold text-primary">{(campaign.createdAt as any).toDate?.().toLocaleString() || new Date(campaign.createdAt as any).toLocaleString()}</p>
                                 </div>

@@ -343,7 +343,22 @@ export default function CreateCampaignPage() {
                         </FormItem>
                     )}/>
                     <FormField control={form.control} name="priority" render={({ field }) => (
-                        <FormItem>{renderLabel('Priority Level', 'priority')}<Select onValueChange={field.onChange} defaultValue={field.value}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Priority" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown">{priorityLevels.map(p => <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>)}</Select><FormMessage /></FormItem>
+                        <FormItem>
+                            {renderLabel('Priority Level', 'priority')}
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger className="font-bold">
+                                        <SelectValue placeholder="Select Priority" />
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent className="rounded-[12px] shadow-dropdown">
+                                    {priorityLevels.map(p => (
+                                        <SelectItem key={p} value={p} className="font-bold">{p}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
                     )}/>
                 </div>
                 <FormField control={form.control} name="targetAmount" render={({ field }) => (

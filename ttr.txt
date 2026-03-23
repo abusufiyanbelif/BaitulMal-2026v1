@@ -1,2 +1,1 @@
-src/app/campaign-members/create/page.tsx(331,270): error TS17008: JSX element 'SelectContent' has no corresponding closing tag.
-src/app/campaign-members/create/page.tsx(378,326): error TS17008: JSX element 'SelectContent' has no corresponding closing tag.
+src/app/campaign-members/create/page.tsx(346,270): error TS17008: JSX element 'SelectContent' has no corresponding closing tag.
