@@ -1,56 +1,33 @@
-# Developer Guide: DocuExtract Application
+# Developer & Operations Guide: DocuExtract
 
-Welcome to the developer guide for the DocuExtract application. This document serves as the central hub for understanding, running, and contributing to the project.
+Welcome to the central knowledge hub for the DocuExtract Organization platform.
 
 ## Table of Contents
 
 1.  [**Setup and Installation**](./01-setup-and-installation.md)
-    -   Prerequisites
-    -   Environment Setup
-    -   Running the Application
-
 2.  [**Firebase Configuration**](./02-firebase-configuration.md)
-    -   Firebase Project Setup
-    -   Admin SDK (Server-side)
-    -   Client-Side Configuration
-    -   Troubleshooting Connection Issues
-
 3.  [**Database & CLI Commands**](./03-database-and-cli.md)
-    -   Seeding the Database (`db:seed`)
-    -   Data Migrations
-    -   Erasing Data (`db:erase`)
-
 4.  [**Permissions & Authentication**](./04-permissions-and-auth.md)
-    -   Actors & Roles (Users, Service Accounts)
-    -   Required Google Cloud APIs & IAM Roles
-    -   Login Mechanism & Security Rules
-    -   Troubleshooting Access Errors
-
 5.  [**Genkit AI Flows**](./05-genkit-ai-flows.md)
-    -   Overview of Genkit
-    -   Creating a New AI Flow
-    -   Input/Output Schemas with Zod
-    -   Troubleshooting AI Errors
-
 6.  [**Common Issues & Troubleshooting**](./06-common-issues-and-troubleshooting.md)
-    -   Diagnosing Build Failures (Next.js 404 Errors)
-    -   Solving Client-Side Exceptions
-    -   Debugging Permission Denied Errors
-
 7.  [**Storage & File Management**](./07-storage-and-file-management.md)
-    -   Folder Structure Philosophy
-    -   Detailed Folder Layout
-    -   A Note on Migration
+8.  [**Database Schema & Structure**](./08-database-schema.md)
+9.  [**Page Mapping & Business Logic**](./09-page-mapping-and-logic.md)
+10. [**Workflows & Standard Processes**](./10-workflows-and-processes.md)
+11. [**AI & Genkit Deep Dive**](./11-ai-and-genkit-integration.md)
+12. [**Firebase Security & Scaling**](./12-firebase-security-and-scaling.md)
+13. [**Technical Standards & Patterns**](./13-technical-standards-and-patterns.md)
+14. [**Identity Mirroring Logic**](./14-identity-mirroring-logic.md)
 
-## Project Overview
+## Core Technology Stack
 
-This application is a Next.js-based platform designed for managing community support initiatives. It leverages Firebase for its backend services, including Authentication, Firestore (database), and Storage. The application is designed with a role-based access control system, distinguishing between regular users and administrators with full system access.
+-   **Frontend**: Next.js 14 (App Router), Tailwind CSS, ShadCN UI.
+-   **Backend**: Firebase (Auth, Firestore, Storage).
+-   **AI Engine**: Genkit with Google Gemini Flash.
+-   **Type Safety**: TypeScript & Zod.
 
-## Core Technologies
+## Key Design Principles
 
--   **Framework**: [Next.js](https://nextjs.org/) (App Router)
--   **UI**: [React](https://react.dev/), [ShadCN/UI](https://ui.shadcn.com/), [Tailwind CSS](https://tailwindcss.com/)
--   **Backend**: [Firebase](https://firebase.google.com/) (Authentication, Firestore, Storage)
--   **AI**: [Genkit](https://firebase.google.com/docs/genkit)
--   **Schema Validation**: [Zod](https://zod.dev/)
--   **Deployment**: Firebase App Hosting
+-   **Title Case Typography**: All labels and headings follow the standard institutional standard.
+-   **Simplified Language**: Using community-focused charitable English (e.g., Organization, Documents).
+-   **Mobile-First Hub**: High-fidelity scrolling and responsive layouts for all registries.
