@@ -4,7 +4,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
 import type { Donation, Donor } from '@/lib/types';
 
-const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. Please ensure server credentials are configured.";
+const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure Server Credentials Are Configured Correctly.";
 
 /**
  * Robust action to save or update a donation while handling donor identity linking.
