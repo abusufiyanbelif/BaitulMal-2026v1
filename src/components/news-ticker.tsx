@@ -44,7 +44,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
 
     const timer = setInterval(() => {
       handleNext();
-    }, 12000); 
+    }, 8000); 
 
     return () => clearInterval(timer);
   }, [sortedItems]);
@@ -55,7 +55,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
     setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % sortedItems.length);
       setIsTransitioning(false);
-    }, 500); 
+    }, 400); 
   };
 
   const handlePrev = () => {
@@ -64,7 +64,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
     setTimeout(() => {
       setCurrentIndex((prev) => (prev - 1 + sortedItems.length) % sortedItems.length);
       setIsTransitioning(false);
-    }, 500);
+    }, 400);
   };
 
   if (!sortedItems || sortedItems.length === 0) return null;
