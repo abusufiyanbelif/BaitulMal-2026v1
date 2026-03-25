@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
+import { withAIRetry } from '@/lib/ai-retry';
 
 const ExtractAndCorrectTextInputSchema = z.object({
   photoDataUri: z
@@ -49,7 +50,8 @@ const extractAndCorrectTextFlow = ai.defineFlow(
     outputSchema: ExtractAndCorrectTextOutputSchema,
   },
   async (input: ExtractAndCorrectTextInput) => {
-    const { output } = await extractTextPrompt(input);
+    // Implemented retry logic to handle potential 429 errors
+    const { output } = await withAIRetry(() => extractTextPrompt(input));
 
     if (!output || !output.extractedText) {
         throw new Error('The AI model failed to extract any text. The document might be empty or unreadable.');

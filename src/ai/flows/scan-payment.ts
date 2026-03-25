@@ -9,6 +9,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'zod';
+import { withAIRetry } from '@/lib/ai-retry';
 
 const ScanPaymentScreenshotInputSchema = z.object({
   photoDataUri: z
@@ -63,7 +64,8 @@ const scanPaymentScreenshotFlow = ai.defineFlow(
     outputSchema: ScanPaymentScreenshotOutputSchema,
   },
   async (input: ScanPaymentScreenshotInput) => {
-    const { output } = await prompt(input);
+    // Implemented retry logic to handle potential 429 errors
+    const { output } = await withAIRetry(() => prompt(input));
     if (!output) {
       throw new Error("The AI model did not return a valid output.");
     }

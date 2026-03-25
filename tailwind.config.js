@@ -108,6 +108,25 @@ const config = {
             '0%, 100%': { transform: 'scale(1)' },
             '50%': { transform: 'scale(1.05)' },
         },
+        'ticker-sequence': {
+          '0%': { transform: 'translateY(-100%)', opacity: '0' },
+          '10%': { transform: 'translateY(0)', opacity: '1' },
+          '30%': { transform: 'translateX(0)' },
+          '90%': { transform: 'translateX(-100%)', opacity: '1' },
+          '100%': { transform: 'translateX(-100%)', opacity: '0' },
+        },
+        'ticker-fade-pulse': {
+          '0%, 100%': { opacity: '1' },
+          '50%': { opacity: '0.6' },
+        },
+        'urgent-pulse': {
+          '0%, 100%': { boxShadow: '0 4px 10px rgba(0, 0, 0, 0.05)', borderColor: 'hsl(var(--border))' },
+          '50%': { boxShadow: '0 0 25px rgba(239, 68, 68, 0.5)', borderColor: 'rgba(239, 68, 68, 0.8)' },
+        },
+        'high-pulse': {
+          '0%, 100%': { boxShadow: '0 4px 10px rgba(0, 0, 0, 0.05)', borderColor: 'hsl(var(--border))' },
+          '50%': { boxShadow: '0 0 25px rgba(245, 158, 11, 0.4)', borderColor: 'rgba(245, 158, 11, 0.7)' },
+        }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
@@ -118,6 +137,10 @@ const config = {
         'fade-in-zoom': 'fade-in-zoom 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'shimmer': 'shimmer 2s infinite',
         'zoom-in-out': 'zoom-in-out 3s ease-in-out infinite',
+        'ticker-sequence': 'ticker-sequence 5s linear infinite',
+        'ticker-fade-pulse': 'ticker-fade-pulse 2s ease-in-out infinite',
+        'urgent-pulse': 'urgent-pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite',
+        'high-pulse': 'high-pulse 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite',
       },
     },
   },

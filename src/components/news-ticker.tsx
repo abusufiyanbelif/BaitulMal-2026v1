@@ -23,7 +23,7 @@ interface NewsTickerProps {
 
 /**
  * Sequential News Ticker with theme-managed variant colors.
- * Title Case enforced for all status messaging.
+ * Accelerated transition cycle set to 5 seconds.
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -42,9 +42,10 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
   useEffect(() => {
     if (!sortedItems || sortedItems.length <= 1) return;
 
+    // Reduced cycle from 8s to 5s for snappier delivery
     const timer = setInterval(() => {
       handleNext();
-    }, 8000); 
+    }, 5000); 
 
     return () => clearInterval(timer);
   }, [sortedItems]);
