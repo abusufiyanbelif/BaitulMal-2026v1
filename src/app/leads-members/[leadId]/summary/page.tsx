@@ -146,6 +146,7 @@ export default function LeadSummaryPage() {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isImageDeleted, setIsImageDeleted] = useState(false);
     const [isClient, setIsClient] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
     
     const [newDocuments, setNewDocuments] = useState<File[]>([]);
     const [existingDocuments, setExistingDocuments] = useState<CampaignDocument[]>([]);
@@ -366,6 +367,7 @@ export default function LeadSummaryPage() {
             toast({ title: "Verification Error", description: "Authorization Session Expired.", variant: "destructive" });
             return;
         }
+        setIsSubmitting(true);
         let imageUrl = editableLead.imageUrl || '';
         if (isImageDeleted && imageUrl) {
             imageUrl = '';
@@ -378,6 +380,7 @@ export default function LeadSummaryPage() {
                 imageUrl = await getDownloadURL(fileRef);
             } catch (uploadError) {
                 toast({ title: 'Image Upload Failed', variant: 'destructive'});
+                setIsSubmitting(false);
                 return;
             }
         }
@@ -405,6 +408,7 @@ export default function LeadSummaryPage() {
             .finally(() => { 
                 toast({ title: 'Success', description: 'Appeal Summary Secured.', variant: 'success' }); 
                 setEditMode(false); 
+                setIsSubmitting(false);
             });
     };
     
@@ -433,6 +437,7 @@ export default function LeadSummaryPage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
+             {isSubmitting && <BrandedLoader message="Securing Appeal Changes..." />}
              <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95 text-primary">
                 <Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> All Appeals</Link></Button>
             </div>
@@ -552,7 +557,7 @@ export default function LeadSummaryPage() {
                                                 <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                                 <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
                                                     <SelectItem value="Hold" className="font-normal">Hold (Private)</SelectItem>
-                                                    <SelectItem value="Ready to Publish" className="font-normal">Ready to Publish</SelectItem>
+                                                    <SelectItem value="Ready to Publish" className="font-normal">Ready To Publish</SelectItem>
                                                     <SelectItem value="Published" className="font-bold text-primary">Published</SelectItem>
                                                 </SelectContent>
                                             </Select>
@@ -679,7 +684,7 @@ export default function LeadSummaryPage() {
                                             </div>
                                             <div className="transition-transform hover:translate-x-1 duration-300">
                                                 <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Target Goal</p>
-                                                <p className="text-3xl font-bold text-primary opacity-40 font-mono">₹{(fundingData.targetAmount || 0).toLocaleString('en-IN')}</p>
+                                                <p className="text-3xl font-bold text-primary opacity-40 font-mono">₹{(fundingData?.targetAmount || 0).toLocaleString('en-IN')}</p>
                                             </div>
                                             <div 
                                                 className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
@@ -748,7 +753,7 @@ export default function LeadSummaryPage() {
                                 <CardContent className="p-0 flex-1 overflow-hidden">
                                     <ScrollArea className="w-full h-full">
                                         <div className="p-4">
-                                            <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[600px] border-primary/10">
+                                            <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[650px] border-primary/10">
                                                 {isRationInitiative ? (
                                                     <Table>
                                                         <TableHeader className="bg-[hsl(var(--table-header-bg))]">
@@ -851,7 +856,7 @@ export default function LeadSummaryPage() {
                                                 <span className="font-normal opacity-60 uppercase text-[9px]">Disbursed (Given)</span>
                                                 <span className="font-mono text-primary font-bold">₹{fundingData.zakatGiven.toLocaleString('en-IN')}</span>
                                             </div>
-                                            <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 rounded">
+                                            <div className="flex justify-between items-center text-xs font-bold text-primary transition-all hover:bg-primary/5 px-2 rounded">
                                                 <span className="font-normal opacity-60 uppercase text-[9px]">Pending Verification</span>
                                                 <span className="font-mono text-primary font-bold">₹{fundingData.zakatPending.toLocaleString('en-IN')}</span>
                                             </div>
@@ -875,9 +880,11 @@ export default function LeadSummaryPage() {
                                     <CardContent className="p-0 sm:p-6">
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
-                                            <BarChart data={chartDataValues} layout="vertical" margin={{ right: 20 }}>
-                                                <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartDataValues.map((entry) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
-                                            </BarChart>
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <BarChart data={chartDataValues} layout="vertical" margin={{ right: 20 }}>
+                                                    <CartesianGrid horizontal={false} strokeDasharray="3 3" opacity={0.3} /><YAxis dataKey="name" type="category" tickLine={false} tickMargin={10} axisLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: 'hsl(var(--primary))' }} width={100}/><XAxis type="number" tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} hide /><ChartTooltip content={<ChartTooltipContent />} /><Bar dataKey="value" radius={4} className="transition-all duration-1000 ease-out">{chartDataValues.map((entry) => (<Cell key={entry.name} fill={entry.fill} />))}</Bar>
+                                                </BarChart>
+                                            </ResponsiveContainer>
                                         </ChartContainer>
                                         ) : <Skeleton className="h-[250px] w-full" />}
                                     </CardContent>
@@ -890,25 +897,27 @@ export default function LeadSummaryPage() {
                                     <CardContent className="p-0 sm:p-6">
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
-                                                <PieChart>
-                                                    <ChartTooltip 
-                                                        content={
-                                                            <ChartTooltipContent 
-                                                                nameKey="name" 
-                                                                formatter={(value, name, item) => (
-                                                                    <div className="flex flex-col">
-                                                                        <span className="font-bold">₹{Number(value).toLocaleString()}</span>
-                                                                        <span className="text-[10px] opacity-70">{(item as any).payload.count} Donations</span>
-                                                                    </div>
-                                                                )}
-                                                            />
-                                                        } 
-                                                    />
-                                                    <Pie data={paymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={5} className="transition-all duration-1000 ease-out focus:outline-none">
-                                                        {paymentTypeChartData.map((entry) => (<Cell key={`cell-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />))}
-                                                    </Pie>
-                                                    <ChartLegend content={<ChartLegendContent />} />
-                                                </PieChart>
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <PieChart>
+                                                        <ChartTooltip 
+                                                            content={
+                                                                <ChartTooltipContent 
+                                                                    nameKey="name" 
+                                                                    formatter={(value, name, item) => (
+                                                                        <div className="flex flex-col">
+                                                                            <span className="font-bold">₹{Number(value).toLocaleString()}</span>
+                                                                            <span className="text-[10px] opacity-70">{(item as any).payload.count} Donations</span>
+                                                                        </div>
+                                                                    )}
+                                                                />
+                                                            } 
+                                                        />
+                                                        <Pie data={paymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={5} className="transition-all duration-1000 ease-out focus:outline-none">
+                                                            {paymentTypeChartData.map((entry) => (<Cell key={`cell-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />))}
+                                                        </Pie>
+                                                        <ChartLegend content={<ChartLegendContent />} />
+                                                    </PieChart>
+                                                </ResponsiveContainer>
                                             </ChartContainer>
                                         ) : <Skeleton className="h-[250px] w-full" />}
                                     </CardContent>

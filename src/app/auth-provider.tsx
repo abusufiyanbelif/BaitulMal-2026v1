@@ -74,7 +74,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
                         <CardTitle className="text-destructive">Service Error</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4 font-normal">
+                    <CardContent className="space-y-4 font-normal text-primary">
                          <Alert variant="destructive">
                             <AlertTitle className="font-bold">Could Not Synchronize With Authorization Server</AlertTitle>
                             <AlertDescription>

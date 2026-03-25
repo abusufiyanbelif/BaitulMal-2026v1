@@ -144,6 +144,7 @@ export default function CampaignSummaryPage() {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isImageDeleted, setIsImageDeleted] = useState(false);
     const [isClient, setIsClient] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [newDocuments, setNewDocuments] = useState<File[]>([]);
     const [existingDocuments, setExistingDocuments] = useState<CampaignDocument[]>([]);
@@ -303,24 +304,24 @@ export default function CampaignSummaryPage() {
     }, [fundingData]);
 
     useEffect(() => {
-        if (campaign && !editMode) {
+        if (lead && !editMode) {
              setEditableCampaign({
-                name: campaign.name || '',
-                description: campaign.description || '',
-                startDate: campaign.startDate || '',
-                endDate: campaign.endDate || '',
-                category: campaign.category || 'General',
-                status: campaign.status || 'Upcoming',
-                priority: campaign.priority || 'Low',
-                targetAmount: campaign.targetAmount || 0,
-                authenticityStatus: campaign.authenticityStatus || 'Pending Verification',
-                publicVisibility: campaign.publicVisibility || 'Hold',
-                allowedDonationTypes: campaign.allowedDonationTypes || [...donationCategories],
-                imageUrl: campaign.imageUrl || '',
-                imageUrlFilename: campaign.imageUrlFilename || '',
+                name: campaign?.name || '',
+                description: campaign?.description || '',
+                startDate: campaign?.startDate || '',
+                endDate: campaign?.endDate || '',
+                category: campaign?.category || 'General',
+                status: campaign?.status || 'Upcoming',
+                priority: campaign?.priority || 'Low',
+                targetAmount: campaign?.targetAmount || 0,
+                authenticityStatus: campaign?.authenticityStatus || 'Pending Verification',
+                publicVisibility: campaign?.publicVisibility || 'Hold',
+                allowedDonationTypes: campaign?.allowedDonationTypes || [...donationCategories],
+                imageUrl: campaign?.imageUrl || '',
+                imageUrlFilename: campaign?.imageUrlFilename || '',
             });
-            setExistingDocuments(campaign.documents || []);
-            setImagePreview(campaign.imageUrl || null);
+            setExistingDocuments(campaign?.documents || []);
+            setImagePreview(campaign?.imageUrl || null);
             setIsImageDeleted(false);
             setImageFile(null);
             setNewDocuments([]);
@@ -380,6 +381,7 @@ export default function CampaignSummaryPage() {
             toast({ title: "Verification Error", description: "Authorization Session Expired.", variant: "destructive" });
             return;
         }
+        setIsSubmitting(true);
         let imageUrl = editableCampaign.imageUrl || '';
         let imageUrlFilename = editableCampaign.imageUrlFilename || '';
         if (isImageDeleted && imageUrl) {
@@ -398,6 +400,7 @@ export default function CampaignSummaryPage() {
                 imageUrlFilename = `campaign_${editableCampaign.name?.replace(/\s+/g, '_')}_${dateStr}.png`;
             } catch (uploadError) {
                 toast({ title: 'Image Upload Failed', variant: 'destructive'});
+                setIsSubmitting(false);
                 return;
             }
         }
@@ -419,8 +422,14 @@ export default function CampaignSummaryPage() {
             updatedAt: serverTimestamp(),
         };
         updateDoc(campaignDocRef, saveData)
-            .catch(async (serverError: any) => { errorEmitter.emit('permission-error', new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: saveData })); })
-            .finally(() => { toast({ title: 'Success', description: 'Campaign Details Secured.', variant: 'success' }); setEditMode(false); });
+            .catch(async (serverError: any) => { 
+                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: saveData })); 
+            })
+            .finally(() => { 
+                toast({ title: 'Success', description: 'Campaign Details Secured.', variant: 'success' }); 
+                setEditMode(false);
+                setIsSubmitting(false);
+            });
     };
     
     const handleDownload = (format: 'png' | 'pdf') => {
@@ -438,6 +447,7 @@ export default function CampaignSummaryPage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
+             {isSubmitting && <BrandedLoader message="Securing Campaign Details..." />}
              <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95 text-primary">
                 <Link href="/campaign-members"><ArrowLeft className="mr-2 h-4 w-4" /> All Campaigns</Link></Button>
             </div>
