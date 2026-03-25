@@ -56,8 +56,8 @@ interface UnlinkedDonationResolverProps {
 }
 
 /**
- * Unlinked Donation Resolver - Optimized for mobile alignment and compact interaction.
- * Features independent scroll zones and professional Title Case typography.
+ * Unlinked Donation Resolver - High-fidelity identity resolution hub.
+ * Title Case typography enforced.
  */
 export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId }: UnlinkedDonationResolverProps) {
     const firestore = useFirestore();
@@ -156,13 +156,13 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
             phone: selectedDonation.donorPhone || '',
             upiIds: Array.from(new Set(donorUpis)),
             status: 'Active',
-            notes: `Donor profile created through resolution center.`
+            notes: `Donor Profile Created Through Resolution Center.`
         }, { id: userProfile.id, name: userProfile.name });
 
         if (res.success && res.id) {
             const linkRes = await linkDonationToDonorAction(selectedDonation.id, res.id, { id: userProfile.id, name: userProfile.name });
             if (linkRes.success) {
-                toast({ title: 'Profile Created', description: 'New Donor profile registered and linked.', variant: 'success' });
+                toast({ title: 'Profile Created', description: 'New Donor Profile Registered And Linked.', variant: 'success' });
                 setSelectedDonation(null);
             }
         } else {
@@ -182,7 +182,6 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                 </DialogHeader>
 
                 <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
-                    {/* Sidebar: Unlinked Records List */}
                     <div className="w-full md:w-1/3 lg:w-1/4 border-r border-primary/5 flex flex-col bg-muted/5 h-1/3 md:h-full shrink-0">
                         <div className="p-4 bg-white border-b flex items-center justify-between">
                             <h3 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Unlinked Records</h3>
@@ -249,7 +248,6 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                         )}
                     </div>
 
-                    {/* Main Resolution Workspace */}
                     <div className="flex-1 flex flex-col bg-white overflow-hidden relative h-2/3 md:h-full">
                         {selectedDonation ? (
                             <ScrollArea className="h-full w-full">
@@ -286,7 +284,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                             <div className="relative pt-2">
                                                 <Search className="absolute left-3 bottom-3 h-4 w-4 text-primary/40" />
                                                 <Input 
-                                                    placeholder="Search database for matches..." 
+                                                    placeholder="Search Database For Matches..." 
                                                     value={searchTerm}
                                                     onChange={e => setSearchTerm(e.target.value)}
                                                     className="pl-10 h-10 rounded-xl border-primary/10 text-sm font-normal"
@@ -311,7 +309,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                                         </div>
                                                     ))
                                                 ) : searchTerm.length > 2 && (
-                                                    <p className="text-center text-[10px] text-muted-foreground font-normal italic py-4">No matching profiles found.</p>
+                                                    <p className="text-center text-[10px] text-muted-foreground font-normal italic py-4">No Matching Profiles Found.</p>
                                                 )}
                                             </div>
                                         </div>

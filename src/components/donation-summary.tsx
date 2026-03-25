@@ -41,7 +41,8 @@ const donationCategoryChartConfig = {
 } satisfies ChartConfig;
 
 /**
- * Donation Summary - Displays aggregate historical trends and category distributions.
+ * Donation Summary - Aggregate historical trends and category distributions.
+ * Title Case typography enforced.
  */
 export function DonationSummary() {
   const { isLoading, yearlySummary, categorySummary } = usePublicData();

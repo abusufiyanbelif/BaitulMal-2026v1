@@ -15,6 +15,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 /**
  * Overall Funding Summary - Aggregate organizational impact reporting.
+ * Title Case typography enforced.
  */
 export function OverallFundingSummary() {
   const { isLoading, overallSummary } = usePublicData();
@@ -86,23 +87,23 @@ export function OverallFundingSummary() {
                         <span className="text-4xl font-bold text-primary">
                             {overallSummary.progress.toFixed(0)}%
                         </span>
-                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Funded</span>
+                        <span className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase">Funded</span>
                     </div>
                 </div>
                 <div className="space-y-4 text-center md:text-left font-bold text-primary">
-                    <div>
+                    <div className="space-y-1">
                         <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Raised For Goals</p>
                         <p className="text-3xl font-bold font-mono">
                         ₹{(overallSummary.totalCollectedForGoals || 0).toLocaleString('en-IN')}
                         </p>
                     </div>
-                    <div>
+                    <div className="space-y-1">
                         <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Combined Target Goal</p>
                         <p className="text-3xl font-bold font-mono opacity-40">
                         ₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}
                         </p>
                     </div>
-                    <div>
+                    <div className="space-y-1">
                         <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase group-hover:text-primary transition-colors opacity-60">Lifetime Funds Received</p>
                         <p className="text-3xl font-bold font-mono">
                         ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}

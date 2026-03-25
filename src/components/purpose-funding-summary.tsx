@@ -9,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 /**
- * Purpose Funding Summary - Displays verified donation totals aggregated by purpose.
+ * Purpose Funding Summary - Verified donation totals by institutional purpose.
+ * Title Case typography enforced.
  */
 export function PurposeFundingSummary() {
   const { isLoading, campaignsWithProgress, leadsWithProgress } = usePublicData();
@@ -19,13 +20,11 @@ export function PurposeFundingSummary() {
 
     const totals: Record<string, number> = {};
 
-    // Aggregate from Campaigns
     campaignsWithProgress.forEach(c => {
       const p = c.category || 'General';
       totals[p] = (totals[p] || 0) + c.collected;
     });
 
-    // Aggregate from Leads
     leadsWithProgress.forEach(l => {
       const p = l.purpose || 'Other';
       totals[p] = (totals[p] || 0) + l.collected;

@@ -54,9 +54,10 @@ function Badge({ className, variant, children, ...props }: BadgeProps) {
       displayChildren = content
         .split(' ')
         .map(word => {
-            // Keep specific acronyms uppercase
             const lower = word.toLowerCase();
+            // Acronyms that should always be UPPERCASE
             if (['upi', 'pan', 'ifsc', 'id', 'pwa', 'ssr', 'ocr', 'gpay', 'utr', 'png', 'pdf', 'csv', 'json'].includes(lower)) return word.toUpperCase();
+            // Title Case for everything else
             return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
         })
         .join(' ');

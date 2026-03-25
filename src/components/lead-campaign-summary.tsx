@@ -16,7 +16,8 @@ import { useMemo } from 'react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 /**
- * Lead And Campaign Summary - Displays combined counts.
+ * Lead And Campaign Summary - Real-time counts of active community projects.
+ * Title Case typography enforced.
  */
 export function LeadAndCampaignSummary() {
   const { isLoading, campaignsWithProgress, leadsWithProgress } = usePublicData();

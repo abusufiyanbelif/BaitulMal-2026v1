@@ -36,7 +36,7 @@ import { Label } from '@/components/ui/label';
 
 /**
  * App Footer - Organization profile and contribution hub.
- * Strictly Title Case typography enforced.
+ * strictly Title Case typography enforced.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
@@ -129,7 +129,7 @@ export function AppFooter() {
           </div>
 
           <div className="space-y-6 md:pl-10">
-            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight">
+            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight uppercase">
               Resources And Information
             </h3>
             <nav className="flex flex-col gap-4">
@@ -149,7 +149,7 @@ export function AppFooter() {
           </div>
 
           <div className="flex flex-col md:items-end gap-6">
-            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight">
+            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight uppercase">
               Support Our Mission
             </h3>
             <div className="w-full sm:w-auto">

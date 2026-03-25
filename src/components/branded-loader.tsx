@@ -9,8 +9,8 @@ import { doc, getDoc } from 'firebase/firestore';
 import type { BrandingSettings } from '@/lib/types';
 
 /**
- * Branded Loader - Displays the organization logo with premium high-fidelity animations.
- * All messages follow the professional Title Case standard.
+ * Branded Loader - High-fidelity organizational feedback hub.
+ * Re-engineered for snappy performance and Title Case typography.
  */
 export function BrandedLoader({ message = "Updating Your Organization Records...", progress }: { message?: string, progress?: number }) {
   const firebase = useFirebase();
@@ -28,16 +28,15 @@ export function BrandedLoader({ message = "Updating Your Organization Records...
   const validLogoUrl = branding?.logoUrl?.trim() ? branding.logoUrl : null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-md transition-all duration-700 animate-in fade-in">
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/95 backdrop-blur-md transition-opacity duration-300">
       <div className="relative z-10 flex flex-col items-center gap-10 w-full max-w-sm px-8 animate-fade-in-zoom">
         
-        {/* Organization Logo Hub with Scale-Pulse Effect */}
         <div className="relative w-36 h-32 flex items-center justify-center">
           {validLogoUrl ? (
             <div className="relative w-full h-full animate-zoom-in-out">
               <Image
                 src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
-                alt="Organization Logo"
+                alt="Logo"
                 fill
                 sizes="144px"
                 className="object-contain drop-shadow-2xl"
@@ -49,15 +48,14 @@ export function BrandedLoader({ message = "Updating Your Organization Records...
           )}
         </div>
 
-        {/* Dynamic Status Feedback */}
         <div className="flex flex-col items-center gap-5 w-full text-center">
           <div className="space-y-1.5">
             <p className="text-sm font-bold text-primary tracking-tight">
               {message}
             </p>
             {progress !== undefined && (
-              <p className="text-[10px] font-black text-primary/40 tracking-widest animate-pulse">
-                {Math.round(progress)}% Complete
+              <p className="text-[10px] font-black text-primary/40 tracking-widest">
+                {Math.round(progress)}% Secure
               </p>
             )}
           </div>
@@ -66,7 +64,7 @@ export function BrandedLoader({ message = "Updating Your Organization Records...
             <Progress 
                 value={progress ?? 33} 
                 className={cn(
-                    "h-full bg-primary transition-all duration-700 ease-out",
+                    "h-full bg-primary transition-all duration-500 ease-out",
                     progress === undefined && "animate-pulse"
                 )} 
             />

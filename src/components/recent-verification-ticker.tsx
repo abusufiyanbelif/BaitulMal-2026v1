@@ -15,7 +15,8 @@ interface VerificationItem {
 }
 
 /**
- * A specialized vertical ticker for Recent Verifications.
+ * Recent Verification Ticker - Specialized vertical carousel.
+ * Title Case typography enforced.
  */
 export function RecentVerificationTicker({ items }: { items: VerificationItem[] }) {
   const [startIndex, setStartIndex] = useState(0);
@@ -53,7 +54,7 @@ export function RecentVerificationTicker({ items }: { items: VerificationItem[] 
   return (
     <Card className="animate-fade-in-up border-primary/10 overflow-hidden bg-white shadow-md transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '600ms' }}>
       <CardHeader className="bg-primary/5 border-b">
-        <CardTitle className="text-xl font-bold tracking-tight text-primary flex items-center gap-2">
+        <CardTitle className="text-xl font-bold tracking-tight text-primary flex items-center gap-2 uppercase">
           <CheckCircle2 className="h-6 w-6 text-primary"/> Recent Verifications
         </CardTitle>
         <CardDescription className="font-normal text-primary/70">
@@ -65,9 +66,9 @@ export function RecentVerificationTicker({ items }: { items: VerificationItem[] 
             <ScrollArea className="w-full">
                 <div className="min-w-[350px]">
                     <div className="grid grid-cols-[1.5fr_1fr_auto] gap-4 px-6 py-3 bg-[hsl(var(--table-header-bg))] border-b text-[10px] font-bold text-[hsl(var(--table-header-fg))] tracking-tight">
-                        <span className="font-bold">Reference Information</span>
-                        <span className="font-bold">Allocation Target</span>
-                        <span className="text-right pr-2 font-bold">Status</span>
+                        <span className="font-bold uppercase">Reference Information</span>
+                        <span className="font-bold uppercase">Allocation Target</span>
+                        <span className="text-right pr-2 font-bold uppercase">Status</span>
                     </div>
                     
                     <div className="relative overflow-hidden h-[300px]">

@@ -1,8 +1,7 @@
-
 'use client';
 
 import { usePathname, useRouter } from 'next/navigation';
-import { ReactNode, useEffect } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { SessionProvider } from '@/components/session-provider';
 import { useUser } from '@/firebase/auth/use-user';
 import { useSession } from '@/hooks/use-session';
@@ -12,48 +11,52 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 
-// This internal component will only run AFTER the initial auth check is complete.
-// It handles route protection.
+/**
+ * RouteGuard - Protects institutional routes and handles redirects.
+ * Optimized for faster initial mount.
+ */
 function RouteGuard({ children }: { children: ReactNode }) {
-    const { user, isLoading } = useSession(); // Use session which knows about both auth and profile loading state
+    const { user, isLoading } = useSession();
     const router = useRouter();
     const pathname = usePathname();
+    const [isRedirecting, setIsRedirecting] = useState(false);
 
-    const isPublicRoute = ['/login', '/seed'].includes(pathname) || pathname.startsWith('/campaign-public') || pathname.startsWith('/leads-public') || pathname.startsWith('/info');
-    const isHomePage = pathname === '/';
+    const isPublicRoute = ['/login', '/seed', '/'].includes(pathname) || 
+                          pathname.startsWith('/campaign-public') || 
+                          pathname.startsWith('/leads-public') || 
+                          pathname.startsWith('/info');
 
     useEffect(() => {
-        // Wait until the session loading is complete before running any redirect logic
-        if (isLoading) {
-            return;
-        }
+        if (isLoading) return;
         
-        // If user is logged in, redirect away from login page
         if (user && pathname === '/login') {
+            setIsRedirecting(true);
             router.push('/dashboard');
             return;
         }
 
-        // If not logged in and on a protected route, redirect to login page
-        if (!user && !isPublicRoute && !isHomePage) {
+        if (!user && !isPublicRoute) {
+            setIsRedirecting(true);
             router.push('/login');
+            return;
         }
         
-        // If logged in and on the homepage, redirect to dashboard
-        if (user && isHomePage) {
+        if (user && pathname === '/') {
+            setIsRedirecting(true);
             router.push('/dashboard');
+            return;
         }
-    }, [user, isLoading, isPublicRoute, isHomePage, pathname, router]);
 
-    // Show a loader while the session is loading OR while a redirect is imminent.
-    if (isLoading || (!user && !isPublicRoute && !isHomePage) || (user && isHomePage) || (user && pathname === '/login')) {
-        return <BrandedLoader />;
+        setIsRedirecting(false);
+    }, [user, isLoading, isPublicRoute, pathname, router]);
+
+    // Only show the blocking loader if we are truly waiting for session OR in the middle of a redirect.
+    if (isLoading || isRedirecting) {
+        return <BrandedLoader message="Syncing Access Controls..." />;
     }
     
-    // If the route is public, or the user is authenticated and on a non-root page, render the children.
     return <>{children}</>;
 }
-
 
 export function AuthProvider({ children }: { children: ReactNode }) {
     const { user, isUserLoading, userError } = useUser();
@@ -64,20 +67,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 <Card className="w-full max-w-lg">
                     <CardHeader className="text-center">
                         <AlertTriangle className="h-12 w-12 text-destructive mx-auto mb-4" />
-                        <CardTitle className="text-destructive">Application Error</CardTitle>
+                        <CardTitle className="text-destructive">Service Error</CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent className="space-y-4 font-normal">
                          <Alert variant="destructive">
-                            <AlertTitle>An error occurred while connecting to services.</AlertTitle>
+                            <AlertTitle className="font-bold">Could Not Synchronize With Authorization Server</AlertTitle>
                             <AlertDescription>
-                                <p>This can happen due to network issues or a misconfiguration.</p>
-                                <p className="font-mono text-xs bg-destructive/20 p-2 rounded mt-2">
+                                <p>This May Be Due To A Network Interruption. Please Verify Your Connectivity.</p>
+                                <p className="font-mono text-[10px] bg-destructive/10 p-2 rounded mt-2 opacity-70">
                                     {userError.message}
                                 </p>
                             </AlertDescription>
                         </Alert>
-                        <Button onClick={() => window.location.reload()} className="w-full">
-                            Reload Page
+                        <Button onClick={() => window.location.reload()} className="w-full font-bold">
+                            Reload Organization Dashboard
                         </Button>
                     </CardContent>
                 </Card>
@@ -85,8 +88,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         );
     }
     
-    // SessionProvider fetches the user's profile and provides a unified 'isLoading' state.
-    // RouteGuard consumes this state to prevent premature redirects.
     return (
         <SessionProvider authUser={user} isAuthenticating={isUserLoading}>
             <RouteGuard>{children}</RouteGuard>
