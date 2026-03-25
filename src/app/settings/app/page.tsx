@@ -14,7 +14,7 @@ import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, UploadCloud, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, ChevronDown, Monitor, Megaphone, Quote, Target, PieChart, Info, HeartHandshake, Smartphone, CheckCircle2, GraduationCap, HeartPulse, Utensils, HelpCircle, ListChecks } from 'lucide-react';
+import { Loader2, UploadCloud, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, ChevronDown, Monitor, Megaphone, Quote, Target, PieChart, Info, HeartHandshake, Smartphone, CheckCircle2, GraduationCap, HeartPulse, Utensils, HelpCircle, ListChecks, Calendar } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -44,6 +44,8 @@ interface FormDataType {
     isPurposeSummaryVisible: boolean;
     isInitiativeSummaryVisible: boolean;
     isRecentVerificationVisible: boolean;
+    summaryStartDate: string;
+    summaryEndDate: string;
     qrCodeUrl: string;
     qrWidth: number | string;
     qrHeight: number | string;
@@ -224,6 +226,8 @@ export default function AppSettingsPage() {
                 isPurposeSummaryVisible: brandingSettings?.isPurposeSummaryVisible ?? true,
                 isInitiativeSummaryVisible: brandingSettings?.isInitiativeSummaryVisible ?? true,
                 isRecentVerificationVisible: brandingSettings?.isRecentVerificationVisible ?? true,
+                summaryStartDate: brandingSettings?.summaryStartDate || '',
+                summaryEndDate: brandingSettings?.summaryEndDate || '',
                 qrCodeUrl: paymentSettings?.qrCodeUrl || '',
                 qrWidth: paymentSettings?.qrWidth || 120,
                 qrHeight: paymentSettings?.qrHeight || 120,
@@ -327,13 +331,13 @@ export default function AppSettingsPage() {
 
         if (logoFile || qrCodeFile) {
             if (!auth?.currentUser) {
-                toast({ title: "Authentication Error", description: "User not authenticated yet.", variant: "destructive" });
+                toast({ title: "Authentication Error", description: "User Not Authenticated Yet.", variant: "destructive" });
                 return;
             }
         }
 
         setIsSubmitting(true);
-        toast({ title: 'Saving Settings...', description: 'Please wait.' });
+        toast({ title: 'Saving Settings...', description: 'Please Wait.' });
 
         try {
             const batch = writeBatch(firestore);
@@ -364,6 +368,8 @@ export default function AppSettingsPage() {
                 isPurposeSummaryVisible: editableData.isPurposeSummaryVisible,
                 isInitiativeSummaryVisible: editableData.isInitiativeSummaryVisible,
                 isRecentVerificationVisible: editableData.isRecentVerificationVisible,
+                summaryStartDate: editableData.summaryStartDate,
+                summaryEndDate: editableData.summaryEndDate,
             };
             batch.set(doc(firestore, 'settings', 'branding'), brandingData, { merge: true });
 
@@ -407,13 +413,13 @@ export default function AppSettingsPage() {
             batch.set(doc(firestore, 'settings', 'guidingPrinciples'), gpData);
 
             await batch.commit();
-            toast({ title: 'Success!', description: 'All settings have been updated.', variant: 'success' });
+            toast({ title: 'Success!', description: 'All Settings Have Been Updated.', variant: 'success' });
             setIsEditMode(false);
         } catch (error: any) {
             if (error.code === 'permission-denied') {
                 errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'settings documents', operation: 'write' }));
             } else {
-                toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
+                toast({ title: 'Save Failed', description: error.message || 'An Unexpected Error Occurred.', variant: 'destructive' });
             }
         } finally {
             setIsSubmitting(false);
@@ -422,7 +428,6 @@ export default function AppSettingsPage() {
     
     const handleCancel = () => setIsEditMode(false);
 
-    const isLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
     const isFormDisabled = !isEditMode || isSubmitting;
 
     const displayData = isEditMode && editableData ? editableData : {
@@ -440,6 +445,8 @@ export default function AppSettingsPage() {
         isPurposeSummaryVisible: brandingSettings?.isPurposeSummaryVisible ?? true,
         isInitiativeSummaryVisible: brandingSettings?.isInitiativeSummaryVisible ?? true,
         isRecentVerificationVisible: brandingSettings?.isRecentVerificationVisible ?? true,
+        summaryStartDate: brandingSettings?.summaryStartDate || '',
+        summaryEndDate: brandingSettings?.summaryEndDate || '',
         qrCodeUrl: paymentSettings?.qrCodeUrl || '',
         qrWidth: paymentSettings?.qrWidth || 120,
         qrHeight: paymentSettings?.qrHeight || 120,
@@ -534,6 +541,42 @@ export default function AppSettingsPage() {
 
                         <Separator className="bg-primary/10" />
 
+                        <div className="space-y-4">
+                            <h4 className="text-xs font-bold text-primary flex items-center gap-2 tracking-tight uppercase">
+                                <Calendar className="h-4 w-4" /> Reporting Period Configuration
+                            </h4>
+                            <p className="text-xs text-muted-foreground font-normal">
+                                Define the date range used for the landing page financial aggregates (Overall Summary, Category Breakdown, etc.). 
+                                Leave blank to show all-time data.
+                            </p>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-1">
+                                    <Label htmlFor="summaryStartDate" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Summary Start Date</Label>
+                                    <Input 
+                                        id="summaryStartDate"
+                                        type="date"
+                                        value={displayData.summaryStartDate}
+                                        onChange={(e) => handleFieldChange('summaryStartDate', e.target.value)}
+                                        disabled={isFormDisabled}
+                                        className="font-bold h-10 border-primary/10"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <Label htmlFor="summaryEndDate" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Summary End Date</Label>
+                                    <Input 
+                                        id="summaryEndDate"
+                                        type="date"
+                                        value={displayData.summaryEndDate}
+                                        onChange={(e) => handleFieldChange('summaryEndDate', e.target.value)}
+                                        disabled={isFormDisabled}
+                                        className="font-bold h-10 border-primary/10"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <Separator className="bg-primary/10" />
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <VisibilityToggle 
                                 id="hero-visibility"
@@ -555,7 +598,7 @@ export default function AppSettingsPage() {
                             />
                             <VisibilityToggle 
                                 id="wisdom-visibility"
-                                label="Show Hikmat Aur Fikr"
+                                label="Show Wisdom & Reflections"
                                 description="Display daily religious wisdom and reflections."
                                 icon={Quote}
                                 checked={displayData.isWisdomVisible}
@@ -583,7 +626,7 @@ export default function AppSettingsPage() {
                             <VisibilityToggle 
                                 id="purpose-summary-visibility"
                                 label="Show Impact By Purpose"
-                                description="Display verified fund utilization categorized by institutional purpose."
+                                description="Display verified fund utilization categorized by organizational purpose."
                                 icon={HeartHandshake}
                                 checked={displayData.isPurposeSummaryVisible}
                                 onChange={(val) => handleFieldChange('isPurposeSummaryVisible', val)}
@@ -671,16 +714,16 @@ export default function AppSettingsPage() {
                         </div>
 
                         <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2">Visual Branding</h4>
+                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2">Visual Identity</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                                 <div className="flex flex-col items-center gap-4 bg-muted/5 rounded-xl p-4 border border-dashed">
-                                    <div className="relative w-full max-w-[200px] aspect-[2/1] rounded-lg flex items-center justify-center bg-white overflow-hidden shadow-inner">
+                                    <div className="relative w-full max-w-[200px] aspect-[2/1] rounded-lg flex items-center justify-center bg-white overflow-hidden shadow-inner border border-primary/5">
                                         {(isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl) ? (
                                             <img src={(isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)!.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent((isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)!)}` : (isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)} alt="Logo" className="object-contain p-2 h-full w-full" />
                                         ) : (
                                             <div className="text-muted-foreground text-center p-2 font-normal">
                                                 <ImageIcon className="mx-auto h-8 w-8 opacity-20" />
-                                                <p className="text-[10px] mt-1 font-bold tracking-tighter">No Logo</p>
+                                                <p className="text-[10px] mt-1 font-bold tracking-tighter">No Logo Uploaded</p>
                                             </div>
                                         )}
                                     </div>
@@ -792,13 +835,13 @@ export default function AppSettingsPage() {
                                 />
                                 
                                 <div className="pt-4 flex flex-col items-center gap-4 bg-secondary/30 rounded-xl p-4 border border-primary/10">
-                                    <div className="relative w-32 h-32 border-2 border-dashed rounded-lg flex items-center justify-center bg-white overflow-hidden">
+                                    <div className="relative w-32 h-32 border-2 border-dashed border-primary/20 rounded-lg flex items-center justify-center bg-white overflow-hidden shadow-inner">
                                         {(isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl) ? (
                                             <img src={(isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)!.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent((isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)!)}` : (isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)} alt="QR" className="object-contain p-2 h-full w-full" />
                                         ) : (
                                             <div className="text-muted-foreground text-center p-2 font-normal">
                                                 <QrCode className="mx-auto h-8 w-8 opacity-20" />
-                                                <p className="text-[10px] mt-1 font-bold tracking-tighter">No QR Code</p>
+                                                <p className="text-[10px] mt-1 font-bold tracking-tighter">No QR Code Uploaded</p>
                                             </div>
                                         )}
                                     </div>
@@ -856,7 +899,7 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-4">
                             <div className="space-y-1.5">
-                                <Label className="font-bold text-[10px] text-muted-foreground tracking-tighter">Section Heading</Label>
+                                <Label className="font-bold text-[10px] text-muted-foreground tracking-tighter uppercase">Section Heading</Label>
                                 <Input 
                                     value={displayData.gpTitle} 
                                     onChange={(e) => handleFieldChange('gpTitle', e.target.value)} 
@@ -865,7 +908,7 @@ export default function AppSettingsPage() {
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <Label className="font-bold text-[10px] text-muted-foreground tracking-tighter">Mission Description</Label>
+                                <Label className="font-bold text-[10px] text-muted-foreground tracking-tighter uppercase">Mission Description</Label>
                                 <Textarea 
                                     rows={3} 
                                     value={displayData.gpDescription} 
@@ -881,14 +924,14 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2"><Target className="h-4 w-4"/> Core Pillars (Focus Areas)</h4>
+                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase"><Target className="h-4 w-4"/> Core Pillars (Focus Areas)</h4>
                                 {isEditMode && (
                                     <Button type="button" variant="outline" size="sm" onClick={handleAddFocusArea} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add Pillar</Button>
                                 )}
                             </div>
                             <div className="grid gap-4">
                                 {(displayData.focusAreas || []).map((area, index) => (
-                                    <div key={area.id || index} className="relative p-4 border rounded-xl bg-primary/[0.01] space-y-4 border-primary/5">
+                                    <div key={area.id || index} className="relative p-4 border rounded-xl bg-primary/[0.01] space-y-4 border-primary/5 shadow-sm">
                                         {isEditMode && (
                                             <div className="absolute top-2 right-2 flex items-center gap-2">
                                                 <div className="flex items-center space-x-1.5 mr-2">
@@ -906,15 +949,15 @@ export default function AppSettingsPage() {
                                         )}
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div className="space-y-1">
-                                                <Label className="text-[9px] font-bold text-muted-foreground">Icon & Title</Label>
+                                                <Label className="text-[9px] font-bold text-muted-foreground uppercase">Icon & Title</Label>
                                                 <div className="flex gap-2">
                                                     <Select value={area.icon} onValueChange={(val) => handleFocusAreaChange(index, 'icon', val)} disabled={isFormDisabled}>
                                                         <SelectTrigger className="w-12 h-9 p-0 justify-center"><FocusAreaIcon type={area.icon}/></SelectTrigger>
-                                                        <SelectContent>
-                                                            <SelectItem value="Education"><GraduationCap className="h-4 w-4"/></SelectItem>
-                                                            <SelectItem value="Healthcare"><HeartPulse className="h-4 w-4"/></SelectItem>
-                                                            <SelectItem value="Relief"><Utensils className="h-4 w-4"/></SelectItem>
-                                                            <SelectItem value="Other"><HelpCircle className="h-4 w-4"/></SelectItem>
+                                                        <SelectContent className="rounded-[12px] shadow-dropdown">
+                                                            <SelectItem value="Education"><GraduationCap className="h-4 w-4 text-primary"/></SelectItem>
+                                                            <SelectItem value="Healthcare"><HeartPulse className="h-4 w-4 text-primary"/></SelectItem>
+                                                            <SelectItem value="Relief"><Utensils className="h-4 w-4 text-primary"/></SelectItem>
+                                                            <SelectItem value="Other"><HelpCircle className="h-4 w-4 text-primary"/></SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                     <Input 
@@ -926,7 +969,7 @@ export default function AppSettingsPage() {
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
-                                                <Label className="text-[9px] font-bold text-muted-foreground">Description</Label>
+                                                <Label className="text-[9px] font-bold text-muted-foreground uppercase">Description</Label>
                                                 <Textarea 
                                                     value={area.description} 
                                                     onChange={(e) => handleFocusAreaChange(index, 'description', e.target.value)} 
@@ -945,16 +988,16 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2"><ListChecks className="h-4 w-4"/> Procedural Rules</h4>
+                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase"><ListChecks className="h-4 w-4"/> Procedural Rules</h4>
                                 {isEditMode && (
                                     <Button type="button" variant="outline" size="sm" onClick={handleAddPrinciple} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add Rule</Button>
                                 )}
                             </div>
                             <div className="space-y-4">
                                 {(displayData.principles || []).map((principle, index) => (
-                                    <div key={principle.id || index} className="relative group p-4 border rounded-md bg-muted/5 space-y-3 shadow-sm">
+                                    <div key={principle.id || index} className="relative group p-4 border rounded-xl bg-white space-y-3 shadow-sm border-primary/5">
                                         <div className="flex items-center justify-between">
-                                            <p className="font-bold text-primary text-xs tracking-tight">Rule #{index + 1}</p>
+                                            <p className="font-bold text-primary text-[10px] tracking-widest uppercase opacity-40">Rule #{index + 1}</p>
                                             {isEditMode && (
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex items-center space-x-1.5">
@@ -976,12 +1019,12 @@ export default function AppSettingsPage() {
                                                 value={principle.text} 
                                                 onChange={(e) => handlePrincipleChange(index, 'text', e.target.value)} 
                                                 placeholder="Enter organizational rule or principle..." 
-                                                className="font-normal min-h-[80px] text-sm" 
+                                                className="font-normal min-h-[80px] text-sm leading-relaxed" 
                                             />
                                         ) : (
                                             <p className="text-sm font-normal text-foreground leading-relaxed">
                                                 {principle.text || <span className="italic opacity-50">Empty rule text</span>}
-                                                {principle.isHidden && <Badge variant="outline" className="ml-2 text-[8px]">Hidden</Badge>}
+                                                {principle.isHidden && <Badge variant="outline" className="ml-2 text-[8px] font-bold">Hidden</Badge>}
                                             </p>
                                         )}
                                     </div>

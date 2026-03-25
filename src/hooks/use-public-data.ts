@@ -1,20 +1,25 @@
 'use client';
 import { useMemo } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
-import { useFirestore, useMemoFirebase, collection, query, where } from '@/firebase';
+import { useDoc } from '@/firebase/firestore/use-doc';
+import { useFirestore, useMemoFirebase, collection, query, where, doc } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import type { Campaign, Lead, Donation, DonationCategory } from '@/lib/types';
+import type { Campaign, Lead, Donation, DonationCategory, BrandingSettings } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 
 const RECENT_UPDATE_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 
 /**
  * usePublicData - Strict filtering for public-facing institutional reporting.
- * Only retrieves data that is both Verified AND Published.
+ * Re-engineered to support Custom Date Range filtering from organization settings.
  */
 export function usePublicData() {
   const firestore = useFirestore();
   const { isLoading: isSessionLoading } = useSession();
+
+  // Load configuration for date range filtering
+  const brandingRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'branding') : null, [firestore]);
+  const { data: brandingSettings, isLoading: isBrandingLoading } = useDoc<BrandingSettings>(brandingRef);
 
   // Strict Query: Authenticity Verified AND Visibility Published
   const campaignsCollectionRef = useMemoFirebase(() => {
@@ -45,7 +50,7 @@ export function usePublicData() {
   const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
 
-  const isLoading = areCampaignsLoading || areLeadsLoading || areDonationsLoading || isSessionLoading;
+  const isLoading = areCampaignsLoading || areLeadsLoading || areDonationsLoading || isSessionLoading || isBrandingLoading;
 
   const isRecentlyUpdated = (updatedAt: any) => {
     if (!updatedAt) return false;
@@ -67,21 +72,31 @@ export function usePublicData() {
         yearlySummary: [],
         categorySummary: [],
         recentDonationsFormatted: [],
+        summaryDateRange: null
       };
     }
 
     const allPublicItems = [...campaigns, ...leads];
     const itemsById = new Map(allPublicItems.map(item => [item.id, item]));
 
+    // Identity Configured Date Range
+    const startDate = brandingSettings?.summaryStartDate || '';
+    const endDate = brandingSettings?.summaryEndDate || '';
+
     const collectedAmounts = new Map<string, number>();
     const yearlyData: Record<string, { totalGoalReceived: number; overallTotalReceived: number; totalTarget: number; }> = {};
 
     donations.forEach(donation => {
-      const donationYear = donation.donationDate ? donation.donationDate.split('-')[0] : null;
+      const donationDate = donation.donationDate || '';
+      
+      // Global Aggregate Filter: Respect Custom Date Range
+      const isWithinRange = (!startDate || donationDate >= startDate) && (!endDate || donationDate <= endDate);
+
+      const donationYear = donationDate ? donationDate.split('-')[0] : null;
       if (donationYear && !yearlyData[donationYear]) {
           yearlyData[donationYear] = { totalGoalReceived: 0, overallTotalReceived: 0, totalTarget: 0 };
       }
-      if (donationYear) yearlyData[donationYear].overallTotalReceived += donation.amount;
+      if (donationYear && isWithinRange) yearlyData[donationYear].overallTotalReceived += donation.amount;
 
       const links = (donation.linkSplit && donation.linkSplit.length > 0)
         ? donation.linkSplit
@@ -93,6 +108,7 @@ export function usePublicData() {
         const item = itemsById.get(link.linkId);
         if (!item) return;
 
+        // Individual item progress remains lifetime for accuracy, but aggregate summary respects range
         const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
         const proportionForThisItem = link.amount / totalDonationAmount;
 
@@ -112,10 +128,13 @@ export function usePublicData() {
         }, 0);
         
         const itemContribution = applicableAmountInDonation * proportionForThisItem;
-        const currentCollected = collectedAmounts.get(link.linkId) || 0;
-        collectedAmounts.set(link.linkId, currentCollected + itemContribution);
+        
+        // Progress for cards is always lifetime
+        const currentLifetimeCollected = collectedAmounts.get(link.linkId) || 0;
+        collectedAmounts.set(link.linkId, currentLifetimeCollected + itemContribution);
 
-        if (donationYear) {
+        // Aggregate goal tracking respects custom range
+        if (donationYear && isWithinRange) {
             yearlyData[donationYear].totalGoalReceived += itemContribution;
         }
       });
@@ -143,12 +162,37 @@ export function usePublicData() {
       };
     });
 
-    const totalTarget = allPublicItems.reduce((sum, item) => sum + (item.targetAmount || 0), 0);
-    const totalCollectedForGoals = Array.from(collectedAmounts.values()).reduce((sum, amount) => sum + amount, 0);
-    const grandTotalRaised = donations.reduce((sum, d) => sum + d.amount, 0);
-    const overallProgress = totalTarget > 0 ? Math.min((totalCollectedForGoals / totalTarget) * 100, 100) : 0;
+    // Aggregate summaries filtered by the configured date range
+    const summaryDonations = donations.filter(d => {
+        const dDate = d.donationDate || '';
+        return (!startDate || dDate >= startDate) && (!endDate || dDate <= endDate);
+    });
 
-    const amountsByCategory = donations.reduce((acc, d) => {
+    const totalTarget = allPublicItems.reduce((sum, item) => sum + (item.targetAmount || 0), 0);
+    
+    // Recalculate collected amount specifically for the summary period
+    let totalCollectedForGoalsInRange = 0;
+    summaryDonations.forEach(d => {
+        const links = d.linkSplit || [];
+        links.forEach(l => {
+            const item = itemsById.get(l.linkId);
+            if (!item) return;
+            const splits = d.typeSplit || [];
+            const prop = l.amount / (d.amount || 1);
+            const eligible = splits.reduce((acc, s) => {
+                const cat = (s.category as any) === 'General' ? 'Sadaqah' : s.category;
+                const isAllowed = item.allowedDonationTypes?.includes(cat as DonationCategory);
+                const isForGoal = cat !== 'Zakat' || s.forFundraising === true;
+                return (isAllowed && isForGoal) ? acc + s.amount : acc;
+            }, 0);
+            totalCollectedForGoalsInRange += (eligible * prop);
+        });
+    });
+
+    const grandTotalRaisedInRange = summaryDonations.reduce((sum, d) => sum + d.amount, 0);
+    const overallProgress = totalTarget > 0 ? Math.min((totalCollectedForGoalsInRange / totalTarget) * 100, 100) : 0;
+
+    const amountsByCategoryInRange = summaryDonations.reduce((acc, d) => {
       const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
       splits.forEach(split => {
         const category = split.category as DonationCategory;
@@ -175,6 +219,7 @@ export function usePublicData() {
             ...data, 
             progress: data.totalTarget > 0 ? (data.totalGoalReceived / data.totalTarget) * 100 : 0 
         }))
+        .filter(y => y.totalGoalReceived > 0 || y.overallTotalReceived > 0)
         .sort((a, b) => parseInt(b.year) - parseInt(a.year));
 
     const recentDonationsFormatted = [...donations]
@@ -199,16 +244,17 @@ export function usePublicData() {
       leadsWithProgress,
       overallSummary: {
         totalTarget,
-        grandTotalRaised,
-        totalCollectedForGoals,
+        grandTotalRaised: grandTotalRaisedInRange,
+        totalCollectedForGoals: totalCollectedForGoalsInRange,
         progress: overallProgress,
       },
       yearlySummary: sortedYearlyData,
-      categorySummary: Object.entries(amountsByCategory).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` })),
+      categorySummary: Object.entries(amountsByCategoryInRange).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` })),
       recentDonationsFormatted,
+      summaryDateRange: (startDate || endDate) ? { start: startDate, end: endDate } : null
     };
 
-  }, [isLoading, campaigns, leads, donations]);
+  }, [isLoading, campaigns, leads, donations, brandingSettings]);
 
   return { isLoading, ...memoizedData };
 }

@@ -42,16 +42,16 @@ const donationCategoryChartConfig = {
 
 /**
  * Donation Summary - Aggregate historical trends and category distributions.
- * Title Case typography enforced.
+ * Re-engineered to follow the professional Title Case standard.
  */
 export function DonationSummary() {
-  const { isLoading, yearlySummary, categorySummary } = usePublicData();
+  const { isLoading, yearlySummary, categorySummary, summaryDateRange } = usePublicData();
 
   if (isLoading) {
     return (
-      <div className="grid gap-6">
-        <Card className="border-primary/10"><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
-        <Card className="border-primary/10"><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
+      <div className="grid gap-10">
+        <Card className="border-primary/10 bg-white"><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
+        <Card className="border-primary/10 bg-white"><CardHeader><Skeleton className="h-6 w-3/4" /></CardHeader><CardContent><Skeleton className="h-40 w-full" /></CardContent></Card>
       </div>
     );
   }
@@ -59,6 +59,10 @@ export function DonationSummary() {
   if (!yearlySummary || !categorySummary) {
     return <p className="font-bold text-primary">No Donation Data Available.</p>;
   }
+
+  const rangeText = summaryDateRange 
+    ? `${summaryDateRange.start || 'Beginning'} To ${summaryDateRange.end || 'Today'}`
+    : 'Full History';
 
   return (
     <div className="grid gap-10">
@@ -69,9 +73,9 @@ export function DonationSummary() {
                 <Calendar className="h-6 w-6 text-primary" />
                 Yearly Summary
               </CardTitle>
-              <span className="text-2xl font-bold text-primary">{yearlySummary[0]?.year || new Date().getFullYear()}</span>
+              <span className="text-2xl font-bold text-primary font-mono">{yearlySummary[0]?.year || new Date().getFullYear()}</span>
           </div>
-          <CardDescription className="font-normal text-primary/70">Historical Summary Of Funds Received Against Goals.</CardDescription>
+          <CardDescription className="font-normal text-primary/70">Performance Trends For The Selected Period ({rangeText}).</CardDescription>
         </CardHeader>
         <CardContent className="p-0 flex-1 overflow-hidden">
             <ScrollArea className="w-full h-full">
@@ -79,23 +83,23 @@ export function DonationSummary() {
                     <Table>
                         <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                             <TableRow className="border-b border-primary/10">
-                                <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Year</TableHead>
-                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Target Goal</TableHead>
-                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Raised For Goal</TableHead>
-                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Overall Total</TableHead>
-                                <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] pr-6 text-[10px] tracking-tight">Progress</TableHead>
+                                <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Year</TableHead>
+                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Target Goal</TableHead>
+                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Raised For Goal</TableHead>
+                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Overall Total</TableHead>
+                                <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] pr-6 text-[10px] tracking-tight uppercase">Progress</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {yearlySummary.map(({ year, totalTarget, totalGoalReceived, overallTotalReceived, progress }) => (
-                                <TableRow key={year} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5">
+                                <TableRow key={year} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5 bg-white">
                                     <TableCell className="font-bold text-primary pl-4">{year}</TableCell>
                                     <TableCell className="font-normal text-primary/80">₹{totalTarget.toLocaleString('en-IN')}</TableCell>
                                     <TableCell className="font-bold text-primary">₹{totalGoalReceived.toLocaleString('en-IN')}</TableCell>
                                     <TableCell className="font-normal text-primary/60">₹{overallTotalReceived.toLocaleString('en-IN')}</TableCell>
                                     <TableCell className="text-right w-[150px] pr-6">
                                         <div className="flex items-center justify-end gap-3">
-                                            <Progress value={progress} className="h-1 flex-1" />
+                                            <Progress value={progress} className="h-1 flex-1 bg-primary/10" />
                                             <span className="text-[10px] font-bold text-primary whitespace-nowrap">{Math.round(progress)}%</span>
                                         </div>
                                     </TableCell>
@@ -115,7 +119,7 @@ export function DonationSummary() {
             <PieChartIcon className="h-6 w-6 text-primary" />
             Category Distribution
           </CardTitle>
-           <CardDescription className="font-normal text-primary/70">Lifetime Breakdown Of All Contributions By Type.</CardDescription>
+           <CardDescription className="font-normal text-primary/70">Breakdown Of Contributions In Configured Range ({rangeText}).</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
           <ChartContainer config={donationCategoryChartConfig} className="h-[300px] w-full">

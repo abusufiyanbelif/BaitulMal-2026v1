@@ -15,10 +15,10 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 /**
  * Overall Funding Summary - Aggregate organizational impact reporting.
- * Title Case typography enforced.
+ * Re-engineered to support dynamic date range descriptions and Title Case typography.
  */
 export function OverallFundingSummary() {
-  const { isLoading, overallSummary } = usePublicData();
+  const { isLoading, overallSummary, summaryDateRange } = usePublicData();
 
   const chartData = useMemo(() => ([
     {
@@ -30,7 +30,7 @@ export function OverallFundingSummary() {
 
   if (isLoading) {
     return (
-        <Card className="border-primary/20">
+        <Card className="border-primary/20 bg-white">
             <CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader>
             <CardContent><Skeleton className="h-48 w-full" /></CardContent>
         </Card>
@@ -41,6 +41,10 @@ export function OverallFundingSummary() {
     return <p className="font-bold text-primary text-center py-10">Impact Summary Currently Unavailable.</p>
   }
 
+  const rangeDescription = summaryDateRange 
+    ? `Verified goal contributions from ${summaryDateRange.start || 'The Beginning'} to ${summaryDateRange.end || 'Today'}.`
+    : 'A summary of verified goal contributions across all projects.';
+
   return (
     <Card className="animate-fade-in-up border-primary/20 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden flex flex-col" style={{ animationDelay: '700ms' }}>
       <CardHeader className="bg-primary/5 border-b shrink-0">
@@ -48,7 +52,7 @@ export function OverallFundingSummary() {
             <Target className="h-6 w-6 text-primary" />
             Overall Funding Impact
         </CardTitle>
-        <CardDescription className="font-normal text-primary/70">A Summary Of Verified Goal Contributions Across All Projects.</CardDescription>
+        <CardDescription className="font-normal text-primary/70">{rangeDescription}</CardDescription>
       </CardHeader>
       <CardContent className="pt-6">
         <ScrollArea className="w-full">
@@ -83,28 +87,28 @@ export function OverallFundingSummary() {
                         />
                         </RadialBarChart>
                     </ChartContainer>
-                    <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom">
                         <span className="text-4xl font-bold text-primary">
                             {overallSummary.progress.toFixed(0)}%
                         </span>
-                        <span className="text-[10px] font-bold text-muted-foreground tracking-tight">Funded</span>
+                        <span className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Funded</span>
                     </div>
                 </div>
                 <div className="space-y-4 text-center md:text-left font-bold text-primary">
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Raised For Goals</p>
+                        <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Raised For Goal</p>
                         <p className="text-3xl font-bold font-mono">
                         ₹{(overallSummary.totalCollectedForGoals || 0).toLocaleString('en-IN')}
                         </p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Combined Target Goal</p>
+                        <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Combined Target Goal</p>
                         <p className="text-3xl font-bold font-mono opacity-40">
                         ₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}
                         </p>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Total Funds Received</p>
+                        <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Period Total Received</p>
                         <p className="text-3xl font-bold font-mono">
                         ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}
                         </p>

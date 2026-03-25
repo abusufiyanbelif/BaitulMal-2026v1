@@ -20,6 +20,8 @@ export interface BrandingSettings extends DocumentData {
   isPurposeSummaryVisible?: boolean;
   isInitiativeSummaryVisible?: boolean;
   isRecentVerificationVisible?: boolean;
+  summaryStartDate?: string;
+  summaryEndDate?: string;
 }
 
 export interface PaymentSettings extends DocumentData {
