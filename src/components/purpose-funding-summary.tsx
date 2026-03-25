@@ -53,12 +53,12 @@ export function PurposeFundingSummary() {
   return (
     <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden flex flex-col">
       <CardHeader className="bg-primary/5 border-b shrink-0">
-        <CardTitle className="text-xl font-bold text-primary flex items-center gap-2 uppercase tracking-tight">
+        <CardTitle className="text-xl font-bold text-primary flex items-center gap-2 tracking-tight">
           <Target className="h-6 w-6 text-primary" />
           Impact By Purpose
         </CardTitle>
         <CardDescription className="font-normal text-primary/70">
-          Total Verified Funds Utilized Across Community Support Categories.
+          Verified Funds Utilized Across Community Categories.
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0 flex-1 overflow-hidden">
@@ -67,8 +67,8 @@ export function PurposeFundingSummary() {
                 <Table>
                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                         <TableRow className="border-b border-primary/10">
-                            <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] uppercase text-[10px] tracking-widest">Purpose Type</TableHead>
-                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] pr-6 uppercase text-[10px] tracking-widest">Amount Received</TableHead>
+                            <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Purpose Type</TableHead>
+                            <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] pr-6 text-[10px] tracking-tight">Amount Received</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>

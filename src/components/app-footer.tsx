@@ -36,7 +36,7 @@ import { Label } from '@/components/ui/label';
 
 /**
  * App Footer - Organization profile and contribution hub.
- * strictly Title Case typography enforced.
+ * Title Case typography enforced.
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();

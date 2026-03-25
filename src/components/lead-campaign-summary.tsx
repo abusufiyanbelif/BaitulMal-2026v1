@@ -62,7 +62,7 @@ export function LeadAndCampaignSummary() {
       <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md overflow-hidden flex flex-col" style={{ animationDelay: '1000ms' }}>
         <CardHeader className="bg-primary/5 border-b shrink-0">
           <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight uppercase">
+              <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
                 <FolderKanban className="h-6 w-6 text-primary" />
                 Active Campaigns
               </CardTitle>
@@ -76,8 +76,8 @@ export function LeadAndCampaignSummary() {
                 <Table>
                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                     <TableRow className="border-b border-primary/10">
-                        <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] uppercase text-[10px] tracking-widest">Category Name</TableHead>
-                        <TableHead className="text-right pr-6 font-bold text-[hsl(var(--table-header-fg))] uppercase text-[10px] tracking-widest">Project Count</TableHead>
+                        <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Category Name</TableHead>
+                        <TableHead className="text-right pr-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Project Count</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -98,7 +98,7 @@ export function LeadAndCampaignSummary() {
       <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md overflow-hidden flex flex-col" style={{ animationDelay: '1100ms' }}>
         <CardHeader className="bg-primary/5 border-b shrink-0">
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight uppercase">
+            <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
               <Lightbulb className="h-6 w-6 text-primary" />
               Verified Leads
             </CardTitle>
@@ -114,8 +114,8 @@ export function LeadAndCampaignSummary() {
                 <Table>
                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                     <TableRow className="border-b border-primary/10">
-                        <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] uppercase text-[10px] tracking-widest">Appeal Purpose</TableHead>
-                        <TableHead className="text-right pr-6 font-bold text-[hsl(var(--table-header-fg))] uppercase text-[10px] tracking-widest">Case Count</TableHead>
+                        <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Appeal Purpose</TableHead>
+                        <TableHead className="text-right pr-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Case Count</TableHead>
                     </TableRow>
                     </TableHeader>
                     <TableBody>

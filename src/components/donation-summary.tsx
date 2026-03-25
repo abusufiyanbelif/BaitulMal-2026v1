@@ -65,13 +65,13 @@ export function DonationSummary() {
       <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden flex flex-col" style={{ animationDelay: '800ms' }}>
         <CardHeader className="bg-primary/5 border-b shrink-0">
           <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight uppercase">
+              <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
                 <Calendar className="h-6 w-6 text-primary" />
-                Yearly Financial Summary
+                Yearly Summary
               </CardTitle>
               <span className="text-2xl font-bold text-primary">{yearlySummary[0]?.year || new Date().getFullYear()}</span>
           </div>
-          <CardDescription className="font-normal text-primary/70">A Year-By-Year Breakdown Of Funds Received Against Fundraising Goals.</CardDescription>
+          <CardDescription className="font-normal text-primary/70">Historical Summary Of Funds Received Against Goals.</CardDescription>
         </CardHeader>
         <CardContent className="p-0 flex-1 overflow-hidden">
             <ScrollArea className="w-full h-full">
@@ -79,11 +79,11 @@ export function DonationSummary() {
                     <Table>
                         <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                             <TableRow className="border-b border-primary/10">
-                                <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] uppercase text-[10px] tracking-widest">Year</TableHead>
-                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] uppercase text-[10px] tracking-widest">Target Goal</TableHead>
-                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] uppercase text-[10px] tracking-widest">Raised For Goal</TableHead>
-                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] uppercase text-[10px] tracking-widest">Total Received</TableHead>
-                                <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] pr-6 uppercase text-[10px] tracking-widest">Progress</TableHead>
+                                <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Year</TableHead>
+                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Target Goal</TableHead>
+                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Raised For Goal</TableHead>
+                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Overall Total</TableHead>
+                                <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] pr-6 text-[10px] tracking-tight">Progress</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
@@ -111,11 +111,11 @@ export function DonationSummary() {
       
       <Card className="animate-fade-in-up border-primary/10 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden" style={{ animationDelay: '900ms' }}>
         <CardHeader className="bg-primary/5 border-b">
-          <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight uppercase">
+          <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
             <PieChartIcon className="h-6 w-6 text-primary" />
-            Donations By Category
+            Category Distribution
           </CardTitle>
-           <CardDescription className="font-normal text-primary/70">A Lifetime Breakdown Of All Contributions By Designation.</CardDescription>
+           <CardDescription className="font-normal text-primary/70">Lifetime Breakdown Of All Contributions By Type.</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
           <ChartContainer config={donationCategoryChartConfig} className="h-[300px] w-full">
