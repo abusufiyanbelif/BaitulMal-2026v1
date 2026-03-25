@@ -70,7 +70,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                                     "flex flex-col hover:shadow-xl transition-all duration-500 ease-in-out hover:-translate-y-1 cursor-pointer animate-fade-in-up overflow-hidden active:scale-[0.98] h-full border-primary/20 bg-white shadow-sm",
                                     isUrgent && "animate-urgent-pulse border-red-500/50",
                                     isHigh && "animate-high-pulse border-orange-500/50",
-                                    isCompleted && "hover:shadow-none hover:-translate-y-0"
+                                    isCompleted && "opacity-80 grayscale-[0.5] hover:grayscale-0 hover:opacity-100"
                                 )}
                                 style={{ animationDelay: `${50 + index * 30}ms` }}
                                 onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}
@@ -108,13 +108,15 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                                             {campaign.authenticityStatus === 'Verified' ? 'Verified' : campaign.authenticityStatus}
                                         </Badge>
                                     </div>
-                                    <div className={cn(
-                                        "text-[10px] font-bold tracking-tight flex items-center gap-1.5 uppercase", 
-                                        isUrgent ? 'text-red-600' : isHigh ? 'text-orange-600' : 'text-primary'
-                                    )}>
-                                        {getPriorityIcon(priorityLabel)}
-                                        {priorityLabel} Priority
-                                    </div>
+                                    {!isCompleted && (
+                                        <div className={cn(
+                                            "text-[10px] font-bold tracking-tight flex items-center gap-1.5 uppercase", 
+                                            isUrgent ? 'text-red-600' : isHigh ? 'text-orange-600' : 'text-primary'
+                                        )}>
+                                            {getPriorityIcon(priorityLabel)}
+                                            {priorityLabel} Priority
+                                        </div>
+                                    )}
                                     {(campaign.targetAmount || 0) > 0 && (
                                         <div className="space-y-2 border-t border-primary/5 pt-3">
                                             <div className="flex justify-between items-baseline text-[11px] font-bold text-primary tracking-tight uppercase">
@@ -285,7 +287,7 @@ export function PublicCampaignsView() {
             <AccordionItem key={section.id} value={section.id} className="border-none">
               <AccordionTrigger className="hover:no-underline group font-bold">
                 <div className="flex items-center gap-4">
-                  <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'priority' ? 'bg-red-600' : 'bg-primary')} />
+                  <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'priority' ? 'bg-red-600' : section.id === 'ongoing_upcoming' ? 'bg-primary' : 'bg-muted-foreground')} />
                   <div className="flex items-center gap-2">
                     <section.icon className={cn("h-6 w-6", section.color || "text-primary")} />
                     <span className={cn("text-2xl font-bold tracking-tight uppercase", section.color || "text-primary")}>{section.title}</span>

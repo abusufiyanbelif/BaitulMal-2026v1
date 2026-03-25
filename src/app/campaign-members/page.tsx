@@ -390,20 +390,24 @@ export default function CampaignPage() {
   }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter, authenticityFilter, visibilityFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => {
-    const published = filteredCampaigns.filter(c => c.publicVisibility === 'Published');
-    const internal = filteredCampaigns.filter(c => c.publicVisibility !== 'Published');
+    const ongoing = filteredCampaigns.filter(c => c.status !== 'Completed');
+    const completed = filteredCampaigns.filter(c => c.status === 'Completed');
+
+    const ongoingPublished = ongoing.filter(c => c.publicVisibility === 'Published');
+    const ongoingInternal = ongoing.filter(c => c.publicVisibility !== 'Published');
 
     const sortByPriority = (list: any[]) => [...list].sort((a, b) => (priorityWeight[b.priority || 'Medium'] || 0) - (priorityWeight[a.priority || 'Medium'] || 0));
 
     return [
-      { id: 'published', title: 'Published Campaigns', icon: Globe, items: sortByPriority(published), color: 'text-primary' },
-      { id: 'internal', title: 'Internal & Draft Hub', icon: FileLock, items: sortByPriority(internal), color: 'text-amber-600' }
+      { id: 'published', title: 'Open Published Initiatives', icon: Globe, items: sortByPriority(ongoingPublished), color: 'text-primary' },
+      { id: 'internal', title: 'Internal Hub & Drafts', icon: FileLock, items: sortByPriority(ongoingInternal), color: 'text-amber-600' },
+      { id: 'completed', title: 'Completed & Archive', icon: CheckCircle2, items: sortByPriority(completed), color: 'text-muted-foreground' }
     ].filter(s => s.items.length > 0);
   }, [filteredCampaigns]);
 
   const isLoading = isProfileLoading || areCampaignsLoading || areDonationsLoading;
   
-  if (isLoading && !isSubmitting) return <SectionLoader label="Loading Campaigns..." description="Fetching institutional records and verifying progress." />;
+  if (isLoading && !isSubmitting) return <SectionLoader label="Loading Campaigns..." description="Retrieving organizational records and verifying progress." />;
 
   if (!isLoading && userProfile && !canViewCampaigns) {
     return (
@@ -433,7 +437,7 @@ export default function CampaignPage() {
 
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight text-primary">Campaign Management</h1>
-          <p className="text-sm max-w-2xl font-bold leading-relaxed opacity-70">Monitor fundraising goals, authenticity vetting, and internal drafts.</p>
+          <p className="text-sm max-w-2xl font-bold leading-relaxed opacity-70">Monitor fundraising goals, authenticity verification, and project archives.</p>
         </div>
 
         <Card className="animate-fade-in-zoom shadow-none border-primary/10 bg-white/30 overflow-hidden">
@@ -461,7 +465,7 @@ export default function CampaignPage() {
                   <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-none overflow-hidden">
                     <AccordionTrigger className="hover:no-underline py-5 group font-bold">
                       <div className="flex items-center gap-4">
-                        <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'published' ? 'bg-primary' : 'bg-amber-600')} />
+                        <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'published' ? 'bg-primary' : section.id === 'internal' ? 'bg-amber-600' : 'bg-muted-foreground')} />
                         <div className="flex items-center gap-2">
                             <section.icon className={cn("h-5 w-5", section.color || "text-primary")} />
                             <span className={cn("text-lg font-bold tracking-tight", section.color || "text-primary")}>{section.title}</span>

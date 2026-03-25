@@ -230,7 +230,7 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
                 </div>
                 <Progress value={lead.progress} className="h-2 bg-primary/10 shadow-inner" />
                 <div className="flex justify-between items-center">
-                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Progress</span>
+                    <span className="text-[9px] font-bold text-muted-foreground tracking-tight">Progress</span>
                     <span className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary/5 border border-primary/10">
                         {Math.round(lead.progress)}% Funded
                     </span>
@@ -368,14 +368,18 @@ export default function LeadPage() {
   }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, authenticityFilter, visibilityFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => {
-    const published = filteredLeads.filter(l => l.publicVisibility === 'Published');
-    const internal = filteredLeads.filter(l => l.publicVisibility !== 'Published');
+    const ongoing = filteredLeads.filter(l => l.status !== 'Completed');
+    const completed = filteredLeads.filter(l => l.status === 'Completed');
+
+    const ongoingPublished = ongoing.filter(l => l.publicVisibility === 'Published');
+    const ongoingInternal = ongoing.filter(l => l.publicVisibility !== 'Published');
 
     const sortByPriority = (list: any[]) => [...list].sort((a, b) => (priorityWeight[b.priority || 'Medium'] || 0) - (priorityWeight[a.priority || 'Medium'] || 0));
 
     return [
-      { id: 'published', title: 'Published Appeals', icon: Globe, items: sortByPriority(published), color: 'text-primary' },
-      { id: 'internal', title: 'Internal & Draft Hub', icon: FileLock, items: sortByPriority(internal), color: 'text-amber-600' }
+      { id: 'published', title: 'Open Published Initiatives', icon: Globe, items: sortByPriority(ongoingPublished), color: 'text-primary' },
+      { id: 'internal', title: 'Internal Hub & Drafts', icon: FileLock, items: sortByPriority(ongoingInternal), color: 'text-amber-600' },
+      { id: 'completed', title: 'Completed & Archive', icon: CheckCircle2, items: sortByPriority(completed), color: 'text-muted-foreground' }
     ].filter(s => s.items.length > 0);
   }, [filteredLeads]);
 
@@ -407,7 +411,7 @@ export default function LeadPage() {
 
         <div className="space-y-2">
           <h1 className="text-3xl font-bold tracking-tight text-primary">Lead Management</h1>
-          <p className="text-sm max-w-2xl font-bold leading-relaxed opacity-70">Review individual support appeals, authenticate evidence, and manage draft cases.</p>
+          <p className="text-sm max-w-2xl font-bold leading-relaxed opacity-70">Review individual support appeals, authenticate evidence, and manage archives.</p>
         </div>
 
         <Card className="animate-fade-in-zoom shadow-none border-primary/5 bg-white/30 overflow-hidden">
@@ -421,7 +425,7 @@ export default function LeadPage() {
                     <Select value={visibilityFilter} onValueChange={setVisibilityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Visibilities" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Visibilities</SelectItem><SelectItem value="Hold" className="font-normal">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-normal">Ready To Publish</SelectItem><SelectItem value="Published" className="font-normal text-primary">Published</SelectItem></SelectContent></Select>
                     <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
                         <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-normal">{y}</SelectItem>)}</SelectContent></Select>
-                        <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-normal border-primary/20 text-primary", !dateRange ? "opacity-60" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Date Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                        <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-normal border-primary/20 text-primary", !dateRange ? "opacity-60" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
                         {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
                     </div>
                 </div>
@@ -435,7 +439,7 @@ export default function LeadPage() {
                   <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-none overflow-hidden">
                     <AccordionTrigger className="hover:no-underline py-5 group font-bold">
                       <div className="flex items-center gap-4">
-                        <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'published' ? 'bg-primary' : 'bg-amber-600')} />
+                        <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'published' ? 'bg-primary' : section.id === 'internal' ? 'bg-amber-600' : 'bg-muted-foreground')} />
                         <div className="flex items-center gap-2">
                             <section.icon className={cn("h-5 w-5", section.color || "text-primary")} />
                             <span className={cn("text-lg font-bold tracking-tight", section.color || "text-primary")}>{section.title}</span>
