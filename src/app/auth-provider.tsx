@@ -12,8 +12,8 @@ import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 
 /**
- * RouteGuard - Protects institutional routes and handles redirects.
- * Optimized for faster initial mount.
+ * RouteGuard - Optimized for rapid initial mount.
+ * Prevents long blocking states by allowing public views to render immediately.
  */
 function RouteGuard({ children }: { children: ReactNode }) {
     const { user, isLoading } = useSession();
@@ -50,9 +50,14 @@ function RouteGuard({ children }: { children: ReactNode }) {
         setIsRedirecting(false);
     }, [user, isLoading, isPublicRoute, pathname, router]);
 
-    // Only show the blocking loader if we are truly waiting for session OR in the middle of a redirect.
+    // Fast return for public routes to ensure snappy first paint
+    if (isPublicRoute && !isRedirecting) {
+        return <>{children}</>;
+    }
+
+    // Only show the blocking loader if we are truly waiting for session OR in the middle of a private redirect.
     if (isLoading || isRedirecting) {
-        return <BrandedLoader message="Syncing Access Controls..." />;
+        return <BrandedLoader message="Synchronizing Access Controls..." />;
     }
     
     return <>{children}</>;

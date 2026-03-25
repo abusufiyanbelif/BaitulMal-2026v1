@@ -25,6 +25,9 @@ function HomeDashboardCard({ title, description, href, icon: Icon, delay }: { ti
   );
 }
 
+/**
+ * Member Dashboard - Optimized for Title Case and snappy navigation.
+ */
 export default function Home() {
     const { userProfile, isLoading } = useSession();
 

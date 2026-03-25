@@ -22,7 +22,7 @@ interface NewsTickerProps {
 }
 
 /**
- * Sequential News Ticker - Snappy transition cycle set to 5 seconds.
+ * Sequential News Ticker - Snappy 5-second transition cycle.
  * Title Case typography enforced.
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {

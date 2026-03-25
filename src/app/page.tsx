@@ -33,6 +33,9 @@ const priorityWeight: Record<string, number> = {
   'Low': 1
 };
 
+/**
+ * Public Landing Hub - High-fidelity Title Case typography.
+ */
 export default function Home() {
     const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted, isLoading } = usePublicData();
     const { brandingSettings } = useBranding();
