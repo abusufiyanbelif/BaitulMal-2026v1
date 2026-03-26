@@ -14,6 +14,7 @@ import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { 
     Loader2, 
     UploadCloud, 
@@ -126,7 +127,7 @@ function VerifiableItem({ icon: Icon, label, value, isEditing, id, onChange, pla
                 <Icon className="h-5 w-5" />
             </div>
             <div className="flex-1 space-y-1">
-                <p className="text-sm font-bold text-primary tracking-tight">{label}</p>
+                <p className="text-xs font-bold text-primary tracking-tight">{label}</p>
                 {isEditing ? (
                     <Input 
                         id={id}
@@ -454,10 +455,10 @@ export default function AppSettingsPage() {
             batch.set(doc(firestore, 'settings', 'guidingPrinciples'), gpData);
 
             await batch.commit();
-            toast({ title: 'Success', description: 'Institutional configuration updated.', variant: 'success' });
+            toast({ title: 'Success', description: 'Institutional Configuration Updated Successfully.', variant: 'success' });
             setIsEditMode(false);
         } catch (error: any) {
-            toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
+            toast({ title: 'Save Failed', description: error.message || 'An Unexpected Error Occurred.', variant: 'destructive' });
         } finally {
             setIsSubmitting(false);
         }
@@ -479,7 +480,7 @@ export default function AppSettingsPage() {
         logoWidth: brandingSettings?.logoWidth || 40,
         logoHeight: brandingSettings?.logoHeight || 40,
         heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.',
-        heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact.',
+        heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) To Make A Lasting Impact.',
         isHeroVisible: brandingSettings?.isHeroVisible ?? true,
         isNewsTickerVisible: brandingSettings?.isNewsTickerVisible ?? true,
         isWisdomVisible: brandingSettings?.isWisdomVisible ?? true,
@@ -544,7 +545,6 @@ export default function AppSettingsPage() {
 
             <div className="space-y-6 animate-fade-in-up">
                 
-                {/* Landing Page Configuration */}
                 <SettingsSection 
                     title="Landing Page Configuration" 
                     description="Configure the primary welcome message and component visibility on the homepage."
@@ -554,7 +554,7 @@ export default function AppSettingsPage() {
                     <div className="space-y-6">
                         <div className="grid gap-6">
                             <div className="space-y-2">
-                                <Label htmlFor="heroTitle" className="font-bold text-[10px] text-muted-foreground tracking-tighter uppercase opacity-60">Hero Title</Label>
+                                <Label htmlFor="heroTitle" className="font-bold text-xs text-muted-foreground tracking-tight uppercase opacity-60">Hero Title</Label>
                                 {isEditMode ? (
                                     <Input 
                                         id="heroTitle"
@@ -567,7 +567,7 @@ export default function AppSettingsPage() {
                                 )}
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="heroDescription" className="font-bold text-[10px] text-muted-foreground tracking-tighter uppercase opacity-60">Hero Description</Label>
+                                <Label htmlFor="heroDescription" className="font-bold text-xs text-muted-foreground tracking-tight uppercase opacity-60">Hero Description</Label>
                                 {isEditMode ? (
                                     <Textarea 
                                         id="heroDescription"
@@ -768,7 +768,6 @@ export default function AppSettingsPage() {
                     </div>
                 </SettingsSection>
 
-                {/* Organization Details Section */}
                 <SettingsSection 
                     title="Organization Details" 
                     description="Public profile, visual identity, and contact information."
@@ -888,7 +887,6 @@ export default function AppSettingsPage() {
                     </div>
                 </SettingsSection>
 
-                {/* Bank Transfer & Digital Payments Section */}
                 <SettingsSection 
                     title="Financial Channels" 
                     description="Configure direct bank transfer and digital payment handle details."
@@ -988,7 +986,6 @@ export default function AppSettingsPage() {
                     </div>
                 </SettingsSection>
 
-                {/* Core Institutional Standards */}
                 <SettingsSection 
                     title="Core Institutional Standards" 
                     description="Define focus pillars and operational rules for public guidance."

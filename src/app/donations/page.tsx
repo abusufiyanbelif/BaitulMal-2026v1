@@ -1,10 +1,10 @@
 'use client';
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useCollection, useStorage, errorEmitter, FirestorePermissionError, useMemoFirebase, useAuth, storageRef, uploadBytes, getDownloadURL } from '@/firebase';
-import { collection, doc, serverTimestamp, setDoc, updateDoc, deleteField } from 'firebase/firestore';
-import type { Donation, Campaign, Lead, UserProfile, DonationLink, TransactionDetail, Donor } from '@/lib/types';
+import { useFirestore, useCollection, useStorage, useMemoFirebase, useAuth, storageRef, uploadBytes, getDownloadURL } from '@/firebase';
+import { collection, doc, deleteField } from 'firebase/firestore';
+import type { Donation, Campaign, Lead, DonationLink, TransactionDetail, Donor } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import Resizer from 'react-image-file-resizer';
@@ -78,7 +78,6 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogFooter,
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { Input } from '@/components/ui/input';
@@ -105,18 +104,7 @@ type SortKey = keyof Donation | 'srNo';
 
 const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1100px]";
 
-interface StatCardProps {
-    title: string;
-    count: number | string;
-    description: string;
-    icon: any;
-    delay: string;
-    isCurrency?: boolean;
-    colorClass?: string;
-    onClick?: () => void;
-}
-
-function StatCard({ title, count, description, icon: Icon, delay, isCurrency = false, colorClass, onClick }: StatCardProps) {
+function StatCard({ title, count, description, icon: Icon, delay, isCurrency = false, colorClass, onClick }: { title: string, count: number | string, description: string, icon: any, delay: string, isCurrency?: boolean, colorClass?: string, onClick?: () => void }) {
     return (
         <Card 
             onClick={onClick}

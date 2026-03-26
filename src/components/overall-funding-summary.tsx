@@ -8,6 +8,7 @@ import {
   RadialBarChart,
   RadialBar,
   PolarAngleAxis,
+  ResponsiveContainer
 } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { useMemo } from 'react';
@@ -15,7 +16,6 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 /**
  * Overall Funding Summary - Aggregate organizational impact reporting.
- * Title Case typography enforced.
  */
 export function OverallFundingSummary() {
   const { isLoading, overallSummary, summaryDateRange } = usePublicData();
@@ -48,7 +48,7 @@ export function OverallFundingSummary() {
     <div className="space-y-10">
         <Card className="animate-fade-in-up border-primary/20 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden flex flex-col" style={{ animationDelay: '700ms' }}>
         <CardHeader className="bg-primary/5 border-b shrink-0">
-            <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
+            <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight uppercase">
                 <Target className="h-6 w-6 text-primary" />
                 Overall Funding Impact
             </CardTitle>
@@ -67,25 +67,27 @@ export function OverallFundingSummary() {
                             }}
                             className="mx-auto aspect-square h-full"
                         >
-                            <RadialBarChart
-                                data={chartData}
-                                startAngle={-270}
-                                endAngle={90}
-                                innerRadius="75%"
-                                outerRadius="100%"
-                                barSize={20}
-                            >
-                            <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                            <RadialBar
-                                dataKey="value"
-                                background={{ fill: 'hsl(var(--muted))' }}
-                                cornerRadius={10}
-                            />
-                            <ChartTooltip
-                                cursor={false}
-                                content={<ChartTooltipContent hideLabel />}
-                            />
-                            </RadialBarChart>
+                            <ResponsiveContainer width="100%" height="100%">
+                                <RadialBarChart
+                                    data={chartData}
+                                    startAngle={-270}
+                                    endAngle={90}
+                                    innerRadius="75%"
+                                    outerRadius="100%"
+                                    barSize={20}
+                                >
+                                <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                <RadialBar
+                                    dataKey="value"
+                                    background={{ fill: 'hsl(var(--muted))' }}
+                                    cornerRadius={10}
+                                />
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={<ChartTooltipContent hideLabel />}
+                                />
+                                </RadialBarChart>
+                            </ResponsiveContainer>
                         </ChartContainer>
                         <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom">
                             <span className="text-4xl font-bold text-primary">

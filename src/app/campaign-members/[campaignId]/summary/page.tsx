@@ -868,7 +868,7 @@ export default function CampaignSummaryPage() {
                                         <div className="space-y-3 font-normal text-foreground">
                                             {existingDocuments.map((doc) => (
                                                 <div key={doc.url} className="flex items-center justify-between p-2 border rounded-md gap-4 bg-primary/5 transition-all hover:bg-primary/10 border-primary/5">
-                                                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                    <div className="flex items-center gap-3 flex-1 min-0">
                                                         <Button variant="link" className="p-0 h-auto font-bold truncate text-primary active:scale-95" onClick={() => { if (doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i)) handleViewImage(doc.url, doc.name); else window.open(doc.url, '_blank'); }}><p className="truncate text-xs">{doc.name}</p></Button>
                                                     </div>
                                                     <div className="flex items-center gap-4">
@@ -886,12 +886,14 @@ export default function CampaignSummaryPage() {
                                         {campaign.documents.map((doc, idx) => {
                                             const isImg = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i);
                                             return (
-                                                <Card key={doc.url} className="overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center border-primary/10 bg-white">
-                                                    {isImg ? (
-                                                        <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="300px" className="object-cover" />
-                                                    ) : (
-                                                        <File className="h-12 w-12 text-primary/20" />
-                                                    )}
+                                                <Card key={doc.url} className="overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center border-primary/10 bg-white cursor-pointer" onClick={() => isImg ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}>
+                                                    <div className="relative aspect-square w-full">
+                                                        {isImg ? (
+                                                            <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="300px" className="object-cover" />
+                                                        ) : (
+                                                            <div className="flex items-center justify-center h-full bg-muted/10"><File className="h-12 w-12 text-primary/20" /></div>
+                                                        )}
+                                                    </div>
                                                     <CardFooter className="p-2 border-t mt-auto w-full bg-muted/5">
                                                         <p className="text-[10px] font-bold text-primary truncate w-full">{doc.name}</p>
                                                     </CardFooter>
