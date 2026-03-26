@@ -1,3 +1,4 @@
+
 'use client';
 import React, { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -565,7 +566,7 @@ export default function BeneficiariesPage() {
                 <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold tracking-tight text-[hsl(var(--table-header-fg))]", gridClass)}>
                     <div className="flex justify-center">
                         <Checkbox 
-                            checked={paginatedDonations.length > 0 && selectedIds.length === paginatedDonations.length}
+                            checked={paginatedBeneficiaries.length > 0 && selectedIds.length === paginatedBeneficiaries.length}
                             onCheckedChange={toggleSelectAll}
                             className="border-primary/40 data-[state=checked]:bg-primary"
                         />

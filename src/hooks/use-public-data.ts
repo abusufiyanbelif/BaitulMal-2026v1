@@ -1,3 +1,4 @@
+
 'use client';
 import { useMemo } from 'react';
 import { useCollection } from '@/firebase/firestore/use-collection';
@@ -15,7 +16,7 @@ const RECENT_UPDATE_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
  */
 export function usePublicData() {
   const firestore = useFirestore();
-  const { isLoading: isSessionLoading } = useSession();
+  const { user, isLoading: isSessionLoading } = useSession();
 
   // Load configuration for date range and ticker filtering
   const brandingRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'branding') : null, [firestore]);
@@ -41,10 +42,11 @@ export function usePublicData() {
   }, [firestore]);
   
   // Master beneficiaries list for unique family counting
+  // SECURITY FIX: Only fetch if a user is authenticated to prevent permission errors for public visitors
   const beneficiariesCollectionRef = useMemoFirebase(() => {
-    if (!firestore) return null;
+    if (!firestore || !user) return null;
     return collection(firestore, 'beneficiaries');
-  }, [firestore]);
+  }, [firestore, user]);
 
   // Donations must be Verified to appear in aggregates or tickers
   const donationsCollectionRef = useMemoFirebase(() => {
@@ -60,7 +62,7 @@ export function usePublicData() {
   const isLoading = areCampaignsLoading || areLeadsLoading || areDonationsLoading || areBeneficiariesLoading || isSessionLoading || isBrandingLoading;
 
   const memoizedData = useMemo(() => {
-    if (isLoading || !campaigns || !leads || !donations || !beneficiaries) {
+    if (isLoading || !campaigns || !leads || !donations) {
       return {
         campaignsWithProgress: [],
         leadsWithProgress: [],
@@ -162,9 +164,8 @@ export function usePublicData() {
       return { ...lead, collected, progress };
     });
 
-    // Unique Family Impact logic: Beneficiaries in master list linked to verified status
-    // For simplicity and uniqueness, we count the master list beneficiaries
-    const familiesImpacted = beneficiaries.length;
+    // Unique Family Impact logic: Beneficiaries in master list (requires auth)
+    const familiesImpacted = beneficiaries?.length || 0;
 
     const summaryDonations = donations.filter(d => {
         const dDate = d.donationDate || '';
