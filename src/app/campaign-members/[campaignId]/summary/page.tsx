@@ -251,7 +251,7 @@ export default function CampaignSummaryPage() {
             
             splits.forEach((split: any) => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-                if (applicableAmountsByCategory.hasOwnProperty(category)) {
+                if (amountsByCategory.hasOwnProperty(category)) {
                     const allocatedAmount = split.amount * proportionForThisCampaign;
                     amountsByCategory[category as DonationCategory] += allocatedAmount;
                     const isForFundraising = category !== 'Zakat' || split.forFundraising === true;
@@ -330,7 +330,7 @@ export default function CampaignSummaryPage() {
 
     const isLoadingPage = isCampaignLoading || isProfileLoading || areBeneficiariesLoading || isBrandingLoading || isPaymentLoading;
 
-    if (isLoadingPage) return <BrandedLoader />;
+    if (isLoadingPage) return <BrandedLoader message="Initializing Campaign Summary..." />;
 
     if (!campaign) return <p className="text-center mt-20 text-primary font-bold">Campaign Record Not Found.</p>;
 

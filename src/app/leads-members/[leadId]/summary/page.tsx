@@ -236,7 +236,7 @@ export default function LeadSummaryPage() {
                 if (amountsByCategory.hasOwnProperty(category)) {
                     const allocatedAmount = split.amount * allocationProportion;
                     amountsByCategory[category as DonationCategory] += allocatedAmount;
-                    const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
+                    const isForFundraising = category !== 'Zakat' || split.forFundraising === true;
                     if (category === 'Zakat' && isForFundraising) zakatForGoalAmount += allocatedAmount;
                 }
             });
@@ -373,7 +373,9 @@ export default function LeadSummaryPage() {
             imageUrl = '';
         } else if (imageFile) {
             try {
-                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(imageFile, 1024, 1024, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
+                const resizedBlob = await new Promise<Blob>((resolve) => {
+                    (Resizer as any).imageFileResizer(imageFile, 1024, 1024, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                });
                 const filePath = `leads/${leadId}/background.png`;
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);
@@ -431,7 +433,7 @@ export default function LeadSummaryPage() {
 
     const isLoadingPage = isLeadLoading || isProfileLoading || areBeneficiariesLoading || isBrandingLoading || isPaymentLoading;
 
-    if (isLoadingPage) return <BrandedLoader />;
+    if (isLoadingPage) return <BrandedLoader message="Initializing Appeal Summary..." />;
 
     if (!lead) return <p className="text-center mt-20 text-primary font-bold">Lead Record Not Found.</p>;
 
@@ -565,7 +567,7 @@ export default function LeadSummaryPage() {
                                     </div>
                                     
                                     {editableLead.purpose === 'Education' && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5 animate-fade-in-up border-primary/10">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5 animate-fade-in-zoom border-primary/10">
                                             <div className="space-y-1"><Label className="font-bold text-xs uppercase">Degree</Label><Select value={editableLead.degree} onValueChange={(val) => handleFieldChange('degree', val)}><SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{educationDegrees.map(d=><SelectItem key={d} value={d} className="font-normal">{d}</SelectItem>)}</SelectContent></Select></div>
                                             <div className="space-y-1"><Label className="font-bold text-xs uppercase">Year</Label><Select value={editableLead.year} onValueChange={(val) => handleFieldChange('year', val)}><SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{educationYears.map(y=><SelectItem key={y} value={y} className="font-normal">{y}</SelectItem>)}</SelectContent></Select></div>
                                             <div className="space-y-1"><Label className="font-bold text-xs uppercase">Semester</Label><Select value={editableLead.semester} onValueChange={(val) => handleFieldChange('semester', val)}><SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{educationSemesters.map(s=><SelectItem key={s} value={s} className="font-normal">{s}</SelectItem>)}</SelectContent></Select></div>

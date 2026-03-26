@@ -236,8 +236,8 @@ export default function BeneficiaryDetailsPage() {
       }, { requested: 0, disbursed: 0, verified: 0, pending: 0, zakatDisbursed: 0, zakatVerified: 0 });
   }, [linkedInitiatives]);
 
-  if (isLoading && !formBeneficiaryData) return <BrandedLoader />;
-  if (!beneficiary) return <p className="text-center mt-20 text-primary font-bold">Beneficiary not found.</p>;
+  if (isLoading && !formBeneficiaryData) return <BrandedLoader message="Syncing Profile Hub..." />;
+  if (!beneficiary) return <p className="text-center mt-20 text-primary font-bold">Beneficiary Profile Not Found.</p>;
 
   return (
     <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
@@ -247,14 +247,14 @@ export default function BeneficiaryDetailsPage() {
             <Link href={backHref}><ArrowLeft className="mr-2 h-4 w-4" /> Back To List</Link>
         </Button>
         <div className="flex items-center gap-2">
-            <Badge variant="outline" className="font-bold border-primary/10 text-primary/60">ID: {beneficiary.idNumber || 'N/A'}</Badge>
-            <Badge variant={beneficiary.status === 'Verified' ? 'eligible' : 'outline'} className="font-bold text-[10px]">{beneficiary.status}</Badge>
+            <Badge variant="outline" className="font-bold border-primary/10 text-primary/60 uppercase">ID: {beneficiary.idNumber || 'N/A'}</Badge>
+            <Badge variant={beneficiary.status === 'Verified' ? 'eligible' : 'outline'} className="font-bold text-[10px] uppercase">{beneficiary.status}</Badge>
         </div>
       </div>
 
       <div className="space-y-2 animate-fade-in-up">
           <h1 className="text-4xl font-bold tracking-tight text-primary">{beneficiary.name}</h1>
-          <p className="text-sm text-muted-foreground font-normal">System entry recorded on: {beneficiary.addedDate}</p>
+          <p className="text-sm text-muted-foreground font-normal">System Entry Recorded On: {beneficiary.addedDate}</p>
       </div>
 
       <Tabs defaultValue="profile" className="w-full space-y-6">
@@ -272,7 +272,7 @@ export default function BeneficiaryDetailsPage() {
                 <CardHeader className="flex flex-row items-center justify-between border-b bg-primary/5 px-6 py-4">
                     <div className="space-y-0.5">
                         <CardTitle className="text-lg font-bold text-primary tracking-tight">Beneficiary Master Record</CardTitle>
-                        <CardDescription className="text-xs font-normal">Personal details and identification Documents.</CardDescription>
+                        <CardDescription className="text-xs font-normal">Personal Details and Identification Evidence.</CardDescription>
                     </div>
                     {canUpdate && !isEditMode && ( 
                         <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md active:scale-95 transition-transform">
@@ -300,13 +300,13 @@ export default function BeneficiaryDetailsPage() {
             <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                 <CardHeader className="bg-primary/5 border-b px-6 py-4">
                     <CardTitle className="text-lg font-bold text-primary tracking-tight">Assistance Registry</CardTitle>
-                    <CardDescription className="text-xs font-normal">A chronological log of all support initiatives linked to this recipient.</CardDescription>
+                    <CardDescription className="text-xs font-normal">A Chronological Log Of All Support Initiatives Linked To This Recipient.</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
                     {isLinksLoading ? ( 
                         <div className="py-20 flex flex-col items-center gap-4">
                             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                            <p className="text-xs font-bold text-primary/60 tracking-tight">Scanning databases...</p>
+                            <p className="text-[10px] font-bold text-primary/60 tracking-tight uppercase">Scanning Databases...</p>
                         </div>
                     ) : linkedInitiatives.length > 0 ? (
                         <ScrollArea className="w-full">
@@ -314,13 +314,13 @@ export default function BeneficiaryDetailsPage() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead className="pl-6">Initiative Name</TableHead>
-                                            <TableHead>Purpose / Type</TableHead>
-                                            <TableHead>Category</TableHead>
-                                            <TableHead className="text-center">Verification</TableHead>
-                                            <TableHead className="text-right">Added Date</TableHead>
-                                            <TableHead className="text-right">Allocation (₹)</TableHead>
-                                            <TableHead className="text-right pr-6">Actions</TableHead>
+                                            <TableHead className="pl-6 font-bold text-primary text-[10px] uppercase tracking-tight">Initiative Name</TableHead>
+                                            <TableHead className="font-bold text-primary text-[10px] uppercase tracking-tight">Purpose / Type</TableHead>
+                                            <TableHead className="font-bold text-primary text-[10px] uppercase tracking-tight">Category</TableHead>
+                                            <TableHead className="text-center font-bold text-primary text-[10px] uppercase tracking-tight">Verification</TableHead>
+                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase tracking-tight">Added Date</TableHead>
+                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase tracking-tight">Allocation (₹)</TableHead>
+                                            <TableHead className="text-right pr-6 font-bold text-primary text-[10px] uppercase tracking-tight">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -337,21 +337,21 @@ export default function BeneficiaryDetailsPage() {
                                                                     {link.name}
                                                                 </Link>
                                                             </p>
-                                                            <p className="text-[10px] font-normal text-muted-foreground tracking-tight">{link.type} • {link.initiativeStatus}</p>
+                                                            <p className="text-[10px] font-normal text-muted-foreground tracking-tight uppercase">{link.type} • {link.initiativeStatus}</p>
                                                         </div>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell><Badge variant="outline" className="text-[10px] font-bold border-primary/10 text-primary/70">{link.purpose}</Badge></TableCell>
-                                                <TableCell><p className="text-xs font-bold text-primary/80">{link.category}</p></TableCell>
+                                                <TableCell><Badge variant="outline" className="text-[10px] font-bold border-primary/10 text-primary/70 uppercase">{link.purpose}</Badge></TableCell>
+                                                <TableCell><p className="text-xs font-bold text-primary/80 uppercase">{link.category}</p></TableCell>
                                                 <TableCell className="text-center">
-                                                    <Badge variant={link.beneficiaryStatus === 'Given' ? 'given' : 'outline'} className="font-bold text-[9px]">
+                                                    <Badge variant={link.beneficiaryStatus === 'Given' ? 'given' : 'outline'} className="font-bold text-[9px] uppercase">
                                                         {link.beneficiaryStatus}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right"><p className="text-xs font-mono opacity-60">{link.addedDate}</p></TableCell>
                                                 <TableCell className="text-right">
                                                     <p className="font-bold font-mono text-sm text-primary">₹{link.kitAmount.toLocaleString('en-IN')}</p>
-                                                    {link.zakatAllocation > 0 && <p className="text-[9px] font-bold text-primary/60 tracking-tight">Zakat: ₹{link.zakatAllocation.toLocaleString('en-IN')}</p>}
+                                                    {link.zakatAllocation > 0 && <p className="text-[9px] font-bold text-primary/60 tracking-tight uppercase">Zakat: ₹{link.zakatAllocation.toLocaleString('en-IN')}</p>}
                                                 </TableCell>
                                                 <TableCell className="text-right pr-6">
                                                     <div onClick={e => e.stopPropagation()}>
@@ -390,7 +390,7 @@ export default function BeneficiaryDetailsPage() {
                     ) : ( 
                         <div className="flex flex-col items-center justify-center py-20 opacity-40">
                             <Info className="h-12 w-12 mb-2" />
-                            <p className="text-sm font-bold italic">No assistance records linked to this profile.</p>
+                            <p className="text-sm font-bold italic">No Assistance Records Linked To This Profile.</p>
                         </div>
                     )}
                 </CardContent>
@@ -406,7 +406,7 @@ export default function BeneficiaryDetailsPage() {
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
                         <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.requested.toLocaleString('en-IN')}</div>
-                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Combined value of all linked requirements</p>
+                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Combined Value Of All Linked Requirements</p>
                     </CardContent>
                 </Card>
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
@@ -416,7 +416,7 @@ export default function BeneficiaryDetailsPage() {
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
                         <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.verified.toLocaleString('en-IN')}</div>
-                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Reserved for this member</p>
+                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Reserved Funds For This Member</p>
                     </CardContent>
                 </Card>
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
@@ -426,14 +426,14 @@ export default function BeneficiaryDetailsPage() {
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
                         <div className="text-3xl font-bold text-primary font-mono">₹{financialSummary.disbursed.toLocaleString('en-IN')}</div>
-                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Confirmed value successfully provided</p>
+                        <p className="text-[10px] font-normal text-muted-foreground mt-1">Confirmed Value Successfully Provided</p>
                     </CardContent>
                 </Card>
 
                 <Card className="md:col-span-3 border-primary/10 bg-white shadow-sm overflow-hidden">
                     <CardHeader className="bg-primary/5 border-b px-6 py-4">
                         <CardTitle className="text-lg font-bold text-primary tracking-tight">Allocation Breakdown</CardTitle>
-                        <CardDescription className="text-xs font-normal text-primary/60">Detailed split of aid across initiatives, identifying source funds and current disbursement status.</CardDescription>
+                        <CardDescription className="text-xs font-normal text-primary/60">Detailed Split Of Aid Across Initiatives, Identifying Source Funds And Current Disbursement Status.</CardDescription>
                     </CardHeader>
                     <CardContent className="p-0">
                         <ScrollArea className="w-full">
@@ -441,12 +441,12 @@ export default function BeneficiaryDetailsPage() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead className="pl-6 font-bold text-[10px] tracking-tight uppercase">Initiative Source</TableHead>
-                                            <TableHead className="text-right font-bold text-[10px] tracking-tight uppercase">Requirement (₹)</TableHead>
-                                            <TableHead className="text-right font-bold text-[10px] tracking-tight uppercase">Zakat Allocation (₹)</TableHead>
-                                            <TableHead className="text-right font-bold text-[10px] tracking-tight uppercase">Community Fund (₹)</TableHead>
-                                            <TableHead className="text-center font-bold text-[10px] tracking-tight uppercase">Financial Status</TableHead>
-                                            <TableHead className="text-right pr-6 font-bold text-[10px] tracking-tight uppercase">Net Provision (₹)</TableHead>
+                                            <TableHead className="pl-6 font-bold text-[10px] tracking-tight uppercase text-primary">Initiative Source</TableHead>
+                                            <TableHead className="text-right font-bold text-[10px] tracking-tight uppercase text-primary">Requirement (₹)</TableHead>
+                                            <TableHead className="text-right font-bold text-[10px] tracking-tight uppercase text-primary">Zakat Allocation (₹)</TableHead>
+                                            <TableHead className="text-right font-bold text-[10px] tracking-tight uppercase text-primary">Community Fund (₹)</TableHead>
+                                            <TableHead className="text-center font-bold text-[10px] tracking-tight uppercase text-primary">Financial Status</TableHead>
+                                            <TableHead className="text-right pr-6 font-bold text-[10px] tracking-tight uppercase text-primary">Net Provision (₹)</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -472,7 +472,7 @@ export default function BeneficiaryDetailsPage() {
                                                 <TableCell className="text-center">
                                                     <Badge 
                                                         variant={link.beneficiaryStatus === 'Given' ? 'given' : link.beneficiaryStatus === 'Verified' ? 'eligible' : 'outline'} 
-                                                        className="font-bold text-[9px]"
+                                                        className="font-bold text-[9px] uppercase"
                                                     >
                                                         {link.beneficiaryStatus === 'Given' ? 'Disbursed' : link.beneficiaryStatus === 'Verified' ? 'Secured' : 'Evaluation'}
                                                     </Badge>
@@ -488,7 +488,7 @@ export default function BeneficiaryDetailsPage() {
                                             </TableRow>
                                         ))}
                                         {linkedInitiatives.length === 0 && (
-                                            <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground italic font-normal">No financial records available.</TableCell></TableRow>
+                                            <TableRow><TableCell colSpan={6} className="text-center py-12 text-muted-foreground italic font-normal">No Financial Records Available.</TableCell></TableRow>
                                         )}
                                     </TableBody>
                                     <TableFooter className="bg-primary/5 border-t">
@@ -514,14 +514,14 @@ export default function BeneficiaryDetailsPage() {
                         <CardHeader className="bg-primary/5 border-b px-6 py-4">
                             <CardTitle className="text-lg font-bold text-primary tracking-tight">Impact Summary</CardTitle>
                         </CardHeader>
-                        <CardContent className="p-6 sm:p-10 space-y-8">
+                        <CardContent className="p-6 sm:p-10 space-y-8 font-normal">
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 p-6 rounded-2xl bg-primary/[0.02] border border-primary/10">
                                 <div className="space-y-2">
                                     <h4 className="text-xs font-bold text-primary tracking-tight uppercase">Religious Compliance Tracking</h4>
                                     <div className="flex flex-wrap gap-4 items-center">
                                         <div className="space-y-0.5">
                                             <p className="text-[9px] font-bold text-muted-foreground tracking-tight uppercase">Zakat Eligible</p>
-                                            <Badge variant={beneficiary.isEligibleForZakat ? 'eligible' : 'outline'} className="font-bold">
+                                            <Badge variant={beneficiary.isEligibleForZakat ? 'eligible' : 'outline'} className="font-bold uppercase">
                                                 {beneficiary.isEligibleForZakat ? 'Confirmed' : 'Not Eligible'}
                                             </Badge>
                                         </div>
@@ -534,7 +534,7 @@ export default function BeneficiaryDetailsPage() {
                                 </div>
                                 <div className="flex items-center gap-2 text-primary bg-white p-4 rounded-xl border border-primary/5 shadow-sm">
                                     <CheckCircle2 className="h-5 w-5 text-primary" />
-                                    <p className="text-sm font-bold tracking-tight">Audit Synchronized Site-Wide</p>
+                                    <p className="text-sm font-bold tracking-tight uppercase">Audit Synchronized Site-Wide</p>
                                 </div>
                             </div>
 
@@ -543,11 +543,11 @@ export default function BeneficiaryDetailsPage() {
                                     <span className="font-normal"><Info className="h-4 w-4"/></span> Impact Analysis
                                 </h4>
                                 <p className="text-sm leading-relaxed text-muted-foreground font-normal">
-                                    This recipient has been supported across <span className="font-bold text-primary">{linkedInitiatives.length} initiative(s)</span>. 
-                                    Out of the total requirement of <span className="font-bold text-primary font-mono">₹{financialSummary.requested.toLocaleString('en-IN')}</span>, 
-                                    the organization has successfully disbursed <span className="font-bold text-primary font-mono">₹{financialSummary.disbursed.toLocaleString('en-IN')}</span>. 
-                                    {financialSummary.verified > 0 && ` An additional ₹${financialSummary.verified.toLocaleString('en-IN')} has been verified and reserved for future provision.`}
-                                    {financialSummary.zakatDisbursed > 0 && ` A significant portion (₹${financialSummary.zakatDisbursed.toLocaleString('en-IN')}) was provided from the Zakat fund, adhering strictly to religious compliance for poverty alleviation.`}
+                                    This Recipient Has Been Supported Across <span className="font-bold text-primary">{linkedInitiatives.length} Initiative(s)</span>. 
+                                    Out Of The Total Requirement Of <span className="font-bold text-primary font-mono">₹{financialSummary.requested.toLocaleString('en-IN')}</span>, 
+                                    The Organization Has Successfully Disbursed <span className="font-bold text-primary font-mono">₹{financialSummary.disbursed.toLocaleString('en-IN')}</span>. 
+                                    {financialSummary.verified > 0 && ` An Additional ₹${financialSummary.verified.toLocaleString('en-IN')} Has Been Verified And Reserved For Future Provision.`}
+                                    {financialSummary.zakatDisbursed > 0 && ` A Significant Portion (₹${financialSummary.zakatDisbursed.toLocaleString('en-IN')}) Was Provided From The Zakat Fund, Adhering Strictly To Religious Compliance For Poverty Alleviation.`}
                                 </p>
                             </div>
                         </CardContent>

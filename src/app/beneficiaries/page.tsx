@@ -92,7 +92,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, on
         >
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">{count}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">
@@ -565,7 +565,7 @@ export default function BeneficiariesPage() {
                 <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold tracking-tight text-[hsl(var(--table-header-fg))]", gridClass)}>
                     <div className="flex justify-center">
                         <Checkbox 
-                            checked={paginatedBeneficiaries.length > 0 && selectedIds.length === paginatedBeneficiaries.length}
+                            checked={paginatedDonations.length > 0 && selectedIds.length === paginatedDonations.length}
                             onCheckedChange={toggleSelectAll}
                             className="border-primary/40 data-[state=checked]:bg-primary"
                         />
@@ -575,10 +575,10 @@ export default function BeneficiariesPage() {
                     <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Name</SortableHeader>
                     <SortableHeader sortKey="phone" sortConfig={sortConfig} handleSort={handleSort}>Phone</SortableHeader>
                     <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Verification Status</SortableHeader>
-                    <div className="text-center font-bold tracking-tight text-[10px] uppercase">Disbursement Status</div>
+                    <div className="text-center font-bold tracking-tight text-[10px]">Disbursement Status</div>
                     <SortableHeader sortKey="isEligibleForZakat" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Zakat</SortableHeader>
                     <SortableHeader sortKey="referralBy" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">Referred By</SortableHeader>
-                    <div className="text-right pr-4 font-bold tracking-tight text-[10px] uppercase">Actions</div>
+                    <div className="text-right pr-4 font-bold tracking-tight text-[10px]">Actions</div>
                 </div>
 
                 <Accordion type="single" collapsible className="w-full">
@@ -646,31 +646,31 @@ export default function BeneficiariesPage() {
                     <AccordionContent className="bg-primary/[0.02] px-6 py-4 border-t border-primary/10 animate-fade-in-up">
                         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-3 text-primary font-normal">
                         <div className="space-y-1 col-span-2">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Address</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Address</p>
                             <p className="text-sm leading-tight font-normal">{b.address || 'N/A'}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Age</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Age</p>
                             <p className="text-sm font-normal">{b.age || 'N/A'}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Occupation</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Occupation</p>
                             <p className="text-sm font-normal">{b.occupation || 'N/A'}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Family Details</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Family Details</p>
                             <p className="text-sm font-normal">T: {b.members || 0}, E: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">ID Artifact</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight">ID Artifact</p>
                             <p className="text-sm font-normal">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Date Added</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Date Added</p>
                             <p className="text-sm font-normal">{b.addedDate || 'N/A'}</p>
                         </div>
                         <div className="space-y-1 col-span-2">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Notes</p>
+                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Notes</p>
                             <p className="text-sm italic opacity-80 font-normal line-clamp-2">{b.notes || (b.isEligibleForZakat ? 'Eligible For Zakat Support.' : 'N/A')}</p>
                         </div>
                         </div>

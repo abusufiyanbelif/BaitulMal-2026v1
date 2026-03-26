@@ -469,6 +469,8 @@ export default function AppSettingsPage() {
         focusAreas: guidingPrinciplesData?.focusAreas || [],
     };
 
+    const isLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
+
     if (isLoading) {
         return <BrandedLoader />;
     }
@@ -509,7 +511,7 @@ export default function AppSettingsPage() {
                     <div className="space-y-6">
                         <div className="grid gap-6">
                             <div className="space-y-2">
-                                <Label htmlFor="heroTitle" className="font-bold text-xs text-muted-foreground tracking-tighter">Hero Title</Label>
+                                <Label htmlFor="heroTitle" className="font-bold text-xs text-muted-foreground tracking-tighter uppercase">Hero Title</Label>
                                 {isEditMode ? (
                                     <Input 
                                         id="heroTitle"
@@ -523,7 +525,7 @@ export default function AppSettingsPage() {
                                 )}
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="heroDescription" className="font-bold text-xs text-muted-foreground tracking-tighter">Hero Description</Label>
+                                <Label htmlFor="heroDescription" className="font-bold text-xs text-muted-foreground tracking-tighter uppercase">Hero Description</Label>
                                 {isEditMode ? (
                                     <Textarea 
                                         id="heroDescription"
@@ -551,7 +553,7 @@ export default function AppSettingsPage() {
                             </p>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <Label htmlFor="summaryStartDate" className="text-[10px] font-bold text-muted-foreground tracking-tight">Summary Start Date</Label>
+                                    <Label htmlFor="summaryStartDate" className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Summary Start Date</Label>
                                     <Input 
                                         id="summaryStartDate"
                                         type="date"
@@ -562,7 +564,7 @@ export default function AppSettingsPage() {
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <Label htmlFor="summaryEndDate" className="text-[10px] font-bold text-muted-foreground tracking-tight">Summary End Date</Label>
+                                    <Label htmlFor="summaryEndDate" className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Summary End Date</Label>
                                     <Input 
                                         id="summaryEndDate"
                                         type="date"
@@ -663,7 +665,7 @@ export default function AppSettingsPage() {
                 >
                     <div className="space-y-8">
                         <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2">Identity & Registration</h4>
+                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 uppercase">Identity & Registration</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
                                 <VerifiableItem 
                                     icon={Building2} 
@@ -714,7 +716,7 @@ export default function AppSettingsPage() {
                         </div>
 
                         <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2">Visual Identity</h4>
+                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 uppercase">Visual Identity</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                                 <div className="flex flex-col items-center gap-4 bg-muted/5 rounded-xl p-4 border border-dashed">
                                     <div className="relative w-full max-w-[200px] aspect-[2/1] rounded-lg flex items-center justify-center bg-white overflow-hidden shadow-inner border border-primary/5">
@@ -729,7 +731,7 @@ export default function AppSettingsPage() {
                                     </div>
                                     {isEditMode && (
                                         <div className="flex gap-2">
-                                            <label htmlFor="logo-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-[10px] font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent h-7 px-3 cursor-pointer">
+                                            <label htmlFor="logo-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-[10px] font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent h-7 px-3 cursor-pointer uppercase">
                                                 <UploadCloud className="mr-1.5 h-3.5 w-3.5" /> Upload Logo
                                             </label>
                                             <Input id="logo-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setLogoFile(e.target.files[0])} />
@@ -743,11 +745,11 @@ export default function AppSettingsPage() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <Label htmlFor="logoWidth" className="font-bold text-[10px] text-muted-foreground">Logo Width (px)</Label>
+                                        <Label htmlFor="logoWidth" className="font-bold text-[10px] text-muted-foreground uppercase">Logo Width (px)</Label>
                                         <Input id="logoWidth" type="number" value={displayData.logoWidth || 40} onChange={(e) => handleFieldChange('logoWidth', e.target.value)} disabled={isFormDisabled} className="h-9 font-normal" />
                                     </div>
                                     <div className="space-y-1">
-                                        <Label htmlFor="logoHeight" className="font-bold text-[10px] text-muted-foreground">Logo Height (px)</Label>
+                                        <Label htmlFor="logoHeight" className="font-bold text-[10px] text-muted-foreground uppercase">Logo Height (px)</Label>
                                         <Input id="logoHeight" type="number" value={displayData.logoHeight || 40} onChange={(e) => handleFieldChange('logoHeight', e.target.value)} disabled={isFormDisabled} className="h-9 font-normal" />
                                     </div>
                                 </div>
@@ -755,7 +757,7 @@ export default function AppSettingsPage() {
                         </div>
 
                         <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2">Communications & Footer</h4>
+                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 uppercase">Communications & Footer</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                                 <div className="space-y-1">
                                     <Label htmlFor="contactEmail" className="font-bold text-sm text-primary">Support Email</Label>
@@ -783,7 +785,7 @@ export default function AppSettingsPage() {
                     <div className="space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-4">
-                                <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2">Traditional Bank Transfer</h4>
+                                <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 uppercase">Traditional Bank Transfer</h4>
                                 <VerifiableItem 
                                     icon={User} 
                                     label="Account Holder Name" 
@@ -814,7 +816,7 @@ export default function AppSettingsPage() {
                             </div>
                             
                             <div className="space-y-4">
-                                <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2">UPI & QR Setup</h4>
+                                <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 uppercase">UPI & QR Setup</h4>
                                 <VerifiableItem 
                                     icon={QrCode} 
                                     label="UPI ID" 
@@ -847,7 +849,7 @@ export default function AppSettingsPage() {
                                     </div>
                                     {isEditMode && (
                                         <div className="w-full flex justify-center gap-2">
-                                            <label htmlFor="qr-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent h-8 px-3 cursor-pointer">
+                                            <label htmlFor="qr-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent h-8 px-3 cursor-pointer uppercase">
                                                 <UploadCloud className="mr-2 h-4 w-4" /> Change QR
                                             </label>
                                             <Input id="qr-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setQrCodeFile(e.target.files[0])} />
@@ -860,11 +862,11 @@ export default function AppSettingsPage() {
                                     )}
                                     <div className="w-full grid grid-cols-2 gap-4 mt-2">
                                         <div className="space-y-1">
-                                            <Label htmlFor="qrWidth" className="font-bold text-[10px] text-muted-foreground">Width (px)</Label>
+                                            <Label htmlFor="qrWidth" className="font-bold text-[10px] text-muted-foreground uppercase">Width (px)</Label>
                                             <Input id="qrWidth" type="number" value={displayData.qrWidth || 120} onChange={(e) => handleFieldChange('qrWidth', e.target.value)} disabled={isFormDisabled} className="h-8 font-normal" placeholder="Default: 120"/>
                                         </div>
                                         <div className="space-y-1">
-                                            <Label htmlFor="qrHeight" className="font-bold text-[10px] text-muted-foreground">Height (px)</Label>
+                                            <Label htmlFor="qrHeight" className="font-bold text-[10px] text-muted-foreground uppercase">Height (px)</Label>
                                             <Input id="qrHeight" type="number" value={displayData.qrHeight || 120} onChange={(e) => handleFieldChange('qrHeight', e.target.value)} disabled={isFormDisabled} className="h-8 font-normal" placeholder="Default: 120"/>
                                         </div>
                                     </div>
@@ -887,7 +889,7 @@ export default function AppSettingsPage() {
                                 <p className="text-xs text-muted-foreground font-normal">Controls the visibility of this section on public informational pages.</p>
                             </div>
                             <div className="flex items-center space-x-2">
-                                <Label htmlFor="gp-visibility" className="font-bold text-xs opacity-60">Visible</Label>
+                                <Label htmlFor="gp-visibility" className="font-bold text-xs opacity-60 uppercase">Visible</Label>
                                 <Switch 
                                     id="gp-visibility" 
                                     checked={displayData.isGuidingPrinciplesPublic} 
@@ -926,7 +928,7 @@ export default function AppSettingsPage() {
                             <div className="flex items-center justify-between">
                                 <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase"><Target className="h-4 w-4"/> Core Pillars (Focus Areas)</h4>
                                 {isEditMode && (
-                                    <Button type="button" variant="outline" size="sm" onClick={handleAddFocusArea} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add Pillar</Button>
+                                    <Button type="button" variant="outline" size="sm" onClick={handleAddFocusArea} className="h-7 text-[10px] font-bold uppercase"><Plus className="h-3 w-3 mr-1"/> Add Pillar</Button>
                                 )}
                             </div>
                             <div className="grid gap-4">
@@ -940,7 +942,7 @@ export default function AppSettingsPage() {
                                                         checked={area.isHidden} 
                                                         onCheckedChange={(checked) => handleFocusAreaChange(index, 'isHidden', !!checked)} 
                                                     />
-                                                    <Label htmlFor={`focus-hide-${index}`} className="text-[10px] font-bold opacity-60">Hide</Label>
+                                                    <Label htmlFor={`focus-hide-${index}`} className="text-[10px] font-bold opacity-60 uppercase">Hide</Label>
                                                 </div>
                                                 <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleRemoveFocusArea(index)}>
                                                     <Trash2 className="h-4 w-4"/>
@@ -990,7 +992,7 @@ export default function AppSettingsPage() {
                             <div className="flex items-center justify-between">
                                 <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase"><ListChecks className="h-4 w-4"/> Procedural Rules</h4>
                                 {isEditMode && (
-                                    <Button type="button" variant="outline" size="sm" onClick={handleAddPrinciple} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add Rule</Button>
+                                    <Button type="button" variant="outline" size="sm" onClick={handleAddPrinciple} className="h-7 text-[10px] font-bold uppercase"><Plus className="h-3 w-3 mr-1"/> Add Rule</Button>
                                 )}
                             </div>
                             <div className="space-y-4">
@@ -1006,7 +1008,7 @@ export default function AppSettingsPage() {
                                                             checked={principle.isHidden} 
                                                             onCheckedChange={(checked) => handlePrincipleChange(index, 'text', !!checked)} 
                                                         />
-                                                        <Label htmlFor={`gp-hide-${index}`} className="text-[10px] font-bold opacity-60 cursor-pointer">Hide</Label>
+                                                        <Label htmlFor={`gp-hide-${index}`} className="text-[10px] font-bold opacity-60 cursor-pointer uppercase">Hide</Label>
                                                     </div>
                                                     <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleRemovePrinciple(index)}>
                                                         <Trash2 className="h-4 w-4"/>
@@ -1024,7 +1026,7 @@ export default function AppSettingsPage() {
                                         ) : (
                                             <p className="text-sm font-normal text-foreground leading-relaxed">
                                                 {principle.text || <span className="italic opacity-50">Empty rule text</span>}
-                                                {principle.isHidden && <Badge variant="outline" className="ml-2 text-[8px] font-bold">Hidden</Badge>}
+                                                {principle.isHidden && <Badge variant="outline" className="ml-2 text-[8px] font-bold uppercase">Hidden</Badge>}
                                             </p>
                                         )}
                                     </div>

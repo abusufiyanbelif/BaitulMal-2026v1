@@ -135,7 +135,7 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
                     </p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-5 w-5" />
                 </div>
             </div>
             <p className="text-[9px] font-medium text-muted-foreground mt-auto">{description}</p>
@@ -270,7 +270,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                     {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
                                                         <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated General Fund</TableCell></TableRow>
                                                     )}
-                                                </TableBody>
+                                                </Table>
                                             </Table>
                                         </div>
                                         <ScrollBar orientation="horizontal" className="h-1.5" />
@@ -769,10 +769,10 @@ export default function DonationsPage() {
                         <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor Name</SortableHeader>
                         <SortableHeader sortKey="amount" sortConfig={sortConfig} handleSort={handleSort} className="text-right">Amount (₹)</SortableHeader>
                         <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Entry Date</SortableHeader>
-                        <div className="text-center font-bold text-[10px] tracking-tight uppercase">Method</div>
+                        <div className="text-center font-bold text-[10px] tracking-tight">Method</div>
                         <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Verification Status</SortableHeader>
-                        <div className="font-bold text-[10px] tracking-tight uppercase">Target Initiative</div>
-                        <div className="text-right pr-4 font-bold text-[10px] tracking-tight uppercase">Actions</div>
+                        <div className="font-bold text-[10px] tracking-tight">Target Initiative</div>
+                        <div className="text-right pr-4 font-bold text-[10px] tracking-tight">Actions</div>
                     </div>
                     <div className="w-full max-h-[70vh]">
                         {paginatedDonations.map((d, i) => (
@@ -788,7 +788,7 @@ export default function DonationsPage() {
                             />
                         ))}
                         {paginatedDonations.length === 0 && (
-                            <div className="text-center py-24 text-primary/40 font-bold bg-primary/[0.02] italic tracking-widest">No Donation Records Found.</div>
+                            <div className="text-center py-24 text-primary/40 font-bold bg-primary/[0.02] italic tracking-widest uppercase">No Donation Records Found.</div>
                         )}
                     </div>
                     <ScrollBar orientation="horizontal" />
