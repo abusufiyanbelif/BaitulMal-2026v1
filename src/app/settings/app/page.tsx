@@ -5,9 +5,9 @@ import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
-import { useStorage, useFirestore, useAuth, useMemoFirebase, useCollection } from '@/firebase';
+import { useStorage, useFirestore, useMemoFirebase, useCollection, collection } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, setDoc, writeBatch, collection } from 'firebase/firestore';
+import { doc, setDoc, writeBatch } from 'firebase/firestore';
 import Resizer from 'react-image-file-resizer';
 import Link from 'next/link';
 
@@ -18,7 +18,7 @@ import {
     Loader2, 
     UploadCloud, 
     Save, 
-    Image as ImageIcon, 
+    ImageIcon, 
     QrCode, 
     Edit, 
     Trash2, 
@@ -125,7 +125,7 @@ function VerifiableItem({ icon: Icon, label, value, isEditing, id, onChange, pla
             <div className="mt-1 shrink-0 p-2 rounded-lg bg-primary/10 text-primary">
                 <Icon className="h-5 w-5" />
             </div>
-            <div className="flex-1 space-y-1">
+            <div className="flex-1 min-w-0 space-y-1">
                 <p className="text-xs font-bold text-primary tracking-tight">{label}</p>
                 {isEditing ? (
                     <Input 
@@ -234,7 +234,6 @@ export default function AppSettingsPage() {
     
     const firestore = useFirestore();
     const storage = useStorage();
-    const auth = useAuth();
     const { toast } = useToast();
 
     const campaignsRef = useMemoFirebase(() => firestore ? collection(firestore, 'campaigns') : null, [firestore]);
@@ -465,9 +464,9 @@ export default function AppSettingsPage() {
     
     const handleCancel = () => setIsEditMode(false);
 
-    const isLoadingAggregate = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
+    const isLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
 
-    if (isLoadingAggregate) {
+    if (isLoading) {
         return <BrandedLoader />;
     }
 
@@ -584,7 +583,7 @@ export default function AppSettingsPage() {
                         <Separator className="bg-primary/10" />
 
                         <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-primary flex items-center gap-2 tracking-tight uppercase">
+                            <h4 className="text-xs font-bold text-primary flex items-center gap-2 tracking-tight">
                                 <Calendar className="h-4 w-4" /> Reporting Period Filter
                             </h4>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -616,7 +615,7 @@ export default function AppSettingsPage() {
                         <Separator className="bg-primary/10" />
 
                         <div className="space-y-6">
-                            <h4 className="text-xs font-bold text-primary flex items-center gap-2 tracking-tight uppercase">
+                            <h4 className="text-xs font-bold text-primary flex items-center gap-2 tracking-tight">
                                 <Megaphone className="h-4 w-4" /> News Ticker Configuration
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -833,7 +832,7 @@ export default function AppSettingsPage() {
                                         ) : (
                                             <div className="text-muted-foreground text-center p-2 font-normal opacity-20">
                                                 <ImageIcon className="mx-auto h-8 w-8" />
-                                                <p className="text-[10px] mt-1 font-bold tracking-tighter uppercase">No Logo Uploaded</p>
+                                                <p className="text-[10px] mt-1 font-bold tracking-tighter">No Logo Uploaded</p>
                                             </div>
                                         )}
                                     </div>
@@ -1034,7 +1033,7 @@ export default function AppSettingsPage() {
                             <div className="flex items-center justify-between">
                                 <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase"><Target className="h-4 w-4 opacity-40"/> Impact Pillars (Focus Areas)</h4>
                                 {isEditMode && (
-                                    <Button type="button" variant="outline" size="sm" onClick={handleAddFocusArea} className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform shadow-sm uppercase"><Plus className="h-3 w-3 mr-1"/> Add Pillar</Button>
+                                    <Button type="button" variant="outline" size="sm" onClick={handleAddFocusArea} className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform shadow-sm"><Plus className="h-3 w-3 mr-1"/> Add Pillar</Button>
                                 )}
                             </div>
                             <div className="grid gap-4">
@@ -1098,7 +1097,7 @@ export default function AppSettingsPage() {
                             <div className="flex items-center justify-between">
                                 <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase"><ListChecks className="h-4 w-4 opacity-40"/> Procedural Directives</h4>
                                 {isEditMode && (
-                                    <Button type="button" variant="outline" size="sm" onClick={handleAddPrinciple} className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform shadow-sm uppercase"><Plus className="h-3 w-3 mr-1"/> Add Rule</Button>
+                                    <Button type="button" variant="outline" size="sm" onClick={handleAddPrinciple} className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform shadow-sm"><Plus className="h-3 w-3 mr-1"/> Add Rule</Button>
                                 )}
                             </div>
                             <div className="space-y-4">
