@@ -145,7 +145,7 @@ export function OverallFundingSummary() {
 
             <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60">Target Progress</CardTitle>
+                    <CardTitle className="text-[10px] font-bold text-primary opacity-60">Target Progress</CardTitle>
                     <Target className="h-5 w-5 text-primary opacity-40" />
                 </CardHeader>
                 <CardContent>

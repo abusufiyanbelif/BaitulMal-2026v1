@@ -188,10 +188,13 @@ export default function BeneficiaryDetailsPage() {
         const { idProofFile, idProofDeleted, ...formData } = data;
         const { status, kitAmount, zakatAllocation, ...masterData } = formData;
         
-        await updateMasterBeneficiaryAction(beneficiaryId, { ...masterData, idProofUrl, addedDate: beneficiary?.addedDate || new Date().toISOString().split('T')[0] }, { id: currentUserProfile.id, name: currentUserProfile.name });
+        const masterRes = await updateMasterBeneficiaryAction(beneficiaryId, { ...masterData, idProofUrl, addedDate: beneficiary?.addedDate || new Date().toISOString().split('T')[0] }, { id: currentUserProfile.id, name: currentUserProfile.name });
         
+        if (!masterRes.success) throw new Error(masterRes.message);
+
         if (initiativeContext) {
-            await updateInitiativeBeneficiaryDetailsAction(initiativeContext.type, initiativeContext.id, beneficiaryId, { ...formData, idProofUrl, id: beneficiaryId });
+            const initRes = await updateInitiativeBeneficiaryDetailsAction(initiativeContext.type, initiativeContext.id, beneficiaryId, { ...formData, idProofUrl, id: beneficiaryId });
+            if (!initRes.success) throw new Error(initRes.message);
         }
 
         toast({ title: 'Success', description: 'Beneficiary record updated successfully.', variant: 'success' });
@@ -211,7 +214,11 @@ export default function BeneficiaryDetailsPage() {
         if (res && res.success) { 
             fetchLinkedInitiatives(); 
             toast({ title: "Status Updated", description: `Disbursement status set to ${newStatus}.`, variant: "success" }); 
+        } else {
+            throw new Error(res.message);
         }
+    } catch (error: any) {
+        toast({ title: 'Update Failed', description: error.message, variant: 'destructive' });
     } finally {
         setIsSubmitting(false);
     }
