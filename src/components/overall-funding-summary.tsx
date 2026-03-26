@@ -3,7 +3,7 @@
 import { usePublicData } from '@/hooks/use-public-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from './ui/skeleton';
-import { Target, IndianRupee, Users } from 'lucide-react';
+import { Target, IndianRupee, Users, CheckCircle2 } from 'lucide-react';
 import {
   RadialBarChart,
   RadialBar,
@@ -57,7 +57,7 @@ export function OverallFundingSummary() {
         <CardContent className="pt-6">
             <ScrollArea className="w-full">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center min-w-[300px]">
-                    <div className="relative h-48 w-full">
+                    <div className="relative h-48 sm:h-64 w-full">
                         <ChartContainer
                             config={{
                                 progress: {
@@ -123,7 +123,7 @@ export function OverallFundingSummary() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-[10px] font-bold text-primary tracking-widest uppercase opacity-60">Families Impacted</CardTitle>
+                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60">Families Impacted</CardTitle>
                     <Users className="h-5 w-5 text-primary opacity-40" />
                 </CardHeader>
                 <CardContent>
@@ -134,7 +134,7 @@ export function OverallFundingSummary() {
             
             <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-[10px] font-bold text-primary tracking-widest uppercase opacity-60">Verified Donations</CardTitle>
+                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60">Verified Donations</CardTitle>
                     <CheckCircle2 className="h-5 w-5 text-primary opacity-40" />
                 </CardHeader>
                 <CardContent>
@@ -145,7 +145,7 @@ export function OverallFundingSummary() {
 
             <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-[10px] font-bold text-primary tracking-widest uppercase opacity-60">Target Progress</CardTitle>
+                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60">Target Progress</CardTitle>
                     <Target className="h-5 w-5 text-primary opacity-40" />
                 </CardHeader>
                 <CardContent>

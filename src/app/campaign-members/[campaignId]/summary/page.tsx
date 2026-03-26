@@ -886,79 +886,25 @@ export default function CampaignSummaryPage() {
                                         {campaign.documents.map((doc, idx) => {
                                             const isImg = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i);
                                             return (
-                                                <Card key={doc.url} className="overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col active:scale-95 bg-white border-primary/10 cursor-pointer shadow-sm group animate-fade-in-up" style={{ animationDelay: `${50 + idx * 50}ms` }} onClick={() => { if (isImg) handleViewImage(doc.url, doc.name); else window.open(doc.url, '_blank'); }}>
-                                                    <div className="block flex-grow">
-                                                        <div className="relative aspect-square w-full bg-muted flex items-center justify-center overflow-hidden">
-                                                            {isImg ? <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="(max-width: 768px) 100vw, 300px" className="object-cover transition-transform duration-500 group-hover:scale-110" /> : <File className="w-10 h-10 text-muted-foreground transition-transform duration-500 group-hover:scale-110" />}
-                                                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-                                                        </div>
-                                                        <div className="p-2 text-center text-[10px] font-bold text-primary tracking-tight truncate transition-colors group-hover:text-primary/80 uppercase">{doc.name}</div>
-                                                    </div>
-                                                    <CardFooter className="p-2 border-t mt-auto flex justify-center w-full gap-2 bg-muted/5" onClick={e => e.stopPropagation()}>
-                                                        {canUpdateSummary ? ( 
-                                                            <div className="flex items-center gap-2">
-                                                                <Switch checked={!!doc.isPublic} onCheckedChange={() => quickToggleDocumentPublic(doc)} />
-                                                                <Label className="text-[9px] text-foreground font-bold tracking-tight uppercase">Public</Label>
-                                                            </div>
-                                                        ) : ( <Badge variant={doc.isPublic ? "eligible" : "secondary"} className="font-bold text-[9px] tracking-tight uppercase">{doc.isPublic ? "Public" : "Private"}</Badge> )}
+                                                <Card key={doc.url} className="overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col items-center justify-center border-primary/10 bg-white">
+                                                    {isImg ? (
+                                                        <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="300px" className="object-cover" />
+                                                    ) : (
+                                                        <File className="h-12 w-12 text-primary/20" />
+                                                    )}
+                                                    <CardFooter className="p-2 border-t mt-auto w-full bg-muted/5">
+                                                        <p className="text-[10px] font-bold text-primary truncate w-full">{doc.name}</p>
                                                     </CardFooter>
                                                 </Card>
-                                            );
+                                            )
                                         })}
                                     </div>
-                                ) : <p className="text-[10px] text-muted-foreground font-bold tracking-tight italic opacity-60 uppercase">No documents available.</p>
+                                ) : <p className="text-center italic opacity-40 py-10">No Public Documents Attached.</p>
                             )}
                         </CardContent>
                     </Card>
                 )}
-
-                <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
-                    <CardHeader className="bg-primary/5 border-b pb-3">
-                        <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight uppercase"><History className="h-4 w-4 opacity-40"/> Activity History Log</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-6 space-y-4">
-                        <div className="flex items-start gap-3">
-                            <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Clock className="h-3.5 w-3.5"/></div>
-                            <div>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Record Created By</p>
-                                <p className="text-xs font-bold text-primary">{campaign?.createdByName || 'Organization System'}</p>
-                                <p className="text-[9px] font-mono opacity-60">Staff ID: {campaign?.createdById || 'System'}</p>
-                            </div>
-                        </div>
-                        {campaign?.createdAt && (
-                            <div className="flex items-start gap-3">
-                                <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Calendar className="h-3.5 w-3.5"/></div>
-                               <div>
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Creation Date</p>
-                                    <p className="text-xs font-bold text-primary">{(campaign.createdAt as any).toDate?.().toLocaleString() || new Date(campaign.createdAt as any).toLocaleString()}</p>
-                                </div>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
             </div>
-
-            <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
-
-            <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-                <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden animate-fade-in-zoom border-primary/10">
-                    <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary tracking-tight text-sm uppercase">{imageToView?.name}</DialogTitle></DialogHeader>
-                    <ScrollArea className="flex-1 bg-secondary/20">
-                        <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
-                            {imageToView && (
-                                <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Document View" fill sizes="100vw" className="object-contain transition-all duration-300 origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
-                            )}
-                        </div>
-                        <ScrollBar orientation="vertical" />
-                    </ScrollArea>
-                    <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">
-                        <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform uppercase"><ZoomIn className="mr-1 h-4 w-4"/> In</Button>
-                        <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5))} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform uppercase"><ZoomOut className="mr-1 h-4 w-4"/> Out</Button>
-                        <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform uppercase"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
-                        <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform uppercase"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </main>
     );
 }

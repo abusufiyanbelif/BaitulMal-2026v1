@@ -110,10 +110,8 @@ const config = {
         },
         'ticker-sequence': {
           '0%': { transform: 'translateY(-100%)', opacity: '0' },
-          '20%': { transform: 'translateY(0)', opacity: '1' }, // Drop for 1s (20% of 5s)
-          '30%': { transform: 'translateX(0)' },
-          '90%': { transform: 'translateX(-100%)', opacity: '1' }, // Slide for 4s
-          '100%': { transform: 'translateX(-100%)', opacity: '0' },
+          '20%': { transform: 'translateY(0)', opacity: '1' },
+          '100%': { transform: 'translateX(-100%)', opacity: '1' },
         },
         'ticker-fade-pulse': {
           '0%, 100%': { opacity: '1' },
