@@ -551,7 +551,7 @@ export default function AppSettingsPage() {
                             </p>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <Label htmlFor="summaryStartDate" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Summary Start Date</Label>
+                                    <Label htmlFor="summaryStartDate" className="text-[10px] font-bold text-muted-foreground tracking-tight">Summary Start Date</Label>
                                     <Input 
                                         id="summaryStartDate"
                                         type="date"
@@ -562,7 +562,7 @@ export default function AppSettingsPage() {
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <Label htmlFor="summaryEndDate" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Summary End Date</Label>
+                                    <Label htmlFor="summaryEndDate" className="text-[10px] font-bold text-muted-foreground tracking-tight">Summary End Date</Label>
                                     <Input 
                                         id="summaryEndDate"
                                         type="date"
@@ -1004,7 +1004,7 @@ export default function AppSettingsPage() {
                                                         <Checkbox 
                                                             id={`gp-hide-${index}`}
                                                             checked={principle.isHidden} 
-                                                            onCheckedChange={(checked) => handlePrincipleChange(index, 'isHidden', !!checked)} 
+                                                            onCheckedChange={(checked) => handlePrincipleChange(index, 'text', !!checked)} 
                                                         />
                                                         <Label htmlFor={`gp-hide-${index}`} className="text-[10px] font-bold opacity-60 cursor-pointer">Hide</Label>
                                                     </div>

@@ -110,9 +110,9 @@ const config = {
         },
         'ticker-sequence': {
           '0%': { transform: 'translateY(-100%)', opacity: '0' },
-          '8%': { transform: 'translateY(0)', opacity: '1' },
-          '25%': { transform: 'translateX(0)' },
-          '88%': { transform: 'translateX(-100%)', opacity: '1' },
+          '12%': { transform: 'translateY(0)', opacity: '1' },
+          '30%': { transform: 'translateX(0)' },
+          '85%': { transform: 'translateX(-100%)', opacity: '1' },
           '100%': { transform: 'translateX(-100%)', opacity: '0' },
         },
         'ticker-fade-pulse': {
@@ -137,7 +137,7 @@ const config = {
         'fade-in-zoom': 'fade-in-zoom 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards',
         'shimmer': 'shimmer 2s infinite',
         'zoom-in-out': 'zoom-in-out 3s ease-in-out infinite',
-        'ticker-sequence': 'ticker-sequence 8s linear infinite',
+        'ticker-sequence': 'ticker-sequence 5s linear infinite',
         'ticker-fade-pulse': 'ticker-fade-pulse 2s ease-in-out infinite',
         'urgent-pulse': 'urgent-pulse 2s cubic-bezier(0.4, 0, 0.2, 1) infinite',
         'high-pulse': 'high-pulse 2.5s cubic-bezier(0.4, 0, 0.2, 1) infinite',

@@ -10,7 +10,7 @@ import { donationCategories } from '@/lib/modules';
 const RECENT_UPDATE_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 
 /**
- * usePublicData - Strict filtering for public-facing institutional reporting.
+ * usePublicData - Strict filtering for public-facing organizational reporting.
  * Re-engineered to support Custom Date Range filtering from organization settings.
  */
 export function usePublicData() {
@@ -130,8 +130,8 @@ export function usePublicData() {
         const itemContribution = applicableAmountInDonation * proportionForThisItem;
         
         // Progress for cards is always lifetime
-        const currentLifetimeCollected = collectedAmounts.get(link.linkId) || 0;
-        collectedAmounts.set(link.linkId, currentLifetimeCollected + itemContribution);
+        const currentLifetimeCollected = collectedAmounts.get(link.id) || 0;
+        collectedAmounts.set(link.id, currentLifetimeCollected + itemContribution);
 
         // Aggregate goal tracking respects custom range
         if (donationYear && isWithinRange) {
@@ -168,7 +168,13 @@ export function usePublicData() {
         return (!startDate || dDate >= startDate) && (!endDate || dDate <= endDate);
     });
 
-    const totalTarget = allPublicItems.reduce((sum, item) => sum + (item.targetAmount || 0), 0);
+    // Calculate Target specifically for items that fall within or overlap the period
+    const summaryItems = allPublicItems.filter(item => {
+        const itemStart = item.startDate || '';
+        return (!startDate || itemStart >= startDate) && (!endDate || itemStart <= endDate);
+    });
+
+    const totalTargetInRange = summaryItems.reduce((sum, item) => sum + (item.targetAmount || 0), 0);
     
     // Recalculate collected amount specifically for the summary period
     let totalCollectedForGoalsInRange = 0;
@@ -190,7 +196,7 @@ export function usePublicData() {
     });
 
     const grandTotalRaisedInRange = summaryDonations.reduce((sum, d) => sum + d.amount, 0);
-    const overallProgress = totalTarget > 0 ? Math.min((totalCollectedForGoalsInRange / totalTarget) * 100, 100) : 0;
+    const overallProgress = totalTargetInRange > 0 ? Math.min((totalCollectedForGoalsInRange / totalTargetInRange) * 100, 100) : 0;
 
     const amountsByCategoryInRange = summaryDonations.reduce((acc, d) => {
       const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
@@ -243,7 +249,7 @@ export function usePublicData() {
       campaignsWithProgress,
       leadsWithProgress,
       overallSummary: {
-        totalTarget,
+        totalTarget: totalTargetInRange,
         grandTotalRaised: grandTotalRaisedInRange,
         totalCollectedForGoals: totalCollectedForGoalsInRange,
         progress: overallProgress,

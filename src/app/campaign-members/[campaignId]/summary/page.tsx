@@ -304,7 +304,7 @@ export default function CampaignSummaryPage() {
     }, [fundingData]);
 
     useEffect(() => {
-        if (lead && !editMode) {
+        if (campaign && !editMode) {
              setEditableCampaign({
                 name: campaign?.name || '',
                 description: campaign?.description || '',
@@ -601,7 +601,7 @@ export default function CampaignSummaryPage() {
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                 </div>
                                 <div className="space-y-2 font-normal text-foreground">
-                                    <Label className="text-muted-foreground text-[10px] font-bold tracking-tight uppercase">Mission Statement</Label>
+                                    <Label className="text-muted-foreground text-[10px] font-bold tracking-tight uppercase">Mission Description</Label>
                                     <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{campaign?.description || 'No detailed description available.'}</p>
                                 </div>
                             </>
