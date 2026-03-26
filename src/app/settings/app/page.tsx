@@ -5,8 +5,8 @@ import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
-import { useStorage, useFirestore, useAuth } from '@/firebase/provider';
-import { errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useStorage, useFirestore, useAuth, useCollection, useMemoFirebase } from '@/firebase/provider';
+import { errorEmitter, FirestorePermissionError, collection } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc, writeBatch } from 'firebase/firestore';
 import Resizer from 'react-image-file-resizer';
@@ -14,7 +14,43 @@ import Link from 'next/link';
 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, UploadCloud, Save, Image as ImageIcon, QrCode, Edit, Trash2, X, Building2, MapPin, Hash, ShieldCheck, Globe, Landmark, User, CreditCard, Plus, Shield, ChevronDown, Monitor, Megaphone, Quote, Target, PieChart, Info, HeartHandshake, Smartphone, CheckCircle2, GraduationCap, HeartPulse, Utensils, HelpCircle, ListChecks, Calendar } from 'lucide-react';
+import { 
+    Loader2, 
+    UploadCloud, 
+    Save, 
+    Image as ImageIcon, 
+    QrCode, 
+    Edit, 
+    Trash2, 
+    X, 
+    Building2, 
+    MapPin, 
+    Hash, 
+    ShieldCheck, 
+    Globe, 
+    Landmark, 
+    User, 
+    CreditCard, 
+    Plus, 
+    Shield, 
+    ChevronDown, 
+    Monitor, 
+    Megaphone, 
+    Quote, 
+    Target, 
+    PieChart, 
+    Info, 
+    HeartHandshake, 
+    Smartphone, 
+    CheckCircle2, 
+    GraduationCap, 
+    HeartPulse, 
+    Utensils, 
+    HelpCircle, 
+    ListChecks, 
+    Calendar,
+    Filter
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -26,8 +62,9 @@ import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { GuidingPrinciple, FocusArea } from '@/lib/types';
+import type { GuidingPrinciple, FocusArea, Campaign, Lead } from '@/lib/types';
 import { BrandedLoader } from '@/components/branded-loader';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 interface FormDataType {
     name: string;
@@ -67,6 +104,13 @@ interface FormDataType {
     gpDescription: string;
     principles: GuidingPrinciple[];
     focusAreas: FocusArea[];
+    // News Ticker Configuration
+    isTickerActiveVisible: boolean;
+    isTickerDonationVisible: boolean;
+    isTickerCompletedVisible: boolean;
+    tickerMaxDonations: number | string;
+    tickerMaxCompleted: number | string;
+    tickerSkipIds: string[];
 }
 
 function VerifiableItem({ icon: Icon, label, value, isEditing, id, onChange, placeholder }: { 
@@ -123,7 +167,7 @@ function VisibilityToggle({ id, label, description, icon: Icon, checked, onChang
                 <p className="text-xs text-muted-foreground font-normal">{description}</p>
             </div>
             <div className="flex items-center space-x-2">
-                <Label htmlFor={id} className="font-bold text-xs opacity-60 tracking-tight">Visible</Label>
+                <Label htmlFor={id} className="font-bold text-xs opacity-60 tracking-tight uppercase">Visible</Label>
                 <Switch 
                     id={id} 
                     checked={checked} 
@@ -190,11 +234,17 @@ export default function AppSettingsPage() {
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
     const { guidingPrinciplesData, isLoading: isGPLoading } = useGuidingPrinciples();
     
-    const storage = useStorage();
     const firestore = useFirestore();
+    const storage = useStorage();
     const auth = useAuth();
     const { toast } = useToast();
-    
+
+    // Fetch all initiatives for skip selection
+    const campaignsRef = useMemoFirebase(() => firestore ? collection(firestore, 'campaigns') : null, [firestore]);
+    const leadsRef = useMemoFirebase(() => firestore ? collection(firestore, 'leads') : null, [firestore]);
+    const { data: allCampaigns } = useCollection<Campaign>(campaignsRef);
+    const { data: allLeads } = useCollection<Lead>(leadsRef);
+
     const [isEditMode, setIsEditMode] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     
@@ -248,6 +298,13 @@ export default function AppSettingsPage() {
                 gpDescription: guidingPrinciplesData?.description || '',
                 principles: guidingPrinciplesData?.principles || [],
                 focusAreas: guidingPrinciplesData?.focusAreas || [],
+                // News Ticker Sub-config
+                isTickerActiveVisible: brandingSettings?.isTickerActiveVisible ?? true,
+                isTickerDonationVisible: brandingSettings?.isTickerDonationVisible ?? true,
+                isTickerCompletedVisible: brandingSettings?.isTickerCompletedVisible ?? true,
+                tickerMaxDonations: brandingSettings?.tickerMaxDonations ?? 15,
+                tickerMaxCompleted: brandingSettings?.tickerMaxCompleted ?? 5,
+                tickerSkipIds: brandingSettings?.tickerSkipIds || [],
             });
         } else {
             setEditableData(null);
@@ -282,50 +339,6 @@ export default function AppSettingsPage() {
         handleFieldChange('qrCodeUrl', '');
     };
 
-    const handleAddPrinciple = () => {
-        if (!editableData) return;
-        const newPrinciples = [
-            ...editableData.principles,
-            { id: `gp_${Date.now()}`, text: '', isHidden: false }
-        ];
-        handleFieldChange('principles', newPrinciples);
-    };
-
-    const handleRemovePrinciple = (index: number) => {
-        if (!editableData) return;
-        const newPrinciples = editableData.principles.filter((_, i) => i !== index);
-        handleFieldChange('principles', newPrinciples);
-    };
-
-    const handlePrincipleChange = (index: number, field: 'text' | 'isHidden', value: any) => {
-        if (!editableData) return;
-        const newPrinciples = [...editableData.principles];
-        newPrinciples[index] = { ...newPrinciples[index], [field]: value };
-        handleFieldChange('principles', newPrinciples);
-    };
-
-    const handleAddFocusArea = () => {
-        if (!editableData) return;
-        const newAreas = [
-            ...editableData.focusAreas,
-            { id: `focus_${Date.now()}`, title: 'New Pillar', description: '', icon: 'Other' as const, isHidden: false }
-        ];
-        handleFieldChange('focusAreas', newAreas);
-    };
-
-    const handleRemoveFocusArea = (index: number) => {
-        if (!editableData) return;
-        const newAreas = editableData.focusAreas.filter((_, i) => i !== index);
-        handleFieldChange('focusAreas', newAreas);
-    };
-
-    const handleFocusAreaChange = (index: number, field: keyof FocusArea, value: any) => {
-        if (!editableData) return;
-        const newAreas = [...editableData.focusAreas];
-        newAreas[index] = { ...newAreas[index], [field]: value };
-        handleFieldChange('focusAreas', newAreas);
-    };
-
     const handleSave = async () => {
         if (!firestore || !storage || !canUpdateSettings || !editableData) return;
 
@@ -337,8 +350,6 @@ export default function AppSettingsPage() {
         }
 
         setIsSubmitting(true);
-        toast({ title: 'Saving Settings...', description: 'Please Wait.' });
-
         try {
             const batch = writeBatch(firestore);
 
@@ -370,6 +381,12 @@ export default function AppSettingsPage() {
                 isRecentVerificationVisible: editableData.isRecentVerificationVisible,
                 summaryStartDate: editableData.summaryStartDate,
                 summaryEndDate: editableData.summaryEndDate,
+                isTickerActiveVisible: editableData.isTickerActiveVisible,
+                isTickerDonationVisible: editableData.isTickerDonationVisible,
+                isTickerCompletedVisible: editableData.isTickerCompletedVisible,
+                tickerMaxDonations: Number(editableData.tickerMaxDonations),
+                tickerMaxCompleted: Number(editableData.tickerMaxCompleted),
+                tickerSkipIds: editableData.tickerSkipIds,
             };
             batch.set(doc(firestore, 'settings', 'branding'), brandingData, { merge: true });
 
@@ -402,7 +419,6 @@ export default function AppSettingsPage() {
             };
             batch.set(doc(firestore, 'settings', 'payment'), paymentData, { merge: true });
 
-            // Guiding Principles Save
             const gpData = {
                 isGuidingPrinciplesPublic: editableData.isGuidingPrinciplesPublic,
                 title: editableData.gpTitle,
@@ -413,14 +429,10 @@ export default function AppSettingsPage() {
             batch.set(doc(firestore, 'settings', 'guidingPrinciples'), gpData);
 
             await batch.commit();
-            toast({ title: 'Success!', description: 'All Settings Have Been Updated.', variant: 'success' });
+            toast({ title: 'Success', description: 'Institutional configuration updated.', variant: 'success' });
             setIsEditMode(false);
         } catch (error: any) {
-            if (error.code === 'permission-denied') {
-                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: 'settings documents', operation: 'write' }));
-            } else {
-                toast({ title: 'Save Failed', description: error.message || 'An Unexpected Error Occurred.', variant: 'destructive' });
-            }
+            toast({ title: 'Save Failed', description: error.message || 'An unexpected error occurred.', variant: 'destructive' });
         } finally {
             setIsSubmitting(false);
         }
@@ -467,6 +479,13 @@ export default function AppSettingsPage() {
         gpDescription: guidingPrinciplesData?.description || '',
         principles: guidingPrinciplesData?.principles || [],
         focusAreas: guidingPrinciplesData?.focusAreas || [],
+        // Ticker
+        isTickerActiveVisible: brandingSettings?.isTickerActiveVisible ?? true,
+        isTickerDonationVisible: brandingSettings?.isTickerDonationVisible ?? true,
+        isTickerCompletedVisible: brandingSettings?.isTickerCompletedVisible ?? true,
+        tickerMaxDonations: brandingSettings?.tickerMaxDonations ?? 15,
+        tickerMaxCompleted: brandingSettings?.tickerMaxCompleted ?? 5,
+        tickerSkipIds: brandingSettings?.tickerSkipIds || [],
     };
 
     const isLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
@@ -479,19 +498,19 @@ export default function AppSettingsPage() {
         <div className="space-y-6 text-primary font-normal pb-20">
             <div className="flex items-center justify-between">
                 <div className="space-y-1">
-                    <h2 className="text-2xl font-bold tracking-tight">App Settings</h2>
-                    <p className="text-sm text-muted-foreground">Manage Organization Profile, Branding, And Core Standards.</p>
+                    <h2 className="text-2xl font-bold tracking-tight text-primary">App Settings</h2>
+                    <p className="text-sm text-muted-foreground font-normal">Manage Organization Profile, Branding, And Core Standards.</p>
                 </div>
                 {!isEditMode ? (
-                    <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md">
-                        <Edit className="mr-2 h-4 w-4"/>Edit Settings
+                    <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md transition-transform active:scale-95">
+                        <Edit className="mr-2 h-4 w-4"/>Modify Configuration
                     </Button>
                 ) : (
                     <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="font-bold border-primary/20 text-primary">
+                        <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
                             <X className="mr-2 h-4 w-4" /> Cancel
                         </Button>
-                        <Button onClick={handleSave} disabled={isSubmitting} className="font-bold shadow-md">
+                        <Button onClick={handleSave} disabled={isSubmitting} className="font-bold shadow-md active:scale-95 transition-transform">
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
                             Save All Changes
                         </Button>
@@ -511,13 +530,12 @@ export default function AppSettingsPage() {
                     <div className="space-y-6">
                         <div className="grid gap-6">
                             <div className="space-y-2">
-                                <Label htmlFor="heroTitle" className="font-bold text-xs text-muted-foreground tracking-tighter uppercase">Hero Title</Label>
+                                <Label htmlFor="heroTitle" className="font-bold text-[10px] text-muted-foreground tracking-tighter uppercase opacity-60">Hero Title</Label>
                                 {isEditMode ? (
                                     <Input 
                                         id="heroTitle"
                                         value={displayData.heroTitle}
                                         onChange={(e) => handleFieldChange('heroTitle', e.target.value)}
-                                        placeholder="Enter primary heading..."
                                         className="font-normal"
                                     />
                                 ) : (
@@ -525,15 +543,14 @@ export default function AppSettingsPage() {
                                 )}
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="heroDescription" className="font-bold text-xs text-muted-foreground tracking-tighter uppercase">Hero Description</Label>
+                                <Label htmlFor="heroDescription" className="font-bold text-[10px] text-muted-foreground tracking-tighter uppercase opacity-60">Hero Description</Label>
                                 {isEditMode ? (
                                     <Textarea 
                                         id="heroDescription"
                                         rows={3}
                                         value={displayData.heroDescription}
                                         onChange={(e) => handleFieldChange('heroDescription', e.target.value)}
-                                        placeholder="Enter subtext description..."
-                                        className="font-normal"
+                                        className="font-normal leading-relaxed"
                                     />
                                 ) : (
                                     <p className="text-sm font-normal text-muted-foreground leading-relaxed">{displayData.heroDescription}</p>
@@ -545,15 +562,11 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-4">
                             <h4 className="text-xs font-bold text-primary flex items-center gap-2 tracking-tight uppercase">
-                                <Calendar className="h-4 w-4" /> Reporting Period Configuration
+                                <Calendar className="h-4 w-4" /> Reporting Period Filter
                             </h4>
-                            <p className="text-xs text-muted-foreground font-normal">
-                                Define the date range used for the landing page financial aggregates (Overall Summary, Category Breakdown, etc.). 
-                                Leave blank to show all-time data.
-                            </p>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <Label htmlFor="summaryStartDate" className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Summary Start Date</Label>
+                                    <Label htmlFor="summaryStartDate" className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Aggregate Start Date</Label>
                                     <Input 
                                         id="summaryStartDate"
                                         type="date"
@@ -564,7 +577,7 @@ export default function AppSettingsPage() {
                                     />
                                 </div>
                                 <div className="space-y-1">
-                                    <Label htmlFor="summaryEndDate" className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Summary End Date</Label>
+                                    <Label htmlFor="summaryEndDate" className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase opacity-60">Aggregate End Date</Label>
                                     <Input 
                                         id="summaryEndDate"
                                         type="date"
@@ -579,10 +592,85 @@ export default function AppSettingsPage() {
 
                         <Separator className="bg-primary/10" />
 
+                        <div className="space-y-6">
+                            <h4 className="text-xs font-bold text-primary flex items-center gap-2 tracking-tight uppercase">
+                                <Megaphone className="h-4 w-4" /> News Ticker Granular Sub-config
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-muted/5">
+                                    <h5 className="text-[10px] font-bold text-primary/60 uppercase tracking-widest border-b pb-2 mb-2">Display Toggles</h5>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center justify-between">
+                                            <Label htmlFor="ticker-active" className="text-xs font-bold">Show Active Initiatives</Label>
+                                            <Switch id="ticker-active" checked={displayData.isTickerActiveVisible} onCheckedChange={(val) => handleFieldChange('isTickerActiveVisible', val)} disabled={isFormDisabled} />
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <Label htmlFor="ticker-donations" className="text-xs font-bold">Show Verified Donations</Label>
+                                            <Switch id="ticker-donations" checked={displayData.isTickerDonationVisible} onCheckedChange={(val) => handleFieldChange('isTickerDonationVisible', val)} disabled={isFormDisabled} />
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <Label htmlFor="ticker-completed" className="text-xs font-bold">Show Recent Archive</Label>
+                                            <Switch id="ticker-completed" checked={displayData.isTickerCompletedVisible} onCheckedChange={(val) => handleFieldChange('isTickerCompletedVisible', val)} disabled={isFormDisabled} />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-muted/5">
+                                    <h5 className="text-[10px] font-bold text-primary/60 uppercase tracking-widest border-b pb-2 mb-2">Item Constraints</h5>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-1">
+                                            <Label className="text-[9px] font-bold">Max Donations</Label>
+                                            <Input type="number" value={displayData.tickerMaxDonations} onChange={e => handleFieldChange('tickerMaxDonations', e.target.value)} disabled={isFormDisabled} className="h-8 text-xs font-bold" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="text-[9px] font-bold">Max Archive</Label>
+                                            <Input type="number" value={displayData.tickerMaxCompleted} onChange={e => handleFieldChange('tickerMaxCompleted', e.target.value)} disabled={isFormDisabled} className="h-8 text-xs font-bold" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="space-y-3 p-4 rounded-xl border border-primary/10 bg-white shadow-sm">
+                                <h5 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2">
+                                    <Filter className="h-4 w-4 opacity-40"/> Ticker Exclusion List (Skip IDs)
+                                </h5>
+                                <p className="text-[10px] text-muted-foreground font-normal">Select specific initiatives that should never appear in the rolling ticker.</p>
+                                <div className="border rounded-lg bg-muted/5 p-2">
+                                    <ScrollArea className="h-48 w-full">
+                                        <div className="space-y-1">
+                                            {[...(allCampaigns || []), ...(allLeads || [])].map((item) => {
+                                                const isSkipped = displayData.tickerSkipIds.includes(item.id);
+                                                return (
+                                                    <div key={item.id} className="flex items-center space-x-3 p-2 rounded hover:bg-primary/5 transition-colors border-b border-primary/5 last:border-0">
+                                                        <Checkbox 
+                                                            id={`skip-${item.id}`} 
+                                                            checked={isSkipped} 
+                                                            onCheckedChange={(checked) => {
+                                                                const current = [...displayData.tickerSkipIds];
+                                                                const updated = checked ? [...current, item.id] : current.filter(id => id !== item.id);
+                                                                handleFieldChange('tickerSkipIds', updated);
+                                                            }} 
+                                                            disabled={isFormDisabled}
+                                                        />
+                                                        <Label htmlFor={`skip-${item.id}`} className="text-xs font-normal cursor-pointer flex-1 flex justify-between gap-4">
+                                                            <span className="truncate">{item.name}</span>
+                                                            <span className="text-[9px] font-mono opacity-40 shrink-0">ID:{item.id.slice(-4)}</span>
+                                                        </Label>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                        <ScrollBar orientation="vertical" />
+                                    </ScrollArea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <Separator className="bg-primary/10" />
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <VisibilityToggle 
                                 id="hero-visibility"
-                                label="Show Hero Section"
+                                label="Show Hero Message"
                                 description="Display the primary title and description at the top of the landing page."
                                 icon={Monitor}
                                 checked={displayData.isHeroVisible}
@@ -591,8 +679,8 @@ export default function AppSettingsPage() {
                             />
                             <VisibilityToggle 
                                 id="news-ticker-visibility"
-                                label="Show News Tickers"
-                                description="Display rolling updates for active campaigns and recent donations."
+                                label="Main News Tickers"
+                                description="Master toggle for all rolling community updates."
                                 icon={Megaphone}
                                 checked={displayData.isNewsTickerVisible}
                                 onChange={(val) => handleFieldChange('isNewsTickerVisible', val)}
@@ -600,8 +688,8 @@ export default function AppSettingsPage() {
                             />
                             <VisibilityToggle 
                                 id="wisdom-visibility"
-                                label="Show Wisdom & Reflections"
-                                description="Display daily religious wisdom and reflections."
+                                label="Wisdom & Reflections"
+                                description="Display daily religious guidance and scholar quotes."
                                 icon={Quote}
                                 checked={displayData.isWisdomVisible}
                                 onChange={(val) => handleFieldChange('isWisdomVisible', val)}
@@ -609,8 +697,8 @@ export default function AppSettingsPage() {
                             />
                             <VisibilityToggle 
                                 id="overall-summary-visibility"
-                                label="Show Overall Funding"
-                                description="Display the combined fundraising progress for all verified goals."
+                                label="Overall Funding Progress"
+                                description="Display the combined organizational progress bar."
                                 icon={Target}
                                 checked={displayData.isOverallSummaryVisible}
                                 onChange={(val) => handleFieldChange('isOverallSummaryVisible', val)}
@@ -618,8 +706,8 @@ export default function AppSettingsPage() {
                             />
                             <VisibilityToggle 
                                 id="donation-summary-visibility"
-                                label="Show Yearly Summary"
-                                description="Display historical financial data and category breakdowns."
+                                label="Donation Summary Charts"
+                                description="Display category distributions and historical trends."
                                 icon={PieChart}
                                 checked={displayData.isDonationSummaryVisible}
                                 onChange={(val) => handleFieldChange('isDonationSummaryVisible', val)}
@@ -627,8 +715,8 @@ export default function AppSettingsPage() {
                             />
                             <VisibilityToggle 
                                 id="purpose-summary-visibility"
-                                label="Show Impact By Purpose"
-                                description="Display verified fund utilization categorized by organizational purpose."
+                                label="Impact By Purpose"
+                                description="Display verified fund utilization across community pillars."
                                 icon={HeartHandshake}
                                 checked={displayData.isPurposeSummaryVisible}
                                 onChange={(val) => handleFieldChange('isPurposeSummaryVisible', val)}
@@ -636,8 +724,8 @@ export default function AppSettingsPage() {
                             />
                             <VisibilityToggle 
                                 id="initiative-summary-visibility"
-                                label="Show Initiative Summaries"
-                                description="Display counts and lists for active campaigns and leads."
+                                label="Initiative Summaries"
+                                description="Display counts and tables for active campaigns and appeals."
                                 icon={Building2}
                                 checked={displayData.isInitiativeSummaryVisible}
                                 onChange={(val) => handleFieldChange('isInitiativeSummaryVisible', val)}
@@ -645,8 +733,8 @@ export default function AppSettingsPage() {
                             />
                             <VisibilityToggle 
                                 id="recent-verification-visibility"
-                                label="Show Verification Ticker"
-                                description="Display the animated sliding ticker of confirmed donations."
+                                label="Real-time Verification Feed"
+                                description="Display the animated feed of confirmed community contributions."
                                 icon={CheckCircle2}
                                 checked={displayData.isRecentVerificationVisible}
                                 onChange={(val) => handleFieldChange('isRecentVerificationVisible', val)}
@@ -665,7 +753,7 @@ export default function AppSettingsPage() {
                 >
                     <div className="space-y-8">
                         <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 uppercase">Identity & Registration</h4>
+                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 uppercase opacity-60">Identity & Registration</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
                                 <VerifiableItem 
                                     icon={Building2} 
@@ -674,7 +762,7 @@ export default function AppSettingsPage() {
                                     isEditing={isEditMode}
                                     id="org-name"
                                     onChange={(v) => handleFieldChange('name', v)}
-                                    placeholder="Full legal name"
+                                    placeholder="Full Legal Name"
                                 />
                                 <VerifiableItem 
                                     icon={MapPin} 
@@ -683,11 +771,11 @@ export default function AppSettingsPage() {
                                     isEditing={isEditMode}
                                     id="org-address"
                                     onChange={(v) => handleFieldChange('address', v)}
-                                    placeholder="Official registered address"
+                                    placeholder="Official Registered Address"
                                 />
                                 <VerifiableItem 
                                     icon={Hash} 
-                                    label="Registration Number" 
+                                    label="Registration No." 
                                     value={displayData.regNo} 
                                     isEditing={isEditMode}
                                     id="org-reg"
@@ -701,7 +789,7 @@ export default function AppSettingsPage() {
                                     isEditing={isEditMode}
                                     id="org-pan"
                                     onChange={(v) => handleFieldChange('pan', v)}
-                                    placeholder="Permanent account number"
+                                    placeholder="Institutional PAN"
                                 />
                                 <VerifiableItem 
                                     icon={Globe} 
@@ -716,27 +804,27 @@ export default function AppSettingsPage() {
                         </div>
 
                         <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 uppercase">Visual Identity</h4>
+                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 uppercase opacity-60">Visual Identity</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                                <div className="flex flex-col items-center gap-4 bg-muted/5 rounded-xl p-4 border border-dashed">
+                                <div className="flex flex-col items-center gap-4 bg-muted/5 rounded-xl p-4 border border-dashed border-primary/10">
                                     <div className="relative w-full max-w-[200px] aspect-[2/1] rounded-lg flex items-center justify-center bg-white overflow-hidden shadow-inner border border-primary/5">
                                         {(isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl) ? (
                                             <img src={(isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)!.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent((isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)!)}` : (isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)} alt="Logo" className="object-contain p-2 h-full w-full" />
                                         ) : (
-                                            <div className="text-muted-foreground text-center p-2 font-normal">
-                                                <ImageIcon className="mx-auto h-8 w-8 opacity-20" />
-                                                <p className="text-[10px] mt-1 font-bold tracking-tighter">No Logo Uploaded</p>
+                                            <div className="text-muted-foreground text-center p-2 font-normal opacity-20">
+                                                <ImageIcon className="mx-auto h-8 w-8" />
+                                                <p className="text-[10px] mt-1 font-bold tracking-tighter uppercase">No Logo Uploaded</p>
                                             </div>
                                         )}
                                     </div>
                                     {isEditMode && (
                                         <div className="flex gap-2">
-                                            <label htmlFor="logo-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-[10px] font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent h-7 px-3 cursor-pointer uppercase">
+                                            <label htmlFor="logo-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-[10px] font-bold border border-primary/20 bg-background hover:bg-primary/5 h-7 px-3 cursor-pointer uppercase text-primary transition-all active:scale-95 shadow-sm">
                                                 <UploadCloud className="mr-1.5 h-3.5 w-3.5" /> Upload Logo
                                             </label>
                                             <Input id="logo-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setLogoFile(e.target.files[0])} />
                                             {editableData?.logoUrl && (
-                                                <Button type="button" variant="destructive" size="icon" className="h-7 w-7" onClick={handleRemoveLogo} disabled={isSubmitting}>
+                                                <Button type="button" variant="destructive" size="icon" className="h-7 w-7 transition-transform active:scale-90" onClick={handleRemoveLogo} disabled={isSubmitting}>
                                                     <Trash2 className="h-3.5 w-3.5" />
                                                 </Button>
                                             )}
@@ -745,55 +833,55 @@ export default function AppSettingsPage() {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <Label htmlFor="logoWidth" className="font-bold text-[10px] text-muted-foreground uppercase">Logo Width (px)</Label>
-                                        <Input id="logoWidth" type="number" value={displayData.logoWidth || 40} onChange={(e) => handleFieldChange('logoWidth', e.target.value)} disabled={isFormDisabled} className="h-9 font-normal" />
+                                        <Label htmlFor="logoWidth" className="font-bold text-[10px] text-muted-foreground uppercase opacity-60">Width (px)</Label>
+                                        <Input id="logoWidth" type="number" value={displayData.logoWidth || 40} onChange={(e) => handleFieldChange('logoWidth', e.target.value)} disabled={isFormDisabled} className="h-9 font-normal text-primary" />
                                     </div>
                                     <div className="space-y-1">
-                                        <Label htmlFor="logoHeight" className="font-bold text-[10px] text-muted-foreground uppercase">Logo Height (px)</Label>
-                                        <Input id="logoHeight" type="number" value={displayData.logoHeight || 40} onChange={(e) => handleFieldChange('logoHeight', e.target.value)} disabled={isFormDisabled} className="h-9 font-normal" />
+                                        <Label htmlFor="logoHeight" className="font-bold text-[10px] text-muted-foreground uppercase opacity-60">Height (px)</Label>
+                                        <Input id="logoHeight" type="number" value={displayData.logoHeight || 40} onChange={(e) => handleFieldChange('logoHeight', e.target.value)} disabled={isFormDisabled} className="h-9 font-normal text-primary" />
                                     </div>
                                 </div>
                             </div>
                         </div>
 
                         <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 uppercase">Communications & Footer</h4>
+                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 uppercase opacity-60">Public Footer & Support</h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
                                 <div className="space-y-1">
-                                    <Label htmlFor="contactEmail" className="font-bold text-sm text-primary">Support Email</Label>
-                                    <Input id="contactEmail" value={displayData.contactEmail} onChange={(e) => handleFieldChange('contactEmail', e.target.value)} disabled={isFormDisabled} placeholder="support@org.com" className="h-9 font-normal"/>
+                                    <Label htmlFor="contactEmail" className="font-bold text-sm text-primary">Service Email</Label>
+                                    <Input id="contactEmail" value={displayData.contactEmail} onChange={(e) => handleFieldChange('contactEmail', e.target.value)} disabled={isFormDisabled} placeholder="support@org.com" className="h-9 font-normal text-primary"/>
                                 </div>
                                 <div className="space-y-1">
-                                    <Label htmlFor="contactPhone" className="font-bold text-sm text-primary">Contact Phone</Label>
-                                    <Input id="contactPhone" value={displayData.contactPhone} onChange={(e) => handleFieldChange('contactPhone', e.target.value)} disabled={isFormDisabled} placeholder="+91 00000 00000" className="h-9 font-normal"/>
+                                    <Label htmlFor="contactPhone" className="font-bold text-sm text-primary">Support Hotline</Label>
+                                    <Input id="contactPhone" value={displayData.contactPhone} onChange={(e) => handleFieldChange('contactPhone', e.target.value)} disabled={isFormDisabled} placeholder="+91 00000 00000" className="h-9 font-normal text-primary"/>
                                 </div>
                                 <div className="md:col-span-2 space-y-1">
-                                    <Label htmlFor="copyright" className="font-bold text-sm text-primary">Footer Copyright Text</Label>
-                                    <Input id="copyright" value={displayData.copyright} onChange={(e) => handleFieldChange('copyright', e.target.value)} disabled={isFormDisabled} placeholder="© 2026 Your Organization. All Rights Reserved." className="h-9 font-normal"/>
+                                    <Label htmlFor="copyright" className="font-bold text-sm text-primary">Footer Rights Notice</Label>
+                                    <Input id="copyright" value={displayData.copyright} onChange={(e) => handleFieldChange('copyright', e.target.value)} disabled={isFormDisabled} placeholder="© 2026 Your Organization. All Rights Reserved." className="h-9 font-normal text-primary"/>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </SettingsSection>
 
-                {/* Bank Transfer & UPI Details Section */}
+                {/* Bank Transfer & Digital Payments Section */}
                 <SettingsSection 
-                    title="Bank Transfer & UPI Details" 
-                    description="Configure all donation channels including bank and digital payment info."
+                    title="Financial Channels" 
+                    description="Configure direct bank transfer and digital payment handle details."
                     icon={CreditCard}
                 >
                     <div className="space-y-8">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-4">
-                                <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 uppercase">Traditional Bank Transfer</h4>
+                                <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 uppercase opacity-60">Direct Bank Transfer</h4>
                                 <VerifiableItem 
                                     icon={User} 
-                                    label="Account Holder Name" 
+                                    label="Account Title" 
                                     value={displayData.bankAccountName} 
                                     isEditing={isEditMode}
                                     id="bank-name"
                                     onChange={(v) => handleFieldChange('bankAccountName', v)}
-                                    placeholder="Full name as per bank"
+                                    placeholder="Full Holder Name"
                                 />
                                 <VerifiableItem 
                                     icon={CreditCard} 
@@ -802,7 +890,7 @@ export default function AppSettingsPage() {
                                     isEditing={isEditMode}
                                     id="bank-acc"
                                     onChange={(v) => handleFieldChange('bankAccountNumber', v)}
-                                    placeholder="Bank account number"
+                                    placeholder="Account Identifier"
                                 />
                                 <VerifiableItem 
                                     icon={Landmark} 
@@ -811,15 +899,15 @@ export default function AppSettingsPage() {
                                     isEditing={isEditMode}
                                     id="bank-ifsc"
                                     onChange={(v) => handleFieldChange('bankIfsc', v)}
-                                    placeholder="11-digit IFSC code"
+                                    placeholder="11-digit Code"
                                 />
                             </div>
                             
                             <div className="space-y-4">
-                                <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 uppercase">UPI & QR Setup</h4>
+                                <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 uppercase opacity-60">Digital Handles & QR</h4>
                                 <VerifiableItem 
                                     icon={QrCode} 
-                                    label="UPI ID" 
+                                    label="Primary UPI ID" 
                                     value={displayData.upiId} 
                                     isEditing={isEditMode}
                                     id="upi-id"
@@ -828,7 +916,7 @@ export default function AppSettingsPage() {
                                 />
                                 <VerifiableItem 
                                     icon={Smartphone} 
-                                    label="Payment Mobile Number" 
+                                    label="Linked Mobile Number" 
                                     value={displayData.paymentMobileNumber} 
                                     isEditing={isEditMode}
                                     id="pay-mob"
@@ -841,20 +929,20 @@ export default function AppSettingsPage() {
                                         {(isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl) ? (
                                             <img src={(isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)!.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent((isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)!)}` : (isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)} alt="QR" className="object-contain p-2 h-full w-full" />
                                         ) : (
-                                            <div className="text-muted-foreground text-center p-2 font-normal">
-                                                <QrCode className="mx-auto h-8 w-8 opacity-20" />
-                                                <p className="text-[10px] mt-1 font-bold tracking-tighter">No QR Code Uploaded</p>
+                                            <div className="text-muted-foreground text-center p-2 font-normal opacity-20">
+                                                <QrCode className="mx-auto h-8 w-8" />
+                                                <p className="text-[10px] mt-1 font-bold tracking-tighter uppercase">No QR Code</p>
                                             </div>
                                         )}
                                     </div>
                                     {isEditMode && (
                                         <div className="w-full flex justify-center gap-2">
-                                            <label htmlFor="qr-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs font-bold ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 border border-input bg-background hover:bg-accent h-8 px-3 cursor-pointer uppercase">
-                                                <UploadCloud className="mr-2 h-4 w-4" /> Change QR
+                                            <label htmlFor="qr-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs font-bold border border-primary/20 bg-background hover:bg-primary/5 h-8 px-3 cursor-pointer uppercase text-primary transition-all active:scale-95 shadow-sm">
+                                                <UploadCloud className="mr-2 h-4 w-4" /> Change QR Image
                                             </label>
                                             <Input id="qr-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setQrCodeFile(e.target.files[0])} />
                                             {editableData?.qrCodeUrl && (
-                                                <Button type="button" variant="destructive" size="sm" className="font-bold h-8" onClick={handleRemoveQrCode} disabled={isSubmitting}>
+                                                <Button type="button" variant="destructive" size="sm" className="font-bold h-8 transition-transform active:scale-90" onClick={handleRemoveQrCode} disabled={isSubmitting}>
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             )}
@@ -862,12 +950,12 @@ export default function AppSettingsPage() {
                                     )}
                                     <div className="w-full grid grid-cols-2 gap-4 mt-2">
                                         <div className="space-y-1">
-                                            <Label htmlFor="qrWidth" className="font-bold text-[10px] text-muted-foreground uppercase">Width (px)</Label>
-                                            <Input id="qrWidth" type="number" value={displayData.qrWidth || 120} onChange={(e) => handleFieldChange('qrWidth', e.target.value)} disabled={isFormDisabled} className="h-8 font-normal" placeholder="Default: 120"/>
+                                            <Label htmlFor="qrWidth" className="font-bold text-[10px] text-muted-foreground uppercase opacity-60">Width (px)</Label>
+                                            <Input id="qrWidth" type="number" value={displayData.qrWidth || 120} onChange={(e) => handleFieldChange('qrWidth', e.target.value)} disabled={isFormDisabled} className="h-8 font-normal text-primary" placeholder="120"/>
                                         </div>
                                         <div className="space-y-1">
-                                            <Label htmlFor="qrHeight" className="font-bold text-[10px] text-muted-foreground uppercase">Height (px)</Label>
-                                            <Input id="qrHeight" type="number" value={displayData.qrHeight || 120} onChange={(e) => handleFieldChange('qrHeight', e.target.value)} disabled={isFormDisabled} className="h-8 font-normal" placeholder="Default: 120"/>
+                                            <Label htmlFor="qrHeight" className="font-bold text-[10px] text-muted-foreground uppercase opacity-60">Height (px)</Label>
+                                            <Input id="qrHeight" type="number" value={displayData.qrHeight || 120} onChange={(e) => handleFieldChange('qrHeight', e.target.value)} disabled={isFormDisabled} className="h-8 font-normal text-primary" placeholder="120"/>
                                         </div>
                                     </div>
                                 </div>
@@ -876,17 +964,17 @@ export default function AppSettingsPage() {
                     </div>
                 </SettingsSection>
 
-                {/* Guiding Principles Manager Section */}
+                {/* Core Institutional Standards */}
                 <SettingsSection 
-                    title="Guiding Principles Manager" 
-                    description="Define core values, pillars of focus, and operational standards."
+                    title="Core Institutional Standards" 
+                    description="Define focus pillars and operational rules for public guidance."
                     icon={Shield}
                 >
                     <div className="space-y-8">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-muted/5 gap-4 transition-all hover:border-primary/20">
                             <div className="space-y-1 flex-1">
-                                <h3 className="font-bold text-primary text-sm tracking-tight">Public Principles Section</h3>
-                                <p className="text-xs text-muted-foreground font-normal">Controls the visibility of this section on public informational pages.</p>
+                                <h3 className="font-bold text-primary text-sm tracking-tight">Public Principles Availability</h3>
+                                <p className="text-xs text-muted-foreground font-normal">Toggle visibility of the standards section on informational pages.</p>
                             </div>
                             <div className="flex items-center space-x-2">
                                 <Label htmlFor="gp-visibility" className="font-bold text-xs opacity-60 uppercase">Visible</Label>
@@ -901,7 +989,7 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-4">
                             <div className="space-y-1.5">
-                                <Label className="font-bold text-[10px] text-muted-foreground tracking-tighter uppercase">Section Heading</Label>
+                                <Label className="font-bold text-[10px] text-muted-foreground tracking-tighter uppercase opacity-60">Section Headline</Label>
                                 <Input 
                                     value={displayData.gpTitle} 
                                     onChange={(e) => handleFieldChange('gpTitle', e.target.value)} 
@@ -910,14 +998,14 @@ export default function AppSettingsPage() {
                                 />
                             </div>
                             <div className="space-y-1.5">
-                                <Label className="font-bold text-[10px] text-muted-foreground tracking-tighter uppercase">Mission Description</Label>
+                                <Label className="font-bold text-[10px] text-muted-foreground tracking-tighter uppercase opacity-60">Preamble Description</Label>
                                 <Textarea 
                                     rows={3} 
                                     value={displayData.gpDescription} 
                                     onChange={(e) => handleFieldChange('gpDescription', e.target.value)} 
                                     disabled={isFormDisabled} 
-                                    placeholder="Brief introduction about your principles..." 
-                                    className="font-normal text-sm leading-relaxed"
+                                    placeholder="Enter introductory text..." 
+                                    className="font-normal text-sm leading-relaxed text-primary"
                                 />
                             </div>
                         </div>
@@ -926,14 +1014,14 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase"><Target className="h-4 w-4"/> Core Pillars (Focus Areas)</h4>
+                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase"><Target className="h-4 w-4 opacity-40"/> Impact Pillars (Focus Areas)</h4>
                                 {isEditMode && (
-                                    <Button type="button" variant="outline" size="sm" onClick={handleAddFocusArea} className="h-7 text-[10px] font-bold uppercase"><Plus className="h-3 w-3 mr-1"/> Add Pillar</Button>
+                                    <Button type="button" variant="outline" size="sm" onClick={handleAddFocusArea} className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform shadow-sm uppercase"><Plus className="h-3 w-3 mr-1"/> Add Pillar</Button>
                                 )}
                             </div>
                             <div className="grid gap-4">
                                 {(displayData.focusAreas || []).map((area, index) => (
-                                    <div key={area.id || index} className="relative p-4 border rounded-xl bg-primary/[0.01] space-y-4 border-primary/5 shadow-sm">
+                                    <div key={area.id || index} className="relative p-4 border rounded-xl bg-primary/[0.01] space-y-4 border-primary/5 shadow-sm group">
                                         {isEditMode && (
                                             <div className="absolute top-2 right-2 flex items-center gap-2">
                                                 <div className="flex items-center space-x-1.5 mr-2">
@@ -942,16 +1030,16 @@ export default function AppSettingsPage() {
                                                         checked={area.isHidden} 
                                                         onCheckedChange={(checked) => handleFocusAreaChange(index, 'isHidden', !!checked)} 
                                                     />
-                                                    <Label htmlFor={`focus-hide-${index}`} className="text-[10px] font-bold opacity-60 uppercase">Hide</Label>
+                                                    <Label htmlFor={`focus-hide-${index}`} className="text-[10px] font-bold opacity-60 uppercase cursor-pointer">Hide</Label>
                                                 </div>
-                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => handleRemoveFocusArea(index)}>
+                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive transition-transform active:scale-90" onClick={() => handleRemoveFocusArea(index)}>
                                                     <Trash2 className="h-4 w-4"/>
                                                 </Button>
                                             </div>
                                         )}
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                             <div className="space-y-1">
-                                                <Label className="text-[9px] font-bold text-muted-foreground uppercase">Icon & Title</Label>
+                                                <Label className="text-[9px] font-bold text-muted-foreground uppercase opacity-60">Visual & Label</Label>
                                                 <div className="flex gap-2">
                                                     <Select value={area.icon} onValueChange={(val) => handleFocusAreaChange(index, 'icon', val)} disabled={isFormDisabled}>
                                                         <SelectTrigger className="w-12 h-9 p-0 justify-center"><FocusAreaIcon type={area.icon}/></SelectTrigger>
@@ -966,18 +1054,18 @@ export default function AppSettingsPage() {
                                                         value={area.title} 
                                                         onChange={(e) => handleFocusAreaChange(index, 'title', e.target.value)} 
                                                         disabled={isFormDisabled}
-                                                        className="font-bold h-9"
+                                                        className="font-bold h-9 text-primary"
                                                     />
                                                 </div>
                                             </div>
                                             <div className="space-y-1">
-                                                <Label className="text-[9px] font-bold text-muted-foreground uppercase">Description</Label>
+                                                <Label className="text-[9px] font-bold text-muted-foreground uppercase opacity-60">Objective Description</Label>
                                                 <Textarea 
                                                     value={area.description} 
                                                     onChange={(e) => handleFocusAreaChange(index, 'description', e.target.value)} 
                                                     disabled={isFormDisabled}
                                                     rows={2}
-                                                    className="text-xs font-normal min-h-[36px]"
+                                                    className="text-xs font-normal min-h-[36px] text-primary"
                                                 />
                                             </div>
                                         </div>
@@ -990,27 +1078,27 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase"><ListChecks className="h-4 w-4"/> Procedural Rules</h4>
+                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase"><ListChecks className="h-4 w-4 opacity-40"/> Procedural Directives</h4>
                                 {isEditMode && (
-                                    <Button type="button" variant="outline" size="sm" onClick={handleAddPrinciple} className="h-7 text-[10px] font-bold uppercase"><Plus className="h-3 w-3 mr-1"/> Add Rule</Button>
+                                    <Button type="button" variant="outline" size="sm" onClick={handleAddPrinciple} className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform shadow-sm uppercase"><Plus className="h-3 w-3 mr-1"/> Add Rule</Button>
                                 )}
                             </div>
                             <div className="space-y-4">
                                 {(displayData.principles || []).map((principle, index) => (
-                                    <div key={principle.id || index} className="relative group p-4 border rounded-xl bg-white space-y-3 shadow-sm border-primary/5">
+                                    <div key={principle.id || index} className="relative group p-4 border rounded-xl bg-white space-y-3 shadow-sm border-primary/5 hover:border-primary/20 transition-all">
                                         <div className="flex items-center justify-between">
-                                            <p className="font-bold text-primary text-[10px] tracking-widest uppercase opacity-40">Rule #{index + 1}</p>
+                                            <p className="font-bold text-primary text-[10px] tracking-widest uppercase opacity-40">Standard Directive #{index + 1}</p>
                                             {isEditMode && (
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex items-center space-x-1.5">
                                                         <Checkbox 
                                                             id={`gp-hide-${index}`}
                                                             checked={principle.isHidden} 
-                                                            onCheckedChange={(checked) => handlePrincipleChange(index, 'text', !!checked)} 
+                                                            onCheckedChange={(checked) => handlePrincipleChange(index, 'isHidden', !!checked)} 
                                                         />
                                                         <Label htmlFor={`gp-hide-${index}`} className="text-[10px] font-bold opacity-60 cursor-pointer uppercase">Hide</Label>
                                                     </div>
-                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleRemovePrinciple(index)}>
+                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive transition-transform active:scale-90" onClick={() => handleRemovePrinciple(index)}>
                                                         <Trash2 className="h-4 w-4"/>
                                                     </Button>
                                                 </div>
@@ -1020,14 +1108,16 @@ export default function AppSettingsPage() {
                                             <Textarea 
                                                 value={principle.text} 
                                                 onChange={(e) => handlePrincipleChange(index, 'text', e.target.value)} 
-                                                placeholder="Enter organizational rule or principle..." 
-                                                className="font-normal min-h-[80px] text-sm leading-relaxed" 
+                                                placeholder="Enter Standard Procedural Rule..." 
+                                                className="font-normal min-h-[80px] text-sm leading-relaxed text-primary" 
                                             />
                                         ) : (
-                                            <p className="text-sm font-normal text-foreground leading-relaxed">
-                                                {principle.text || <span className="italic opacity-50">Empty rule text</span>}
-                                                {principle.isHidden && <Badge variant="outline" className="ml-2 text-[8px] font-bold uppercase">Hidden</Badge>}
-                                            </p>
+                                            <div className="flex items-start gap-2">
+                                                <p className="text-sm font-normal text-foreground leading-relaxed flex-1">
+                                                    {principle.text || <span className="italic opacity-30">Unspecified Directive Text</span>}
+                                                </p>
+                                                {principle.isHidden && <Badge variant="outline" className="text-[8px] font-black uppercase border-primary/10">Private</Badge>}
+                                            </div>
                                         )}
                                     </div>
                                 ))}

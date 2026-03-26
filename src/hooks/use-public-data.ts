@@ -11,13 +11,13 @@ const RECENT_UPDATE_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 
 /**
  * usePublicData - Strict filtering for public-facing organizational reporting.
- * Re-engineered to support Custom Date Range filtering from organization settings.
+ * Re-engineered to support Custom Date Range filtering and News Ticker exclusions.
  */
 export function usePublicData() {
   const firestore = useFirestore();
   const { isLoading: isSessionLoading } = useSession();
 
-  // Load configuration for date range filtering
+  // Load configuration for date range and ticker filtering
   const brandingRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'branding') : null, [firestore]);
   const { data: brandingSettings, isLoading: isBrandingLoading } = useDoc<BrandingSettings>(brandingRef);
 
@@ -79,6 +79,14 @@ export function usePublicData() {
     const allPublicItems = [...campaigns, ...leads];
     const itemsById = new Map(allPublicItems.map(item => [item.id, item]));
 
+    // Identity Configured Exclusions & Limits
+    const skipIds = new Set(brandingSettings?.tickerSkipIds || []);
+    const maxDonations = brandingSettings?.tickerMaxDonations ?? 15;
+    const maxCompleted = brandingSettings?.tickerMaxCompleted ?? 5;
+    const isTickerActiveVisible = brandingSettings?.isTickerActiveVisible !== false;
+    const isTickerDonationVisible = brandingSettings?.isTickerDonationVisible !== false;
+    const isTickerCompletedVisible = brandingSettings?.isTickerCompletedVisible !== false;
+
     // Identity Configured Date Range
     const startDate = brandingSettings?.summaryStartDate || '';
     const endDate = brandingSettings?.summaryEndDate || '';
@@ -130,8 +138,8 @@ export function usePublicData() {
         const itemContribution = applicableAmountInDonation * proportionForThisItem;
         
         // Progress for cards is always lifetime
-        const currentLifetimeCollected = collectedAmounts.get(link.id) || 0;
-        collectedAmounts.set(link.id, currentLifetimeCollected + itemContribution);
+        const currentLifetimeCollected = collectedAmounts.get(link.linkId) || 0;
+        collectedAmounts.set(link.linkId, currentLifetimeCollected + itemContribution);
 
         // Aggregate goal tracking respects custom range
         if (donationYear && isWithinRange) {
@@ -228,9 +236,10 @@ export function usePublicData() {
         .filter(y => y.totalGoalReceived > 0 || y.overallTotalReceived > 0)
         .sort((a, b) => parseInt(b.year) - parseInt(a.year));
 
-    const recentDonationsFormatted = [...donations]
+    // News Ticker Formatter with Skips and Limits
+    const recentDonationsFormatted = isTickerDonationVisible ? [...donations]
         .sort((a, b) => new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime())
-        .slice(0, 15)
+        .slice(0, maxDonations)
         .map(d => {
             const primaryLink = d.linkSplit?.[0] || ( (d as any).campaignId ? { linkName: (d as any).campaignName || 'Campaign', linkId: (d as any).campaignId, linkType: 'campaign', amount: d.amount } : null );
             const initiativeName = primaryLink?.linkName || 'General Fund';
@@ -243,7 +252,7 @@ export function usePublicData() {
                         ? `/leads-public/${primaryLink.linkId}/summary` 
                         : '#'
             };
-        });
+        }) : [];
 
     return {
       campaignsWithProgress,
@@ -257,7 +266,11 @@ export function usePublicData() {
       yearlySummary: sortedYearlyData,
       categorySummary: Object.entries(amountsByCategoryInRange).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` })),
       recentDonationsFormatted,
-      summaryDateRange: (startDate || endDate) ? { start: startDate, end: endDate } : null
+      summaryDateRange: (startDate || endDate) ? { start: startDate, end: endDate } : null,
+      isTickerActiveVisible,
+      isTickerCompletedVisible,
+      skipIds,
+      maxCompleted
     };
 
   }, [isLoading, campaigns, leads, donations, brandingSettings]);

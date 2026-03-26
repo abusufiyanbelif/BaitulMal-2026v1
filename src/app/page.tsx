@@ -37,12 +37,14 @@ const priorityWeight: Record<string, number> = {
  * Public Landing Hub - High-fidelity Title Case typography.
  */
 export default function Home() {
-    const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted, isLoading } = usePublicData();
+    const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted, isLoading, isTickerActiveVisible, isTickerCompletedVisible, skipIds, maxCompleted } = usePublicData();
     const { brandingSettings } = useBranding();
 
     const activeTickerItems = useMemo(() => {
+        if (!isTickerActiveVisible) return [];
+        
         const activeCampaigns = (campaignsWithProgress || [])
-            .filter(c => c.status === 'Active' || c.status === 'Upcoming')
+            .filter(c => (c.status === 'Active' || c.status === 'Upcoming') && !skipIds.has(c.id))
             .map(c => {
                 const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
                 const isUrgent = c.priority === 'Urgent';
@@ -59,7 +61,7 @@ export default function Home() {
             });
         
         const activeLeads = (leadsWithProgress || [])
-            .filter(l => l.status === 'Active' || l.status === 'Upcoming')
+            .filter(l => (l.status === 'Active' || l.status === 'Upcoming') && !skipIds.has(l.id))
             .map(l => {
                 const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
                 const isUrgent = l.priority === 'Urgent';
@@ -78,19 +80,21 @@ export default function Home() {
         return [...activeCampaigns, ...activeLeads].sort((a, b) => 
             (priorityWeight[b.priority] || 0) - (priorityWeight[a.priority] || 0)
         );
-    }, [campaignsWithProgress, leadsWithProgress]);
+    }, [campaignsWithProgress, leadsWithProgress, isTickerActiveVisible, skipIds]);
 
     const completedTickerItems = useMemo(() => {
+        if (!isTickerCompletedVisible) return [];
+
         const completedCampaigns = (campaignsWithProgress || [])
-            .filter(c => c.status === 'Completed')
+            .filter(c => c.status === 'Completed' && !skipIds.has(c.id))
             .map(c => ({ id: c.id, text: `Campaign: ${c.name}`, href: `/campaign-public/${c.id}/summary` }));
         
         const completedLeads = (leadsWithProgress || [])
-            .filter(l => l.status === 'Completed')
+            .filter(l => l.status === 'Completed' && !skipIds.has(l.id))
             .map(l => ({ id: l.id, text: `Appeal: ${l.name}`, href: `/leads-public/${l.id}/summary` }));
 
-        return [...completedCampaigns, ...completedLeads];
-    }, [campaignsWithProgress, leadsWithProgress]);
+        return [...completedCampaigns, ...completedLeads].slice(0, maxCompleted);
+    }, [campaignsWithProgress, leadsWithProgress, isTickerCompletedVisible, skipIds, maxCompleted]);
 
     const heroTitle = brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.';
     const heroDescription = brandingSettings?.heroDescription || `Join ${brandingSettings?.name || 'Our Community'} To Make A Lasting Impact. Your Contribution Brings Hope And Changes Lives.`;

@@ -22,6 +22,13 @@ export interface BrandingSettings extends DocumentData {
   isRecentVerificationVisible?: boolean;
   summaryStartDate?: string;
   summaryEndDate?: string;
+  // News Ticker Configuration
+  isTickerActiveVisible?: boolean;
+  isTickerDonationVisible?: boolean;
+  isTickerCompletedVisible?: boolean;
+  tickerMaxDonations?: number;
+  tickerMaxCompleted?: number;
+  tickerSkipIds?: string[];
 }
 
 export interface PaymentSettings extends DocumentData {
