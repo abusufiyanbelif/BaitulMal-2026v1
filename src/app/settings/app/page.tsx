@@ -264,7 +264,7 @@ export default function AppSettingsPage() {
                 logoWidth: brandingSettings?.logoWidth || 40,
                 logoHeight: brandingSettings?.logoHeight || 40,
                 heroTitle: brandingSettings?.heroTitle || 'Empowering Our Community, One Act Of Kindness At A Time.',
-                heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) to make a lasting impact.',
+                heroDescription: brandingSettings?.heroDescription || 'Join Baitulmal Samajik Sanstha (Solapur) To Make A Lasting Impact.',
                 isHeroVisible: brandingSettings?.isHeroVisible ?? true,
                 isNewsTickerVisible: brandingSettings?.isNewsTickerVisible ?? true,
                 isWisdomVisible: brandingSettings?.isWisdomVisible ?? true,
@@ -465,9 +465,9 @@ export default function AppSettingsPage() {
     
     const handleCancel = () => setIsEditMode(false);
 
-    const isLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
+    const isLoadingAggregate = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
 
-    if (isLoading) {
+    if (isLoadingAggregate) {
         return <BrandedLoader />;
     }
 

@@ -58,7 +58,7 @@ export function usePublicData() {
   const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
 
-  const isLoading = areCampaignsLoading || areLeadsLoading || areDonationsLoading || areBeneficiariesLoading || isSessionLoading || isBrandingLoading;
+  const isLoading = areCampaignsLoading || areLeadsLoading || areDonationsLoading || (user ? areBeneficiariesLoading : false) || isSessionLoading || isBrandingLoading;
 
   const memoizedData = useMemo(() => {
     if (isLoading || !campaigns || !leads || !donations) {
