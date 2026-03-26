@@ -55,7 +55,7 @@ function RouteGuard({ children }: { children: ReactNode }) {
         return <>{children}</>;
     }
 
-    // Only show the blocking loader if we are truly waiting for session OR in the middle of a private redirect.
+    // Only show the blocking loader if we are waiting for session OR in the middle of a private redirect.
     if (isLoading || isRedirecting) {
         return <BrandedLoader message="Synchronizing Access Controls..." />;
     }

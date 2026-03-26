@@ -5,8 +5,8 @@ import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
-import { useStorage, useFirestore, useAuth, useCollection, useMemoFirebase } from '@/firebase/provider';
-import { errorEmitter, FirestorePermissionError, collection } from '@/firebase';
+import { useStorage, useFirestore, useAuth, useMemoFirebase } from '@/firebase/provider';
+import { useCollection, collection, errorEmitter, FirestorePermissionError } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc, writeBatch } from 'firebase/firestore';
 import Resizer from 'react-image-file-resizer';
@@ -63,6 +63,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import type { GuidingPrinciple, FocusArea, Campaign, Lead } from '@/lib/types';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { cn, getNestedValue } from '@/lib/utils';
+import { donationCategories } from '@/lib/modules';
 
 interface FormDataType {
     name: string;
@@ -372,13 +374,6 @@ export default function AppSettingsPage() {
     const handleSave = async () => {
         if (!firestore || !storage || !canUpdateSettings || !editableData) return;
 
-        if (logoFile || qrCodeFile) {
-            if (!auth?.currentUser) {
-                toast({ title: "Authentication Error", description: "User Not Authenticated Yet.", variant: "destructive" });
-                return;
-            }
-        }
-
         setIsSubmitting(true);
         try {
             const batch = writeBatch(firestore);
@@ -623,7 +618,7 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-6">
                             <h4 className="text-xs font-bold text-primary flex items-center gap-2 tracking-tight uppercase">
-                                <Megaphone className="h-4 w-4" /> News Ticker Granular Sub-config
+                                <Megaphone className="h-4 w-4" /> News Ticker Configuration
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-muted/5">
