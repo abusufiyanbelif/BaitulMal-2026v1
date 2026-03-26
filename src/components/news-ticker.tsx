@@ -22,8 +22,8 @@ interface NewsTickerProps {
 }
 
 /**
- * Sequential News Ticker - Snappy 5-second transition cycle.
- * Refined animation: 1s drop and 4s slide.
+ * Sequential News Ticker - Fast 5-second transition cycle.
+ * Animation: 1s drop and 4s slide.
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);

@@ -401,9 +401,9 @@ export default function PublicLeadSummaryPage() {
                                                     </TableHeader>
                                                     <TableBody>
                                                         {lead.itemCategories?.[0]?.items.map((item, idx) => (
-                                                            <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white border-b border-primary/5 last:border-none">
+                                                            <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white border-b border-primary/5 last:border-none">
                                                                 <TableCell className="font-medium text-xs">{item.name}</TableCell>
-                                                                <TableCell className="text-right font-normal text-xs">{item.quantity} {item.quantityType}</TableCell>
+                                                                <TableCell className="text-right text-xs">{item.quantity} {item.quantityType}</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-xs">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-xs">₹{(item.price || 0).toLocaleString('en-IN')}</TableCell>
                                                             </TableRow>

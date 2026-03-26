@@ -53,10 +53,8 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { cn, getNestedValue } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -98,13 +96,11 @@ interface FormDataType {
     bankAccountName: string;
     bankAccountNumber: string;
     bankIfsc: string;
-    // Guiding Principles
     isGuidingPrinciplesPublic: boolean;
     gpTitle: string;
     gpDescription: string;
     principles: GuidingPrinciple[];
     focusAreas: FocusArea[];
-    // News Ticker Configuration
     isTickerActiveVisible: boolean;
     isTickerDonationVisible: boolean;
     isTickerCompletedVisible: boolean;
@@ -167,7 +163,7 @@ function VisibilityToggle({ id, label, description, icon: Icon, checked, onChang
                 <p className="text-xs text-muted-foreground font-normal">{description}</p>
             </div>
             <div className="flex items-center space-x-2">
-                <Label htmlFor={id} className="font-bold text-xs opacity-60 tracking-tight uppercase">Visible</Label>
+                <Label htmlFor={id} className="font-bold text-xs opacity-60 tracking-tight">Visible</Label>
                 <Switch 
                     id={id} 
                     checked={checked} 
@@ -239,7 +235,6 @@ export default function AppSettingsPage() {
     const auth = useAuth();
     const { toast } = useToast();
 
-    // Fetch all initiatives for skip selection
     const campaignsRef = useMemoFirebase(() => firestore ? collection(firestore, 'campaigns') : null, [firestore]);
     const leadsRef = useMemoFirebase(() => firestore ? collection(firestore, 'leads') : null, [firestore]);
     const { data: allCampaigns } = useCollection<Campaign>(campaignsRef);
@@ -298,7 +293,6 @@ export default function AppSettingsPage() {
                 gpDescription: guidingPrinciplesData?.description || '',
                 principles: guidingPrinciplesData?.principles || [],
                 focusAreas: guidingPrinciplesData?.focusAreas || [],
-                // News Ticker Sub-config
                 isTickerActiveVisible: brandingSettings?.isTickerActiveVisible ?? true,
                 isTickerDonationVisible: brandingSettings?.isTickerDonationVisible ?? true,
                 isTickerCompletedVisible: brandingSettings?.isTickerCompletedVisible ?? true,
@@ -306,10 +300,6 @@ export default function AppSettingsPage() {
                 tickerMaxCompleted: brandingSettings?.tickerMaxCompleted ?? 5,
                 tickerSkipIds: brandingSettings?.tickerSkipIds || [],
             });
-        } else {
-            setEditableData(null);
-            setLogoFile(null);
-            setQrCodeFile(null);
         }
     }, [isEditMode, brandingSettings, paymentSettings, guidingPrinciplesData]);
 
@@ -337,6 +327,46 @@ export default function AppSettingsPage() {
     const handleRemoveQrCode = () => {
         setQrCodeFile(null);
         handleFieldChange('qrCodeUrl', '');
+    };
+
+    const handleAddPrinciple = () => {
+        if (!editableData) return;
+        const newPrinciples = [...editableData.principles, { id: `gp_${Date.now()}`, text: '', isHidden: false }];
+        handleFieldChange('principles', newPrinciples);
+    };
+
+    const handleRemovePrinciple = (index: number) => {
+        if (!editableData) return;
+        const newPrinciples = [...editableData.principles];
+        newPrinciples.splice(index, 1);
+        handleFieldChange('principles', newPrinciples);
+    };
+
+    const handlePrincipleChange = (index: number, field: keyof GuidingPrinciple, value: any) => {
+        if (!editableData) return;
+        const newPrinciples = [...editableData.principles];
+        newPrinciples[index] = { ...newPrinciples[index], [field]: value };
+        handleFieldChange('principles', newPrinciples);
+    };
+
+    const handleAddFocusArea = () => {
+        if (!editableData) return;
+        const newAreas = [...editableData.focusAreas, { id: `fa_${Date.now()}`, title: '', description: '', icon: 'Other', isHidden: false }];
+        handleFieldChange('focusAreas', newAreas);
+    };
+
+    const handleRemoveFocusArea = (index: number) => {
+        if (!editableData) return;
+        const newAreas = [...editableData.focusAreas];
+        newAreas.splice(index, 1);
+        handleFieldChange('focusAreas', newAreas);
+    };
+
+    const handleFocusAreaChange = (index: number, field: keyof FocusArea, value: any) => {
+        if (!editableData) return;
+        const newAreas = [...editableData.focusAreas];
+        newAreas[index] = { ...newAreas[index], [field]: value };
+        handleFieldChange('focusAreas', newAreas);
     };
 
     const handleSave = async () => {
@@ -440,6 +470,12 @@ export default function AppSettingsPage() {
     
     const handleCancel = () => setIsEditMode(false);
 
+    const isLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
+
+    if (isLoading) {
+        return <BrandedLoader />;
+    }
+
     const isFormDisabled = !isEditMode || isSubmitting;
 
     const displayData = isEditMode && editableData ? editableData : {
@@ -479,7 +515,6 @@ export default function AppSettingsPage() {
         gpDescription: guidingPrinciplesData?.description || '',
         principles: guidingPrinciplesData?.principles || [],
         focusAreas: guidingPrinciplesData?.focusAreas || [],
-        // Ticker
         isTickerActiveVisible: brandingSettings?.isTickerActiveVisible ?? true,
         isTickerDonationVisible: brandingSettings?.isTickerDonationVisible ?? true,
         isTickerCompletedVisible: brandingSettings?.isTickerCompletedVisible ?? true,
@@ -487,12 +522,6 @@ export default function AppSettingsPage() {
         tickerMaxCompleted: brandingSettings?.tickerMaxCompleted ?? 5,
         tickerSkipIds: brandingSettings?.tickerSkipIds || [],
     };
-
-    const isLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
-
-    if (isLoading) {
-        return <BrandedLoader />;
-    }
 
     return (
         <div className="space-y-6 text-primary font-normal pb-20">
@@ -977,7 +1006,7 @@ export default function AppSettingsPage() {
                                 <p className="text-xs text-muted-foreground font-normal">Toggle visibility of the standards section on informational pages.</p>
                             </div>
                             <div className="flex items-center space-x-2">
-                                <Label htmlFor="gp-visibility" className="font-bold text-xs opacity-60 uppercase">Visible</Label>
+                                <Label htmlFor="gp-visibility" className="font-bold text-xs opacity-60">Visible</Label>
                                 <Switch 
                                     id="gp-visibility" 
                                     checked={displayData.isGuidingPrinciplesPublic} 

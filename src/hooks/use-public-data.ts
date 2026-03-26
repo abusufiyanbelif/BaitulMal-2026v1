@@ -42,7 +42,7 @@ export function usePublicData() {
   }, [firestore]);
   
   // Master beneficiaries list for unique family counting
-  // SECURITY FIX: Only fetch if a user is authenticated to prevent permission errors for public visitors
+  // SECURITY: Only fetch if a user is authenticated to prevent permission errors for public visitors
   const beneficiariesCollectionRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return collection(firestore, 'beneficiaries');
@@ -78,6 +78,7 @@ export function usePublicData() {
         recentDonationsFormatted: [],
         summaryDateRange: null,
         isTickerActiveVisible: true,
+        isTickerDonationVisible: true,
         isTickerCompletedVisible: true,
         skipIds: new Set<string>(),
         maxCompleted: 5

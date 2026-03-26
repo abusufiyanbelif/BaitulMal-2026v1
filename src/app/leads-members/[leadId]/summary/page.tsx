@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -879,7 +880,7 @@ export default function LeadSummaryPage() {
                             {isVisible('donations_by_category') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
                                     <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Donations By Category</CardTitle></CardHeader>
-                                    <CardContent className="p-0 sm:p-6">
+                                    <CardContent className="pt-6 px-0 sm:px-6">
                                         {isClient ? (
                                         <ChartContainer config={donationCategoryChartConfig} className="h-[250px] w-full">
                                             <ResponsiveContainer width="100%" height="100%">
@@ -888,15 +889,15 @@ export default function LeadSummaryPage() {
                                                 </BarChart>
                                             </ResponsiveContainer>
                                         </ChartContainer>
-                                        ) : <Skeleton className="h-[250px] w-full" />}
+                                        ) : <Skeleton className="h-[250px] w-full"/>}
                                     </CardContent>
                                 </Card>
                             )}
 
                             {isVisible('donations_by_payment_type') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-sm tracking-tight uppercase">Payment Channels Used</CardTitle></CardHeader>
-                                    <CardContent className="p-0 sm:p-6">
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-sm tracking-tight uppercase">Payment Channels Used</CardTitle><CardDescription className="font-normal text-primary/70">Breakdown Of Funds By Contribution Channel.</CardDescription></CardHeader>
+                                    <CardContent className="pt-6 px-0 sm:px-6">
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
                                                 <ResponsiveContainer width="100%" height="100%">
@@ -921,7 +922,7 @@ export default function LeadSummaryPage() {
                                                     </PieChart>
                                                 </ResponsiveContainer>
                                             </ChartContainer>
-                                        ) : <Skeleton className="h-[250px] w-full" />}
+                                        ) : <Skeleton className="h-[250px] w-full"/>}
                                     </CardContent>
                                 </Card>
                             )}
@@ -1003,7 +1004,7 @@ export default function LeadSummaryPage() {
                         {lead?.createdAt && (
                             <div className="flex items-start gap-3">
                                 <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Calendar className="h-3.5 w-3.5"/></div>
-                                <div>
+                               <div>
                                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Date Recorded</p>
                                     <p className="text-xs font-bold text-primary">{(lead.createdAt as any).toDate?.().toLocaleString() || new Date(lead.createdAt as any).toLocaleString()}</p>
                                 </div>

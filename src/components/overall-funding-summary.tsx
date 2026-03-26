@@ -41,8 +41,8 @@ export function OverallFundingSummary() {
   }
 
   const rangeDescription = summaryDateRange 
-    ? `Verified goal contributions from ${summaryDateRange.start || 'The Beginning'} to ${summaryDateRange.end || 'Today'}.`
-    : 'A summary of verified goal contributions across all projects.';
+    ? `Verified Goal Contributions From ${summaryDateRange.start || 'The Beginning'} To ${summaryDateRange.end || 'Today'}.`
+    : 'A Summary Of Verified Goal Contributions Across All Projects.';
 
   return (
     <div className="space-y-10">
@@ -91,24 +91,24 @@ export function OverallFundingSummary() {
                             <span className="text-4xl font-bold text-primary">
                                 {overallSummary.progress.toFixed(0)}%
                             </span>
-                            <span className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Funded</span>
+                            <span className="text-[10px] font-bold text-muted-foreground tracking-tight">Funded</span>
                         </div>
                     </div>
                     <div className="space-y-4 text-center md:text-left font-bold text-primary">
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Raised For Goal</p>
+                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Raised For Goal</p>
                             <p className="text-3xl font-bold font-mono">
                             ₹{(overallSummary.totalCollectedForGoals || 0).toLocaleString('en-IN')}
                             </p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Combined Target Goal</p>
+                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Combined Target Goal</p>
                             <p className="text-3xl font-bold font-mono opacity-40">
                             ₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}
                             </p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Period Total Received</p>
+                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Period Total Received</p>
                             <p className="text-3xl font-bold font-mono">
                             ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}
                             </p>
@@ -134,7 +134,7 @@ export function OverallFundingSummary() {
             
             <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60">Verified Donations</CardTitle>
+                    <CardTitle className="text-[10px] font-bold text-primary opacity-60">Verified Donations</CardTitle>
                     <CheckCircle2 className="h-5 w-5 text-primary opacity-40" />
                 </CardHeader>
                 <CardContent>
