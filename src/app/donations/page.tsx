@@ -154,7 +154,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
     const primaryInitiative = donation.linkSplit?.[0]?.linkName || (donation as any).campaignName || 'Unlinked';
 
     return (
-        <>
+        <div className="flex flex-col">
             <div onClick={() => setIsOpen(!isOpen)} className={cn("cursor-pointer bg-white hover:bg-[hsl(var(--table-row-hover))] group transition-colors border-b border-primary/10", donationGridClass)}>
                 <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                     <Checkbox 
@@ -258,7 +258,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                     {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
                                                         <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated General Fund</TableCell></TableRow>
                                                     )}
-                                                </Table>
+                                                </TableBody>
                                             </Table>
                                         </div>
                                         <ScrollBar orientation="horizontal" className="h-1.5" />
@@ -305,7 +305,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                     </div>
                 </div>
             )}
-        </>
+        </div>
     )
 }
 

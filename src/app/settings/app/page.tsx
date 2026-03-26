@@ -5,10 +5,9 @@ import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
-import { useStorage, useFirestore, useAuth, useMemoFirebase } from '@/firebase/provider';
-import { useCollection, collection, errorEmitter, FirestorePermissionError } from '@/firebase';
+import { useStorage, useFirestore, useAuth, useMemoFirebase, useCollection } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, setDoc, writeBatch } from 'firebase/firestore';
+import { doc, setDoc, writeBatch, collection } from 'firebase/firestore';
 import Resizer from 'react-image-file-resizer';
 import Link from 'next/link';
 
@@ -688,8 +687,6 @@ export default function AppSettingsPage() {
                                 </div>
                             </div>
                         </div>
-
-                        <Separator className="bg-primary/10" />
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <VisibilityToggle 
