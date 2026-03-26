@@ -251,7 +251,7 @@ export default function CampaignSummaryPage() {
             
             splits.forEach((split: any) => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-                if (amountsByCategory.hasOwnProperty(category)) {
+                if (applicableAmountsByCategory.hasOwnProperty(category)) {
                     const allocatedAmount = split.amount * proportionForThisCampaign;
                     amountsByCategory[category as DonationCategory] += allocatedAmount;
                     const isForFundraising = category !== 'Zakat' || split.forFundraising === true;
@@ -558,7 +558,7 @@ export default function CampaignSummaryPage() {
                                             <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
                                                 <SelectItem value="Hold" className="font-normal">Hold (Private)</SelectItem>
-                                                <SelectItem value="Ready to Publish" className="font-normal">Ready to Publish</SelectItem>
+                                                <SelectItem value="Ready to Publish" className="font-normal">Ready To Publish</SelectItem>
                                                 <SelectItem value="Published" className="font-bold text-primary">Published</SelectItem>
                                             </SelectContent>
                                         </Select>
