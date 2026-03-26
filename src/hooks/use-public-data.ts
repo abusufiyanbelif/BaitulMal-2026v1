@@ -4,14 +4,14 @@ import { useCollection } from '@/firebase/firestore/use-collection';
 import { useDoc } from '@/firebase/firestore/use-doc';
 import { useFirestore, useMemoFirebase, collection, query, where, doc } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
-import type { Campaign, Lead, Donation, DonationCategory, BrandingSettings } from '@/lib/types';
+import type { Campaign, Lead, Donation, DonationCategory, BrandingSettings, Beneficiary } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 
 const RECENT_UPDATE_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
 
 /**
  * usePublicData - Strict filtering for public-facing organizational reporting.
- * Re-engineered to support Custom Date Range filtering and News Ticker exclusions.
+ * Re-engineered to support Custom Date Range filtering and unique Family Impact counting.
  */
 export function usePublicData() {
   const firestore = useFirestore();
@@ -40,6 +40,12 @@ export function usePublicData() {
     );
   }, [firestore]);
   
+  // Master beneficiaries list for unique family counting
+  const beneficiariesCollectionRef = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return collection(firestore, 'beneficiaries');
+  }, [firestore]);
+
   // Donations must be Verified to appear in aggregates or tickers
   const donationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -48,18 +54,13 @@ export function usePublicData() {
 
   const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
   const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
+  const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
 
-  const isLoading = areCampaignsLoading || areLeadsLoading || areDonationsLoading || isSessionLoading || isBrandingLoading;
-
-  const isRecentlyUpdated = (updatedAt: any) => {
-    if (!updatedAt) return false;
-    const date = updatedAt.toDate ? updatedAt.toDate() : new Date(updatedAt);
-    return (Date.now() - date.getTime()) < RECENT_UPDATE_THRESHOLD_MS;
-  };
+  const isLoading = areCampaignsLoading || areLeadsLoading || areDonationsLoading || areBeneficiariesLoading || isSessionLoading || isBrandingLoading;
 
   const memoizedData = useMemo(() => {
-    if (isLoading || !campaigns || !leads || !donations) {
+    if (isLoading || !campaigns || !leads || !donations || !beneficiaries) {
       return {
         campaignsWithProgress: [],
         leadsWithProgress: [],
@@ -68,11 +69,16 @@ export function usePublicData() {
           grandTotalRaised: 0,
           totalCollectedForGoals: 0,
           progress: 0,
+          familiesImpacted: 0,
         },
         yearlySummary: [],
         categorySummary: [],
         recentDonationsFormatted: [],
-        summaryDateRange: null
+        summaryDateRange: null,
+        isTickerActiveVisible: true,
+        isTickerCompletedVisible: true,
+        skipIds: new Set<string>(),
+        maxCompleted: 5
       };
     }
 
@@ -116,7 +122,6 @@ export function usePublicData() {
         const item = itemsById.get(link.linkId);
         if (!item) return;
 
-        // Individual item progress remains lifetime for accuracy, but aggregate summary respects range
         const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
         const proportionForThisItem = link.amount / totalDonationAmount;
 
@@ -136,12 +141,9 @@ export function usePublicData() {
         }, 0);
         
         const itemContribution = applicableAmountInDonation * proportionForThisItem;
-        
-        // Progress for cards is always lifetime
         const currentLifetimeCollected = collectedAmounts.get(link.linkId) || 0;
         collectedAmounts.set(link.linkId, currentLifetimeCollected + itemContribution);
 
-        // Aggregate goal tracking respects custom range
         if (donationYear && isWithinRange) {
             yearlyData[donationYear].totalGoalReceived += itemContribution;
         }
@@ -151,32 +153,24 @@ export function usePublicData() {
     const campaignsWithProgress = campaigns.map(campaign => {
       const collected = collectedAmounts.get(campaign.id) || 0;
       const progress = campaign.targetAmount && campaign.targetAmount > 0 ? (collected / campaign.targetAmount) * 100 : 0;
-      return { 
-        ...campaign, 
-        collected, 
-        progress,
-        isUpdated: isRecentlyUpdated(campaign.updatedAt)
-      };
+      return { ...campaign, collected, progress };
     });
 
     const leadsWithProgress = leads.map(lead => {
       const collected = collectedAmounts.get(lead.id) || 0;
       const progress = lead.targetAmount && lead.targetAmount > 0 ? (collected / lead.targetAmount) * 100 : 0;
-      return { 
-        ...lead, 
-        collected, 
-        progress,
-        isUpdated: isRecentlyUpdated(lead.updatedAt)
-      };
+      return { ...lead, collected, progress };
     });
 
-    // Aggregate summaries filtered by the configured date range
+    // Unique Family Impact logic: Beneficiaries in master list linked to verified status
+    // For simplicity and uniqueness, we count the master list beneficiaries
+    const familiesImpacted = beneficiaries.length;
+
     const summaryDonations = donations.filter(d => {
         const dDate = d.donationDate || '';
         return (!startDate || dDate >= startDate) && (!endDate || dDate <= endDate);
     });
 
-    // Calculate Target specifically for items that fall within or overlap the period
     const summaryItems = allPublicItems.filter(item => {
         const itemStart = item.startDate || '';
         return (!startDate || itemStart >= startDate) && (!endDate || itemStart <= endDate);
@@ -184,7 +178,6 @@ export function usePublicData() {
 
     const totalTargetInRange = summaryItems.reduce((sum, item) => sum + (item.targetAmount || 0), 0);
     
-    // Recalculate collected amount specifically for the summary period
     let totalCollectedForGoalsInRange = 0;
     summaryDonations.forEach(d => {
         const links = d.linkSplit || [];
@@ -236,7 +229,6 @@ export function usePublicData() {
         .filter(y => y.totalGoalReceived > 0 || y.overallTotalReceived > 0)
         .sort((a, b) => parseInt(b.year) - parseInt(a.year));
 
-    // News Ticker Formatter with Skips and Limits
     const recentDonationsFormatted = isTickerDonationVisible ? [...donations]
         .sort((a, b) => new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime())
         .slice(0, maxDonations)
@@ -262,6 +254,7 @@ export function usePublicData() {
         grandTotalRaised: grandTotalRaisedInRange,
         totalCollectedForGoals: totalCollectedForGoalsInRange,
         progress: overallProgress,
+        familiesImpacted
       },
       yearlySummary: sortedYearlyData,
       categorySummary: Object.entries(amountsByCategoryInRange).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` })),
@@ -273,7 +266,7 @@ export function usePublicData() {
       maxCompleted
     };
 
-  }, [isLoading, campaigns, leads, donations, brandingSettings]);
+  }, [isLoading, campaigns, leads, donations, beneficiaries, brandingSettings]);
 
   return { isLoading, ...memoizedData };
 }

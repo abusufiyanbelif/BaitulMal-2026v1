@@ -249,16 +249,16 @@ export function PublicLeadsView() {
     const completedItems = filteredLeads.filter(l => l.status === 'Completed');
 
     return [
-      { id: 'priority', title: 'Critical Appeals (Urgent & High Priority)', icon: AlertTriangle, items: priorityItems, color: 'text-red-600' },
-      { id: 'ongoing_upcoming', title: 'Ongoing & Upcoming Leads', icon: Clock, items: ongoingItems, color: 'text-primary' },
-      { id: 'completed', title: 'Closed Appeals (Archive)', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
+      { id: 'priority', title: 'Critical Appeals', icon: AlertTriangle, items: priorityItems, color: 'text-red-600' },
+      { id: 'ongoing_upcoming', title: 'Ongoing Leads', icon: Clock, items: ongoingItems, color: 'text-primary' },
+      { id: 'completed', title: 'Closed Appeals', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
     ].filter(s => s.items.length > 0);
   }, [filteredLeads]);
   
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-          <h1 className="text-4xl font-bold tracking-tight text-primary">Public Leads</h1>
+          <h1 className="text-4xl font-bold tracking-tight text-primary uppercase">Public Leads</h1>
           <p className="text-lg font-bold text-primary">Verified Community Appeals Requiring Your Support.</p>
           
           <div className="space-y-2">
@@ -269,8 +269,8 @@ export function PublicLeadsView() {
 
           <div className="flex flex-wrap items-center gap-2 pt-4 bg-primary/5 p-4 rounded-xl border border-primary/20">
               <Input placeholder="Search Appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-sm h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-normal" disabled={isLoading}/>
-              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs border-primary/20 font-normal text-primary"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="All" className="font-normal">All Statuses</SelectItem><SelectItem value="Active" className="font-normal">Active</SelectItem><SelectItem value="Completed" className="font-normal">Completed</SelectItem><SelectItem value="Upcoming" className="font-normal">Upcoming</SelectItem></SelectContent></Select>
-              <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs border-primary/20 font-normal text-primary"><SelectValue placeholder="All Purposes" /></SelectTrigger><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="All" className="font-normal">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p} className="font-normal">{p}</SelectItem>)}</SelectContent></Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs border-primary/20 font-normal text-primary uppercase"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="All" className="font-normal uppercase">All Statuses</SelectItem><SelectItem value="Active" className="font-normal uppercase">Active</SelectItem><SelectItem value="Completed" className="font-normal uppercase">Completed</SelectItem><SelectItem value="Upcoming" className="font-normal uppercase">Upcoming</SelectItem></SelectContent></Select>
+              <Select value={purposeFilter} onValueChange={setPurposeFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs border-primary/20 font-normal text-primary uppercase"><SelectValue placeholder="All Purposes" /></SelectTrigger><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="All" className="font-normal uppercase">All Purposes</SelectItem>{[...new Set((leadsWithProgress || []).map(l => l.purpose))].map(p => <SelectItem key={p} value={p} className="font-normal">{p}</SelectItem>)}</SelectContent></Select>
               <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
                   <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs font-normal border-primary/20 text-primary"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="All" className="font-normal">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-normal">{y}</SelectItem>)}</SelectContent></Select>
                   <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-normal border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
@@ -292,7 +292,7 @@ export function PublicLeadsView() {
                   <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'priority' ? 'bg-red-600' : section.id === 'ongoing_upcoming' ? 'bg-primary' : 'bg-muted-foreground')} />
                   <div className="flex items-center gap-2">
                     <section.icon className={cn("h-6 w-6", section.color || "text-primary")} />
-                    <span className={cn("text-2xl font-bold tracking-tight", section.color || "text-primary")}>{section.title}</span>
+                    <span className={cn("text-2xl font-bold tracking-tight uppercase", section.color || "text-primary")}>{section.title}</span>
                   </div>
                   <Badge variant="secondary" className="rounded-full h-6 px-3 bg-primary/10 text-primary border-primary/20 font-bold">{section.items.length}</Badge>
                 </div>
@@ -306,7 +306,7 @@ export function PublicLeadsView() {
       ) : (
         <div className="text-center py-24 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
             <Lightbulb className="h-12 w-12 mx-auto text-primary/20 mb-4" />
-            <p className="font-bold text-sm opacity-60 text-primary tracking-widest text-center">No Appeals Found Matching Criteria.</p>
+            <p className="font-bold text-sm opacity-60 text-primary tracking-widest text-center uppercase">No Appeals Found Matching Criteria.</p>
         </div>
       )}
     </div>

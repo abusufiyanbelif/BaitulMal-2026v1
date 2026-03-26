@@ -286,7 +286,7 @@ function DonationListContent() {
           pending: allData.filter(d => d.status === 'Pending').length,
           unlinked: allData.filter(d => !d.donorId).length,
           totalAmount: allData.filter(d => d.status === 'Verified').reduce((sum, d) => sum + d.amountForThisCampaign, 0),
-          pendingAmount: allData.filter(d => d.status === 'Pending').reduce((sum, d) => sum + d.amountForThisCampaign, 0),
+          pendingAmount: allData.filter(d => d.status === 'Pending').reduce((sum, d) => sum + d.amountForThisLead, 0),
           online: allData.filter(d => d.donationType === 'Online Payment').length,
           cash: allData.filter(d => d.donationType === 'Cash').length,
       };
