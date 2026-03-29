@@ -1,13 +1,6 @@
-src/app/donations/page.tsx(221,17): error TS2657: JSX expressions must have one parent element.
-src/app/donations/page.tsx(251,38): error TS17008: JSX element 'ScrollArea' has no corresponding closing tag.
-src/app/donations/page.tsx(260,50): error TS17008: JSX element 'TableBody' has no corresponding closing tag.
-src/app/donations/page.tsx(274,47): error TS17002: Expected corresponding JSX closing tag for 'div'.
-src/app/donations/page.tsx(277,39): error TS17002: Expected corresponding JSX closing tag for 'div'.
-src/app/donations/page.tsx(317,21): error TS1005: ')' expected.
-src/app/donations/page.tsx(317,23): error TS17015: Expected corresponding closing tag for JSX fragment.
-src/app/donations/page.tsx(318,17): error TS1109: Expression expected.
-src/app/donations/page.tsx(319,13): error TS1109: Expression expected.
-src/app/donations/page.tsx(320,9): error TS1128: Declaration or statement expected.
-src/app/donations/page.tsx(320,11): error TS1109: Expression expected.
-src/app/donations/page.tsx(321,5): error TS1109: Expression expected.
-src/app/donations/page.tsx(322,1): error TS1128: Declaration or statement expected.
+src/app/campaign-members/[campaignId]/donations/page.tsx(289,97): error TS2339: Property 'amountForThisLead' does not exist on type '{ amountForThisCampaign: number; id: string; donorName: string; donorPhone: string; donorId?: string | undefined; receiverName: string; amount: number; type?: "Zakat" | "Fitra" | "Sadaqah" | ... 5 more ... | undefined; ... 15 more ...; contributionToDate?: string | undefined; }'.
+src/app/donations/page.tsx(348,34): error TS2304: Cannot find name 'useMemoFirebase'.
+src/app/donations/page.tsx(351,34): error TS2304: Cannot find name 'useMemoFirebase'.
+src/app/donations/page.tsx(354,30): error TS2304: Cannot find name 'useMemoFirebase'.
+src/app/donations/page.tsx(845,18): error TS2304: Cannot find name 'DialogFooter'.
+src/app/donations/page.tsx(850,19): error TS2304: Cannot find name 'DialogFooter'.
