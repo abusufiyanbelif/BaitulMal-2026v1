@@ -2,7 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useCollection, useStorage, useAuth, storageRef, uploadBytes, getDownloadURL } from '@/firebase';
+import { useFirestore, useCollection, useStorage, useAuth, storageRef, uploadBytes, getDownloadURL, useMemoFirebase } from '@/firebase';
 import { collection, doc, deleteField } from 'firebase/firestore';
 import type { Donation, Campaign, Lead, DonationLink, TransactionDetail, Donor } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
@@ -78,6 +78,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogFooter,
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { Input } from '@/components/ui/input';
@@ -258,8 +259,8 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                     {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
                                                         <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated General Fund</TableCell></TableRow>
                                                     )}
-                                                </TableBody>
-                                            </Table>
+                                                </Table>
+                                            </div>
                                         </div>
                                         <ScrollBar orientation="horizontal" className="h-1.5" />
                                     </ScrollArea>
@@ -306,7 +307,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                 </div>
             )}
         </div>
-    )
+    );
 }
 
 export default function DonationsPage() {
@@ -811,6 +812,10 @@ export default function DonationsPage() {
                         defaultLinkId={'unlinked'} 
                     />
                 </div>
+                <DialogFooter className="bg-primary/5 border-t p-4 flex justify-between items-center shrink-0">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Securing Institutional Records</p>
+                    <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary">Close Form</Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
 

@@ -78,6 +78,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogFooter,
 } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
@@ -127,7 +128,7 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
         >
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight"> {title} </p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -286,7 +287,7 @@ function DonationListContent() {
           pending: allData.filter(d => d.status === 'Pending').length,
           unlinked: allData.filter(d => !d.donorId).length,
           totalAmount: allData.filter(d => d.status === 'Verified').reduce((sum, d) => sum + d.amountForThisCampaign, 0),
-          pendingAmount: allData.filter(d => d.status === 'Pending').reduce((sum, d) => sum + d.amountForThisLead, 0),
+          pendingAmount: allData.filter(d => d.status === 'Pending').reduce((sum, d) => sum + d.amountForThisCampaign, 0),
           online: allData.filter(d => d.donationType === 'Online Payment').length,
           cash: allData.filter(d => d.donationType === 'Cash').length,
       };
@@ -717,12 +718,16 @@ function DonationListContent() {
         <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
             <DialogHeader className="border-b bg-primary/5 p-6 shrink-0">
                 <DialogTitle className="text-xl font-bold tracking-tight text-primary">
-                    {editingDonation ? 'Modify Donation Profile' : 'Donation Details To Be Add'}
+                    {editingDonation ? 'Modify Donation Profile' : 'Donation Details To Add'}
                 </DialogTitle>
             </DialogHeader>
             <div className="flex-1 overflow-hidden relative">
                 <DonationForm donation={editingDonation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} campaigns={allCampaigns || []} leads={allLeads || []} defaultLinkId={`campaign_${campaignId}`} />
             </div>
+            <DialogFooter className="bg-primary/5 border-t p-4 shrink-0 flex justify-between items-center">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Securing Institutional Records</p>
+                <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary">Close Form</Button>
+            </DialogFooter>
         </DialogContent>
       </Dialog>
 

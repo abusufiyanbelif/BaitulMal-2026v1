@@ -34,11 +34,11 @@ export function OverallFundingSummary() {
         <div className="grid gap-10">
             <Card className="border-primary/20 bg-white"><CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader><CardContent><Skeleton className="h-48 w-full" /></CardContent></Card>
         </div>
-    )
+    );
   }
 
   if (!overallSummary) {
-    return <p className="font-bold text-primary text-center py-10">Impact Summary Currently Unavailable.</p>
+    return <p className="font-bold text-primary text-center py-10">Impact Summary Currently Unavailable.</p>;
   }
 
   const rangeDescription = summaryDateRange 
