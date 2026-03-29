@@ -259,8 +259,8 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                     {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
                                                         <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated General Fund</TableCell></TableRow>
                                                     )}
-                                                </Table>
-                                            </div>
+                                                </TableBody>
+                                            </Table>
                                         </div>
                                         <ScrollBar orientation="horizontal" className="h-1.5" />
                                     </ScrollArea>
@@ -467,7 +467,7 @@ export default function DonationsPage() {
     setIsSubmitting(true);
     try {
         const res = await bulkUpdateDonationStatusAction(selectedIds, newStatus);
-        if (res && res.success) {
+        if (res.success) {
             toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
             setSelectedIds([]);
         } else {
@@ -601,7 +601,6 @@ export default function DonationsPage() {
 
   return (
     <main className="container mx-auto p-4 md:p-8 font-normal text-primary relative">
-        {isSubmitting && <BrandedLoader message="Processing Registry Action..." />}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div className="flex flex-col gap-2">
                 <Button variant="outline" asChild className="w-fit font-bold border-primary/20 text-primary transition-transform active:scale-95">
@@ -702,7 +701,7 @@ export default function DonationsPage() {
                             <PopoverTrigger asChild>
                                 <Button variant="outline" className={cn("w-[220px] shrink-0 justify-start h-9 text-xs border-primary/10 text-primary font-bold rounded-[10px] bg-white transition-all hover:border-primary/30", !dateRange && "text-muted-foreground")}>
                                     <CalendarIcon className="mr-2 h-3 w-3 opacity-40" />
-                                    {dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd, y")) : "Select Date Range"}
+                                    {dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd, y")) : "Filter Entry Date"}
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0" align="start">
@@ -799,7 +798,7 @@ export default function DonationsPage() {
             <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
                 <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0">
                     <DialogTitle className="text-xl font-bold text-primary tracking-tight">
-                        {editingDonation ? 'Modify Donation Profile' : 'Donation Details To Add'}
+                        {editingDonation ? 'Modify Donation Profile' : 'Register New Contribution'}
                     </DialogTitle>
                 </DialogHeader>
                 <div className="flex-1 min-h-0 relative overflow-hidden flex flex-col">
@@ -834,7 +833,7 @@ export default function DonationsPage() {
         </AlertDialog>
 
         <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-            <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 rounded-[12px] border-primary/10 overflow-hidden">
+            <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 rounded-[12px] border-primary/10 overflow-hidden shadow-2xl animate-fade-in-zoom">
                 <DialogHeader className="px-6 py-4 bg-primary/5 border-b">
                     <DialogTitle className="text-xl font-bold text-primary tracking-tight">Evidence Artifact Viewer</DialogTitle>
                 </DialogHeader>

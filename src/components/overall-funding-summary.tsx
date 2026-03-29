@@ -16,7 +16,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 /**
  * Overall Funding Summary - Aggregate organizational impact reporting.
- * Re-engineered for Title Case typography and precise functional alignment.
+ * Re-engineered for Title Case typography and Families Impacted integration.
  */
 export function OverallFundingSummary() {
   const { isLoading, overallSummary, summaryDateRange } = usePublicData();
@@ -56,77 +56,74 @@ export function OverallFundingSummary() {
                 <CardDescription className="font-normal text-primary/70">{rangeDescription}</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-                <ScrollArea className="w-full">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center min-w-[300px]">
-                        <div className="relative h-48 sm:h-64 w-full">
-                            <ChartContainer
-                                config={{
-                                    progress: {
-                                        label: 'Progress',
-                                        color: 'hsl(var(--primary))',
-                                    },
-                                }}
-                                className="mx-auto aspect-square h-full"
-                            >
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <RadialBarChart
-                                        data={chartData}
-                                        startAngle={-270}
-                                        endAngle={90}
-                                        innerRadius="75%"
-                                        outerRadius="100%"
-                                        barSize={20}
-                                    >
-                                    <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                                    <RadialBar
-                                        dataKey="value"
-                                        background={{ fill: 'hsl(var(--muted))' }}
-                                        cornerRadius={10}
-                                    />
-                                    <ChartTooltip
-                                        cursor={false}
-                                        content={<ChartTooltipContent hideLabel />}
-                                    />
-                                    </RadialBarChart>
-                                </ResponsiveContainer>
-                            </ChartContainer>
-                            <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom">
-                                <span className="text-4xl font-bold text-primary">
-                                    {(overallSummary.progress || 0).toFixed(0)}%
-                                </span>
-                                <span className="text-[10px] font-bold text-muted-foreground tracking-tight">Funded</span>
-                            </div>
-                        </div>
-                        <div className="space-y-4 text-center md:text-left font-bold text-primary">
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Raised For Goal</p>
-                                <p className="text-3xl font-bold font-mono">
-                                ₹{(overallSummary.totalCollectedForGoals || 0).toLocaleString('en-IN')}
-                                </p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Combined Target Goal</p>
-                                <p className="text-3xl font-bold font-mono opacity-40">
-                                ₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}
-                                </p>
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Period Total Received</p>
-                                <p className="text-3xl font-bold font-mono">
-                                ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}
-                                </p>
-                            </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                    <div className="relative h-48 sm:h-64 w-full">
+                        <ChartContainer
+                            config={{
+                                progress: {
+                                    label: 'Progress',
+                                    color: 'hsl(var(--primary))',
+                                },
+                            }}
+                            className="mx-auto aspect-square h-full"
+                        >
+                            <ResponsiveContainer width="100%" height="100%">
+                                <RadialBarChart
+                                    data={chartData}
+                                    startAngle={-270}
+                                    endAngle={90}
+                                    innerRadius="75%"
+                                    outerRadius="100%"
+                                    barSize={20}
+                                >
+                                <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                <RadialBar
+                                    dataKey="value"
+                                    background={{ fill: 'hsl(var(--muted))' }}
+                                    cornerRadius={10}
+                                />
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={<ChartTooltipContent hideLabel />}
+                                />
+                                </RadialBarChart>
+                            </ResponsiveContainer>
+                        </ChartContainer>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom">
+                            <span className="text-4xl font-bold text-primary">
+                                {Math.round(overallSummary.progress || 0)}%
+                            </span>
+                            <span className="text-[10px] font-bold text-muted-foreground tracking-tight">Funded</span>
                         </div>
                     </div>
-                    <ScrollBar orientation="horizontal" className="hidden" />
-                </ScrollArea>
+                    <div className="space-y-4 text-center md:text-left font-bold text-primary">
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Raised For Goal</p>
+                            <p className="text-3xl font-bold font-mono">
+                            ₹{(overallSummary.totalCollectedForGoals || 0).toLocaleString('en-IN')}
+                            </p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Combined Target Goal</p>
+                            <p className="text-3xl font-bold font-mono opacity-40">
+                            ₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}
+                            </p>
+                        </div>
+                        <div className="space-y-1">
+                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Period Total Received</p>
+                            <p className="text-3xl font-bold font-mono">
+                            ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}
+                            </p>
+                        </div>
+                    </div>
+                </div>
             </CardContent>
         </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60">Families Impacted</CardTitle>
+                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60 uppercase">Families Impacted</CardTitle>
                     <Users className="h-5 w-5 text-primary opacity-40" />
                 </CardHeader>
                 <CardContent>
@@ -137,7 +134,7 @@ export function OverallFundingSummary() {
             
             <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60">Verified Donations</CardTitle>
+                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60 uppercase">Verified Donations</CardTitle>
                     <CheckCircle2 className="h-5 w-5 text-primary opacity-40" />
                 </CardHeader>
                 <CardContent>
@@ -148,7 +145,7 @@ export function OverallFundingSummary() {
 
             <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60">Target Progress</CardTitle>
+                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60 uppercase">Target Progress</CardTitle>
                     <Target className="h-5 w-5 text-primary opacity-40" />
                 </CardHeader>
                 <CardContent>

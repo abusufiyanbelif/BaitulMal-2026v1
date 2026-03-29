@@ -5,9 +5,9 @@ import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
-import { useStorage, useFirestore, useMemoFirebase, useCollection, collection } from '@/firebase';
+import { useStorage, useFirestore, useMemoFirebase, collection, doc, useCollection, useDoc } from '@/firebase';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, setDoc, writeBatch } from 'firebase/firestore';
+import { setDoc, writeBatch } from 'firebase/firestore';
 import Resizer from 'react-image-file-resizer';
 import Link from 'next/link';
 
@@ -530,9 +530,7 @@ export default function AppSettingsPage() {
                     </Button>
                 ) : (
                     <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
-                            <X className="mr-2 h-4 w-4" /> Cancel
-                        </Button>
+                        <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="font-bold border-primary/20 text-primary transition-transform active:scale-95"><X className="mr-2 h-4 w-4" /> Cancel</Button>
                         <Button onClick={handleSave} disabled={isSubmitting} className="font-bold shadow-md active:scale-95 transition-transform">
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
                             Save All Changes
