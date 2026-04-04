@@ -29,7 +29,7 @@ const runDiagnosticCheckFlow = ai.defineFlow(
   async (): Promise<RunDiagnosticOutput> => {
     try {
         const response = await ai.generate({
-            model: 'googleai/gemini-1.5-flash-latest',
+            model: 'googleai/gemini-2.5-flash',
             prompt: 'Reply with only the word: "OK"',
             config: {
                 temperature: 0,

@@ -44,7 +44,7 @@ export async function extractBillingDataFromImage(
 
 const prompt = ai.definePrompt({
   name: 'extractBillingDataPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-2.5-flash',
   input: { schema: ExtractBillingDataInputSchema },
   output: { schema: ExtractBillingDataOutputSchema },
   prompt: `You are an expert in extracting data from bills and invoices.

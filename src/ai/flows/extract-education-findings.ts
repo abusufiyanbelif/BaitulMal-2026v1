@@ -41,7 +41,7 @@ export async function extractEducationFindings(
 
 const prompt = ai.definePrompt({
   name: 'extractEducationFindingsPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-2.5-flash',
   input: { schema: ExtractEducationFindingsInputSchema },
   output: { schema: ExtractEducationFindingsOutputSchema },
   prompt: `You are an expert academic registrar tasked with extracting key information from an image of an educational document.

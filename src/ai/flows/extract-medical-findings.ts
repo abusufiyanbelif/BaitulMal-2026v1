@@ -40,7 +40,7 @@ export async function extractMedicalFindings(
 
 const prompt = ai.definePrompt({
   name: 'extractMedicalFindingsPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-2.5-flash',
   input: { schema: ExtractMedicalFindingsInputSchema },
   output: { schema: ExtractMedicalFindingsOutputSchema },
   prompt: `You are an expert medical analyst tasked with extracting key information from an image of a medical report.

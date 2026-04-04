@@ -32,7 +32,7 @@ export async function extractAndCorrectText(input: ExtractAndCorrectTextInput): 
 
 const extractTextPrompt = ai.definePrompt({
   name: 'extractTextPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-2.5-flash',
   input: { schema: ExtractAndCorrectTextInputSchema },
   output: { schema: ExtractAndCorrectTextOutputSchema },
   prompt: `You are an OCR (Optical Character Recognition) expert.

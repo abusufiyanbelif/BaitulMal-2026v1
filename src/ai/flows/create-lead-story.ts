@@ -35,7 +35,7 @@ export async function createLeadStory(
 
 const prompt = ai.definePrompt({
   name: 'createLeadStoryPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-2.5-flash',
   input: { schema: CreateLeadStoryInputSchema },
   output: { schema: CreateLeadStoryOutputSchema },
   prompt: `You are an expert analyst. Your primary goal is to create a lead story abstract for a disease diagnostic by synthesizing findings from medical reports. First, determine if the documents appear to be medical reports. Set the 'isCorrectType' flag to true if they are, and false otherwise.

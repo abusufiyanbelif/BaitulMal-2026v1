@@ -191,7 +191,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                         <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
+                        <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown border-primary/10">
                             <DropdownMenuItem onClick={() => router.push(`/donations/${donation.id}`)} className="text-primary font-normal cursor-pointer"><Eye className="mr-2 h-4 w-4 opacity-60"/> View Details</DropdownMenuItem>
                             {canUpdate && <DropdownMenuItem onClick={handleEdit} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Record</DropdownMenuItem>}
                             {canDelete && (
@@ -259,8 +259,8 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                     {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
                                                         <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated General Fund</TableCell></TableRow>
                                                     )}
-                                                </TableBody>
-                                            </Table>
+                                                </Table>
+                                            </div>
                                         </div>
                                         <ScrollBar orientation="horizontal" className="h-1.5" />
                                     </ScrollArea>
