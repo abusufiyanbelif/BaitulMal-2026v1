@@ -12,7 +12,6 @@ import {
 } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { useMemo } from 'react';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Progress } from '@/components/ui/progress';
 
 /**
@@ -33,7 +32,10 @@ export function OverallFundingSummary() {
   if (isLoading) {
     return (
         <div className="grid gap-10">
-            <Card className="border-primary/20 bg-white"><CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader><CardContent><Skeleton className="h-48 w-full" /></CardContent></Card>
+            <Card className="border-primary/20 bg-white">
+                <CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader>
+                <CardContent><Skeleton className="h-48 w-full" /></CardContent>
+            </Card>
         </div>
     );
   }
@@ -99,19 +101,19 @@ export function OverallFundingSummary() {
                     </div>
                     <div className="space-y-4 text-center md:text-left font-bold text-primary">
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Raised For Goal</p>
+                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Raised For Goal</p>
                             <p className="text-3xl font-bold font-mono">
                             ₹{(overallSummary.totalCollectedForGoals || 0).toLocaleString('en-IN')}
                             </p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Combined Target Goal</p>
+                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Combined Target Goal</p>
                             <p className="text-3xl font-bold font-mono opacity-40">
                             ₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}
                             </p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Period Total Received</p>
+                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Period Total Received</p>
                             <p className="text-3xl font-bold font-mono">
                             ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}
                             </p>

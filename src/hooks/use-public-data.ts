@@ -41,7 +41,6 @@ export function usePublicData() {
   }, [firestore]);
   
   // Master beneficiaries list for unique family counting
-  // SECURITY: Only fetch if a user is authenticated to prevent permission errors for public visitors
   const beneficiariesCollectionRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return collection(firestore, 'beneficiaries');
@@ -164,7 +163,7 @@ export function usePublicData() {
       return { ...lead, collected, progress };
     });
 
-    // Unique Family Impact logic: Beneficiaries in master list (requires auth)
+    // Unique Family Impact logic: Beneficiaries in master list
     const familiesImpacted = beneficiaries?.length || 0;
 
     const summaryDonations = donations.filter(d => {

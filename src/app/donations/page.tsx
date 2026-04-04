@@ -2,8 +2,7 @@
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useCollection, useStorage, useAuth, storageRef, uploadBytes, getDownloadURL, useMemoFirebase } from '@/firebase';
-import { collection, doc, deleteField } from 'firebase/firestore';
+import { useFirestore, useCollection, useStorage, useAuth, useMemoFirebase, collection, doc } from '@/firebase';
 import type { Donation, Campaign, Lead, DonationLink, TransactionDetail, Donor } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
@@ -217,7 +216,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                         <Table>
                                             <TableHeader className="bg-primary/5">
                                                 <TableRow>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Category</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Category Designation</TableHead>
                                                     <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Value</TableHead>
                                                 </TableRow>
                                             </TableHeader>
@@ -259,8 +258,8 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                     {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
                                                         <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated General Fund</TableCell></TableRow>
                                                     )}
-                                                </Table>
-                                            </div>
+                                                </TableBody>
+                                            </Table>
                                         </div>
                                         <ScrollBar orientation="horizontal" className="h-1.5" />
                                     </ScrollArea>

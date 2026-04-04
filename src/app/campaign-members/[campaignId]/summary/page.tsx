@@ -305,7 +305,7 @@ export default function CampaignSummaryPage() {
 
     useEffect(() => {
         if (campaign && !editMode) {
-             setEditableCampaign({
+             setEditableLead({
                 name: campaign?.name || '',
                 description: campaign?.description || '',
                 startDate: campaign?.startDate || '',

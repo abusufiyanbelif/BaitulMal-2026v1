@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
@@ -59,12 +59,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import type { GuidingPrinciple, FocusArea, Campaign, Lead, BrandingSettings } from '@/lib/types';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
-import { donationCategories } from '@/lib/modules';
 
 interface FormDataType {
     name: string;
@@ -372,7 +370,7 @@ export default function AppSettingsPage() {
 
     const handleSave = async () => {
         if (!firestore || !storage || !canUpdateSettings || !editableData) {
-            toast({ title: "Configuration error", description: "Missing data or permissions to secure settings.", variant: "destructive" });
+            toast({ title: "Configuration Error", description: "Missing Data Or Permissions To Secure Settings.", variant: "destructive" });
             return;
         }
 
@@ -459,7 +457,7 @@ export default function AppSettingsPage() {
             toast({ title: 'Success', description: 'Institutional Configuration Updated Successfully.', variant: 'success' });
             setIsEditMode(false);
         } catch (error: any) {
-            toast({ title: 'Save failed', description: error.message || 'An unexpected error occurred while securing settings.', variant: 'destructive' });
+            toast({ title: 'Save Failed', description: error.message || 'An Unexpected Error Occurred While Securing Settings.', variant: 'destructive' });
         } finally {
             setIsSubmitting(false);
         }
@@ -470,7 +468,7 @@ export default function AppSettingsPage() {
     const isGlobalLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
 
     if (isGlobalLoading) {
-        return <BrandedLoader message="Syncing institutional settings..." />;
+        return <BrandedLoader message="Syncing Institutional Settings..." />;
     }
 
     const isFormDisabled = !isEditMode || isSubmitting;
@@ -529,7 +527,7 @@ export default function AppSettingsPage() {
                 </div>
                 {!isEditMode ? (
                     <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md transition-transform active:scale-95">
-                        <Edit className="mr-2 h-4 w-4"/>Modify Configuration
+                        <Edit className="mr-2 h-4 w-4"/> Modify Configuration
                     </Button>
                 ) : (
                     <div className="flex gap-2">
