@@ -56,7 +56,7 @@ export default function CreateBeneficiaryPage() {
         };
 
         const result = await createMasterBeneficiaryAction(
-            newBeneficiary as any,
+            newBeneficiary,
             { id: userProfile.id, name: userProfile.name }
         );
         
@@ -74,7 +74,7 @@ export default function CreateBeneficiaryPage() {
   if (isProfileLoading) {
     return (
       <main className="container mx-auto p-4 md:p-8">
-          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <BrandedLoader message="Syncing With Registry..." />
       </main>
     );
   }

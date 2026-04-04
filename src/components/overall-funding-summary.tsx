@@ -13,6 +13,7 @@ import {
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { useMemo } from 'react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Progress } from '@/components/ui/progress';
 
 /**
  * Overall Funding Summary - Aggregate organizational impact reporting.
@@ -123,7 +124,7 @@ export function OverallFundingSummary() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60 uppercase">Families Impacted</CardTitle>
+                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60">Families Impacted</CardTitle>
                     <Users className="h-5 w-5 text-primary opacity-40" />
                 </CardHeader>
                 <CardContent>
@@ -134,7 +135,7 @@ export function OverallFundingSummary() {
             
             <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60 uppercase">Verified Donations</CardTitle>
+                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60">Verified Donations</CardTitle>
                     <CheckCircle2 className="h-5 w-5 text-primary opacity-40" />
                 </CardHeader>
                 <CardContent>
@@ -145,7 +146,7 @@ export function OverallFundingSummary() {
 
             <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60 uppercase">Target Progress</CardTitle>
+                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60">Target Progress</CardTitle>
                     <Target className="h-5 w-5 text-primary opacity-40" />
                 </CardHeader>
                 <CardContent>

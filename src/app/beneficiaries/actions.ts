@@ -14,7 +14,7 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
     }
     try {
         const docRef = adminDb.collection('beneficiaries').doc();
-        await docRef.set({
+        const payload = {
             ...data,
             id: docRef.id,
             status: data.status || 'Pending',
@@ -22,7 +22,8 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
             createdAt: FieldValue.serverTimestamp(),
             createdById: createdBy.id,
             createdByName: createdBy.name,
-        });
+        };
+        await docRef.set(payload);
 
         revalidatePath('/beneficiaries');
         return { success: true, message: 'Beneficiary Record Registered Successfully.', id: docRef.id };
@@ -345,58 +346,6 @@ export async function bulkImportBeneficiariesAction(
     }
 }
 
-export async function updateInitiativeBeneficiaryDetailsAction(
-    initiativeType: 'campaign' | 'lead',
-    initiativeId: string,
-    beneficiaryId: string,
-    data: Partial<Beneficiary>
-): Promise<{ success: boolean; message: string }> {
-    const { adminDb } = getAdminServices();
-    if (!adminDb) {
-        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
-    }
-    
-    try {
-        const collectionName = initiativeType === 'campaign' ? 'campaigns' : 'leads';
-        const docRef = adminDb.doc(`${collectionName}/${initiativeId}/beneficiaries/${beneficiaryId}`);
-        await docRef.set(data, { merge: true });
-
-        revalidatePath(`/beneficiaries/${beneficiaryId}`);
-        revalidatePath(`/${collectionName}/${initiativeId}/beneficiaries`);
-
-        return { success: true, message: 'Initiative-Specific Details Registered.' };
-    } catch (error: any) {
-        console.error("Error Updating Initiative Beneficiary:", error);
-        return { success: false, message: `Update Failed: ${error.message}` };
-    }
-}
-
-export async function updateBeneficiaryStatusInInitiativeAction(
-    initiativeType: 'campaign' | 'lead',
-    initiativeId: string,
-    beneficiaryId: string,
-    newStatus: Beneficiary['status']
-): Promise<{ success: boolean; message: string }> {
-    const { adminDb } = getAdminServices();
-    if (!adminDb) {
-        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
-    }
-
-    const collectionName = initiativeType === 'campaign' ? 'campaigns' : 'leads';
-    const docPath = `${collectionName}/${initiativeId}/beneficiaries/${beneficiaryId}`;
-
-    try {
-        const docRef = adminDb.doc(docPath);
-        await docRef.set({ status: newStatus || 'Pending' }, { merge: true });
-
-        revalidatePath(`/beneficiaries/${beneficiaryId}`);
-        return { success: true, message: 'Disbursement Status Updated Successfully.' };
-    } catch (error: any) {
-        console.error("Error Updating Disbursement Status:", error);
-        return { success: false, message: `Update Failed: ${error.message}` };
-    }
-}
-
 export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ success: boolean; message: string }> {
     const { adminDb, adminStorage } = getAdminServices();
     if (!adminDb || !adminStorage) {
@@ -425,69 +374,5 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
     } catch (error: any) {
         console.error('Error Deleting Beneficiary:', error);
         return { success: false, message: `Removal Failed: ${error.message}` };
-    }
-}
-
-export async function syncMasterBeneficiaryListAction(): Promise<{ success: boolean; message: string; addedCount: number; }> {
-    const { adminDb } = getAdminServices();
-    if (!adminDb) {
-        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, addedCount: 0 };
-    }
-    
-    try {
-        const batch = adminDb.batch();
-        let addedCount = 0;
-        
-        const masterBeneficiariesSnap = await adminDb.collection('beneficiaries').get();
-        const masterIds = new Set(masterBeneficiariesSnap.docs.map(d => d.id));
-
-        const campaignsSnap = await adminDb.collection('campaigns').get();
-        for (const campaignDoc of campaignsSnap.docs) {
-            const campaignBeneficiariesSnap = await adminDb.collection(`campaigns/${campaignDoc.id}/beneficiaries`).get();
-            for (const benDoc of campaignBeneficiariesSnap.docs) {
-                if (!masterIds.has(benDoc.id)) {
-                    const masterRef = adminDb.collection('beneficiaries').doc(benDoc.id);
-                    const sanitizedData = benDoc.data();
-                    delete sanitizedData.kitAmount;
-                    delete sanitizedData.itemCategoryId;
-                    delete sanitizedData.itemCategoryName;
-                    delete sanitizedData.zakatAllocation;
-                    
-                    batch.set(masterRef, { ...sanitizedData, status: 'Verified' }, { merge: true });
-                    masterIds.add(benDoc.id); 
-                    addedCount++;
-                }
-            }
-        }
-        
-        const leadsSnap = await adminDb.collection('leads').get();
-        for (const leadDoc of leadsSnap.docs) {
-            const leadBeneficiariesSnap = await adminDb.collection(`leads/${leadDoc.id}/beneficiaries`).get();
-            for (const benDoc of leadBeneficiariesSnap.docs) {
-                if (!masterIds.has(benDoc.id)) {
-                    const masterRef = adminDb.collection('beneficiaries').doc(benDoc.id);
-                    const sanitizedData = benDoc.data();
-                    delete sanitizedData.kitAmount;
-                    delete sanitizedData.itemCategoryId;
-                    delete sanitizedData.itemCategoryName;
-                    delete sanitizedData.zakatAllocation;
-
-                    batch.set(masterRef, { ...sanitizedData, status: 'Verified' }, { merge: true });
-                    masterIds.add(benDoc.id);
-                    addedCount++;
-                }
-            }
-        }
-
-        if (addedCount > 0) {
-            await batch.commit();
-        }
-
-        revalidatePath('/beneficiaries');
-        return { success: true, message: `Synchronization Complete. Discovered ${addedCount} New Registry Entries.`, addedCount };
-
-    } catch (error: any) {
-        console.error("Error Syncing Master List:", error);
-        return { success: false, message: `Sync Failed: ${error.message}`, addedCount: 0 };
     }
 }

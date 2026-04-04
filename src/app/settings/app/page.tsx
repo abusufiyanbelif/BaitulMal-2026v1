@@ -5,7 +5,8 @@ import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
-import { useStorage, useFirestore, useMemoFirebase, collection, doc, useCollection, useDoc } from '@/firebase';
+import { useStorage, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { collection, doc } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { setDoc, writeBatch } from 'firebase/firestore';
 import Resizer from 'react-image-file-resizer';
@@ -1095,7 +1096,7 @@ export default function AppSettingsPage() {
                             <div className="flex items-center justify-between">
                                 <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase"><ListChecks className="h-4 w-4 opacity-40"/> Procedural Directives</h4>
                                 {isEditMode && (
-                                    <Button type="button" variant="outline" size="sm" onClick={handleAddPrinciple} className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform shadow-sm"><Plus className="h-3 w-3 mr-1"/> Add Rule</Button>
+                                    <Button type="button" variant="outline" size="sm" onClick={handleAddFocusArea} className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform shadow-sm"><Plus className="h-3 w-3 mr-1"/> Add Rule</Button>
                                 )}
                             </div>
                             <div className="space-y-4">
@@ -1109,7 +1110,7 @@ export default function AppSettingsPage() {
                                                         <Checkbox 
                                                             id={`gp-hide-${index}`}
                                                             checked={principle.isHidden} 
-                                                            onCheckedChange={(checked) => handlePrincipleChange(index, 'isHidden', !!checked)} 
+                                                            onCheckedChange={(checked) => handleFieldChange('principles', displayData.principles.map((p, i) => i === index ? {...p, isHidden: !!checked} : p))} 
                                                         />
                                                         <Label htmlFor={`gp-hide-${index}`} className="text-[10px] font-bold opacity-60 uppercase cursor-pointer">Hide</Label>
                                                     </div>
@@ -1122,7 +1123,7 @@ export default function AppSettingsPage() {
                                         {isEditMode ? (
                                             <Textarea 
                                                 value={principle.text} 
-                                                onChange={(e) => handlePrincipleChange(index, 'text', e.target.value)} 
+                                                onChange={(e) => handleFieldChange('principles', displayData.principles.map((p, i) => i === index ? {...p, text: e.target.value} : p))} 
                                                 placeholder="Enter Standard Procedural Rule..." 
                                                 className="font-normal min-h-[80px] text-sm leading-relaxed text-primary" 
                                             />

@@ -711,7 +711,7 @@ export default function CampaignSummaryPage() {
                                 <CardContent className="p-0 flex-1 overflow-hidden">
                                     <ScrollArea className="w-full h-full">
                                         <div className="p-4">
-                                            <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[600px] border-primary/10">
+                                            <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[650px] border-primary/10">
                                                 <Table>
                                                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                         <TableRow>

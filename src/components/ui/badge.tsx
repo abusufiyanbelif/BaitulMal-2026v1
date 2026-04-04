@@ -40,7 +40,7 @@ function Badge({ className, variant, children, ...props }: BadgeProps) {
         const lowerContent = children.trim().toLowerCase();
         if (lowerContent === 'eligible' || lowerContent === 'verified' || lowerContent === 'success' || lowerContent.includes('published')) {
             finalVariant = 'eligible';
-        } else if (lowerContent === 'given' || lowerContent === 'completed' || lowerContent === 'rejected') {
+        } else if (lowerContent === 'given' || lowerContent === 'completed' || lowerContent === 'rejected' || lowerContent === 'canceled') {
             finalVariant = 'given';
         } else if (lowerContent === 'active' || lowerContent === 'upcoming' || lowerContent.includes('ready')) {
             finalVariant = 'active';
