@@ -222,7 +222,7 @@ export default function BeneficiariesSummaryPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <Card className="bg-white border-primary/10">
                         <CardHeader className="p-4 flex-row items-center justify-between">
-                            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Total Beneficiaries</CardTitle>
+                            <CardTitle className="text-[10px] font-bold capitalize tracking-widest text-primary">Total Beneficiaries</CardTitle>
                             <Users className="h-4 w-4 text-muted-foreground"/>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
@@ -231,7 +231,7 @@ export default function BeneficiariesSummaryPage() {
                     </Card>
                      <Card className="bg-white border-primary/10">
                         <CardHeader className="p-4 flex-row items-center justify-between">
-                            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Verified</CardTitle>
+                            <CardTitle className="text-[10px] font-bold capitalize tracking-widest text-primary">Verified</CardTitle>
                             <CheckCircle2 className="h-4 w-4 text-green-500"/>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
@@ -240,7 +240,7 @@ export default function BeneficiariesSummaryPage() {
                     </Card>
                      <Card className="bg-white border-primary/10">
                         <CardHeader className="p-4 flex-row items-center justify-between">
-                            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Pending</CardTitle>
+                            <CardTitle className="text-[10px] font-bold capitalize tracking-widest text-primary">Pending</CardTitle>
                             <Hourglass className="h-4 w-4 text-amber-500"/>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
@@ -249,7 +249,7 @@ export default function BeneficiariesSummaryPage() {
                     </Card>
                      <Card className="bg-white border-primary/10">
                         <CardHeader className="p-4 flex-row items-center justify-between">
-                            <CardTitle className="text-[10px] font-bold uppercase tracking-widest text-primary">Zakat Eligible</CardTitle>
+                            <CardTitle className="text-[10px] font-bold capitalize tracking-widest text-primary">Zakat Eligible</CardTitle>
                             <UserCheck className="h-4 w-4 text-primary"/>
                         </CardHeader>
                         <CardContent className="p-4 pt-0">

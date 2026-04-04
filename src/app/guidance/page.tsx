@@ -222,7 +222,7 @@ export default function GuidanceHubPage() {
                                 <CardContent className="p-6">
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Resources In Category</Label>
+                                            <Label className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Resources In Category</Label>
                                             {isEditMode && (
                                                 <Button onClick={() => addResource(cat.id)} size="sm" variant="outline" className="h-7 text-[10px] font-bold border-primary/10 text-primary">
                                                     <Plus className="h-3 w-3 mr-1" /> Add Entry

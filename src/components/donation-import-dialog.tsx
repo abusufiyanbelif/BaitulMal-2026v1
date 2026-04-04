@@ -164,15 +164,15 @@ export function DonationImportDialog({
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 shrink-0">
                     <div className="p-3 rounded-xl bg-blue-50 border border-blue-100 flex items-center gap-3">
                         <RefreshCcw className="h-5 w-5 text-blue-600" />
-                        <div><p className="text-[10px] font-bold uppercase text-blue-800 tracking-widest">To Update</p><p className="text-lg font-bold text-blue-900 leading-none">{updateCount}</p></div>
+                        <div><p className="text-[10px] font-bold capitalize text-blue-800 tracking-widest">To Update</p><p className="text-lg font-bold text-blue-900 leading-none">{updateCount}</p></div>
                     </div>
                     <div className="p-3 rounded-xl bg-green-50 border border-green-100 flex items-center gap-3">
                         <CheckCircle className="h-5 w-5 text-green-600" />
-                        <div><p className="text-[10px] font-bold uppercase text-green-800 tracking-widest">New Entries</p><p className="text-lg font-bold text-green-900 leading-none">{newCount}</p></div>
+                        <div><p className="text-[10px] font-bold capitalize text-green-800 tracking-widest">New Entries</p><p className="text-lg font-bold text-green-900 leading-none">{newCount}</p></div>
                     </div>
                     <div className="p-3 rounded-xl bg-red-50 border border-red-100 flex items-center gap-3">
                         <XCircle className="h-5 w-5 text-red-600" />
-                        <div><p className="text-[10px] font-bold uppercase text-red-800 tracking-widest">Errors</p><p className="text-lg font-bold text-red-900 leading-none">{processedRecords.filter(r => !r.isValid).length}</p></div>
+                        <div><p className="text-[10px] font-bold capitalize text-red-800 tracking-widest">Errors</p><p className="text-lg font-bold text-red-900 leading-none">{processedRecords.filter(r => !r.isValid).length}</p></div>
                     </div>
                 </div>
 

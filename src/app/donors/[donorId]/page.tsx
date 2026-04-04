@@ -69,7 +69,7 @@ function DetailItem({ icon: Icon, label, value, isMono = false }: { icon: any, l
                 <Icon className="h-5 w-5" />
             </div>
             <div className="flex-1 min-w-0 space-y-0.5">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</p>
+                <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">{label}</p>
                 <p className={cn("text-base font-bold text-primary truncate", isMono && "font-mono")}>
                     {value || <span className="italic opacity-30 font-normal">Not Provided</span>}
                 </p>
@@ -270,19 +270,19 @@ export default function DonorProfilePage() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 <Card className="p-4 bg-white border-primary/5 shadow-sm">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Lifetime Impact</p>
+                    <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Lifetime Impact</p>
                     <p className="text-2xl font-black text-primary font-mono mt-1">₹{analytics.verifiedSum.toLocaleString('en-IN')}</p>
                 </Card>
                 <Card className="p-4 bg-white border-primary/5 shadow-sm">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total Contributions</p>
+                    <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Total Contributions</p>
                     <p className="text-2xl font-black text-primary font-mono mt-1">{analytics.totalCount}</p>
                 </Card>
                 <Card className="p-4 bg-white border-primary/5 shadow-sm">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Recent Activity</p>
+                    <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Recent Activity</p>
                     <p className="text-sm font-bold text-primary mt-2 flex items-center gap-2"><Clock className="h-3 w-3 opacity-40"/> {analytics.latestDate}</p>
                 </Card>
                 <Card className="p-4 bg-white border-primary/5 shadow-sm">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Pending Verification</p>
+                    <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Pending Verification</p>
                     <p className="text-lg font-bold text-amber-600 font-mono mt-1">₹{analytics.pendingSum.toLocaleString('en-IN')}</p>
                 </Card>
             </div>
@@ -363,21 +363,21 @@ export default function DonorProfilePage() {
                                 {isEditMode ? (
                                     <form onSubmit={handleUpdate} className="space-y-8 font-normal">
                                         <div className="space-y-4">
-                                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Core Identity</h4>
+                                            <h4 className="text-xs font-bold text-muted-foreground capitalize tracking-widest border-b pb-2">Core Identity</h4>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                                <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Full Name</Label><Input name="name" defaultValue={donor.name} required className="font-bold"/></div>
-                                                <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Account Status</Label><Select name="status" defaultValue={donor.status}><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger><SelectContent className="rounded-[12px]"><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem></SelectContent></Select></div>
+                                                <div className="space-y-2"><Label className="text-xs font-bold capitalize text-muted-foreground tracking-widest">Full Name</Label><Input name="name" defaultValue={donor.name} required className="font-bold"/></div>
+                                                <div className="space-y-2"><Label className="text-xs font-bold capitalize text-muted-foreground tracking-widest">Account Status</Label><Select name="status" defaultValue={donor.status}><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger><SelectContent className="rounded-[12px]"><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem></SelectContent></Select></div>
                                             </div>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                                <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Phone Number</Label><Input name="phone" defaultValue={donor.phone} required className="font-mono"/></div>
-                                                <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Email Address</Label><Input name="email" type="email" defaultValue={donor.email} className="font-normal"/></div>
+                                                <div className="space-y-2"><Label className="text-xs font-bold capitalize text-muted-foreground tracking-widest">Phone Number</Label><Input name="phone" defaultValue={donor.phone} required className="font-mono"/></div>
+                                                <div className="space-y-2"><Label className="text-xs font-bold capitalize text-muted-foreground tracking-widest">Email Address</Label><Input name="email" type="email" defaultValue={donor.email} className="font-normal"/></div>
                                             </div>
-                                            <div className="space-y-2"><Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Residential Address</Label><Input name="address" defaultValue={donor.address} className="font-normal"/></div>
+                                            <div className="space-y-2"><Label className="text-xs font-bold capitalize text-muted-foreground tracking-widest">Residential Address</Label><Input name="address" defaultValue={donor.address} className="font-normal"/></div>
                                         </div>
 
                                         <div className="space-y-6">
                                             <div className="flex items-center justify-between border-b pb-2">
-                                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Verified Bank Accounts</h4>
+                                                <h4 className="text-xs font-bold text-muted-foreground capitalize tracking-widest">Verified Bank Accounts</h4>
                                                 <Button type="button" variant="outline" size="sm" onClick={() => setBankDetails([...bankDetails, { bankName: '', accountNumber: '', ifscCode: '' }])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add Account</Button>
                                             </div>
                                             {bankDetails.map((bank, idx) => (
@@ -385,16 +385,16 @@ export default function DonorProfilePage() {
                                                     {bankDetails.length > 1 && (
                                                         <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-6 w-6 text-destructive" onClick={() => setBankDetails(bankDetails.filter((_, i) => i !== idx))}><Trash2 className="h-3 w-3"/></Button>
                                                     )}
-                                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">Bank Name</Label><Input value={bank.bankName} onChange={(e) => { const newB = [...bankDetails]; newB[idx].bankName = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-bold"/></div>
-                                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">Account No.</Label><Input value={bank.accountNumber} onChange={(e) => { const newB = [...bankDetails]; newB[idx].accountNumber = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
-                                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">IFSC Code</Label><Input value={bank.ifscCode} onChange={(e) => { const newB = [...bankDetails]; newB[idx].ifscCode = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
+                                                    <div className="space-y-1"><Label className="text-[9px] font-bold capitalize">Bank Name</Label><Input value={bank.bankName} onChange={(e) => { const newB = [...bankDetails]; newB[idx].bankName = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-bold"/></div>
+                                                    <div className="space-y-1"><Label className="text-[9px] font-bold capitalize">Account No.</Label><Input value={bank.accountNumber} onChange={(e) => { const newB = [...bankDetails]; newB[idx].accountNumber = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
+                                                    <div className="space-y-1"><Label className="text-[9px] font-bold capitalize">IFSC Code</Label><Input value={bank.ifscCode} onChange={(e) => { const newB = [...bankDetails]; newB[idx].ifscCode = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
                                                 </div>
                                             ))}
                                         </div>
 
                                         <div className="space-y-4">
                                             <div className="flex items-center justify-between border-b pb-2">
-                                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Digital UPI Handles</h4>
+                                                <h4 className="text-xs font-bold text-muted-foreground capitalize tracking-widest">Digital UPI Handles</h4>
                                                 <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ''])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add UPI</Button>
                                             </div>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -410,7 +410,7 @@ export default function DonorProfilePage() {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label className="text-xs font-bold uppercase text-muted-foreground tracking-widest">Team Observations</Label>
+                                            <Label className="text-xs font-bold capitalize text-muted-foreground tracking-widest">Team Observations</Label>
                                             <Textarea name="notes" defaultValue={donor.notes} rows={4} className="font-normal" placeholder="Donor preferences, historical notes, etc."/>
                                         </div>
 
@@ -430,10 +430,10 @@ export default function DonorProfilePage() {
                                         </div>
 
                                         <div className="space-y-6">
-                                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Verified Financial Accounts</h4>
+                                            <h4 className="text-xs font-bold text-muted-foreground capitalize tracking-widest border-b pb-2">Verified Financial Accounts</h4>
                                             <div className="grid gap-6 md:grid-cols-2">
                                                 <div className="space-y-3">
-                                                    <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest flex items-center gap-2"><Landmark className="h-3 w-3"/> Bank Accounts</p>
+                                                    <p className="text-[10px] font-bold text-primary/40 capitalize tracking-widest flex items-center gap-2"><Landmark className="h-3 w-3"/> Bank Accounts</p>
                                                     <div className="space-y-2">
                                                         {(donor.bankDetails || []).map((bank, idx) => (
                                                             <div key={idx} className="p-3 rounded-lg border border-primary/5 bg-primary/[0.01]">
@@ -448,7 +448,7 @@ export default function DonorProfilePage() {
                                                     </div>
                                                 </div>
                                                 <div className="space-y-3">
-                                                    <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest flex items-center gap-2"><Smartphone className="h-3 w-3"/> UPI Identifiers</p>
+                                                    <p className="text-[10px] font-bold text-primary/40 capitalize tracking-widest flex items-center gap-2"><Smartphone className="h-3 w-3"/> UPI Identifiers</p>
                                                     <div className="flex flex-wrap gap-2">
                                                         {(donor.upiIds || []).map((upi, idx) => (
                                                             <Badge key={idx} variant="outline" className="font-mono text-xs py-1 border-primary/10 text-primary/80 bg-white">{upi}</Badge>
@@ -484,12 +484,12 @@ export default function DonorProfilePage() {
                                     <Table>
                                         <TableHeader>
                                             <TableRow className="hover:bg-transparent">
-                                                <TableHead className="pl-6 font-bold text-[10px] tracking-tight uppercase text-primary/60">Initiative / Project</TableHead>
-                                                <TableHead className="font-bold text-[10px] tracking-tight uppercase text-primary/60">Donation Value (₹)</TableHead>
-                                                <TableHead className="font-bold text-[10px] tracking-tight uppercase text-primary/60">Designation</TableHead>
-                                                <TableHead className="font-bold text-[10px] tracking-tight uppercase text-primary/60">Date Record</TableHead>
-                                                <TableHead className="text-center font-bold text-[10px] tracking-tight uppercase text-primary/60">Status</TableHead>
-                                                <TableHead className="text-right pr-6 font-bold text-[10px] tracking-tight uppercase text-primary/60">Action</TableHead>
+                                                <TableHead className="pl-6 font-bold text-[10px] tracking-tight capitalize text-primary/60">Initiative / Project</TableHead>
+                                                <TableHead className="font-bold text-[10px] tracking-tight capitalize text-primary/60">Donation Value (₹)</TableHead>
+                                                <TableHead className="font-bold text-[10px] tracking-tight capitalize text-primary/60">Designation</TableHead>
+                                                <TableHead className="font-bold text-[10px] tracking-tight capitalize text-primary/60">Date Record</TableHead>
+                                                <TableHead className="text-center font-bold text-[10px] tracking-tight capitalize text-primary/60">Status</TableHead>
+                                                <TableHead className="text-right pr-6 font-bold text-[10px] tracking-tight capitalize text-primary/60">Action</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>

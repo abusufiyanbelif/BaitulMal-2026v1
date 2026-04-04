@@ -138,7 +138,7 @@ export function ShareDialog({ open, onOpenChange, shareData }: ShareDialogProps)
                 </Button>
                 <Button asChild variant="outline" className="flex-1">
                     <a href={`sms:?body=${encodeURIComponent(message + '\n\n' + url)}`}>
-                        <MessageSquare className="mr-2" /> SMS
+                        <MessageSquare className="mr-2" /> Sms
                     </a>
                 </Button>
                  <Button variant="outline" onClick={() => copyToClipboard(message, 'Summary text copied!')} className="flex-1">

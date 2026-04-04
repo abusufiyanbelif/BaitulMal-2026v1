@@ -90,12 +90,13 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn, getNestedValue } from '@/lib/utils';
-import { bulkUpdateDonationStatusAction, bulkImportDonationsAction, upsertDonationWithDonorAction, deleteDonationAction } from './actions';
+import { bulkUpdateDonationStatusAction, bulkImportDonationsAction, upsertDonationWithDonorAction, deleteDonationAction, bulkMapDonorsAction, bulkUnmapDonorsAction, bulkLinkInitiativeAction } from './actions';
 import { donationCategories } from '@/lib/modules';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
 import { DonationImportDialog } from '@/components/donation-import-dialog';
+import { BulkLinkInitiativeDialog } from '@/components/bulk-link-initiative-dialog';
 import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -118,7 +119,7 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
         >
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-tight">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -135,7 +136,7 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))] tracking-tight uppercase", className)} onClick={() => handleSort(sortKey)}>
+        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))] tracking-tight capitalize", className)} onClick={() => handleSort(sortKey)}>
             {children}
             <div className="flex flex-col opacity-40">
                 <ArrowUp className={cn("h-2.5 w-2.5 -mb-1", isSorted && sortConfig?.direction === 'ascending' && "text-primary opacity-100")} />
@@ -211,14 +212,14 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                     <div className="space-y-6 max-w-5xl mx-auto">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <div className="space-y-3">
-                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight uppercase"><IndianRupee className="h-3 w-3"/> Category Breakdown</h4>
+                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight capitalize"><IndianRupee className="h-3 w-3"/> Category Breakdown</h4>
                                 <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
                                     <ScrollArea className="w-full">
                                         <Table>
                                             <TableHeader className="bg-primary/5">
                                                 <TableRow>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Category</TableHead>
-                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Value</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight capitalize">Category</TableHead>
+                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight capitalize">Value</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -235,15 +236,15 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                 </div>
                             </div>
                             <div className="space-y-3">
-                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight uppercase"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
+                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight capitalize"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
                                 <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
                                     <ScrollArea className="w-full">
                                         <div className="min-w-[300px]">
                                             <Table>
                                                 <TableHeader className="bg-primary/5">
                                                     <TableRow>
-                                                        <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Target Initiative</TableHead>
-                                                        <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Allocated Sum</TableHead>
+                                                        <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight capitalize">Target Initiative</TableHead>
+                                                        <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight capitalize">Allocated Sum</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
@@ -268,17 +269,17 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                             </div>
                         </div>
                         <div className="space-y-3">
-                            <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight uppercase"><ImageIcon className="h-3 w-3"/> Transaction Documents</h4>
+                            <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight capitalize"><ImageIcon className="h-3 w-3"/> Transaction Documents</h4>
                             <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
                                 <ScrollArea className="w-full">
                                     <div className="min-w-[600px]">
                                         <Table>
                                             <TableHeader className="bg-primary/5">
                                                 <TableRow>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Amount</TableHead>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Ref. ID</TableHead>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight uppercase">Date</TableHead>
-                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight pr-6 uppercase">Evidence</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight capitalize">Amount</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight capitalize">Ref. ID</TableHead>
+                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight capitalize">Date</TableHead>
+                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight pr-6 capitalize">Evidence</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -340,6 +341,8 @@ export default function DonationsPage() {
   
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+  const [isBulkLinkModalOpen, setIsBulkLinkModalOpen] = useState(false);
+  const [bulkLinkMode, setBulkLinkMode] = useState<'link' | 'unlink'>('link');
 
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
   const [imageToView, setImageToView] = useState<string | null>(null);
@@ -477,6 +480,52 @@ export default function DonationsPage() {
         setIsBulkUpdating(false);
         setIsSubmitting(false);
     }
+  };
+
+  const handleBulkMapDonors = async () => {
+      if (selectedIds.length === 0 || !userProfile) return;
+      setIsBulkUpdating(true);
+      setIsSubmitting(true);
+      try {
+          const res = await bulkMapDonorsAction(selectedIds, { id: userProfile.id, name: userProfile.name });
+          if (res.success) {
+              toast({ title: "Identity Mapping Completed", description: res.message, variant: "success" });
+              setSelectedIds([]);
+          } else {
+              toast({ title: "Mapping Error", description: res.message, variant: "destructive" });
+          }
+      } finally { setIsBulkUpdating(false); setIsSubmitting(false); }
+  };
+
+  const handleBulkUnmapDonors = async () => {
+      if (selectedIds.length === 0 || !userProfile) return;
+      setIsBulkUpdating(true);
+      setIsSubmitting(true);
+      try {
+          const res = await bulkUnmapDonorsAction(selectedIds, { id: userProfile.id, name: userProfile.name });
+          if (res.success) {
+              toast({ title: "Unmapped Selected Records", description: res.message, variant: "success" });
+              setSelectedIds([]);
+          } else {
+              toast({ title: "Unmap Failed", description: res.message, variant: "destructive" });
+          }
+      } finally { setIsBulkUpdating(false); setIsSubmitting(false); }
+  };
+
+  const handleBulkLinkInitiative = async (initiativeContext?: {id: string, type: 'campaign'|'lead', name: string}) => {
+      if (selectedIds.length === 0 || !userProfile) return;
+      setIsBulkUpdating(true);
+      setIsSubmitting(true);
+      try {
+          const res = await bulkLinkInitiativeAction(selectedIds, bulkLinkMode, initiativeContext, { id: userProfile.id, name: userProfile.name });
+          if (res.success) {
+              toast({ title: "Bulk Allocation Updated", description: res.message, variant: "success" });
+              setSelectedIds([]);
+              setIsBulkLinkModalOpen(false);
+          } else {
+              toast({ title: "Allocation Failed", description: res.message, variant: "destructive" });
+          }
+      } finally { setIsBulkUpdating(false); setIsSubmitting(false); }
   };
 
   const handleFormSubmit = async (data: DonationFormData) => {
@@ -739,6 +788,40 @@ export default function DonationsPage() {
                                 <SelectItem value="Other" className="font-normal">Other</SelectItem>
                             </SelectContent>
                         </Select>
+                        {selectedIds.length > 0 && (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button className="w-[180px] h-9 text-xs font-bold shrink-0 shadow-md bg-primary text-white">
+                                        Bulk Actions ({selectedIds.length})
+                                        <ChevronDown className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56 rounded-[12px] shadow-dropdown border-primary/10">
+                                    <DropdownMenuItem onClick={handleBulkMapDonors} className="font-bold text-primary">
+                                        <RefreshCw className="mr-2 h-4 w-4 opacity-60" /> Auto-Map Identities
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={handleBulkUnmapDonors} className="font-bold text-destructive">
+                                        <XCircle className="mr-2 h-4 w-4" /> Unmap from Donor
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator className="bg-primary/5" />
+                                    <DropdownMenuItem onClick={() => { setBulkLinkMode('link'); setIsBulkLinkModalOpen(true); }} className="font-bold text-primary">
+                                        <FolderKanban className="mr-2 h-4 w-4 opacity-60" /> Link to Initiative
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => { setBulkLinkMode('unlink'); setIsBulkLinkModalOpen(true); }} className="font-bold text-amber-600">
+                                        <X className="mr-2 h-4 w-4 opacity-60" /> Unlink Initiative
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator className="bg-primary/5" />
+                                    <DropdownMenuSub>
+                                        <DropdownMenuSubTrigger className="font-bold text-primary"><CheckSquare className="mr-2 h-4 w-4 opacity-60" /> Set Verification</DropdownMenuSubTrigger>
+                                        <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-bold text-primary">Verified</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-bold text-primary">Pending</DropdownMenuItem>
+                                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Canceled')} className="font-bold text-destructive">Canceled</DropdownMenuItem>
+                                        </DropdownMenuSubContent>
+                                    </DropdownMenuSub>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        )}
                     </div>
                     <ScrollBar orientation="horizontal" className="h-1.5" />
                 </ScrollArea>
@@ -776,7 +859,7 @@ export default function DonationsPage() {
                             />
                         ))}
                         {paginatedDonations.length === 0 && (
-                            <div className="text-center py-24 text-primary/40 font-bold bg-primary/[0.02] italic tracking-widest uppercase">No Donation Records Found.</div>
+                            <div className="text-center py-24 text-primary/40 font-bold bg-primary/[0.02] italic tracking-widest capitalize">No Donation Records Found.</div>
                         )}
                     </div>
                     <ScrollBar orientation="horizontal" />
@@ -812,7 +895,7 @@ export default function DonationsPage() {
                     />
                 </div>
                 <DialogFooter className="bg-primary/5 border-t p-4 flex justify-between items-center shrink-0">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Securing Institutional Records</p>
+                    <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Securing Institutional Records</p>
                     <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary">Close Form</Button>
                 </DialogFooter>
             </DialogContent>
@@ -822,7 +905,7 @@ export default function DonationsPage() {
 
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent className="rounded-[16px] border-border shadow-dropdown">
-                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Confirm Permanent Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Verification Evidence. This Action Is Irreversible.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive capitalize">Confirm Permanent Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Verification Evidence. This Action Is Irreversible.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel className="font-bold border-border">Cancel</AlertDialogCancel>
                     <AlertDialogAction 
@@ -854,6 +937,17 @@ export default function DonationsPage() {
                 </DialogFooter>
             </DialogContent>
         </Dialog>
+
+        <BulkLinkInitiativeDialog 
+            open={isBulkLinkModalOpen} 
+            onOpenChange={setIsBulkLinkModalOpen} 
+            mode={bulkLinkMode}
+            selectedDonations={donations?.filter(d => selectedIds.includes(d.id)) || []} 
+            campaigns={allCampaigns || []} 
+            leads={allLeads || []} 
+            onConfirm={handleBulkLinkInitiative} 
+            isSubmitting={isSubmitting} 
+        />
     </main>
   );
 }

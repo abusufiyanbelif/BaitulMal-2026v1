@@ -690,13 +690,13 @@ export default function CampaignDetailsPage() {
                 <Table>
                     <TableHeader className="bg-primary/5">
                         <TableRow>
-                            <TableHead className="w-[50px] font-bold text-primary text-[10px] uppercase tracking-widest">#</TableHead>
-                            <TableHead className="min-w-[180px] font-bold text-primary text-[10px] uppercase tracking-widest">Item Name</TableHead>
-                            <TableHead className="min-w-[100px] font-bold text-primary text-[10px] uppercase tracking-widest">Quantity</TableHead>
-                            <TableHead className="min-w-[150px] font-bold text-primary text-[10px] uppercase tracking-widest">Unit Type</TableHead>
-                            <TableHead className="min-w-[120px] font-bold text-primary text-[10px] uppercase tracking-widest">Price / Unit (₹)</TableHead>
-                            <TableHead className="text-right min-w-[150px] font-bold text-primary text-[10px] uppercase tracking-widest">Line Total (₹)</TableHead>
-                            {canUpdate && editMode && <TableHead className="w-[50px] text-center font-bold text-primary text-[10px] uppercase tracking-widest">Action</TableHead>}
+                            <TableHead className="w-[50px] font-bold text-primary text-[10px] capitalize tracking-widest">#</TableHead>
+                            <TableHead className="min-w-[180px] font-bold text-primary text-[10px] capitalize tracking-widest">Item Name</TableHead>
+                            <TableHead className="min-w-[100px] font-bold text-primary text-[10px] capitalize tracking-widest">Quantity</TableHead>
+                            <TableHead className="min-w-[150px] font-bold text-primary text-[10px] capitalize tracking-widest">Unit Type</TableHead>
+                            <TableHead className="min-w-[120px] font-bold text-primary text-[10px] capitalize tracking-widest">Price / Unit (₹)</TableHead>
+                            <TableHead className="text-right min-w-[150px] font-bold text-primary text-[10px] capitalize tracking-widest">Line Total (₹)</TableHead>
+                            {canUpdate && editMode && <TableHead className="w-[50px] text-center font-bold text-primary text-[10px] capitalize tracking-widest">Action</TableHead>}
                         </TableRow>
                     </TableHeader>
                     <TableBody className="font-normal">
@@ -857,7 +857,7 @@ export default function CampaignDetailsPage() {
             <CardContent className="pt-6 font-normal">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 text-primary">
                     <div className="space-y-1.5">
-                        <Label htmlFor="priceDate" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Vetting Date</Label>
+                        <Label htmlFor="priceDate" className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Vetting Date</Label>
                         <Input
                             id="priceDate"
                             type="date"
@@ -868,7 +868,7 @@ export default function CampaignDetailsPage() {
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <Label htmlFor="shopName" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Supplier Store</Label>
+                        <Label htmlFor="shopName" className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Supplier Store</Label>
                         <Input
                             id="shopName"
                             value={editableCampaign.shopName || ''}
@@ -879,7 +879,7 @@ export default function CampaignDetailsPage() {
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <Label htmlFor="shopContact" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Supplier Phone</Label>
+                        <Label htmlFor="shopContact" className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Supplier Phone</Label>
                         <Input
                             id="shopContact"
                             value={editableCampaign.shopContact || ''}
@@ -890,7 +890,7 @@ export default function CampaignDetailsPage() {
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <Label htmlFor="shopAddress" className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Procurement Hub</Label>
+                        <Label htmlFor="shopAddress" className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Procurement Hub</Label>
                         <Input
                             id="shopAddress"
                             value={editableCampaign.shopAddress || ''}
@@ -947,17 +947,17 @@ export default function CampaignDetailsPage() {
                                         </DialogHeader>
                                         <div className="grid gap-4 py-4">
                                             <div className="space-y-2">
-                                                <Label htmlFor="cat-name" className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Category Name</Label>
+                                                <Label htmlFor="cat-name" className="font-bold text-xs capitalize text-muted-foreground tracking-widest">Category Name</Label>
                                                 <Input id="cat-name" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} placeholder="e.g. Large Family Kit" className="font-normal" />
                                             </div>
                                             {editableCampaign.category === 'Ration' && (
                                                 <div className="grid grid-cols-2 gap-4">
                                                     <div className="space-y-2">
-                                                        <Label htmlFor="min-members" className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Min Family Members</Label>
+                                                        <Label htmlFor="min-members" className="font-bold text-xs capitalize text-muted-foreground tracking-widest">Min Family Members</Label>
                                                         <Input id="min-members" type="number" value={newCategoryMin} onChange={(e) => setNewCategoryMin(e.target.value)} placeholder="1" className="font-normal" />
                                                     </div>
                                                     <div className="space-y-2">
-                                                        <Label htmlFor="max-members" className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Max Family Members</Label>
+                                                        <Label htmlFor="max-members" className="font-bold text-xs capitalize text-muted-foreground tracking-widest">Max Family Members</Label>
                                                         <Input id="max-members" type="number" value={newCategoryMax} onChange={(e) => setNewCategoryMax(e.target.value)} placeholder="4" className="font-normal" />
                                                     </div>
                                                 </div>
@@ -987,7 +987,7 @@ export default function CampaignDetailsPage() {
       <AlertDialog open={isDeleteItemDialogOpen} onOpenChange={setIsDeleteItemDialogOpen}>
         <AlertDialogContent className="rounded-[16px] border-primary/10">
             <AlertDialogHeader>
-                <AlertDialogTitle className="font-bold text-destructive uppercase">Remove Line Item?</AlertDialogTitle>
+                <AlertDialogTitle className="font-bold text-destructive capitalize">Remove Line Item?</AlertDialogTitle>
                 <AlertDialogDescription className="font-normal text-primary/70">
                     Permanently Erase "{itemToDelete?.itemName}" From This List?
                 </AlertDialogDescription>
@@ -1004,17 +1004,17 @@ export default function CampaignDetailsPage() {
             </DialogHeader>
             <div className="grid gap-4 py-4">
                 <div className="space-y-2">
-                    <Label htmlFor="edit-cat-name" className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Category Name</Label>
+                    <Label htmlFor="edit-cat-name" className="font-bold text-[10px] capitalize text-muted-foreground tracking-widest">Category Name</Label>
                     <Input id="edit-cat-name" value={categoryToEdit?.name || ''} onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, name: e.target.value} : null)} className="font-normal" />
                 </div>
                  {editableCampaign?.category === 'Ration' && (
                     <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
-                            <Label htmlFor="edit-min-members" className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Min Family Size</Label>
+                            <Label htmlFor="edit-min-members" className="font-bold text-[10px] capitalize text-muted-foreground tracking-widest">Min Family Size</Label>
                             <Input id="edit-min-members" type="number" value={categoryToEdit?.minMembers || ''} onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, minMembers: Number(e.target.value) || 0} : null)} className="font-normal" />
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="edit-max-members" className="font-bold text-[10px] uppercase text-muted-foreground tracking-widest">Max Family Size</Label>
+                            <Label htmlFor="edit-max-members" className="font-bold text-[10px] capitalize text-muted-foreground tracking-widest">Max Family Size</Label>
                             <Input id="edit-max-members" type="number" value={categoryToEdit?.maxMembers || ''} onChange={(e) => setCategoryToEdit(prev => prev ? {...prev, maxMembers: Number(e.target.value) || 0} : null)} className="font-normal" />
                         </div>
                     </div>
@@ -1027,14 +1027,14 @@ export default function CampaignDetailsPage() {
       <AlertDialog open={isDeleteCategoryDialogOpen} onOpenChange={setIsDeleteCategoryDialogOpen}>
           <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown">
               <AlertDialogHeader>
-                  <AlertDialogTitle className="font-bold text-destructive uppercase">Delete Category: '{categoryToDelete?.name}'?</AlertDialogTitle>
+                  <AlertDialogTitle className="font-bold text-destructive capitalize">Delete Category: '{categoryToDelete?.name}'?</AlertDialogTitle>
                   <AlertDialogDescription className="font-normal text-primary/70">
                       This Category Is Linked To {dependentBeneficiaries.length} Active Records.
                   </AlertDialogDescription>
               </AlertDialogHeader>
               {dependentBeneficiaries.length > 0 && (
                 <div className="py-4 space-y-2">
-                    <Label htmlFor="target-category" className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Move Dependents To</Label>
+                    <Label htmlFor="target-category" className="font-bold text-xs capitalize text-muted-foreground tracking-widest">Move Dependents To</Label>
                     <Select onValueChange={setTargetCategoryId} value={targetCategoryId || ''}>
                         <SelectTrigger id="target-category" className="font-normal"><SelectValue placeholder="Select Destination Category..." /></SelectTrigger>
                         <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
@@ -1057,7 +1057,7 @@ export default function CampaignDetailsPage() {
                 </DialogHeader>
                 <div className="py-4 space-y-4">
                     <div className="space-y-2">
-                        <Label htmlFor="source-category-copy" className="font-bold text-xs uppercase text-muted-foreground tracking-widest">Source Group</Label>
+                        <Label htmlFor="source-category-copy" className="font-bold text-xs capitalize text-muted-foreground tracking-widest">Source Group</Label>
                         <Select onValueChange={id => { setCopySourceCategoryId(id); setSelectedItemsToCopy([]); }} value={copySourceCategoryId || ''}>
                             <SelectTrigger id="source-category-copy" className="font-normal"><SelectValue placeholder="Select Source Template..." /></SelectTrigger>
                             <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
@@ -1082,7 +1082,7 @@ export default function CampaignDetailsPage() {
                                                 onCheckedChange={(checked) => { if (checked === true) setSelectedItemsToCopy(sourceCategoryForCopy.items.map(item => item.id)); else setSelectedItemsToCopy([]); }}
                                                 className="border-primary/40 data-[state=checked]:bg-primary"
                                             />
-                                            <Label htmlFor="select-all-copy" className="font-bold text-xs cursor-pointer text-primary uppercase tracking-tighter">Check All</Label>
+                                            <Label htmlFor="select-all-copy" className="font-bold text-xs cursor-pointer text-primary capitalize tracking-tighter">Check All</Label>
                                         </div>
                                         {sourceCategoryForCopy.items.map(item => (
                                             <div key={item.id} className="flex items-center space-x-2 p-2 hover:bg-primary/[0.02] rounded-md transition-colors border-b border-primary/5 last:border-0">

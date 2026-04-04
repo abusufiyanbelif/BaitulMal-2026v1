@@ -239,7 +239,7 @@ export default function DonationInfoPage() {
                                 <div className="space-y-8 font-normal">
                                     {!type.hideKeyHighlights && type.purposePoints && type.purposePoints.length > 0 && (
                                         <div className="bg-primary/[0.02] p-6 rounded-2xl border border-primary/10 shadow-sm">
-                                            <h4 className="font-bold text-[10px] uppercase tracking-widest text-primary/60 mb-4 flex items-center gap-2">
+                                            <h4 className="font-bold text-[10px] capitalize tracking-widest text-primary/60 mb-4 flex items-center gap-2">
                                                 <ListChecks className="h-4 w-4" /> Key highlights
                                             </h4>
                                             <ul className="space-y-3">

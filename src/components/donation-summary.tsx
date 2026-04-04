@@ -83,11 +83,11 @@ export function DonationSummary() {
                     <Table>
                         <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                             <TableRow className="border-b border-primary/10">
-                                <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Year</TableHead>
-                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Target Goal</TableHead>
-                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Raised For Goal</TableHead>
-                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight uppercase">Overall Total</TableHead>
-                                <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] pr-6 text-[10px] tracking-tight uppercase">Progress</TableHead>
+                                <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Year</TableHead>
+                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Target Goal</TableHead>
+                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Raised For Goal</TableHead>
+                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Overall Total</TableHead>
+                                <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] pr-6 text-[10px] tracking-tight capitalize">Progress</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>

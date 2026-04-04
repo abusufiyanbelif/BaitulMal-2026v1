@@ -83,7 +83,7 @@ export default function DonorSummaryPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <Card className="border-primary/10 shadow-sm bg-white">
                     <CardHeader className="p-4 flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest opacity-60">Total Donors</CardTitle>
+                        <CardTitle className="text-[10px] font-bold capitalize tracking-widest opacity-60">Total Donors</CardTitle>
                         <Users className="h-4 w-4 text-primary opacity-40"/>
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
@@ -92,7 +92,7 @@ export default function DonorSummaryPage() {
                 </Card>
                 <Card className="border-primary/10 shadow-sm bg-white">
                     <CardHeader className="p-4 flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest opacity-60">Lifetime Support</CardTitle>
+                        <CardTitle className="text-[10px] font-bold capitalize tracking-widest opacity-60">Lifetime Support</CardTitle>
                         <IndianRupee className="h-4 w-4 text-primary opacity-40"/>
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
@@ -101,7 +101,7 @@ export default function DonorSummaryPage() {
                 </Card>
                 <Card className="border-primary/10 shadow-sm bg-white">
                     <CardHeader className="p-4 flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest opacity-60">Avg / Profile</CardTitle>
+                        <CardTitle className="text-[10px] font-bold capitalize tracking-widest opacity-60">Avg / Profile</CardTitle>
                         <HeartHandshake className="h-4 w-4 text-primary opacity-40"/>
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
@@ -110,7 +110,7 @@ export default function DonorSummaryPage() {
                 </Card>
                 <Card className="border-primary/10 shadow-sm bg-white">
                     <CardHeader className="p-4 flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-[10px] font-bold uppercase tracking-widest opacity-60">Status Active</CardTitle>
+                        <CardTitle className="text-[10px] font-bold capitalize tracking-widest opacity-60">Status Active</CardTitle>
                         <ShieldCheck className="h-4 w-4 text-primary opacity-40"/>
                     </CardHeader>
                     <CardContent className="p-4 pt-0">

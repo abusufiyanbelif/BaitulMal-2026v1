@@ -30,7 +30,7 @@ import { upsertDonationWithDonorAction } from '@/app/donations/actions';
 
 const DetailItem = ({ label, value, isMono = false }: { label: string; value: React.ReactNode; isMono?: boolean }) => (
     <div className="space-y-1">
-        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</p>
+        <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">{label}</p>
         <div className={`text-sm font-bold text-primary ${isMono ? 'font-mono' : ''}`}>{value || <span className="italic opacity-30 font-normal">N/A</span>}</div>
     </div>
 );
@@ -259,12 +259,12 @@ export default function DonationDetailsPage() {
                                 <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Institutional Breakdown</CardTitle></CardHeader>
                                 <CardContent className="grid gap-6 md:grid-cols-2 pt-6">
                                     <div className="space-y-3">
-                                        <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Category Designation</h3>
+                                        <h3 className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Category Designation</h3>
                                         <div className="border border-primary/5 rounded-xl overflow-hidden shadow-inner">
                                             <ScrollArea className="w-full">
                                                 <Table>
                                                     <TableHeader className="bg-primary/5">
-                                                        <TableRow><TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Category</TableHead><TableHead className="text-right font-bold text-primary text-[9px] uppercase tracking-tighter">Amount</TableHead></TableRow>
+                                                        <TableRow><TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Category</TableHead><TableHead className="text-right font-bold text-primary text-[9px] capitalize tracking-tighter">Amount</TableHead></TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {typeSplit.map((s: { category: string, amount: number }) => (
@@ -277,12 +277,12 @@ export default function DonationDetailsPage() {
                                         </div>
                                     </div>
                                     <div className="space-y-3">
-                                        <h3 className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Initiative Allocation</h3>
+                                        <h3 className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Initiative Allocation</h3>
                                         <div className="border border-primary/5 rounded-xl overflow-hidden shadow-inner">
                                             <ScrollArea className="w-full">
                                                 <Table>
                                                     <TableHeader className="bg-primary/5">
-                                                        <TableRow><TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Initiative</TableHead><TableHead className="text-right font-bold text-primary text-[9px] uppercase tracking-tighter">Amount</TableHead></TableRow>
+                                                        <TableRow><TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Initiative</TableHead><TableHead className="text-right font-bold text-primary text-[9px] capitalize tracking-tighter">Amount</TableHead></TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {donation.linkSplit && donation.linkSplit.length > 0 ? donation.linkSplit.map((link: DonationLink) => (
@@ -326,13 +326,13 @@ export default function DonationDetailsPage() {
 
                             <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                                 <CardHeader className="bg-primary/5 border-b pb-3">
-                                    <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight uppercase"><History className="h-4 w-4 opacity-40"/> Institutional Audit Log</CardTitle>
+                                    <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight capitalize"><History className="h-4 w-4 opacity-40"/> Institutional Audit Log</CardTitle>
                                 </CardHeader>
                                 <CardContent className="pt-6 space-y-4">
                                     <div className="flex items-start gap-3">
                                         <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Clock className="h-3.5 w-3.5"/></div>
                                         <div>
-                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Registry Entry Secured</p>
+                                            <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-tighter">Registry Entry Secured</p>
                                             <p className="text-xs font-bold text-primary">{donation.uploadedBy}</p>
                                             <p className="text-[9px] font-mono opacity-60">ID: {donation.uploadedById}</p>
                                         </div>
@@ -341,7 +341,7 @@ export default function DonationDetailsPage() {
                                         <div className="flex items-start gap-3">
                                             <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Calendar className="h-3.5 w-3.5"/></div>
                                             <div>
-                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Creation Timestamp</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-tighter">Creation Timestamp</p>
                                                 <p className="text-xs font-bold text-primary">{(donation.createdAt as any).toDate?.().toLocaleString() || new Date(donation.createdAt as any).toLocaleString()}</p>
                                             </div>
                                         </div>
@@ -361,11 +361,11 @@ export default function DonationDetailsPage() {
                                             <Table>
                                                 <TableHeader className="bg-primary/5">
                                                     <TableRow>
-                                                        <TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Transaction Value</TableHead>
-                                                        <TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Reference ID</TableHead>
-                                                        <TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Date Record</TableHead>
-                                                        <TableHead className="font-bold text-primary text-[9px] uppercase tracking-tighter">Sender UPI</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary text-[9px] uppercase tracking-tighter pr-6">Institutional Artifact</TableHead>
+                                                        <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Transaction Value</TableHead>
+                                                        <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Reference ID</TableHead>
+                                                        <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Date Record</TableHead>
+                                                        <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Sender UPI</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary text-[9px] capitalize tracking-tighter pr-6">Institutional Artifact</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
@@ -399,10 +399,10 @@ export default function DonationDetailsPage() {
                             <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Institutional Observations</CardTitle></CardHeader>
                             <CardContent className="space-y-6 pt-6">
                                 {donation.comments && (
-                                    <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Donor Comments</p><p className="text-sm font-normal bg-primary/[0.02] p-4 rounded-lg italic border border-primary/5 leading-relaxed">"{donation.comments}"</p></div>
+                                    <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Donor Comments</p><p className="text-sm font-normal bg-primary/[0.02] p-4 rounded-lg italic border border-primary/5 leading-relaxed">"{donation.comments}"</p></div>
                                 )}
                                 {donation.suggestions && (
-                                    <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Staff Recommendations</p><p className="text-sm font-normal bg-primary/[0.02] p-4 rounded-lg italic border border-primary/5 leading-relaxed">"{donation.suggestions}"</p></div>
+                                    <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Staff Recommendations</p><p className="text-sm font-normal bg-primary/[0.02] p-4 rounded-lg italic border border-primary/5 leading-relaxed">"{donation.suggestions}"</p></div>
                                 )}
                             </CardContent>
                         </Card>
@@ -424,7 +424,7 @@ export default function DonationDetailsPage() {
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
                 <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 rounded-[12px] border-primary/10 overflow-hidden shadow-2xl animate-fade-in-zoom">
                     <DialogHeader className="px-6 py-4 bg-primary/5 border-b">
-                        <DialogTitle className="text-xl font-bold text-primary tracking-tight uppercase tracking-widest">{imageToView ? imageToView.title : 'Evidence Viewer'}</DialogTitle>
+                        <DialogTitle className="text-xl font-bold text-primary tracking-tight capitalize tracking-widest">{imageToView ? imageToView.title : 'Evidence Viewer'}</DialogTitle>
                     </DialogHeader>
                     <ScrollArea className="flex-1 bg-secondary/20">
                         <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">

@@ -455,12 +455,12 @@ export default function CampaignSummaryPage() {
                  <div className="space-y-1">
                     {editMode ? ( <Input id="name" value={editableCampaign.name || ''} onChange={(e) => handleFieldChange('name', e.target.value)} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary tracking-tight">{campaign?.name}</h1> )}
                     <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="text-[10px] font-bold tracking-tight uppercase">{campaign?.status}</Badge>
-                        <Badge variant={campaign?.authenticityStatus === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold flex items-center gap-1 uppercase">
+                        <Badge variant="outline" className="text-[10px] font-bold tracking-tight capitalize">{campaign?.status}</Badge>
+                        <Badge variant={campaign?.authenticityStatus === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold flex items-center gap-1 capitalize">
                             <ShieldCheck className="h-3 w-3" />
                             {campaign?.authenticityStatus}
                         </Badge>
-                        <Badge variant={campaign?.priority === 'Urgent' ? 'destructive' : 'outline'} className={cn("text-[10px] font-bold uppercase", campaign?.priority === 'Urgent' && "animate-in fade-in slide-in-from-left")}>
+                        <Badge variant={campaign?.priority === 'Urgent' ? 'destructive' : 'outline'} className={cn("text-[10px] font-bold capitalize", campaign?.priority === 'Urgent' && "animate-in fade-in slide-in-from-left")}>
                             {campaign?.priority || 'Low'} Priority
                         </Badge>
                     </div>
@@ -499,7 +499,7 @@ export default function CampaignSummaryPage() {
                         {editMode ? (
                             <div className="space-y-6 font-normal animate-fade-in-zoom">
                                 <div className="space-y-2">
-                                    <Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase opacity-60">Header Image</Label>
+                                    <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize opacity-60">Header Image</Label>
                                     <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
                                     <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-all duration-300 group border-primary/20">
                                         {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 transition-all duration-300 hover:scale-110 active:scale-90 shadow-lg" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6 transition-transform group-hover:scale-105"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground group-hover:text-primary" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click To Upload</span></p></div> )}
@@ -507,7 +507,7 @@ export default function CampaignSummaryPage() {
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div className="space-y-1">
-                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Category</Label>
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Category</Label>
                                         <Select value={editableCampaign.category} onValueChange={(val) => handleFieldChange('category', val)}>
                                             <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
@@ -518,7 +518,7 @@ export default function CampaignSummaryPage() {
                                         </Select>
                                     </div>
                                     <div className="space-y-1">
-                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Priority</Label>
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Priority</Label>
                                         <Select value={editableCampaign.priority} onValueChange={(val) => handleFieldChange('priority', val)}>
                                             <SelectTrigger className="font-bold text-primary border-primary/10"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
@@ -527,7 +527,7 @@ export default function CampaignSummaryPage() {
                                         </Select>
                                     </div>
                                     <div className="space-y-1">
-                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Operational Status</Label>
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Operational Status</Label>
                                         <Select value={editableCampaign.status} onValueChange={(value) => handleFieldChange('status', value)}>
                                             <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
@@ -538,7 +538,7 @@ export default function CampaignSummaryPage() {
                                         </Select>
                                     </div>
                                     <div className="space-y-1">
-                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Verification Level</Label>
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Verification Level</Label>
                                         <Select value={editableCampaign.authenticityStatus} onValueChange={(value) => handleFieldChange('authenticityStatus', value)}>
                                             <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
@@ -553,7 +553,7 @@ export default function CampaignSummaryPage() {
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Public Visibility</Label>
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Public Visibility</Label>
                                         <Select value={editableCampaign.publicVisibility} onValueChange={(value) => handleFieldChange('publicVisibility', value)}>
                                             <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
@@ -563,15 +563,15 @@ export default function CampaignSummaryPage() {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Target Amount (₹)</Label><Input type="number" value={editableCampaign.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md border-primary/10" /></div>
+                                    <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Target Amount (₹)</Label><Input type="number" value={editableCampaign.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md border-primary/10" /></div>
                                 </div>
-                                <div><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Description</Label><Textarea id="description" value={editableCampaign.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1 text-foreground font-normal transition-all duration-300 focus:shadow-md border-primary/10" rows={4} /></div>
+                                <div><Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Description</Label><Textarea id="description" value={editableCampaign.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1 text-foreground font-normal transition-all duration-300 focus:shadow-md border-primary/10" rows={4} /></div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Start Date</Label><Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="text-foreground font-bold border-primary/10" /></div>
-                                    <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">End Date</Label><Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="text-foreground font-bold border-primary/10" /></div>
+                                    <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Start Date</Label><Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="text-foreground font-bold border-primary/10" /></div>
+                                    <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">End Date</Label><Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="text-foreground font-bold border-primary/10" /></div>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="font-bold text-xs text-muted-foreground tracking-tight uppercase">Donation Types Included In Goal</Label>
+                                    <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Donation Types Included In Goal</Label>
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border rounded-md p-3 bg-white border-primary/10">
                                         {donationCategories.map(type => (
                                             <div key={type} className="flex items-center space-x-2 transition-all duration-300 hover:translate-x-1">
@@ -584,7 +584,7 @@ export default function CampaignSummaryPage() {
                                                         handleFieldChange('allowedDonationTypes', updated);
                                                     }}
                                                 />
-                                                <Label htmlFor={`edit-type-camp-${type}`} className="text-xs font-bold cursor-pointer uppercase">{type}</Label>
+                                                <Label htmlFor={`edit-type-camp-${type}`} className="text-xs font-bold cursor-pointer capitalize">{type}</Label>
                                             </div>
                                         ))}
                                     </div>
@@ -601,7 +601,7 @@ export default function CampaignSummaryPage() {
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                 </div>
                                 <div className="space-y-2 font-normal text-foreground">
-                                    <Label className="text-muted-foreground text-[10px] font-bold tracking-tight uppercase">Mission Description</Label>
+                                    <Label className="text-muted-foreground text-[10px] font-bold tracking-tight capitalize">Mission Description</Label>
                                     <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{campaign?.description || 'No detailed description available.'}</p>
                                 </div>
                             </>
@@ -751,11 +751,11 @@ export default function CampaignSummaryPage() {
                         <div className="grid gap-6 lg:grid-cols-2 font-normal">
                             {isVisible('fund_totals') && (
                                 <Card className="shadow-sm border-primary/5 bg-white transition-all duration-300 hover:shadow-lg">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight uppercase">Funds Received By Type</CardTitle></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight capitalize">Funds Received By Type</CardTitle></CardHeader>
                                     <CardContent className="space-y-2 pt-6 font-normal text-foreground">
                                         {donationCategories.map(cat => (
                                             <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded">
-                                                <span className="text-muted-foreground font-normal uppercase text-[10px] tracking-tight">{cat}</span>
+                                                <span className="text-muted-foreground font-normal capitalize text-[10px] tracking-tight">{cat}</span>
                                                 <span className="font-mono font-bold">₹{(fundingData.amountsByCategory[cat] || 0).toLocaleString('en-IN')}</span>
                                             </div>
                                         ))}
@@ -860,10 +860,10 @@ export default function CampaignSummaryPage() {
                         <CardContent className="font-normal text-primary pt-6">
                         {editMode ? (
                                 <div className="space-y-4 animate-fade-in-zoom">
-                                    <Label className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Upload New Files</Label>
+                                    <Label className="font-bold text-[10px] text-muted-foreground tracking-tight capitalize">Upload New Files</Label>
                                     <FileUploader onFilesChange={setNewDocuments} multiple acceptedFileTypes="image/png, image/jpeg, image/webp, application/pdf" />
                                     <Separator className="bg-primary/10 my-6" />
-                                    <Label className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">Manage Saved Documents</Label>
+                                    <Label className="font-bold text-[10px] text-muted-foreground tracking-tight capitalize">Manage Saved Documents</Label>
                                     {existingDocuments.length > 0 ? (
                                         <div className="space-y-3 font-normal text-foreground">
                                             {existingDocuments.map((doc) => (

@@ -298,3 +298,179 @@ export async function syncAllDonationsToDonorsAction(): Promise<{ success: boole
         return { success: false, message: error.message, count: 0 };
     }
 }
+
+/**
+ * Bulk actions for identity resolution
+ */
+export async function bulkMapDonorsAction(donationIds: string[], uploadedBy: {id: string, name: string}): Promise<{ success: boolean; message: string; count: number }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, count: 0 };
+
+    try {
+        let mappedCount = 0;
+        const chunkSize = 100;
+
+        for (let i = 0; i < donationIds.length; i += chunkSize) {
+            const batch = adminDb.batch();
+            const chunk = donationIds.slice(i, i + chunkSize);
+            const snaps = await adminDb.getAll(...chunk.map(id => adminDb.collection('donations').doc(id)));
+            
+            for (const snap of snaps) {
+                if (!snap.exists) continue;
+                const d = snap.data() as Donation;
+                
+                // Allow overwriting if user explicitly requests this in bulk? The user specifically asked to map unmapped.
+                // We'll skip if it has a donorId to be safe unless specified, but to ensure robust mapping of selected we evaluate.
+                if (d.donorId) continue; 
+
+                let foundDonorId = null;
+                const queries = [];
+                if (d.donorPhone && d.donorPhone.length > 5) {
+                    queries.push(adminDb.collection('donors').where('phone', '==', d.donorPhone).limit(1).get());
+                    queries.push(adminDb.collection('donors').where('phones', 'array-contains', d.donorPhone).limit(1).get());
+                }
+                
+                const donationUpiIds = (d.transactions || []).map((tx: any) => tx.upiId).filter(Boolean);
+                for (const upi of donationUpiIds) {
+                    queries.push(adminDb.collection('donors').where('upiIds', 'array-contains', upi).limit(1).get());
+                }
+                
+                // Include explicit transactionId to account checking as an extra safeguard
+                const transactionIds = (d.transactions || []).map((tx: any) => tx.transactionId).filter(Boolean);
+                for (const txId of transactionIds) {
+                     queries.push(adminDb.collection('donors').where('accountNumbers', 'array-contains', txId).limit(1).get());
+                }
+
+                if (queries.length > 0) {
+                    const results = await Promise.all(queries);
+                    for (const querySnap of results) {
+                        if (!querySnap.empty) {
+                            const donorDoc = querySnap.docs[0];
+                            foundDonorId = donorDoc.id;
+                            const donorData = donorDoc.data() as Donor;
+                            
+                            // Feature: Scrape UPIS and Phones into Donor
+                            let needsUpdate = false;
+                            const updateData: any = {};
+                            const existingUpis = new Set(donorData.upiIds || []);
+                            for (const upi of donationUpiIds) {
+                                if (upi && !existingUpis.has(upi)) {
+                                    existingUpis.add(upi);
+                                    needsUpdate = true;
+                                }
+                            }
+                            if (needsUpdate) updateData.upiIds = Array.from(existingUpis);
+
+                            if (d.donorPhone && d.donorPhone !== donorData.phone) {
+                                const existingPhones = new Set(donorData.phones || [donorData.phone]);
+                                if (!existingPhones.has(d.donorPhone)) {
+                                    existingPhones.add(d.donorPhone);
+                                    updateData.phones = Array.from(existingPhones).filter(Boolean);
+                                    needsUpdate = true;
+                                }
+                            }
+
+                            if (needsUpdate) {
+                                batch.update(donorDoc.ref, updateData);
+                            }
+                            break;
+                        }
+                    }
+                }
+
+                if (!foundDonorId && d.donorPhone && d.donorPhone.length > 5) {
+                    const newDonorRef = adminDb.collection('donors').doc();
+                    const newDonor: Partial<Donor> = {
+                        id: newDonorRef.id,
+                        name: d.donorName || 'Anonymous Donor',
+                        phone: d.donorPhone,
+                        phones: [d.donorPhone],
+                        upiIds: donationUpiIds,
+                        status: 'Active',
+                        createdAt: FieldValue.serverTimestamp(),
+                        createdById: uploadedBy.id,
+                        createdByName: uploadedBy.name,
+                        notes: `Profile mapped dynamically from Bulk auto-resolve algorithm.`,
+                    };
+                    batch.set(newDonorRef, newDonor);
+                    foundDonorId = newDonorRef.id;
+                }
+
+                if (foundDonorId) {
+                    batch.update(snap.ref, { donorId: foundDonorId, updatedAt: FieldValue.serverTimestamp() });
+                    mappedCount++;
+                }
+            }
+            await batch.commit();
+        }
+
+        revalidatePath('/donations');
+        revalidatePath('/donors');
+        return { success: true, message: `Auto-resolved and mapped ${mappedCount} identity records successfully.`, count: mappedCount };
+    } catch (e: any) {
+        return { success: false, message: e.message, count: 0 };
+    }
+}
+
+export async function bulkUnmapDonorsAction(donationIds: string[], uploadedBy: {id: string, name: string}): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    try {
+        const batch = adminDb.batch();
+        for (const id of donationIds) {
+            batch.update(adminDb.collection('donations').doc(id), { 
+                donorId: null, 
+                updatedAt: FieldValue.serverTimestamp(),
+                updatedBy: uploadedBy.name 
+            });
+        }
+        await batch.commit();
+        revalidatePath('/donations');
+        revalidatePath('/donors');
+        return { success: true, message: `Successfully unlinked ${donationIds.length} records from donors.` };
+    } catch (error: any) {
+         return { success: false, message: error.message };
+    }
+}
+
+export async function bulkLinkInitiativeAction(
+    donationIds: string[], 
+    action: 'link' | 'unlink', 
+    initiativeContext?: { id: string, type: 'campaign' | 'lead', name: string },
+    updatedBy?: {id: string, name: string}
+): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const batch = adminDb.batch();
+        const snaps = await adminDb.getAll(...donationIds.map(id => adminDb.collection('donations').doc(id)));
+        
+        for (const snap of snaps) {
+            if (!snap.exists) continue;
+            const d = snap.data() as Donation;
+            
+            if (action === 'unlink') {
+                batch.update(snap.ref, {
+                    linkSplit: [{ linkId: 'unallocated', linkName: 'Unallocated', linkType: 'general', amount: d.amount }],
+                    updatedAt: FieldValue.serverTimestamp()
+                });
+            } else if (action === 'link' && initiativeContext) {
+                batch.update(snap.ref, {
+                    linkSplit: [{
+                        linkId: initiativeContext.id,
+                        linkName: initiativeContext.name,
+                        linkType: initiativeContext.type,
+                        amount: d.amount
+                    }],
+                    updatedAt: FieldValue.serverTimestamp()
+                });
+            }
+        }
+        await batch.commit();
+        revalidatePath('/donations');
+        return { success: true, message: `Successfully ${action}ed ${donationIds.length} donations.` };
+    } catch (error: any) {
+        return { success: false, message: error.message };
+    }
+}

@@ -299,13 +299,13 @@ export default function LeadDetailsPage() {
                 <Table>
                 <TableHeader className="bg-primary/5">
                     <TableRow>
-                    <TableHead className="w-[50px] font-bold text-primary text-[10px] uppercase tracking-widest">#</TableHead>
-                    <TableHead className="min-w-[180px] font-bold text-primary text-[10px] uppercase tracking-widest">Description</TableHead>
-                    <TableHead className="min-w-[100px] font-bold text-primary text-[10px] uppercase tracking-widest">Quantity</TableHead>
-                    <TableHead className="min-w-[150px] font-bold text-primary text-[10px] uppercase tracking-widest">Unit Type</TableHead>
-                    <TableHead className="min-w-[120px] font-bold text-primary text-[10px] uppercase tracking-widest">Price / Unit (₹)</TableHead>
-                    <TableHead className="text-right min-w-[150px] font-bold text-primary text-[10px] uppercase tracking-widest">Line Total (₹)</TableHead>
-                    {canUpdate && editMode && <TableHead className="w-[50px] text-center font-bold text-primary text-[10px] uppercase tracking-widest">Action</TableHead>}
+                    <TableHead className="w-[50px] font-bold text-primary text-[10px] capitalize tracking-widest">#</TableHead>
+                    <TableHead className="min-w-[180px] font-bold text-primary text-[10px] capitalize tracking-widest">Description</TableHead>
+                    <TableHead className="min-w-[100px] font-bold text-primary text-[10px] capitalize tracking-widest">Quantity</TableHead>
+                    <TableHead className="min-w-[150px] font-bold text-primary text-[10px] capitalize tracking-widest">Unit Type</TableHead>
+                    <TableHead className="min-w-[120px] font-bold text-primary text-[10px] capitalize tracking-widest">Price / Unit (₹)</TableHead>
+                    <TableHead className="text-right min-w-[150px] font-bold text-primary text-[10px] capitalize tracking-widest">Line Total (₹)</TableHead>
+                    {canUpdate && editMode && <TableHead className="w-[50px] text-center font-bold text-primary text-[10px] capitalize tracking-widest">Action</TableHead>}
                     </TableRow>
                 </TableHeader>
                 <TableBody className="font-normal">
@@ -365,7 +365,7 @@ export default function LeadDetailsPage() {
     <AlertDialog open={isDeleteItemDialogOpen} onOpenChange={setIsDeleteItemDialogOpen}>
         <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown">
             <AlertDialogHeader>
-                <AlertDialogTitle className="font-bold text-destructive uppercase">Remove Line Item?</AlertDialogTitle>
+                <AlertDialogTitle className="font-bold text-destructive capitalize">Remove Line Item?</AlertDialogTitle>
                 <AlertDialogDescription className="font-normal text-primary/70">
                     Permanently Erase "{itemToDelete?.itemName}" From This List?
                 </AlertDialogDescription>

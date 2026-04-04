@@ -65,18 +65,18 @@ function ComponentPreview({ themeId }: { themeId: string }) {
                         {/* Mock Financial Cards */}
                         <div className="grid grid-cols-2 gap-3">
                             <Card className="p-3 border-primary/10 bg-card/50 backdrop-blur-sm shadow-sm">
-                                <p className="text-[8px] font-bold uppercase text-muted-foreground tracking-widest">Collected</p>
+                                <p className="text-[8px] font-bold capitalize text-muted-foreground tracking-widest">Collected</p>
                                 <p className="text-sm font-bold text-primary font-mono">₹45,000</p>
                             </Card>
                             <Card className="p-3 border-primary/10 bg-card/50 backdrop-blur-sm shadow-sm">
-                                <p className="text-[8px] font-bold uppercase text-muted-foreground tracking-widest">Target</p>
+                                <p className="text-[8px] font-bold capitalize text-muted-foreground tracking-widest">Target</p>
                                 <p className="text-sm font-bold opacity-60 font-mono">₹1,00,000</p>
                             </Card>
                         </div>
 
                         {/* Mock Progress */}
                         <div className="space-y-1.5">
-                            <div className="flex justify-between text-[10px] font-bold uppercase tracking-tight">
+                            <div className="flex justify-between text-[10px] font-bold capitalize tracking-tight">
                                 <span className="text-primary">Campaign Progress</span>
                                 <span className="text-foreground/60">45%</span>
                             </div>
@@ -85,7 +85,7 @@ function ComponentPreview({ themeId }: { themeId: string }) {
 
                         {/* Mock Table */}
                         <div className="space-y-2">
-                            <p className="text-[10px] font-bold uppercase text-muted-foreground flex items-center gap-1 tracking-widest">
+                            <p className="text-[10px] font-bold capitalize text-muted-foreground flex items-center gap-1 tracking-widest">
                                 <TableIcon className="h-3 w-3" /> Recent Activity
                             </p>
                             <div className="border border-primary/10 rounded-md overflow-hidden bg-card shadow-sm">
@@ -113,9 +113,9 @@ function ComponentPreview({ themeId }: { themeId: string }) {
                         {/* Mock Interactive */}
                         <div className="space-y-3 pb-4">
                             <div className="flex flex-wrap gap-2">
-                                <Badge variant="default" className="text-[8px] font-bold uppercase shadow-sm">Active</Badge>
-                                <Badge variant="eligible" className="text-[8px] font-bold uppercase shadow-sm">Verified</Badge>
-                                <Badge variant="outline" className="text-[8px] font-bold uppercase border-primary/20 text-primary">Pending</Badge>
+                                <Badge variant="default" className="text-[8px] font-bold capitalize shadow-sm">Active</Badge>
+                                <Badge variant="eligible" className="text-[8px] font-bold capitalize shadow-sm">Verified</Badge>
+                                <Badge variant="outline" className="text-[8px] font-bold capitalize border-primary/20 text-primary">Pending</Badge>
                             </div>
                             <div className="grid grid-cols-2 gap-2">
                                 <Button size="sm" className="h-8 text-[10px] font-bold shadow-md">Primary Action</Button>
@@ -227,10 +227,10 @@ export default function ViewportSettingsPage() {
                                         </div>
                                         <div>
                                             <span className="text-sm font-bold block capitalize tracking-tight">{resolvedTheme} Mode Active</span>
-                                            <p className="text-[10px] text-muted-foreground font-normal uppercase tracking-tighter">System Preferences Prioritized</p>
+                                            <p className="text-[10px] text-muted-foreground font-normal capitalize tracking-tighter">System Preferences Prioritized</p>
                                         </div>
                                     </div>
-                                    <Badge variant="outline" className="font-bold uppercase text-[10px] px-3 py-1 border-primary/20 text-primary bg-white">{currentThemeName}</Badge>
+                                    <Badge variant="outline" className="font-bold capitalize text-[10px] px-3 py-1 border-primary/20 text-primary bg-white">{currentThemeName}</Badge>
                                 </div>
                             ) : (
                                 <div className="space-y-6 animate-fade-in-up">
@@ -243,7 +243,7 @@ export default function ViewportSettingsPage() {
                                     <Separator className="bg-primary/10" />
                                     
                                     <div className="space-y-3">
-                                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Select Institutional Color Theme</Label>
+                                        <Label className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Select Institutional Color Theme</Label>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                                             {THEME_SUGGESTIONS.map((s) => (
                                                 <Button 
@@ -274,7 +274,7 @@ export default function ViewportSettingsPage() {
                                 <div className="flex items-center justify-between space-x-2 rounded-lg border border-primary/10 p-4 bg-muted/5 transition-all hover:border-primary/20">
                                     <div className="space-y-0.5">
                                         <Label className="font-bold text-sm">UI Transitions</Label>
-                                        <p className="text-[10px] font-normal text-muted-foreground uppercase tracking-tight">Fade-Ins And Scaling Effects.</p>
+                                        <p className="text-[10px] font-normal text-muted-foreground capitalize tracking-tight">Fade-Ins And Scaling Effects.</p>
                                     </div>
                                     <Switch 
                                         checked={isEditMode ? pendingAnimations : animationsEnabled} 
@@ -285,7 +285,7 @@ export default function ViewportSettingsPage() {
                                 <div className="flex items-center justify-between space-x-2 rounded-lg border border-primary/10 p-4 bg-muted/5 transition-all hover:border-primary/20">
                                     <div className="space-y-0.5">
                                         <Label className="font-bold text-sm">Smooth Scrolling</Label>
-                                        <p className="text-[10px] font-normal text-muted-foreground uppercase tracking-tight">Fluid Navigation Between Sections.</p>
+                                        <p className="text-[10px] font-normal text-muted-foreground capitalize tracking-tight">Fluid Navigation Between Sections.</p>
                                     </div>
                                     <Switch 
                                         checked={isEditMode ? pendingSmoothScroll : smoothScrolling} 
@@ -299,7 +299,7 @@ export default function ViewportSettingsPage() {
                                             <Label className="font-bold text-sm">Reduced Motion Mode</Label>
                                             <Badge variant="secondary" className="text-[8px] h-4 font-bold tracking-tighter">Accessibility</Badge>
                                         </div>
-                                        <p className="text-[10px] font-normal text-muted-foreground uppercase tracking-tight">Minimizes Non-Essential Movement For Enhanced Comfort.</p>
+                                        <p className="text-[10px] font-normal text-muted-foreground capitalize tracking-tight">Minimizes Non-Essential Movement For Enhanced Comfort.</p>
                                     </div>
                                     <Switch 
                                         checked={isEditMode ? pendingReducedMotion : reducedMotion} 
@@ -316,7 +316,7 @@ export default function ViewportSettingsPage() {
                     <Card className={cn("sticky top-24 transition-all duration-500 border-primary/10 shadow-lg bg-white overflow-hidden", isEditMode ? "border-primary/20 opacity-100" : "opacity-50 grayscale pointer-events-none")}>
                         <CardHeader className="bg-primary/5 border-b border-primary/10 pb-3">
                             <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2 font-bold text-sm tracking-widest uppercase text-primary">
+                                <CardTitle className="flex items-center gap-2 font-bold text-sm tracking-widest capitalize text-primary">
                                     <Eye className="h-4 w-4" /> Real-Time Preview
                                 </CardTitle>
                                 {isEditMode && <Badge variant="success" className="animate-pulse text-[10px] font-bold">Live Interaction</Badge>}
@@ -331,7 +331,7 @@ export default function ViewportSettingsPage() {
                             </div>
                         </CardContent>
                         <CardFooter className="bg-muted/5 p-3 border-t border-primary/10 flex justify-center">
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">
+                            <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-tighter">
                                 Currently Rendering: {currentThemeName}
                             </p>
                         </CardFooter>
@@ -345,19 +345,19 @@ export default function ViewportSettingsPage() {
                             </CardHeader>
                             <CardContent className="pt-6 space-y-4">
                                 <div className="flex justify-between items-center py-2 border-b border-dashed border-primary/10">
-                                    <div className="flex items-center gap-2 text-primary/70"><Palette className="h-4 w-4"/><span className="text-xs font-bold uppercase tracking-tight">Active Theme</span></div>
+                                    <div className="flex items-center gap-2 text-primary/70"><Palette className="h-4 w-4"/><span className="text-xs font-bold capitalize tracking-tight">Active Theme</span></div>
                                     <Badge variant="outline" className="font-bold text-primary border-primary/20 bg-white">{currentThemeName}</Badge>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-dashed border-primary/10">
-                                    <div className="flex items-center gap-2 text-primary/70"><Zap className="h-4 w-4"/><span className="text-xs font-bold uppercase tracking-tight">Visual Effects</span></div>
+                                    <div className="flex items-center gap-2 text-primary/70"><Zap className="h-4 w-4"/><span className="text-xs font-bold capitalize tracking-tight">Visual Effects</span></div>
                                     <span className="text-xs font-mono font-bold text-primary">{animationsEnabled ? 'Enabled' : 'Disabled'}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-b border-dashed border-primary/10">
-                                    <div className="flex items-center gap-2 text-primary/70"><MoveHorizontal className="h-4 w-4"/><span className="text-xs font-bold uppercase tracking-tight">Scrolling Style</span></div>
+                                    <div className="flex items-center gap-2 text-primary/70"><MoveHorizontal className="h-4 w-4"/><span className="text-xs font-bold capitalize tracking-tight">Scrolling Style</span></div>
                                     <span className="text-xs font-mono font-bold text-primary">{smoothScrolling ? 'Fluid' : 'Instant'}</span>
                                 </div>
                                 <div className="flex justify-between items-center py-2 border-primary/10">
-                                    <div className="flex items-center gap-2 text-primary/70"><Wind className="h-4 w-4"/><span className="text-xs font-bold uppercase tracking-tight">Motion Profile</span></div>
+                                    <div className="flex items-center gap-2 text-primary/70"><Wind className="h-4 w-4"/><span className="text-xs font-bold capitalize tracking-tight">Motion Profile</span></div>
                                     <Badge variant={reducedMotion ? "secondary" : "success"} className="text-[9px] font-bold">{reducedMotion ? 'Reduced Motion' : 'Full Effects'}</Badge>
                                 </div>
                             </CardContent>

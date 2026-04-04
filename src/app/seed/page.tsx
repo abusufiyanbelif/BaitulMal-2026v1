@@ -59,7 +59,7 @@ export default function SeedPage() {
                           <Terminal className="h-4 w-4"/>
                           <span>npm run db:migrate-settings</span>
                       </div>
-                      <div className="flex items-center gap-2 text-xs text-primary font-bold pl-2 uppercase tracking-tighter">
+                      <div className="flex items-center gap-2 text-xs text-primary font-bold pl-2 capitalize tracking-tighter">
                           <Info className="h-3 w-3"/> Essential: Moves existing branding and payment files to the new folder structure.
                       </div>
                   </div>

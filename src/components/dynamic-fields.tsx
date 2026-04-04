@@ -156,10 +156,10 @@ export function DynamicFields({ isLoading, result, setResult }: DynamicFieldsPro
         {result && (
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={() => handleDownload('json')}>
-              <Download className="mr-2 h-4 w-4" /> JSON
+              <Download className="mr-2 h-4 w-4" /> Json
             </Button>
             <Button variant="outline" size="sm" onClick={() => handleDownload('csv')}>
-              <Download className="mr-2 h-4 w-4" /> CSV
+              <Download className="mr-2 h-4 w-4" /> Csv
             </Button>
           </div>
         )}

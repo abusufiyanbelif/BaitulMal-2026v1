@@ -147,7 +147,7 @@ export default function GuidanceSettingsPage() {
                         </CardHeader>
                         <CardContent className="pt-6 space-y-6">
                             <div className="space-y-2">
-                                <Label className="font-bold text-xs text-muted-foreground tracking-tighter uppercase">Page Headline</Label>
+                                <Label className="font-bold text-xs text-muted-foreground tracking-tighter capitalize">Page Headline</Label>
                                 <Input 
                                     value={localGuidance.title} 
                                     onChange={(e) => setLocalGuidance({...localGuidance, title: e.target.value})} 
@@ -156,7 +156,7 @@ export default function GuidanceSettingsPage() {
                                 />
                             </div>
                             <div className="space-y-2">
-                                <Label className="font-bold text-xs text-muted-foreground tracking-tighter uppercase">Directory Description</Label>
+                                <Label className="font-bold text-xs text-muted-foreground tracking-tighter capitalize">Directory Description</Label>
                                 <Textarea 
                                     rows={4} 
                                     value={localGuidance.description} 
@@ -168,7 +168,7 @@ export default function GuidanceSettingsPage() {
                             </div>
                         </CardContent>
                         <CardFooter className="bg-muted/5 border-t p-4 flex justify-between items-center">
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Operation Workspace:</p>
+                            <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Operation Workspace:</p>
                             <Button variant="ghost" size="sm" asChild className="font-bold text-primary hover:bg-primary/5">
                                 <Link href="/guidance" className="flex items-center">Go To Guidance Hub <ArrowLeft className="ml-2 h-3 w-3 rotate-180" /></Link>
                             </Button>

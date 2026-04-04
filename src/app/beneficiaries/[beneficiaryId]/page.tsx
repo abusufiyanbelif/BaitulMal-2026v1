@@ -254,8 +254,8 @@ export default function BeneficiaryDetailsPage() {
             <Link href={backHref}><ArrowLeft className="mr-2 h-4 w-4" /> Back To List</Link>
         </Button>
         <div className="flex items-center gap-2">
-            <Badge variant="outline" className="font-bold border-primary/10 text-primary/60 uppercase">ID: {beneficiary.idNumber || 'N/A'}</Badge>
-            <Badge variant={beneficiary.status === 'Verified' ? 'eligible' : 'outline'} className="font-bold text-[10px] uppercase">{beneficiary.status}</Badge>
+            <Badge variant="outline" className="font-bold border-primary/10 text-primary/60 capitalize">ID: {beneficiary.idNumber || 'N/A'}</Badge>
+            <Badge variant={beneficiary.status === 'Verified' ? 'eligible' : 'outline'} className="font-bold text-[10px] capitalize">{beneficiary.status}</Badge>
         </div>
       </div>
 
@@ -313,7 +313,7 @@ export default function BeneficiaryDetailsPage() {
                     {isLinksLoading ? ( 
                         <div className="py-20 flex flex-col items-center gap-4">
                             <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                            <p className="text-[10px] font-bold text-primary/60 tracking-tight uppercase">Scanning Databases...</p>
+                            <p className="text-[10px] font-bold text-primary/60 tracking-tight capitalize">Scanning Databases...</p>
                         </div>
                     ) : linkedInitiatives.length > 0 ? (
                         <ScrollArea className="w-full">
@@ -321,13 +321,13 @@ export default function BeneficiaryDetailsPage() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead className="pl-6 font-bold text-primary text-[10px] uppercase tracking-tight">Initiative Name</TableHead>
-                                            <TableHead className="font-bold text-primary text-[10px] uppercase tracking-tight">Purpose / Type</TableHead>
-                                            <TableHead className="font-bold text-primary text-[10px] uppercase tracking-tight">Category</TableHead>
-                                            <TableHead className="text-center font-bold text-primary text-[10px] uppercase tracking-tight">Verification</TableHead>
-                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase tracking-tight">Added Date</TableHead>
-                                            <TableHead className="text-right font-bold text-primary text-[10px] uppercase tracking-tight">Allocation (₹)</TableHead>
-                                            <TableHead className="text-right pr-6 font-bold text-primary text-[10px] uppercase tracking-tight">Actions</TableHead>
+                                            <TableHead className="pl-6 font-bold text-primary text-[10px] capitalize tracking-tight">Initiative Name</TableHead>
+                                            <TableHead className="font-bold text-primary text-[10px] capitalize tracking-tight">Purpose / Type</TableHead>
+                                            <TableHead className="font-bold text-primary text-[10px] capitalize tracking-tight">Category</TableHead>
+                                            <TableHead className="text-center font-bold text-primary text-[10px] capitalize tracking-tight">Verification</TableHead>
+                                            <TableHead className="text-right font-bold text-primary text-[10px] capitalize tracking-tight">Added Date</TableHead>
+                                            <TableHead className="text-right font-bold text-primary text-[10px] capitalize tracking-tight">Allocation (₹)</TableHead>
+                                            <TableHead className="text-right pr-6 font-bold text-primary text-[10px] capitalize tracking-tight">Actions</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -344,21 +344,21 @@ export default function BeneficiaryDetailsPage() {
                                                                     {link.name}
                                                                 </Link>
                                                             </p>
-                                                            <p className="text-[10px] font-normal text-muted-foreground tracking-tight uppercase">{link.type} • {link.initiativeStatus}</p>
+                                                            <p className="text-[10px] font-normal text-muted-foreground tracking-tight capitalize">{link.type} • {link.initiativeStatus}</p>
                                                         </div>
                                                     </div>
                                                 </TableCell>
-                                                <TableCell><Badge variant="outline" className="text-[10px] font-bold border-primary/10 text-primary/70 uppercase">{link.purpose}</Badge></TableCell>
-                                                <TableCell><p className="text-xs font-bold text-primary/80 uppercase">{link.category}</p></TableCell>
+                                                <TableCell><Badge variant="outline" className="text-[10px] font-bold border-primary/10 text-primary/70 capitalize">{link.purpose}</Badge></TableCell>
+                                                <TableCell><p className="text-xs font-bold text-primary/80 capitalize">{link.category}</p></TableCell>
                                                 <TableCell className="text-center">
-                                                    <Badge variant={link.beneficiaryStatus === 'Given' ? 'given' : 'outline'} className="font-bold text-[9px] uppercase">
+                                                    <Badge variant={link.beneficiaryStatus === 'Given' ? 'given' : 'outline'} className="font-bold text-[9px] capitalize">
                                                         {link.beneficiaryStatus}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-right"><p className="text-xs font-mono opacity-60">{link.addedDate}</p></TableCell>
                                                 <TableCell className="text-right">
                                                     <p className="font-bold font-mono text-sm text-primary">₹{link.kitAmount.toLocaleString('en-IN')}</p>
-                                                    {link.zakatAllocation > 0 && <p className="text-[9px] font-bold text-primary/60 tracking-tight uppercase">Zakat: ₹{link.zakatAllocation.toLocaleString('en-IN')}</p>}
+                                                    {link.zakatAllocation > 0 && <p className="text-[9px] font-bold text-primary/60 tracking-tight capitalize">Zakat: ₹{link.zakatAllocation.toLocaleString('en-IN')}</p>}
                                                 </TableCell>
                                                 <TableCell className="text-right pr-6">
                                                     <div onClick={e => e.stopPropagation()}>
@@ -408,7 +408,7 @@ export default function BeneficiaryDetailsPage() {
             <div className="grid gap-6 md:grid-cols-3">
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
                     <CardHeader className="p-4 flex-row items-center justify-between space-y-0">
-                        <CardTitle className="text-[10px] font-bold tracking-tight text-primary uppercase">Total Assistance Value</CardTitle>
+                        <CardTitle className="text-[10px] font-bold tracking-tight text-primary capitalize">Total Assistance Value</CardTitle>
                         <Target className="h-4 w-4 text-primary opacity-40" />
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
@@ -418,7 +418,7 @@ export default function BeneficiaryDetailsPage() {
                 </Card>
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
                     <CardHeader className="p-4 flex-row items-center justify-between space-y-0">
-                        <CardTitle className="text-[10px] font-bold tracking-tight text-primary uppercase">Verified (Secured)</CardTitle>
+                        <CardTitle className="text-[10px] font-bold tracking-tight text-primary capitalize">Verified (Secured)</CardTitle>
                         <CheckCircle2 className="h-4 w-4 text-primary opacity-40" />
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
@@ -428,7 +428,7 @@ export default function BeneficiaryDetailsPage() {
                 </Card>
                 <Card className="border-primary/10 bg-white transition-all hover:shadow-lg">
                     <CardHeader className="p-4 flex-row items-center justify-between space-y-0">
-                        <CardTitle className="text-[10px] font-bold tracking-tight text-primary uppercase">Disbursed (Given)</CardTitle>
+                        <CardTitle className="text-[10px] font-bold tracking-tight text-primary capitalize">Disbursed (Given)</CardTitle>
                         <CheckCircle2 className="h-4 w-4 text-primary opacity-40" />
                     </CardHeader>
                     <CardContent className="p-4 pt-0">
@@ -448,12 +448,12 @@ export default function BeneficiaryDetailsPage() {
                                 <Table>
                                     <TableHeader>
                                         <TableRow>
-                                            <TableHead className="pl-6 font-bold text-[10px] tracking-tight uppercase text-primary">Initiative Source</TableHead>
-                                            <TableHead className="text-right font-bold text-[10px] tracking-tight uppercase text-primary">Requirement (₹)</TableHead>
-                                            <TableHead className="text-right font-bold text-[10px] tracking-tight uppercase text-primary">Zakat Allocation (₹)</TableHead>
-                                            <TableHead className="text-right font-bold text-[10px] tracking-tight uppercase text-primary">Community Fund (₹)</TableHead>
-                                            <TableHead className="text-center font-bold text-[10px] tracking-tight uppercase text-primary">Financial Status</TableHead>
-                                            <TableHead className="text-right pr-6 font-bold text-[10px] tracking-tight uppercase text-primary">Net Provision (₹)</TableHead>
+                                            <TableHead className="pl-6 font-bold text-[10px] tracking-tight capitalize text-primary">Initiative Source</TableHead>
+                                            <TableHead className="text-right font-bold text-[10px] tracking-tight capitalize text-primary">Requirement (₹)</TableHead>
+                                            <TableHead className="text-right font-bold text-[10px] tracking-tight capitalize text-primary">Zakat Allocation (₹)</TableHead>
+                                            <TableHead className="text-right font-bold text-[10px] tracking-tight capitalize text-primary">Community Fund (₹)</TableHead>
+                                            <TableHead className="text-center font-bold text-[10px] tracking-tight capitalize text-primary">Financial Status</TableHead>
+                                            <TableHead className="text-right pr-6 font-bold text-[10px] tracking-tight capitalize text-primary">Net Provision (₹)</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -470,16 +470,16 @@ export default function BeneficiaryDetailsPage() {
                                                 <TableCell className="text-right font-mono text-xs opacity-60">₹{link.kitAmount.toLocaleString('en-IN')}</TableCell>
                                                 <TableCell className="text-right">
                                                     <p className="font-bold font-mono text-sm text-primary">₹{link.zakatAllocation.toLocaleString('en-IN')}</p>
-                                                    <p className="text-[8px] font-bold text-muted-foreground tracking-tight uppercase">Reserved</p>
+                                                    <p className="text-[8px] font-bold text-muted-foreground tracking-tight capitalize">Reserved</p>
                                                 </TableCell>
                                                 <TableCell className="text-right">
                                                     <p className="font-bold font-mono text-sm text-primary">₹{(link.kitAmount - link.zakatAllocation).toLocaleString('en-IN')}</p>
-                                                    <p className="text-[8px] font-bold text-muted-foreground tracking-tight uppercase">Lillah / Sadaqah</p>
+                                                    <p className="text-[8px] font-bold text-muted-foreground tracking-tight capitalize">Lillah / Sadaqah</p>
                                                 </TableCell>
                                                 <TableCell className="text-center">
                                                     <Badge 
                                                         variant={link.beneficiaryStatus === 'Given' ? 'given' : link.beneficiaryStatus === 'Verified' ? 'eligible' : 'outline'} 
-                                                        className="font-bold text-[9px] uppercase"
+                                                        className="font-bold text-[9px] capitalize"
                                                     >
                                                         {link.beneficiaryStatus === 'Given' ? 'Disbursed' : link.beneficiaryStatus === 'Verified' ? 'Secured' : 'Evaluation'}
                                                     </Badge>
@@ -489,7 +489,7 @@ export default function BeneficiaryDetailsPage() {
                                                         <span className={cn("font-bold font-mono text-sm text-primary")}>
                                                             ₹{link.kitAmount.toLocaleString('en-IN')}
                                                         </span>
-                                                        <span className="text-[8px] font-bold text-muted-foreground tracking-tight uppercase">Net Value</span>
+                                                        <span className="text-[8px] font-bold text-muted-foreground tracking-tight capitalize">Net Value</span>
                                                     </div>
                                                 </TableCell>
                                             </TableRow>
@@ -500,7 +500,7 @@ export default function BeneficiaryDetailsPage() {
                                     </TableBody>
                                     <TableFooter className="bg-primary/5 border-t">
                                         <TableRow>
-                                            <TableCell className="pl-6 py-4 font-bold text-primary text-xs tracking-tight uppercase">Aggregate Totals</TableCell>
+                                            <TableCell className="pl-6 py-4 font-bold text-primary text-xs tracking-tight capitalize">Aggregate Totals</TableCell>
                                             <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{financialSummary.requested.toLocaleString('en-IN')}</TableCell>
                                             <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{(financialSummary.zakatDisbursed + financialSummary.zakatVerified).toLocaleString('en-IN')}</TableCell>
                                             <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{(financialSummary.requested - (financialSummary.zakatDisbursed + financialSummary.zakatVerified)).toLocaleString('en-IN')}</TableCell>
@@ -524,24 +524,24 @@ export default function BeneficiaryDetailsPage() {
                         <CardContent className="p-6 sm:p-10 space-y-8 font-normal">
                             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 p-6 rounded-2xl bg-primary/[0.02] border border-primary/10">
                                 <div className="space-y-2">
-                                    <h4 className="text-xs font-bold text-primary tracking-tight uppercase">Religious Compliance Tracking</h4>
+                                    <h4 className="text-xs font-bold text-primary tracking-tight capitalize">Religious Compliance Tracking</h4>
                                     <div className="flex flex-wrap gap-4 items-center">
                                         <div className="space-y-0.5">
-                                            <p className="text-[9px] font-bold text-muted-foreground tracking-tight uppercase">Zakat Eligible</p>
-                                            <Badge variant={beneficiary.isEligibleForZakat ? 'eligible' : 'outline'} className="font-bold uppercase">
+                                            <p className="text-[9px] font-bold text-muted-foreground tracking-tight capitalize">Zakat Eligible</p>
+                                            <Badge variant={beneficiary.isEligibleForZakat ? 'eligible' : 'outline'} className="font-bold capitalize">
                                                 {beneficiary.isEligibleForZakat ? 'Confirmed' : 'Not Eligible'}
                                             </Badge>
                                         </div>
                                         <Separator orientation="vertical" className="h-8 hidden sm:block opacity-20" />
                                         <div className="space-y-0.5">
-                                            <p className="text-[9px] font-bold text-muted-foreground tracking-tight uppercase">Total Zakat Provision</p>
+                                            <p className="text-[9px] font-bold text-muted-foreground tracking-tight capitalize">Total Zakat Provision</p>
                                             <p className="text-sm font-bold text-primary font-mono">₹{(financialSummary.zakatDisbursed + financialSummary.zakatVerified).toLocaleString('en-IN')}</p>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 text-primary bg-white p-4 rounded-xl border border-primary/5 shadow-sm">
                                     <CheckCircle2 className="h-5 w-5 text-primary" />
-                                    <p className="text-sm font-bold tracking-tight uppercase">Audit Synchronized Site-Wide</p>
+                                    <p className="text-sm font-bold tracking-tight capitalize">Audit Synchronized Site-Wide</p>
                                 </div>
                             </div>
 

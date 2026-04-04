@@ -200,7 +200,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
                                 
                                 <Separator className="my-6 bg-primary/10" />
                                 <div className="p-6 bg-primary/[0.03] rounded-2xl border border-dashed border-primary/20 flex flex-col items-center gap-4 text-center mx-2">
-                                    <p className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Donor Not Listed?</p>
+                                    <p className="text-[10px] font-bold text-primary/60 capitalize tracking-widest">Donor Not Listed?</p>
                                     <Button variant="outline" size="sm" onClick={handleRegisterNewProfile} disabled={isCreating} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform h-10 px-8 rounded-xl bg-white shadow-sm w-full sm:w-auto">
                                         Register New Donor <ArrowRight className="ml-2 h-4 w-4" />
                                     </Button>

@@ -162,7 +162,7 @@ export default function DonationSettingsPage() {
             <CardContent className="space-y-8 pt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-4">
-                        <h3 className="font-bold text-primary text-[10px] tracking-widest uppercase">Public View</h3>
+                        <h3 className="font-bold text-primary text-[10px] tracking-widest capitalize">Public View</h3>
                         <div className="space-y-3">
                             {VISIBILITY_OPTIONS.map(opt => (
                                 <div key={`public_don_${opt.id}`} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-primary/5 transition-colors">
@@ -178,7 +178,7 @@ export default function DonationSettingsPage() {
                         </div>
                     </div>
                     <div className="space-y-4">
-                        <h3 className="font-bold text-primary text-[10px] tracking-widest uppercase">Member View</h3>
+                        <h3 className="font-bold text-primary text-[10px] tracking-widest capitalize">Member View</h3>
                         <div className="space-y-3">
                             {VISIBILITY_OPTIONS.map(opt => (
                                 <div key={`member_don_${opt.id}`} className="flex items-center space-x-3 p-2 rounded-lg hover:bg-primary/5 transition-colors">

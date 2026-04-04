@@ -13,7 +13,12 @@ service firebase.storage {
 
     // Helper: Check if user is an Admin
     function isAdmin() {
-      return isSignedIn() && getUserData().role == 'Admin';
+      return isSignedIn() && (getUserData().role == 'Admin' || getUserData().loginId == 'admin');
+    }
+
+    // Helper: Check granular permission
+    function hasPermission(module, action) {
+      return isAdmin() || (isSignedIn() && getUserData().permissions[module][action] == true);
     }
 
     // Settings: Publicly readable branding/payment info, only writable by Admin
@@ -29,14 +34,14 @@ service firebase.storage {
 
     // Campaign Artifacts
     match /campaigns/{campaignId}/{allPaths=**} {
-      allow read: if isSignedIn() || isAdmin();
-      allow write: if isAdmin();
+      allow read: if true;
+      allow write: if hasPermission('campaigns', 'update') || hasPermission('campaigns', 'create') || isAdmin();
     }
 
     // Lead Artifacts
     match /leads/{leadId}/{allPaths=**} {
-      allow read: if isSignedIn() || isAdmin();
-      allow write: if isAdmin();
+      allow read: if true;
+      allow write: if hasPermission('leads-members', 'update') || hasPermission('leads-members', 'create') || isAdmin();
     }
 
     // Beneficiary ID Proofs

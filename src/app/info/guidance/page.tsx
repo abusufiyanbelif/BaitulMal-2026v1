@@ -83,7 +83,7 @@ export default function GuidancePublicPage() {
                 <div className="inline-flex items-center justify-center p-3 rounded-full bg-primary/10 text-primary mb-2">
                     <BookOpen className="h-8 w-8" />
                 </div>
-                <h1 className="text-4xl md:text-5xl font-bold tracking-tighter uppercase">{guidanceData.title}</h1>
+                <h1 className="text-4xl md:text-5xl font-bold tracking-tighter capitalize">{guidanceData.title}</h1>
                 <p className="text-muted-foreground text-lg max-w-3xl mx-auto font-normal leading-relaxed italic">
                     {guidanceData.description}
                 </p>
@@ -128,7 +128,7 @@ export default function GuidancePublicPage() {
                                             <CardContent className="pt-6 space-y-4 flex-1">
                                                 {res.description && (
                                                     <div className="space-y-1">
-                                                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
+                                                        <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest flex items-center gap-1.5">
                                                             <Info className="h-3 w-3" /> Guidance & Scope
                                                         </p>
                                                         <p className="text-sm font-normal text-primary/80 leading-relaxed italic border-l-2 border-primary/20 pl-3">
@@ -169,7 +169,7 @@ export default function GuidancePublicPage() {
                 ) : (
                     <div className="text-center py-24 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/10">
                         <Stethoscope className="h-16 w-16 mx-auto text-primary/20 mb-4" />
-                        <p className="text-lg font-bold text-primary/60 tracking-widest uppercase">No Matches Discovered.</p>
+                        <p className="text-lg font-bold text-primary/60 tracking-widest capitalize">No Matches Discovered.</p>
                         <p className="text-sm text-muted-foreground font-normal mt-2">Try refining your search terms.</p>
                     </div>
                 )}

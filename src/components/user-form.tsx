@@ -292,7 +292,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <Separator className="bg-primary/10" />
 
                                 <div className="space-y-4 rounded-xl border border-primary/5 p-4 bg-primary/[0.02]">
-                                    <h3 className="text-sm font-bold text-primary uppercase tracking-widest">Verifiable identification</h3>
+                                    <h3 className="text-sm font-bold text-primary capitalize tracking-widest">Verifiable identification</h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <FormField control={control} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('ID proof type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                                         <FormField control={control} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('ID number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>

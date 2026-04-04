@@ -28,7 +28,7 @@ export default function Icon() {
             padding: '10px 20px',
             borderRadius: '15px'
         }}>
-            BMS3
+            Bms3
         </div>
       </div>
     ),

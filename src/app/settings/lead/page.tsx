@@ -137,7 +137,7 @@ export default function LeadSettingsPage() {
             <CardContent className="space-y-8">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <div className="space-y-4">
-                        <h3 className="font-bold text-primary text-xs tracking-widest uppercase">Public view</h3>
+                        <h3 className="font-bold text-primary text-xs tracking-widest capitalize">Public view</h3>
                         <div className="space-y-3">
                             {VISIBILITY_OPTIONS.map(opt => (
                                 <div key={`public_lead_${opt.id}`} className="flex items-center space-x-2">
@@ -153,7 +153,7 @@ export default function LeadSettingsPage() {
                         </div>
                     </div>
                     <div className="space-y-4">
-                        <h3 className="font-bold text-primary text-xs tracking-widest uppercase">Member view</h3>
+                        <h3 className="font-bold text-primary text-xs tracking-widest capitalize">Member view</h3>
                         <div className="space-y-3">
                             {VISIBILITY_OPTIONS.map(opt => (
                                 <div key={`member_lead_${opt.id}`} className="flex items-center space-x-2">

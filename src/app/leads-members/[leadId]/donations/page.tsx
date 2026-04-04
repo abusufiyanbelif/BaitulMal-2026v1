@@ -128,7 +128,7 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
         >
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-tight">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -145,7 +145,7 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: { key: string; direction: 'ascending' | 'descending' } | null, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:bg-muted/50 transition-colors font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight flex items-center gap-2 uppercase", className)} onClick={() => handleSort(sortKey)}>
+        <div className={cn("cursor-pointer hover:bg-muted/50 transition-colors font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight flex items-center gap-2 capitalize", className)} onClick={() => handleSort(sortKey)}>
             {children}
             {isSorted && (sortConfig?.direction === 'ascending' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />)}
         </div>
@@ -705,15 +705,15 @@ function LeadDonationListContent() {
                                     {isOpen && (
                                         <div className="bg-primary/[0.01] border-b border-primary/10 p-4 animate-fade-in-up">
                                             <div className="max-w-4xl mx-auto space-y-4">
-                                                <h4 className="text-[10px] font-bold text-primary uppercase tracking-widest flex items-center gap-2"><IndianRupee className="h-3.5 w-3.5"/> Linked Transactions</h4>
+                                                <h4 className="text-[10px] font-bold text-primary capitalize tracking-widest flex items-center gap-2"><IndianRupee className="h-3.5 w-3.5"/> Linked Transactions</h4>
                                                 <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
                                                     <ScrollArea className="w-full">
                                                         <Table>
                                                             <TableHeader className="bg-primary/5">
                                                                 <TableRow>
-                                                                    <TableHead className="text-[9px] font-bold text-primary tracking-tight uppercase">Value (₹)</TableHead>
-                                                                    <TableHead className="text-[9px] font-bold text-primary tracking-tight uppercase">Reference</TableHead>
-                                                                    <TableHead className="text-right text-[9px] font-bold text-primary tracking-tight pr-6 uppercase">Proof</TableHead>
+                                                                    <TableHead className="text-[9px] font-bold text-primary tracking-tight capitalize">Value (₹)</TableHead>
+                                                                    <TableHead className="text-[9px] font-bold text-primary tracking-tight capitalize">Reference</TableHead>
+                                                                    <TableHead className="text-right text-[9px] font-bold text-primary tracking-tight pr-6 capitalize">Proof</TableHead>
                                                                 </TableRow>
                                                             </TableHeader>
                                                             <TableBody>
@@ -721,7 +721,7 @@ function LeadDonationListContent() {
                                                                     <TableRow key={tx.id} className="hover:bg-primary/[0.02]">
                                                                         <TableCell className="font-bold font-mono text-sm text-primary">₹{tx.amount.toFixed(2)}</TableCell>
                                                                         <TableCell className="font-mono text-xs opacity-70 text-primary">{tx.transactionId || 'N/A'}</TableCell>
-                                                                        <TableCell className="text-right pr-6">{tx.screenshotUrl ? (<Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }} className="font-bold text-[10px] h-7 border-primary/20 text-primary hover:bg-primary/5 transition-transform active:scale-95 shadow-none"><ImageIcon className="mr-1 h-3 w-3" /> View Artifact</Button>) : <span className="text-muted-foreground text-[10px] uppercase opacity-40">None</span>}</TableCell>
+                                                                        <TableCell className="text-right pr-6">{tx.screenshotUrl ? (<Button variant="outline" size="sm" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }} className="font-bold text-[10px] h-7 border-primary/20 text-primary hover:bg-primary/5 transition-transform active:scale-95 shadow-none"><ImageIcon className="mr-1 h-3 w-3" /> View Artifact</Button>) : <span className="text-muted-foreground text-[10px] capitalize opacity-40">None</span>}</TableCell>
                                                                     </TableRow>
                                                                 ))}
                                                             </TableBody>
@@ -735,7 +735,7 @@ function LeadDonationListContent() {
                                 </React.Fragment>
                             );
                         })}
-                        {paginatedDonations.length === 0 && <div className="h-32 text-center text-muted-foreground font-normal italic bg-primary/[0.02] py-20 tracking-widest uppercase">No Donation Records Found.</div>}
+                        {paginatedDonations.length === 0 && <div className="h-32 text-center text-muted-foreground font-normal italic bg-primary/[0.02] py-20 tracking-widest capitalize">No Donation Records Found.</div>}
                     </div>
                     <ScrollBar orientation="horizontal" />
                     <ScrollBar orientation="vertical" />

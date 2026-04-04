@@ -76,7 +76,7 @@ function StatCard({ title, count, description, icon: Icon, delay, onClick }: { t
         >
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-tight">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">{count}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">
@@ -335,12 +335,12 @@ export default function DonorRegistryPage() {
                 <Table>
                     <TableHeader>
                         <TableRow className="bg-[hsl(var(--table-header-bg))]">
-                            <TableHead className="w-[60px] pl-4 text-[10px] font-bold tracking-tight uppercase">Sr. No.</TableHead>
-                            <TableHead className="text-[10px] font-bold tracking-tight uppercase">Donor Identity</TableHead>
-                            <TableHead className="text-[10px] font-bold tracking-tight uppercase">Primary Contact</TableHead>
-                            <TableHead className="text-[10px] font-bold tracking-tight uppercase">Financial Handles</TableHead>
-                            <TableHead className="text-center text-[10px] font-bold tracking-tight uppercase">Registry Status</TableHead>
-                            <TableHead className="text-right pr-6 text-[10px] font-bold tracking-tight uppercase">Actions</TableHead>
+                            <TableHead className="w-[60px] pl-4 text-[10px] font-bold tracking-tight capitalize">Sr. No.</TableHead>
+                            <TableHead className="text-[10px] font-bold tracking-tight capitalize">Donor Identity</TableHead>
+                            <TableHead className="text-[10px] font-bold tracking-tight capitalize">Primary Contact</TableHead>
+                            <TableHead className="text-[10px] font-bold tracking-tight capitalize">Financial Handles</TableHead>
+                            <TableHead className="text-center text-[10px] font-bold tracking-tight capitalize">Registry Status</TableHead>
+                            <TableHead className="text-right pr-6 text-[10px] font-bold tracking-tight capitalize">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -407,18 +407,18 @@ export default function DonorRegistryPage() {
                 <ScrollArea className="flex-1">
                     <div className="p-6 space-y-8 font-normal text-primary pb-20">
                         <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Core Identity</h4>
+                            <h4 className="text-xs font-bold text-muted-foreground capitalize tracking-widest border-b pb-2">Core Identity</h4>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Full Name *</Label><Input name="name" required className="font-bold h-11 rounded-xl" placeholder="Full Legal Name"/></div>
-                                <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Primary Contact *</Label><Input name="phone" required className="font-mono h-11 rounded-xl" placeholder="10-Digit Mobile"/></div>
+                                <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground capitalize tracking-widest">Full Name *</Label><Input name="name" required className="font-bold h-11 rounded-xl" placeholder="Full Legal Name"/></div>
+                                <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground capitalize tracking-widest">Primary Contact *</Label><Input name="phone" required className="font-mono h-11 rounded-xl" placeholder="10-Digit Mobile"/></div>
                             </div>
-                            <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Email Identity</Label><Input name="email" type="email" className="font-normal h-11 rounded-xl" placeholder="email@address.com"/></div>
-                            <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Residential Address</Label><Input name="address" className="font-normal h-11 rounded-xl" placeholder="Full Postal Address"/></div>
+                            <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground capitalize tracking-widest">Email Identity</Label><Input name="email" type="email" className="font-normal h-11 rounded-xl" placeholder="email@address.com"/></div>
+                            <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground capitalize tracking-widest">Residential Address</Label><Input name="address" className="font-normal h-11 rounded-xl" placeholder="Full Postal Address"/></div>
                         </div>
 
                         <div className="space-y-6">
                             <div className="flex items-center justify-between border-b pb-2">
-                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Verified Bank Accounts</h4>
+                                <h4 className="text-xs font-bold text-muted-foreground capitalize tracking-widest">Verified Bank Accounts</h4>
                                 <Button type="button" variant="outline" size="sm" onClick={() => setBankDetails([...bankDetails, { bankName: '', accountNumber: '', ifscCode: '' }])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add Account</Button>
                             </div>
                             {bankDetails.map((bank, idx) => (
@@ -426,16 +426,16 @@ export default function DonorRegistryPage() {
                                     {bankDetails.length > 1 && (
                                         <Button type="button" variant="ghost" size="icon" className="absolute -top-2 -right-2 h-6 w-6 text-destructive" onClick={() => setBankDetails(bankDetails.filter((_, i) => i !== idx))}><Trash2 className="h-3 w-3"/></Button>
                                     )}
-                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">Bank Name</Label><Input value={bank.bankName} onChange={(e) => { const newB = [...bankDetails]; newB[idx].bankName = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-bold"/></div>
-                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">Account No.</Label><Input value={bank.accountNumber} onChange={(e) => { const newB = [...bankDetails]; newB[idx].accountNumber = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
-                                    <div className="space-y-1"><Label className="text-[9px] font-bold uppercase">IFSC Code</Label><Input value={bank.ifscCode} onChange={(e) => { const newB = [...bankDetails]; newB[idx].ifscCode = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
+                                    <div className="space-y-1"><Label className="text-[9px] font-bold capitalize">Bank Name</Label><Input value={bank.bankName} onChange={(e) => { const newB = [...bankDetails]; newB[idx].bankName = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-bold"/></div>
+                                    <div className="space-y-1"><Label className="text-[9px] font-bold capitalize">Account No.</Label><Input value={bank.accountNumber} onChange={(e) => { const newB = [...bankDetails]; newB[idx].accountNumber = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
+                                    <div className="space-y-1"><Label className="text-[9px] font-bold capitalize">IFSC Code</Label><Input value={bank.ifscCode} onChange={(e) => { const newB = [...bankDetails]; newB[idx].ifscCode = e.target.value; setBankDetails(newB); }} className="h-8 text-xs font-mono"/></div>
                                 </div>
                             ))}
                         </div>
 
                         <div className="space-y-4">
                             <div className="flex items-center justify-between border-b pb-2">
-                                <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Digital UPI Handles</h4>
+                                <h4 className="text-xs font-bold text-muted-foreground capitalize tracking-widest">Digital UPI Handles</h4>
                                 <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ''])} className="h-7 text-[10px] font-bold"><Plus className="h-3 w-3 mr-1"/> Add UPI</Button>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -453,7 +453,7 @@ export default function DonorRegistryPage() {
                         <Separator className="bg-primary/10" />
                         
                         <div className="space-y-2">
-                            <Label className="font-bold text-[10px] text-muted-foreground uppercase tracking-widest">Team Observations</Label>
+                            <Label className="font-bold text-[10px] text-muted-foreground capitalize tracking-widest">Team Observations</Label>
                             <Textarea name="notes" rows={4} className="font-normal rounded-xl leading-relaxed" placeholder="Mention donor preferences, background vetting details, or historical context..."/>
                         </div>
                     </div>

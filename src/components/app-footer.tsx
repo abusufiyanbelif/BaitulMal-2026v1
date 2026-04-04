@@ -130,7 +130,7 @@ export function AppFooter() {
           </div>
 
           <div className="space-y-6 md:pl-10">
-            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight uppercase">
+            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight capitalize">
               Resources And Information
             </h3>
             <nav className="flex flex-col gap-4">
@@ -150,7 +150,7 @@ export function AppFooter() {
           </div>
 
           <div className="flex flex-col md:items-end gap-6">
-            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight uppercase">
+            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight capitalize">
               Support Our Mission
             </h3>
             <div className="w-full sm:w-auto">

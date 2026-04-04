@@ -92,25 +92,25 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                                     <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 text-primary">
                                         {campaign.name}
                                     </CardTitle>
-                                    <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground uppercase">{campaign.startDate} To {campaign.endDate}</CardDescription>
+                                    <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground capitalize">{campaign.startDate} To {campaign.endDate}</CardDescription>
                                 </CardHeader>
                                 <CardContent className="flex-grow space-y-3 p-4 pt-0">
                                     <div className="flex flex-wrap gap-2 items-center text-xs">
-                                        <Badge variant="outline" className="text-[10px] border-primary/20 text-primary font-bold uppercase">{campaign.category}</Badge>
+                                        <Badge variant="outline" className="text-[10px] border-primary/20 text-primary font-bold capitalize">{campaign.category}</Badge>
                                         <Badge 
                                           variant={campaign.status === 'Active' ? 'success' : 'outline'}
-                                          className={cn("text-[10px] font-bold uppercase", campaign.status === 'Active' && "animate-status-pulse")}
+                                          className={cn("text-[10px] font-bold capitalize", campaign.status === 'Active' && "animate-status-pulse")}
                                         >
                                           {campaign.status}
                                         </Badge>
-                                        <Badge variant="eligible" className="text-[10px] font-bold flex items-center gap-1 uppercase">
+                                        <Badge variant="eligible" className="text-[10px] font-bold flex items-center gap-1 capitalize">
                                             <ShieldCheck className="h-3 w-3" />
                                             {campaign.authenticityStatus === 'Verified' ? 'Verified' : campaign.authenticityStatus}
                                         </Badge>
                                     </div>
                                     {!isCompleted && (
                                         <div className={cn(
-                                            "text-[10px] font-bold tracking-tight flex items-center gap-1.5 uppercase", 
+                                            "text-[10px] font-bold tracking-tight flex items-center gap-1.5 capitalize", 
                                             isUrgent ? 'text-red-600' : isHigh ? 'text-orange-600' : 'text-primary'
                                         )}>
                                             {getPriorityIcon(priorityLabel)}
@@ -119,14 +119,14 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                                     )}
                                     {(campaign.targetAmount || 0) > 0 && (
                                         <div className="space-y-2 border-t border-primary/5 pt-3">
-                                            <div className="flex justify-between items-baseline text-[11px] font-bold text-primary tracking-tight uppercase">
+                                            <div className="flex justify-between items-baseline text-[11px] font-bold text-primary tracking-tight capitalize">
                                                 <span className="opacity-60">Raised: ₹{campaign.collected.toLocaleString('en-IN')}</span>
                                                 <span className="text-sm">Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</span>
                                             </div>
                                             <Progress value={campaign.progress} className="h-2 bg-primary/10 shadow-inner" />
                                             <div className="flex justify-between items-center">
-                                                <span className="text-[9px] font-bold text-muted-foreground tracking-tight uppercase">Progress</span>
-                                                <span className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary/5 border border-primary/10 uppercase">
+                                                <span className="text-[9px] font-bold text-muted-foreground tracking-tight capitalize">Progress</span>
+                                                <span className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary/5 border border-primary/10 capitalize">
                                                     {Math.round(campaign.progress)}% Funded
                                                 </span>
                                             </div>
@@ -134,7 +134,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                                     )}
                                 </CardContent>
                                 <CardFooter className="p-2 border-t bg-primary/5">
-                                    <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold tracking-tight hover:bg-primary hover:text-white text-primary uppercase shadow-none" size="sm" variant="ghost">
+                                    <Button asChild className="w-full transition-transform active:scale-95 text-xs font-bold tracking-tight hover:bg-primary hover:text-white text-primary capitalize shadow-none" size="sm" variant="ghost">
                                         <Link href={`/campaign-public/${campaign.id}/summary`}>
                                             View Detailed Summary
                                         </Link>
@@ -256,7 +256,7 @@ export function PublicCampaignsView() {
   return (
     <div className="space-y-8">
        <div className="space-y-4">
-          <h1 className="text-4xl font-bold tracking-tighter text-primary uppercase">Our Campaigns</h1>
+          <h1 className="text-4xl font-bold tracking-tighter text-primary capitalize">Our Campaigns</h1>
           <p className="text-primary text-lg font-bold">Transparent Tracking Of Our Community Support Projects.</p>
           
           <div className="space-y-2">
@@ -267,8 +267,8 @@ export function PublicCampaignsView() {
 
           <div className="flex flex-wrap items-center gap-2 pt-4 bg-primary/5 p-4 rounded-xl border border-primary/20">
               <Input placeholder="Search Campaigns..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="max-w-xs h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-normal" disabled={isLoading}/>
-              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-normal border-primary/20 text-primary uppercase"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="All" className="font-normal uppercase">All Statuses</SelectItem><SelectItem value="Active" className="font-normal uppercase">Active</SelectItem><SelectItem value="Completed" className="font-normal uppercase">Completed</SelectItem><SelectItem value="Upcoming" className="font-normal uppercase">Upcoming</SelectItem></SelectContent></Select>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-normal border-primary/20 text-primary uppercase"><SelectValue placeholder="All Categories" /></SelectTrigger><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="All" className="font-normal uppercase">All Categories</SelectItem><SelectItem value="Ration" className="font-normal uppercase">Ration</SelectItem><SelectItem value="Relief" className="font-normal uppercase">Relief</SelectItem><SelectItem value="General" className="font-normal uppercase">General</SelectItem></SelectContent></Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-normal border-primary/20 text-primary capitalize"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="All" className="font-normal capitalize">All Statuses</SelectItem><SelectItem value="Active" className="font-normal capitalize">Active</SelectItem><SelectItem value="Completed" className="font-normal capitalize">Completed</SelectItem><SelectItem value="Upcoming" className="font-normal capitalize">Upcoming</SelectItem></SelectContent></Select>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-normal border-primary/20 text-primary capitalize"><SelectValue placeholder="All Categories" /></SelectTrigger><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="All" className="font-normal capitalize">All Categories</SelectItem><SelectItem value="Ration" className="font-normal capitalize">Ration</SelectItem><SelectItem value="Relief" className="font-normal capitalize">Relief</SelectItem><SelectItem value="General" className="font-normal capitalize">General</SelectItem></SelectContent></Select>
               <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
                   <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="All" className="font-normal">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-normal">{y}</SelectItem>)}</SelectContent></Select>
                   <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-normal border-primary/20", !dateRange ? "text-muted-foreground" : "text-primary")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent sideOffset={12} className="w-auto p-0 rounded-[16px] shadow-dropdown border-primary/10" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
@@ -290,7 +290,7 @@ export function PublicCampaignsView() {
                   <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'priority' ? 'bg-red-600' : section.id === 'ongoing_upcoming' ? 'bg-primary' : 'bg-muted-foreground')} />
                   <div className="flex items-center gap-2">
                     <section.icon className={cn("h-6 w-6", section.color || "text-primary")} />
-                    <span className={cn("text-2xl font-bold tracking-tight uppercase", section.color || "text-primary")}>{section.title}</span>
+                    <span className={cn("text-2xl font-bold tracking-tight capitalize", section.color || "text-primary")}>{section.title}</span>
                   </div>
                   <Badge variant="secondary" className="rounded-full h-6 px-3 bg-primary/10 text-primary border-primary/20 font-bold">{section.items.length}</Badge>
                 </div>
@@ -304,7 +304,7 @@ export function PublicCampaignsView() {
       ) : (
         <div className="text-center py-20 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
             <FolderKanban className="h-12 w-12 mx-auto text-primary/20 mb-4" />
-            <p className="text-primary/60 font-bold tracking-widest text-sm uppercase">No Campaigns Found Matching Criteria.</p>
+            <p className="text-primary/60 font-bold tracking-widest text-sm capitalize">No Campaigns Found Matching Criteria.</p>
         </div>
       )}
     </div>

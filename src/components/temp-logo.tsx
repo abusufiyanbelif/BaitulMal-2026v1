@@ -25,7 +25,7 @@ export function TempLogo() {
           letterSpacing: '-1.5px'
         }}
       >
-        BMS3
+        Bms3
       </text>
       
       {/* Decorative institutional elements */}

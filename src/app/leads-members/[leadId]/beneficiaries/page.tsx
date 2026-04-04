@@ -117,7 +117,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, on
         >
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">{title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">{title}</p>
                     <p className="text-2xl font-black text-primary tracking-tight">{count}</p>
                 </div>
                 <div className="p-2 rounded-lg bg-primary/5 text-primary">
@@ -816,35 +816,35 @@ function LeadBeneficiaryListContent() {
                                                 <AccordionContent className="bg-primary/[0.01] border-t border-primary/10 px-6 py-4 animate-fade-in-up">
                                                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-3 text-primary font-normal">
                                                         <div className="space-y-1 col-span-2">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Address</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight capitalize">Address</p>
                                                             <p className="text-sm font-normal leading-tight">{b.address || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Age</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight capitalize">Age</p>
                                                             <p className="text-sm font-normal">{b.age || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Occupation</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight capitalize">Occupation</p>
                                                             <p className="text-sm font-normal">{b.occupation || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Family Details</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight capitalize">Family Details</p>
                                                             <p className="text-sm font-normal">T: {b.members || 0}, E: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Id Artifact</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight capitalize">Id Artifact</p>
                                                             <p className="text-sm font-normal">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Added Date</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight capitalize">Added Date</p>
                                                             <p className="text-sm font-normal">{b.addedDate || 'N/A'}</p>
                                                         </div>
                                                         <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Zakat Allocation</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight capitalize">Zakat Allocation</p>
                                                             <p className="text-sm font-bold font-mono">₹{(b.zakatAllocation || 0).toLocaleString('en-IN')}</p>
                                                         </div>
                                                         <div className="space-y-1 col-span-2">
-                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight uppercase">Internal Notes</p>
+                                                            <p className="text-[10px] font-bold opacity-60 tracking-tight capitalize">Internal Notes</p>
                                                             <p className="text-sm font-normal italic opacity-80 line-clamp-2">{b.notes || (b.isEligibleForZakat ? `Eligible For Zakat. Amount: ${b.zakatAllocation}` : 'N/A')}</p>
                                                         </div>
                                                     </div>

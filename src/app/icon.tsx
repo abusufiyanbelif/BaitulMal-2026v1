@@ -24,7 +24,7 @@ export default function Icon() {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            BMS3
+            Bms3
         </div>
       </div>
     ),

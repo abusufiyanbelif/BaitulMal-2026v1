@@ -184,7 +184,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                 <div className="flex-1 min-h-0 flex flex-col md:flex-row overflow-hidden">
                     <div className="w-full md:w-1/3 lg:w-1/4 border-r border-primary/5 flex flex-col bg-muted/5 h-1/3 md:h-full shrink-0">
                         <div className="p-4 bg-white border-b flex items-center justify-between">
-                            <h3 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Unlinked Records</h3>
+                            <h3 className="text-[10px] font-bold text-primary/40 capitalize tracking-widest">Unlinked Records</h3>
                             <Badge variant="secondary" className="h-5 text-[9px] font-bold">{unlinkedDonations.length}</Badge>
                         </div>
                         <ScrollArea className="flex-1">
@@ -194,7 +194,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                 ) : unlinkedDonations.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-20 text-center opacity-30">
                                         <CheckCircle2 className="h-10 w-10 mb-2"/>
-                                        <p className="text-xs font-bold uppercase tracking-widest">All Records Linked</p>
+                                        <p className="text-xs font-bold capitalize tracking-widest">All Records Linked</p>
                                     </div>
                                 ) : (
                                     paginatedDonations.map(d => (
@@ -212,7 +212,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                             </div>
                                             <div className="flex items-center justify-between text-[9px] opacity-60">
                                                 <span>{d.donationDate}</span>
-                                                <span className="font-mono uppercase truncate max-w-[60px]">ID:{d.id.slice(-4)}</span>
+                                                <span className="font-mono capitalize truncate max-w-[60px]">ID:{d.id.slice(-4)}</span>
                                             </div>
                                         </div>
                                     ))
@@ -268,7 +268,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
 
                                     <div className="space-y-4">
                                         <div className="flex items-center justify-between">
-                                            <h4 className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Select Donor Profile</h4>
+                                            <h4 className="text-[10px] font-bold text-primary/40 capitalize tracking-widest">Select Donor Profile</h4>
                                             <Badge variant="outline" className="text-[9px] font-bold border-primary/10 text-primary/60">Profile Mapping</Badge>
                                         </div>
                                         
@@ -320,7 +320,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                         ) : (
                             <div className="flex-1 flex flex-col items-center justify-center p-10 text-center opacity-30 grayscale">
                                 <AlertCircle className="h-16 w-16 mb-4"/>
-                                <p className="text-sm font-bold uppercase tracking-widest">Select A Record To Resolve</p>
+                                <p className="text-sm font-bold capitalize tracking-widest">Select A Record To Resolve</p>
                             </div>
                         )}
                     </div>

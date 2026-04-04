@@ -54,7 +54,7 @@ export function PermissionsTable({ permissions, onPermissionChange, role, disabl
                   className="border-primary/40 data-[state=checked]:bg-primary transition-all active:scale-90"
                 />
               ) : (
-                <span className="text-[8px] font-black text-muted-foreground/20 uppercase tracking-tighter select-none">N/A</span>
+                <span className="text-[8px] font-black text-muted-foreground/20 capitalize tracking-tighter select-none">N/A</span>
               )}
             </TableCell>
           );

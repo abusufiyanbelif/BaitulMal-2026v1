@@ -256,7 +256,7 @@ export function BeneficiaryForm({
     };
 
     const formIsDisabled = isReadOnly || isSubmitting || isLoading;
-    const renderLabel = (label: string, fieldName: string) => <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight uppercase">{label} {mandatoryFields[fieldName] ? '*' : ''}</FormLabel>;
+    const renderLabel = (label: string, fieldName: string) => <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight capitalize">{label} {mandatoryFields[fieldName] ? '*' : ''}</FormLabel>;
   
     return (
         <Form {...form}>

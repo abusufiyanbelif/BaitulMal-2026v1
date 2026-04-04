@@ -293,6 +293,7 @@ export interface Donor extends DocumentData {
   id: string;
   name: string;
   phone: string;
+  phones?: string[]; // Flattened array of all associated phone numbers
   email?: string;
   address?: string;
   bankDetails?: BankDetail[];

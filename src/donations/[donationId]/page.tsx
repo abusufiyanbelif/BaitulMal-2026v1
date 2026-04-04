@@ -320,7 +320,7 @@ export default function UnlinkedDonationDetailsPage() {
                                         <TableHead>Amount</TableHead>
                                         <TableHead>Date</TableHead>
                                         <TableHead>Transaction ID</TableHead>
-                                        <TableHead>UPI ID</TableHead>
+                                        <TableHead>Upi Id</TableHead>
                                         <TableHead>Artifact</TableHead>
                                     </TableRow>
                                 </TableHeader>

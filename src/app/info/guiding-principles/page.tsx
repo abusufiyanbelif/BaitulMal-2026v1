@@ -68,7 +68,7 @@ export default function GuidingPrinciplesPage() {
                     <div className="inline-flex items-center justify-center p-3 rounded-full bg-primary/10 text-primary mb-2">
                         <Award className="h-8 w-8" />
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-bold tracking-tighter uppercase">{data.title}</h1>
+                    <h1 className="text-4xl md:text-5xl font-bold tracking-tighter capitalize">{data.title}</h1>
                     <p className="text-lg leading-relaxed font-normal opacity-80 max-w-2xl mx-auto">
                         {data.description}
                     </p>
