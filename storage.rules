@@ -2,56 +2,47 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     
-    // Helper: Check if user is signed in
     function isSignedIn() {
       return request.auth != null;
     }
-
-    // Helper: Get user data from Firestore
-    function getUserData() {
-      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
-    }
-
-    // Helper: Check if user is Admin
+    
     function isAdmin() {
-      return isSignedIn() && getUserData().role == 'Admin';
+      return isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin';
     }
 
-    // Helper: Check granular permissions
-    function hasPermission(module, action) {
-      let data = getUserData();
-      return isAdmin() || (data.permissions != null && data.permissions[module][action] == true);
-    }
-
-    // --- Storage Paths ---
-
+    // Public branding/payment assets
     match /settings/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
+    // Member profile proofs
     match /users/{userId}/{allPaths=**} {
-      allow read, write: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+      allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
     }
 
+    // Initiative artifacts (Campaigns)
     match /campaigns/{campaignId}/{allPaths=**} {
-      allow read: if true; // Public visibility is managed by Firestore metadata flags
-      allow write: if hasPermission('campaigns', 'update') || hasPermission('campaigns', 'create');
+      allow read: if true; // Some documents are public
+      allow write: if isSignedIn();
     }
 
+    // Initiative artifacts (Leads)
     match /leads/{leadId}/{allPaths=**} {
-      allow read: if true;
-      allow write: if hasPermission('leads-members', 'update') || hasPermission('leads-members', 'create');
+      allow read: if true; // Some documents are public
+      allow write: if isSignedIn();
     }
 
+    // Beneficiary artifacts
     match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-      allow read: if hasPermission('beneficiaries', 'read');
-      allow write: if isSignedIn(); // Allow members to upload proof during registration
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
     }
 
+    // Donation artifacts (Payment screenshots)
     match /donations/{donationId}/{allPaths=**} {
-      allow read: if hasPermission('donations', 'read');
-      allow write: if hasPermission('donations', 'create') || hasPermission('donations', 'update');
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
     }
   }
 }

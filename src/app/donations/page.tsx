@@ -184,12 +184,10 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                         {donation.status}
                     </Badge>
                 </div>
-                <div className="truncate text-[10px] font-normal text-muted-foreground">{primaryInitiative}</div>
+                <div className="truncate text-[10px] font-normal text-muted-foreground uppercase">{primaryInitiative}</div>
                 <div className="text-right pr-4" onClick={e => e.stopPropagation()}>
                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button>
-                        </DropdownMenuTrigger>
+                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown border-primary/10">
                             <DropdownMenuItem onClick={() => router.push(`/donations/${donation.id}`)} className="text-primary font-normal cursor-pointer"><Eye className="mr-2 h-4 w-4 opacity-60"/> View Details</DropdownMenuItem>
                             {canUpdate && <DropdownMenuItem onClick={handleEdit} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Record</DropdownMenuItem>}
@@ -223,7 +221,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                             <TableBody>
                                                 {(donation.typeSplit || []).map(split => (
                                                     <TableRow key={split.category} className="h-8 hover:bg-[hsl(var(--table-row-hover))]">
-                                                        <TableCell className="py-1 text-[11px] font-normal text-primary/80 whitespace-nowrap">{split.category}</TableCell>
+                                                        <TableCell className="py-1 text-[11px] font-normal text-primary/80 whitespace-nowrap uppercase">{split.category}</TableCell>
                                                         <TableCell className="text-right font-bold font-mono text-primary py-1 text-[11px]">₹{split.amount.toFixed(2)}</TableCell>
                                                     </TableRow>
                                                 ))}
@@ -250,13 +248,13 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                         <TableRow key={link.linkId} className="h-8 hover:bg-[hsl(var(--table-row-hover))]">
                                                             <TableCell className="flex items-center gap-2 py-1">
                                                                 {link.linkType === 'campaign' ? <FolderKanban className="h-3.5 w-3.5 text-primary/40" /> : <Lightbulb className="h-3.5 w-3.5 text-primary/40" />}
-                                                                <span className="text-[10px] font-bold text-primary/80 whitespace-nowrap">{link.linkName}</span>
+                                                                <span className="text-[10px] font-bold text-primary/80 whitespace-nowrap uppercase">{link.linkName}</span>
                                                             </TableCell>
                                                             <TableCell className="text-right font-bold font-mono text-primary py-1 text-[11px]">₹{link.amount.toFixed(2)}</TableCell>
                                                         </TableRow>
                                                     ))}
                                                     {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
-                                                        <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated General Fund</TableCell></TableRow>
+                                                        <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal uppercase">Unallocated General Fund</TableCell></TableRow>
                                                     )}
                                                 </TableBody>
                                             </Table>
@@ -291,7 +289,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                                 <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/5 transition-all active:scale-95 shadow-sm" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
                                                                     <ImageIcon className="mr-1.5 h-3 w-3" /> View Evidence
                                                                 </Button>
-                                                            ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40 tracking-tight">No Artifact</span>}
+                                                            ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40 tracking-tight uppercase">No Artifact</span>}
                                                         </TableCell>
                                                     </TableRow>
                                                 ))}
@@ -470,7 +468,7 @@ export default function DonationsPage() {
             toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
             setSelectedIds([]);
         } else {
-            toast({ title: "Update Failed", description: res?.message || "Failed To Update Status.", variant: "destructive" });
+            toast({ title: "Update Failed", description: res.message, variant: "destructive" });
         }
     } finally {
         setIsBulkUpdating(false);
@@ -811,7 +809,7 @@ export default function DonationsPage() {
                     />
                 </div>
                 <DialogFooter className="bg-primary/5 border-t p-4 flex justify-between items-center shrink-0">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Securing Institutional Records</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest uppercase">Securing Institutional Records</p>
                     <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary">Close Form</Button>
                 </DialogFooter>
             </DialogContent>

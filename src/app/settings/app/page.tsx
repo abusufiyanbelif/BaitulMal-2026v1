@@ -5,8 +5,8 @@ import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
-import { useStorage, useFirestore, useMemoFirebase, useCollection, collection } from '@/firebase';
-import { doc, setDoc, writeBatch } from 'firebase/firestore';
+import { useStorage, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { collection, doc, setDoc, writeBatch } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Resizer from 'react-image-file-resizer';
 import Link from 'next/link';
@@ -831,7 +831,7 @@ export default function AppSettingsPage() {
                                         ) : (
                                             <div className="text-muted-foreground text-center p-2 font-normal opacity-20">
                                                 <ImageIcon className="mx-auto h-8 w-8" />
-                                                <p className="text-[10px] mt-1 font-bold tracking-tighter uppercase">No Logo Uploaded</p>
+                                                <p className="text-[10px] mt-1 font-bold tracking-tighter uppercase uppercase">No Logo Uploaded</p>
                                             </div>
                                         )}
                                     </div>
