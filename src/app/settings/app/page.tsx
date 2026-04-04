@@ -5,10 +5,9 @@ import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
-import { useStorage, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
-import { collection, doc } from 'firebase/firestore';
+import { useStorage, useFirestore, useMemoFirebase, useCollection, collection } from '@/firebase';
+import { doc, setDoc, writeBatch } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { setDoc, writeBatch } from 'firebase/firestore';
 import Resizer from 'react-image-file-resizer';
 import Link from 'next/link';
 
@@ -61,7 +60,7 @@ import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import type { GuidingPrinciple, FocusArea, Campaign, Lead } from '@/lib/types';
+import type { GuidingPrinciple, FocusArea, Campaign, Lead, BrandingSettings } from '@/lib/types';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
@@ -372,7 +371,10 @@ export default function AppSettingsPage() {
     };
 
     const handleSave = async () => {
-        if (!firestore || !storage || !canUpdateSettings || !editableData) return;
+        if (!firestore || !storage || !canUpdateSettings || !editableData) {
+            toast({ title: "Configuration error", description: "Missing data or permissions to secure settings.", variant: "destructive" });
+            return;
+        }
 
         setIsSubmitting(true);
         try {
@@ -457,7 +459,7 @@ export default function AppSettingsPage() {
             toast({ title: 'Success', description: 'Institutional Configuration Updated Successfully.', variant: 'success' });
             setIsEditMode(false);
         } catch (error: any) {
-            toast({ title: 'Save Failed', description: error.message || 'An Unexpected Error Occurred.', variant: 'destructive' });
+            toast({ title: 'Save failed', description: error.message || 'An unexpected error occurred while securing settings.', variant: 'destructive' });
         } finally {
             setIsSubmitting(false);
         }
@@ -465,10 +467,10 @@ export default function AppSettingsPage() {
     
     const handleCancel = () => setIsEditMode(false);
 
-    const isLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
+    const isGlobalLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
 
-    if (isLoading) {
-        return <BrandedLoader />;
+    if (isGlobalLoading) {
+        return <BrandedLoader message="Syncing institutional settings..." />;
     }
 
     const isFormDisabled = !isEditMode || isSubmitting;
@@ -831,7 +833,7 @@ export default function AppSettingsPage() {
                                         ) : (
                                             <div className="text-muted-foreground text-center p-2 font-normal opacity-20">
                                                 <ImageIcon className="mx-auto h-8 w-8" />
-                                                <p className="text-[10px] mt-1 font-bold tracking-tighter">No Logo Uploaded</p>
+                                                <p className="text-[10px] mt-1 font-bold tracking-tighter uppercase">No Logo Uploaded</p>
                                             </div>
                                         )}
                                     </div>
@@ -948,7 +950,7 @@ export default function AppSettingsPage() {
                                         ) : (
                                             <div className="text-muted-foreground text-center p-2 font-normal opacity-20">
                                                 <QrCode className="mx-auto h-8 w-8" />
-                                                <p className="text-[10px] mt-1 font-bold tracking-tighter uppercase">No QR Code</p>
+                                                <p className="text-[10px] mt-1 font-bold tracking-tighter uppercase uppercase">No QR Code</p>
                                             </div>
                                         )}
                                     </div>
@@ -1030,7 +1032,7 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase"><Target className="h-4 w-4 opacity-40"/> Impact Pillars (Focus Areas)</h4>
+                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase uppercase"><Target className="h-4 w-4 opacity-40"/> Impact Pillars (Focus Areas)</h4>
                                 {isEditMode && (
                                     <Button type="button" variant="outline" size="sm" onClick={handleAddFocusArea} className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform shadow-sm"><Plus className="h-3 w-3 mr-1"/> Add Pillar</Button>
                                 )}
@@ -1046,7 +1048,7 @@ export default function AppSettingsPage() {
                                                         checked={area.isHidden} 
                                                         onCheckedChange={(checked) => handleFocusAreaChange(index, 'isHidden', !!checked)} 
                                                     />
-                                                    <Label htmlFor={`focus-hide-${index}`} className="text-[10px] font-bold opacity-60 uppercase cursor-pointer">Hide</Label>
+                                                    <Label htmlFor={`focus-hide-${index}`} className="text-[10px] font-bold opacity-60 uppercase cursor-pointer uppercase">Hide</Label>
                                                 </div>
                                                 <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive transition-transform active:scale-90" onClick={() => handleRemoveFocusArea(index)}>
                                                     <Trash2 className="h-4 w-4"/>
@@ -1094,16 +1096,16 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase"><ListChecks className="h-4 w-4 opacity-40"/> Procedural Directives</h4>
+                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase uppercase"><ListChecks className="h-4 w-4 opacity-40"/> Procedural Directives</h4>
                                 {isEditMode && (
-                                    <Button type="button" variant="outline" size="sm" onClick={handleAddFocusArea} className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform shadow-sm"><Plus className="h-3 w-3 mr-1"/> Add Rule</Button>
+                                    <Button type="button" variant="outline" size="sm" onClick={handleAddPrinciple} className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform shadow-sm"><Plus className="h-3 w-3 mr-1"/> Add Rule</Button>
                                 )}
                             </div>
                             <div className="space-y-4">
                                 {(displayData.principles || []).map((principle, index) => (
                                     <div key={principle.id || index} className="relative group p-4 border rounded-xl bg-white space-y-3 shadow-sm border-primary/5 hover:border-primary/20 transition-all">
                                         <div className="flex items-center justify-between">
-                                            <p className="font-bold text-primary text-[10px] tracking-widest uppercase opacity-40">Standard Directive #{index + 1}</p>
+                                            <p className="font-bold text-primary text-[10px] tracking-widest uppercase opacity-40 uppercase">Standard Directive #{index + 1}</p>
                                             {isEditMode && (
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex items-center space-x-1.5">
@@ -1112,7 +1114,7 @@ export default function AppSettingsPage() {
                                                             checked={principle.isHidden} 
                                                             onCheckedChange={(checked) => handleFieldChange('principles', displayData.principles.map((p, i) => i === index ? {...p, isHidden: !!checked} : p))} 
                                                         />
-                                                        <Label htmlFor={`gp-hide-${index}`} className="text-[10px] font-bold opacity-60 uppercase cursor-pointer">Hide</Label>
+                                                        <Label htmlFor={`gp-hide-${index}`} className="text-[10px] font-bold opacity-60 uppercase cursor-pointer uppercase">Hide</Label>
                                                     </div>
                                                     <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive transition-transform active:scale-90" onClick={() => handleRemovePrinciple(index)}>
                                                         <Trash2 className="h-4 w-4"/>
@@ -1132,7 +1134,7 @@ export default function AppSettingsPage() {
                                                 <p className="text-sm font-normal text-foreground leading-relaxed flex-1">
                                                     {principle.text || <span className="italic opacity-30">Unspecified Directive Text</span>}
                                                 </p>
-                                                {principle.isHidden && <Badge variant="outline" className="text-[8px] font-black uppercase border-primary/10">Private</Badge>}
+                                                {principle.isHidden && <Badge variant="outline" className="text-[8px] font-black uppercase border-primary/10 uppercase">Private</Badge>}
                                             </div>
                                         )}
                                     </div>
