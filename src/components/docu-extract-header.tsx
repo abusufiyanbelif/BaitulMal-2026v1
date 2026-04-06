@@ -1,6 +1,6 @@
 'use client';
 
-import { LogOut, User, LogIn, Settings, LayoutDashboard } from 'lucide-react';
+import { LogOut, User, LogIn, Settings, LayoutDashboard, Heart, HandHelping } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/firebase';
@@ -105,16 +105,38 @@ export function DocuExtractHeader() {
                         <p className="text-[10px] font-normal text-muted-foreground pt-1 truncate tracking-tight">
                           {user.email}
                         </p>
-                        <Badge variant="outline" className="w-fit mt-3 text-[9px] font-bold border-primary/20 text-primary tracking-tight">Member Account</Badge>
+                        <Badge variant="outline" className="w-fit mt-3 text-[9px] font-bold border-primary/20 text-primary tracking-tight">
+                          {userProfile.role === 'Donor' ? 'Donor Account' : 'Member Account'}
+                        </Badge>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-primary/5" />
-                     <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
-                      <Link href="/dashboard" className="flex items-center w-full">
-                        <LayoutDashboard className="mr-3 h-4 w-4 opacity-60" />
-                        <span>Member Dashboard</span>
-                      </Link>
-                    </DropdownMenuItem>
+                     {(userProfile.role === 'Admin' || userProfile.role === 'User') && (
+                      <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
+                        <Link href="/dashboard" className="flex items-center w-full">
+                          <LayoutDashboard className="mr-3 h-4 w-4 opacity-60" />
+                          <span>Member Dashboard</span>
+                        </Link>
+                      </DropdownMenuItem>
+                     )}
+                     
+                     {(userProfile.role === 'Donor' || userProfile.linkedDonorId) && (
+                      <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
+                        <Link href="/donor-portal" className="flex items-center w-full">
+                          <Heart className="mr-3 h-4 w-4 opacity-60" />
+                          <span>Donor Portal</span>
+                        </Link>
+                      </DropdownMenuItem>
+                     )}
+
+                     {userProfile.linkedBeneficiaryId && (
+                      <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
+                        <Link href="/beneficiary-portal" className="flex items-center w-full">
+                          <HandHelping className="mr-3 h-4 w-4 opacity-60" />
+                          <span>Beneficiary Portal</span>
+                        </Link>
+                      </DropdownMenuItem>
+                     )}
                     <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
                       <Link href="/profile" className="flex items-center w-full">
                         <User className="mr-3 h-4 w-4 opacity-60" />
@@ -145,7 +167,7 @@ export function DocuExtractHeader() {
                 <Button asChild className="font-bold tracking-tight text-xs shadow-md px-6 h-10 transition-all active:scale-95 rounded-xl">
                     <Link href="/login">
                         <LogIn className="mr-2 h-4 w-4" />
-                        <span>Member Login</span>
+                        <span>Login</span>
                     </Link>
                 </Button>
               )

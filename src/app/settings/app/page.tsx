@@ -110,6 +110,9 @@ interface FormDataType {
     tickerMaxDonations: number | string;
     tickerMaxCompleted: number | string;
     tickerSkipIds: string[];
+    isDonorLoginEnabled: boolean;
+    isBeneficiaryLoginEnabled: boolean;
+    isDonorSelfRecordPaymentEnabled: boolean;
 }
 
 function VerifiableItem({ icon: Icon, label, value, isEditing, id, onChange, placeholder }: { 
@@ -302,6 +305,9 @@ export default function AppSettingsPage() {
                 tickerMaxDonations: brandingSettings?.tickerMaxDonations ?? 15,
                 tickerMaxCompleted: brandingSettings?.tickerMaxCompleted ?? 5,
                 tickerSkipIds: brandingSettings?.tickerSkipIds || [],
+                isDonorLoginEnabled: brandingSettings?.isDonorLoginEnabled ?? true,
+                isBeneficiaryLoginEnabled: brandingSettings?.isBeneficiaryLoginEnabled ?? true,
+                isDonorSelfRecordPaymentEnabled: brandingSettings?.isDonorSelfRecordPaymentEnabled ?? false,
             });
         }
     }, [isEditMode, brandingSettings, paymentSettings, guidingPrinciplesData]);
@@ -417,6 +423,9 @@ export default function AppSettingsPage() {
                 tickerMaxDonations: Number(editableData.tickerMaxDonations),
                 tickerMaxCompleted: Number(editableData.tickerMaxCompleted),
                 tickerSkipIds: editableData.tickerSkipIds,
+                isDonorLoginEnabled: editableData.isDonorLoginEnabled,
+                isBeneficiaryLoginEnabled: editableData.isBeneficiaryLoginEnabled,
+                isDonorSelfRecordPaymentEnabled: editableData.isDonorSelfRecordPaymentEnabled,
             };
             batch.set(doc(firestore, 'settings', 'branding'), brandingData, { merge: true });
 
@@ -522,6 +531,9 @@ export default function AppSettingsPage() {
         tickerMaxDonations: brandingSettings?.tickerMaxDonations ?? 15,
         tickerMaxCompleted: brandingSettings?.tickerMaxCompleted ?? 5,
         tickerSkipIds: brandingSettings?.tickerSkipIds || [],
+        isDonorLoginEnabled: brandingSettings?.isDonorLoginEnabled ?? true,
+        isBeneficiaryLoginEnabled: brandingSettings?.isBeneficiaryLoginEnabled ?? true,
+        isDonorSelfRecordPaymentEnabled: brandingSettings?.isDonorSelfRecordPaymentEnabled ?? false,
     };
 
     return (
@@ -775,6 +787,43 @@ export default function AppSettingsPage() {
                                 disabled={isFormDisabled}
                             />
                         </div>
+                    </div>
+                </SettingsSection>
+
+                <SettingsSection 
+                    title="Portals & Access Control" 
+                    description="Globally toggle access to the Donor and Beneficiary authentications and features."
+                    icon={ShieldCheck}
+                    defaultOpen={true}
+                >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <VisibilityToggle 
+                            id="donor-login-visibility"
+                            label="Donor Portal Login"
+                            description="If disabled, donors cannot securely log in or view their profile histories."
+                            icon={HeartHandshake}
+                            checked={displayData.isDonorLoginEnabled}
+                            onChange={(val) => handleFieldChange('isDonorLoginEnabled', val)}
+                            disabled={isFormDisabled}
+                        />
+                        <VisibilityToggle 
+                            id="beneficiary-login-visibility"
+                            label="Beneficiary Portal Login"
+                            description="If disabled, beneficiaries cannot log in to check their status or submit updates."
+                            icon={User}
+                            checked={displayData.isBeneficiaryLoginEnabled}
+                            onChange={(val) => handleFieldChange('isBeneficiaryLoginEnabled', val)}
+                            disabled={isFormDisabled}
+                        />
+                        <VisibilityToggle 
+                            id="donor-payment-self-record"
+                            label="Donor Self-Payment Record"
+                            description="If disabled, only staff members can record payments on behalf of the donor."
+                            icon={CreditCard}
+                            checked={displayData.isDonorSelfRecordPaymentEnabled}
+                            onChange={(val) => handleFieldChange('isDonorSelfRecordPaymentEnabled', val)}
+                            disabled={isFormDisabled}
+                        />
                     </div>
                 </SettingsSection>
 

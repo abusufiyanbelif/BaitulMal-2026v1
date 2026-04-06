@@ -259,14 +259,26 @@ export async function syncAllDonationsToDonorsAction(): Promise<{ success: boole
         const donationsSnap = await adminDb.collection('donations').get();
         let count = 0;
         let preparedCount = 0;
-        const batch = adminDb.batch();
+        const CHUNK_SIZE = 450;
+        let batch = adminDb.batch();
+        let batchOpCount = 0;
+
+        const commitIfNeeded = async () => {
+            if (batchOpCount >= CHUNK_SIZE) {
+                await batch.commit();
+                batch = adminDb.batch();
+                batchOpCount = 0;
+            }
+        };
 
         for (const docSnap of donationsSnap.docs) {
             const donation = docSnap.data() as Donation;
             
             if (donation.donorId === undefined) {
                 batch.update(docSnap.ref, { donorId: null });
+                batchOpCount++;
                 preparedCount++;
+                await commitIfNeeded();
             }
 
             if (!donation.donorId && donation.donorPhone) {
@@ -278,12 +290,14 @@ export async function syncAllDonationsToDonorsAction(): Promise<{ success: boole
                 if (!donorQuery.empty) {
                     const donorId = donorQuery.docs[0].id;
                     batch.update(docSnap.ref, { donorId });
+                    batchOpCount++;
                     count++;
+                    await commitIfNeeded();
                 }
             }
         }
 
-        if (count > 0 || preparedCount > 0) {
+        if (batchOpCount > 0) {
             await batch.commit();
         }
 
@@ -532,9 +546,10 @@ export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success
         const campaignMap: Record<string, number> = {};
         const leadMap: Record<string, number> = {};
 
-        // 2. Aggregate
+        // 2. Aggregate — only Verified donations count toward collectedAmount
         donationsSnap.docs.forEach(docSnap => {
             const d = docSnap.data() as Donation;
+            if (d.status !== 'Verified') return; // BUG FIX: skip Pending/Canceled
             (d.linkSplit || []).forEach(link => {
                 if (link.linkType === 'campaign') {
                     campaignMap[link.linkId] = (campaignMap[link.linkId] || 0) + link.amount;

@@ -1,0 +1,21 @@
+
+> docuextract@0.1.0 db:migrate-donors
+> ts-node --compiler-options '{"module":"CommonJS"}' scripts/migrate-donors-to-users.ts
+
+<anonymous_script>:1
+'{module:CommonJS}'
+^
+
+SyntaxError: Unexpected token ''', "'{module:CommonJS}'" is not valid JSON
+    at JSON.parse (<anonymous>)
+    at parse (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\ts-node\dist\util.js:52:45)
+    at arg (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\ts-node\node_modules\arg\index.js:122:24)
+    at parseArgv (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\ts-node\dist\bin.js:69:12)
+    at main (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\ts-node\dist\bin.js:25:18)
+    at Object.<anonymous> (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\ts-node\dist\bin.js:579:5)
+    at Module._compile (node:internal/modules/cjs/loader:1760:14)
+    at Object..js (node:internal/modules/cjs/loader:1893:10)
+    at Module.load (node:internal/modules/cjs/loader:1480:32)
+    at Module._load (node:internal/modules/cjs/loader:1299:12)
+
+Node.js v24.11.0

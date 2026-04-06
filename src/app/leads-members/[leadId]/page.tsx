@@ -141,7 +141,7 @@ export default function LeadDetailsPage() {
   };
   
   const calculateTotal = (items: RationItem[]) => {
-    return items.reduce((sum, item: RationItem) => sum + (Number(item.price || 0) * Number(item.quantity || 0)), 0);
+    return items.reduce((sum, item: RationItem) => sum + (Number(item.price) || 0), 0);
   };
 
   const handleSave = () => {
@@ -151,7 +151,7 @@ export default function LeadDetailsPage() {
          itemCategories: editableLead.itemCategories,
      };
  
-     if (configSettings?.isVerificationRequired) {
+     if (configSettings?.verificationMode && configSettings.verificationMode !== 'Disabled') {
          setPendingUpdates(saveData);
          setIsVerificationDialogOpen(true);
          return;
@@ -400,6 +400,22 @@ export default function LeadDetailsPage() {
             isOpen={isVerificationDialogOpen}
             onOpenChange={setIsVerificationDialogOpen}
             user={{ id: userProfile.id, name: userProfile.name }}
+            isOptional={configSettings?.verificationMode === 'Optional'}
+            onBypass={() => {
+                setIsVerificationDialogOpen(false);
+                updateDoc(leadDocRef!, pendingUpdates)
+                    .catch(async (serverError) => {
+                        errorEmitter.emit('permission-error', new FirestorePermissionError({
+                            path: leadDocRef!.path,
+                            operation: 'update',
+                            requestResourceData: pendingUpdates,
+                        } satisfies SecurityRuleContext));
+                    })
+                    .finally(() => {
+                        toast({ title: 'Success', description: 'Lead Item List Synchronized.', variant: 'success' });
+                        setEditMode(false);
+                    });
+            }}
             onSuccess={() => {
                 setEditMode(false);
             }}

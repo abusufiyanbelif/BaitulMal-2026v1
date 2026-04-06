@@ -310,7 +310,8 @@ function VerificationCard({ request, onView }: { request: PendingVerification, o
         'beneficiaries': User,
         'campaigns': Info,
         'leads': MessageSquare,
-        'donors': ShieldCheck
+        'donors': ShieldCheck,
+        'users': User,
     }[request.module] || Info;
 
     const Icon = moduleIcon;

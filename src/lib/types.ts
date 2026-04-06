@@ -29,6 +29,10 @@ export interface BrandingSettings extends DocumentData {
   tickerMaxDonations?: number;
   tickerMaxCompleted?: number;
   tickerSkipIds?: string[];
+  // Role & Features Toggles
+  isDonorLoginEnabled?: boolean;
+  isBeneficiaryLoginEnabled?: boolean;
+  isDonorSelfRecordPaymentEnabled?: boolean;
 }
 
 export interface PaymentSettings extends DocumentData {
@@ -358,7 +362,7 @@ export interface UserProfile extends DocumentData {
   phone?: string;
   loginId: string;
   userKey: string;
-  role: 'Admin' | 'User';
+  role: 'Admin' | 'User' | 'Donor' | 'Beneficiary';
   status: 'Active' | 'Inactive';
   permissions: UserPermissions;
   createdAt?: Timestamp | FieldValue;
@@ -369,6 +373,8 @@ export interface UserProfile extends DocumentData {
   idProofUrl?: string;
   organizationGroup?: GroupId | null;
   organizationRole?: string;
+  linkedDonorId?: string;
+  linkedBeneficiaryId?: string;
 }
  
 export interface PendingVerification extends DocumentData {
@@ -383,6 +389,6 @@ export interface PendingVerification extends DocumentData {
   status: 'Pending' | 'Partially Approved' | 'Approved' | 'Rejected';
   createdAt: Timestamp | FieldValue;
   updatedAt: Timestamp | FieldValue;
-  module: 'donations' | 'beneficiaries' | 'campaigns' | 'leads' | 'donors';
+  module: 'donations' | 'beneficiaries' | 'campaigns' | 'leads' | 'donors' | 'users';
   description?: string;
 }

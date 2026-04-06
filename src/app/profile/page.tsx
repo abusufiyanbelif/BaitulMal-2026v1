@@ -13,9 +13,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { doc, writeBatch } from 'firebase/firestore';
+import { doc, writeBatch, collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { processPortalProfileUpdateAction } from '@/app/verifications/actions';
 
 function ProfileDetail({ icon, label, value, children, isEditing }: { icon: React.ReactNode, label: string, value?: React.ReactNode, children?: React.ReactNode, isEditing?: boolean }) {
     return (
@@ -88,12 +89,27 @@ export default function ProfilePage() {
         }
         setIsSubmitting(true);
 
-        const batch = writeBatch(firestore);
-        const userDocRef = doc(firestore, 'users', userProfile.id);
-
         const updateData: {name?: string, phone?: string } = {};
         if (name !== userProfile.name) updateData.name = name;
         if (phone !== (userProfile.phone || '')) updateData.phone = phone;
+
+        const isSelfServicePortalUser = userProfile.role === 'Donor' || userProfile.role === 'Beneficiary';
+
+        if (isSelfServicePortalUser) {
+             processPortalProfileUpdateAction(userProfile.id, userProfile.name, updateData).then((result) => {
+                 setIsSubmitting(false);
+                 if (result.success) {
+                     toast({ title: 'Approval Required', description: result.message, variant: 'success' });
+                     setIsEditMode(false);
+                 } else {
+                     toast({ title: 'Failed to Submit', description: result.message, variant: 'destructive' });
+                 }
+             });
+             return;
+        }
+
+        const batch = writeBatch(firestore);
+        const userDocRef = doc(firestore, 'users', userProfile.id);
 
         batch.update(userDocRef, updateData);
 

@@ -16,7 +16,7 @@ import { AlertTriangle } from 'lucide-react';
  * Prevents long blocking states by allowing public views to render immediately.
  */
 function RouteGuard({ children }: { children: ReactNode }) {
-    const { user, isLoading } = useSession();
+    const { user, userProfile, isLoading } = useSession();
     const router = useRouter();
     const pathname = usePathname();
     const [isRedirecting, setIsRedirecting] = useState(false);
@@ -31,7 +31,7 @@ function RouteGuard({ children }: { children: ReactNode }) {
         
         if (user && pathname === '/login') {
             setIsRedirecting(true);
-            router.push('/dashboard');
+            router.push(userProfile?.role === 'Donor' ? '/donor-portal' : '/dashboard');
             return;
         }
 
@@ -43,7 +43,7 @@ function RouteGuard({ children }: { children: ReactNode }) {
         
         if (user && pathname === '/') {
             setIsRedirecting(true);
-            router.push('/dashboard');
+            router.push(userProfile?.role === 'Donor' ? '/donor-portal' : '/dashboard');
             return;
         }
 

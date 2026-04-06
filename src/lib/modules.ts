@@ -62,6 +62,7 @@ export const settingsSubModules = [
     { id: 'beneficiary', name: 'Beneficiary Settings', permissions: crudPermissions },
     { id: 'donor', name: 'Donor Settings', permissions: crudPermissions },
     { id: 'user', name: 'User Settings', permissions: crudPermissions },
+    { id: 'data-health', name: '🩺 Data Health', permissions: simpleReadPermission },
 ] as const;
 
 export const leadPurposesConfig = [

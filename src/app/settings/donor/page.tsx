@@ -5,6 +5,7 @@
  import { doc, setDoc } from 'firebase/firestore';
  import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
  import { Settings, Save, Loader2, CheckSquare, Edit, X, UserSearch, ShieldCheck } from 'lucide-react';
+ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
  import { Checkbox } from '@/components/ui/checkbox';
  import { Label } from '@/components/ui/label';
  import { useToast } from '@/hooks/use-toast';
@@ -41,20 +42,21 @@
  
    const [localVis, setLocalVis] = useState<Record<string, boolean>>({});
    const [localMandatory, setLocalMandatory] = useState<Record<string, boolean>>({});
-   const [localVerification, setLocalVerification] = useState(false);
+   const [localVerificationMode, setLocalVerificationMode] = useState('Disabled');
  
    useEffect(() => {
      if (visibilitySettings) setLocalVis(visibilitySettings);
      if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
-     if (configSettings?.isVerificationRequired) setLocalVerification(configSettings.isVerificationRequired);
+     if (configSettings?.verificationMode) setLocalVerificationMode(configSettings.verificationMode);
+     else if (configSettings?.isVerificationRequired) setLocalVerificationMode('Mandatory');
    }, [visibilitySettings, configSettings]);
  
    const isDirty = useMemo(() => {
      const visChanged = JSON.stringify(localVis) !== JSON.stringify(visibilitySettings || {});
      const mandatoryChanged = JSON.stringify(localMandatory) !== JSON.stringify(configSettings?.mandatoryFields || {});
-     const verificationChanged = localVerification !== (configSettings?.isVerificationRequired || false);
+     const verificationChanged = localVerificationMode !== (configSettings?.verificationMode || 'Disabled');
      return visChanged || mandatoryChanged || verificationChanged;
-   }, [localVis, localMandatory, localVerification, visibilitySettings, configSettings]);
+   }, [localVis, localMandatory, localVerificationMode, visibilitySettings, configSettings]);
  
    const handleVisToggle = (id: string) => {
      setLocalVis(prev => ({ ...prev, [id]: !prev[id] }));
@@ -70,7 +72,11 @@
      try {
          await Promise.all([
              setDoc(visRef, localVis),
-             setDoc(configRef, { mandatoryFields: localMandatory, isVerificationRequired: localVerification }, { merge: true })
+             setDoc(configRef, {
+                 mandatoryFields: localMandatory,
+                 isVerificationRequired: localVerificationMode !== 'Disabled',
+                 verificationMode: localVerificationMode
+             }, { merge: true })
          ]);
          toast({ title: "Settings Saved Successfully", variant: "success" });
          setIsEditMode(false);
@@ -79,6 +85,15 @@
      } finally {
          setIsSubmitting(false);
      }
+   };
+
+   const handleCancel = () => {
+     if (visibilitySettings) setLocalVis(visibilitySettings);
+     if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
+     if (configSettings?.verificationMode) setLocalVerificationMode(configSettings.verificationMode);
+     else if (configSettings?.isVerificationRequired) setLocalVerificationMode('Mandatory');
+     else setLocalVerificationMode('Disabled');
+     setIsEditMode(false);
    };
  
    if (isVisLoading || isConfigLoading) return <BrandedLoader />;
@@ -96,12 +111,7 @@
                  </Button>
              ) : (
                  <div className="flex gap-2">
-                     <Button variant="outline" onClick={() => {
-                         if (visibilitySettings) setLocalVis(visibilitySettings);
-                         if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
-                         if (configSettings?.isVerificationRequired) setLocalVerification(configSettings.isVerificationRequired);
-                         setIsEditMode(false);
-                     }} className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
+                     <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
                          <X className="mr-2 h-4 w-4" /> Discard
                      </Button>
                      <Button onClick={handleSave} disabled={isSubmitting || !isDirty} className="font-bold shadow-md transition-transform active:scale-95">
@@ -170,18 +180,21 @@
                  <CardDescription className="text-xs font-normal">Require secondary confirmation from another member before donor profile updates take effect.</CardDescription>
              </CardHeader>
              <CardContent className="pt-6">
-                 <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
-                     <Checkbox 
-                         id="verification_required" 
-                         checked={localVerification} 
-                         onCheckedChange={(checked) => setLocalVerification(!!checked)} 
-                         disabled={!isEditMode}
-                         className="data-[state=checked]:bg-primary"
-                     />
-                     <div className="space-y-0.5">
-                         <Label htmlFor="verification_required" className="cursor-pointer font-bold text-sm tracking-tight text-primary">Enable "Assign to Verifier" on Edits</Label>
-                         <p className="text-[10px] text-muted-foreground font-medium">Changes will remain "Pending" until the assigned member confirms them.</p>
-                     </div>
+                 <div className="flex flex-col space-y-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
+                     <Label className="font-bold text-sm tracking-tight text-primary">Approval Requirement</Label>
+                     <Select value={localVerificationMode} onValueChange={setLocalVerificationMode} disabled={!isEditMode}>
+                         <SelectTrigger className="font-bold border-primary/20 bg-white shadow-sm w-full sm:max-w-xs">
+                             <SelectValue placeholder="Select Requirement" />
+                         </SelectTrigger>
+                         <SelectContent>
+                             <SelectItem value="Disabled">Disabled (Changes apply instantly)</SelectItem>
+                             <SelectItem value="Optional">Optional (Can bypass approval)</SelectItem>
+                             <SelectItem value="Mandatory">Mandatory (Requires approval)</SelectItem>
+                         </SelectContent>
+                     </Select>
+                     <p className="text-[10px] text-muted-foreground font-medium mt-2">
+                         Control how modifications to donor profiles are handled by default.
+                     </p>
                  </div>
              </CardContent>
          </Card>

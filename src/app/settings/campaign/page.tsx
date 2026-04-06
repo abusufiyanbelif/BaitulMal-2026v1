@@ -4,6 +4,7 @@ import { useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Settings, Save, Loader2, CheckSquare, Edit, X, ShieldCheck } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -47,23 +48,24 @@ export default function CampaignSettingsPage() {
 
   const [localVis, setLocalVis] = useState<Record<string, boolean>>({});
   const [localMandatory, setLocalMandatory] = useState<Record<string, boolean>>({});
-  const [localVerification, setLocalVerification] = useState(false);
+  const [localVerificationMode, setLocalVerificationMode] = useState('Disabled');
   const [localDonateNow, setLocalDonateNow] = useState(false);
  
    useEffect(() => {
      if (visibilitySettings) setLocalVis(visibilitySettings);
      if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
-     if (configSettings?.isVerificationRequired) setLocalVerification(configSettings.isVerificationRequired);
+     if (configSettings?.verificationMode) setLocalVerificationMode(configSettings.verificationMode);
+     else if (configSettings?.isVerificationRequired) setLocalVerificationMode('Mandatory');
      if (configSettings?.isDonateNowVisible) setLocalDonateNow(configSettings.isDonateNowVisible);
    }, [visibilitySettings, configSettings]);
  
    const isDirty = useMemo(() => {
      const visChanged = JSON.stringify(localVis) !== JSON.stringify(visibilitySettings || {});
      const mandatoryChanged = JSON.stringify(localMandatory) !== JSON.stringify(configSettings?.mandatoryFields || {});
-     const verificationChanged = localVerification !== (configSettings?.isVerificationRequired || false);
+     const verificationChanged = localVerificationMode !== (configSettings?.verificationMode || 'Disabled');
      const donateNowChanged = localDonateNow !== (configSettings?.isDonateNowVisible || false);
      return visChanged || mandatoryChanged || verificationChanged || donateNowChanged;
-   }, [localVis, localMandatory, localVerification, localDonateNow, visibilitySettings, configSettings]);
+   }, [localVis, localMandatory, localVerificationMode, localDonateNow, visibilitySettings, configSettings]);
 
   const handleVisToggle = (id: string, group: 'public' | 'member') => {
     const key = `${group}_${id}`;
@@ -82,7 +84,8 @@ export default function CampaignSettingsPage() {
              setDoc(visRef, localVis),
              setDoc(configRef, { 
                  mandatoryFields: localMandatory, 
-                 isVerificationRequired: localVerification,
+                 isVerificationRequired: localVerificationMode !== 'Disabled',
+                 verificationMode: localVerificationMode,
                  isDonateNowVisible: localDonateNow
              }, { merge: true })
          ]);
@@ -98,7 +101,8 @@ export default function CampaignSettingsPage() {
   const handleCancel = () => {
      if (visibilitySettings) setLocalVis(visibilitySettings);
      if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
-     if (configSettings?.isVerificationRequired) setLocalVerification(configSettings.isVerificationRequired);
+     if (configSettings?.verificationMode) setLocalVerificationMode(configSettings.verificationMode);
+     else if (configSettings?.isVerificationRequired) setLocalVerificationMode('Mandatory');
      if (configSettings?.isDonateNowVisible) setLocalDonateNow(configSettings.isDonateNowVisible);
      setIsEditMode(false);
    };
@@ -214,20 +218,23 @@ export default function CampaignSettingsPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent className="pt-6">
-                        <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
-                            <Checkbox 
-                                id="verification_required" 
-                                checked={localVerification} 
-                                onCheckedChange={(checked) => setLocalVerification(!!checked)} 
-                                disabled={!isEditMode}
-                                className="data-[state=checked]:bg-primary"
-                            />
-                            <div className="space-y-0.5">
-                                <Label htmlFor="verification_required" className="cursor-pointer font-bold text-sm tracking-tight text-primary">Enable "Assign to Verifier" on Edits</Label>
-                                <p className="text-[10px] text-muted-foreground font-medium">Changes remain "Pending" until confirmed.</p>
-                            </div>
-                        </div>
-                    </CardContent>
+                         <div className="flex flex-col space-y-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
+                             <Label className="font-bold text-sm tracking-tight text-primary">Approval Requirement</Label>
+                             <Select value={localVerificationMode} onValueChange={setLocalVerificationMode} disabled={!isEditMode}>
+                                 <SelectTrigger className="font-bold border-primary/20 bg-white shadow-sm w-full">
+                                     <SelectValue placeholder="Select Requirement" />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                     <SelectItem value="Disabled">Disabled (Changes apply instantly)</SelectItem>
+                                     <SelectItem value="Optional">Optional (Can bypass approval)</SelectItem>
+                                     <SelectItem value="Mandatory">Mandatory (Requires approval)</SelectItem>
+                                 </SelectContent>
+                             </Select>
+                             <p className="text-[10px] text-muted-foreground font-medium mt-2">
+                                Control how modifications to campaigns are handled by default.
+                             </p>
+                         </div>
+                     </CardContent>
                 </Card>
 
                 <Card className="animate-fade-in-up border-primary/10 bg-white shadow-sm overflow-hidden">

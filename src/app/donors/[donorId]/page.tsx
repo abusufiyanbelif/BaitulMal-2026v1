@@ -205,7 +205,7 @@ export default function DonorProfilePage() {
                 notes: formData.get('notes') as string,
             };
 
-            if (configSettings?.isVerificationRequired && donor) {
+            if (configSettings?.verificationMode && configSettings.verificationMode !== 'Disabled' && donor) {
                  setPendingUpdates(updates);
                  setIsVerificationDialogOpen(true);
                  return;
@@ -541,7 +541,7 @@ export default function DonorProfilePage() {
                                                         <TableCell className="font-mono font-bold text-sm text-primary">₹{donation.amount.toLocaleString('en-IN')}</TableCell>
                                                         <TableCell>
                                                             <div className="flex flex-wrap gap-1">
-                                                                {donation.typeSplit.map((ts, idx) => (
+                                                                {(donation.typeSplit || []).map((ts, idx) => (
                                                                     <Badge key={idx} variant="secondary" className="text-[8px] font-bold h-4">{ts.category}</Badge>
                                                                 ))}
                                                             </div>
@@ -553,11 +553,15 @@ export default function DonorProfilePage() {
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell className="text-right pr-6">
-                                                            <Button variant="ghost" size="sm" asChild className="h-8 font-bold text-[10px] active:scale-95 transition-transform text-primary hover:bg-primary/10">
-                                                                <Link href={primaryLink?.linkType === 'campaign' ? `/campaign-members/${primaryLink.linkId}/donations/${donation.id}` : `/leads-members/${primaryLink?.linkId}/donations/${donation.id}`}>
-                                                                    <ExternalLink className="mr-1.5 h-3 w-3"/> View Details
-                                                                </Link>
-                                                            </Button>
+                                                            {primaryLink?.linkId ? (
+                                                                <Button variant="ghost" size="sm" asChild className="h-8 font-bold text-[10px] active:scale-95 transition-transform text-primary hover:bg-primary/10">
+                                                                    <Link href={primaryLink.linkType === 'campaign' ? `/campaign-members/${primaryLink.linkId}/donations/${donation.id}` : `/leads-members/${primaryLink.linkId}/donations/${donation.id}`}>
+                                                                        <ExternalLink className="mr-1.5 h-3 w-3"/> View Details
+                                                                    </Link>
+                                                                </Button>
+                                                            ) : (
+                                                                <span className="text-[10px] text-muted-foreground italic">Unlinked</span>
+                                                            )}
                                                         </TableCell>
                                                     </TableRow>
                                                 )
@@ -580,6 +584,18 @@ export default function DonorProfilePage() {
                      isOpen={isVerificationDialogOpen}
                      onOpenChange={setIsVerificationDialogOpen}
                      user={{ id: userProfile.id, name: userProfile.name }}
+                     isOptional={configSettings?.verificationMode === 'Optional'}
+                     onBypass={async () => {
+                         setIsVerificationDialogOpen(false);
+                         const res = await updateDonorAction(donorId, pendingUpdates, { id: userProfile.id, name: userProfile.name });
+                         if (res.success) {
+                             toast({ title: 'Profile Updated', description: 'Changes applied directly.', variant: 'success' });
+                             setIsEditMode(false);
+                             forceRefetch();
+                         } else {
+                             toast({ title: 'Update Failed', description: res.message, variant: 'destructive' });
+                         }
+                     }}
                      onSuccess={() => {
                          setIsEditMode(false);
                      }}

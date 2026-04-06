@@ -76,16 +76,25 @@
          const status = allApproved ? 'Approved' : 'Partially Approved';
  
          if (allApproved) {
-             // Apply the actual changes to the target document
+             // Apply the actual changes to the target document.
              const targetRef = adminDb.doc(`${request.targetCollection}/${request.targetId}`);
-             await targetRef.set(request.newValue, { merge: true });
  
-             // Special handling for donations: Trigger recalculation
+             // Profile modules: use set(merge) to preserve existing fields not in the update payload.
+             // Array-heavy modules (campaigns/leads/donations/beneficiaries): use update() so
+             // array fields are fully replaced rather than merged — prevents stale nested data.
+             const profileModules: string[] = ['donors', 'users'];
+             if (profileModules.includes(request.module)) {
+                 await targetRef.set(request.newValue, { merge: true });
+             } else {
+                 await targetRef.update(request.newValue);
+             }
+ 
+             // Special handling for donations: Trigger recalculation of initiative totals
              if (request.module === 'donations') {
                  await bulkRecalculateInitiativeTotalsAction();
              }
  
-             // Cleanup: Delete the pending request (or mark as archived)
+             // Cleanup: Delete the pending request
              await docRef.delete();
              
              revalidatePath(request.revalidatePath, 'page');
@@ -137,4 +146,51 @@
          console.error('Reject Verification Error:', error);
          return { success: false, message: `Rejection Failed: ${error.message}` };
      }
+ }
+
+ export async function processPortalProfileUpdateAction(
+    userId: string,
+    userName: string,
+    updateData: { name?: string; phone?: string }
+ ) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const adminsSnap = await adminDb.collection('users').where('role', '==', 'Admin').where('status', '==', 'Active').get();
+        const assignedVerifiers = adminsSnap.docs.map(doc => ({
+            id: doc.id,
+            name: doc.data().name,
+            status: 'Pending' as const
+        }));
+
+        if (assignedVerifiers.length === 0) {
+           return { success: false, message: 'No Active Administrator Found to verify your request.' };
+        }
+
+        const originalSnap = await adminDb.collection('users').doc(userId).get();
+
+        const payload: PendingVerification = {
+            id: adminDb.collection('pending_verifications').doc().id,
+            targetId: userId,
+            targetCollection: 'users',
+            revalidatePath: '/profile',
+            newValue: updateData,
+            originalValue: originalSnap.exists ? originalSnap.data() : null,
+            requestedBy: { id: userId, name: userName },
+            assignedVerifiers,
+            status: 'Pending',
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+            module: 'users',  // FIX: was incorrectly 'donors'
+            description: 'Profile update requested via Supporter Portal.'
+        };
+
+        await adminDb.doc(`pending_verifications/${payload.id}`).set(payload);
+
+        return { success: true, message: 'Profile update dispatched for administrative approval.' };
+    } catch (error: any) {
+        console.error('Failed to submit portal profile change:', error);
+        return { success: false, message: `Failed: ${error.message}` };
+    }
  }

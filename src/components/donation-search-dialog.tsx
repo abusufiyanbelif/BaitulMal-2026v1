@@ -165,7 +165,7 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
                                                 <span className="font-mono">ID: {donation.id.slice(-6).toUpperCase()}</span>
                                             </div>
                                             <div className="pt-2 flex flex-wrap gap-1">
-                                                {donation.typeSplit.map((ts, idx) => (
+                                                {(donation.typeSplit || []).map((ts, idx) => (
                                                     <Badge key={idx} variant="secondary" className="text-[8px] font-bold h-4">
                                                         {ts.category}: ₹{ts.amount.toLocaleString()}
                                                     </Badge>

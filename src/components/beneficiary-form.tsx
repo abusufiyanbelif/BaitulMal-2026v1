@@ -260,7 +260,7 @@ export function BeneficiaryForm({
          }
  
          // Verification Check for Edits
-         if (isEditing && configSettings?.isVerificationRequired && userProfile) {
+         if (isEditing && configSettings?.verificationMode && configSettings.verificationMode !== 'Disabled' && userProfile) {
              setPendingFormData(data);
              setIsVerificationDialogOpen(true);
              return;
@@ -403,6 +403,11 @@ export function BeneficiaryForm({
                     isOpen={isVerificationDialogOpen}
                     onOpenChange={setIsVerificationDialogOpen}
                     user={{ id: userProfile.id, name: userProfile.name }}
+                    isOptional={configSettings?.verificationMode === 'Optional'}
+                    onBypass={() => {
+                        setIsVerificationDialogOpen(false);
+                        onSubmit(pendingFormData);
+                    }}
                     onSuccess={() => {
                         onCancel(); // Close form on success
                     }}

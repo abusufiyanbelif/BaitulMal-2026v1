@@ -241,7 +241,7 @@ export default function CampaignDetailsPage() {
          itemCategories: sanitizedEditableItemCategories,
      };
  
-     if (configSettings?.isVerificationRequired) {
+     if (configSettings?.verificationMode && configSettings.verificationMode !== 'Disabled') {
          setPendingUpdates(saveData);
          setIsVerificationDialogOpen(true);
          return;
@@ -1128,6 +1128,42 @@ export default function CampaignDetailsPage() {
                 <DialogFooter className="bg-primary/5 p-4 rounded-b-[16px] -mx-6 -mb-6 border-t"><Button variant="outline" onClick={() => setIsCopyItemsOpen(false)} className="font-bold border-primary/20 text-primary">Discard</Button><Button onClick={handleCopyItemsConfirm} disabled={!copySourceCategoryId || selectedItemsToCopy.length === 0} className="font-bold shadow-md px-8 transition-transform active:scale-95"><Copy className="mr-2 h-4 w-4" /> Replicate Items</Button></DialogFooter>
             </DialogContent>
         </Dialog>
+
+    {userProfile && pendingUpdates && (
+        <VerificationRequestDialog
+            isOpen={isVerificationDialogOpen}
+            onOpenChange={setIsVerificationDialogOpen}
+            user={{ id: userProfile.id, name: userProfile.name }}
+            isOptional={configSettings?.verificationMode === 'Optional'}
+            onBypass={() => {
+                setIsVerificationDialogOpen(false);
+                updateDoc(campaignDocRef!, pendingUpdates)
+                    .catch(async (serverError: any) => {
+                        errorEmitter.emit('permission-error', new FirestorePermissionError({
+                            path: campaignDocRef!.path,
+                            operation: 'update',
+                            requestResourceData: pendingUpdates,
+                        } satisfies SecurityRuleContext));
+                    })
+                    .finally(() => {
+                        toast({ title: 'Success', description: 'Campaign Details Secured.', variant: 'success' });
+                        setEditMode(false);
+                    });
+            }}
+            onSuccess={() => {
+                setEditMode(false);
+            }}
+            payload={{
+                module: 'campaigns',
+                targetId: campaignId,
+                targetCollection: 'campaigns',
+                description: `Update requirement list and settings for ${campaign?.name}`,
+                originalValue: campaign || {},
+                newValue: pendingUpdates,
+                revalidatePath: `/campaign-members/${campaignId}`
+            }}
+        />
+    )}
     </>
   );
 }

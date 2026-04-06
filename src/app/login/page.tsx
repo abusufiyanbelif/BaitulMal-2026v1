@@ -25,10 +25,11 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, AlertTriangle, ExternalLink, ArrowLeft } from 'lucide-react';
+import { Loader2, AlertTriangle, ExternalLink, ArrowLeft, HeartHandshake, HandHelping } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const loginSchema = z.object({
   loginId: z.string().min(3, 'Login ID or Phone Number is required.'),
@@ -74,7 +75,7 @@ export default function LoginPage() {
     try {
       await signInWithLoginId(auth, firestore, data.loginId, data.password);
       toast({ title: 'Login successful', description: "Welcome back!", variant: 'success' });
-      router.push('/dashboard');
+      // Redirect is handled automatically by the auth-provider RouteGuard based on user role
     } catch (error: any) {
       if (error.code === 'auth/configuration-not-found') {
             setSetupError(error.message);
@@ -140,7 +141,16 @@ export default function LoginPage() {
                 </Link>
             </Button>
         </div>
-      <Card className="animate-fade-in-up shadow-xl border-primary/10 bg-white" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
+        
+        <Tabs defaultValue="member" className="w-full animate-fade-in-up" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
+            <TabsList className="grid w-full grid-cols-3 mb-4 h-12 shadow-sm rounded-xl">
+                <TabsTrigger value="member" className="font-bold">Staff</TabsTrigger>
+                <TabsTrigger value="donor" className="font-bold">Donor</TabsTrigger>
+                <TabsTrigger value="beneficiary" className="font-bold text-xs sm:text-sm">Beneficiary</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="member" className="mt-0 outline-none">
+                <Card className="shadow-xl border-primary/10 bg-white">
           <CardHeader className="text-center">
               <div className="flex justify-center items-center gap-3 mb-4">
                 {isBrandingLoading ? (
@@ -260,6 +270,42 @@ export default function LoginPage() {
               </AlertDescription>
           </Alert>
       )}
+      </TabsContent>
+
+      <TabsContent value="donor" className="mt-0 outline-none">
+          <Card className="shadow-xl border-primary/10 bg-white">
+              <CardContent className="flex flex-col items-center justify-center p-8 text-center space-y-6">
+                  <div className="bg-primary/5 p-4 rounded-full">
+                      <HeartHandshake className="h-12 w-12 text-primary" />
+                  </div>
+                  <div className="space-y-2">
+                      <h3 className="font-bold text-xl text-primary">Donor Portal</h3>
+                      <p className="text-sm font-normal text-muted-foreground">Access your comprehensive donation summaries and secure tax receipts via Mobile OTP.</p>
+                  </div>
+                  <Button asChild className="w-full h-12 font-bold transition-transform active:scale-95 text-lg">
+                      <Link href="/portal-login">Continue via Mobile</Link>
+                  </Button>
+              </CardContent>
+          </Card>
+      </TabsContent>
+
+      <TabsContent value="beneficiary" className="mt-0 outline-none">
+          <Card className="shadow-xl border-primary/10 bg-white">
+              <CardContent className="flex flex-col items-center justify-center p-8 text-center space-y-6">
+                  <div className="bg-primary/5 p-4 rounded-full">
+                      <HandHelping className="h-12 w-12 text-primary" />
+                  </div>
+                  <div className="space-y-2">
+                      <h3 className="font-bold text-xl text-primary">Beneficiary Portal</h3>
+                      <p className="text-sm font-normal text-muted-foreground">Check your assistance request status securely and submit real-time updates.</p>
+                  </div>
+                  <Button asChild className="w-full h-12 font-bold transition-transform active:scale-95 text-lg">
+                      <Link href="/portal-login">Continue via Mobile</Link>
+                  </Button>
+              </CardContent>
+          </Card>
+      </TabsContent>
+      </Tabs>
   </div>
   );
 }

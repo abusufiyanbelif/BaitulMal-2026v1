@@ -20,6 +20,8 @@
    payload: Omit<PendingVerification, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'assignedVerifiers' | 'requestedBy'>;
    user: { id: string, name: string };
    onSuccess?: () => void;
+   isOptional?: boolean;
+   onBypass?: () => void;
  }
  
  export function VerificationRequestDialog({
@@ -27,7 +29,9 @@
    onOpenChange,
    payload,
    user,
-   onSuccess
+   onSuccess,
+   isOptional,
+   onBypass
  }: VerificationRequestDialogProps) {
    const firestore = useFirestore();
    const { toast } = useToast();
@@ -166,12 +170,21 @@
            )}
          </div>
  
-         <DialogFooter className="bg-primary/5 p-4 border-t gap-2 sm:gap-0">
-           <Button variant="ghost" onClick={() => onOpenChange(false)} className="font-bold border-primary/10 text-primary">Cancel</Button>
-           <Button onClick={handleSubmit} disabled={isSubmitting || selectedUserIds.length === 0} className="font-bold shadow-lg">
-             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
-             Dispatch Request ({selectedUserIds.length})
-           </Button>
+         <DialogFooter className="bg-primary/5 p-4 border-t gap-2 sm:gap-0 flex sm:justify-between items-center">
+           <div className="flex w-full sm:w-auto">
+               <Button variant="ghost" onClick={() => onOpenChange(false)} className="font-bold border-primary/10 text-primary w-full sm:w-auto">Cancel</Button>
+           </div>
+           <div className="flex gap-2 w-full sm:w-auto flex-col sm:flex-row">
+               {isOptional && (
+                   <Button variant="outline" onClick={() => { onBypass?.(); onOpenChange(false); }} className="font-bold border-primary border text-primary">
+                       Bypass & Apply Direct
+                   </Button>
+               )}
+               <Button onClick={handleSubmit} disabled={isSubmitting || selectedUserIds.length === 0} className="font-bold shadow-lg flex-1 sm:flex-none">
+                 {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
+                 Dispatch Request ({selectedUserIds.length})
+               </Button>
+           </div>
          </DialogFooter>
        </DialogContent>
      </Dialog>

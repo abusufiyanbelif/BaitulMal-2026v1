@@ -38,9 +38,23 @@ export async function copyLeadAction(options: CopyLeadOptions): Promise<{ succes
                 ...sourceData,
                 name: newName,
                 status: 'Upcoming',
+                publicVisibility: 'Hold',         // reset — not published yet
+                authenticityStatus: 'Pending Verification', // reset
+                targetAmount: 0,
+                requiredAmount: 0,                // reset — recalculate after beneficiaries are added
+                collectedAmount: 0,               // reset — no donations yet
                 createdAt: FieldValue.serverTimestamp() as any,
-                targetAmount: 0, 
+                updatedAt: FieldValue.serverTimestamp() as any,
+                createdById: undefined,
+                createdByName: undefined,
+                leadNumber: undefined,            // will be assigned on save if needed
             };
+
+            // Strip runtime-only fields that should not be carried over
+            delete (newLeadData as any).id;
+            delete (newLeadData as any).createdById;
+            delete (newLeadData as any).createdByName;
+            delete (newLeadData as any).leadNumber;
 
             if (!copyRationLists) {
                 newLeadData.itemCategories = [];

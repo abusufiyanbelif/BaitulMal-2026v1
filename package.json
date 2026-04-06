@@ -16,7 +16,8 @@
     "db:check-structure": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/check-structure.ts",
     "db:migrate-beneficiary-status": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/migrate-beneficiary-status.ts",
     "db:migrate-priority": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/migrate-priority.ts",
-    "db:migrate-donations-goal": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/migrate-donations-goal.ts"
+    "db:migrate-donations-goal": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/migrate-donations-goal.ts",
+    "db:migrate-donors": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' scripts/migrate-donors-to-users.ts"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.0.0",

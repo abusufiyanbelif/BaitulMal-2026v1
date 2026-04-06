@@ -363,7 +363,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     if (!userProfile) return;
 
     // Verification Check for Edits
-    if (donation && configSettings?.isVerificationRequired) {
+    if (donation && configSettings?.verificationMode && configSettings.verificationMode !== 'Disabled') {
         setPendingFormData(data);
         setIsVerificationDialogOpen(true);
         return;
@@ -642,6 +642,15 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
         <VerificationRequestDialog
             isOpen={isVerificationDialogOpen}
             onOpenChange={setIsVerificationDialogOpen}
+            isOptional={configSettings?.verificationMode === 'Optional'}
+            onBypass={async () => {
+                setIsSubmitting(true);
+                try {
+                    await onSubmit(pendingFormData);
+                } finally {
+                    setIsSubmitting(false);
+                }
+            }}
             user={{ id: userProfile.id, name: userProfile.name }}
             onSuccess={() => {
                 onCancel();

@@ -39,10 +39,19 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
                 ...sourceData,
                 name: newName,
                 status: 'Upcoming',
+                publicVisibility: 'Hold',              // reset — not published yet
+                authenticityStatus: 'Pending Verification', // reset
+                targetAmount: 0,
+                collectedAmount: 0,                    // reset — no donations yet
                 createdAt: FieldValue.serverTimestamp() as any,
-                // Reset financial data
-                targetAmount: 0, 
+                updatedAt: FieldValue.serverTimestamp() as any,
+                campaignNumber: undefined,             // will be assigned on save if needed
             };
+            // Strip runtime-only fields that should not be carried over
+            delete (newCampaignData as any).id;
+            delete (newCampaignData as any).createdById;
+            delete (newCampaignData as any).createdByName;
+            delete (newCampaignData as any).campaignNumber;
             if (!copyRationLists) {
                 newCampaignData.itemCategories = [];
             }

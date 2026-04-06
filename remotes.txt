@@ -1,0 +1,4 @@
+origin	https://github.com/abusufiyanbelif/DocDataExtract.git (fetch)
+origin	https://github.com/abusufiyanbelif/DocDataExtract.git (push)
+upstream	https://github.com/abusufiyanbelif/DocDataExtract.git (fetch)
+upstream	https://github.com/abusufiyanbelif/DocDataExtract.git (push)
