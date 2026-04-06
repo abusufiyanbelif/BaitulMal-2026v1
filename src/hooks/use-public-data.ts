@@ -19,7 +19,10 @@ export function usePublicData() {
 
   // Load configuration for date range and ticker filtering
   const brandingRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'branding') : null, [firestore]);
+  const visRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donation_visibility') : null, [firestore]);
+
   const { data: brandingSettings, isLoading: isBrandingLoading } = useDoc<BrandingSettings>(brandingRef);
+  const { data: visSettings, isLoading: isVisLoading } = useDoc<any>(visRef);
 
   // Strict Query: Authenticity Verified AND Visibility Published
   const campaignsCollectionRef = useMemoFirebase(() => {
@@ -58,7 +61,7 @@ export function usePublicData() {
   const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
 
-  const isLoading = areCampaignsLoading || areLeadsLoading || areDonationsLoading || (user ? areBeneficiariesLoading : false) || isSessionLoading || isBrandingLoading;
+  const isLoading = areCampaignsLoading || areLeadsLoading || areDonationsLoading || (user ? areBeneficiariesLoading : false) || isSessionLoading || isBrandingLoading || isVisLoading;
 
   const memoizedData = useMemo(() => {
     if (isLoading || !campaigns || !leads || !donations) {
@@ -69,8 +72,10 @@ export function usePublicData() {
           totalTarget: 0,
           grandTotalRaised: 0,
           totalCollectedForGoals: 0,
+          grandTotalUnlinked: 0,
           progress: 0,
           familiesImpacted: 0,
+          showUnlinkedFunds: false,
         },
         yearlySummary: [],
         categorySummary: [],
@@ -101,6 +106,7 @@ export function usePublicData() {
 
     const collectedAmounts = new Map<string, number>();
     const yearlyData: Record<string, { totalGoalReceived: number; overallTotalReceived: number; totalTarget: number; }> = {};
+    let grandTotalUnlinked = 0;
 
     donations.forEach(donation => {
       const donationDate = donation.donationDate || '';
@@ -150,6 +156,12 @@ export function usePublicData() {
             yearlyData[donationYear].totalGoalReceived += itemContribution;
         }
       });
+
+      const isUnlinked = !donation.linkSplit || donation.linkSplit.length === 0 || donation.linkSplit.some(l => l.linkId === 'unallocated');
+      if (isUnlinked) {
+          const unallocatedPart = (donation.linkSplit || []).find(l => l.linkId === 'unallocated')?.amount ?? donation.amount;
+          grandTotalUnlinked += unallocatedPart;
+      }
     });
 
     const campaignsWithProgress = campaigns.map(campaign => {
@@ -254,8 +266,10 @@ export function usePublicData() {
         totalTarget: totalTargetInRange,
         grandTotalRaised: grandTotalRaisedInRange,
         totalCollectedForGoals: totalCollectedForGoalsInRange,
+        grandTotalUnlinked,
         progress: overallProgress,
-        familiesImpacted
+        familiesImpacted,
+        showUnlinkedFunds: user ? (visSettings?.member_unlinked_funds !== false) : (visSettings?.public_unlinked_funds === true)
       },
       yearlySummary: sortedYearlyData,
       categorySummary: Object.entries(amountsByCategoryInRange).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` })),

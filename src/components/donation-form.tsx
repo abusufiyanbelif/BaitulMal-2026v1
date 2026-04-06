@@ -62,6 +62,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { cn } from '@/lib/utils';
 import { createDonorAction } from '@/app/donors/actions';
 import { DonorSearchDialog } from './donor-search-dialog';
+import { VerificationRequestDialog } from './verification-request-dialog';
 
 const linkSplitSchema = z.array(z.object({
     linkId: z.string(),
@@ -257,8 +258,10 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   const { toast } = useToast();
   const firestore = useFirestore();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDonorSearchOpen, setIsDonorSearchOpen] = useState(false);
-  const [isVerifying, setIsVerifying] = useState(false);
+   const [isDonorSearchOpen, setIsDonorSearchOpen] = useState(false);
+   const [isVerifying, setIsVerifying] = useState(false);
+   const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
+   const [pendingFormData, setPendingFormData] = useState<DonationFormData | null>(null);
 
   const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donation_config') : null, [firestore]);
   const { data: configSettings } = useDoc<any>(configRef);
@@ -358,6 +361,13 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     }
 
     if (!userProfile) return;
+
+    // Verification Check for Edits
+    if (donation && configSettings?.isVerificationRequired) {
+        setPendingFormData(data);
+        setIsVerificationDialogOpen(true);
+        return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -628,6 +638,25 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
             upiIds: watchedTransactions.map(t => t.upiId).filter(Boolean) as string[]
         }}
       />
+      {userProfile && pendingFormData && (
+        <VerificationRequestDialog
+            isOpen={isVerificationDialogOpen}
+            onOpenChange={setIsVerificationDialogOpen}
+            user={{ id: userProfile.id, name: userProfile.name }}
+            onSuccess={() => {
+                onCancel();
+            }}
+            payload={{
+                module: 'donations',
+                targetId: donation?.id || '',
+                targetCollection: 'donations',
+                description: `Update donation record for ${pendingFormData.donorName} (₹${pendingFormData.amount})`,
+                originalValue: donation || {},
+                newValue: pendingFormData,
+                revalidatePath: '/donations'
+            }}
+        />
+      )}
     </Form>
   );
 }

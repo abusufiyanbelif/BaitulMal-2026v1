@@ -41,7 +41,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { VerificationRequestDialog } from '@/components/verification-request-dialog';
 import { BrandedLoader } from '@/components/branded-loader';
+import { PendingUpdateWarning } from '@/components/pending-update-warning';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -112,9 +114,15 @@ export default function DonorProfilePage() {
 
     const [bankDetails, setBankDetails] = useState<BankDetail[]>([]);
     const [upiIds, setUpiIds] = useState<string[]>([]);
+ 
+    const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
+    const [pendingUpdates, setPendingUpdates] = useState<Partial<Donor> | null>(null);
 
     const donorDocRef = useMemoFirebase(() => donorId && firestore ? doc(firestore, 'donors', donorId) as DocumentReference<Donor> : null, [donorId, firestore]);
     const { data: donor, isLoading: donorLoading, forceRefetch } = useDoc<Donor>(donorDocRef);
+ 
+    const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donor_config') : null, [firestore]);
+    const { data: configSettings } = useDoc<any>(configRef);
 
     const donationsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
     const { data: allDonations, isLoading: donationsLoading } = useCollection<Donation>(donationsRef);
@@ -197,18 +205,24 @@ export default function DonorProfilePage() {
                 notes: formData.get('notes') as string,
             };
 
-            const res = await updateDonorAction(donorId, updates, { id: userProfile.id, name: userProfile.name });
-            if (res.success) {
-                toast({ title: 'Success', description: 'Donor Profile Updated Successfully.', variant: 'success' });
-                setIsEditMode(false);
-                forceRefetch();
-            } else {
-                toast({ title: 'Update Failed', description: res.message, variant: 'destructive' });
-            }
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+            if (configSettings?.isVerificationRequired && donor) {
+                 setPendingUpdates(updates);
+                 setIsVerificationDialogOpen(true);
+                 return;
+             }
+ 
+             const res = await updateDonorAction(donorId, updates, { id: userProfile.id, name: userProfile.name });
+             if (res.success) {
+                 toast({ title: 'Success', description: 'Donor Profile Updated Successfully.', variant: 'success' });
+                 setIsEditMode(false);
+                 forceRefetch();
+             } else {
+                 toast({ title: 'Update Failed', description: res.message, variant: 'destructive' });
+             }
+         } finally {
+             setIsSubmitting(false);
+         }
+     };
 
     const handleDelete = async () => {
         if (!userProfile || !donor) return;
@@ -262,6 +276,8 @@ export default function DonorProfilePage() {
                     </div>
                 </div>
             </div>
+
+            <PendingUpdateWarning targetId={donorId} module="donors" />
 
             <div className="space-y-1 animate-fade-in-up">
                 <h1 className="text-4xl font-bold tracking-tight text-primary">{donor.name}</h1>
@@ -424,7 +440,22 @@ export default function DonorProfilePage() {
                                 ) : (
                                     <div className="space-y-10">
                                         <div className="grid gap-4 md:grid-cols-3">
-                                            <DetailItem icon={Phone} label="Primary Contact" value={donor.phone} isMono />
+                                            <div className="relative group">
+                                                <DetailItem icon={Phone} label="Primary Contact" value={donor.phone} isMono />
+                                                {donor.phone && (
+                                                    <Button 
+                                                        variant="outline" 
+                                                        size="sm" 
+                                                        className="absolute top-2 right-2 h-7 gap-1.5 font-bold text-[10px] border-green-200 text-green-600 hover:bg-green-50 hover:border-green-300 transition-all opacity-0 group-hover:opacity-100"
+                                                        onClick={() => window.open(`https://wa.me/91${donor.phone!.replace(/\D/g, '')}`, '_blank')}
+                                                    >
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                                            <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.06 3.973L0 16l4.204-1.102a7.923 7.923 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+                                                        </svg>
+                                                        WhatsApp
+                                                    </Button>
+                                                )}
+                                            </div>
                                             <DetailItem icon={Mail} label="Email Address" value={donor.email} />
                                             <DetailItem icon={MapPin} label="Residential Address" value={donor.address} />
                                         </div>
@@ -543,6 +574,26 @@ export default function DonorProfilePage() {
                     </Card>
                 </TabsContent>
             </Tabs>
+
+            {userProfile && pendingUpdates && (
+                 <VerificationRequestDialog
+                     isOpen={isVerificationDialogOpen}
+                     onOpenChange={setIsVerificationDialogOpen}
+                     user={{ id: userProfile.id, name: userProfile.name }}
+                     onSuccess={() => {
+                         setIsEditMode(false);
+                     }}
+                     payload={{
+                         module: 'donors',
+                         targetId: donorId,
+                         targetCollection: 'donors',
+                         description: `Update donor profile for ${donor?.name}`,
+                         originalValue: donor || {},
+                         newValue: pendingUpdates,
+                         revalidatePath: `/donors/${donorId}`
+                     }}
+                 />
+             )}
         </main>
     );
 }

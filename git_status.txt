@@ -1,0 +1,64 @@
+On branch rollback-working
+Your branch is ahead of 'origin/rollback-working' by 1 commit.
+  (use "git push" to publish your local commits)
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+	modified:   firestore.rules
+	modified:   src/app/beneficiaries/[beneficiaryId]/page.tsx
+	modified:   src/app/beneficiaries/actions.ts
+	modified:   src/app/campaign-members/[campaignId]/donations/page.tsx
+	modified:   src/app/campaign-members/[campaignId]/page.tsx
+	modified:   src/app/campaign-members/[campaignId]/summary/page.tsx
+	modified:   src/app/campaign-members/actions.ts
+	modified:   src/app/campaign-public/[campaignId]/summary/page.tsx
+	modified:   src/app/donations/actions.ts
+	modified:   src/app/donations/page.tsx
+	modified:   src/app/donors/[donorId]/page.tsx
+	modified:   src/app/donors/page.tsx
+	modified:   src/app/leads-members/[leadId]/donations/page.tsx
+	modified:   src/app/leads-members/[leadId]/page.tsx
+	modified:   src/app/leads-members/[leadId]/summary/page.tsx
+	modified:   src/app/leads-members/actions.ts
+	modified:   src/app/leads-public/[leadId]/summary/page.tsx
+	modified:   src/app/page.tsx
+	modified:   src/app/providers.tsx
+	modified:   src/app/settings/app/page.tsx
+	modified:   src/app/settings/beneficiary/page.tsx
+	modified:   src/app/settings/campaign/page.tsx
+	modified:   src/app/settings/donation/page.tsx
+	modified:   src/app/settings/donor/page.tsx
+	modified:   src/app/settings/lead/page.tsx
+	modified:   src/app/settings/members/page.tsx
+	modified:   src/app/users/[userId]/page.tsx
+	modified:   src/components/beneficiary-form.tsx
+	modified:   src/components/bulk-link-initiative-dialog.tsx
+	modified:   src/components/donation-form.tsx
+	modified:   src/components/overall-funding-summary.tsx
+	modified:   src/components/ui/alert.tsx
+	modified:   src/components/unlinked-donation-resolver.tsx
+	modified:   src/components/user-form.tsx
+	modified:   src/hooks/use-public-data.ts
+	modified:   src/lib/modules.ts
+	modified:   src/lib/types.ts
+	modified:   storage.rules
+	modified:   tsconfig.tsbuildinfo
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+	git_status.txt
+	scripts/check_members_config.js
+	scripts/crosscheck_users.js
+	scripts/scan_data_usage.ts
+	scripts/scan_flaws.js
+	scripts/scan_users.js
+	src/app/donate/
+	src/app/donations/public-actions.ts
+	src/app/verifications/
+	src/components/pending-update-warning.tsx
+	src/components/public-donation-form.tsx
+	src/components/verification-manager.tsx
+	src/components/verification-request-dialog.tsx
+
+no changes added to commit (use "git add" and/or "git commit -a")

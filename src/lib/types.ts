@@ -370,3 +370,19 @@ export interface UserProfile extends DocumentData {
   organizationGroup?: GroupId | null;
   organizationRole?: string;
 }
+ 
+export interface PendingVerification extends DocumentData {
+  id: string;
+  targetId: string;
+  targetCollection: string;
+  revalidatePath: string;
+  newValue: any;
+  originalValue?: any;
+  requestedBy: { id: string, name: string };
+  assignedVerifiers: { id: string, name: string, status: 'Pending' | 'Approved' | 'Rejected', updatedAt?: any }[];
+  status: 'Pending' | 'Partially Approved' | 'Approved' | 'Rejected';
+  createdAt: Timestamp | FieldValue;
+  updatedAt: Timestamp | FieldValue;
+  module: 'donations' | 'beneficiaries' | 'campaigns' | 'leads' | 'donors';
+  description?: string;
+}

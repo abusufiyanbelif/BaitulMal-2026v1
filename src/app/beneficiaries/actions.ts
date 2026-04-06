@@ -376,3 +376,44 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
         return { success: false, message: `Removal Failed: ${error.message}` };
     }
 }
+
+export async function syncMasterBeneficiaryListAction(): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    try {
+        revalidatePath('/beneficiaries');
+        return { success: true, message: 'Registry Synchronized With Database.' };
+    } catch (error: any) {
+        console.error("Sync Registry Failed:", error);
+        return { success: false, message: error.message };
+    }
+}
+
+export async function updateInitiativeBeneficiaryDetailsAction(
+    initiativeType: 'campaign' | 'lead',
+    initiativeId: string,
+    beneficiaryId: string,
+    data: any
+) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    try {
+        const collectionName = initiativeType === 'campaign' ? 'campaigns' : 'leads';
+        const docRef = adminDb.doc(`${collectionName}/${initiativeId}/beneficiaries/${beneficiaryId}`);
+        await docRef.set(data, { merge: true });
+        revalidatePath(`/${initiativeType === 'campaign' ? 'campaign-members' : 'leads-members'}/${initiativeId}/beneficiaries`);
+        revalidatePath(`/beneficiaries/${beneficiaryId}`);
+        return { success: true, message: 'Initiative Record Updated.' };
+    } catch (error: any) {
+        return { success: false, message: error.message };
+    }
+}
+
+export async function updateBeneficiaryStatusInInitiativeAction(
+    initiativeType: 'campaign' | 'lead',
+    initiativeId: string,
+    beneficiaryId: string,
+    newStatus: Beneficiary['status']
+) {
+    return updateInitiativeBeneficiaryDetailsAction(initiativeType, initiativeId, beneficiaryId, { status: newStatus });
+}

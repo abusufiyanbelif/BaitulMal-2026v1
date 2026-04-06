@@ -1,59 +1,116 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    // Helper: Check if user is signed in
+
+    // ============================================================
+    // HELPER FUNCTIONS
+    // ============================================================
+
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Helper: Get user data from Firestore
     function getUserData() {
       return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
     }
 
-    // Helper: Check if user is an Admin
     function isAdmin() {
       return isSignedIn() && (getUserData().role == 'Admin' || getUserData().loginId == 'admin');
     }
 
-    // Helper: Check granular permission
     function hasPermission(module, action) {
-      return isAdmin() || (isSignedIn() && getUserData().permissions[module][action] == true);
+      let data = getUserData();
+      return isAdmin() || (
+        isSignedIn() &&
+        data.keys().hasAll(['permissions']) &&
+        data.permissions.keys().hasAll([module]) &&
+        data.permissions[module].keys().hasAll([action]) &&
+        data.permissions[module][action] == true
+      );
     }
 
-    // Settings: Publicly readable branding/payment info, only writable by Admin
+    // ============================================================
+    // SETTINGS / APP ASSETS (Logo, QR Code, Info images)
+    // Publicly readable — used on landing page, public summaries,
+    // and the donate page before login.
+    // ============================================================
     match /settings/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // User Profile Files (ID Proofs)
+    // ============================================================
+    // USER ID PROOF DOCUMENTS
+    // Only the owner or an admin can read/write their own files.
+    // ============================================================
     match /users/{userId}/{allPaths=**} {
-      allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
     }
 
-    // Campaign Artifacts
+    // ============================================================
+    // CAMPAIGN ARTIFACTS (Cover images, documents)
+    // Public read for cover images shown on public summary pages.
+    // Only campaign editors can write.
+    // ============================================================
     match /campaigns/{campaignId}/{allPaths=**} {
       allow read: if true;
-      allow write: if hasPermission('campaigns', 'update') || hasPermission('campaigns', 'create') || isAdmin();
+      allow write: if isSignedIn() && (
+        hasPermission('campaigns', 'update') ||
+        hasPermission('campaigns', 'create') ||
+        isAdmin()
+      );
     }
 
-    // Lead Artifacts
+    // ============================================================
+    // LEAD ARTIFACTS (Cover images, documents)
+    // Public read for cover images shown on public lead summaries.
+    // Only lead editors can write.
+    // ============================================================
     match /leads/{leadId}/{allPaths=**} {
       allow read: if true;
-      allow write: if hasPermission('leads-members', 'update') || hasPermission('leads-members', 'create') || isAdmin();
+      allow write: if isSignedIn() && (
+        hasPermission('leads-members', 'update') ||
+        hasPermission('leads-members', 'create') ||
+        isAdmin()
+      );
     }
 
-    // Beneficiary ID Proofs
+    // ============================================================
+    // BENEFICIARY ID PROOFS
+    // Sensitive — require authentication to read.
+    // Any signed-in staff member can upload during data entry.
+    // ============================================================
     match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-      allow read: if isSignedIn() || isAdmin();
-      allow write: if isSignedIn();
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && (
+        hasPermission('beneficiaries', 'update') ||
+        hasPermission('beneficiaries', 'create') ||
+        isAdmin()
+      );
     }
 
-    // Donation Evidence (Screenshots)
+    // ============================================================
+    // DONATION PAYMENT SCREENSHOTS / EVIDENCE
+    // Staff-only read (sensitive financial proof).
+    // Any authenticated user can upload for their donation record.
+    // ============================================================
     match /donations/{donationId}/{allPaths=**} {
-      allow read: if isSignedIn() || isAdmin();
-      allow write: if isSignedIn();
+      allow read: if isSignedIn();
+      allow write: if isSignedIn() && (
+        hasPermission('donations', 'update') ||
+        hasPermission('donations', 'create') ||
+        isAdmin()
+      );
+    }
+
+    // ============================================================
+    // PUBLIC DONATION UPLOADS (from unauthenticated donate page)
+    // Payment screenshots uploaded by public donors.
+    // ============================================================
+    match /public_donations/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write: if true; // Public donors upload their payment proof
     }
   }
 }

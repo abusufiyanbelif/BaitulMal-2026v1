@@ -433,11 +433,34 @@ export async function bulkUnmapDonorsAction(donationIds: string[], uploadedBy: {
     }
 }
 
+export async function bulkManualMapDonorsAction(donationIds: string[], donorId: string, updatedBy: {id: string, name: string}): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    try {
+        const batch = adminDb.batch();
+        for (const id of donationIds) {
+            batch.update(adminDb.collection('donations').doc(id), { 
+                donorId, 
+                updatedAt: FieldValue.serverTimestamp(),
+                updatedBy: updatedBy.name 
+            });
+        }
+        await batch.commit();
+        revalidatePath('/donations');
+        revalidatePath(`/donors/${donorId}`);
+        revalidatePath('/donors');
+        return { success: true, message: `Successfully mapped ${donationIds.length} records to the selected donor.` };
+    } catch (error: any) {
+        return { success: false, message: error.message };
+    }
+}
+
 export async function bulkLinkInitiativeAction(
     donationIds: string[], 
     action: 'link' | 'unlink', 
     initiativeContext?: { id: string, type: 'campaign' | 'lead', name: string },
-    updatedBy?: {id: string, name: string}
+    updatedBy?: {id: string, name: string},
+    splitOptions?: { shouldSplit: boolean; fillAmount: number }
 ): Promise<{ success: boolean; message: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
@@ -456,13 +479,34 @@ export async function bulkLinkInitiativeAction(
                     updatedAt: FieldValue.serverTimestamp()
                 });
             } else if (action === 'link' && initiativeContext) {
-                batch.update(snap.ref, {
-                    linkSplit: [{
+                let finalLinks = [];
+                
+                if (splitOptions?.shouldSplit && d.amount > splitOptions.fillAmount) {
+                    finalLinks = [
+                        {
+                            linkId: initiativeContext.id,
+                            linkName: initiativeContext.name,
+                            linkType: initiativeContext.type,
+                            amount: splitOptions.fillAmount
+                        },
+                        {
+                            linkId: 'unallocated',
+                            linkName: 'Unallocated',
+                            linkType: 'general' as const,
+                            amount: d.amount - splitOptions.fillAmount
+                        }
+                    ];
+                } else {
+                    finalLinks = [{
                         linkId: initiativeContext.id,
                         linkName: initiativeContext.name,
                         linkType: initiativeContext.type,
                         amount: d.amount
-                    }],
+                    }];
+                }
+
+                batch.update(snap.ref, {
+                    linkSplit: finalLinks,
                     updatedAt: FieldValue.serverTimestamp()
                 });
             }
@@ -470,6 +514,51 @@ export async function bulkLinkInitiativeAction(
         await batch.commit();
         revalidatePath('/donations');
         return { success: true, message: `Successfully ${action}ed ${donationIds.length} donations.` };
+    } catch (error: any) {
+        return { success: false, message: error.message };
+    }
+}
+
+export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        // 1. Fetch all initiatives and donations
+        const campaignsSnap = await adminDb.collection('campaigns').get();
+        const leadsSnap = await adminDb.collection('leads').get();
+        const donationsSnap = await adminDb.collection('donations').get();
+
+        const campaignMap: Record<string, number> = {};
+        const leadMap: Record<string, number> = {};
+
+        // 2. Aggregate
+        donationsSnap.docs.forEach(docSnap => {
+            const d = docSnap.data() as Donation;
+            (d.linkSplit || []).forEach(link => {
+                if (link.linkType === 'campaign') {
+                    campaignMap[link.linkId] = (campaignMap[link.linkId] || 0) + link.amount;
+                } else if (link.linkType === 'lead') {
+                    leadMap[link.linkId] = (leadMap[link.linkId] || 0) + link.amount;
+                }
+            });
+        });
+
+        // 3. Batch Update
+        const batch = adminDb.batch();
+        campaignsSnap.docs.forEach(docSnap => {
+            batch.update(docSnap.ref, { collectedAmount: campaignMap[docSnap.id] || 0 });
+        });
+        leadsSnap.docs.forEach(docSnap => {
+            batch.update(docSnap.ref, { collectedAmount: leadMap[docSnap.id] || 0 });
+        });
+
+        await batch.commit();
+        revalidatePath('/campaigns');
+        revalidatePath('/leads');
+        revalidatePath('/dashboard');
+        
+        return { success: true, message: "System-wide financial reconciliation complete. All totals synchronized." };
     } catch (error: any) {
         return { success: false, message: error.message };
     }

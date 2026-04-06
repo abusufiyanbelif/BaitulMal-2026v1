@@ -121,8 +121,16 @@ export default function Home() {
                     <p className="mt-6 max-w-3xl mx-auto text-lg text-muted-foreground font-normal leading-relaxed">
                         {heroDescription}
                     </p>
-                    <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button asChild size="lg" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md px-8 h-12 rounded-xl">
+                    <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
+                        {brandingSettings?.isLandingDonateNowVisible !== false && (
+                            <Button asChild size="lg" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-xl active:scale-95 font-bold shadow-xl px-10 h-14 rounded-2xl bg-primary text-primary-foreground group">
+                                <Link href="/donate">
+                                    <HeartHandshake className="mr-2 h-6 w-6 text-red-400 group-hover:scale-110 transition-transform" />
+                                    Donate Now
+                                </Link>
+                            </Button>
+                        )}
+                        <Button asChild size="lg" variant="outline" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md px-8 h-12 rounded-xl border-primary/20 text-primary">
                             <Link href="/campaign-public">
                                 <FolderKanban className="mr-2 h-5 w-5" />
                                 Our Campaigns

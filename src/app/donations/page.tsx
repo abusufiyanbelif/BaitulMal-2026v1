@@ -90,13 +90,14 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn, getNestedValue } from '@/lib/utils';
-import { bulkUpdateDonationStatusAction, bulkImportDonationsAction, upsertDonationWithDonorAction, deleteDonationAction, bulkMapDonorsAction, bulkUnmapDonorsAction, bulkLinkInitiativeAction } from './actions';
+import { bulkUpdateDonationStatusAction, bulkImportDonationsAction, upsertDonationWithDonorAction, deleteDonationAction, bulkMapDonorsAction, bulkUnmapDonorsAction, bulkLinkInitiativeAction, bulkManualMapDonorsAction } from './actions';
 import { donationCategories } from '@/lib/modules';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
 import { DonationImportDialog } from '@/components/donation-import-dialog';
 import { BulkLinkInitiativeDialog } from '@/components/bulk-link-initiative-dialog';
+import { DonorSearchDialog } from '@/components/donor-search-dialog';
 import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -342,6 +343,7 @@ export default function DonationsPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
   const [isBulkLinkModalOpen, setIsBulkLinkModalOpen] = useState(false);
+  const [isManualMapOpen, setIsManualMapOpen] = useState(false);
   const [bulkLinkMode, setBulkLinkMode] = useState<'link' | 'unlink'>('link');
 
   const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
@@ -512,12 +514,28 @@ export default function DonationsPage() {
       } finally { setIsBulkUpdating(false); setIsSubmitting(false); }
   };
 
-  const handleBulkLinkInitiative = async (initiativeContext?: {id: string, type: 'campaign'|'lead', name: string}) => {
+  const handleBulkManualMap = async (donor: Donor) => {
+      if (selectedIds.length === 0 || !userProfile || !donor.id) return;
+      setIsBulkUpdating(true);
+      setIsSubmitting(true);
+      try {
+          const res = await bulkManualMapDonorsAction(selectedIds, donor.id, { id: userProfile.id, name: userProfile.name });
+          if (res.success) {
+              toast({ title: "Manual Mapping Complete", description: res.message, variant: "success" });
+              setSelectedIds([]);
+              setIsManualMapOpen(false);
+          } else {
+              toast({ title: "Manual Mapping Failed", description: res.message, variant: "destructive" });
+          }
+      } finally { setIsBulkUpdating(false); setIsSubmitting(false); }
+  };
+
+  const handleBulkLinkInitiative = async (initiativeContext?: {id: string, type: 'campaign'|'lead', name: string}, splitOptions?: { shouldSplit: boolean; fillAmount: number }) => {
       if (selectedIds.length === 0 || !userProfile) return;
       setIsBulkUpdating(true);
       setIsSubmitting(true);
       try {
-          const res = await bulkLinkInitiativeAction(selectedIds, bulkLinkMode, initiativeContext, { id: userProfile.id, name: userProfile.name });
+          const res = await bulkLinkInitiativeAction(selectedIds, bulkLinkMode, initiativeContext, { id: userProfile.id, name: userProfile.name }, splitOptions);
           if (res.success) {
               toast({ title: "Bulk Allocation Updated", description: res.message, variant: "success" });
               setSelectedIds([]);
@@ -800,6 +818,9 @@ export default function DonationsPage() {
                                     <DropdownMenuItem onClick={handleBulkMapDonors} className="font-bold text-primary">
                                         <RefreshCw className="mr-2 h-4 w-4 opacity-60" /> Auto-Map Identities
                                     </DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => setIsManualMapOpen(true)} className="font-bold text-primary">
+                                        <Users className="mr-2 h-4 w-4 opacity-60" /> Manually Map to Donor
+                                    </DropdownMenuItem>
                                     <DropdownMenuItem onClick={handleBulkUnmapDonors} className="font-bold text-destructive">
                                         <XCircle className="mr-2 h-4 w-4" /> Unmap from Donor
                                     </DropdownMenuItem>
@@ -943,10 +964,17 @@ export default function DonationsPage() {
             onOpenChange={setIsBulkLinkModalOpen} 
             mode={bulkLinkMode}
             selectedDonations={donations?.filter(d => selectedIds.includes(d.id)) || []} 
+            allDonations={donations || []}
             campaigns={allCampaigns || []} 
             leads={allLeads || []} 
             onConfirm={handleBulkLinkInitiative} 
             isSubmitting={isSubmitting} 
+        />
+
+        <DonorSearchDialog 
+            open={isManualMapOpen} 
+            onOpenChange={setIsManualMapOpen} 
+            onSelectDonor={handleBulkManualMap} 
         />
     </main>
   );

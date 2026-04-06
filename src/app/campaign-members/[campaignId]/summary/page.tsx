@@ -105,6 +105,9 @@ import {
 } from '@/components/ui/chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import type { ChartConfig } from '@/components/ui/chart';
+import { recalculateCampaignGoalAction } from '../../actions';
+import { PendingUpdateWarning } from '@/components/pending-update-warning';
+import { VerificationRequestDialog } from '@/components/verification-request-dialog';
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-3))" },
@@ -145,6 +148,7 @@ export default function CampaignSummaryPage() {
     const [isImageDeleted, setIsImageDeleted] = useState(false);
     const [isClient, setIsClient] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isRecalculating, setIsRecalculating] = useState(false);
 
     const [newDocuments, setNewDocuments] = useState<File[]>([]);
     const [existingDocuments, setExistingDocuments] = useState<CampaignDocument[]>([]);
@@ -156,6 +160,9 @@ export default function CampaignSummaryPage() {
     const [imageToView, setImageToView] = useState<{url: string, name: string} | null>(null);
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0);
+
+    const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
+    const [pendingSaveData, setPendingSaveData] = useState<any>(null);
 
     const summaryRef = useRef<HTMLDivElement>(null);
 
@@ -421,15 +428,12 @@ export default function CampaignSummaryPage() {
             documents: finalDocuments,
             updatedAt: serverTimestamp(),
         };
-        updateDoc(campaignDocRef, saveData)
-            .catch(async (serverError: any) => { 
-                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: campaignDocRef.path, operation: 'update', requestResourceData: saveData })); 
-            })
-            .finally(() => { 
-                toast({ title: 'Success', description: 'Campaign Details Secured.', variant: 'success' }); 
-                setEditMode(false);
-                setIsSubmitting(false);
-            });
+
+        // If user is not an Admin or specifically wants verification, we stage it
+        // For this high-integrity build, we'll stage ALL summary updates from this page
+        setPendingSaveData(saveData);
+        setIsVerificationDialogOpen(true);
+        setIsSubmitting(false);
     };
     
     const handleDownload = (format: 'png' | 'pdf') => {
@@ -488,6 +492,10 @@ export default function CampaignSummaryPage() {
                     </div>
                     <ScrollBar orientation="horizontal" className="hidden" />
                 </ScrollArea>
+            </div>
+
+            <div className="mb-6">
+                <PendingUpdateWarning targetId={campaignId} module="campaigns" />
             </div>
 
             <div className="space-y-6" ref={summaryRef}>
@@ -640,9 +648,32 @@ export default function CampaignSummaryPage() {
                                                 <p className="text-[10px] font-bold text-muted-foreground tracking-tight group-hover:text-primary transition-colors opacity-60">Raised For Goal</p>
                                                 <p className="text-3xl font-bold text-primary font-mono flex items-center justify-center md:justify-start gap-2">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
                                             </div>
-                                            <div className="transition-transform hover:translate-x-1 duration-300">
+                                            <div className="transition-transform hover:translate-x-1 duration-300 relative group/target">
                                                 <p className="text-[10px] font-bold text-muted-foreground tracking-tight opacity-60">Target Goal</p>
-                                                <p className="text-3xl font-bold text-primary opacity-40 font-mono">₹{(fundingData?.targetAmount || 0).toLocaleString('en-IN')}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-3xl font-bold text-primary opacity-40 font-mono">₹{(fundingData?.targetAmount || 0).toLocaleString('en-IN')}</p>
+                                                    {canUpdateSummary && (
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="icon" 
+                                                            className="h-6 w-6 opacity-0 group-hover/target:opacity-100 transition-opacity"
+                                                            onClick={async () => {
+                                                                setIsRecalculating(true);
+                                                                const res = await recalculateCampaignGoalAction(campaignId);
+                                                                if (res.success) {
+                                                                    toast({ title: res.message, variant: "success" });
+                                                                    forceRefetchCampaign();
+                                                                } else {
+                                                                    toast({ title: "Recalculation Failed", description: res.message, variant: "destructive" });
+                                                                }
+                                                                setIsRecalculating(false);
+                                                            }}
+                                                            disabled={isRecalculating}
+                                                        >
+                                                            <RefreshCw className={cn("h-3 w-3", isRecalculating && "animate-spin")} />
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </div>
                                             <div 
                                                 className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"

@@ -96,3 +96,30 @@ export async function deleteLeadAction(leadId: string): Promise<{ success: boole
         return { success: false, message: `Failed to delete lead: ${error.message}` };
     }
 }
+
+export async function recalculateLeadGoalAction(leadId: string): Promise<{ success: boolean; message: string; newTotal?: number }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    try {
+        const beneficiariesSnap = await adminDb.collection(`leads/${leadId}/beneficiaries`).get();
+        let total = 0;
+        beneficiariesSnap.forEach(doc => {
+            const data = doc.data();
+            total += (Number(data.kitAmount) || 0);
+        });
+
+        await adminDb.collection('leads').doc(leadId).update({
+            targetAmount: total,
+            requiredAmount: total,
+            updatedAt: FieldValue.serverTimestamp()
+        });
+
+        revalidatePath(`/leads-members/${leadId}/summary`);
+        revalidatePath(`/leads-public/${leadId}/summary`);
+        
+        return { success: true, message: `Goal Recalculated: ₹${total.toLocaleString('en-IN')}`, newTotal: total };
+    } catch (error: any) {
+        console.error('Recalculate Failed:', error);
+        return { success: false, message: error.message };
+    }
+}

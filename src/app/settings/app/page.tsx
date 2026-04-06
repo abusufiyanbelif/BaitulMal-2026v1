@@ -81,6 +81,7 @@ interface FormDataType {
     isPurposeSummaryVisible: boolean;
     isInitiativeSummaryVisible: boolean;
     isRecentVerificationVisible: boolean;
+    isLandingDonateNowVisible: boolean;
     summaryStartDate: string;
     summaryEndDate: string;
     qrCodeUrl: string;
@@ -272,6 +273,7 @@ export default function AppSettingsPage() {
                 isPurposeSummaryVisible: brandingSettings?.isPurposeSummaryVisible ?? true,
                 isInitiativeSummaryVisible: brandingSettings?.isInitiativeSummaryVisible ?? true,
                 isRecentVerificationVisible: brandingSettings?.isRecentVerificationVisible ?? true,
+                isLandingDonateNowVisible: brandingSettings?.isLandingDonateNowVisible ?? true,
                 summaryStartDate: brandingSettings?.summaryStartDate || '',
                 summaryEndDate: brandingSettings?.summaryEndDate || '',
                 qrCodeUrl: paymentSettings?.qrCodeUrl || '',
@@ -406,6 +408,7 @@ export default function AppSettingsPage() {
                 isPurposeSummaryVisible: editableData.isPurposeSummaryVisible,
                 isInitiativeSummaryVisible: editableData.isInitiativeSummaryVisible,
                 isRecentVerificationVisible: editableData.isRecentVerificationVisible,
+                isLandingDonateNowVisible: editableData.isLandingDonateNowVisible,
                 summaryStartDate: editableData.summaryStartDate,
                 summaryEndDate: editableData.summaryEndDate,
                 isTickerActiveVisible: editableData.isTickerActiveVisible,
@@ -490,6 +493,7 @@ export default function AppSettingsPage() {
         isPurposeSummaryVisible: brandingSettings?.isPurposeSummaryVisible ?? true,
         isInitiativeSummaryVisible: brandingSettings?.isInitiativeSummaryVisible ?? true,
         isRecentVerificationVisible: brandingSettings?.isRecentVerificationVisible ?? true,
+        isLandingDonateNowVisible: brandingSettings?.isLandingDonateNowVisible ?? true,
         summaryStartDate: brandingSettings?.summaryStartDate || '',
         summaryEndDate: brandingSettings?.summaryEndDate || '',
         qrCodeUrl: paymentSettings?.qrCodeUrl || '',
@@ -759,6 +763,15 @@ export default function AppSettingsPage() {
                                 icon={CheckCircle2}
                                 checked={displayData.isRecentVerificationVisible}
                                 onChange={(val) => handleFieldChange('isRecentVerificationVisible', val)}
+                                disabled={isFormDisabled}
+                            />
+                            <VisibilityToggle 
+                                id="landing-donate-now-visibility"
+                                label="Landing Page Donate Button"
+                                description="Show a prominent 'Donate Now' button in the hero section."
+                                icon={HeartHandshake}
+                                checked={displayData.isLandingDonateNowVisible}
+                                onChange={(val) => handleFieldChange('isLandingDonateNowVisible', val)}
                                 disabled={isFormDisabled}
                             />
                         </div>

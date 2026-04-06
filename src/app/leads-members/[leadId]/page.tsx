@@ -37,6 +37,8 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { BrandedLoader } from '@/components/branded-loader';
 import { SectionLoader } from '@/components/section-loader';
+import { VerificationRequestDialog } from '@/components/verification-request-dialog';
+import { PendingUpdateWarning } from '@/components/pending-update-warning';
 
 const quantityTypes = ['kg', 'litre', 'gram', 'ml', 'piece', 'packet', 'dozen', 'month', 'year', 'semester', 'unit', 'day', 'treatment'];
 
@@ -60,13 +62,19 @@ export default function LeadDetailsPage() {
     return collection(firestore, `leads/${leadId}/beneficiaries`);
   }, [firestore, leadId]);
   const { data: beneficiaries, isLoading: areBeneficiariesLoading, forceRefetch: forceRefetchBeneficiaries } = useCollection<Beneficiary>(beneficiariesCollectionRef);
+ 
+   const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_config') : null, [firestore]);
+   const { data: configSettings } = useDoc<any>(configRef);
 
   const [editMode, setEditMode] = useState(false);
   const [editableLead, setEditableLead] = useState<Lead | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
   
   const [itemToDelete, setItemToDelete] = useState<{ itemId: string; itemName: string } | null>(null);
-  const [isDeleteItemDialogOpen, setIsDeleteItemDialogOpen] = useState(false);
+   const [isDeleteItemDialogOpen, setIsDeleteItemDialogOpen] = useState(false);
+ 
+   const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
+   const [pendingUpdates, setPendingUpdates] = useState<any>(null);
   
   useEffect(() => {
     if (lead && !editMode) {
@@ -140,11 +148,17 @@ export default function LeadDetailsPage() {
     if (!leadDocRef || !editableLead || !canUpdate) return;
     
     const saveData: Partial<Lead> = {
-        itemCategories: editableLead.itemCategories,
-    };
-    
-    updateDoc(leadDocRef, saveData)
-        .catch(async (serverError) => {
+         itemCategories: editableLead.itemCategories,
+     };
+ 
+     if (configSettings?.isVerificationRequired) {
+         setPendingUpdates(saveData);
+         setIsVerificationDialogOpen(true);
+         return;
+     }
+     
+     updateDoc(leadDocRef, saveData)
+         .catch(async (serverError) => {
             const permissionError = new FirestorePermissionError({
                 path: leadDocRef.path,
                 operation: 'update',
@@ -243,6 +257,8 @@ export default function LeadDetailsPage() {
       </div>
       
       <h1 className="text-4xl font-bold tracking-tight text-primary">{editableLead.name}</h1>
+
+      <PendingUpdateWarning targetId={leadId} module="leads" />
 
       <div className="border-b border-primary/10 mb-4">
         <ScrollArea className="w-full">
@@ -378,6 +394,26 @@ export default function LeadDetailsPage() {
             </AlertDialogFooter>
         </AlertDialogContent>
     </AlertDialog>
+
+    {userProfile && pendingUpdates && (
+        <VerificationRequestDialog
+            isOpen={isVerificationDialogOpen}
+            onOpenChange={setIsVerificationDialogOpen}
+            user={{ id: userProfile.id, name: userProfile.name }}
+            onSuccess={() => {
+                setEditMode(false);
+            }}
+            payload={{
+                module: 'leads',
+                targetId: leadId,
+                targetCollection: 'leads',
+                description: `Update requirement list for ${lead?.name}`,
+                originalValue: lead || {},
+                newValue: pendingUpdates,
+                revalidatePath: `/leads-members/${leadId}`
+            }}
+        />
+    )}
     </>
   );
 }

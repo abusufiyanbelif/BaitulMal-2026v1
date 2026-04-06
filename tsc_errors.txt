@@ -1,0 +1,4 @@
+src/components/beneficiary-form.tsx(299,103): error TS18048: 'field.value' is possibly 'undefined'.
+src/components/unlinked-donation-resolver.tsx(68,39): error TS2304: Cannot find name 'useDoc'.
+src/components/unlinked-donation-resolver.tsx(86,61): error TS2367: This comparison appears to be unintentional because the types '"founder" | "co-founder" | "finance" | "member"' and '"none"' have no overlap.
+src/components/user-form.tsx(280,100): error TS18048: 'field.value' is possibly 'undefined'.

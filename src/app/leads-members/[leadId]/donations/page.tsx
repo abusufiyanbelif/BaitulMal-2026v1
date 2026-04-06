@@ -93,10 +93,11 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn, getNestedValue } from '@/lib/utils';
-import { bulkUpdateDonationStatusAction, bulkImportDonationsAction, upsertDonationWithDonorAction } from '@/app/donations/actions';
+import { bulkUpdateDonationStatusAction, bulkImportDonationsAction, upsertDonationWithDonorAction, bulkMapDonorsAction, bulkUnmapDonorsAction, bulkManualMapDonorsAction } from '@/app/donations/actions';
 import { donationCategories } from '@/lib/modules';
 import { BrandedLoader } from '@/components/branded-loader';
 import { DonationImportDialog } from '@/components/donation-import-dialog';
+import { DonorSearchDialog } from '@/components/donor-search-dialog';
 import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -210,6 +211,7 @@ function LeadDonationListContent() {
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+  const [isManualMapOpen, setIsManualMapOpen] = useState(false);
   
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.update', false);
   const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.create', false);
@@ -439,6 +441,52 @@ function LeadDonationListContent() {
     }
   };
 
+  const handleBulkMapDonors = async () => {
+      if (selectedIds.length === 0 || !userProfile) return;
+      setIsBulkUpdating(true);
+      setIsSubmitting(true);
+      try {
+          const res = await bulkMapDonorsAction(selectedIds, { id: userProfile.id, name: userProfile.name });
+          if (res.success) {
+              toast({ title: "Auto-Mapping Complete", description: res.message, variant: "success" });
+              setSelectedIds([]);
+          } else {
+              toast({ title: "Auto-Mapping Failed", description: res.message, variant: "destructive" });
+          }
+      } finally { setIsBulkUpdating(false); setIsSubmitting(false); }
+  };
+
+  const handleBulkUnmapDonors = async () => {
+      if (selectedIds.length === 0 || !userProfile) return;
+      setIsBulkUpdating(true);
+      setIsSubmitting(true);
+      try {
+          const res = await bulkUnmapDonorsAction(selectedIds, { id: userProfile.id, name: userProfile.name });
+          if (res.success) {
+              toast({ title: "Unmapping Complete", description: res.message, variant: "success" });
+              setSelectedIds([]);
+          } else {
+              toast({ title: "Unmapping Failed", description: res.message, variant: "destructive" });
+          }
+      } finally { setIsBulkUpdating(false); setIsSubmitting(false); }
+  };
+
+  const handleBulkManualMap = async (donor: any) => {
+      if (selectedIds.length === 0 || !userProfile || !donor.id) return;
+      setIsBulkUpdating(true);
+      setIsSubmitting(true);
+      try {
+          const res = await bulkManualMapDonorsAction(selectedIds, donor.id, { id: userProfile.id, name: userProfile.name });
+          if (res.success) {
+              toast({ title: "Manual Mapping Complete", description: res.message, variant: "success" });
+              setSelectedIds([]);
+              setIsManualMapOpen(false);
+          } else {
+              toast({ title: "Manual Mapping Failed", description: res.message, variant: "destructive" });
+          }
+      } finally { setIsBulkUpdating(false); setIsSubmitting(false); }
+  };
+
   const handleExport = () => {
     if (!donations || donations.length === 0) return;
     const headers = ['ID', 'Donor Name', 'Donor Phone', 'Receiver Name', 'Referral', 'Total Amount', 'Donation Date', 'Status', 'Donation Type', 'Comments', 'Suggestions'];
@@ -577,6 +625,16 @@ function LeadDonationListContent() {
                                 <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-normal text-primary">Set To Verified</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-normal">Set To Pending</DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => handleBulkStatusChange('Canceled')} className="font-normal text-destructive">Set To Canceled</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={handleBulkMapDonors} className="font-bold text-primary">
+                                    <RefreshCw className="mr-2 h-4 w-4 opacity-60" /> Auto-Map Identities
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setIsManualMapOpen(true)} className="font-bold text-primary">
+                                    <Users className="mr-2 h-4 w-4 opacity-60" /> Manually Map to Donor
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={handleBulkUnmapDonors} className="font-bold text-destructive">
+                                    <XCircle className="mr-2 h-4 w-4" /> Unmap from Donor
+                                </DropdownMenuItem>
                             </DropdownMenuContent>
                         </DropdownMenu>
                     </div>
@@ -788,6 +846,12 @@ function LeadDonationListContent() {
         <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
             <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Unlink From Project?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach This Record From The Current Lead Initiative? The Master Record Will Remain Verified.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 rounded-[12px] transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
         </AlertDialog>
+
+        <DonorSearchDialog 
+            open={isManualMapOpen} 
+            onOpenChange={setIsManualMapOpen} 
+            onSelectDonor={handleBulkManualMap} 
+        />
     </main>
   );
 }

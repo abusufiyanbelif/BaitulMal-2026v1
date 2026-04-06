@@ -116,6 +116,14 @@ export function OverallFundingSummary() {
                             ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}
                             </p>
                         </div>
+                        {overallSummary.showUnlinkedFunds && (
+                            <div className="space-y-1 pt-2 border-t border-primary/5">
+                                <p className="text-[10px] font-bold text-amber-600 tracking-tight capitalize">Available Unlinked Funds</p>
+                                <p className="text-xl font-bold font-mono text-amber-700">
+                                ₹{(overallSummary.grandTotalUnlinked || 0).toLocaleString('en-IN')}
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </CardContent>

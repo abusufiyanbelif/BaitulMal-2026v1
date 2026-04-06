@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Settings, Save, Loader2, CheckSquare, Edit, X } from 'lucide-react';
+import { Settings, Save, Loader2, CheckSquare, Edit, X, ShieldCheck } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -55,17 +55,23 @@ export default function LeadSettingsPage() {
 
   const [localVis, setLocalVis] = useState<Record<string, boolean>>({});
   const [localMandatory, setLocalMandatory] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    if (visibilitySettings) setLocalVis(visibilitySettings);
-    if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
-  }, [visibilitySettings, configSettings]);
-
-  const isDirty = useMemo(() => {
-    const visChanged = JSON.stringify(localVis) !== JSON.stringify(visibilitySettings || {});
-    const mandatoryChanged = JSON.stringify(localMandatory) !== JSON.stringify(configSettings?.mandatoryFields || {});
-    return visChanged || mandatoryChanged;
-  }, [localVis, localMandatory, visibilitySettings, configSettings]);
+  const [localVerification, setLocalVerification] = useState(false);
+  const [localDonateNow, setLocalDonateNow] = useState(false);
+ 
+   useEffect(() => {
+     if (visibilitySettings) setLocalVis(visibilitySettings);
+     if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
+     if (configSettings?.isVerificationRequired) setLocalVerification(configSettings.isVerificationRequired);
+     if (configSettings?.isDonateNowVisible) setLocalDonateNow(configSettings.isDonateNowVisible);
+   }, [visibilitySettings, configSettings]);
+ 
+   const isDirty = useMemo(() => {
+     const visChanged = JSON.stringify(localVis) !== JSON.stringify(visibilitySettings || {});
+     const mandatoryChanged = JSON.stringify(localMandatory) !== JSON.stringify(configSettings?.mandatoryFields || {});
+     const verificationChanged = localVerification !== (configSettings?.isVerificationRequired || false);
+     const donateNowChanged = localDonateNow !== (configSettings?.isDonateNowVisible || false);
+     return visChanged || mandatoryChanged || verificationChanged || donateNowChanged;
+   }, [localVis, localMandatory, localVerification, localDonateNow, visibilitySettings, configSettings]);
 
   const handleVisToggle = (id: string, group: 'public' | 'member') => {
     const key = `${group}_${id}`;
@@ -81,9 +87,13 @@ export default function LeadSettingsPage() {
     setIsSubmitting(true);
     try {
         await Promise.all([
-            setDoc(visRef, localVis),
-            setDoc(configRef, { mandatoryFields: localMandatory }, { merge: true })
-        ]);
+             setDoc(visRef, localVis),
+             setDoc(configRef, { 
+                 mandatoryFields: localMandatory, 
+                 isVerificationRequired: localVerification,
+                 isDonateNowVisible: localDonateNow
+             }, { merge: true })
+         ]);
         toast({ title: "Settings saved", variant: "success" });
         setIsEditMode(false);
     } catch (e) {
@@ -94,10 +104,12 @@ export default function LeadSettingsPage() {
   };
 
   const handleCancel = () => {
-    if (visibilitySettings) setLocalVis(visibilitySettings);
-    if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
-    setIsEditMode(false);
-  };
+     if (visibilitySettings) setLocalVis(visibilitySettings);
+     if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
+     if (configSettings?.isVerificationRequired) setLocalVerification(configSettings.isVerificationRequired);
+     if (configSettings?.isDonateNowVisible) setLocalDonateNow(configSettings.isDonateNowVisible);
+     setIsEditMode(false);
+   };
 
   if (isVisLoading || isConfigLoading) return <BrandedLoader />;
 
@@ -172,31 +184,87 @@ export default function LeadSettingsPage() {
             </CardContent>
         </Card>
 
-        <Card className="animate-fade-in-up border-primary/10">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-bold text-primary">
-                    <CheckSquare className="h-5 w-5" /> Mandatory fields
-                </CardTitle>
-                <CardDescription className="font-normal">
-                    Define required fields for individual support leads.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {MANDATORY_FIELDS.map(field => (
-                        <div key={field.id} className="flex items-center space-x-2">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card className="animate-fade-in-up border-primary/10 h-full">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 font-bold text-primary">
+                        <CheckSquare className="h-5 w-5" /> Mandatory fields
+                    </CardTitle>
+                    <CardDescription className="font-normal">
+                        Define required fields for individual support leads.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {MANDATORY_FIELDS.map(field => (
+                            <div key={field.id} className="flex items-center space-x-2">
+                                <Checkbox 
+                                    id={`mandatory_lead_${field.id}`} 
+                                    checked={localMandatory[field.id] === true} 
+                                    onCheckedChange={() => handleMandatoryToggle(field.id)} 
+                                    disabled={!isEditMode}
+                                />
+                                <Label htmlFor={`mandatory_lead_${field.id}`} className="cursor-pointer font-normal">{field.name}</Label>
+                            </div>
+                        ))}
+                    </div>
+                </CardContent>
+            </Card>
+
+            <div className="space-y-6">
+                <Card className="animate-fade-in-up border-primary/10 bg-white shadow-sm overflow-hidden">
+                    <CardHeader className="bg-primary/5 border-b">
+                        <CardTitle className="flex items-center gap-2 font-bold text-primary">
+                            <ShieldCheck className="h-5 w-5" /> Audit & Workflow
+                        </CardTitle>
+                        <CardDescription className="font-normal text-primary/70">
+                            Require secondary confirmation from another member.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                        <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
                             <Checkbox 
-                                id={`mandatory_lead_${field.id}`} 
-                                checked={localMandatory[field.id] === true} 
-                                onCheckedChange={() => handleMandatoryToggle(field.id)} 
+                                id="verification_required" 
+                                checked={localVerification} 
+                                onCheckedChange={(checked) => setLocalVerification(!!checked)} 
                                 disabled={!isEditMode}
+                                className="data-[state=checked]:bg-primary"
                             />
-                            <Label htmlFor={`mandatory_lead_${field.id}`} className="cursor-pointer font-normal">{field.name}</Label>
+                            <div className="space-y-0.5">
+                                <Label htmlFor="verification_required" className="cursor-pointer font-bold text-sm tracking-tight text-primary">Enable "Assign to Verifier" on Edits</Label>
+                                <p className="text-[10px] text-muted-foreground font-medium">Changes remain "Pending" until confirmed.</p>
+                            </div>
                         </div>
-                    ))}
-                </div>
-            </CardContent>
-        </Card>
-    </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="animate-fade-in-up border-primary/10 bg-white shadow-sm overflow-hidden">
+                    <CardHeader className="bg-primary/5 border-b">
+                        <CardTitle className="flex items-center gap-2 font-bold text-primary">
+                            <Save className="h-5 w-5" /> Donation Controls
+                        </CardTitle>
+                        <CardDescription className="font-normal text-primary/70">
+                            Manage public-facing donation options for individual appeals.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                        <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
+                            <Checkbox 
+                                id="is_donate_now_visible" 
+                                checked={localDonateNow} 
+                                onCheckedChange={(checked) => setLocalDonateNow(!!checked)} 
+                                disabled={!isEditMode}
+                                className="data-[state=checked]:bg-primary"
+                            />
+                            <div className="space-y-0.5">
+                                <Label htmlFor="is_donate_now_visible" className="cursor-pointer font-bold text-sm tracking-tight text-primary">Show "Donate Now" Button</Label>
+                                <p className="text-[10px] text-muted-foreground font-medium">Allow the public to initiate donations directly from the appeal page.</p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+             </div>
+         </div>
+     </div>
   );
 }

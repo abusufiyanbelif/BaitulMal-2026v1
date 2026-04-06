@@ -4,6 +4,20 @@ export const crudPermissions = ['create', 'read', 'update', 'delete'] as const;
 export const readUpdatePermissions = ['read', 'update'] as const;
 export const simpleReadPermission = ['read'] as const;
 export const donationCategories = ['Fitra', 'Zakat', 'Sadaqah', 'Fidiya', 'Interest', 'Lillah', 'Loan', 'Monthly Contribution'] as const;
+export const upiProviders = ['Google Pay', 'PhonePe', 'Paytm', 'Amazon Pay', 'BHIM UPI', 'Other'] as const;
+export const supportedBanks = [
+    'State Bank of India (SBI)',
+    'HDFC Bank',
+    'ICICI Bank',
+    'Axis Bank',
+    'Kotak Mahindra Bank',
+    'IndusInd Bank',
+    'Bank of Baroda (BOI)',
+    'Punjab National Bank (PNB)',
+    'Union Bank of India',
+    'Canara Bank',
+    'Other'
+] as const;
 
 export const GROUPS = [
     { id: 'founder', name: 'Founders' },

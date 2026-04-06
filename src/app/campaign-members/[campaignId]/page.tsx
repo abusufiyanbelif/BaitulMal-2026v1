@@ -66,6 +66,8 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { BrandedLoader } from '@/components/branded-loader';
 import { SectionLoader } from '@/components/section-loader';
+import { VerificationRequestDialog } from '@/components/verification-request-dialog';
+import { PendingUpdateWarning } from '@/components/pending-update-warning';
 
 const quantityTypes = ['kg', 'litre', 'gram', 'ml', 'piece', 'packet', 'dozen', 'month', 'year', 'semester', 'unit', 'day', 'treatment'];
 
@@ -90,6 +92,9 @@ export default function CampaignDetailsPage() {
     return collection(firestore, `campaigns/${campaignId}/beneficiaries`);
   }, [firestore, campaignId]);
   const { data: beneficiaries, isLoading: areBeneficiariesLoading, forceRefetch: forceRefetchBeneficiaries } = useCollection<Beneficiary>(beneficiariesCollectionRef);
+ 
+   const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'campaign_config') : null, [firestore]);
+   const { data: configSettings } = useDoc<any>(configRef);
 
   const [editMode, setEditMode] = useState(false);
   const [editableCampaign, setEditableCampaign] = useState<Campaign | null>(null);
@@ -114,7 +119,10 @@ export default function CampaignDetailsPage() {
   const [categoryToEdit, setCategoryToEdit] = useState<ItemCategory | null>(null);
 
   const [itemToDelete, setItemToDelete] = useState<{ categoryId: string; itemId: string; itemName: string } | null>(null);
-  const [isDeleteItemDialogOpen, setIsDeleteItemDialogOpen] = useState(false);
+   const [isDeleteItemDialogOpen, setIsDeleteItemDialogOpen] = useState(false);
+ 
+   const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
+   const [pendingUpdates, setPendingUpdates] = useState<any>(null);
 
   const syncAllCategoriesFromMaster = useCallback((itemCategories: ItemCategory[]): ItemCategory[] => {
     const masterList = itemCategories.find(cat => cat.name === 'Item Price List');
@@ -226,15 +234,21 @@ export default function CampaignDetailsPage() {
     if (!campaignDocRef || !editableCampaign || !canUpdate) return;
 
     const saveData = {
-        priceDate: editableCampaign.priceDate,
-        shopName: editableCampaign.shopName,
-        shopContact: editableCampaign.shopContact,
-        shopAddress: editableCampaign.shopAddress,
-        itemCategories: sanitizedEditableItemCategories,
-    };
-    
-    updateDoc(campaignDocRef, saveData)
-        .catch(async (serverError: any) => {
+         priceDate: editableCampaign.priceDate,
+         shopName: editableCampaign.shopName,
+         shopContact: editableCampaign.shopContact,
+         shopAddress: editableCampaign.shopAddress,
+         itemCategories: sanitizedEditableItemCategories,
+     };
+ 
+     if (configSettings?.isVerificationRequired) {
+         setPendingUpdates(saveData);
+         setIsVerificationDialogOpen(true);
+         return;
+     }
+     
+     updateDoc(campaignDocRef, saveData)
+         .catch(async (serverError: any) => {
             const permissionError = new FirestorePermissionError({
                 path: campaignDocRef.path,
                 operation: 'update',
@@ -794,8 +808,10 @@ export default function CampaignDetailsPage() {
         </div>
         
         <h1 className="text-4xl font-bold tracking-tight text-primary">{editableCampaign.name}</h1>
-        
-        <div className="border-b border-primary/10 mb-4">
+         
+         <PendingUpdateWarning targetId={campaignId} module="campaigns" />
+ 
+         <div className="border-b border-primary/10 mb-4">
             <ScrollArea className="w-full">
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 w-full bg-transparent p-0 border-b border-primary/10 pb-4">
                     {canReadSummary && (

@@ -98,3 +98,29 @@ export async function deleteCampaignAction(campaignId: string): Promise<{ succes
         return { success: false, message: `Failed to delete campaign: ${error.message}` };
     }
 }
+
+export async function recalculateCampaignGoalAction(campaignId: string): Promise<{ success: boolean; message: string; newTotal?: number }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    try {
+        const beneficiariesSnap = await adminDb.collection(`campaigns/${campaignId}/beneficiaries`).get();
+        let total = 0;
+        beneficiariesSnap.forEach(doc => {
+            const data = doc.data();
+            total += (Number(data.kitAmount) || 0);
+        });
+
+        await adminDb.collection('campaigns').doc(campaignId).update({
+            targetAmount: total,
+            updatedAt: FieldValue.serverTimestamp()
+        });
+
+        revalidatePath(`/campaign-members/${campaignId}/summary`);
+        revalidatePath(`/campaign-public/${campaignId}/summary`);
+        
+        return { success: true, message: `Goal Recalculated: ₹${total.toLocaleString('en-IN')}`, newTotal: total };
+    } catch (error: any) {
+        console.error('Recalculate Failed:', error);
+        return { success: false, message: error.message };
+    }
+}

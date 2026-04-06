@@ -108,6 +108,9 @@ import {
 } from '@/components/ui/chart';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import type { ChartConfig } from '@/components/ui/chart';
+import { recalculateLeadGoalAction } from '../../actions';
+import { PendingUpdateWarning } from '@/components/pending-update-warning';
+import { VerificationRequestDialog } from '@/components/verification-request-dialog';
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-3))" },
@@ -148,6 +151,7 @@ export default function LeadSummaryPage() {
     const [isImageDeleted, setIsImageDeleted] = useState(false);
     const [isClient, setIsClient] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isRecalculating, setIsRecalculating] = useState(false);
     
     const [newDocuments, setNewDocuments] = useState<File[]>([]);
     const [existingDocuments, setExistingDocuments] = useState<CampaignDocument[]>([]);
@@ -159,6 +163,9 @@ export default function LeadSummaryPage() {
     const [imageToView, setImageToView] = useState<{url: string, name: string} | null>(null);
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0);
+
+    const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
+    const [pendingSaveData, setPendingSaveData] = useState<any>(null);
 
     const summaryRef = useRef<HTMLDivElement>(null);
 
@@ -404,15 +411,11 @@ export default function LeadSummaryPage() {
             documents: finalDocuments,
             updatedAt: serverTimestamp(),
         };
-        updateDoc(leadDocRef, saveData)
-            .catch(async (serverError: any) => { 
-                errorEmitter.emit('permission-error', new FirestorePermissionError({ path: leadDocRef.path, operation: 'update', requestResourceData: saveData })); 
-            })
-            .finally(() => { 
-                toast({ title: 'Success', description: 'Appeal Summary Secured.', variant: 'success' }); 
-                setEditMode(false); 
-                setIsSubmitting(false);
-            });
+
+        // For high-integrity build, we'll stage ALL summary updates from this page for verification
+        setPendingSaveData(saveData);
+        setIsVerificationDialogOpen(true);
+        setIsSubmitting(false);
     };
     
     const handleDownload = (format: 'png' | 'pdf') => {
@@ -496,6 +499,10 @@ export default function LeadSummaryPage() {
                   </div>
                   <ScrollBar orientation="horizontal" className="hidden" />
               </ScrollArea>
+            </div>
+
+            <div className="mb-6">
+                <PendingUpdateWarning targetId={leadId} module="leads" />
             </div>
 
             <div className="space-y-6" ref={summaryRef}>
@@ -685,9 +692,32 @@ export default function LeadSummaryPage() {
                                                 <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize group-hover:text-primary transition-colors opacity-60">Raised For Goal</p>
                                                 <p className="text-3xl font-bold text-primary font-mono flex items-center justify-center md:justify-start gap-2">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
                                             </div>
-                                            <div className="transition-transform hover:translate-x-1 duration-300">
+                                            <div className="transition-transform hover:translate-x-1 duration-300 relative group/target">
                                                 <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Target Goal</p>
-                                                <p className="text-3xl font-bold text-primary opacity-40 font-mono">₹{(fundingData?.targetAmount || 0).toLocaleString('en-IN')}</p>
+                                                <div className="flex items-center gap-2">
+                                                    <p className="text-3xl font-bold text-primary opacity-40 font-mono">₹{(fundingData?.targetAmount || 0).toLocaleString('en-IN')}</p>
+                                                    {canUpdateSummary && (
+                                                        <Button 
+                                                            variant="ghost" 
+                                                            size="icon" 
+                                                            className="h-6 w-6 opacity-0 group-hover/target:opacity-100 transition-opacity"
+                                                            onClick={async () => {
+                                                                setIsRecalculating(true);
+                                                                const res = await recalculateLeadGoalAction(leadId);
+                                                                if (res.success) {
+                                                                    toast({ title: res.message, variant: "success" });
+                                                                    router.refresh();
+                                                                } else {
+                                                                    toast({ title: "Recalculation Failed", description: res.message, variant: "destructive" });
+                                                                }
+                                                                setIsRecalculating(false);
+                                                            }}
+                                                            disabled={isRecalculating}
+                                                        >
+                                                            <RefreshCw className={cn("h-3 w-3", isRecalculating && "animate-spin")} />
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </div>
                                             <div 
                                                 className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
@@ -1017,24 +1047,41 @@ export default function LeadSummaryPage() {
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-                <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden animate-fade-in-zoom border-primary/10 text-primary font-normal">
+                <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden rounded-[24px] border-primary/10 shadow-2xl">
                     <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary tracking-tight text-sm capitalize">{imageToView?.name}</DialogTitle></DialogHeader>
-                    <ScrollArea className="flex-1 bg-secondary/20">
-                        <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
-                            {imageToView && (
-                                <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Document View" fill sizes="100vw" className="object-contain transition-all duration-300 origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
-                            )}
-                        </div>
-                        <ScrollBar orientation="vertical" />
-                    </ScrollArea>
+                    <div className="p-4 bg-secondary/20 flex-1 overflow-hidden relative min-h-[70vh]">
+                        {imageToView && (
+                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                        )}
+                    </div>
                     <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">
-                        <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform capitalize"><ZoomIn className="mr-1 h-4 w-4"/> In</Button>
-                        <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5))} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform capitalize"><ZoomOut className="mr-1 h-4 w-4"/> Out</Button>
-                        <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform capitalize"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
-                        <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform capitalize"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
+                        <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><ZoomIn className="mr-1 h-4 w-4"/> In</Button>
+                        <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5))} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><ZoomOut className="mr-1 h-4 w-4"/> Out</Button>
+                        <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
+                        <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {userProfile && pendingSaveData && (
+                <VerificationRequestDialog
+                    isOpen={isVerificationDialogOpen}
+                    onOpenChange={setIsVerificationDialogOpen}
+                    user={{ id: userProfile.id, name: userProfile.name }}
+                    payload={{
+                        targetId: leadId,
+                        module: 'leads',
+                        action: 'update',
+                        newData: pendingSaveData,
+                        oldData: lead,
+                        description: `Update appeal details: ${lead.name}`
+                    }}
+                    onSuccess={() => {
+                        setEditMode(false);
+                        setPendingSaveData(null);
+                    }}
+                />
+            )}
         </main>
     );
 }

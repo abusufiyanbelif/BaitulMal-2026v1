@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { FolderKanban, Lightbulb, Save, Info, AlertTriangle } from 'lucide-react';
@@ -13,14 +14,16 @@ interface BulkLinkInitiativeDialogProps {
   onOpenChange: (open: boolean) => void;
   mode: 'link' | 'unlink';
   selectedDonations: Donation[];
+  allDonations: Donation[];
   campaigns: Campaign[];
   leads: Lead[];
-  onConfirm: (initiativeContext?: { id: string; type: 'campaign' | 'lead'; name: string }) => Promise<void>;
+  onConfirm: (initiativeContext?: { id: string; type: 'campaign' | 'lead'; name: string }, splitOptions?: { shouldSplit: boolean; fillAmount: number }) => Promise<void>;
   isSubmitting: boolean;
 }
 
-export function BulkLinkInitiativeDialog({ open, onOpenChange, mode, selectedDonations, campaigns, leads, onConfirm, isSubmitting }: BulkLinkInitiativeDialogProps) {
+export function BulkLinkInitiativeDialog({ open, onOpenChange, mode, selectedDonations, allDonations, campaigns, leads, onConfirm, isSubmitting }: BulkLinkInitiativeDialogProps) {
   const [selectedInitiative, setSelectedInitiative] = useState<string>('');
+  const [shouldSplit, setShouldSplit] = useState(true);
 
   const totalSelectedAmount = useMemo(() => {
     return selectedDonations.reduce((sum, d) => sum + (d.amount || 0), 0);
@@ -46,8 +49,16 @@ export function BulkLinkInitiativeDialog({ open, onOpenChange, mode, selectedDon
       const target = selectedInitiativeData.targetAmount || 0;
       const collected = selectedInitiativeData.collectedAmount || 0;
       const remaining = target - collected;
-      return { target, collected, remaining };
-  }, [selectedInitiativeData]);
+      const isOver = totalSelectedAmount > remaining && remaining > 0;
+      return { target, collected, remaining, isOver };
+  }, [selectedInitiativeData, totalSelectedAmount]);
+
+  const unlinkedSuggestions = useMemo(() => {
+      return allDonations
+          .filter(d => (!d.linkSplit || d.linkSplit.length === 0 || d.linkSplit.some(l => l.linkId === 'unallocated')))
+          .sort((a, b) => (b.amount || 0) - (a.amount || 0))
+          .slice(0, 5);
+  }, [allDonations]);
 
   const handleApply = async () => {
       if (mode === 'unlink') {
@@ -57,7 +68,12 @@ export function BulkLinkInitiativeDialog({ open, onOpenChange, mode, selectedDon
       if (!selectedInitiative) return;
       const [type, id] = selectedInitiative.split('_');
       const name = selectedInitiativeData?.name || 'Unknown';
-      await onConfirm({ id, type: type as 'campaign' | 'lead', name });
+      
+      const splitOptions = (targetDiff?.isOver && shouldSplit) 
+        ? { shouldSplit: true, fillAmount: targetDiff.remaining }
+        : undefined;
+
+      await onConfirm({ id, type: type as 'campaign' | 'lead', name }, splitOptions);
   };
 
   return (
@@ -134,9 +150,43 @@ export function BulkLinkInitiativeDialog({ open, onOpenChange, mode, selectedDon
                                 </div>
                                 <div>
                                     <p className="text-[10px] uppercase font-bold tracking-tight text-blue-800/60">After Allocation</p>
-                                    <p className="font-mono text-sm font-black text-green-700">₹{Math.max(0, targetDiff.remaining - totalSelectedAmount).toFixed(2)}</p>
+                                    <p className="font-mono text-sm font-black text-green-700">₹{Math.max(0, targetDiff.remaining - (targetDiff.isOver && shouldSplit ? targetDiff.remaining : totalSelectedAmount)).toFixed(2)}</p>
                                 </div>
                             </div>
+
+                            {targetDiff.isOver && targetDiff.remaining > 0 && (
+                                <div className="mt-4 p-3 bg-white/60 border border-blue-200 rounded-lg space-y-2">
+                                     <div className="flex items-center space-x-2">
+                                        <Checkbox 
+                                            id="split-to-fill" 
+                                            checked={shouldSplit} 
+                                            onCheckedChange={(checked: boolean) => setShouldSplit(!!checked)} 
+                                        />
+                                        <label htmlFor="split-to-fill" className="text-xs font-bold text-blue-900 cursor-pointer">
+                                            Split to Fill (Allocate only ₹{targetDiff.remaining.toFixed(2)})
+                                        </label>
+                                    </div>
+                                    <p className="text-[10px] text-blue-800/60 font-medium ml-6">
+                                        If enabled, the remaining ₹{(totalSelectedAmount - targetDiff.remaining).toFixed(2)} will stay in the Unallocated pool.
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {mode === 'link' && unlinkedSuggestions.length > 0 && (
+                        <div className="space-y-2">
+                            <h4 className="text-[10px] font-black text-primary/40 uppercase tracking-widest flex items-center gap-1">
+                                <Lightbulb className="h-3.5 w-3.5" /> High-Value Suggestions
+                            </h4>
+                            <div className="flex flex-wrap gap-2">
+                                {unlinkedSuggestions.map(d => (
+                                    <Badge key={d.id} variant="secondary" className="font-mono text-[10px] py-1 border-primary/5">
+                                        ₹{d.amount.toLocaleString()}
+                                    </Badge>
+                                ))}
+                            </div>
+                            <p className="text-[9px] text-muted-foreground italic">These large unlinked donations could help fulfill this cause quickly.</p>
                         </div>
                     )}
                 </>

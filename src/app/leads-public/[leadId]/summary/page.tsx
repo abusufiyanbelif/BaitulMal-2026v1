@@ -45,7 +45,8 @@ import {
     GraduationCap,
     HeartPulse,
     Info,
-    ShieldCheck
+    ShieldCheck,
+    HeartHandshake
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { ShareDialog } from '@/components/share-dialog';
@@ -115,7 +116,9 @@ export default function PublicLeadSummaryPage() {
     const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
     
     const visibilityRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_visibility') : null, [firestore]);
+    const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_config') : null, [firestore]);
     const { data: visibilitySettings } = useDoc<any>(visibilityRef);
+    const { data: configSettings } = useDoc<any>(configRef);
 
     const isRationInitiative = useMemo(() => {
         return lead?.purpose === 'Relief' && lead?.category === 'Ration Kit';
@@ -277,6 +280,14 @@ export default function PublicLeadSummaryPage() {
             </div>
 
             <div className="flex justify-end items-center mb-4 flex-wrap gap-2">
+                {configSettings?.isDonateNowVisible !== false && (
+                    <Button asChild className="active:scale-95 transition-transform font-bold shadow-xl h-11 px-10 rounded-2xl bg-primary text-primary-foreground hover:shadow-2xl hover:-translate-y-0.5 group">
+                        <Link href={`/donate?leadId=${leadId}`}>
+                            <HeartHandshake className="mr-2 h-5 w-5 text-red-500 group-hover:scale-110 transition-transform" />
+                            Donate Now
+                        </Link>
+                    </Button>
+                )}
                 <Button onClick={handleShare} variant="outline" className="active:scale-95 transition-transform font-bold border-primary/20 text-primary h-10 px-6 rounded-xl shadow-sm">
                     <Share2 className="mr-2 h-4 w-4" /> Share Dashboard
                 </Button>

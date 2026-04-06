@@ -266,7 +266,28 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                             <TabsContent value="profile" className="mt-6 space-y-6 animate-fade-in-up">
                                 <FormField control={control} name="name" render={({ field }) => (<FormItem>{renderLabel('Full name', 'name')}<FormControl><Input placeholder="e.g. Moosa Shaikh" {...field} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
                                 <FormField control={control} name="email" render={({ field }) => (<FormItem>{renderLabel('Email address', 'email')}<FormControl><Input type="email" placeholder="user@example.com" {...field} disabled={isFormDisabled || (isEditing && !isCurrentUserAdmin)} className="font-normal" /></FormControl><FormDescription className="font-normal text-xs opacity-70">Primary institutional contact and authentication identity.</FormDescription><FormMessage /></FormItem>)}/>
-                                <FormField control={control} name="phone" render={({ field }) => (<FormItem>{renderLabel('Phone number', 'phone')}<FormControl><Input placeholder="10-digit mobile number" {...field} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
+                                 <FormField control={control} name="phone" render={({ field }) => (
+                                     <FormItem>
+                                         {renderLabel('Phone number', 'phone')}
+                                         <div className="flex gap-2">
+                                             <FormControl><Input placeholder="10-digit mobile number" {...field} disabled={isFormDisabled} className="font-normal flex-1" /></FormControl>
+                                             {field.value && (
+                                                 <Button 
+                                                     type="button" 
+                                                     variant="outline" 
+                                                     size="icon" 
+                                                     className="shrink-0 border-green-200 text-green-600 hover:bg-green-50"
+                                                     onClick={() => window.open(`https://wa.me/91${String(field.value || '').replace(/\D/g, '')}`, '_blank')}
+                                                 >
+                                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                                         <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.06 3.973L0 16l4.204-1.102a7.923 7.923 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
+                                                     </svg>
+                                                 </Button>
+                                             )}
+                                         </div>
+                                         <FormMessage />
+                                     </FormItem>
+                                 )}/>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField control={control} name="loginId" render={({ field }) => (<FormItem>{renderLabel('Login ID', 'loginId')}<FormControl><Input placeholder="Auto-generated from name" {...field} disabled={isFormDisabled || (!isCurrentUserAdmin && isEditing)} className="font-normal" /></FormControl><FormDescription className="font-normal text-xs opacity-70">Unique identifier for account access.</FormDescription><FormMessage /></FormItem>)}/>
                                     <FormField control={control} name="userKey" render={({ field }) => (
