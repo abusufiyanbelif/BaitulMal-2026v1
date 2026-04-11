@@ -84,7 +84,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
          if (!allDonations || !configSettings) return [];
          
          const isGlobal = configSettings.isUnlinkedFundsGlobal;
-         const isMember = userProfile?.organizationGroup && (userProfile.organizationGroup as string) !== 'none';
+         const isMember = userProfile?.organizationGroup;
          
          if (!isGlobal && !isMember) return [];
  

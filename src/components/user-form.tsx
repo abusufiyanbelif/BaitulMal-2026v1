@@ -73,7 +73,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
       phone: user?.phone || '',
       userKey: user?.userKey || '',
       loginId: user?.loginId || '',
-      role: user?.role || 'User',
+      role: (user?.role as 'Admin' | 'User') || 'User',
       status: user?.status || 'Active',
       password: '',
       idProofType: user?.idProofType || '',
@@ -102,7 +102,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
         phone: user.phone || '',
         userKey: user.userKey || '',
         loginId: user.loginId || '',
-        role: user.role || 'User',
+        role: (user.role as 'Admin' | 'User') || 'User',
         status: user.status || 'Active',
         password: '',
         idProofType: user.idProofType || '',
@@ -253,7 +253,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
   
   return (
     <Form {...form}>
-        <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col h-full overflow-hidden bg-white">
+        <form onSubmit={handleSubmit(onFormSubmit as any)} className="flex flex-col h-full overflow-hidden bg-white">
             <div className="flex-1 min-h-0 relative flex flex-col">
                 <ScrollArea className="flex-1 w-full">
                     <div className="px-6 py-4 space-y-6 text-primary font-normal pb-24">
@@ -264,9 +264,9 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <TabsTrigger value="permissions" className="font-bold data-[state=active]:shadow-sm">Permissions</TabsTrigger>
                             </TabsList>
                             <TabsContent value="profile" className="mt-6 space-y-6 animate-fade-in-up">
-                                <FormField control={control} name="name" render={({ field }) => (<FormItem>{renderLabel('Full name', 'name')}<FormControl><Input placeholder="e.g. Moosa Shaikh" {...field} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
-                                <FormField control={control} name="email" render={({ field }) => (<FormItem>{renderLabel('Email address', 'email')}<FormControl><Input type="email" placeholder="user@example.com" {...field} disabled={isFormDisabled || (isEditing && !isCurrentUserAdmin)} className="font-normal" /></FormControl><FormDescription className="font-normal text-xs opacity-70">Primary institutional contact and authentication identity.</FormDescription><FormMessage /></FormItem>)}/>
-                                 <FormField control={control} name="phone" render={({ field }) => (
+                                <FormField control={control as any} name="name" render={({ field }) => (<FormItem>{renderLabel('Full name', 'name')}<FormControl><Input placeholder="e.g. Moosa Shaikh" {...field} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
+                                <FormField control={control as any} name="email" render={({ field }) => (<FormItem>{renderLabel('Email address', 'email')}<FormControl><Input type="email" placeholder="user@example.com" {...field} disabled={isFormDisabled || (isEditing && !isCurrentUserAdmin)} className="font-normal" /></FormControl><FormDescription className="font-normal text-xs opacity-70">Primary institutional contact and authentication identity.</FormDescription><FormMessage /></FormItem>)}/>
+                                 <FormField control={control as any} name="phone" render={({ field }) => (
                                      <FormItem>
                                          {renderLabel('Phone number', 'phone')}
                                          <div className="flex gap-2">
@@ -277,7 +277,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                                      variant="outline" 
                                                      size="icon" 
                                                      className="shrink-0 border-green-200 text-green-600 hover:bg-green-50"
-                                                     onClick={() => window.open(`https://wa.me/91${String(field.value || '').replace(/\D/g, '')}`, '_blank')}
+                                                     onClick={() => window.open(`https://wa.me/91${String(field.value as string || '').replace(/\D/g, '')}`, '_blank')}
                                                  >
                                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                                                          <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.06 3.973L0 16l4.204-1.102a7.923 7.923 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
@@ -289,8 +289,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                      </FormItem>
                                  )}/>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <FormField control={control} name="loginId" render={({ field }) => (<FormItem>{renderLabel('Login ID', 'loginId')}<FormControl><Input placeholder="Auto-generated from name" {...field} disabled={isFormDisabled || (!isCurrentUserAdmin && isEditing)} className="font-normal" /></FormControl><FormDescription className="font-normal text-xs opacity-70">Unique identifier for account access.</FormDescription><FormMessage /></FormItem>)}/>
-                                    <FormField control={control} name="userKey" render={({ field }) => (
+                                    <FormField control={control as any} name="loginId" render={({ field }) => (<FormItem>{renderLabel('Login ID', 'loginId')}<FormControl><Input placeholder="Auto-generated from name" {...field} disabled={isFormDisabled || (!isCurrentUserAdmin && isEditing)} className="font-normal" /></FormControl><FormDescription className="font-normal text-xs opacity-70">Unique identifier for account access.</FormDescription><FormMessage /></FormItem>)}/>
+                                    <FormField control={control as any} name="userKey" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="font-bold text-primary opacity-60">System ID (User key)</FormLabel>
                                             <FormControl><Input placeholder="System-generated" {...field} readOnly disabled={true} className="bg-muted/30 font-mono opacity-60 font-normal" /></FormControl>
@@ -307,7 +307,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                         <FormDescription className="font-normal text-xs opacity-70 italic">Administrators cannot set passwords directly. Dispatch a secure reset link to the member's email.</FormDescription>
                                     </div>
                                 ) : (
-                                    <FormField control={control} name="password" render={({ field }) => (<FormItem><FormLabel className="font-bold text-primary">Initial password *</FormLabel><FormControl><Input type="password" placeholder="Minimum 6 characters" {...field} value={field.value ?? ''} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
+                                    <FormField control={control as any} name="password" render={({ field }) => (<FormItem><FormLabel className="font-bold text-primary">Initial password *</FormLabel><FormControl><Input type="password" placeholder="Minimum 6 characters" {...field} value={field.value ?? ''} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
                                 )}
                                 
                                 <Separator className="bg-primary/10" />
@@ -315,8 +315,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <div className="space-y-4 rounded-xl border border-primary/5 p-4 bg-primary/[0.02]">
                                     <h3 className="text-sm font-bold text-primary capitalize tracking-widest">Verifiable identification</h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <FormField control={control} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('ID proof type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
-                                        <FormField control={control} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('ID number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                        <FormField control={control as any} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('ID proof type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                        <FormField control={control as any} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('ID number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                                     </div>
                                     <FormItem>
                                         {renderLabel('ID proof document', 'idProofFile')}
@@ -334,7 +334,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 </div>
 
                                 <Separator className="bg-primary/10" />
-                                <FormField control={control} name="status" render={({ field }) => (
+                                <FormField control={control as any} name="status" render={({ field }) => (
                                     <FormItem>
                                         {renderLabel('Account status', 'status')}
                                         <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isFormDisabled}>
@@ -349,7 +349,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 )}/>
                             </TabsContent>
                             <TabsContent value="organization" className="mt-6 space-y-6 animate-fade-in-up">
-                                <FormField control={control} name="organizationGroup" render={({ field }) => (
+                                <FormField control={control as any} name="organizationGroup" render={({ field }) => (
                                     <FormItem>
                                         {renderLabel('Organization group', 'organizationGroup')}
                                         <Select onValueChange={field.onChange} value={field.value || 'none'} disabled={isFormDisabled}>
@@ -362,10 +362,10 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                         <FormDescription className="font-normal text-xs opacity-70">Determines visibility in the public team directory.</FormDescription>
                                     </FormItem>
                                 )}/>
-                                <FormField control={control} name="organizationRole" render={({ field }) => (<FormItem>{renderLabel('Institutional title', 'organizationRole')}<FormControl><Input placeholder="e.g. President, Treasurer" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                <FormField control={control as any} name="organizationRole" render={({ field }: any) => (<FormItem>{renderLabel('Institutional title', 'organizationRole')}<FormControl><Input placeholder="e.g. President, Treasurer" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                             </TabsContent>
                             <TabsContent value="permissions" className="mt-6 space-y-6 animate-fade-in-up">
-                                <FormField control={control} name="role" render={({ field }) => (<FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-primary/[0.02] shadow-sm"><div className="space-y-0.5"><FormLabel className="font-bold text-primary text-base">Administrative Superuser</FormLabel><FormDescription className="font-normal text-xs opacity-70">Grant unrestricted global access to all system modules and settings.</FormDescription></div><FormControl><Switch checked={field.value === 'Admin'} onCheckedChange={(checked) => field.onChange(checked ? 'Admin' : 'User')} disabled={isFormDisabled} /></FormControl></FormItem>)}/>
+                                <FormField control={control as any} name="role" render={({ field }: any) => (<FormItem className="flex flex-row items-center justify-between rounded-xl border p-4 bg-primary/[0.02] shadow-sm"><div className="space-y-0.5"><FormLabel className="font-bold text-primary text-base">Administrative Superuser</FormLabel><FormDescription className="font-normal text-xs opacity-70">Grant unrestricted global access to all system modules and settings.</FormDescription></div><FormControl><Switch checked={field.value === 'Admin'} onCheckedChange={(checked) => field.onChange(checked ? 'Admin' : 'User')} disabled={isFormDisabled} /></FormControl></FormItem>)}/>
                                 <div className="space-y-2">
                                     <FormLabel className="font-bold text-primary">Granular module permissions</FormLabel>
                                     <FormDescription className="font-normal text-xs opacity-70">Define specific access levels per module. (Ignored if superuser status is active).</FormDescription>
