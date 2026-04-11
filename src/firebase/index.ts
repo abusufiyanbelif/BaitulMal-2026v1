@@ -37,6 +37,8 @@ export {
   signOut,
   onAuthStateChanged,
   sendPasswordResetEmail,
+  RecaptchaVerifier,
+  signInWithPhoneNumber
 } from 'firebase/auth';
 
 export {

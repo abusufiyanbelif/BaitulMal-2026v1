@@ -85,7 +85,7 @@ const formSchema = z.object({
   donationDate: z.string().min(1, { message: "Date Is Required."}),
   contributionFromDate: z.string().optional(),
   contributionToDate: z.string().optional(),
-  status: z.enum(['Verified', 'Pending', 'Canceled']),
+  status: z.enum(['Verified', 'Pending', 'Canceled', 'Rejected']),
   comments: z.string().optional(),
   suggestions: z.string().optional(),
   isTypeSplit: z.boolean().default(false),
@@ -509,7 +509,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                             <FormItem>{renderLabel('Donation Date', 'donationDate')}<FormControl><Input type="date" {...field} disabled={isReadOnly} className="font-bold text-primary"/></FormControl><FormMessage /></FormItem>
                         )}/>
                         <FormField control={control} name="status" render={({ field }) => (
-                            <FormItem>{renderLabel('Verification Status', 'status')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="Pending" className="font-normal">Pending Review</SelectItem><SelectItem value="Verified" className="font-normal text-primary">Verified (Secured)</SelectItem><SelectItem value="Canceled" className="font-normal text-destructive">Canceled</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                            <FormItem>{renderLabel('Verification Status', 'status')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="Pending" className="font-normal">Pending Review</SelectItem><SelectItem value="Verified" className="font-normal text-primary">Verified (Secured)</SelectItem><SelectItem value="Canceled" className="font-normal text-destructive">Canceled</SelectItem><SelectItem value="Rejected" className="font-normal text-destructive">Rejected</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                         )}/>
                     </div>
                     

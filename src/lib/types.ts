@@ -1,3 +1,4 @@
+
 import type { DocumentData, Timestamp, FieldValue } from 'firebase/firestore';
 import type { UserPermissions, GroupId, PriorityLevel } from './modules';
 import { donationCategories } from './modules';
@@ -342,7 +343,7 @@ export interface Donation extends DocumentData {
   donationType: 'Cash' | 'Online Payment' | 'Check' | 'Other';
   referral: string;
   donationDate: string;
-  status: 'Verified' | 'Pending' | 'Canceled';
+  status: 'Verified' | 'Pending' | 'Canceled' | 'Rejected';
   comments?: string;
   suggestions?: string;
   uploadedBy: string;

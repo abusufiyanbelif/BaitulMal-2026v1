@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useAuth, useFirestore, signInWithPhoneNumber, RecaptchaVerifier } from '@/firebase';
+import { useAuth, signInWithPhoneNumber, RecaptchaVerifier } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useBranding } from '@/hooks/use-branding';
 
@@ -16,6 +16,13 @@ import { Input } from '@/components/ui/input';
 import { Loader2, AlertTriangle, ArrowLeft, Phone, ShieldCheck } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
+
+// Add this interface to extend the global Window object
+declare global {
+    interface Window {
+        recaptchaVerifier?: RecaptchaVerifier;
+    }
+}
 
 const phoneSchema = z.object({
   phone: z.string().min(10, 'Phone must be exactly 10 digits.').max(10),
@@ -65,7 +72,7 @@ export default function PortalLoginPage() {
 
     try {
         const phoneE164 = `+91${data.phone}`;
-        const confirmationResult = await signInWithPhoneNumber(auth!, phoneE164, window.recaptchaVerifier);
+        const confirmationResult = await signInWithPhoneNumber(auth!, phoneE164, window.recaptchaVerifier!);
         setVerificationResult(confirmationResult);
         setStep('otp');
         toast({ title: 'OTP Sent!', description: 'Please check your mobile messages.', variant: 'success' });

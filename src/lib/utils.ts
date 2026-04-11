@@ -48,3 +48,19 @@ export const getInitials = (name: string | null | undefined): string => {
       .substring(0, 2)
       .toUpperCase();
 };
+
+export const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+    }).format(amount);
+};
+
+export const formatDate = (date: Date, options?: Intl.DateTimeFormatOptions) => {
+    const defaultOptions: Intl.DateTimeFormatOptions = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+    };
+    return new Intl.DateTimeFormat('en-US', options || defaultOptions).format(date);
+};
