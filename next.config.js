@@ -3,13 +3,14 @@ const nextConfig = {
   // Standalone output is required for many App Hosting environments
   output: 'standalone',
   // Force a fresh build to resolve bundle sync errors (ChunkLoadError).
-  // Build Timestamp: 2026-04-12-01-05
+  // Build Timestamp: 2026-04-12-20-15
   reactStrictMode: true,
   allowedDevOrigins: [
     "https://*.cloudworkstations.dev",
     "https://*.cluster-edb2jv34dnhjisxuq5m7l37ccy.cloudworkstations.dev",
     "*.cloudworkstations.dev",
-    "*.cluster-edb2jv34dnhjisxuq5m7l37ccy.cluster-edb2jv34dnhjisxuq5m7l37ccy.cloudworkstations.dev"
+    "*.cluster-edb2jv34dnhjisxuq5m7l37ccy.cloudworkstations.dev",
+    "6000-firebase-studio-1757160189526.cluster-edb2jv34dnhjisxuq5m7l37ccy.cloudworkstations.dev"
   ],
   images: {
     remotePatterns: [
