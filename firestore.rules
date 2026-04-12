@@ -1,7 +1,9 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // --- Helper Functions ---
+    
+    // --- Security Helper Functions ---
+    
     function isSignedIn() {
       return request.auth != null;
     }
@@ -11,92 +13,93 @@ service cloud.firestore {
     }
     
     function isAdmin() {
-      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && getUserData().role == 'Admin';
+      return isSignedIn() && getUserData().role == 'Admin';
     }
     
+    function isActive() {
+      return isSignedIn() && getUserData().status == 'Active';
+    }
+    
+    function hasPermission(module, action) {
+      return isActive() && (isAdmin() || getUserData().permissions[module][action] == true);
+    }
+
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
 
-    function hasPermission(module, permission) {
-      let permissions = getUserData().permissions;
-      return permissions != null && permissions[module] != null && permissions[module][permission] == true;
-    }
-
-    // --- Collection Rules ---
-
-    match /settings/{docId} {
+    // --- Public Institutional Settings ---
+    // Essential for landing page and login discovery
+    match /settings/{document} {
       allow read: if true;
       allow write: if isAdmin();
     }
     
-    match /user_lookups/{id} {
+    match /user_lookups/{document} {
       allow read: if true;
       allow write: if isAdmin();
     }
-    
+
+    // --- Core Organization Modules ---
+
     match /users/{userId} {
       allow read: if isSignedIn();
-      allow write: if isAdmin() || isOwner(userId);
+      allow create: if isAdmin();
+      allow update: if isAdmin() || isOwner(userId);
+      allow delete: if isAdmin();
     }
-    
+
     match /donors/{donorId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin() || hasPermission('donors', 'update');
+      allow read: if hasPermission('donors', 'read');
+      allow write: if hasPermission('donors', 'update') || (request.method == 'create' && hasPermission('donors', 'create'));
     }
-    
+
     match /donations/{donationId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin() || hasPermission('donations', 'update');
+      // Public can see verified donations for transparency reporting
+      allow read: if (resource.data.status == 'Verified') || hasPermission('donations', 'read');
+      allow write: if hasPermission('donations', 'update') || (request.method == 'create' && hasPermission('donations', 'create'));
     }
-    
+
+    match /beneficiaries/{beneficiaryId} {
+      allow read: if hasPermission('beneficiaries', 'read');
+      allow write: if hasPermission('beneficiaries', 'update') || (request.method == 'create' && hasPermission('beneficiaries', 'create'));
+    }
+
+    // --- Initiatives (Campaigns & Appeals) ---
+
     match /campaigns/{campaignId} {
-      allow read: if true;
-      allow write: if isAdmin() || hasPermission('campaigns', 'update');
+      allow read: if true; // Visibility logic handled by publicVisibility field in app
+      allow write: if hasPermission('campaigns', 'update') || (request.method == 'create' && hasPermission('campaigns', 'create'));
       
-      match /beneficiaries/{benId} {
+      match /beneficiaries/{id} {
         allow read: if isSignedIn();
-        allow write: if isAdmin() || hasPermission('campaigns', 'beneficiaries.update');
+        allow write: if isAdmin() || hasPermission('campaigns', 'update');
       }
     }
-    
+
     match /leads/{leadId} {
       allow read: if true;
-      allow write: if isAdmin() || hasPermission('leads-members', 'update');
+      allow write: if hasPermission('leads-members', 'update') || (request.method == 'create' && hasPermission('leads-members', 'create'));
       
-      match /beneficiaries/{benId} {
+      match /beneficiaries/{id} {
         allow read: if isSignedIn();
-        allow write: if isAdmin() || hasPermission('leads-members', 'beneficiaries.update');
+        allow write: if isAdmin() || hasPermission('leads-members', 'update');
       }
     }
-    
-    match /beneficiaries/{benId} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin() || hasPermission('beneficiaries', 'update');
-    }
-    
+
+    // --- Verification Pipeline ---
+    // CRITICAL: Aligned with frontend query patterns to prevent permission denials
     match /pending_verifications/{id} {
-      // Allow read/get if admin, assigned verifier, or requester
-      allow read: if isSignedIn() && (
-        isAdmin() || 
-        request.auth.uid in resource.data.assignedVerifierIds || 
-        request.auth.uid == resource.data.requestedBy.id
-      );
-      
-      // Mandatory: list requires filter by assignedVerifierIds unless Admin
-      allow list: if isSignedIn() && (
-        isAdmin() || 
-        (request.query.limit <= 100 && request.auth.uid in resource.data.assignedVerifierIds)
-      );
-      
+      allow get, list: if isSignedIn() && (isAdmin() || request.auth.uid in resource.data.assignedVerifierIds);
       allow create: if isSignedIn();
       allow update: if isSignedIn() && (isAdmin() || request.auth.uid in resource.data.assignedVerifierIds);
       allow delete: if isAdmin();
     }
     
+    // --- Site Analytics ---
     match /page_hits/{id} {
       allow read: if isAdmin();
-      allow write: if true; // Increments happen anonymously
+      allow write: if true;
     }
   }
 }

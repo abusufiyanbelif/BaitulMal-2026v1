@@ -58,17 +58,18 @@ export default function VerificationsPage() {
         const baseCol = collection(firestore, 'pending_verifications');
         
         // SECURITY COMPLIANT QUERY:
-        // Non-admins MUST strictly filter by assignedVerifierIds to avoid security rule violations.
-        if (userProfile.role !== 'Admin') {
-            return query(
-                baseCol, 
-                where('assignedVerifierIds', 'array-contains', userProfile.id),
-                orderBy('createdAt', 'desc')
-            );
+        // Use an explicit role check to decide whether to run a global or filtered query.
+        // This ensures the request always matches the Firestore Security Rules.
+        if (userProfile.role === 'Admin') {
+            return query(baseCol, orderBy('createdAt', 'desc'));
         }
 
-        // Admin: Can query globally for institutional oversight
-        return query(baseCol, orderBy('createdAt', 'desc'));
+        // Member: Strictly filter by assigned tasks only.
+        return query(
+            baseCol, 
+            where('assignedVerifierIds', 'array-contains', userProfile.id),
+            orderBy('createdAt', 'desc')
+        );
     }, [firestore, userProfile]);
 
     const { data: verifications, isLoading: isVerificationsLoading } = useCollection<PendingVerification>(verificationsRef);
