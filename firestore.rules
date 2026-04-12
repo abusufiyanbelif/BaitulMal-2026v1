@@ -1,149 +1,122 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    /**
-     * CORE PHILOSOPHY:
-     * This ruleset enforces a strict hierarchical user-ownership model. All data is organized 
-     * under a root `/users/{userId}` path. This ensures authorization independence, where 
-     * a user's permission is determined solely by their identity and the resource path, 
-     * eliminating the need for expensive cross-document lookups (get() calls).
-     *
-     * DATA STRUCTURE:
-     * - /users/{userId}: The root profile for a user.
-     * - /users/{userId}/documents/{documentId}: Documents owned by the user.
-     * - /users/{userId}/documents/{documentId}/...: Sub-collections containing extracted 
-     *   content (text, identity, billing, medical) related to a specific document.
-     *
-     * KEY SECURITY DECISIONS:
-     * 1. Authorization Independence: We use the userId in the path to grant access.
-     * 2. Denormalized Ownership: Entities like 'Document' include a `userId` field 
-     *    validated against the path to ensure data consistency.
-     * 3. Structural Segregation: Top-level global collections (like 'pending_verifications') 
-     *    are intentionally avoided. Access to 'pending' data is handled via status-based 
-     *    queries on the user's own document collection, preventing data leakage.
-     * 4. Prototyping Flexibility: While ownership is strictly enforced, we do not 
-     *    validate the full schema of data payloads to allow for rapid iteration.
-     */
-
-    // --- Helper Functions ---
-
-    /** @description Checks if the user is authenticated. */
+    // ------------------------------------------------------------
+    // Helper Functions
+    // ------------------------------------------------------------
+    
     function isSignedIn() {
       return request.auth != null;
     }
-
-    /** @description Checks if the authenticated user's UID matches the provided userId. */
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && getUserData().role == 'Admin';
+    }
+    
+    function isActive() {
+      return isSignedIn() && getUserData().status == 'Active';
+    }
+    
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-
-    /** @description Verifies ownership and ensures the document exists for state-changing operations. */
-    function isExistingOwner(userId) {
-      return resource != null && isOwner(userId);
+    
+    function hasPermission(module, action) {
+      let permissions = getUserData().permissions;
+      return isAdmin() || (isActive() && permissions[module][action] == true);
     }
 
-    /** @description Validates that a field in the incoming data matches the path-based owner. */
-    function isValidOwnership(field, userId) {
-      return request.resource.data[field] == userId;
+    // ------------------------------------------------------------
+    // Rules
+    // ------------------------------------------------------------
+
+    // Public lookups for login discovery
+    match /user_lookups/{lookupId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
-    /** @description Ensures a field remains unchanged during an update. */
-    function isUnchanged(field) {
-      return request.resource.data[field] == resource.data[field];
+    // Settings (Public & Admin restricted)
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
-    // --- Collection Rules ---
-
-    /**
-     * @description Rules for the UserProfile entity. Only the account owner can manage their profile.
-     * @path /users/{userId}
-     * @allow (get, list, create, update) if UID matches userId.
-     * @deny (get) if UID does not match userId.
-     * @principle Enforces strict root-level ownership and path-to-data consistency.
-     */
+    // Users & Members
     match /users/{userId} {
-      allow get, list: if isOwner(userId);
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && isUnchanged('id');
-      allow delete: if isExistingOwner(userId);
+      allow read: if isAdmin() || isOwner(userId) || hasPermission('users', 'read');
+      allow create: if isAdmin();
+      allow update: if isAdmin() || (isOwner(userId) && isActive());
+      allow delete: if isAdmin();
+    }
 
-      /**
-       * @description Rules for Documents uploaded by the user.
-       * @path /users/{userId}/documents/{documentId}
-       * @allow (create) if the userId in the document matches the path and auth UID.
-       * @deny (list) for any path other than the user's own.
-       * @principle Implements user-scoped listing and relational integrity validation.
-       */
-      match /documents/{documentId} {
-        allow get, list: if isOwner(userId);
-        allow create: if isOwner(userId) && isValidOwnership('userId', userId);
-        allow update: if isExistingOwner(userId) && isUnchanged('userId');
-        allow delete: if isExistingOwner(userId);
+    // Donors Registry
+    match /donors/{donorId} {
+      allow read: if isAdmin() || hasPermission('donors', 'read');
+      allow write: if isAdmin() || hasPermission('donors', 'update');
+    }
 
-        /**
-         * @description Rules for Text Extraction Results associated with a document.
-         * @path /users/{userId}/documents/{documentId}/textExtractionResults/{resultId}
-         * @allow (get, list) if the parent path belongs to the authenticated user.
-         * @deny (create) if the documentId link is missing or incorrect.
-         * @principle Inherits ownership from the parent document path.
-         */
-        match /textExtractionResults/{resultId} {
-          allow get, list: if isOwner(userId);
-          allow create: if isOwner(userId) && request.resource.data.documentId == documentId;
-          allow update: if isExistingOwner(userId) && isUnchanged('documentId');
-          allow delete: if isExistingOwner(userId);
-        }
+    // Master Beneficiaries
+    match /beneficiaries/{beneficiaryId} {
+      allow read: if isAdmin() || hasPermission('beneficiaries', 'read');
+      allow write: if isAdmin() || hasPermission('beneficiaries', 'update');
+    }
 
-        /**
-         * @description Rules for Identity Info extracted from a document.
-         * @path /users/{userId}/documents/{documentId}/extractedIdentityInfo/{infoId}
-         * @allow (create) if the user owns the document path.
-         * @principle Path-based authorization for specialized extraction sub-collections.
-         */
-        match /extractedIdentityInfo/{infoId} {
-          allow get, list: if isOwner(userId);
-          allow create: if isOwner(userId) && request.resource.data.documentId == documentId;
-          allow update: if isExistingOwner(userId) && isUnchanged('documentId');
-          allow delete: if isExistingOwner(userId);
-        }
+    // Donations Central Log
+    match /donations/{donationId} {
+      allow read: if isAdmin() || hasPermission('donations', 'read');
+      allow write: if isAdmin() || hasPermission('donations', 'update');
+    }
 
-        /**
-         * @description Rules for Billing Info extracted from a document.
-         * @path /users/{userId}/documents/{documentId}/extractedBillingInfo/{infoId}
-         * @allow (update) if ownership is maintained.
-         * @principle Path-based authorization for specialized extraction sub-collections.
-         */
-        match /extractedBillingInfo/{infoId} {
-          allow get, list: if isOwner(userId);
-          allow create: if isOwner(userId) && request.resource.data.documentId == documentId;
-          allow update: if isExistingOwner(userId) && isUnchanged('documentId');
-          allow delete: if isExistingOwner(userId);
-        }
-
-        /**
-         * @description Rules for Medical Info extracted from a document.
-         * @path /users/{userId}/documents/{documentId}/extractedMedicalInfo/{infoId}
-         * @allow (delete) if the user owns the document path.
-         * @principle Path-based authorization for specialized extraction sub-collections.
-         */
-        match /extractedMedicalInfo/{infoId} {
-          allow get, list: if isOwner(userId);
-          allow create: if isOwner(userId) && request.resource.data.documentId == documentId;
-          allow update: if isExistingOwner(userId) && isUnchanged('documentId');
-          allow delete: if isExistingOwner(userId);
-        }
+    // Initiatives: Campaigns & Leads
+    match /campaigns/{campaignId} {
+      allow read: if true;
+      allow write: if isAdmin() || hasPermission('campaigns', 'update');
+      
+      match /beneficiaries/{benId} {
+        allow read: if true;
+        allow write: if isAdmin() || hasPermission('campaigns', 'update');
       }
     }
 
-    /**
-     * GLOBAL DENY RULE:
-     * This rule explicitly denies access to top-level collections not defined above.
-     * This includes '/pending_verifications', which should be accessed via 
-     * '/users/{userId}/documents' using filters on the 'status' field.
-     */
-    match /{document=**} {
-      allow read, write: if false;
+    match /leads/{leadId} {
+      allow read: if true;
+      allow write: if isAdmin() || hasPermission('leads-members', 'update');
+      
+      match /beneficiaries/{benId} {
+        allow read: if true;
+        allow write: if isAdmin() || hasPermission('leads-members', 'update');
+      }
+    }
+
+    // Guidance Directory
+    match /guidance/{resourceId} {
+      allow read: if true;
+      allow write: if isAdmin() || hasPermission('guidance', 'update');
+    }
+
+    // Verification Pipeline (High-Integrity)
+    match /pending_verifications/{requestId} {
+      // Admins can see the full pipeline.
+      // Members can only see verifications assigned specifically to them.
+      // List rules must match the query filters.
+      allow list: if isAdmin() || (isSignedIn() && request.query.limit <= 100 && request.auth.uid in request.query.filters[0].value);
+      
+      allow get: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.assignedVerifierIds);
+      
+      allow create: if isActive();
+      allow update: if isAdmin() || (isSignedIn() && request.auth.uid in resource.data.assignedVerifierIds);
+      allow delete: if isAdmin();
+    }
+    
+    // Page Hits (Analytics)
+    match /page_hits/{pageId} {
+      allow read: if true;
+      allow write: if true; 
     }
   }
 }
