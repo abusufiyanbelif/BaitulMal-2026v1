@@ -34,7 +34,7 @@ export function OverallFundingSummary() {
   if (isLoading) {
     return (
         <div className="grid gap-10">
-            <Card className="border-primary/20 bg-white">
+            <Card className="border-primary/20 bg-white shadow-sm">
                 <CardHeader>
                     <Skeleton className="h-6 w-1/2" />
                 </CardHeader>
@@ -142,7 +142,7 @@ export function OverallFundingSummary() {
         </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
+            <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1 shadow-sm">
                 <CardHeader className="flex items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60 capitalize">Families Impacted</CardTitle>
                     <Users className="h-5 w-5 text-primary opacity-40" />
@@ -153,7 +153,7 @@ export function OverallFundingSummary() {
                 </CardContent>
             </Card>
             
-            <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
+            <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1 shadow-sm">
                 <CardHeader className="flex items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60 capitalize">Verified Donations</CardTitle>
                     <CheckCircle2 className="h-5 w-5 text-primary opacity-40" />
@@ -164,7 +164,7 @@ export function OverallFundingSummary() {
                 </CardContent>
             </Card>
 
-            <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
+            <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1 shadow-sm">
                 <CardHeader className="flex items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60 capitalize">Target Progress</CardTitle>
                     <Target className="h-5 w-5 text-primary opacity-40" />

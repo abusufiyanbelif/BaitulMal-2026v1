@@ -1,29 +1,32 @@
 {
   "entities": {
-    "Campaign": {
-      "title": "Campaign",
-      "description": "An institutional fundraising project.",
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Organizational staff member or donor profile.",
       "type": "object",
       "properties": {
+        "id": { "type": "string" },
         "name": { "type": "string" },
-        "status": { "type": "string", "enum": ["Upcoming", "Active", "Completed"] },
-        "targetAmount": { "type": "number" },
-        "collectedAmount": { "type": "number" },
-        "authenticityStatus": { "type": "string", "enum": ["Pending Verification", "Verified", "Rejected", "On Hold", "Need More Details"] },
-        "publicVisibility": { "type": "string", "enum": ["Hold", "Ready to Publish", "Published"] },
-        "priority": { "type": "string", "enum": ["Low", "Medium", "High", "Urgent"] }
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "role": { "type": "string", "enum": ["Admin", "User", "Donor", "Beneficiary"] },
+        "status": { "type": "string", "enum": ["Active", "Inactive"] },
+        "permissions": { "type": "object" },
+        "linkedDonorId": { "type": "string" },
+        "linkedBeneficiaryId": { "type": "string" }
       }
     },
     "PendingVerification": {
       "title": "Pending Verification",
-      "description": "A request for institutional audit and approval of a record modification.",
+      "description": "Staged data update awaiting peer review.",
       "type": "object",
       "properties": {
-        "module": { "type": "string" },
         "targetId": { "type": "string" },
+        "targetCollection": { "type": "string" },
+        "module": { "type": "string" },
         "status": { "type": "string", "enum": ["Pending", "Partially Approved", "Approved", "Rejected"] },
         "assignedVerifierIds": { "type": "array", "items": { "type": "string" } },
-        "requestedBy": { "type": "object" }
+        "newValue": { "type": "object" }
       }
     }
   },
@@ -31,13 +34,17 @@
     "providers": ["password", "phone"]
   },
   "firestore": {
-    "/campaigns/{campaignId}": {
-      "schema": { "$ref": "#/backend/entities/Campaign" },
-      "description": "Community projects collection."
+    "/users/{userId}": {
+      "schema": "#/backend/entities/UserProfile",
+      "description": "Master user and staff directory."
     },
-    "/pending_verifications/{requestId}": {
-      "schema": { "$ref": "#/backend/entities/PendingVerification" },
-      "description": "Organizational audit trail for sensitive modifications."
+    "/pending_verifications/{id}": {
+      "schema": "#/backend/entities/PendingVerification",
+      "description": "Registry of staged modifications awaiting approval."
+    },
+    "/donations/{id}": {
+      "schema": "Donation",
+      "description": "Financial contribution records."
     }
   }
 }

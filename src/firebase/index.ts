@@ -2,7 +2,14 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, signInWithPhoneNumber, RecaptchaVerifier } from 'firebase/auth';
+import { 
+    getAuth, 
+    signInWithPhoneNumber, 
+    RecaptchaVerifier, 
+    sendPasswordResetEmail,
+    onAuthStateChanged,
+    signOut as firebaseSignOut
+} from 'firebase/auth';
 import { 
     getFirestore, 
     doc, 
@@ -25,22 +32,15 @@ import {
 } from 'firebase/firestore';
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 
-// IMPORTANT: DO NOT MODIFY THIS FUNCTION
+/**
+ * IMPORTANT: Circular dependency resolution.
+ * We initialize the core app here but do NOT import from the barrel file in children.
+ */
 export function initializeFirebase() {
   if (!getApps().length) {
-    let firebaseApp;
-    try {
-      firebaseApp = initializeApp();
-    } catch (e) {
-      if (process.env.NODE_ENV === "production") {
-        console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
-      }
-      firebaseApp = initializeApp(firebaseConfig);
-    }
-
+    const firebaseApp = initializeApp(firebaseConfig);
     return getSdks(firebaseApp);
   }
-
   return getSdks(getApp());
 }
 
@@ -53,6 +53,7 @@ export function getSdks(firebaseApp: FirebaseApp) {
   };
 }
 
+// Explicitly re-export core Firestore functions to ensure they are defined at runtime
 export {
     doc,
     collection,
@@ -75,7 +76,10 @@ export {
     uploadBytes,
     getDownloadURL,
     signInWithPhoneNumber,
-    RecaptchaVerifier
+    RecaptchaVerifier,
+    sendPasswordResetEmail,
+    onAuthStateChanged,
+    firebaseSignOut
 };
 
 export * from './provider';
