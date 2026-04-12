@@ -13,6 +13,7 @@ import { cn } from '@/lib/utils';
 import { ThemeProvider, useTheme } from 'next-themes';
 import { THEME_SUGGESTIONS } from '@/lib/themes';
 import { VerificationManager } from '@/components/verification-manager';
+import { initializeFirebase } from '@/firebase';
 
 /**
  * ThemeSync - Ensures '.dark' class matches the selected data-theme metadata.
@@ -38,6 +39,17 @@ export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const isLoginPage = pathname === '/login';
   const allThemes = THEME_SUGGESTIONS.map(t => t.id);
+
+  /**
+   * TEMPORARY FORCED LOGOUT
+   * Runs once on mount to clear any persistent auth tokens.
+   */
+  useEffect(() => {
+    const { auth } = initializeFirebase();
+    auth.signOut().then(() => {
+      console.log('Institutional Session Forcefully Terminated.');
+    });
+  }, []);
 
   return (
     <FirebaseClientProvider>
