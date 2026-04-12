@@ -2,61 +2,55 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     
-    // --- Helper Functions ---
+    // --- HELPERS ---
     
     function isSignedIn() {
       return request.auth != null;
     }
     
     function isAdmin() {
-      return isSignedIn() && 
-        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+      return isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin';
     }
     
-    function hasPermission(module, permission) {
-      return isAdmin() || (isSignedIn() && 
-        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions[module][permission] == true);
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    function hasPermission(module, action) {
+      let profile = firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+      return profile.role == 'Admin' || (profile.permissions != null && profile.permissions[module][action] == true);
     }
 
-    // --- Path Rules ---
+    // --- RULES ---
 
-    // Institutional Branding
+    match /users/{userId}/{allPaths=**} {
+      allow read: if isSignedIn() && (isOwner(userId) || isAdmin() || hasPermission('users', 'read'));
+      allow write: if isSignedIn() && (isOwner(userId) || isAdmin());
+    }
+    
+    match /donations/{donationId}/{allPaths=**} {
+      allow read: if isSignedIn() && (isAdmin() || hasPermission('donations', 'read'));
+      allow write: if isSignedIn() && (isAdmin() || hasPermission('donations', 'update'));
+    }
+    
+    match /campaigns/{campaignId}/{allPaths=**} {
+      allow read: if isAdmin() || hasPermission('campaigns', 'read') || firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published';
+      allow write: if isAdmin() || hasPermission('campaigns', 'update');
+    }
+    
+    match /leads/{leadId}/{allPaths=**} {
+      allow read: if isAdmin() || hasPermission('leads-members', 'read') || firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published';
+      allow write: if isAdmin() || hasPermission('leads-members', 'update');
+    }
+    
+    match /beneficiaries/{benId}/{allPaths=**} {
+      allow read: if isSignedIn() && (isAdmin() || hasPermission('beneficiaries', 'read'));
+      allow write: if isSignedIn() && (isAdmin() || hasPermission('beneficiaries', 'update'));
+    }
+    
     match /settings/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin();
-    }
-
-    // Member Identity Artifacts
-    match /users/{userId}/{allPaths=**} {
-      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-      allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-    }
-
-    // Campaign Evidence & Header Images
-    match /campaigns/{campaignId}/{allPaths=**} {
-      allow read: if hasPermission('campaigns', 'read') || 
-        firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published';
-      allow write: if hasPermission('campaigns', 'update');
-    }
-
-    // Individual Appeal Evidence
-    match /leads/{leadId}/{allPaths=**} {
-      allow read: if hasPermission('leads-members', 'read') || 
-        firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published';
-      allow write: if hasPermission('leads-members', 'update');
-    }
-
-    // Beneficiary Master Documents
-    match /beneficiaries/{benId}/{allPaths=**} {
-      allow read: if hasPermission('beneficiaries', 'read');
-      allow write: if hasPermission('beneficiaries', 'create') || hasPermission('beneficiaries', 'update');
-    }
-
-    // Donation Payment Proofs
-    match /donations/{donationId}/{allPaths=**} {
-      allow read: if hasPermission('donations', 'read') ||
-        (isSignedIn() && request.auth.uid == firestore.get(/databases/(default)/documents/donations/$(donationId)).data.donorId);
-      allow write: if isSignedIn(); // Allow public upload via gateway
     }
   }
 }

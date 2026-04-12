@@ -27,7 +27,10 @@ import {
     Check,
     X,
     MessageSquare,
-    History
+    History,
+    IndianRupee,
+    FolderKanban,
+    Lightbulb
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
@@ -56,7 +59,6 @@ export default function VerificationsPage() {
         
         // SECURITY COMPLIANT QUERY:
         // If not an Admin, we MUST filter by assignedVerifierIds to match the security rules.
-        // This ensures the query result is consistent with the mandatory rule constraints.
         if (userProfile.role !== 'Admin') {
             return query(
                 baseCol, 

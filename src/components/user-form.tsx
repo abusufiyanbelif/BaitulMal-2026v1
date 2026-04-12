@@ -85,7 +85,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
     },
   });
 
-  const { watch, setValue, register, control, handleSubmit, getValues, formState: { isDirty }, reset } = form;
+  const { control, watch, setValue, register, handleSubmit, getValues, formState: { isDirty }, reset } = form;
   const nameValue = watch('name');
   const roleValue = watch('role');
   const idProofFile = watch('idProofFile');
@@ -337,7 +337,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <FormField control={control as any} name="status" render={({ field }) => (
                                     <FormItem>
                                         {renderLabel('Account status', 'status')}
-                                        <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isFormDisabled}>
+                                        <Select onValueChange={field.onChange} value={field.value} disabled={isFormDisabled}>
                                             <FormControl><SelectTrigger className="font-normal"><SelectValue/></SelectTrigger></FormControl>
                                             <SelectContent className="rounded-[12px] shadow-dropdown">
                                                 <SelectItem value="Active" className="font-normal text-primary">Active</SelectItem>
