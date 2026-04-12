@@ -1,6 +1,10 @@
 rules_version = '2';
+
 service firebase.storage {
   match /b/{bucket}/o {
+    
+    // --- HELPER FUNCTIONS ---
+    
     function isSignedIn() {
       return request.auth != null;
     }
@@ -12,34 +16,53 @@ service firebase.storage {
     function isAdmin() {
       return isSignedIn() && getUserData().role == 'Admin';
     }
+    
+    function hasPermission(module, action) {
+      let data = getUserData();
+      return isAdmin() || (data.permissions != null && 
+             data.permissions[module] != null && 
+             data.permissions[module][action] == true);
+    }
 
+    // --- PATH RULES ---
+
+    // Member Identity Documents
     match /users/{userId}/{allPaths=**} {
-      allow read, write: if isSignedIn() && (isAdmin() || request.auth.uid == userId);
+      allow read, write: if isAdmin() || request.auth.uid == userId;
     }
-    
+
+    // Master Beneficiary Documents
     match /beneficiaries/{benId}/{allPaths=**} {
-      allow read: if isSignedIn(); 
-      allow write: if isSignedIn(); 
+      allow read: if hasPermission('beneficiaries', 'read') || request.auth.uid == benId;
+      allow write: if isAdmin() || hasPermission('beneficiaries', 'update') || hasPermission('beneficiaries', 'create');
     }
-    
-    match /donations/{donationId}/{allPaths=**} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn();
+
+    // Campaign Artifacts
+    match /campaigns/{campId}/{allPaths=**} {
+      // Allow public read if it's a published background or document
+      allow read: if hasPermission('campaigns', 'read') || 
+                  firestore.get(/databases/(default)/documents/campaigns/$(campId)).data.publicVisibility == 'Published';
+      allow write: if isAdmin() || hasPermission('campaigns', 'update');
     }
-    
-    match /campaigns/{id}/{allPaths=**} {
-      allow read: if true; 
-      allow write: if isAdmin();
+
+    // Lead Artifacts
+    match /leads/{leadId}/{allPaths=**} {
+      allow read: if hasPermission('leads-members', 'read') || 
+                  firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published';
+      allow write: if isAdmin() || hasPermission('leads-members', 'update');
     }
-    
-    match /leads/{id}/{allPaths=**} {
-      allow read: if true; 
-      allow write: if isAdmin();
+
+    // Donation Proofs
+    match /donations/{donId}/{allPaths=**} {
+      allow read: if hasPermission('donations', 'read') || 
+                  (isSignedIn() && request.auth.uid == firestore.get(/databases/(default)/documents/donations/$(donId)).data.donorId);
+      allow write: if true; // Allow public upload of evidence
     }
-    
+
+    // Institutional Settings (Logo, QR)
     match /settings/{allPaths=**} {
       allow read: if true;
-      allow write: if isAdmin();
+      allow write: if isAdmin() || hasPermission('settings', 'update');
     }
   }
 }
