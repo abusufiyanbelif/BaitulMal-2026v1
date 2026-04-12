@@ -5,8 +5,8 @@ import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { useGuidingPrinciples } from '@/hooks/use-guiding-principles';
-import { useStorage, useFirestore, useMemoFirebase, useCollection, collection } from '@/firebase';
-import { doc, setDoc, writeBatch } from 'firebase/firestore';
+import { useStorage, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { doc, setDoc, writeBatch, collection } from 'firebase/firestore';
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import Resizer from 'react-image-file-resizer';
 import Link from 'next/link';
@@ -380,7 +380,7 @@ export default function AppSettingsPage() {
 
     const handleSave = async () => {
         if (!firestore || !storage || !canUpdateSettings || !editableData) {
-            toast({ title: "Configuration error", description: "Missing data or permissions to secure settings.", variant: "destructive" });
+            toast({ title: "Configuration Error", description: "Missing Data Or Permissions To Secure Settings.", variant: "destructive" });
             return;
         }
 
@@ -482,7 +482,7 @@ export default function AppSettingsPage() {
     const isGlobalLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
 
     if (isGlobalLoading) {
-        return <BrandedLoader message="Syncing institutional settings..." />;
+        return <BrandedLoader message="Syncing Institutional Settings..." />;
     }
 
     const isFormDisabled = !isEditMode || isSubmitting;
@@ -505,26 +505,6 @@ export default function AppSettingsPage() {
         isLandingDonateNowVisible: brandingSettings?.isLandingDonateNowVisible ?? true,
         summaryStartDate: brandingSettings?.summaryStartDate || '',
         summaryEndDate: brandingSettings?.summaryEndDate || '',
-        qrCodeUrl: paymentSettings?.qrCodeUrl || '',
-        qrWidth: paymentSettings?.qrWidth || 120,
-        qrHeight: paymentSettings?.qrHeight || 120,
-        upiId: paymentSettings?.upiId || '',
-        paymentMobileNumber: paymentSettings?.paymentMobileNumber || '',
-        contactEmail: paymentSettings?.contactEmail || '',
-        contactPhone: paymentSettings?.contactPhone || '',
-        regNo: paymentSettings?.regNo || '',
-        pan: paymentSettings?.pan || '',
-        address: paymentSettings?.address || '',
-        website: paymentSettings?.website || '',
-        copyright: paymentSettings?.copyright || '',
-        bankAccountName: paymentSettings?.bankAccountName || '',
-        bankAccountNumber: paymentSettings?.bankAccountNumber || '',
-        bankIfsc: paymentSettings?.bankIfsc || '',
-        isGuidingPrinciplesPublic: guidingPrinciplesData?.isGuidingPrinciplesPublic || false,
-        gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
-        gpDescription: guidingPrinciplesData?.description || '',
-        principles: guidingPrinciplesData?.principles || [],
-        focusAreas: guidingPrinciplesData?.focusAreas || [],
         isTickerActiveVisible: brandingSettings?.isTickerActiveVisible ?? true,
         isTickerDonationVisible: brandingSettings?.isTickerDonationVisible ?? true,
         isTickerCompletedVisible: brandingSettings?.isTickerCompletedVisible ?? true,
@@ -1012,7 +992,7 @@ export default function AppSettingsPage() {
                                         ) : (
                                             <div className="text-muted-foreground text-center p-2 font-normal opacity-20">
                                                 <QrCode className="mx-auto h-8 w-8" />
-                                                <p className="text-[10px] mt-1 font-bold tracking-tighter capitalize uppercase">No QR Code</p>
+                                                <p className="text-[10px] mt-1 font-bold tracking-tighter capitalize">No QR Code</p>
                                             </div>
                                         )}
                                     </div>
@@ -1094,7 +1074,7 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 capitalize uppercase"><Target className="h-4 w-4 opacity-40"/> Impact Pillars (Focus Areas)</h4>
+                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 capitalize"><Target className="h-4 w-4 opacity-40"/> Impact Pillars (Focus Areas)</h4>
                                 {isEditMode && (
                                     <Button type="button" variant="outline" size="sm" onClick={handleAddFocusArea} className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform shadow-sm"><Plus className="h-3 w-3 mr-1"/> Add Pillar</Button>
                                 )}
@@ -1110,7 +1090,7 @@ export default function AppSettingsPage() {
                                                         checked={area.isHidden} 
                                                         onCheckedChange={(checked) => handleFocusAreaChange(index, 'isHidden', !!checked)} 
                                                     />
-                                                    <Label htmlFor={`focus-hide-${index}`} className="text-[10px] font-bold opacity-60 capitalize cursor-pointer capitalize">Hide</Label>
+                                                    <Label htmlFor={`focus-hide-${index}`} className="text-[10px] font-bold opacity-60 capitalize cursor-pointer">Hide</Label>
                                                 </div>
                                                 <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive transition-transform active:scale-90" onClick={() => handleRemoveFocusArea(index)}>
                                                     <Trash2 className="h-4 w-4"/>
@@ -1121,7 +1101,7 @@ export default function AppSettingsPage() {
                                             <div className="space-y-1">
                                                 <Label className="text-[9px] font-bold text-muted-foreground capitalize opacity-60">Visual & Label</Label>
                                                 <div className="flex gap-2">
-                                                    <Select value={area.icon} onValueChange={(val) => handleFocusAreaChange(index, 'icon', val)} disabled={isFormDisabled}>
+                                                    <Select value={area.icon} onValueChange={(val) => handleFocusAreaChange(index, 'icon', val as any)} disabled={isFormDisabled}>
                                                         <SelectTrigger className="w-12 h-9 p-0 justify-center"><FocusAreaIcon type={area.icon}/></SelectTrigger>
                                                         <SelectContent className="rounded-[12px] shadow-dropdown">
                                                             <SelectItem value="Education"><GraduationCap className="h-4 w-4 text-primary"/></SelectItem>
@@ -1158,7 +1138,7 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 capitalize uppercase"><ListChecks className="h-4 w-4 opacity-40"/> Procedural Directives</h4>
+                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 capitalize"><ListChecks className="h-4 w-4 opacity-40"/> Procedural Directives</h4>
                                 {isEditMode && (
                                     <Button type="button" variant="outline" size="sm" onClick={handleAddPrinciple} className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform shadow-sm"><Plus className="h-3 w-3 mr-1"/> Add Rule</Button>
                                 )}
@@ -1167,7 +1147,7 @@ export default function AppSettingsPage() {
                                 {(displayData.principles || []).map((principle, index) => (
                                     <div key={principle.id || index} className="relative group p-4 border rounded-xl bg-white space-y-3 shadow-sm border-primary/5 hover:border-primary/20 transition-all">
                                         <div className="flex items-center justify-between">
-                                            <p className="font-bold text-primary text-[10px] tracking-widest capitalize opacity-40 capitalize">Standard Directive #{index + 1}</p>
+                                            <p className="font-bold text-primary text-[10px] tracking-widest capitalize opacity-40">Standard Directive #{index + 1}</p>
                                             {isEditMode && (
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex items-center space-x-1.5">
@@ -1176,7 +1156,7 @@ export default function AppSettingsPage() {
                                                             checked={principle.isHidden} 
                                                             onCheckedChange={(checked) => handleFieldChange('principles', displayData.principles.map((p, i) => i === index ? {...p, isHidden: !!checked} : p))} 
                                                         />
-                                                        <Label htmlFor={`gp-hide-${index}`} className="text-[10px] font-bold opacity-60 capitalize cursor-pointer capitalize">Hide</Label>
+                                                        <Label htmlFor={`gp-hide-${index}`} className="text-[10px] font-bold opacity-60 capitalize cursor-pointer">Hide</Label>
                                                     </div>
                                                     <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive transition-transform active:scale-90" onClick={() => handleRemovePrinciple(index)}>
                                                         <Trash2 className="h-4 w-4"/>
@@ -1196,7 +1176,7 @@ export default function AppSettingsPage() {
                                                 <p className="text-sm font-normal text-foreground leading-relaxed flex-1">
                                                     {principle.text || <span className="italic opacity-30">Unspecified Directive Text</span>}
                                                 </p>
-                                                {principle.isHidden && <Badge variant="outline" className="text-[8px] font-black capitalize border-primary/10 capitalize">Private</Badge>}
+                                                {principle.isHidden && <Badge variant="outline" className="text-[8px] font-black capitalize border-primary/10">Private</Badge>}
                                             </div>
                                         )}
                                     </div>

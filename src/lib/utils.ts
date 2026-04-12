@@ -39,7 +39,7 @@ export function set(obj: any, path: string, value: any) {
     return obj;
 }
 
-export const getInitials = (name: string | null | undefined): string => {
+export function getInitials(name: string | null | undefined): string {
     if (!name) return 'U';
     return name
       .split(' ')
@@ -47,20 +47,23 @@ export const getInitials = (name: string | null | undefined): string => {
       .join('')
       .substring(0, 2)
       .toUpperCase();
-};
+}
 
-export const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+export function formatCurrency(amount: number): string {
+    return new Intl.NumberFormat('en-IN', {
         style: 'currency',
-        currency: 'USD',
+        currency: 'INR',
     }).format(amount);
-};
+}
 
-export const formatDate = (date: Date, options?: Intl.DateTimeFormatOptions) => {
+export function formatDate(dateInput: Date | string, options?: Intl.DateTimeFormatOptions): string {
+    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
+    if (isNaN(date.getTime())) return 'Invalid Date';
+    
     const defaultOptions: Intl.DateTimeFormatOptions = {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
     };
-    return new Intl.DateTimeFormat('en-US', options || defaultOptions).format(date);
-};
+    return new Intl.DateTimeFormat('en-IN', options || defaultOptions).format(date);
+}

@@ -33,13 +33,24 @@ export function OverallFundingSummary() {
   if (isLoading) {
     return (
         <div className="grid gap-10">
-            <Card className="border-primary/20 bg-white"><CardHeader><Skeleton className="h-6 w-1/2" /></CardHeader><CardContent><Skeleton className="h-48 w-full" /></CardContent></Card>
+            <Card className="border-primary/20 bg-white">
+                <CardHeader>
+                    <Skeleton className="h-6 w-1/2" />
+                </CardHeader>
+                <CardContent>
+                    <Skeleton className="h-48 w-full" />
+                </CardContent>
+            </Card>
         </div>
     );
   }
 
   if (!overallSummary) {
-    return <p className="font-bold text-primary text-center py-10">Impact Summary Currently Unavailable.</p>;
+    return (
+        <div className="text-center py-10 font-bold text-primary italic opacity-40">
+            Impact Summary Currently Unavailable.
+        </div>
+    );
   }
 
   const rangeDescription = summaryDateRange 
@@ -47,7 +58,7 @@ export function OverallFundingSummary() {
     : 'A Summary Of Verified Goal Contributions Across All Projects.';
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-10 font-normal text-primary">
         <Card className="animate-fade-in-up border-primary/20 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden flex flex-col" style={{ animationDelay: '700ms' }}>
             <CardHeader className="bg-primary/5 border-b shrink-0">
                 <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
