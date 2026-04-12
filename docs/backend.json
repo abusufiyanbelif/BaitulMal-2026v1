@@ -1,70 +1,50 @@
 {
   "entities": {
     "UserProfile": {
-      "title": "User Profile",
-      "description": "Organizational staff member profile.",
+      "title": "UserProfile",
+      "description": "Organizational member profile with granular permissions and linked donor identity.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
-        "email": { "type": "string" },
-        "phone": { "type": "string" },
-        "loginId": { "type": "string" },
-        "userKey": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
         "role": { "type": "string", "enum": ["Admin", "User", "Donor", "Beneficiary"] },
         "status": { "type": "string", "enum": ["Active", "Inactive"] },
         "permissions": { "type": "object" },
-        "organizationGroup": { "type": "string" },
-        "organizationRole": { "type": "string" }
+        "linkedDonorId": { "type": "string" }
       },
       "required": ["id", "name", "email", "role", "status"]
     },
-    "Campaign": {
-      "title": "Campaign",
-      "description": "Large-scale relief project.",
+    "PendingVerification": {
+      "title": "PendingVerification",
+      "description": "A staged record update requiring multi-party institutional approval.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "name": { "type": "string" },
-        "status": { "type": "string", "enum": ["Upcoming", "Active", "Completed"] },
-        "priority": { "type": "string", "enum": ["Low", "Medium", "High", "Urgent"] },
-        "targetAmount": { "type": "number" },
-        "collectedAmount": { "type": "number" },
-        "publicVisibility": { "type": "string", "enum": ["Hold", "Ready to Publish", "Published"] }
+        "module": { "type": "string", "enum": ["donations", "beneficiaries", "campaigns", "leads", "donors", "users"] },
+        "status": { "type": "string", "enum": ["Pending", "Partially Approved", "Approved", "Rejected"] },
+        "assignedVerifierIds": { "type": "array", "items": { "type": "string" } },
+        "newValue": { "type": "object" },
+        "requestedBy": { "type": "object" }
       },
-      "required": ["id", "name", "status"]
-    },
-    "Donation": {
-      "title": "Donation",
-      "description": "A financial contribution record.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "donorName": { "type": "string" },
-        "amount": { "type": "number" },
-        "status": { "type": "string", "enum": ["Verified", "Pending", "Canceled", "Rejected"] }
-      }
+      "required": ["id", "module", "status", "assignedVerifierIds", "newValue"]
     }
   },
   "auth": {
-    "providers": ["password"]
+    "providers": ["password", "phone"]
   },
   "firestore": {
     "/users/{userId}": {
-      "schema": { "$ref": "#/entities/UserProfile" },
-      "description": "Institutional user accounts."
+      "schema": "#/backend/entities/UserProfile",
+      "description": "Secure member registry."
     },
-    "/campaigns/{campaignId}": {
-      "schema": { "$ref": "#/entities/Campaign" },
-      "description": "Relief projects."
+    "/pending_verifications/{id}": {
+      "schema": "#/backend/entities/PendingVerification",
+      "description": "Institutional audit trail for record modifications."
     },
-    "/donations/{donationId}": {
-      "schema": { "$ref": "#/entities/Donation" },
-      "description": "Financial records."
-    },
-    "/pending_verifications/{requestId}": {
+    "/settings/{docId}": {
       "schema": "object",
-      "description": "Audit staging area."
+      "description": "Global application branding and financial settings."
     }
   }
 }
