@@ -17,10 +17,10 @@ import { Loader2, AlertTriangle, ArrowLeft, Phone, ShieldCheck } from 'lucide-re
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
 
-// Add this interface to extend the global Window object
+// Extension for window object to hold recaptcha verifier
 declare global {
     interface Window {
-        recaptchaVerifier?: RecaptchaVerifier;
+        recaptchaVerifier?: any;
     }
 }
 
@@ -54,7 +54,6 @@ export default function PortalLoginPage() {
     defaultValues: { otp: '' },
   });
 
-  // Master Global Switch Control check
   const isPortalsEnabled = (brandingSettings?.isDonorLoginEnabled ?? true) || (brandingSettings?.isBeneficiaryLoginEnabled ?? true);
 
   const setupRecaptcha = () => {
@@ -75,9 +74,9 @@ export default function PortalLoginPage() {
         const confirmationResult = await signInWithPhoneNumber(auth!, phoneE164, window.recaptchaVerifier!);
         setVerificationResult(confirmationResult);
         setStep('otp');
-        toast({ title: 'OTP Sent!', description: 'Please check your mobile messages.', variant: 'success' });
+        toast({ title: 'OTP Sent!', description: 'Please Check Your Mobile Messages.', variant: 'success' });
     } catch (err: any) {
-        setLoginError(err.message || 'Failed to send OTP. Try again later.');
+        setLoginError(err.message || 'Failed To Send OTP. Try Again Later.');
     } finally {
         setIsLoading(false);
     }
@@ -89,26 +88,25 @@ export default function PortalLoginPage() {
 
       try {
           await verificationResult.confirm(data.otp);
-          toast({ title: 'Securely Logged In', description: 'Redirecting to your portal...', variant: 'success' });
-          // Routing logic is governed silently by RouteGuard inside auth-provider.tsx!
+          toast({ title: 'Securely Logged In', description: 'Redirecting To Your Portal...', variant: 'success' });
       } catch (err: any) {
-          setLoginError('Invalid OTP code. Please try again.');
+          setLoginError('Invalid OTP Code. Please Try Again.');
       } finally {
           setIsLoading(false);
       }
   };
 
   if (isBrandingLoading) {
-      return <div className="h-screen w-full flex items-center justify-center p-4">Loading Portal Configuration...</div>;
+      return <BrandedLoader message="Fetching Portal Config..." />;
   }
 
   if (!isPortalsEnabled) {
       return (
           <div className="h-screen w-full flex flex-col items-center justify-center p-4 bg-muted/20">
               <ShieldCheck className="h-20 w-20 text-destructive mb-6" />
-              <h1 className="text-3xl font-bold tracking-tight text-primary">Portal Access is Closed</h1>
-              <p className="mt-2 text-muted-foreground text-center">Organization administrators have currently suspended self-service portal functionality.</p>
-              <Button asChild className="mt-8 font-bold"><Link href="/">Return to Home</Link></Button>
+              <h1 className="text-3xl font-bold tracking-tight text-primary">Portal Access Suspended</h1>
+              <p className="mt-2 text-muted-foreground text-center font-normal">Organization Administrators Have Currently Disabled Self-Service Portal Access.</p>
+              <Button asChild className="mt-8 font-bold"><Link href="/">Return To Home</Link></Button>
           </div>
       );
   }
@@ -117,7 +115,7 @@ export default function PortalLoginPage() {
     <div className="w-full max-w-sm pt-20 mx-auto min-h-screen">
       <div className="mb-4">
         <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
-          <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back to home</Link>
+          <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Home</Link>
         </Button>
       </div>
 
@@ -127,7 +125,7 @@ export default function PortalLoginPage() {
                 <Phone className="h-8 w-8 text-primary" />
             </div>
           <CardTitle className="font-bold text-primary text-2xl">Supporter Portal</CardTitle>
-          <CardDescription className="font-normal px-2">Access your donations or requests securely via Mobile Auth.</CardDescription>
+          <CardDescription className="font-normal px-2">Access Your Impact History Securely Via Mobile.</CardDescription>
         </CardHeader>
         
         <CardContent>
@@ -162,7 +160,7 @@ export default function PortalLoginPage() {
                             name="otp"
                             render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="font-bold text-primary">Enter your 6-Digit Code</FormLabel>
+                                <FormLabel className="font-bold text-primary">Enter 6-Digit Code</FormLabel>
                                 <FormControl>
                                     <Input placeholder="XXXXXX" {...field} className="h-12 text-2xl text-center tracking-[1rem] font-bold" maxLength={6} />
                                 </FormControl>
@@ -175,7 +173,7 @@ export default function PortalLoginPage() {
                             Verify & Enter Portal
                         </Button>
                         <Button variant="ghost" onClick={() => setStep('phone')} type="button" className="w-full mt-2 font-bold opacity-60">
-                            Use a different number
+                            Use A Different Number
                         </Button>
                     </form>
                 </Form>
@@ -192,7 +190,7 @@ export default function PortalLoginPage() {
       </Card>
       
       <p className="text-center w-full mt-12 text-sm opacity-60 font-bold block">
-         Staff Members: <Link href="/login" className="underline text-primary">Use the Member Login Area here.</Link>
+         Staff Members: <Link href="/login" className="underline text-primary">Use The Member Login Area.</Link>
       </p>
     </div>
   );
