@@ -1,52 +1,52 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-    
-    // Helper to check role from Firestore
-    function getUserData() {
-      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
-    }
-    
     function isAdmin() {
-      return request.auth != null && getUserData().role == 'Admin';
+      return request.auth != null && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin';
     }
     
-    function hasPermission(module, permission) {
-      let permissions = getUserData().permissions;
-      return isAdmin() || (permissions != null && permissions.keys().contains(module) && permissions[module][permission] == true);
+    function hasPermission(module, p) {
+      return request.auth != null && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions[module][p] == true;
     }
 
-    // --- Organization Artifacts ---
-
+    // Settings (Logo, QR Codes)
     match /settings/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
+    // User Artifacts
     match /users/{userId}/{allPaths=**} {
-      allow read: if isAdmin() || request.auth.uid == userId;
-      allow write: if isAdmin() || request.auth.uid == userId;
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin() || hasPermission('users', 'read'));
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
 
+    // Campaign Evidence
     match /campaigns/{campaignId}/{allPaths=**} {
-      // Staff with module access or if the initiative is published
-      allow read: if isAdmin() || hasPermission('campaigns', 'read');
+      allow read: if firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published' ||
+                  (request.auth != null && (isAdmin() || hasPermission('campaigns', 'read')));
       allow write: if isAdmin() || hasPermission('campaigns', 'update');
     }
 
+    // Lead Evidence
     match /leads/{leadId}/{allPaths=**} {
-      allow read: if isAdmin() || hasPermission('leads-members', 'read');
+      allow read: if firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published' ||
+                  (request.auth != null && (isAdmin() || hasPermission('leads-members', 'read')));
       allow write: if isAdmin() || hasPermission('leads-members', 'update');
     }
 
+    // Beneficiary ID Proofs
     match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-      allow read: if isAdmin() || hasPermission('beneficiaries', 'read');
-      allow write: if isAdmin() || hasPermission('beneficiaries', 'create') || hasPermission('beneficiaries', 'update');
+      allow read: if request.auth != null && (isAdmin() || hasPermission('beneficiaries', 'read'));
+      allow write: if request.auth != null;
     }
 
+    // Donation Screenshots
     match /donations/{donationId}/{allPaths=**} {
-      allow read: if isAdmin() || hasPermission('donations', 'read');
-      allow write: if isAdmin() || hasPermission('donations', 'create') || hasPermission('donations', 'update');
+      allow read: if request.auth != null && (isAdmin() || hasPermission('donations', 'read'));
+      allow write: if request.auth != null;
     }
   }
 }

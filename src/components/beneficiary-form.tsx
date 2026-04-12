@@ -259,7 +259,6 @@ export function BeneficiaryForm({
              return;
          }
  
-         // Verification Check for Edits
          if (isEditing && configSettings?.verificationMode && configSettings.verificationMode !== 'Disabled' && userProfile) {
              setPendingFormData(data);
              setIsVerificationDialogOpen(true);
@@ -409,7 +408,7 @@ export function BeneficiaryForm({
                         onSubmit(pendingFormData);
                     }}
                     onSuccess={() => {
-                        onCancel(); // Close form on success
+                        onCancel(); 
                     }}
                     payload={{
                         module: 'beneficiaries',

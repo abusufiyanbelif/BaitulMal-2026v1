@@ -94,7 +94,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
   
   useEffect(() => {
     if (user) {
-      const orgGroupValue: 'founder' | 'co-founder' | 'finance' | 'member' | 'none' = user.organizationGroup || 'none';
+      const orgGroupValue: 'founder' | 'co-founder' | 'finance' | 'member' | 'none' = (user.organizationGroup as any) || 'none';
       
       const defaultValues = {
         name: user.name || '',
@@ -167,7 +167,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
     setValue('idProofFile', null);
     setValue('idProofDeleted', true);
     setPreview(null);
-    toast({ title: 'Image marked for deletion', description: 'The ID proof will be permanently removed upon saving.', variant: 'default' });
+    toast({ title: 'Image marked for deletion' });
   };
 
   const handleSendPasswordReset = async () => {
@@ -270,7 +270,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                      <FormItem>
                                          {renderLabel('Phone number', 'phone')}
                                          <div className="flex gap-2">
-                                             <FormControl><Input placeholder="10-digit mobile number" {...field} disabled={isFormDisabled} className="font-normal flex-1" /></FormControl>
+                                             <FormControl><Input placeholder="10-digit mobile number" {...field} value={field.value ?? ''} disabled={isFormDisabled} className="font-normal flex-1" /></FormControl>
                                              {field.value && (
                                                  <Button 
                                                      type="button" 
@@ -293,7 +293,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                     <FormField control={control as any} name="userKey" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="font-bold text-primary opacity-60">System ID (User key)</FormLabel>
-                                            <FormControl><Input placeholder="System-generated" {...field} readOnly disabled={true} className="bg-muted/30 font-mono opacity-60 font-normal" /></FormControl>
+                                            <FormControl><Input placeholder="System-generated" {...field} value={field.value ?? ''} readOnly disabled={true} className="bg-muted/30 font-mono opacity-60 font-normal" /></FormControl>
                                         </FormItem>
                                     )}/>
                                 </div>
@@ -315,8 +315,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <div className="space-y-4 rounded-xl border border-primary/5 p-4 bg-primary/[0.02]">
                                     <h3 className="text-sm font-bold text-primary capitalize tracking-widest">Verifiable identification</h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <FormField control={control as any} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('ID proof type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
-                                        <FormField control={control as any} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('ID number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                        <FormField control={control as any} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('ID proof type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} value={field.value ?? ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                        <FormField control={control as any} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('ID number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} value={field.value ?? ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                                     </div>
                                     <FormItem>
                                         {renderLabel('ID proof document', 'idProofFile')}

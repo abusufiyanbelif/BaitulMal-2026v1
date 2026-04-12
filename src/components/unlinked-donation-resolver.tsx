@@ -144,6 +144,10 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
         return () => clearTimeout(timer);
     }, [searchTerm, firestore]);
 
+    const handleSelect = (donor: Donor) => {
+        handleLinkToExisting(donor);
+    };
+
     const handleLinkToExisting = async (donor: Donor) => {
         if (!selectedDonation || !userProfile) return;
         setIsResolving(selectedDonation.id);
