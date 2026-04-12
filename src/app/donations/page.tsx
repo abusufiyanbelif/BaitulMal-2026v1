@@ -2,7 +2,18 @@
 import React, { useState, useMemo } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useCollection, useStorage, useAuth, useMemoFirebase, collection, doc } from '@/firebase';
+import { 
+    useFirestore, 
+    useCollection, 
+    useStorage, 
+    useAuth, 
+    useMemoFirebase, 
+    collection, 
+    doc, 
+    storageRef, 
+    uploadBytes, 
+    getDownloadURL 
+} from '@/firebase';
 import type { Donation, Campaign, Lead, DonationLink, TransactionDetail, Donor } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
@@ -592,9 +603,9 @@ export default function DonationsPage() {
     }
   };
 
-  const isLoading = areDonationsLoading || isProfileLoading || isSubmitting;
+  const isTotalLoading = areDonationsLoading || isProfileLoading || isSubmitting;
   
-  if (isLoading && !donations) return <SectionLoader label="Loading Donation Records..." description="Retrieving Organization Database." />;
+  if (isTotalLoading && !donations) return <SectionLoader label="Loading Donation Records..." description="Retrieving Organization Database." />;
 
   return (
     <main className="container mx-auto p-4 md:p-8 font-normal text-primary relative">
@@ -809,7 +820,7 @@ export default function DonationsPage() {
                     />
                 </div>
                 <DialogFooter className="bg-primary/5 border-t p-4 flex justify-between items-center shrink-0">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest uppercase">Securing Institutional Records</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Securing Institutional Records</p>
                     <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary">Close Form</Button>
                 </DialogFooter>
             </DialogContent>
@@ -844,10 +855,10 @@ export default function DonationsPage() {
                     <ScrollBar orientation="vertical" />
                 </ScrollArea>
                 <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white flex">
-                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
-                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5)) } className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
-                    <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
-                    <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
+                    <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold border-primary/20 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
+                    <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5)) } className="font-bold border-primary/20 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
+                    <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold border-primary/20 text-primary transition-transform active:scale-95"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
+                    <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold border-primary/20 text-primary transition-transform active:scale-95"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

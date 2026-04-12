@@ -59,6 +59,13 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
+import { 
+    Select, 
+    SelectContent, 
+    SelectItem, 
+    SelectTrigger, 
+    SelectValue 
+} from '@/components/ui/select';
 import type { GuidingPrinciple, FocusArea, Campaign, Lead, BrandingSettings } from '@/lib/types';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -325,7 +332,7 @@ export default function AppSettingsPage() {
     
     const handleRemoveQrCode = () => {
         setQrCodeFile(null);
-        handleFieldChange('qrCodeUrl', '');
+        handleFieldChange('logoUrl', '');
     };
 
     const handleAddPrinciple = () => {
@@ -465,9 +472,9 @@ export default function AppSettingsPage() {
     
     const handleCancel = () => setIsEditMode(false);
 
-    const isGlobalLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
+    const isTotalLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
 
-    if (isGlobalLoading) {
+    if (isTotalLoading) {
         return <BrandedLoader message="Syncing Institutional Settings..." />;
     }
 
@@ -826,12 +833,12 @@ export default function AppSettingsPage() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
                                 <div className="flex flex-col items-center gap-4 bg-muted/5 rounded-xl p-4 border border-dashed border-primary/10">
                                     <div className="relative w-full max-w-[200px] aspect-[2/1] rounded-lg flex items-center justify-center bg-white overflow-hidden shadow-inner border border-primary/5">
-                                        {(isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl) ? (
-                                            <img src={(isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)!.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent((isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)!)}` : (isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)} alt="Logo" className="object-contain p-2 h-full w-full" />
+                                        {displayData.logoUrl ? (
+                                            <img src={displayData.logoUrl.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(displayData.logoUrl)}` : displayData.logoUrl} alt="Logo" className="object-contain p-2 h-full w-full" />
                                         ) : (
                                             <div className="text-muted-foreground text-center p-2 font-normal opacity-20">
                                                 <ImageIcon className="mx-auto h-8 w-8" />
-                                                <p className="text-[10px] mt-1 font-bold tracking-tighter uppercase uppercase">No Logo Uploaded</p>
+                                                <p className="text-[10px] mt-1 font-bold tracking-tighter uppercase">No Logo Uploaded</p>
                                             </div>
                                         )}
                                     </div>
@@ -841,7 +848,7 @@ export default function AppSettingsPage() {
                                                 <UploadCloud className="mr-1.5 h-3.5 w-3.5" /> Upload Logo
                                             </label>
                                             <Input id="logo-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setLogoFile(e.target.files[0])} />
-                                            {editableData?.logoUrl && (
+                                            {displayData.logoUrl && (
                                                 <Button type="button" variant="destructive" size="icon" className="h-7 w-7 transition-transform active:scale-90" onClick={handleRemoveLogo} disabled={isSubmitting}>
                                                     <Trash2 className="h-3.5 w-3.5" />
                                                 </Button>
@@ -943,12 +950,12 @@ export default function AppSettingsPage() {
                                 
                                 <div className="pt-4 flex flex-col items-center gap-4 bg-secondary/30 rounded-xl p-4 border border-primary/10">
                                     <div className="relative w-32 h-32 border-2 border-dashed border-primary/20 rounded-lg flex items-center justify-center bg-white overflow-hidden shadow-inner">
-                                        {(isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl) ? (
-                                            <img src={(isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)!.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent((isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)!)}` : (isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)} alt="QR" className="object-contain p-2 h-full w-full" />
+                                        {displayData.qrCodeUrl ? (
+                                            <img src={displayData.qrCodeUrl.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(displayData.qrCodeUrl)}` : displayData.qrCodeUrl} alt="QR" className="object-contain p-2 h-full w-full" />
                                         ) : (
                                             <div className="text-muted-foreground text-center p-2 font-normal opacity-20">
                                                 <QrCode className="mx-auto h-8 w-8" />
-                                                <p className="text-[10px] mt-1 font-bold tracking-tighter uppercase uppercase">No QR Code</p>
+                                                <p className="text-[10px] mt-1 font-bold tracking-tighter uppercase">No QR Code</p>
                                             </div>
                                         )}
                                     </div>
@@ -958,7 +965,7 @@ export default function AppSettingsPage() {
                                                 <UploadCloud className="mr-2 h-4 w-4" /> Change QR Image
                                             </label>
                                             <Input id="qr-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setQrCodeFile(e.target.files[0])} />
-                                            {editableData?.qrCodeUrl && (
+                                            {displayData.qrCodeUrl && (
                                                 <Button type="button" variant="destructive" size="sm" className="font-bold h-8 transition-transform active:scale-90" onClick={handleRemoveQrCode} disabled={isSubmitting}>
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -1030,7 +1037,7 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase uppercase"><Target className="h-4 w-4 opacity-40"/> Impact Pillars (Focus Areas)</h4>
+                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase"><Target className="h-4 w-4 opacity-40"/> Impact Pillars (Focus Areas)</h4>
                                 {isEditMode && (
                                     <Button type="button" variant="outline" size="sm" onClick={handleAddFocusArea} className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform shadow-sm"><Plus className="h-3 w-3 mr-1"/> Add Pillar</Button>
                                 )}
@@ -1046,7 +1053,7 @@ export default function AppSettingsPage() {
                                                         checked={area.isHidden} 
                                                         onCheckedChange={(checked) => handleFocusAreaChange(index, 'isHidden', !!checked)} 
                                                     />
-                                                    <Label htmlFor={`focus-hide-${index}`} className="text-[10px] font-bold opacity-60 uppercase cursor-pointer uppercase">Hide</Label>
+                                                    <Label htmlFor={`focus-hide-${index}`} className="text-[10px] font-bold opacity-60 uppercase cursor-pointer">Hide</Label>
                                                 </div>
                                                 <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive transition-transform active:scale-90" onClick={() => handleRemoveFocusArea(index)}>
                                                     <Trash2 className="h-4 w-4"/>
@@ -1057,13 +1064,13 @@ export default function AppSettingsPage() {
                                             <div className="space-y-1">
                                                 <Label className="text-[9px] font-bold text-muted-foreground uppercase opacity-60">Visual & Label</Label>
                                                 <div className="flex gap-2">
-                                                    <Select value={area.icon} onValueChange={(val) => handleFocusAreaChange(index, 'icon', val)} disabled={isFormDisabled}>
+                                                    <Select value={area.icon} onValueChange={(val) => handleFocusAreaChange(index, 'icon', val as any)} disabled={isFormDisabled}>
                                                         <SelectTrigger className="w-12 h-9 p-0 justify-center"><FocusAreaIcon type={area.icon}/></SelectTrigger>
                                                         <SelectContent className="rounded-[12px] shadow-dropdown">
-                                                            <SelectItem value="Education"><GraduationCap className="h-4 w-4 text-primary"/></SelectItem>
-                                                            <SelectItem value="Healthcare"><HeartPulse className="h-4 w-4 text-primary"/></SelectItem>
-                                                            <SelectItem value="Relief"><Utensils className="h-4 w-4 text-primary"/></SelectItem>
-                                                            <SelectItem value="Other"><HelpCircle className="h-4 w-4 text-primary"/></SelectItem>
+                                                            <SelectItem value="Education" className="font-normal">Education</SelectItem>
+                                                            <SelectItem value="Healthcare" className="font-normal">Healthcare</SelectItem>
+                                                            <SelectItem value="Relief" className="font-normal">Relief</SelectItem>
+                                                            <SelectItem value="Other" className="font-normal">Other</SelectItem>
                                                         </SelectContent>
                                                     </Select>
                                                     <Input 
@@ -1094,7 +1101,7 @@ export default function AppSettingsPage() {
 
                         <div className="space-y-6">
                             <div className="flex items-center justify-between">
-                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase uppercase"><ListChecks className="h-4 w-4 opacity-40"/> Procedural Directives</h4>
+                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 uppercase"><ListChecks className="h-4 w-4 opacity-40"/> Procedural Directives</h4>
                                 {isEditMode && (
                                     <Button type="button" variant="outline" size="sm" onClick={handleAddPrinciple} className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform shadow-sm"><Plus className="h-3 w-3 mr-1"/> Add Rule</Button>
                                 )}
@@ -1103,7 +1110,7 @@ export default function AppSettingsPage() {
                                 {(displayData.principles || []).map((principle, index) => (
                                     <div key={principle.id || index} className="relative group p-4 border rounded-xl bg-white space-y-3 shadow-sm border-primary/5 hover:border-primary/20 transition-all">
                                         <div className="flex items-center justify-between">
-                                            <p className="font-bold text-primary text-[10px] tracking-widest uppercase opacity-40 uppercase">Standard Directive #{index + 1}</p>
+                                            <p className="font-bold text-primary text-[10px] tracking-widest uppercase opacity-40">Standard Directive #{index + 1}</p>
                                             {isEditMode && (
                                                 <div className="flex items-center gap-3">
                                                     <div className="flex items-center space-x-1.5">
@@ -1112,7 +1119,7 @@ export default function AppSettingsPage() {
                                                             checked={principle.isHidden} 
                                                             onCheckedChange={(checked) => handleFieldChange('principles', displayData.principles.map((p, i) => i === index ? {...p, isHidden: !!checked} : p))} 
                                                         />
-                                                        <Label htmlFor={`gp-hide-${index}`} className="text-[10px] font-bold opacity-60 uppercase cursor-pointer uppercase">Hide</Label>
+                                                        <Label htmlFor={`gp-hide-${index}`} className="text-[10px] font-bold opacity-60 uppercase cursor-pointer">Hide</Label>
                                                     </div>
                                                     <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive transition-transform active:scale-90" onClick={() => handleRemovePrinciple(index)}>
                                                         <Trash2 className="h-4 w-4"/>
@@ -1132,7 +1139,7 @@ export default function AppSettingsPage() {
                                                 <p className="text-sm font-normal text-foreground leading-relaxed flex-1">
                                                     {principle.text || <span className="italic opacity-30">Unspecified Directive Text</span>}
                                                 </p>
-                                                {principle.isHidden && <Badge variant="outline" className="text-[8px] font-black uppercase border-primary/10 uppercase">Private</Badge>}
+                                                {principle.isHidden && <Badge variant="outline" className="text-[8px] font-black uppercase border-primary/10">Private</Badge>}
                                             </div>
                                         )}
                                     </div>

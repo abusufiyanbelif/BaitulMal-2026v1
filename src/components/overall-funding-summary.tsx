@@ -41,7 +41,7 @@ export function OverallFundingSummary() {
   }
 
   if (!overallSummary) {
-    return <p className="font-bold text-primary text-center py-10">Impact Summary Currently Unavailable.</p>;
+    return <p className="font-bold text-primary text-center py-10 italic">Impact Summary Currently Unavailable.</p>;
   }
 
   const rangeDescription = summaryDateRange 
@@ -96,24 +96,24 @@ export function OverallFundingSummary() {
                             <span className="text-4xl font-bold text-primary">
                                 {Math.round(overallSummary.progress || 0)}%
                             </span>
-                            <span className="text-[10px] font-bold text-muted-foreground tracking-tight">Funded</span>
+                            <span className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Funded</span>
                         </div>
                     </div>
                     <div className="space-y-4 text-center md:text-left font-bold text-primary">
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Raised For Goal</p>
+                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Raised For Goal</p>
                             <p className="text-3xl font-bold font-mono">
                             ₹{(overallSummary.totalCollectedForGoals || 0).toLocaleString('en-IN')}
                             </p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Combined Target Goal</p>
+                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Combined Target Goal</p>
                             <p className="text-3xl font-bold font-mono opacity-40">
                             ₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}
                             </p>
                         </div>
                         <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight">Period Total Received</p>
+                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight uppercase">Period Total Received</p>
                             <p className="text-3xl font-bold font-mono">
                             ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}
                             </p>
@@ -126,7 +126,7 @@ export function OverallFundingSummary() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
                 <CardHeader className="flex items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60">Families Impacted</CardTitle>
+                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60 uppercase">Families Impacted</CardTitle>
                     <Users className="h-5 w-5 text-primary opacity-40" />
                 </CardHeader>
                 <CardContent>
@@ -137,25 +137,26 @@ export function OverallFundingSummary() {
             
             <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
                 <CardHeader className="flex items-center justify-between space-y-0 pb-2">
-                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60">Verified Donations</CardTitle>
+                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60 uppercase">Verified Donations</CardTitle>
                     <CheckCircle2 className="h-5 w-5 text-primary opacity-40" />
                 </CardHeader>
                 <CardContent>
                     <div className="text-3xl font-bold text-primary font-mono">₹{overallSummary.grandTotalRaised.toLocaleString('en-IN')}</div>
                     <p className="text-[9px] text-muted-foreground mt-1 font-normal">Confirmed Community Contributions Recorded.</p>
                 </CardContent>
+            </Card>
 
-                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
-                    <CardHeader className="flex items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60">Target Progress</CardTitle>
-                        <Target className="h-5 w-5 text-primary opacity-40" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-bold text-primary font-mono">{Math.round(overallSummary.progress)}%</div>
-                        <p className="text-[9px] text-muted-foreground mt-1 font-normal">Organization Goal Achievement For Selected Period.</p>
-                    </CardContent>
-                </Card>
-            </div>
+            <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
+                <CardHeader className="flex items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60 uppercase">Target Progress</CardTitle>
+                    <Target className="h-5 w-5 text-primary opacity-40" />
+                </CardHeader>
+                <CardContent>
+                    <div className="text-3xl font-bold text-primary font-mono">{Math.round(overallSummary.progress)}%</div>
+                    <p className="text-[9px] text-muted-foreground mt-1 font-normal">Organization Goal Achievement For Selected Period.</p>
+                </CardContent>
+            </Card>
         </div>
-    );
+    </div>
+  );
 }

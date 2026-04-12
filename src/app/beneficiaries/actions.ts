@@ -136,6 +136,86 @@ export async function updateMasterBeneficiaryAction(
     }
 }
 
+export async function updateInitiativeBeneficiaryDetailsAction(
+    initiativeType: 'campaign' | 'lead',
+    initiativeId: string,
+    beneficiaryId: string,
+    data: any
+): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const collectionName = initiativeType === 'campaign' ? 'campaigns' : 'leads';
+        const docRef = adminDb.doc(`${collectionName}/${initiativeId}/beneficiaries/${beneficiaryId}`);
+        await docRef.set(data, { merge: true });
+        revalidatePath(`/${collectionName}-members/${initiativeId}/beneficiaries`);
+        return { success: true, message: 'Initiative Record Updated.' };
+    } catch (error: any) {
+        return { success: false, message: error.message };
+    }
+}
+
+export async function updateBeneficiaryStatusInInitiativeAction(
+    initiativeType: 'campaign' | 'lead',
+    initiativeId: string,
+    beneficiaryId: string,
+    newStatus: Beneficiary['status']
+): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const collectionName = initiativeType === 'campaign' ? 'campaigns' : 'leads';
+        const docRef = adminDb.doc(`${collectionName}/${initiativeId}/beneficiaries/${beneficiaryId}`);
+        await docRef.update({ status: newStatus });
+        revalidatePath(`/${collectionName}-members/${initiativeId}/beneficiaries`);
+        return { success: true, message: 'Disbursement Status Updated.' };
+    } catch (error: any) {
+        return { success: false, message: error.message };
+    }
+}
+
+export async function syncMasterBeneficiaryListAction(): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const batch = adminDb.batch();
+        let addedCount = 0;
+        
+        const masterSnap = await adminDb.collection('beneficiaries').get();
+        const masterIds = new Set(masterSnap.docs.map(d => d.id));
+
+        const initiatives = [
+            { type: 'campaigns', label: 'Campaign' },
+            { type: 'leads', label: 'Lead' }
+        ];
+
+        for (const init of initiatives) {
+            const initSnap = await adminDb.collection(init.type).get();
+            for (const doc of initSnap.docs) {
+                const subSnap = await adminDb.collection(`${init.type}/${doc.id}/beneficiaries`).get();
+                subSnap.forEach(subDoc => {
+                    if (!masterIds.has(subDoc.id)) {
+                        const masterRef = adminDb.collection('beneficiaries').doc(subDoc.id);
+                        const { status, kitAmount, itemCategoryId, itemCategoryName, ...masterData } = subDoc.data();
+                        batch.set(masterRef, { ...masterData, status: 'Verified' }, { merge: true });
+                        masterIds.add(subDoc.id);
+                        addedCount++;
+                    }
+                });
+            }
+        }
+
+        if (addedCount > 0) await batch.commit();
+        revalidatePath('/beneficiaries');
+        return { success: true, message: `Sync Complete. Registered ${addedCount} New Profiles.` };
+    } catch (error: any) {
+        return { success: false, message: error.message };
+    }
+}
+
 export async function bulkUpdateMasterBeneficiaryStatusAction(
     ids: string[], 
     newStatus: Beneficiary['status'], 
