@@ -126,7 +126,7 @@ export default function VerificationsPage() {
                         <ShieldCheck className="h-8 w-8 text-primary" />
                         Verification Pipeline
                     </h1>
-                    <p className="text-muted-foreground font-normal text-sm">Audit and approve institutional record modifications.</p>
+                    <p className="text-muted-foreground font-normal text-sm">Audit And Approve Institutional Record Modifications.</p>
                 </div>
             </div>
 
@@ -156,7 +156,7 @@ export default function VerificationsPage() {
                             <CardContent className="flex flex-col items-center justify-center py-16 text-center">
                                 <CheckCircle2 className="h-12 w-12 text-primary/20 mb-4" />
                                 <h3 className="font-bold text-lg text-primary">All Clear</h3>
-                                <p className="text-muted-foreground text-sm max-w-xs font-normal">No pending verifications currently assigned to your account.</p>
+                                <p className="text-muted-foreground text-sm max-w-xs font-normal">No Pending Verifications Currently Assigned To Your Account.</p>
                             </CardContent>
                         </Card>
                     )}

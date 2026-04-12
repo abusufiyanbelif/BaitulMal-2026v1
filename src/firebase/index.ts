@@ -2,7 +2,7 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, signInWithPhoneNumber, RecaptchaVerifier } from 'firebase/auth';
+import { getAuth, signInWithPhoneNumber, RecaptchaVerifier, sendPasswordResetEmail } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
@@ -49,8 +49,8 @@ export * from 'firebase/auth';
 export * from 'firebase/firestore';
 export * from 'firebase/storage';
 
-// Explicitly export these for the Portal Login flow
-export { signInWithPhoneNumber, RecaptchaVerifier };
+// Explicitly export these for the Portal Login and Auth flows
+export { signInWithPhoneNumber, RecaptchaVerifier, sendPasswordResetEmail };
 
 export * from './provider';
 export * from './client-provider';
