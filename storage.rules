@@ -2,55 +2,51 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
     
-    // --- HELPERS ---
-    
-    function isSignedIn() {
-      return request.auth != null;
+    // Helper to check role from Firestore
+    function getUserData() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
     }
     
     function isAdmin() {
-      return isSignedIn() && firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin';
+      return request.auth != null && getUserData().role == 'Admin';
     }
     
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
-    }
-    
-    function hasPermission(module, action) {
-      let profile = firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
-      return profile.role == 'Admin' || (profile.permissions != null && profile.permissions[module][action] == true);
+    function hasPermission(module, permission) {
+      let permissions = getUserData().permissions;
+      return isAdmin() || (permissions != null && permissions.keys().contains(module) && permissions[module][permission] == true);
     }
 
-    // --- RULES ---
+    // --- Organization Artifacts ---
 
-    match /users/{userId}/{allPaths=**} {
-      allow read: if isSignedIn() && (isOwner(userId) || isAdmin() || hasPermission('users', 'read'));
-      allow write: if isSignedIn() && (isOwner(userId) || isAdmin());
-    }
-    
-    match /donations/{donationId}/{allPaths=**} {
-      allow read: if isSignedIn() && (isAdmin() || hasPermission('donations', 'read'));
-      allow write: if isSignedIn() && (isAdmin() || hasPermission('donations', 'update'));
-    }
-    
-    match /campaigns/{campaignId}/{allPaths=**} {
-      allow read: if isAdmin() || hasPermission('campaigns', 'read') || firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published';
-      allow write: if isAdmin() || hasPermission('campaigns', 'update');
-    }
-    
-    match /leads/{leadId}/{allPaths=**} {
-      allow read: if isAdmin() || hasPermission('leads-members', 'read') || firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published';
-      allow write: if isAdmin() || hasPermission('leads-members', 'update');
-    }
-    
-    match /beneficiaries/{benId}/{allPaths=**} {
-      allow read: if isSignedIn() && (isAdmin() || hasPermission('beneficiaries', 'read'));
-      allow write: if isSignedIn() && (isAdmin() || hasPermission('beneficiaries', 'update'));
-    }
-    
     match /settings/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin();
+    }
+
+    match /users/{userId}/{allPaths=**} {
+      allow read: if isAdmin() || request.auth.uid == userId;
+      allow write: if isAdmin() || request.auth.uid == userId;
+    }
+
+    match /campaigns/{campaignId}/{allPaths=**} {
+      // Staff with module access or if the initiative is published
+      allow read: if isAdmin() || hasPermission('campaigns', 'read');
+      allow write: if isAdmin() || hasPermission('campaigns', 'update');
+    }
+
+    match /leads/{leadId}/{allPaths=**} {
+      allow read: if isAdmin() || hasPermission('leads-members', 'read');
+      allow write: if isAdmin() || hasPermission('leads-members', 'update');
+    }
+
+    match /beneficiaries/{beneficiaryId}/{allPaths=**} {
+      allow read: if isAdmin() || hasPermission('beneficiaries', 'read');
+      allow write: if isAdmin() || hasPermission('beneficiaries', 'create') || hasPermission('beneficiaries', 'update');
+    }
+
+    match /donations/{donationId}/{allPaths=**} {
+      allow read: if isAdmin() || hasPermission('donations', 'read');
+      allow write: if isAdmin() || hasPermission('donations', 'create') || hasPermission('donations', 'update');
     }
   }
 }

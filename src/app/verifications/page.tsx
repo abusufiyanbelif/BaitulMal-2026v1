@@ -58,7 +58,7 @@ export default function VerificationsPage() {
         const baseCol = collection(firestore, 'pending_verifications');
         
         // SECURITY COMPLIANT QUERY:
-        // If not an Admin, we MUST filter by assignedVerifierIds to match the security rules.
+        // Non-admins MUST strictly filter by assignedVerifierIds to avoid security rule violations.
         if (userProfile.role !== 'Admin') {
             return query(
                 baseCol, 
@@ -67,7 +67,7 @@ export default function VerificationsPage() {
             );
         }
 
-        // Admin: Can query globally for audit purposes
+        // Admin: Can query globally for institutional oversight
         return query(baseCol, orderBy('createdAt', 'desc'));
     }, [firestore, userProfile]);
 
@@ -109,7 +109,7 @@ export default function VerificationsPage() {
 
     const isLoading = isProfileLoading || isVerificationsLoading;
 
-    if (isLoading) return <BrandedLoader message="Loading Verification Pipeline..." />;
+    if (isLoading) return <BrandedLoader message="Syncing Verification Pipeline..." />;
 
     const myPendingRequests = (verifications || []).filter(v => 
         v.status !== 'Approved' && v.status !== 'Rejected' && 
@@ -126,17 +126,17 @@ export default function VerificationsPage() {
                         <ShieldCheck className="h-8 w-8 text-primary" />
                         Verification Pipeline
                     </h1>
-                    <p className="text-muted-foreground font-normal text-sm">Audit and approve organization record changes.</p>
+                    <p className="text-muted-foreground font-normal text-sm">Audit and approve institutional record modifications.</p>
                 </div>
             </div>
 
             <Tabs defaultValue="assigned" className="w-full space-y-6">
                 <TabsList className="bg-primary/5 p-1 border border-primary/10">
                     <TabsTrigger value="assigned" className="font-bold data-[state=active]:bg-primary data-[state=active]:text-white">
-                        Assigned to Me ({myPendingRequests.length})
+                        Assigned To Me ({myPendingRequests.length})
                     </TabsTrigger>
                     <TabsTrigger value="all" className="font-bold data-[state=active]:bg-primary data-[state=active]:text-white">
-                        All Requests ({allRequests.length})
+                        Full Pipeline ({allRequests.length})
                     </TabsTrigger>
                 </TabsList>
 
@@ -153,10 +153,10 @@ export default function VerificationsPage() {
                         </div>
                     ) : (
                         <Card className="border-dashed border-primary/20 bg-primary/[0.01]">
-                            <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
                                 <CheckCircle2 className="h-12 w-12 text-primary/20 mb-4" />
-                                <h3 className="font-bold text-lg text-primary">Pipeline Clear</h3>
-                                <p className="text-muted-foreground text-sm max-w-xs font-normal">No pending verifications currently assigned to you. Great work!</p>
+                                <h3 className="font-bold text-lg text-primary">All Clear</h3>
+                                <p className="text-muted-foreground text-sm max-w-xs font-normal">No pending verifications currently assigned to your account.</p>
                             </CardContent>
                         </Card>
                     )}
@@ -180,15 +180,15 @@ export default function VerificationsPage() {
                     <DialogHeader className="bg-primary/5 p-6 border-b">
                         <div className="flex items-center justify-between mb-2">
                              <Badge className="bg-primary/10 text-primary hover:bg-primary/20 capitalize font-bold border-0">
-                                {selectedRequest?.module} Update Request
+                                {selectedRequest?.module} Record Review
                             </Badge>
                             <Badge variant={selectedRequest?.status === 'Approved' ? 'eligible' : selectedRequest?.status === 'Rejected' ? 'destructive' : 'outline'} className="capitalize font-bold">
                                 {selectedRequest?.status}
                             </Badge>
                         </div>
-                        <DialogTitle className="text-2xl font-bold text-primary tracking-tight">Record Change Audit</DialogTitle>
+                        <DialogTitle className="text-2xl font-bold text-primary tracking-tight">Modification Audit</DialogTitle>
                         <DialogDescription className="font-normal text-muted-foreground">
-                            Requested by {selectedRequest?.requestedBy.name} on {selectedRequest?.createdAt ? new Date((selectedRequest.createdAt as any).seconds * 1000).toLocaleString() : 'N/A'}
+                            Requested By {selectedRequest?.requestedBy.name} On {selectedRequest?.createdAt ? new Date((selectedRequest.createdAt as any).seconds * 1000).toLocaleString() : 'N/A'}
                         </DialogDescription>
                     </DialogHeader>
 
@@ -198,7 +198,7 @@ export default function VerificationsPage() {
                                 <div className="p-4 bg-primary/5 rounded-xl border border-primary/10">
                                     <div className="flex items-center gap-2 mb-2 text-primary font-bold text-xs uppercase tracking-wider">
                                         <MessageSquare className="h-3 w-3" />
-                                        Request Description
+                                        Request Context
                                     </div>
                                     <p className="text-sm font-normal text-primary/80">{selectedRequest.description}</p>
                                 </div>
@@ -207,18 +207,18 @@ export default function VerificationsPage() {
                             <div className="space-y-4">
                                 <h3 className="font-bold text-sm text-primary uppercase tracking-widest flex items-center gap-2">
                                     <History className="h-4 w-4" />
-                                    Data Comparison
+                                    Institutional State Comparison
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-bold text-muted-foreground uppercase">Original State</Label>
+                                        <Label className="text-[10px] font-bold text-muted-foreground uppercase">Original Registry Data</Label>
                                         <pre className="p-4 bg-muted/30 rounded-xl text-[11px] font-mono whitespace-pre-wrap border border-primary/5 overflow-auto max-h-40">
                                             {JSON.stringify(selectedRequest?.originalValue, null, 2)}
                                         </pre>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-bold text-primary uppercase">Proposed State</Label>
-                                        <pre className="p-4 bg-primary/[0.03] rounded-xl text-[11px] font-mono whitespace-pre-wrap border border-primary/10 overflow-auto max-h-40 text-primary">
+                                        <Label className="text-[10px] font-bold text-primary uppercase">Proposed Update</Label>
+                                        <pre className="p-4 bg-primary/[0.03] rounded-xl text-[11px] font-mono whitespace-pre-wrap border border-primary/10 overflow-auto max-h-40 text-primary font-bold">
                                             {JSON.stringify(selectedRequest?.newValue, null, 2)}
                                         </pre>
                                     </div>
@@ -228,7 +228,7 @@ export default function VerificationsPage() {
                             <div className="space-y-3">
                                 <h3 className="font-bold text-sm text-primary uppercase tracking-widest flex items-center gap-2">
                                     <ShieldCheck className="h-4 w-4" />
-                                    Verifier Status
+                                    Assigned Verifiers Status
                                 </h3>
                                 <div className="space-y-2">
                                     {selectedRequest?.assignedVerifiers.map((av, idx) => (
@@ -251,7 +251,7 @@ export default function VerificationsPage() {
 
                     <DialogFooter className="bg-primary/5 p-6 border-t gap-3 sm:gap-1 flex justify-between w-full">
                         <div className="flex-1">
-                            <Button variant="ghost" onClick={() => setIsDetailOpen(false)} className="font-bold border-primary/10 text-primary">Close</Button>
+                            <Button variant="ghost" onClick={() => setIsDetailOpen(false)} className="font-bold border-primary/10 text-primary">Close Auditor</Button>
                         </div>
                         {selectedRequest?.status !== 'Approved' && selectedRequest?.status !== 'Rejected' && 
                          selectedRequest?.assignedVerifiers.some(av => av.id === userProfile?.id && av.status === 'Pending') && (
@@ -270,7 +270,7 @@ export default function VerificationsPage() {
                                     className="bg-primary hover:bg-primary/90 text-white font-bold shadow-lg"
                                 >
                                     {isActionLoading ? <Clock className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
-                                    Approve Update
+                                    Verify Record
                                 </Button>
                             </div>
                         )}
@@ -281,9 +281,9 @@ export default function VerificationsPage() {
             <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
                 <DialogContent className="max-w-md rounded-[20px] border-primary/10 shadow-2xl">
                     <DialogHeader>
-                        <DialogTitle className="font-bold text-primary">Provide Rejection Reason</DialogTitle>
+                        <DialogTitle className="font-bold text-primary">State Rejection Reason</DialogTitle>
                         <DialogDescription className="font-normal">
-                            Please explain why you are rejecting this update request. This will be shared with the requester.
+                            Please provide a brief explanation for rejecting this update. This will be visible to the requester.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="py-4">
@@ -347,7 +347,7 @@ function VerificationCard({ request, onView }: { request: PendingVerification, o
                     </Badge>
                 </div>
                 <CardTitle className="text-sm font-bold text-primary group-hover:text-primary transition-colors truncate">
-                    {request.description || `${request.module.toUpperCase()} Update`}
+                    {request.description || `${request.module.toUpperCase()} Modification`}
                 </CardTitle>
                 <CardDescription className="text-[10px] font-normal flex items-center gap-1">
                     <Clock className="h-3 w-3" />
@@ -356,11 +356,11 @@ function VerificationCard({ request, onView }: { request: PendingVerification, o
             </CardHeader>
             <CardContent className="pt-4 space-y-3 font-normal">
                 <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Requester</span>
+                    <span className="text-muted-foreground font-normal">Requester</span>
                     <span className="font-bold text-primary">{request.requestedBy.name}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">Verifiers</span>
+                    <span className="text-muted-foreground font-normal">Verifiers</span>
                     <div className="flex -space-x-2">
                         {request.assignedVerifiers.map((av, i) => (
                             <div key={i} title={av.name} className="h-6 w-6 rounded-full border-2 border-white bg-primary/10 flex items-center justify-center text-[8px] font-bold text-primary shadow-sm">
@@ -374,7 +374,7 @@ function VerificationCard({ request, onView }: { request: PendingVerification, o
                     className="w-full mt-2 font-bold text-xs h-9 border-primary/10 hover:bg-primary hover:text-white transition-all group-hover:shadow-md"
                     onClick={onView}
                 >
-                    Review Details <Eye className="ml-2 h-3.5 w-3.5" />
+                    Perform Review <Eye className="ml-2 h-3.5 w-3.5" />
                 </Button>
             </CardContent>
         </Card>
