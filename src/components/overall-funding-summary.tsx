@@ -69,7 +69,7 @@ export function OverallFundingSummary() {
                 <CardDescription className="font-normal text-primary/70">{rangeDescription}</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center font-normal">
                     <div className="relative h-48 sm:h-64 w-full">
                         <ChartContainer
                             config={{
@@ -162,6 +162,7 @@ export function OverallFundingSummary() {
                     <div className="text-3xl font-bold text-primary font-mono">₹{overallSummary.grandTotalRaised.toLocaleString('en-IN')}</div>
                     <p className="text-[9px] text-muted-foreground mt-1 font-normal">Confirmed Community Contributions Recorded.</p>
                 </CardContent>
+            </Card>
 
             <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
                 <CardHeader className="flex items-center justify-between space-y-0 pb-2">
