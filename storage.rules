@@ -1,116 +1,66 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
-
-    // ============================================================
-    // HELPER FUNCTIONS
-    // ============================================================
-
+    
+    // Helper Functions
     function isSignedIn() {
       return request.auth != null;
     }
-
+    
     function getUserData() {
       return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
     }
-
+    
     function isAdmin() {
-      return isSignedIn() && (getUserData().role == 'Admin' || getUserData().loginId == 'admin');
+      return isSignedIn() && getUserData().role == 'Admin';
     }
-
+    
+    function isActive() {
+      return isSignedIn() && getUserData().status == 'Active';
+    }
+    
     function hasPermission(module, action) {
-      let data = getUserData();
-      return isAdmin() || (
-        isSignedIn() &&
-        data.keys().hasAll(['permissions']) &&
-        data.permissions.keys().hasAll([module]) &&
-        data.permissions[module].keys().hasAll([action]) &&
-        data.permissions[module][action] == true
-      );
+      return isAdmin() || (isActive() && getUserData().permissions[module][action] == true);
     }
 
-    // ============================================================
-    // SETTINGS / APP ASSETS (Logo, QR Code, Info images)
-    // Publicly readable — used on landing page, public summaries,
-    // and the donate page before login.
-    // ============================================================
+    // Settings
     match /settings/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    // ============================================================
-    // USER ID PROOF DOCUMENTS
-    // Only the owner or an admin can read/write their own files.
-    // ============================================================
+    // User Files
     match /users/{userId}/{allPaths=**} {
-      allow read: if isSignedIn() && (request.auth.uid == userId || isAdmin());
-      allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow read: if request.auth.uid == userId || hasPermission('users', 'read');
+      allow write: if request.auth.uid == userId || isAdmin();
     }
 
-    // ============================================================
-    // CAMPAIGN ARTIFACTS (Cover images, documents)
-    // Public read for cover images shown on public summary pages.
-    // Only campaign editors can write.
-    // ============================================================
+    // Campaign Files
     match /campaigns/{campaignId}/{allPaths=**} {
-      allow read: if true;
-      allow write: if isSignedIn() && (
-        hasPermission('campaigns', 'update') ||
-        hasPermission('campaigns', 'create') ||
-        isAdmin()
-      );
+      allow read: if firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published' || 
+                  hasPermission('campaigns', 'read');
+      allow write: if hasPermission('campaigns', 'update');
     }
 
-    // ============================================================
-    // LEAD ARTIFACTS (Cover images, documents)
-    // Public read for cover images shown on public lead summaries.
-    // Only lead editors can write.
-    // ============================================================
+    // Lead Files
     match /leads/{leadId}/{allPaths=**} {
-      allow read: if true;
-      allow write: if isSignedIn() && (
-        hasPermission('leads-members', 'update') ||
-        hasPermission('leads-members', 'create') ||
-        isAdmin()
-      );
+      allow read: if firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published' || 
+                  hasPermission('leads-members', 'read');
+      allow write: if hasPermission('leads-members', 'update');
     }
 
-    // ============================================================
-    // BENEFICIARY ID PROOFS
-    // Sensitive — require authentication to read.
-    // Any signed-in staff member can upload during data entry.
-    // ============================================================
-    match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn() && (
-        hasPermission('beneficiaries', 'update') ||
-        hasPermission('beneficiaries', 'create') ||
-        isAdmin()
-      );
+    // Beneficiary Files
+    match /beneficiaries/{benId}/{allPaths=**} {
+      allow read: if hasPermission('beneficiaries', 'read') || getUserData().linkedBeneficiaryId == benId;
+      allow write: if hasPermission('beneficiaries', 'update') || getUserData().linkedBeneficiaryId == benId;
     }
 
-    // ============================================================
-    // DONATION PAYMENT SCREENSHOTS / EVIDENCE
-    // Staff-only read (sensitive financial proof).
-    // Any authenticated user can upload for their donation record.
-    // ============================================================
+    // Donation Files
     match /donations/{donationId}/{allPaths=**} {
-      allow read: if isSignedIn();
-      allow write: if isSignedIn() && (
-        hasPermission('donations', 'update') ||
-        hasPermission('donations', 'create') ||
-        isAdmin()
-      );
-    }
-
-    // ============================================================
-    // PUBLIC DONATION UPLOADS (from unauthenticated donate page)
-    // Payment screenshots uploaded by public donors.
-    // ============================================================
-    match /public_donations/{allPaths=**} {
-      allow read: if isSignedIn();
-      allow write: if true; // Public donors upload their payment proof
+      allow read: if hasPermission('donations', 'read') || 
+                  firestore.get(/databases/(default)/documents/donations/$(donationId)).data.donorId == request.auth.uid;
+      allow write: if hasPermission('donations', 'update') || 
+                   (!exists(/b/$(bucket)/o/donations/$(donationId)) && isSignedIn());
     }
   }
 }
