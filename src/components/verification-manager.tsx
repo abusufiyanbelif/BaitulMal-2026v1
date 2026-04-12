@@ -2,18 +2,18 @@
  
  import { useState, useMemo } from 'react';
  import { useSession } from '@/hooks/use-session';
- import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
- import { collection, query, where, orderBy } from 'firebase/firestore';
+ import { useCollection, useFirestore, useMemoFirebase, collection, query, where, orderBy } from '@/firebase';
  import type { PendingVerification } from '@/lib/types';
  import { Card, CardContent } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
  import { Badge } from '@/components/ui/badge';
- import { ShieldCheck, ArrowRight, Loader2, Users, CheckCircle2, XCircle } from 'lucide-react';
+ import { ShieldCheck, ArrowRight, Loader2, Users, CheckCircle2, XCircle, Clock } from 'lucide-react';
  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
  import { ScrollArea } from '@/components/ui/scroll-area';
  import { useToast } from '@/hooks/use-toast';
  import { approveVerificationAction, rejectVerificationAction } from '@/app/verifications/actions';
  import { cn } from '@/lib/utils';
+ import { Label } from '@/components/ui/label';
  
  /**
   * Verification Manager - Floating institutional feedback for pending approvals.
@@ -110,10 +110,10 @@
    return (
      <>
        <div className="fixed bottom-6 right-6 z-[100] animate-in fade-in slide-in-from-bottom-5 duration-500 max-w-sm w-full">
-         <Card className="border-primary/20 bg-white/95 backdrop-blur shadow-2xl overflow-hidden ring-1 ring-primary/5">
+         <Card className="border-primary/20 bg-white/95 backdrop-blur shadow-2xl overflow-hidden ring-1 ring-primary/5 rounded-2xl">
            <div className="h-1 bg-primary w-full" />
            <CardContent className="p-4 flex gap-4">
-             <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+             <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/10 shadow-sm">
                <ShieldCheck className="h-6 w-6 text-primary animate-pulse" />
              </div>
              <div className="flex-1 space-y-2">
@@ -125,14 +125,14 @@
                    </Badge>
                  </div>
                  <p className="text-xs text-primary/70 leading-relaxed font-medium">
-                   Members have requested your verification for {myTasks.length} record {myTasks.length === 1 ? 'update' : 'updates'}.
+                   Members Have Requested Your Verification For {myTasks.length} Record {myTasks.length === 1 ? 'Update' : 'Updates'}.
                  </p>
                </div>
                <div className="flex gap-2">
-                 <Button size="sm" variant="outline" className="h-8 text-[10px] font-bold flex-1 border-primary/20 text-primary hover:bg-primary/5" onClick={() => setIsDismissed(true)}>
+                 <Button size="sm" variant="outline" className="h-8 text-[10px] font-bold flex-1 border-primary/20 text-primary hover:bg-primary/5 rounded-xl transition-all" onClick={() => setIsDismissed(true)}>
                    Skip / Later
                  </Button>
-                 <Button size="sm" className="h-8 text-[10px] font-bold flex-1 shadow-md bg-primary hover:bg-primary/90 text-white" onClick={() => handleReview(myTasks[0])}>
+                 <Button size="sm" className="h-8 text-[10px] font-bold flex-1 shadow-md bg-primary hover:bg-primary/90 text-white rounded-xl transition-all" onClick={() => handleReview(myTasks[0])}>
                    Verify Now <ArrowRight className="ml-1 h-3 w-3" />
                  </Button>
                </div>
@@ -151,7 +151,7 @@
                  </div>
                  <div>
                    <DialogTitle className="text-2xl font-bold text-primary tracking-tight">Verification Review</DialogTitle>
-                   <DialogDescription className="font-medium text-primary/60 text-sm">Reviewing update request for {selectedRequest?.module} record.</DialogDescription>
+                   <DialogDescription className="font-medium text-primary/60 text-sm">Reviewing Update Request For {selectedRequest?.module} Record.</DialogDescription>
                  </div>
                </div>
                <Badge variant="outline" className="bg-white border-primary/20 text-primary font-bold px-3 py-1 text-xs capitalize">{selectedRequest?.status}</Badge>
@@ -167,12 +167,12 @@
                   <div className="flex-1">
                     <p className="text-[10px] font-bold text-primary/50 uppercase tracking-widest">Requested By</p>
                     <p className="text-lg font-bold text-primary">{selectedRequest?.requestedBy.name}</p>
-                    <p className="text-xs font-medium text-primary/60 italic">"I have updated this {selectedRequest?.module} record. Please verify."</p>
+                    <p className="text-xs font-medium text-primary/60 italic">"I Have Updated This {selectedRequest?.module} Record. Please Verify."</p>
                   </div>
                </div>
  
                <div className="space-y-4">
-                 <h4 className="font-bold text-sm text-primary/80 flex items-center gap-2 border-b border-primary/10 pb-2">Proposed Changes Breakdown</h4>
+                 <h4 className="font-bold text-sm text-primary/80 flex items-center gap-2 border-b border-primary/10 pb-2 capitalize tracking-tight">Proposed Modifications Breakdown</h4>
                  <div className="grid gap-3">
                     {selectedRequest && Object.entries(selectedRequest.newValue).map(([key, value]) => {
                       if (['id', 'updatedAt', 'createdAt', 'createdById', 'createdByName'].includes(key)) return null;
@@ -198,8 +198,8 @@
                </div>
  
                <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10 space-y-4 shadow-inner">
-                 <h4 className="font-bold text-sm text-primary/80 flex items-center gap-2 mb-2">
-                   <Users className="h-4 w-4" /> Sign-off Status
+                 <h4 className="font-bold text-sm text-primary/80 flex items-center gap-2 mb-2 capitalize tracking-tight">
+                   <Users className="h-4 w-4" /> Sign-Off Status
                  </h4>
                  <div className="grid gap-3">
                     {selectedRequest?.assignedVerifiers.map((v, idx) => (
@@ -208,8 +208,8 @@
                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-xs text-primary">{v.name.charAt(0)}</div>
                            <span className="text-sm font-bold text-primary">{v.name} {v.id === userProfile?.id && "(You)"}</span>
                         </div>
-                        <Badge variant={v.status === 'Approved' ? 'success' : 'secondary'} className="text-[10px] font-bold px-2 py-0.5 capitalize">
-                          {v.status === 'Approved' ? <CheckCircle2 className="mr-1 h-3 w-3" /> : <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
+                        <Badge variant={v.status === 'Approved' ? 'eligible' : 'outline'} className="text-[10px] font-bold px-2 py-0.5 capitalize">
+                          {v.status === 'Approved' ? <CheckCircle2 className="mr-1 h-3 w-3" /> : <Clock className="mr-1 h-3 w-3" />}
                           {v.status}
                         </Badge>
                       </div>

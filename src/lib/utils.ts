@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export function getNestedValue(obj: any, path: string, defaultValue: any = undefined) {
     if (typeof path !== 'string') {
-        console.warn('getNestedValue: path must be a string');
+        console.warn('getNestedValue: Path Must Be A String.');
         return defaultValue;
     }
     const keys = path.split('.');
@@ -23,7 +23,7 @@ export function getNestedValue(obj: any, path: string, defaultValue: any = undef
 
 export function set(obj: any, path: string, value: any) {
     if (typeof path !== 'string') {
-        console.warn('set: path must be a string');
+        console.warn('set: Path Must Be A String.');
         return obj;
     }
     const keys = path.split('.');
@@ -51,8 +51,8 @@ export function getInitials(name: string | null | undefined): string {
 }
 
 /**
- * Formats a number as Indian Rupee (INR) currency.
- * Professional Title Case standard.
+ * Formats A Number As Indian Rupee (INR) Currency.
+ * Follows The Professional Title Case Standard.
  */
 export function formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-IN', {
@@ -64,7 +64,7 @@ export function formatCurrency(amount: number): string {
 }
 
 /**
- * Formats a date string or object into an institutional standard display.
+ * Formats A Date String Or Object Into An Institutional Standard Display.
  */
 export function formatDate(dateInput: Date | string | null | undefined, options?: Intl.DateTimeFormatOptions): string {
     if (!dateInput) return 'N/A';

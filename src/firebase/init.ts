@@ -7,8 +7,8 @@ import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
 /**
- * Initializes the Firebase Client SDK.
- * This file is isolated to prevent circular dependencies in the barrel file.
+ * @fileOverview Base initialization for Firebase SDKs.
+ * Isolated from the barrel file to prevent circular dependencies.
  */
 export function initializeFirebase() {
   const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();

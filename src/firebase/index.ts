@@ -1,66 +1,50 @@
 'use client';
 
-import { firebaseConfig } from '@/firebase/config';
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, signInWithPhoneNumber, RecaptchaVerifier } from 'firebase/auth';
-import { getFirestore, doc, collection, query, where, orderBy, limit, getDoc, getDocs, setDoc, updateDoc, deleteDoc, onSnapshot, serverTimestamp, FieldValue } from 'firebase/firestore';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+/**
+ * @fileOverview Firebase Barrel File.
+ * Re-exports all standard SDK functions and institutional providers.
+ */
 
-// Re-export standard Firebase SDK functions to ensure they are available through the barrel
-export {
-  doc,
-  collection,
-  query,
-  where,
-  orderBy,
-  limit,
-  getDoc,
-  getDocs,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  onSnapshot,
-  serverTimestamp,
+export { 
+  doc, 
+  collection, 
+  query, 
+  where, 
+  orderBy, 
+  limit, 
+  getDoc, 
+  getDocs, 
+  setDoc, 
+  updateDoc, 
+  deleteDoc, 
+  onSnapshot, 
+  serverTimestamp, 
   FieldValue,
-  signInWithPhoneNumber,
+  writeBatch,
+  increment,
+  deleteField,
+  Timestamp
+} from 'firebase/firestore';
+
+export { 
+  signInWithPhoneNumber, 
   RecaptchaVerifier,
-  storageRef,
-  uploadBytes,
-  getDownloadURL,
-  deleteObject,
-};
+  onAuthStateChanged,
+  sendPasswordResetEmail,
+  PhoneAuthProvider
+} from 'firebase/auth';
 
-// IMPORTANT: DO NOT MODIFY THIS FUNCTION
-export function initializeFirebase() {
-  if (!getApps().length) {
-    let firebaseApp;
-    try {
-      firebaseApp = initializeApp();
-    } catch (e) {
-      if (process.env.NODE_ENV === "production") {
-        console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
-      }
-      firebaseApp = initializeApp(firebaseConfig);
-    }
-    return getSdks(firebaseApp);
-  }
-  return getSdks(getApp());
-}
+export { 
+  ref as storageRef, 
+  uploadBytes, 
+  getDownloadURL, 
+  deleteObject 
+} from 'firebase/storage';
 
-export function getSdks(firebaseApp: FirebaseApp) {
-  return {
-    firebaseApp,
-    auth: getAuth(firebaseApp),
-    firestore: getFirestore(firebaseApp),
-    storage: getStorage(firebaseApp)
-  };
-}
-
+export { initializeFirebase } from './init';
 export * from './provider';
 export * from './client-provider';
 export * from './firestore/use-collection';
 export * from './firestore/use-doc';
-export * from './non-blocking-updates';
-export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';
