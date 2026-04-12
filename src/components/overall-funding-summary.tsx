@@ -12,6 +12,7 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
+import { Progress } from '@/components/ui/progress';
 
 /**
  * Overall Funding Summary - Aggregate organizational impact reporting.
