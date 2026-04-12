@@ -88,7 +88,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
         const userGroup = userProfile?.organizationGroup;
         
         // Use string comparison safely
-        if (!isGlobal && (!userGroup || (userGroup as any) === 'none') && userProfile?.role !== 'Admin') return [];
+        if (!isGlobal && (!userGroup || userGroup === 'none') && userProfile?.role !== 'Admin') return [];
 
         return allDonations.filter(d => !d.donorId).sort((a, b) => new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime());
     }, [allDonations, configSettings, userProfile]);

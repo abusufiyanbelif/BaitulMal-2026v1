@@ -344,13 +344,13 @@ export async function bulkMapDonorsAction(donationIds: string[], uploadedBy: {id
                     queries.push(adminDb.collection('donors').where('phones', 'array-contains', d.donorPhone).limit(1).get());
                 }
                 
-                const donationUpiIds = (d.transactions || []).map((tx: any) => tx.upiId).filter(Boolean);
+                const donationUpiIds = (d.transactions || []).map((tx: any) => tx.upiId).filter(Boolean) as string[];
                 for (const upi of donationUpiIds) {
                     queries.push(adminDb.collection('donors').where('upiIds', 'array-contains', upi).limit(1).get());
                 }
                 
                 // Include explicit transactionId to account checking as an extra safeguard
-                const transactionIds = (d.transactions || []).map((tx: any) => tx.transactionId).filter(Boolean);
+                const transactionIds = (d.transactions || []).map((tx: any) => tx.transactionId).filter(Boolean) as string[];
                 for (const txId of transactionIds) {
                      queries.push(adminDb.collection('donors').where('accountNumbers', 'array-contains', txId).limit(1).get());
                 }
@@ -456,7 +456,7 @@ export async function bulkManualMapDonorsAction(donationIds: string[], donorId: 
             batch.update(adminDb.collection('donations').doc(id), { 
                 donorId, 
                 updatedAt: FieldValue.serverTimestamp(),
-                updatedBy: updatedBy.name 
+                updatedBy: uploadedBy.name 
             });
         }
         await batch.commit();

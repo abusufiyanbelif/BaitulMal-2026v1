@@ -162,7 +162,6 @@ export function OverallFundingSummary() {
                     <div className="text-3xl font-bold text-primary font-mono">₹{overallSummary.grandTotalRaised.toLocaleString('en-IN')}</div>
                     <p className="text-[9px] text-muted-foreground mt-1 font-normal">Confirmed Community Contributions Recorded.</p>
                 </CardContent>
-            </Card>
 
             <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1">
                 <CardHeader className="flex items-center justify-between space-y-0 pb-2">
