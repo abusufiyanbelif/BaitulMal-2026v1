@@ -54,7 +54,9 @@ export default function VerificationsPage() {
         
         const baseCol = collection(firestore, 'pending_verifications');
         
-        // SECURITY: If not admin, strictly filter by assigned ID to match rules
+        // SECURITY COMPLIANT QUERY:
+        // If not an Admin, we MUST filter by assignedVerifierIds to match the security rules.
+        // This ensures the query result is consistent with the mandatory rule constraints.
         if (userProfile.role !== 'Admin') {
             return query(
                 baseCol, 
@@ -63,6 +65,7 @@ export default function VerificationsPage() {
             );
         }
 
+        // Admin: Can query globally for audit purposes
         return query(baseCol, orderBy('createdAt', 'desc'));
     }, [firestore, userProfile]);
 
@@ -316,11 +319,11 @@ function VerificationCard({ request, onView }: { request: PendingVerification, o
     }[request.status];
 
     const moduleIcon = {
-        'donations': CheckCircle2,
-        'beneficiaries': User,
-        'campaigns': Info,
-        'leads': MessageSquare,
-        'donors': ShieldCheck,
+        'donations': IndianRupee,
+        'beneficiaries': Users,
+        'campaigns': FolderKanban,
+        'leads': Lightbulb,
+        'donors': HeartHandshake,
         'users': User,
     }[request.module] || Info;
 

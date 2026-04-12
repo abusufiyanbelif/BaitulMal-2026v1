@@ -29,7 +29,9 @@
      
      const baseCol = collection(firestore, 'pending_verifications');
      
-     // Non-Admin: strictly filter by assigned IDs to comply with security rules
+     // SECURITY COMPLIANT QUERY:
+     // If not an Admin, we MUST filter by assignedVerifierIds to match the security rules.
+     // Rules prevent listing all documents for non-admins to ensure task isolation.
      if (userProfile.role !== 'Admin') {
          return query(
            baseCol,
@@ -39,7 +41,7 @@
          );
      }
 
-     // Admin: Global list
+     // Admin: Can query globally
      return query(
        baseCol,
        where('status', 'in', ['Pending', 'Partially Approved']),

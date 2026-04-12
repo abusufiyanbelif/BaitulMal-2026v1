@@ -21,13 +21,15 @@ import { Progress } from '@/components/ui/progress';
 export function OverallFundingSummary() {
   const { isLoading, overallSummary, summaryDateRange } = usePublicData();
 
-  const chartData = useMemo(() => ([
-    {
-      name: 'Progress',
-      value: overallSummary?.progress || 0,
-      fill: 'hsl(var(--primary))',
-    },
-  ]), [overallSummary?.progress]);
+  const chartData = useMemo(() => {
+    return [
+      {
+        name: 'Progress',
+        value: overallSummary?.progress || 0,
+        fill: 'hsl(var(--primary))',
+      },
+    ];
+  }, [overallSummary?.progress]);
 
   if (isLoading) {
     return (
@@ -104,7 +106,7 @@ export function OverallFundingSummary() {
                             <span className="text-4xl font-bold text-primary">
                                 {Math.round(overallSummary.progress || 0)}%
                             </span>
-                            <span className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">Funded</span>
+                            <span className="text-[10px] text-muted-foreground font-bold tracking-tight capitalize">Funded</span>
                         </div>
                     </div>
                     <div className="space-y-4 text-center md:text-left font-bold text-primary">
