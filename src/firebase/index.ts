@@ -1,59 +1,6 @@
 'use client';
 
-import { firebaseConfig } from '@/firebase/config';
-import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { 
-    getAuth, 
-    signInWithPhoneNumber, 
-    RecaptchaVerifier, 
-    sendPasswordResetEmail,
-    onAuthStateChanged,
-    signOut as firebaseSignOut
-} from 'firebase/auth';
-import { 
-    getFirestore, 
-    doc, 
-    collection, 
-    query, 
-    where, 
-    getDoc, 
-    getDocs, 
-    setDoc, 
-    updateDoc, 
-    deleteDoc, 
-    serverTimestamp, 
-    deleteField, 
-    Timestamp, 
-    increment, 
-    writeBatch,
-    orderBy,
-    limit,
-    onSnapshot
-} from 'firebase/firestore';
-import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-
-/**
- * IMPORTANT: Circular dependency resolution.
- * We initialize the core app here but do NOT import from the barrel file in children.
- */
-export function initializeFirebase() {
-  if (!getApps().length) {
-    const firebaseApp = initializeApp(firebaseConfig);
-    return getSdks(firebaseApp);
-  }
-  return getSdks(getApp());
-}
-
-export function getSdks(firebaseApp: FirebaseApp) {
-  return {
-    firebaseApp,
-    auth: getAuth(firebaseApp),
-    firestore: getFirestore(firebaseApp),
-    storage: getStorage(firebaseApp),
-  };
-}
-
-// Explicitly re-export core Firestore functions to ensure they are defined at runtime
+// 1. Export core SDK functions first to ensure they are available to sub-modules and avoid circular dependency undefined issues.
 export {
     doc,
     collection,
@@ -71,17 +18,26 @@ export {
     writeBatch,
     orderBy,
     limit,
-    onSnapshot,
-    storageRef,
+    onSnapshot
+} from 'firebase/firestore';
+
+export {
+    ref as storageRef,
     uploadBytes,
     getDownloadURL,
+    getStorage
+} from 'firebase/storage';
+
+export {
     signInWithPhoneNumber,
     RecaptchaVerifier,
     sendPasswordResetEmail,
     onAuthStateChanged,
-    firebaseSignOut
-};
+    signOut as firebaseSignOut,
+    getAuth
+} from 'firebase/auth';
 
+// 2. Export local files
 export * from './provider';
 export * from './client-provider';
 export * from './firestore/use-collection';
@@ -90,3 +46,20 @@ export * from './non-blocking-updates';
 export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';
+
+// 3. Initialization Logic
+import { firebaseConfig } from '@/firebase/config';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
+
+export function initializeFirebase() {
+  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  return {
+    firebaseApp: app,
+    auth: getAuth(app),
+    firestore: getFirestore(app),
+    storage: getStorage(app),
+  };
+}
