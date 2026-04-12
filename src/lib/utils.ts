@@ -50,6 +50,10 @@ export function getInitials(name: string | null | undefined): string {
       .toUpperCase();
 }
 
+/**
+ * Formats a number as Indian Rupee (INR) currency.
+ * Professional Title Case standard.
+ */
 export function formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-IN', {
         style: 'currency',
@@ -59,6 +63,9 @@ export function formatCurrency(amount: number): string {
     }).format(amount);
 }
 
+/**
+ * Formats a date string or object into an institutional standard display.
+ */
 export function formatDate(dateInput: Date | string | null | undefined, options?: Intl.DateTimeFormatOptions): string {
     if (!dateInput) return 'N/A';
     const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;

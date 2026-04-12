@@ -8,13 +8,17 @@
  import { Card, CardContent } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
  import { Badge } from '@/components/ui/badge';
- import { ShieldCheck, Eye, CheckCircle2, XCircle, ArrowRight, Loader2, Users } from 'lucide-react';
+ import { ShieldCheck, ArrowRight, Loader2, Users, CheckCircle2, XCircle } from 'lucide-react';
  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
  import { ScrollArea } from '@/components/ui/scroll-area';
  import { useToast } from '@/hooks/use-toast';
  import { approveVerificationAction, rejectVerificationAction } from '@/app/verifications/actions';
  import { cn } from '@/lib/utils';
  
+ /**
+  * Verification Manager - Floating institutional feedback for pending approvals.
+  * Title Case standard applied.
+  */
  export function VerificationManager() {
    const { userProfile, isLoading: isSessionLoading } = useSession();
    const firestore = useFirestore();
@@ -52,6 +56,8 @@
  
    const myTasks = useMemo(() => {
      if (!allRequests || !userProfile) return [];
+     // For admins, show all. For members, show where they haven't approved yet.
+     if (userProfile.role === 'Admin') return allRequests;
      return allRequests.filter(req => 
        req.assignedVerifiers.some(v => v.id === userProfile.id && v.status === 'Pending')
      );
@@ -103,7 +109,7 @@
  
    return (
      <>
-       <div className="fixed bottom-6 right-6 z-[100] animate-in fade-in slide-in-from-bottom-5 duration-500 max-w-sm w-full font-normal">
+       <div className="fixed bottom-6 right-6 z-[100] animate-in fade-in slide-in-from-bottom-5 duration-500 max-w-sm w-full">
          <Card className="border-primary/20 bg-white/95 backdrop-blur shadow-2xl overflow-hidden ring-1 ring-primary/5">
            <div className="h-1 bg-primary w-full" />
            <CardContent className="p-4 flex gap-4">
@@ -148,7 +154,7 @@
                    <DialogDescription className="font-medium text-primary/60 text-sm">Reviewing update request for {selectedRequest?.module} record.</DialogDescription>
                  </div>
                </div>
-               <Badge variant="outline" className="bg-white border-primary/20 text-primary font-bold px-3 py-1 text-xs">{selectedRequest?.status}</Badge>
+               <Badge variant="outline" className="bg-white border-primary/20 text-primary font-bold px-3 py-1 text-xs capitalize">{selectedRequest?.status}</Badge>
              </div>
            </DialogHeader>
  
@@ -202,7 +208,7 @@
                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-xs text-primary">{v.name.charAt(0)}</div>
                            <span className="text-sm font-bold text-primary">{v.name} {v.id === userProfile?.id && "(You)"}</span>
                         </div>
-                        <Badge variant={v.status === 'Approved' ? 'success' : 'secondary'} className="text-[10px] font-bold px-2 py-0.5">
+                        <Badge variant={v.status === 'Approved' ? 'success' : 'secondary'} className="text-[10px] font-bold px-2 py-0.5 capitalize">
                           {v.status === 'Approved' ? <CheckCircle2 className="mr-1 h-3 w-3" /> : <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
                           {v.status}
                         </Badge>
@@ -228,7 +234,7 @@
                disabled={isActionLoading}
              >
                {isActionLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : <CheckCircle2 className="mr-2 h-5 w-5" />}
-               Confirm and Apply
+               Confirm And Apply
              </Button>
            </DialogFooter>
          </DialogContent>

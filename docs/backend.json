@@ -1,33 +1,29 @@
 {
   "entities": {
     "UserProfile": {
-      "title": "UserProfile",
-      "description": "Organizational member profile with granular permissions and linked donor identity.",
+      "title": "User Profile",
+      "description": "Institutional member account with role-based access controls.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
         "email": { "type": "string", "format": "email" },
         "role": { "type": "string", "enum": ["Admin", "User", "Donor", "Beneficiary"] },
-        "status": { "type": "string", "enum": ["Active", "Inactive"] },
-        "permissions": { "type": "object" },
-        "linkedDonorId": { "type": "string" }
+        "status": { "type": "string", "enum": ["Active", "Inactive"] }
       },
       "required": ["id", "name", "email", "role", "status"]
     },
     "PendingVerification": {
-      "title": "PendingVerification",
-      "description": "A staged record update requiring multi-party institutional approval.",
+      "title": "Pending Verification",
+      "description": "A request to modify a record that requires multi-party approval.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
-        "module": { "type": "string", "enum": ["donations", "beneficiaries", "campaigns", "leads", "donors", "users"] },
-        "status": { "type": "string", "enum": ["Pending", "Partially Approved", "Approved", "Rejected"] },
+        "module": { "type": "string" },
+        "targetId": { "type": "string" },
         "assignedVerifierIds": { "type": "array", "items": { "type": "string" } },
-        "newValue": { "type": "object" },
-        "requestedBy": { "type": "object" }
-      },
-      "required": ["id", "module", "status", "assignedVerifierIds", "newValue"]
+        "status": { "type": "string", "enum": ["Pending", "Partially Approved", "Approved", "Rejected"] }
+      }
     }
   },
   "auth": {
@@ -36,15 +32,23 @@
   "firestore": {
     "/users/{userId}": {
       "schema": "#/backend/entities/UserProfile",
-      "description": "Secure member registry."
+      "description": "Member profile registry."
     },
     "/pending_verifications/{id}": {
       "schema": "#/backend/entities/PendingVerification",
-      "description": "Institutional audit trail for record modifications."
+      "description": "Institutional audit and approval pipeline."
     },
-    "/settings/{docId}": {
+    "/donors/{id}": {
       "schema": "object",
-      "description": "Global application branding and financial settings."
+      "description": "Contributor identity registry."
+    },
+    "/donations/{id}": {
+      "schema": "object",
+      "description": "Verified financial contribution logs."
+    },
+    "/beneficiaries/{id}": {
+      "schema": "object",
+      "description": "Master aid recipient registry."
     }
   }
 }
