@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -86,9 +85,9 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
          
          const isGlobal = configSettings.isUnlinkedFundsGlobal;
          const userGroup = userProfile?.organizationGroup;
-         const isMember = userGroup && userGroup !== null;
+         const isMember = !!(userGroup && userGroup !== null);
          
-         if (!isGlobal && !isMember) return [];
+         if (!isGlobal && !isMember && userProfile?.role !== 'Admin') return [];
  
          return allDonations.filter(d => !d.donorId).sort((a, b) => new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime());
      }, [allDonations, configSettings, userProfile]);

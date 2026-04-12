@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState } from 'react';
@@ -55,7 +54,7 @@ export default function VerificationsPage() {
         
         const baseCol = collection(firestore, 'pending_verifications');
         
-        // If not admin, only show verifications assigned to them to avoid permission errors
+        // SECURITY: If not admin, strictly filter by assigned ID to match rules
         if (userProfile.role !== 'Admin') {
             return query(
                 baseCol, 
