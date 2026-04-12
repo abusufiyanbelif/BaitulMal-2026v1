@@ -8,7 +8,7 @@
  import { Card, CardContent } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
  import { Badge } from '@/components/ui/badge';
- import { ShieldCheck, Eye, CheckCircle2, XCircle, ArrowRight, Loader2, Info, Users } from 'lucide-react';
+ import { ShieldCheck, Eye, CheckCircle2, XCircle, ArrowRight, Loader2, Users } from 'lucide-react';
  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
  import { ScrollArea } from '@/components/ui/scroll-area';
  import { useToast } from '@/hooks/use-toast';
