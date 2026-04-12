@@ -1,6 +1,7 @@
+
 'use client';
  
- import { useState, useMemo, useEffect } from 'react';
+ import { useState, useMemo } from 'react';
  import { useSession } from '@/hooks/use-session';
  import { useCollection, useFirestore, useMemoFirebase } from '@/firebase';
  import { collection, query, where, orderBy } from 'firebase/firestore';
@@ -8,7 +9,7 @@
  import { Card, CardContent } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
  import { Badge } from '@/components/ui/badge';
- import { ShieldCheck, AlertCircle, Eye, CheckCircle2, XCircle, ArrowRight, Loader2, Info, Users } from 'lucide-react';
+ import { ShieldCheck, Eye, CheckCircle2, XCircle, ArrowRight, Loader2, Info, Users } from 'lucide-react';
  import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
  import { ScrollArea } from '@/components/ui/scroll-area';
  import { useToast } from '@/hooks/use-toast';
@@ -26,8 +27,21 @@
  
    const verificationsRef = useMemoFirebase(() => {
      if (!firestore || !userProfile) return null;
+     
+     const baseCol = collection(firestore, 'pending_verifications');
+     
+     // SECURITY: If not admin, strictly filter by assigned ID to match rules
+     if (userProfile.role !== 'Admin') {
+         return query(
+           baseCol,
+           where('assignedVerifierIds', 'array-contains', userProfile.id),
+           where('status', 'in', ['Pending', 'Partially Approved']),
+           orderBy('createdAt', 'desc')
+         );
+     }
+
      return query(
-       collection(firestore, 'pending_verifications'),
+       baseCol,
        where('status', 'in', ['Pending', 'Partially Approved']),
        orderBy('createdAt', 'desc')
      );
@@ -141,7 +155,6 @@
  
            <ScrollArea className="max-h-[60vh] p-8">
              <div className="space-y-6">
-               {/* Requester Info */}
                <div className="flex items-center gap-4 bg-primary/[0.03] p-4 rounded-2xl border border-primary/5">
                   <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-xl shadow-sm border border-primary/10">
                     {selectedRequest?.requestedBy.name.charAt(0)}
@@ -153,14 +166,12 @@
                   </div>
                </div>
  
-               {/* Values Comparison (Simple List for Now) */}
                <div className="space-y-4">
                  <h4 className="font-bold text-sm text-primary/80 flex items-center gap-2 border-b border-primary/10 pb-2">
                     <Info className="h-4 w-4" /> Proposed Changes Breakdown
                  </h4>
                  <div className="grid gap-3">
                     {selectedRequest && Object.entries(selectedRequest.newValue).map(([key, value]) => {
-                      // Skip internal fields and complex objects for base visualization
                       if (['id', 'updatedAt', 'createdAt', 'createdById', 'createdByName'].includes(key)) return null;
                       if (typeof value === 'object' && value !== null) return null;
                       if (selectedRequest.originalValue && selectedRequest.originalValue[key] === value) return null;
@@ -183,7 +194,6 @@
                  </div>
                </div>
  
-               {/* Approval Progress */}
                <div className="bg-primary/5 p-6 rounded-2xl border border-primary/10 space-y-4 shadow-inner">
                  <h4 className="font-bold text-sm text-primary/80 flex items-center gap-2 mb-2">
                    <Users className="h-4 w-4" /> Sign-off Status
@@ -195,7 +205,7 @@
                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center font-bold text-xs text-primary">{v.name.charAt(0)}</div>
                            <span className="text-sm font-bold text-primary">{v.name} {v.id === userProfile?.id && "(You)"}</span>
                         </div>
-                        <Badge variant={v.status === 'Approved' ? 'active' : 'secondary'} className="text-[10px] font-bold px-2 py-0.5">
+                        <Badge variant={v.status === 'Approved' ? 'success' : 'secondary'} className="text-[10px] font-bold px-2 py-0.5">
                           {v.status === 'Approved' ? <CheckCircle2 className="mr-1 h-3 w-3" /> : <Loader2 className="mr-1 h-3 w-3 animate-spin" />}
                           {v.status}
                         </Badge>

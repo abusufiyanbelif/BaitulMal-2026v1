@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -84,7 +85,8 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
          if (!allDonations || !configSettings) return [];
          
          const isGlobal = configSettings.isUnlinkedFundsGlobal;
-         const isMember = userProfile?.organizationGroup;
+         const userGroup = userProfile?.organizationGroup;
+         const isMember = userGroup && userGroup !== null;
          
          if (!isGlobal && !isMember) return [];
  
@@ -297,7 +299,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                                     placeholder="Search Database For Matches..." 
                                                     value={searchTerm}
                                                     onChange={e => setSearchTerm(e.target.value)}
-                                                    className="pl-10 h-10 rounded-xl border-primary/10 text-sm font-normal"
+                                                    className="pl-10 rounded-xl border-primary/10 text-sm font-normal"
                                                 />
                                             </div>
 

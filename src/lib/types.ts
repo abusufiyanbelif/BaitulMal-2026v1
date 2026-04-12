@@ -387,6 +387,7 @@ export interface PendingVerification extends DocumentData {
   originalValue?: any;
   requestedBy: { id: string, name: string };
   assignedVerifiers: { id: string, name: string, status: 'Pending' | 'Approved' | 'Rejected', updatedAt?: any }[];
+  assignedVerifierIds: string[]; // NEW: Indexed array for secure filtering
   status: 'Pending' | 'Partially Approved' | 'Approved' | 'Rejected';
   createdAt: Timestamp | FieldValue;
   updatedAt: Timestamp | FieldValue;

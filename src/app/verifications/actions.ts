@@ -1,3 +1,4 @@
+
 'use server';
  
  import { getAdminServices } from '@/lib/firebase-admin-sdk';
@@ -19,7 +20,7 @@
  }
  
  export async function requestVerificationAction(
-     verificationData: Omit<PendingVerification, 'id' | 'createdAt' | 'updatedAt' | 'status'>
+     verificationData: Omit<PendingVerification, 'id' | 'createdAt' | 'updatedAt' | 'status' | 'assignedVerifierIds'>
  ) {
      const { adminDb } = getAdminServices();
      if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
@@ -31,6 +32,7 @@
          const payload: PendingVerification = {
              ...verificationData,
              id: newDoc.id,
+             assignedVerifierIds: verificationData.assignedVerifiers.map(v => v.id),
              status: 'Pending',
              createdAt: Timestamp.now(),
              updatedAt: Timestamp.now(),
@@ -179,10 +181,11 @@
             originalValue: originalSnap.exists ? originalSnap.data() : null,
             requestedBy: { id: userId, name: userName },
             assignedVerifiers,
+            assignedVerifierIds: assignedVerifiers.map(v => v.id),
             status: 'Pending',
             createdAt: Timestamp.now(),
             updatedAt: Timestamp.now(),
-            module: 'users',  // FIX: was incorrectly 'donors'
+            module: 'users',
             description: 'Profile update requested via Supporter Portal.'
         };
 

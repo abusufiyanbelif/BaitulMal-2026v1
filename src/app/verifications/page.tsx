@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState } from 'react';
@@ -5,7 +6,6 @@ import {
     useFirestore, 
     useCollection, 
     useMemoFirebase, 
-    useAuth,
     collection,
     query,
     orderBy,
@@ -27,7 +27,6 @@ import {
     Eye,
     Check,
     X,
-    Filter,
     MessageSquare,
     History
 } from 'lucide-react';
@@ -52,9 +51,21 @@ export default function VerificationsPage() {
     const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
 
     const verificationsRef = useMemoFirebase(() => {
-        if (!firestore) return null;
-        return query(collection(firestore, 'pending_verifications'), orderBy('createdAt', 'desc'));
-    }, [firestore]);
+        if (!firestore || !userProfile) return null;
+        
+        const baseCol = collection(firestore, 'pending_verifications');
+        
+        // If not admin, only show verifications assigned to them to avoid permission errors
+        if (userProfile.role !== 'Admin') {
+            return query(
+                baseCol, 
+                where('assignedVerifierIds', 'array-contains', userProfile.id),
+                orderBy('createdAt', 'desc')
+            );
+        }
+
+        return query(baseCol, orderBy('createdAt', 'desc'));
+    }, [firestore, userProfile]);
 
     const { data: verifications, isLoading: isVerificationsLoading } = useCollection<PendingVerification>(verificationsRef);
 
@@ -111,7 +122,7 @@ export default function VerificationsPage() {
                         <ShieldCheck className="h-8 w-8 text-primary" />
                         Verification Pipeline
                     </h1>
-                    <p className="text-muted-foreground font-normal">Audit and approve organization record changes.</p>
+                    <p className="text-muted-foreground font-normal text-sm">Audit and approve organization record changes.</p>
                 </div>
             </div>
 
