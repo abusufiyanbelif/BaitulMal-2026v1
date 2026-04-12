@@ -2,10 +2,9 @@
 import React, { useState, useMemo, Suspense } from 'react';
 import { useParams, useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
-import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc } from '@/firebase';
+import { useFirestore, useStorage, useAuth, useMemoFirebase, useCollection, useDoc, storageRef, uploadBytes, getDownloadURL } from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { collection, doc, serverTimestamp, setDoc, updateDoc, type DocumentReference, deleteField } from 'firebase/firestore';
 import type { Donation, Campaign, Lead } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
@@ -44,11 +43,11 @@ import {
     XCircle,
     Smartphone,
     Wallet,
-    CheckCircle2,
-    Users,
     CalendarIcon,
     AlertCircle,
-    Save
+    Save,
+    Users,
+    CheckCircle2
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -355,7 +354,7 @@ function DonationListContent() {
     setIsUnlinkDialogOpen(false);
     setIsSubmitting(true);
     const docRef = doc(firestore, 'donations', donationToUnlink);
-    const newLinkSplit = (donationData.linkSplit || []).filter(link => link.linkId !== campaignId || link.linkType !== 'campaign');
+    const newLinkSplit = (donationData.linkSplit || []).filter(link => link.linkId !== campaignId || link.linkType === 'campaign');
     const updateData = { linkSplit: newLinkSplit };
     try {
         await updateDoc(docRef, updateData);
@@ -745,7 +744,7 @@ function DonationListContent() {
       )}
       
       <AlertDialog open={isUnlinkDialogOpen} onOpenChange={setIsUnlinkDialogOpen}>
-        <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink From Project?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach This Record From The Current Campaign? The Record Remains Secured In The Master Registry.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/10 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white font-bold rounded-[12px] transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent className="rounded-[16px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive uppercase">Unlink From Project?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Detach This Record From The Current Campaign? The Record Remains Secured In The Master Registry.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleUnlinkConfirm} className="bg-destructive text-white font-bold rounded-[12px] transition-transform active:scale-95 shadow-md">Confirm Unlink</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
     </main>
   );
