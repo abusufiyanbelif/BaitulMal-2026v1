@@ -86,7 +86,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
          
          const isGlobal = configSettings.isUnlinkedFundsGlobal;
          const userGroup = userProfile?.organizationGroup;
-         const isMember = !!(userGroup && userGroup !== 'none');
+         const isMember = !!userGroup;
          
          if (!isGlobal && !isMember && userProfile?.role !== 'Admin') return [];
  
@@ -310,7 +310,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                                     searchResults.map(donor => (
                                                         <div 
                                                             key={donor.id}
-                                                            onClick={() => handleLinkToExisting(donor)}
+                                                            onClick={() => handleSelect(donor)}
                                                             className="flex items-center justify-between p-3 rounded-xl border border-primary/5 hover:border-primary/30 hover:bg-primary/[0.02] cursor-pointer group transition-all"
                                                         >
                                                             <div className="min-w-0">
