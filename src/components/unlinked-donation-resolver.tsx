@@ -87,7 +87,8 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
         const isGlobal = configSettings.isUnlinkedFundsGlobal;
         const userGroup = userProfile?.organizationGroup;
         
-        if (!isGlobal && (!userGroup || userGroup === 'none') && userProfile?.role !== 'Admin') return [];
+        // Use string comparison safely
+        if (!isGlobal && (!userGroup || userGroup === ('none' as any)) && userProfile?.role !== 'Admin') return [];
 
         return allDonations.filter(d => !d.donorId).sort((a, b) => new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime());
     }, [allDonations, configSettings, userProfile]);
@@ -334,7 +335,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                             </ScrollArea>
                         ) : (
                             <div className="flex-1 flex flex-col items-center justify-center p-10 text-center opacity-30 grayscale">
-                                <AlertCircle className="h-16 w-16 mb-4"/>
+                                <DatabaseZap className="h-16 w-16 mb-4"/>
                                 <p className="text-sm font-bold capitalize tracking-widest">Select A Record To Resolve</p>
                             </div>
                         )}
