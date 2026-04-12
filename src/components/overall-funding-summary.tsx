@@ -62,7 +62,7 @@ export function OverallFundingSummary() {
     <div className="space-y-10">
         <Card className="animate-fade-in-up border-primary/20 bg-white shadow-md transition-all duration-300 hover:shadow-xl overflow-hidden flex flex-col" style={{ animationDelay: '700ms' }}>
             <CardHeader className="bg-primary/5 border-b shrink-0">
-                <CardTitle className="flex items-center gap-2 font-bold text-primary tracking-tight">
+                <CardTitle className="text-xl font-bold text-primary flex items-center gap-2 tracking-tight">
                     <Target className="h-6 w-6 text-primary" />
                     Overall Funding Impact
                 </CardTitle>

@@ -31,7 +31,6 @@
      
      // SECURITY COMPLIANT QUERY:
      // If not an Admin, we MUST filter by assignedVerifierIds to match the security rules.
-     // Rules prevent listing all documents for non-admins to ensure task isolation.
      if (userProfile.role !== 'Admin') {
          return query(
            baseCol,
