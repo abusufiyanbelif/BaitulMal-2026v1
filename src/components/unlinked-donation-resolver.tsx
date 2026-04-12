@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { 
     useFirestore, 
     useCollection, 
@@ -23,7 +23,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { 
     Loader2, 
@@ -82,16 +81,9 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
     const { data: allDonations, isLoading: isLoadingDonations } = useCollection<Donation>(donationsRef);
 
     const unlinkedDonations = useMemo(() => {
-        if (!allDonations || !configSettings) return [];
-        
-        const isGlobal = configSettings.isUnlinkedFundsGlobal;
-        const userGroup = userProfile?.organizationGroup;
-        
-        // Ensure user can resolve
-        if (!isGlobal && (!userGroup || userGroup === 'none') && userProfile?.role !== 'Admin') return [];
-
+        if (!allDonations) return [];
         return allDonations.filter(d => !d.donorId).sort((a, b) => new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime());
-    }, [allDonations, configSettings, userProfile]);
+    }, [allDonations]);
 
     const totalPages = Math.ceil(unlinkedDonations.length / itemsPerPage);
     const paginatedDonations = useMemo(() => {
@@ -108,10 +100,6 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
             }
         }
     }, [open, initialDonationId, unlinkedDonations]);
-
-    useEffect(() => {
-        setCurrentPage(1);
-    }, [unlinkedDonations.length, searchTerm]);
 
     useEffect(() => {
         const fetchMatches = async () => {
@@ -143,10 +131,6 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
         const timer = setTimeout(fetchMatches, 300);
         return () => clearTimeout(timer);
     }, [searchTerm, firestore]);
-
-    const handleSelect = (donor: Donor) => {
-        handleLinkToExisting(donor);
-    };
 
     const handleLinkToExisting = async (donor: Donor) => {
         if (!selectedDonation || !userProfile) return;
@@ -314,7 +298,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                                     searchResults.map(donor => (
                                                         <div 
                                                             key={donor.id}
-                                                            onClick={() => handleSelect(donor)}
+                                                            onClick={() => handleLinkToExisting(donor)}
                                                             className="flex items-center justify-between p-3 rounded-xl border border-primary/5 hover:border-primary/30 hover:bg-primary/[0.02] cursor-pointer group transition-all"
                                                         >
                                                             <div className="min-w-0">
