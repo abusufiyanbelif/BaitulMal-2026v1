@@ -1,89 +1,492 @@
 {
   "entities": {
-    "UserProfile": {
-      "title": "User Profile",
-      "description": "Organizational member account details including role and permissions.",
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
       "type": "object",
+      "description": "Represents an authenticated user of the DocuExtract application.",
       "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "email": { "type": "string", "format": "email" },
-        "phone": { "type": "string" },
-        "loginId": { "type": "string" },
-        "userKey": { "type": "string" },
-        "role": { "type": "string", "enum": ["Admin", "User"] },
-        "status": { "type": "string", "enum": ["Active", "Inactive"] },
-        "organizationGroup": { "type": "string", "enum": ["founder", "co-founder", "finance", "member"] },
-        "organizationRole": { "type": "string" },
-        "idProofUrl": { "type": "string" }
-      }
-    },
-    "Donor": {
-      "title": "Donor Profile",
-      "description": "Identity and verified financial handles for organizational contributors.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "name": { "type": "string" },
-        "phone": { "type": "string" },
-        "email": { "type": "string" },
-        "bankDetails": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "bankName": { "type": "string" },
-              "accountNumber": { "type": "string" },
-              "ifscCode": { "type": "string" }
-            }
-          }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity (typically from an external authentication system like Firebase UID)."
         },
-        "upiIds": { "type": "array", "items": { "type": "string" } },
-        "accountNumbers": { "type": "array", "items": { "type": "string" }, "description": "Flattened account numbers for fast querying." },
-        "status": { "type": "string", "enum": ["Active", "Inactive"] },
-        "notes": { "type": "string" }
-      }
-    },
-    "Donation": {
-      "title": "Donation Record",
-      "description": "Financial contribution log linked to donors and initiatives.",
-      "type": "object",
-      "properties": {
-        "id": { "type": "string" },
-        "donorId": { "type": "string", "description": "Foreign key to Donor Profile." },
-        "donorName": { "type": "string" },
-        "amount": { "type": "number" },
-        "donationDate": { "type": "string", "format": "date" },
-        "status": { "type": "string", "enum": ["Verified", "Pending", "Canceled"] },
-        "linkSplit": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "linkId": { "type": "string" },
-              "linkType": { "type": "string", "enum": ["campaign", "lead", "general"] },
-              "amount": { "type": "number" }
-            }
-          }
+        "email": {
+          "type": "string",
+          "description": "The user's email address.",
+          "format": "email"
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's display name."
         }
-      }
+      },
+      "required": [
+        "id",
+        "email",
+        "displayName"
+      ]
+    },
+    "Document": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Document",
+      "type": "object",
+      "description": "Represents an uploaded image or document by a user for text extraction and analysis.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Document entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who uploaded this document. (Relationship: User 1:N Document)"
+        },
+        "uploadDate": {
+          "type": "string",
+          "description": "Timestamp when the document was uploaded.",
+          "format": "date-time"
+        },
+        "originalFilename": {
+          "type": "string",
+          "description": "The original filename of the uploaded document."
+        },
+        "fileUrl": {
+          "type": "string",
+          "description": "URL to the stored original document file (e.g., in cloud storage).",
+          "format": "uri"
+        },
+        "mimeType": {
+          "type": "string",
+          "description": "The MIME type of the uploaded file (e.g., 'image/jpeg', 'application/pdf')."
+        },
+        "extractedText": {
+          "type": "string",
+          "description": "The full raw text extracted from the document using OCR/AI."
+        },
+        "documentType": {
+          "type": "string",
+          "description": "Categorization of the document for specific extraction logic (e.g., 'IDENTITY_PROOF', 'BILL', 'MEDICAL_REPORT', 'GENERAL')."
+        },
+        "processingStatus": {
+          "type": "string",
+          "description": "The current processing status of the document (e.g., 'UPLOADED', 'TEXT_EXTRACTED', 'DETAILS_EXTRACTED', 'FAILED')."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "uploadDate",
+        "originalFilename",
+        "fileUrl",
+        "mimeType",
+        "extractedText",
+        "documentType",
+        "processingStatus"
+      ]
+    },
+    "Person": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Person",
+      "type": "object",
+      "description": "Represents an individual whose personal details have been extracted from one or more documents.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Person entity."
+        },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User who owns this Person record. (Relationship: User 1:N Person)"
+        },
+        "fullName": {
+          "type": "string",
+          "description": "The full name of the person."
+        },
+        "dateOfBirth": {
+          "type": "string",
+          "description": "The person's date of birth.",
+          "format": "date"
+        },
+        "address": {
+          "type": "string",
+          "description": "The person's primary address."
+        },
+        "email": {
+          "type": "string",
+          "description": "The person's email address, if extracted.",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "The person's phone number, if extracted."
+        }
+      },
+      "required": [
+        "id",
+        "userId",
+        "fullName"
+      ]
+    },
+    "IdentityDetail": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "IdentityDetail",
+      "type": "object",
+      "description": "Stores structured information extracted specifically from identity proof documents.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the IdentityDetail entity."
+        },
+        "documentId": {
+          "type": "string",
+          "description": "Reference to the Document from which this identity information was extracted. (Relationship: Document 1:1 IdentityDetail)"
+        },
+        "personId": {
+          "type": "string",
+          "description": "Reference to the Person entity this identity detail belongs to. (Relationship: Person 1:N IdentityDetail)"
+        },
+        "idType": {
+          "type": "string",
+          "description": "The type of identity document (e.g., 'DriverLicense', 'Passport', 'NationalID')."
+        },
+        "idNumber": {
+          "type": "string",
+          "description": "The unique identification number from the document."
+        },
+        "issueDate": {
+          "type": "string",
+          "description": "The date the identity document was issued.",
+          "format": "date"
+        },
+        "expiryDate": {
+          "type": "string",
+          "description": "The expiration date of the identity document.",
+          "format": "date"
+        },
+        "issuingAuthority": {
+          "type": "string",
+          "description": "The authority that issued the identity document."
+        },
+        "nationality": {
+          "type": "string",
+          "description": "The nationality indicated on the identity document."
+        }
+      },
+      "required": [
+        "id",
+        "documentId",
+        "personId",
+        "idType",
+        "idNumber"
+      ]
+    },
+    "BillDetail": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BillDetail",
+      "type": "object",
+      "description": "Stores structured information extracted specifically from billing documents.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the BillDetail entity."
+        },
+        "documentId": {
+          "type": "string",
+          "description": "Reference to the Document from which this billing information was extracted. (Relationship: Document 1:1 BillDetail)"
+        },
+        "vendorName": {
+          "type": "string",
+          "description": "The name of the vendor or service provider on the bill."
+        },
+        "billDate": {
+          "type": "string",
+          "description": "The date of the bill.",
+          "format": "date"
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "The total amount of the bill."
+        },
+        "currency": {
+          "type": "string",
+          "description": "The currency of the bill (e.g., 'USD', 'EUR')."
+        },
+        "invoiceNumber": {
+          "type": "string",
+          "description": "The invoice number, if present on the bill."
+        }
+      },
+      "required": [
+        "id",
+        "documentId",
+        "vendorName",
+        "billDate",
+        "totalAmount",
+        "currency"
+      ]
+    },
+    "BillLineItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "BillLineItem",
+      "type": "object",
+      "description": "Represents an individual line item from a billing document.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the BillLineItem entity."
+        },
+        "billId": {
+          "type": "string",
+          "description": "Reference to the BillDetail this line item belongs to. (Relationship: BillDetail 1:N BillLineItem)"
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of the item or service."
+        },
+        "quantity": {
+          "type": "number",
+          "description": "The quantity of the item or service."
+        },
+        "unitPrice": {
+          "type": "number",
+          "description": "The unit price of the item or service."
+        },
+        "lineTotal": {
+          "type": "number",
+          "description": "The total amount for this specific line item (quantity * unitPrice)."
+        }
+      },
+      "required": [
+        "id",
+        "billId",
+        "description",
+        "quantity",
+        "unitPrice",
+        "lineTotal"
+      ]
+    },
+    "MedicalReportDetail": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "MedicalReportDetail",
+      "type": "object",
+      "description": "Stores structured information extracted specifically from medical reports.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the MedicalReportDetail entity."
+        },
+        "documentId": {
+          "type": "string",
+          "description": "Reference to the Document from which this medical report information was extracted. (Relationship: Document 1:1 MedicalReportDetail)"
+        },
+        "patientId": {
+          "type": "string",
+          "description": "Reference to the Person entity representing the patient. (Relationship: Person 1:N MedicalReportDetail)"
+        },
+        "reportDate": {
+          "type": "string",
+          "description": "The date the medical report was issued.",
+          "format": "date"
+        },
+        "hospitalName": {
+          "type": "string",
+          "description": "The name of the hospital or clinic where the report was generated."
+        },
+        "doctorName": {
+          "type": "string",
+          "description": "The name of the doctor who prepared or reviewed the report."
+        },
+        "diagnosis": {
+          "type": "string",
+          "description": "The primary diagnosis from the medical report."
+        },
+        "diseaseDetails": {
+          "type": "string",
+          "description": "Detailed description of the disease or condition."
+        },
+        "findings": {
+          "type": "string",
+          "description": "Summary of medical findings and observations."
+        },
+        "recommendations": {
+          "type": "string",
+          "description": "Treatment recommendations or next steps."
+        }
+      },
+      "required": [
+        "id",
+        "documentId",
+        "patientId",
+        "reportDate",
+        "hospitalName",
+        "diagnosis"
+      ]
     }
   },
   "auth": {
-    "providers": ["email/password"]
+    "providers": [
+      "password",
+      "anonymous"
+    ]
   },
   "firestore": {
-    "/users/{userId}": {
-      "schema": "#/entities/UserProfile",
-      "description": "Core institutional member data."
-    },
-    "/donors/{donorId}": {
-      "schema": "#/entities/Donor",
-      "description": "Central contributor registry."
-    },
-    "/donations/{donationId}": {
-      "schema": "#/entities/Donation",
-      "description": "Global financial audit log."
-    }
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user profile information. The `userId` wildcard corresponds to the authenticated Firebase UID (`request.auth.uid`). Documents in this collection include an 'id' field that matches the `userId` for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user, matching their Firebase Authentication UID."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/documents/{documentId}",
+        "definition": {
+          "entityName": "Document",
+          "schema": {
+            "$ref": "#/backend/entities/Document"
+          },
+          "description": "Stores uploaded images or documents for a specific user. Includes a denormalized 'userId' field matching the path's `userId` for authorization independence. This collection is the source for all extracted details.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns this document."
+            },
+            {
+              "name": "documentId",
+              "description": "The unique identifier for the specific document."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/people/{personId}",
+        "definition": {
+          "entityName": "Person",
+          "schema": {
+            "$ref": "#/backend/entities/Person"
+          },
+          "description": "Stores aggregated personal details extracted from documents for a specific user. Includes a denormalized 'userId' field matching the path's `userId` for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns this person record."
+            },
+            {
+              "name": "personId",
+              "description": "The unique identifier for the specific person record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/documents/{documentId}/identityDetails/{identityDetailId}",
+        "definition": {
+          "entityName": "IdentityDetail",
+          "schema": {
+            "$ref": "#/backend/entities/IdentityDetail"
+          },
+          "description": "Stores structured identity information extracted from a specific document. Includes denormalized 'userId' for authorization independence, 'documentId' (from path), and 'personId' to link to the corresponding Person entity.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns this identity detail."
+            },
+            {
+              "name": "documentId",
+              "description": "The unique identifier of the document from which this identity detail was extracted."
+            },
+            {
+              "name": "identityDetailId",
+              "description": "The unique identifier for the specific identity detail record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/documents/{documentId}/billDetails/{billDetailId}",
+        "definition": {
+          "entityName": "BillDetail",
+          "schema": {
+            "$ref": "#/backend/entities/BillDetail"
+          },
+          "description": "Stores structured billing information extracted from a specific document. Includes denormalized 'userId' for authorization independence and 'documentId' (from path).",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns this bill detail."
+            },
+            {
+              "name": "documentId",
+              "description": "The unique identifier of the document from which this bill detail was extracted."
+            },
+            {
+              "name": "billDetailId",
+              "description": "The unique identifier for the specific bill detail record."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/documents/{documentId}/billDetails/{billDetailId}/lineItems/{lineItemId}",
+        "definition": {
+          "entityName": "BillLineItem",
+          "schema": {
+            "$ref": "#/backend/entities/BillLineItem"
+          },
+          "description": "Stores individual line items for a specific bill. Includes denormalized 'userId' for authorization independence and 'billId' to link to the parent BillDetail.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns this bill line item."
+            },
+            {
+              "name": "documentId",
+              "description": "The unique identifier of the document associated with this bill line item."
+            },
+            {
+              "name": "billDetailId",
+              "description": "The unique identifier of the parent bill detail."
+            },
+            {
+              "name": "lineItemId",
+              "description": "The unique identifier for the specific bill line item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/documents/{documentId}/medicalReportDetails/{medicalReportDetailId}",
+        "definition": {
+          "entityName": "MedicalReportDetail",
+          "schema": {
+            "$ref": "#/backend/entities/MedicalReportDetail"
+          },
+          "description": "Stores structured medical report information extracted from a specific document. Includes denormalized 'userId' for authorization independence, 'documentId' (from path), and 'patientId' to link to the corresponding Person entity.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user who owns this medical report detail."
+            },
+            {
+              "name": "documentId",
+              "description": "The unique identifier of the document from which this medical report detail was extracted."
+            },
+            {
+              "name": "medicalReportDetailId",
+              "description": "The unique identifier for the specific medical report detail record."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The current `FirebaseError: Missing or insufficient permissions` for a `list` operation on `/pending_verifications` for a logged-in user indicates a direct violation of the 'Rules are not Filters' (QAPs) principle. A top-level collection like `/pending_verifications` with potential mixed ownership or requiring specific roles (e.g., admin) cannot be listed by a regular user without complex and inefficient rules that attempt to filter documents, which is insecure and leads to such permission errors. \n\nOur design eliminates the problematic `/pending_verifications` collection for standard user access. Instead, we leverage the existing `processingStatus` field within the `Document` entity. Users will query their own documents, optionally filtering by `processingStatus` (e.g., 'PENDING_VERIFICATION') within their dedicated `/users/{userId}/documents` subcollection. If an administrative 'pending verification' queue is truly needed, it should be a separate, strictly access-controlled collection (e.g., `/admin_tasks/document_verifications`) accessible only to users with an 'admin' role, whose presence is verified via a dedicated `/roles_admin/{uid}` collection.\n\nThis structure strongly adheres to Authorization Independence and QAPs through these strategies:\n\n1.  **Authorization Independence via Denormalization:** Every single document representing user-owned data (User, Document, Person, IdentityDetail, BillDetail, BillLineItem, MedicalReportDetail) will explicitly contain a `userId` field. This `userId` field will always match the `request.auth.uid` of the document's owner. This crucial denormalization ensures that security rules can perform direct `request.auth.uid == resource.data.userId` checks for any read/write operation without needing to perform `get()` calls on parent documents or related entities. This makes rules atomic, highly performant, and significantly easier to debug.\n\n2.  **QAPs (Rules are not Filters) through Structural Segregation and Path-Based Ownership:**\n    *   All user-specific data is strictly segregated into subcollections under a user's unique path, `/users/{userId}/...`. This automatically scopes `list` operations to the current authenticated user's data. For instance, a `list` on `/users/{userId}/documents` inherently returns only documents owned by `{userId}`. The security rules will simply verify `request.auth.uid == userId` (the wildcard in the path), ensuring no implicit filtering is attempted by the rules.\n    *   By managing document processing states (like 'PENDING_VERIFICATION') directly within the user's `Document` collection via the `processingStatus` field, client-side queries can efficiently filter for specific statuses (`.where('processingStatus', '==', 'PENDING_VERIFICATION')`) without violating QAPs, as the primary authorization check is already handled by the path and the denormalized `userId`.\n\nThis design ensures that authorization logic is clear, robust, and performs optimally, avoiding the common pitfalls of `get()` dependencies and rules attempting to filter results for `list` operations."
   }
 }
