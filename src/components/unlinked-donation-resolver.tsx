@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { 
     useFirestore, 
     useCollection, 
+    useDoc,
     useMemoFirebase, 
     collection, 
     query, 
     getDocs,
     doc,
-    useDoc
 } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { 
@@ -63,13 +63,13 @@ interface UnlinkedDonationResolverProps {
  */
 export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId }: UnlinkedDonationResolverProps) {
     const firestore = useFirestore();
-     const { userProfile } = useSession();
-     const { toast } = useToast();
- 
-     const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donation_config') : null, [firestore]);
-     const { data: configSettings } = useDoc<any>(configRef);
- 
-     const [isResolving, setIsResolving] = useState<string | null>(null);
+    const { userProfile } = useSession();
+    const { toast } = useToast();
+
+    const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donation_config') : null, [firestore]);
+    const { data: configSettings } = useDoc<any>(configRef);
+
+    const [isResolving, setIsResolving] = useState<string | null>(null);
     const [selectedDonation, setSelectedDonation] = useState<Donation | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
@@ -82,16 +82,15 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
     const { data: allDonations, isLoading: isLoadingDonations } = useCollection<Donation>(donationsRef);
 
     const unlinkedDonations = useMemo(() => {
-         if (!allDonations || !configSettings) return [];
-         
-         const isGlobal = configSettings.isUnlinkedFundsGlobal;
-         const userGroup = userProfile?.organizationGroup;
-         const isMember = !!userGroup;
-         
-         if (!isGlobal && !isMember && userProfile?.role !== 'Admin') return [];
- 
-         return allDonations.filter(d => !d.donorId).sort((a, b) => new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime());
-     }, [allDonations, configSettings, userProfile]);
+        if (!allDonations || !configSettings) return [];
+        
+        const isGlobal = configSettings.isUnlinkedFundsGlobal;
+        const userGroup = userProfile?.organizationGroup;
+        
+        if (!isGlobal && (!userGroup || userGroup === 'none') && userProfile?.role !== 'Admin') return [];
+
+        return allDonations.filter(d => !d.donorId).sort((a, b) => new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime());
+    }, [allDonations, configSettings, userProfile]);
 
     const totalPages = Math.ceil(unlinkedDonations.length / itemsPerPage);
     const paginatedDonations = useMemo(() => {

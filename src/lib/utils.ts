@@ -42,7 +42,8 @@ export function set(obj: any, path: string, value: any) {
 export function getInitials(name: string | null | undefined): string {
     if (!name) return 'U';
     return name
-      .split(' ')
+      .trim()
+      .split(/\s+/)
       .map((n) => n[0])
       .join('')
       .substring(0, 2)
@@ -53,10 +54,13 @@ export function formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-IN', {
         style: 'currency',
         currency: 'INR',
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 2,
     }).format(amount);
 }
 
-export function formatDate(dateInput: Date | string, options?: Intl.DateTimeFormatOptions): string {
+export function formatDate(dateInput: Date | string | null | undefined, options?: Intl.DateTimeFormatOptions): string {
+    if (!dateInput) return 'N/A';
     const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
     if (isNaN(date.getTime())) return 'Invalid Date';
     

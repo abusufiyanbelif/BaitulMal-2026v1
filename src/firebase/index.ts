@@ -2,8 +2,9 @@
 
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore'
+import { getAuth, signInWithPhoneNumber, RecaptchaVerifier } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
+import { getStorage } from 'firebase/storage';
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
@@ -36,9 +37,20 @@ export function getSdks(firebaseApp: FirebaseApp) {
   return {
     firebaseApp,
     auth: getAuth(firebaseApp),
-    firestore: getFirestore(firebaseApp)
+    firestore: getFirestore(firebaseApp),
+    storage: getStorage(firebaseApp)
   };
 }
+
+// Re-export standard Firebase SDK functions for use throughout the app
+// This prevents TypeError: doc is not a function and other similar errors
+export * from 'firebase/app';
+export * from 'firebase/auth';
+export * from 'firebase/firestore';
+export * from 'firebase/storage';
+
+// Explicitly export these for the Portal Login flow
+export { signInWithPhoneNumber, RecaptchaVerifier };
 
 export * from './provider';
 export * from './client-provider';
