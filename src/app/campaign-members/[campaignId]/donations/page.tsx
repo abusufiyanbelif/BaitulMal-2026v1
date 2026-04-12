@@ -420,7 +420,7 @@ function DonationListContent() {
     
     const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
     if (hasFilesToUpload && !auth?.currentUser) {
-        toast({ title: "Authentication Error", description: "Authorization Expired. Please Re-Login.", variant: "destructive" });
+        toast({ title: "Authentication Error", description: "Authorization Session Expired. Please Re-Login.", variant: "destructive" });
         return;
     }
 

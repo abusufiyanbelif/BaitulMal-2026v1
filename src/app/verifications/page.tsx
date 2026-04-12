@@ -114,7 +114,7 @@ export default function VerificationsPage() {
     const allRequests = verifications || [];
 
     return (
-        <main className="container mx-auto p-4 md:p-8 text-primary">
+        <main className="container mx-auto p-4 md:p-8 text-primary font-normal">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                 <div className="space-y-1">
                     <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
@@ -349,16 +349,16 @@ function VerificationCard({ request, onView }: { request: PendingVerification, o
                     {request.createdAt ? new Date((request.createdAt as any).seconds * 1000).toLocaleDateString() : 'N/A'}
                 </CardDescription>
             </CardHeader>
-            <CardContent className="pt-4 space-y-3">
-                <div className="flex items-center justify-between text-xs font-normal">
+            <CardContent className="pt-4 space-y-3 font-normal">
+                <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">Requester</span>
                     <span className="font-bold text-primary">{request.requestedBy.name}</span>
                 </div>
-                <div className="flex items-center justify-between text-xs font-normal">
+                <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">Verifiers</span>
                     <div className="flex -space-x-2">
                         {request.assignedVerifiers.map((av, i) => (
-                            <div key={i} title={av.name} className="h-6 w-6 rounded-full border-2 border-white bg-primary/10 flex items-center justify-center text-[8px] font-bold text-primary">
+                            <div key={i} title={av.name} className="h-6 w-6 rounded-full border-2 border-white bg-primary/10 flex items-center justify-center text-[8px] font-bold text-primary shadow-sm">
                                 {av.name.charAt(0)}
                             </div>
                         ))}

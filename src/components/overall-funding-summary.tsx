@@ -3,7 +3,8 @@
 import { usePublicData } from '@/hooks/use-public-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from './ui/skeleton';
-import { Target, IndianRupee, Users, CheckCircle2 } from 'lucide-react';
+import { Target, Users, CheckCircle2, IndianRupee } from 'lucide-react';
+import { useMemo } from 'react';
 import {
   RadialBarChart,
   RadialBar,
@@ -11,13 +12,10 @@ import {
   ResponsiveContainer
 } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { useMemo } from 'react';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { Progress } from '@/components/ui/progress';
 
 /**
  * Overall Funding Summary - Aggregate organizational impact reporting.
- * Re-engineered for Title Case typography and Families Impacted integration.
+ * Follows the professional Title Case typography standard.
  */
 export function OverallFundingSummary() {
   const { isLoading, overallSummary, summaryDateRange } = usePublicData();

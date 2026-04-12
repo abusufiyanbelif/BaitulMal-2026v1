@@ -1,4 +1,3 @@
-
 import type { DocumentData, Timestamp, FieldValue } from 'firebase/firestore';
 import type { UserPermissions, GroupId, PriorityLevel } from './modules';
 import { donationCategories } from './modules';

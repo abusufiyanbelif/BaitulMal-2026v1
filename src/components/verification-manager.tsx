@@ -29,7 +29,7 @@
      
      const baseCol = collection(firestore, 'pending_verifications');
      
-     // SECURITY: If not admin, strictly filter by assigned ID to match rules
+     // Non-Admin: strictly filter by assigned IDs to comply with security rules
      if (userProfile.role !== 'Admin') {
          return query(
            baseCol,
@@ -39,6 +39,7 @@
          );
      }
 
+     // Admin: Global list
      return query(
        baseCol,
        where('status', 'in', ['Pending', 'Partially Approved']),
@@ -101,7 +102,6 @@
  
    return (
      <>
-       {/* Sticky Notification Popup */}
        <div className="fixed bottom-6 right-6 z-[100] animate-in fade-in slide-in-from-bottom-5 duration-500 max-w-sm w-full font-normal">
          <Card className="border-primary/20 bg-white/95 backdrop-blur shadow-2xl overflow-hidden ring-1 ring-primary/5">
            <div className="h-1 bg-primary w-full" />
@@ -134,7 +134,6 @@
          </Card>
        </div>
  
-       {/* Detailed Review Dialog */}
        <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
          <DialogContent className="max-w-2xl rounded-[24px] border-primary/10 shadow-2xl p-0 overflow-hidden font-normal">
            <DialogHeader className="bg-primary/5 p-8 border-b space-y-2">
@@ -166,9 +165,7 @@
                </div>
  
                <div className="space-y-4">
-                 <h4 className="font-bold text-sm text-primary/80 flex items-center gap-2 border-b border-primary/10 pb-2">
-                    <Info className="h-4 w-4" /> Proposed Changes Breakdown
-                 </h4>
+                 <h4 className="font-bold text-sm text-primary/80 flex items-center gap-2 border-b border-primary/10 pb-2">Proposed Changes Breakdown</h4>
                  <div className="grid gap-3">
                     {selectedRequest && Object.entries(selectedRequest.newValue).map(([key, value]) => {
                       if (['id', 'updatedAt', 'createdAt', 'createdById', 'createdByName'].includes(key)) return null;
