@@ -2,12 +2,9 @@ import { getAdminServices } from '../src/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
 
 /**
- * UNIFIED IDENTITY CONSOLIDATION SCRIPT (STABILIZED)
- * 
- * Fixes:
- * 1. Sanitizes update payload to prevent "undefined value" Firestore errors.
- * 2. Implements deep sync for institutional audit trails.
- * 3. Handles cross-collection data re-attribution.
+ * UNIFIED IDENTITY CONSOLIDATION SCRIPT
+ * Consolidates fragmented profiles into a primary "Golden Record".
+ * Atomic update of financial records, management logs, and authorship audit trails.
  */
 async function mergeDuplicateIdentities() {
     console.log('🔍 Starting Deep Identity Scan & Integration...');
@@ -52,7 +49,7 @@ async function mergeDuplicateIdentities() {
             const primary = profiles[0];
             const redundants = profiles.slice(1);
 
-            console.log(`\n💎 Consolidating Identity: ${primary.name} (${key})`);
+            console.log(`\n💎 Consolidating Identity Cluster: ${primary.name} (${key})`);
             console.log(`   PRIMARY GOLDEN ID: ${primary.id} (Role: ${primary.role})`);
 
             const batch = adminDb.batch();
@@ -61,7 +58,7 @@ async function mergeDuplicateIdentities() {
             let primaryLinkedBeneficiaryId = primary.linkedBeneficiaryId;
 
             for (const redundant of redundants) {
-                console.log(`   Merging Redundant: ${redundant.id} (Role: ${redundant.role})`);
+                console.log(`   Merging Redundant Fragment: ${redundant.id} (Role: ${redundant.role})`);
 
                 // 1. Merge Permissions
                 if (redundant.permissions) {
@@ -71,39 +68,43 @@ async function mergeDuplicateIdentities() {
                     });
                 }
 
-                // 2. Capture nested links
                 if (redundant.linkedDonorId) primaryLinkedDonorId = redundant.linkedDonorId;
                 if (redundant.linkedBeneficiaryId) primaryLinkedBeneficiaryId = redundant.linkedBeneficiaryId;
 
-                // 3. Re-assign all donations pointing to redundant UID
+                // 2. Re-assign all DONATIONS pointing to redundant UID
                 const linkedDonations = donationsSnap.docs.filter(d => d.data().donorId === redundant.id);
                 linkedDonations.forEach(d => {
                     batch.update(d.ref, { 
                         donorId: primary.id,
                         updatedAt: FieldValue.serverTimestamp(),
-                        notes: (d.data().notes || '') + ` (Automated identity merge into ${primary.id})`
+                        notes: (d.data().notes || '') + ` (Unified from identity ${redundant.id})`
                     });
                     recordsProcessed++;
                 });
 
-                // 4. Update Audit Trails in all modules
+                // 3. Update AUDIT TRAILS (Everything created/updated by this redundant UID)
                 const modules = ['campaigns', 'leads', 'beneficiaries', 'donations'];
                 for (const col of modules) {
                     const createdSnap = await adminDb.collection(col).where('createdById', '==', redundant.id).get();
                     createdSnap.forEach(doc => {
-                        batch.update(doc.ref, { createdById: primary.id, createdByName: primary.name });
+                        batch.update(doc.ref, { 
+                            createdById: primary.id, 
+                            createdByName: primary.name 
+                        });
                     });
                     const updatedSnap = await adminDb.collection(col).where('updatedById', '==', redundant.id).get();
                     updatedSnap.forEach(doc => {
-                        batch.update(doc.ref, { updatedById: primary.id, updatedByName: primary.name });
+                        batch.update(doc.ref, { 
+                            updatedById: primary.id, 
+                            updatedByName: primary.name 
+                        });
                     });
                 }
 
-                // 5. Move Master Donor Data
+                // 4. Move Master Donor Data
                 const oldDonorRef = adminDb.collection('donors').doc(redundant.id);
                 const primaryDonorRef = adminDb.collection('donors').doc(primary.id);
                 const oldDonorSnap = await oldDonorRef.get();
-                
                 if (oldDonorSnap.exists) {
                     batch.set(primaryDonorRef, {
                         ...oldDonorSnap.data(),
@@ -113,7 +114,7 @@ async function mergeDuplicateIdentities() {
                     batch.delete(oldDonorRef);
                 }
 
-                // 6. Purge Redundant records
+                // 5. Purge Redundant records
                 batch.delete(adminDb.collection('users').doc(redundant.id));
                 if (redundant.loginId) batch.delete(adminDb.collection('user_lookups').doc(redundant.loginId));
                 if (redundant.phone) batch.delete(adminDb.collection('user_lookups').doc(redundant.phone));
@@ -126,7 +127,6 @@ async function mergeDuplicateIdentities() {
                 permissions: mergedPermissions,
                 updatedAt: FieldValue.serverTimestamp()
             };
-
             if (primaryLinkedDonorId) finalUpdate.linkedDonorId = primaryLinkedDonorId;
             if (primaryLinkedBeneficiaryId) finalUpdate.linkedBeneficiaryId = primaryLinkedBeneficiaryId;
 
@@ -136,7 +136,7 @@ async function mergeDuplicateIdentities() {
 
         console.log(`\n✅ CONSOLIDATION COMPLETE.`);
         console.log(`   Identities Unified: ${mergedCount}`);
-        console.log(`   Records Re-attributed: ${recordsProcessed}`);
+        console.log(`   Audit Trails Updated: ${recordsProcessed} Financial/Management Records.`);
         process.exit(0);
     } catch (error: any) {
         console.error("❌ Consolidation Script Failed:", error);

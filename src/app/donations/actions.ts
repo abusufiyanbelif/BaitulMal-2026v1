@@ -1,15 +1,41 @@
-
 'use server';
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
-import type { Donation, Donor } from '@/lib/types';
+import type { Donation, Donor, DonationLink, TransactionDetail, Campaign, Lead } from '@/lib/types';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure Server Credentials Are Configured Correctly.";
 
 /**
+ * Recalculates initiative totals for specific IDs.
+ * Internal helper for atomicity within donation actions.
+ */
+async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, links: DonationLink[]) {
+    for (const link of links) {
+        if (link.linkId === 'unallocated') continue;
+        
+        const collectionName = link.linkType === 'campaign' ? 'campaigns' : 'leads';
+        const initiativeRef = db.collection(collectionName).doc(link.linkId);
+        
+        // Query all verified donations linked to this initiative
+        const donationsSnap = await db.collection('donations')
+            .where('status', '==', 'Verified')
+            .get();
+            
+        let total = 0;
+        donationsSnap.docs.forEach(doc => {
+            const d = doc.data() as Donation;
+            const split = d.linkSplit?.find(l => l.linkId === link.linkId);
+            if (split) total += split.amount;
+        });
+
+        await initiativeRef.update({ collectedAmount: total, updatedAt: FieldValue.serverTimestamp() });
+    }
+}
+
+/**
  * Robust action to save or update a donation while handling donor identity linking.
- * Uses Unified Identity Logic: Scans Users AND Donors by phone/email to prevent duplicates.
+ * Performs deep reconciliation of initiative collected totals.
  */
 export async function upsertDonationWithDonorAction(
     donationId: string | null,
@@ -24,29 +50,18 @@ export async function upsertDonationWithDonorAction(
         const donorPhone = donationData.donorPhone;
         const donorName = donationData.donorName;
 
-        // --- 1. Robust Identity Discovery (Prevent Duplication) ---
+        // 1. Unified Identity Discovery
         if (!finalDonorId && donorPhone && donorPhone.length >= 10) {
-            // A. Check PRIMARY USERS (Admins/Staff)
-            const userMatch = await adminDb.collection('users')
-                .where('phone', '==', donorPhone)
-                .limit(1)
-                .get();
-
+            const userMatch = await adminDb.collection('users').where('phone', '==', donorPhone).limit(1).get();
             if (!userMatch.empty) {
                 finalDonorId = userMatch.docs[0].id;
             } else {
-                // B. Check SECONDARY REGISTRY (Donors)
-                const donorMatch = await adminDb.collection('donors')
-                    .where('phone', '==', donorPhone)
-                    .limit(1)
-                    .get();
-
+                const donorMatch = await adminDb.collection('donors').where('phone', '==', donorPhone).limit(1).get();
                 if (!donorMatch.empty) {
                     finalDonorId = donorMatch.docs[0].id;
                 } else {
-                    // C. Auto-Provision Single Identity
                     const newDonorRef = adminDb.collection('donors').doc();
-                    const newDonor: Partial<Donor> = {
+                    await newDonorRef.set({
                         id: newDonorRef.id,
                         name: donorName || 'Anonymous Donor',
                         phone: donorPhone,
@@ -55,14 +70,13 @@ export async function upsertDonationWithDonorAction(
                         createdById: uploadedBy.id,
                         createdByName: uploadedBy.name,
                         notes: `Established via verified donation entry.`,
-                    };
-                    await newDonorRef.set(newDonor);
+                    });
                     finalDonorId = newDonorRef.id;
                 }
             }
         }
 
-        // --- 2. Record Financial Data ---
+        // 2. Record Financial Data
         const docRef = donationId ? adminDb.collection('donations').doc(donationId) : adminDb.collection('donations').doc();
         const id = docRef.id;
 
@@ -78,50 +92,42 @@ export async function upsertDonationWithDonorAction(
 
         await docRef.set(finalDonationData, { merge: true });
 
-        // --- 3. Synchronize historical unlinked records for this phone ---
-        if (finalDonorId && donorPhone) {
-            const unlinkedQuery = adminDb.collection('donations')
-                .where('donorPhone', '==', donorPhone)
-                .where('donorId', '==', null);
-            
-            const unlinkedSnap = await unlinkedQuery.get();
-            if (!unlinkedSnap.empty) {
-                const batch = adminDb.batch();
-                unlinkedSnap.docs.forEach(d => {
-                    batch.update(d.ref, { donorId: finalDonorId, updatedAt: FieldValue.serverTimestamp() });
-                });
-                await batch.commit();
-            }
+        // 3. Trigger Cross-Collection Financial Reconciliation
+        if (donationData.linkSplit) {
+            await syncInitiativeCollectedTotals(adminDb, donationData.linkSplit);
         }
 
         revalidatePath('/donations');
         revalidatePath('/donors');
-        return { success: true, message: 'Contribution secured and identity synchronized.', id };
+        revalidatePath('/dashboard');
+        return { success: true, message: 'Contribution secured and initiative totals synchronized.', id };
     } catch (error: any) {
         console.error("Upsert Donation Failed:", error);
         return { success: false, message: `Operation failed: ${error.message}` };
     }
 }
 
-export async function linkDonationToDonorAction(
-    donationId: string,
-    donorId: string,
-    updatedBy: { id: string, name: string }
-): Promise<{ success: boolean; message: string }> {
+export async function deleteDonationAction(donationId: string): Promise<{ success: boolean; message: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
-
     try {
-        const donationRef = adminDb.collection('donations').doc(donationId);
-        await donationRef.update({
-            donorId: donorId,
-            updatedAt: FieldValue.serverTimestamp(),
-            updatedBy: updatedBy.name,
-            updatedById: updatedBy.id
-        });
+        const docRef = adminDb.collection('donations').doc(donationId);
+        const snap = await docRef.get();
+        if (!snap.exists) return { success: true, message: 'Record already purged.' };
+
+        const d = snap.data() as Donation;
+        const links = d.linkSplit || [];
+
+        await docRef.delete();
+
+        // Reconcile totals after deletion
+        if (links.length > 0) {
+            await syncInitiativeCollectedTotals(adminDb, links);
+        }
 
         revalidatePath('/donations');
-        return { success: true, message: "Identity successfully linked." };
+        revalidatePath('/dashboard');
+        return { success: true, message: 'Donation record purged and totals reconciled.' };
     } catch (error: any) {
         return { success: false, message: error.message };
     }
@@ -136,17 +142,70 @@ export async function bulkUpdateDonationStatusAction(
 
     try {
         const batch = adminDb.batch();
+        const affectedLinks: DonationLink[] = [];
+
         for (const id of ids) {
-            batch.update(adminDb.collection('donations').doc(id), { 
-                status: newStatus,
-                updatedAt: FieldValue.serverTimestamp()
-            });
+            const ref = adminDb.collection('donations').doc(id);
+            const snap = await ref.get();
+            if (snap.exists) {
+                const d = snap.data() as Donation;
+                if (d.linkSplit) affectedLinks.push(...d.linkSplit);
+                batch.update(ref, { status: newStatus, updatedAt: FieldValue.serverTimestamp() });
+            }
         }
         await batch.commit();
+
+        // Deep sync totals for all affected initiatives
+        if (affectedLinks.length > 0) {
+            const uniqueLinks = Array.from(new Set(affectedLinks.map(l => `${l.linkType}_${l.linkId}`)))
+                .map(key => {
+                    const [type, id] = key.split('_');
+                    return { linkType: type as any, linkId: id };
+                });
+            await syncInitiativeCollectedTotals(adminDb, uniqueLinks as any);
+        }
+
         revalidatePath('/donations');
-        return { success: true, message: `Updated ${ids.length} records.` };
+        return { success: true, message: `Updated ${ids.length} records and synchronized totals.` };
     } catch (error: any) {
         return { success: false, message: error.message };
+    }
+}
+
+export async function bulkMapDonorsAction(donationIds: string[], uploadedBy: {id: string, name: string}): Promise<{ success: boolean; message: string; count: number }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, count: 0 };
+
+    try {
+        let mappedCount = 0;
+        const snaps = await adminDb.getAll(...donationIds.map(id => adminDb.collection('donations').doc(id)));
+        
+        for (const snap of snaps) {
+            if (!snap.exists) continue;
+            const d = snap.data() as Donation;
+            if (d.donorId) continue; 
+
+            let foundDonorId = null;
+            if (d.donorPhone && d.donorPhone.length >= 10) {
+                const userMatch = await adminDb.collection('users').where('phone', '==', d.donorPhone).limit(1).get();
+                if (!userMatch.empty) {
+                    foundDonorId = userMatch.docs[0].id;
+                } else {
+                    const donorMatch = await adminDb.collection('donors').where('phone', '==', d.donorPhone).limit(1).get();
+                    if (!donorMatch.empty) foundDonorId = donorMatch.docs[0].id;
+                }
+            }
+
+            if (foundDonorId) {
+                await snap.ref.update({ donorId: foundDonorId, updatedAt: FieldValue.serverTimestamp() });
+                mappedCount++;
+            }
+        }
+
+        revalidatePath('/donations');
+        return { success: true, message: `Auto-mapped ${mappedCount} records.`, count: mappedCount };
+    } catch (e: any) {
+        return { success: false, message: e.message, count: 0 };
     }
 }
 
@@ -201,59 +260,15 @@ export async function bulkImportDonationsAction(
         }
 
         await batch.commit();
+        
+        if (initiativeContext) {
+            await syncInitiativeCollectedTotals(adminDb, [{ linkId: initiativeContext.id, linkType: initiativeContext.type, linkName: initiativeContext.name, amount: 0 }]);
+        }
+
         revalidatePath('/donations');
         return { success: true, message: `Synchronized ${count} records.`, count };
     } catch (error: any) {
         return { success: false, message: error.message, count: 0 };
-    }
-}
-
-export async function deleteDonationAction(donationId: string): Promise<{ success: boolean; message: string }> {
-    const { adminDb } = getAdminServices();
-    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
-    try {
-        await adminDb.collection('donations').doc(donationId).delete();
-        revalidatePath('/donations');
-        return { success: true, message: 'Donation record purged.' };
-    } catch (error: any) {
-        return { success: false, message: error.message };
-    }
-}
-
-export async function bulkMapDonorsAction(donationIds: string[], uploadedBy: {id: string, name: string}): Promise<{ success: boolean; message: string; count: number }> {
-    const { adminDb } = getAdminServices();
-    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, count: 0 };
-
-    try {
-        let mappedCount = 0;
-        const snaps = await adminDb.getAll(...donationIds.map(id => adminDb.collection('donations').doc(id)));
-        
-        for (const snap of snaps) {
-            if (!snap.exists) continue;
-            const d = snap.data() as Donation;
-            if (d.donorId) continue; 
-
-            let foundDonorId = null;
-            if (d.donorPhone && d.donorPhone.length >= 10) {
-                const userMatch = await adminDb.collection('users').where('phone', '==', d.donorPhone).limit(1).get();
-                if (!userMatch.empty) {
-                    foundDonorId = userMatch.docs[0].id;
-                } else {
-                    const donorMatch = await adminDb.collection('donors').where('phone', '==', d.donorPhone).limit(1).get();
-                    if (!donorMatch.empty) foundDonorId = donorMatch.docs[0].id;
-                }
-            }
-
-            if (foundDonorId) {
-                await snap.ref.update({ donorId: foundDonorId, updatedAt: FieldValue.serverTimestamp() });
-                mappedCount++;
-            }
-        }
-
-        revalidatePath('/donations');
-        return { success: true, message: `Auto-mapped ${mappedCount} records.`, count: mappedCount };
-    } catch (e: any) {
-        return { success: false, message: e.message, count: 0 };
     }
 }
 
@@ -300,12 +315,14 @@ export async function bulkLinkInitiativeAction(
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        const batch = adminDb.batch();
         const snaps = await adminDb.getAll(...donationIds.map(id => adminDb.collection('donations').doc(id)));
-        
+        const affectedLinks: DonationLink[] = [];
+
+        const batch = adminDb.batch();
         for (const snap of snaps) {
             if (!snap.exists) continue;
             const d = snap.data() as Donation;
+            if (d.linkSplit) affectedLinks.push(...d.linkSplit);
             
             if (action === 'unlink') {
                 batch.update(snap.ref, {
@@ -314,31 +331,27 @@ export async function bulkLinkInitiativeAction(
                 });
             } else if (action === 'link' && initiativeContext) {
                 let finalLinkAmount = d.amount;
-                
-                // Optional logic for split-to-fill
                 if (splitOptions?.shouldSplit && splitOptions.fillAmount < d.amount) {
                     finalLinkAmount = splitOptions.fillAmount;
                 }
 
-                const newLink = {
-                    linkId: initiativeContext.id,
-                    linkName: initiativeContext.name,
-                    linkType: initiativeContext.type,
-                    amount: finalLinkAmount
-                };
-
-                const links = [newLink];
+                const links = [{ linkId: initiativeContext.id, linkName: initiativeContext.name, linkType: initiativeContext.type, amount: finalLinkAmount }];
                 if (finalLinkAmount < d.amount) {
                     links.push({ linkId: 'unallocated', linkName: 'Unallocated', linkType: 'general', amount: d.amount - finalLinkAmount });
                 }
-
-                batch.update(snap.ref, {
-                    linkSplit: links,
-                    updatedAt: FieldValue.serverTimestamp()
-                });
+                batch.update(snap.ref, { linkSplit: links, updatedAt: FieldValue.serverTimestamp() });
+                affectedLinks.push(...links);
             }
         }
         await batch.commit();
+
+        const uniqueLinks = Array.from(new Set(affectedLinks.map(l => `${l.linkType}_${l.linkId}`)))
+            .map(key => {
+                const [type, id] = key.split('_');
+                return { linkType: type as any, linkId: id };
+            });
+        await syncInitiativeCollectedTotals(adminDb, uniqueLinks as any);
+
         revalidatePath('/donations');
         return { success: true, message: `Successfully updated ${donationIds.length} allocations.` };
     } catch (error: any) {
@@ -346,40 +359,6 @@ export async function bulkLinkInitiativeAction(
     }
 }
 
-export async function syncAllDonationsToDonorsAction(): Promise<{ success: boolean; message: string; count: number }> {
-    const { adminDb } = getAdminServices();
-    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, count: 0 };
-
-    try {
-        const donationsSnap = await adminDb.collection('donations').where('donorId', '==', null).get();
-        let count = 0;
-
-        for (const docSnap of donationsSnap.docs) {
-            const d = docSnap.data() as Donation;
-            if (!d.donorPhone) continue;
-
-            const userMatch = await adminDb.collection('users').where('phone', '==', d.donorPhone).limit(1).get();
-            if (!userMatch.empty) {
-                await docSnap.ref.update({ donorId: userMatch.docs[0].id, updatedAt: FieldValue.serverTimestamp() });
-                count++;
-            } else {
-                const donorMatch = await adminDb.collection('donors').where('phone', '==', d.donorPhone).limit(1).get();
-                if (!donorMatch.empty) {
-                    await docSnap.ref.update({ donorId: donorMatch.docs[0].id, updatedAt: FieldValue.serverTimestamp() });
-                    count++;
-                }
-            }
-        }
-        revalidatePath('/donations');
-        return { success: true, message: `Successfully synchronized ${count} historical identities.`, count };
-    } catch (error: any) {
-        return { success: false, message: error.message, count: 0 };
-    }
-}
-
-/**
- * Internal Admin helper to recalculate initiative collected totals.
- */
 export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success: boolean; message: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
@@ -395,7 +374,7 @@ export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success
         const leadMap: Record<string, number> = {};
 
         donationsSnap.docs.forEach(d => {
-            const data = d.data();
+            const data = d.data() as Donation;
             if (data.status !== 'Verified') return;
             (data.linkSplit || []).forEach((link: any) => {
                 if (link.linkType === 'campaign') campaignMap[link.linkId] = (campaignMap[link.linkId] || 0) + link.amount;
@@ -410,6 +389,7 @@ export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success
         await batch.commit();
         revalidatePath('/campaigns');
         revalidatePath('/leads-members');
+        revalidatePath('/dashboard');
         return { success: true, message: "Initiative financial totals re-synchronized." };
     } catch (error: any) {
         return { success: false, message: error.message };

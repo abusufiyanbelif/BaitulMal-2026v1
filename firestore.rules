@@ -1,10 +1,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // UNRESTRICTED ACCESS FOR TESTING & STABILIZATION
-    // This allows the application's internal role-based logic to govern the dashboard.
+    // UNRESTRICTED ACCESS FOR TESTING & STABILIZATION PHASE
+    // As requested: all authenticated users have full read/write/modify/delete access.
     match /{document=**} {
-      allow read, write: if true;
+      allow read, write: if request.auth != null;
     }
   }
 }

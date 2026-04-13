@@ -1,9 +1,8 @@
-
 'use client';
 
 /**
- * @fileOverview Definitive barrel file for Firebase SDKs.
- * Declarations must precede exports to avoid circular reference loops.
+ * @fileOverview Hardened barrel file for Firebase SDKs.
+ * Ensures consistent named exports and resolves naming collisions.
  */
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -48,7 +47,7 @@ import {
 
 import { firebaseConfig } from '@/firebase/config';
 
-// Primary Service Initializer
+// Primary SDK Initializer
 export function initializeFirebase() {
   const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
   return {
@@ -59,7 +58,7 @@ export function initializeFirebase() {
   };
 }
 
-// Explicit Named Exports
+// Explicit Named Exports for components and hooks
 export {
     doc,
     collection,
@@ -84,6 +83,7 @@ export {
     onAuthStateChanged,
     firebaseSignOut,
     getFirebaseAuth as getAuth,
+    getFirestore,
     storageRef,
     uploadBytes,
     getDownloadURL,
