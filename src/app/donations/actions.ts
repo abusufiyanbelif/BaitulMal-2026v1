@@ -1,3 +1,4 @@
+
 'use server';
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -8,13 +9,14 @@ const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure 
 
 /**
  * Sanitizes an object by removing all undefined values.
- * Essential for Firestore compatibility.
  */
 function sanitizePayload(data: Record<string, any>) {
     const sanitized: Record<string, any> = {};
     Object.keys(data).forEach(key => {
-        if (data[key] !== undefined) {
+        if (data[key] !== undefined && data[key] !== null) {
             sanitized[key] = data[key];
+        } else if (data[key] === null) {
+            sanitized[key] = null;
         }
     });
     return sanitized;
@@ -22,7 +24,6 @@ function sanitizePayload(data: Record<string, any>) {
 
 /**
  * Recalculates initiative totals for specific IDs.
- * Internal helper for atomicity within donation actions.
  */
 async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, links: DonationLink[]) {
     for (const link of links) {
@@ -47,8 +48,7 @@ async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, li
 }
 
 /**
- * Robust action to save or update a donation while handling donor identity linking.
- * Performs deep reconciliation of initiative collected totals.
+ * Robust action to save or update a donation while handling unified identity linking.
  */
 export async function upsertDonationWithDonorAction(
     donationId: string | null,
@@ -63,7 +63,7 @@ export async function upsertDonationWithDonorAction(
         const donorPhone = donationData.donorPhone || '';
         const donorName = donationData.donorName || 'Anonymous Donor';
 
-        // 1. Unified Identity Discovery
+        // 1. Unified Identity Discovery (Scan Users first to prevent fragmentation)
         if (!finalDonorId && donorPhone && donorPhone.length >= 10) {
             const userMatch = await adminDb.collection('users').where('phone', '==', donorPhone).limit(1).get();
             if (!userMatch.empty) {
@@ -82,7 +82,7 @@ export async function upsertDonationWithDonorAction(
                         createdAt: FieldValue.serverTimestamp(),
                         createdById: uploadedBy.id,
                         createdByName: uploadedBy.name,
-                        notes: `Established via verified donation entry.`,
+                        notes: `Profile established via verified donation registry.`,
                     });
                     finalDonorId = newDonorRef.id;
                 }
@@ -122,7 +122,7 @@ export async function upsertDonationWithDonorAction(
         revalidatePath('/donations');
         revalidatePath('/donors');
         revalidatePath('/dashboard');
-        return { success: true, message: 'Contribution secured and initiative totals synchronized.', id };
+        return { success: true, message: 'Institutional record secured and totals reconciled.', id };
     } catch (error: any) {
         console.error("Upsert Donation Failed:", error);
         return { success: false, message: `Operation failed: ${error.message}` };
@@ -142,7 +142,6 @@ export async function deleteDonationAction(donationId: string): Promise<{ succes
 
         await docRef.delete();
 
-        // Reconcile totals after deletion
         if (links.length > 0) {
             await syncInitiativeCollectedTotals(adminDb, links);
         }
@@ -177,7 +176,6 @@ export async function bulkUpdateDonationStatusAction(
         }
         await batch.commit();
 
-        // Deep sync totals for all affected initiatives
         if (affectedLinks.length > 0) {
             const uniqueLinks = Array.from(new Set(affectedLinks.map(l => `${l.linkType}_${l.linkId}`)))
                 .map(key => {

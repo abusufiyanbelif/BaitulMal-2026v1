@@ -1,3 +1,4 @@
+
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
@@ -16,8 +17,10 @@ const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually m
 function sanitizePayload(data: Record<string, any>) {
     const sanitized: Record<string, any> = {};
     Object.keys(data).forEach(key => {
-        if (data[key] !== undefined) {
+        if (data[key] !== undefined && data[key] !== null) {
             sanitized[key] = data[key];
+        } else if (data[key] === null) {
+            sanitized[key] = null;
         }
     });
     return sanitized;
@@ -159,11 +162,11 @@ export async function consolidateIdentitiesAction(
             const primaryDonorRef = adminDb.collection('donors').doc(primaryUid);
             const oldDonorSnap = await oldDonorRef.get();
             if (oldDonorSnap.exists) {
-                batch.set(primaryDonorRef, {
+                batch.set(primaryDonorRef, sanitizePayload({
                     ...oldDonorSnap.data(),
                     id: primaryUid,
                     updatedAt: FieldValue.serverTimestamp()
-                }, { merge: true });
+                }), { merge: true });
                 batch.delete(oldDonorRef);
             }
 
