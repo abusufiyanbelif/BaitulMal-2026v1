@@ -23,13 +23,14 @@ interface NewsTickerProps {
 
 /**
  * Sequential News Ticker - Fast 5-second transition cycle.
- * Animation: 1s drop and 4s slide.
+ * Includes safety guards against undefined items during loading.
  */
 export function NewsTicker({ items, label = "Updates", variant = "active" }: NewsTickerProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const sortedItems = React.useMemo(() => {
+    if (!items || items.length === 0) return [];
     if (variant === 'active') {
         return [...items].sort((a, b) => {
             const getScore = (item: TickerItem) => (item.isUrgent ? 2 : item.isHigh ? 1 : 0);
@@ -50,7 +51,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
   }, [sortedItems]);
 
   const handleNext = () => {
-    if (isTransitioning) return;
+    if (isTransitioning || sortedItems.length === 0) return;
     setIsTransitioning(true);
     setTimeout(() => {
       setCurrentIndex((prev) => (prev + 1) % sortedItems.length);
@@ -59,7 +60,7 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
   };
 
   const handlePrev = () => {
-    if (isTransitioning) return;
+    if (isTransitioning || sortedItems.length === 0) return;
     setIsTransitioning(true);
     setTimeout(() => {
       setCurrentIndex((prev) => (prev - 1 + sortedItems.length) % sortedItems.length);
@@ -70,6 +71,8 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
   if (!sortedItems || sortedItems.length === 0) return null;
 
   const currentItem = sortedItems[currentIndex];
+  if (!currentItem) return null;
+
   const isCompleted = variant === 'completed';
   const isDonation = variant === 'donation';
   const isActive = variant === 'active';

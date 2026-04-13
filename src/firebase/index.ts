@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Definitive barrel file for Firebase SDKs.
- * Resolved naming collisions and ensured all core functions are explicitly exported.
+ * Optimized for standard ESM exports to prevent circular dependencies and SSR crashes.
  */
 
 import { 
@@ -22,7 +22,8 @@ import {
     writeBatch,
     orderBy,
     limit,
-    onSnapshot
+    onSnapshot,
+    getFirestore
 } from 'firebase/firestore';
 
 import { 
@@ -35,13 +36,16 @@ import {
 } from 'firebase/auth';
 
 import { 
-    getStorage as getFirebaseStorageSDK,
+    getStorage as getFirebaseStorage,
     ref as storageRef,
     uploadBytes,
     getDownloadURL,
     deleteObject,
     uploadString
 } from 'firebase/storage';
+
+import { firebaseConfig } from '@/firebase/config';
+import { initializeApp, getApps, getApp } from 'firebase/app';
 
 export {
     doc,
@@ -70,13 +74,10 @@ export {
     storageRef,
     uploadBytes,
     getDownloadURL,
-    getFirebaseStorageSDK as getStorage,
+    getFirebaseStorage as getStorage,
     deleteObject,
     uploadString
 };
-
-import { firebaseConfig } from '@/firebase/config';
-import { initializeApp, getApps, getApp } from 'firebase/app';
 
 export * from './provider';
 export * from './client-provider';
@@ -87,23 +88,16 @@ export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';
 
+/**
+ * Initializes Firebase core services.
+ * Safe for use in the 'use client' bundle.
+ */
 export function initializeFirebase() {
   const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
   return {
     firebaseApp: app,
     auth: getFirebaseAuth(app),
-    firestore: getFirestoreInstance(app),
-    storage: getStorageInstance(app),
+    firestore: getFirestore(app),
+    storage: getFirebaseStorage(app),
   };
-}
-
-// Internal helpers for initialization to avoid direct usage of SDK getters in the same scope
-function getFirestoreInstance(app: any) {
-    const { getFirestore } = require('firebase/firestore');
-    return getFirestore(app);
-}
-
-function getStorageInstance(app: any) {
-    const { getStorage } = require('firebase/storage');
-    return getStorage(app);
 }

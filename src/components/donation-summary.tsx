@@ -4,6 +4,7 @@ import { usePublicData } from '@/hooks/use-public-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from './ui/skeleton';
 import { Calendar, PieChart as PieChartIcon, IndianRupee } from 'lucide-react';
+import { useState, useEffect } from 'react';
 import {
   PieChart,
   Pie,
@@ -46,6 +47,11 @@ const donationCategoryChartConfig = {
  */
 export function DonationSummary() {
   const { isLoading, yearlySummary, categorySummary, summaryDateRange } = usePublicData();
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   if (isLoading) {
     return (
@@ -122,17 +128,23 @@ export function DonationSummary() {
            <CardDescription className="font-normal text-primary/70">Breakdown Of Contributions In Configured Range ({rangeText}).</CardDescription>
         </CardHeader>
         <CardContent className="pt-6">
-          <ChartContainer config={donationCategoryChartConfig} className="h-[300px] w-full">
-            <PieChart>
-              <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-              <Pie data={categorySummary} dataKey="value" nameKey="name" innerRadius={60} outerRadius={100} strokeWidth={5} paddingAngle={2} className="transition-all duration-1000 ease-out focus:outline-none">
-                {categorySummary.map((entry: any) => (
-                  <Cell key={`cell-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />
-                ))}
-              </Pie>
-              <ChartLegend content={<ChartLegendContent nameKey="name" />} />
-            </PieChart>
-          </ChartContainer>
+          {isClient ? (
+            <ChartContainer config={donationCategoryChartConfig} className="h-[300px] w-full">
+              <PieChart>
+                <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                <Pie data={categorySummary} dataKey="value" nameKey="name" innerRadius={60} outerRadius={100} strokeWidth={5} paddingAngle={2} className="transition-all duration-1000 ease-out focus:outline-none">
+                  {categorySummary.map((entry: any) => (
+                    <Cell key={`cell-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />
+                  ))}
+                </Pie>
+                <ChartLegend content={<ChartLegendContent nameKey="name" />} />
+              </PieChart>
+            </ChartContainer>
+          ) : (
+            <div className="flex items-center justify-center h-[300px] w-full">
+              <Skeleton className="h-48 w-48 rounded-full" />
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

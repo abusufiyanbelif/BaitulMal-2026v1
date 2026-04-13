@@ -7,24 +7,20 @@ import { useSession } from '@/hooks/use-session';
 import type { Campaign, Lead, Donation, DonationCategory, BrandingSettings, Beneficiary } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 
-const RECENT_UPDATE_THRESHOLD_MS = 3 * 24 * 60 * 60 * 1000; // 3 days
-
 /**
  * usePublicData - Strict filtering for public-facing organizational reporting.
- * Re-engineered to support Custom Date Range filtering and unique Family Impact counting.
+ * Handles both modern linkSplit and legacy campaignId structures.
  */
 export function usePublicData() {
   const firestore = useFirestore();
   const { user, isLoading: isSessionLoading } = useSession();
 
-  // Load configuration for date range and ticker filtering
   const brandingRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'branding') : null, [firestore]);
   const visRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donation_visibility') : null, [firestore]);
 
   const { data: brandingSettings, isLoading: isBrandingLoading } = useDoc<BrandingSettings>(brandingRef);
   const { data: visSettings, isLoading: isVisLoading } = useDoc<any>(visRef);
 
-  // Strict Query: Authenticity Verified AND Visibility Published
   const campaignsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(
@@ -43,14 +39,11 @@ export function usePublicData() {
     );
   }, [firestore]);
   
-  // Master beneficiaries list for unique family counting
-  // SECURITY: Only fetch if a user is authenticated to prevent permission errors for public visitors
   const beneficiariesCollectionRef = useMemoFirebase(() => {
     if (!firestore || !user) return null;
     return collection(firestore, 'beneficiaries');
   }, [firestore, user]);
 
-  // Donations must be Verified to appear in aggregates or tickers
   const donationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
     return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
@@ -92,7 +85,6 @@ export function usePublicData() {
     const allPublicItems = [...campaigns, ...leads];
     const itemsById = new Map(allPublicItems.map(item => [item.id, item]));
 
-    // Identity Configured Exclusions & Limits
     const skipIds = new Set(brandingSettings?.tickerSkipIds || []);
     const maxDonations = brandingSettings?.tickerMaxDonations ?? 15;
     const maxCompleted = brandingSettings?.tickerMaxCompleted ?? 5;
@@ -100,7 +92,6 @@ export function usePublicData() {
     const isTickerDonationVisible = brandingSettings?.isTickerDonationVisible !== false;
     const isTickerCompletedVisible = brandingSettings?.isTickerCompletedVisible !== false;
 
-    // Identity Configured Date Range
     const startDate = brandingSettings?.summaryStartDate || '';
     const endDate = brandingSettings?.summaryEndDate || '';
 
@@ -110,8 +101,6 @@ export function usePublicData() {
 
     donations.forEach(donation => {
       const donationDate = donation.donationDate || '';
-      
-      // Global Aggregate Filter: Respect Custom Date Range
       const isWithinRange = (!startDate || donationDate >= startDate) && (!endDate || donationDate <= endDate);
 
       const donationYear = donationDate ? donationDate.split('-')[0] : null;
@@ -176,7 +165,6 @@ export function usePublicData() {
       return { ...lead, collected, progress };
     });
 
-    // Unique Family Impact logic: Beneficiaries in master list (requires auth)
     const familiesImpacted = beneficiaries?.length || 0;
 
     const summaryDonations = donations.filter(d => {
@@ -193,7 +181,12 @@ export function usePublicData() {
     
     let totalCollectedForGoalsInRange = 0;
     summaryDonations.forEach(d => {
-        const links = d.linkSplit || [];
+        const links = (d.linkSplit && d.linkSplit.length > 0)
+            ? d.linkSplit
+            : (d as any).campaignId 
+                ? [{ linkId: (d as any).campaignId, amount: d.amount, linkType: 'campaign' }] 
+                : [];
+
         links.forEach(l => {
             const item = itemsById.get(l.linkId);
             if (!item) return;
@@ -281,7 +274,7 @@ export function usePublicData() {
       maxCompleted
     };
 
-  }, [isLoading, campaigns, leads, donations, beneficiaries, brandingSettings]);
+  }, [isLoading, campaigns, leads, donations, beneficiaries, brandingSettings, visSettings, user]);
 
   return { isLoading, ...memoizedData };
 }
