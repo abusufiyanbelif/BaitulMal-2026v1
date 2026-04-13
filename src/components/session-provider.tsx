@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useMemo as useReactMemo, ReactNode } from 'react';
@@ -31,6 +32,7 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
   const profileWithDefaults = useReactMemo(() => {
     if (!authUser) return null;
 
+    // EMERGENCY ADMIN BYPASS IDENTITIES
     const isAdminIdentity = 
         authUser.email === 'abusufiyan.belif@gmail.com' || 
         authUser.email === 'baitulmalss.solapur@gmail.com' || 

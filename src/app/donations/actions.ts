@@ -376,3 +376,42 @@ export async function syncAllDonationsToDonorsAction(): Promise<{ success: boole
         return { success: false, message: error.message, count: 0 };
     }
 }
+
+/**
+ * Internal Admin helper to recalculate initiative collected totals.
+ */
+export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const [campaignsSnap, leadsSnap, donationsSnap] = await Promise.all([
+            adminDb.collection('campaigns').get(),
+            adminDb.collection('leads').get(),
+            adminDb.collection('donations').get(),
+        ]);
+
+        const campaignMap: Record<string, number> = {};
+        const leadMap: Record<string, number> = {};
+
+        donationsSnap.docs.forEach(d => {
+            const data = d.data();
+            if (data.status !== 'Verified') return;
+            (data.linkSplit || []).forEach((link: any) => {
+                if (link.linkType === 'campaign') campaignMap[link.linkId] = (campaignMap[link.linkId] || 0) + link.amount;
+                else if (link.linkType === 'lead') leadMap[link.linkId] = (leadMap[link.linkId] || 0) + link.amount;
+            });
+        });
+
+        const batch = adminDb.batch();
+        campaignsSnap.docs.forEach(d => batch.update(d.ref, { collectedAmount: campaignMap[d.id] || 0 }));
+        leadsSnap.docs.forEach(d => batch.update(d.ref, { collectedAmount: leadMap[d.id] || 0 }));
+        
+        await batch.commit();
+        revalidatePath('/campaigns');
+        revalidatePath('/leads-members');
+        return { success: true, message: "Initiative financial totals re-synchronized." };
+    } catch (error: any) {
+        return { success: false, message: error.message };
+    }
+}

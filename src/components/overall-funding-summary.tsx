@@ -1,3 +1,4 @@
+
 'use client';
 
 import { usePublicData } from '@/hooks/use-public-data';
@@ -36,7 +37,7 @@ export function OverallFundingSummary() {
     ];
   }, [overallSummary?.progress]);
 
-  if (isLoading) {
+  if (isLoading || !isClient) {
     return (
         <div className="grid gap-10">
             <Card className="border-primary/20 bg-white shadow-sm">
@@ -76,43 +77,37 @@ export function OverallFundingSummary() {
             <CardContent className="pt-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center font-normal">
                     <div className="relative h-48 sm:h-64 w-full">
-                        {isClient ? (
-                            <ChartContainer
-                                config={{
-                                    progress: {
-                                        label: 'Progress',
-                                        color: 'hsl(var(--primary))',
-                                    },
-                                }}
-                                className="mx-auto aspect-square h-full"
-                            >
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <RadialBarChart
-                                        data={chartData}
-                                        startAngle={-270}
-                                        endAngle={90}
-                                        innerRadius="75%"
-                                        outerRadius="100%"
-                                        barSize={20}
-                                    >
-                                    <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                                    <RadialBar
-                                        dataKey="value"
-                                        background={{ fill: 'hsl(var(--muted))' }}
-                                        cornerRadius={10}
-                                    />
-                                    <ChartTooltip
-                                        cursor={false}
-                                        content={<ChartTooltipContent hideLabel />}
-                                    />
-                                    </RadialBarChart>
-                                </ResponsiveContainer>
-                            </ChartContainer>
-                        ) : (
-                            <div className="flex items-center justify-center h-full w-full">
-                                <Skeleton className="h-40 w-40 rounded-full" />
-                            </div>
-                        )}
+                        <ChartContainer
+                            config={{
+                                progress: {
+                                    label: 'Progress',
+                                    color: 'hsl(var(--primary))',
+                                },
+                            }}
+                            className="mx-auto aspect-square h-full"
+                        >
+                            <ResponsiveContainer width="100%" height="100%">
+                                <RadialBarChart
+                                    data={chartData}
+                                    startAngle={-270}
+                                    endAngle={90}
+                                    innerRadius="75%"
+                                    outerRadius="100%"
+                                    barSize={20}
+                                >
+                                <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                <RadialBar
+                                    dataKey="value"
+                                    background={{ fill: 'hsl(var(--muted))' }}
+                                    cornerRadius={10}
+                                />
+                                <ChartTooltip
+                                    cursor={false}
+                                    content={<ChartTooltipContent hideLabel />}
+                                />
+                                </RadialBarChart>
+                            </ResponsiveContainer>
+                        </ChartContainer>
                         <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom">
                             <span className="text-4xl font-bold text-primary">
                                 {Math.round(overallSummary.progress || 0)}%

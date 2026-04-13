@@ -1,11 +1,14 @@
+
 'use client';
 
 /**
  * @fileOverview Definitive barrel file for Firebase SDKs.
- * Optimized for standard ESM exports to prevent circular dependencies and SSR crashes.
+ * Declarations must precede exports to avoid circular reference loops.
  */
 
+import { initializeApp, getApps, getApp } from 'firebase/app';
 import { 
+    getFirestore,
     doc,
     collection,
     query,
@@ -23,7 +26,6 @@ import {
     orderBy,
     limit,
     onSnapshot,
-    getFirestore
 } from 'firebase/firestore';
 
 import { 
@@ -45,8 +47,19 @@ import {
 } from 'firebase/storage';
 
 import { firebaseConfig } from '@/firebase/config';
-import { initializeApp, getApps, getApp } from 'firebase/app';
 
+// Primary Service Initializer
+export function initializeFirebase() {
+  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  return {
+    firebaseApp: app,
+    auth: getFirebaseAuth(app),
+    firestore: getFirestore(app),
+    storage: getFirebaseStorage(app),
+  };
+}
+
+// Explicit Named Exports
 export {
     doc,
     collection,
@@ -87,17 +100,3 @@ export * from './non-blocking-updates';
 export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';
-
-/**
- * Initializes Firebase core services.
- * Safe for use in the 'use client' bundle.
- */
-export function initializeFirebase() {
-  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-  return {
-    firebaseApp: app,
-    auth: getFirebaseAuth(app),
-    firestore: getFirestore(app),
-    storage: getFirebaseStorage(app),
-  };
-}
