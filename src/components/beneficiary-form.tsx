@@ -280,7 +280,7 @@ export function BeneficiaryForm({
                             <div className="space-y-4">
                                 <h3 className="text-lg font-bold text-primary tracking-tight">Personal Information</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <FormField control={control} name="name" render={({ field }) => (<FormItem>{renderLabel('Full Name', 'name')}<FormControl><Input placeholder="e.g. Saleem Khan" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
+                                    <FormField control={control} name="name" render={({ field }) => (<FormItem>{renderLabel('Full Name', 'name')}<FormControl><Input placeholder="e.g. Saleem Khan" {...field} value={field.value || ''} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
                                     <FormField control={control} name="age" render={({ field }) => (<FormItem>{renderLabel('Age', 'age')}<FormControl><Input type="number" placeholder="e.g. 35" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -306,9 +306,9 @@ export function BeneficiaryForm({
                                             <FormMessage />
                                         </FormItem>
                                     )}/>
-                                    <FormField control={control} name="occupation" render={({ field }) => (<FormItem>{renderLabel('Occupation', 'occupation')}<FormControl><Input placeholder="e.g. Daily Wage Laborer" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                    <FormField control={control} name="occupation" render={({ field }) => (<FormItem>{renderLabel('Occupation', 'occupation')}<FormControl><Input placeholder="e.g. Daily Wage Laborer" {...field} value={field.value || ''} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                                 </div>
-                                <FormField control={control} name="address" render={({ field }) => (<FormItem>{renderLabel('Address', 'address')}<FormControl><Input placeholder="Full Residential Address" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
+                                <FormField control={control} name="address" render={({ field }) => (<FormItem>{renderLabel('Address', 'address')}<FormControl><Input placeholder="Full Residential Address" {...field} value={field.value || ''} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
                             </div>
                             <Separator />
                             <div className="space-y-4">
@@ -324,8 +324,8 @@ export function BeneficiaryForm({
                             <div className="space-y-4">
                                 <h3 className="text-lg font-bold text-primary tracking-tight">Identification & Financials</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <FormField control={control} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('Id Proof Type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
-                                    <FormField control={control} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('Id Number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                    <FormField control={control} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('Id Proof Type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} value={field.value || ''} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                    <FormField control={control} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('Id Number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} value={field.value || ''} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                                 </div>
                                 <div className="space-y-2">
                                     {!isReadOnly && (
@@ -380,7 +380,7 @@ export function BeneficiaryForm({
                             <Separator />
                             <div className="space-y-4 pb-10">
                                 <h3 className="text-lg font-bold text-primary tracking-tight">Institutional Notes</h3>
-                                <FormField control={control} name="notes" render={({ field }) => (<FormItem>{renderLabel('Internal Notes', 'notes')}<FormControl><Textarea placeholder="Vetting Details, Background Checks, Etc." {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                <FormField control={control} name="notes" render={({ field }) => (<FormItem>{renderLabel('Internal Notes', 'notes')}<FormControl><Textarea placeholder="Vetting Details, Background Checks, Etc." {...field} value={field.value || ''} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                             </div>
                         </div>
                         <ScrollBar orientation="vertical" />

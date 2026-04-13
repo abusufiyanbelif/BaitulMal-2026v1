@@ -267,7 +267,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                      <FormItem>
                                          {renderLabel('Phone Number', 'phone')}
                                          <div className="flex gap-2">
-                                             <FormControl><Input placeholder="10-Digit Mobile Number" {...field} value={field.value ?? ''} disabled={isFormDisabled} className="font-normal flex-1" /></FormControl>
+                                             <FormControl><Input placeholder="10-Digit Mobile Number" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal flex-1" /></FormControl>
                                              {field.value && (
                                                  <Button 
                                                      type="button" 
@@ -290,7 +290,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                     <FormField control={control as any} name="userKey" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="font-bold text-primary opacity-60">System ID (User Key)</FormLabel>
-                                            <FormControl><Input placeholder="System-Generated" {...field} value={field.value ?? ''} readOnly disabled={true} className="bg-muted/30 font-mono opacity-60 font-normal" /></FormControl>
+                                            <FormControl><Input placeholder="System-Generated" {...field} value={field.value || ''} readOnly disabled={true} className="bg-muted/30 font-mono opacity-60 font-normal" /></FormControl>
                                         </FormItem>
                                     )}/>
                                 </div>
@@ -312,8 +312,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <div className="space-y-4 rounded-xl border border-primary/5 p-4 bg-primary/[0.02]">
                                     <h3 className="text-sm font-bold text-primary capitalize tracking-widest">Identification Evidence</h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <FormField control={control as any} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('ID Proof Type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} value={field.value ?? ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
-                                        <FormField control={control as any} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('ID Number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} value={field.value ?? ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                        <FormField control={control as any} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('ID Proof Type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                        <FormField control={control as any} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('ID Number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                                     </div>
                                     <FormItem>
                                         {renderLabel('ID Proof Document', 'idProofFile')}
@@ -334,7 +334,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <FormField control={control as any} name="status" render={({ field }) => (
                                     <FormItem>
                                         {renderLabel('Account Status', 'status')}
-                                        <Select onValueChange={field.onChange} value={field.value ?? 'Active'} disabled={isFormDisabled}>
+                                        <Select onValueChange={field.onChange} value={field.value || 'Active'} disabled={isFormDisabled}>
                                             <FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl>
                                             <SelectContent className="rounded-[12px] shadow-dropdown">
                                                 <SelectItem value="Active" className="font-normal text-primary">Active</SelectItem>
@@ -349,7 +349,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <FormField control={control as any} name="role" render={({ field }: any) => (
                                     <FormItem>
                                         {renderLabel('Access Role', 'role')}
-                                        <Select onValueChange={field.onChange} value={field.value ?? 'User'} disabled={isFormDisabled}>
+                                        <Select onValueChange={field.onChange} value={field.value || 'User'} disabled={isFormDisabled}>
                                             <FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl>
                                             <SelectContent className="rounded-[12px] shadow-dropdown">
                                                 <SelectItem value="Admin" className="font-bold text-red-600">Admin (Superuser)</SelectItem>
@@ -363,7 +363,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <FormField control={control as any} name="organizationGroup" render={({ field }) => (
                                     <FormItem>
                                         {renderLabel('Organization Group', 'organizationGroup')}
-                                        <Select onValueChange={field.onChange} value={field.value ?? 'none'} disabled={isFormDisabled}>
+                                        <Select onValueChange={field.onChange} value={field.value || 'none'} disabled={isFormDisabled}>
                                             <FormControl><SelectTrigger className="font-normal"><SelectValue/></SelectTrigger></FormControl>
                                             <SelectContent className="rounded-[12px] shadow-dropdown">
                                                 <SelectItem value="none" className="font-normal italic">-- Not A Public Member --</SelectItem>
@@ -373,7 +373,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                         <FormDescription className="font-normal text-xs opacity-70">Determines Visibility In The Public Team Directory.</FormDescription>
                                     </FormItem>
                                 )}/>
-                                <FormField control={control as any} name="organizationRole" render={({ field }: any) => (<FormItem>{renderLabel('Institutional Title', 'organizationRole')}<FormControl><Input placeholder="e.g. President, Treasurer" {...field} value={field.value ?? ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                <FormField control={control as any} name="organizationRole" render={({ field }: any) => (<FormItem>{renderLabel('Institutional Title', 'organizationRole')}<FormControl><Input placeholder="e.g. President, Treasurer" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                             </TabsContent>
                             <TabsContent value="permissions" className="mt-6 space-y-6 animate-fade-in-up">
                                 <div className="space-y-2">
