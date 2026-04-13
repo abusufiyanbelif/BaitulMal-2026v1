@@ -1,4 +1,3 @@
-
 'use server';
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -9,6 +8,7 @@ const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure 
 
 /**
  * Sanitizes an object by removing all undefined values.
+ * Essential to prevent Firestore WriteBatch crashes.
  */
 function sanitizePayload(data: Record<string, any>) {
     const sanitized: Record<string, any> = {};
@@ -49,6 +49,7 @@ async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, li
 
 /**
  * Robust action to save or update a donation while handling unified identity linking.
+ * Implements a "Search-First" strategy to prevent profile fragmentation.
  */
 export async function upsertDonationWithDonorAction(
     donationId: string | null,
@@ -63,16 +64,19 @@ export async function upsertDonationWithDonorAction(
         const donorPhone = donationData.donorPhone || '';
         const donorName = donationData.donorName || 'Anonymous Donor';
 
-        // 1. Unified Identity Discovery (Scan Users first to prevent fragmentation)
+        // --- UNIFIED IDENTITY SEARCH ---
+        // 1. Check if a User (Admin/Staff) exists with this phone first
         if (!finalDonorId && donorPhone && donorPhone.length >= 10) {
             const userMatch = await adminDb.collection('users').where('phone', '==', donorPhone).limit(1).get();
             if (!userMatch.empty) {
                 finalDonorId = userMatch.docs[0].id;
             } else {
+                // 2. Check if a mirrored Donor profile exists
                 const donorMatch = await adminDb.collection('donors').where('phone', '==', donorPhone).limit(1).get();
                 if (!donorMatch.empty) {
                     finalDonorId = donorMatch.docs[0].id;
                 } else {
+                    // 3. Create a new linked Donor profile if no identity discovered
                     const newDonorRef = adminDb.collection('donors').doc();
                     await newDonorRef.set({
                         id: newDonorRef.id,
@@ -89,7 +93,7 @@ export async function upsertDonationWithDonorAction(
             }
         }
 
-        // 2. Record Financial Data
+        // --- RECORD FINANCIAL DATA ---
         const docRef = donationId ? adminDb.collection('donations').doc(donationId) : adminDb.collection('donations').doc();
         const id = docRef.id;
 
@@ -114,7 +118,7 @@ export async function upsertDonationWithDonorAction(
 
         await docRef.set(payload, { merge: true });
 
-        // 3. Trigger Cross-Collection Financial Reconciliation
+        // --- TRIGGER RECONCILIATION ---
         if (donationData.linkSplit) {
             await syncInitiativeCollectedTotals(adminDb, donationData.linkSplit);
         }

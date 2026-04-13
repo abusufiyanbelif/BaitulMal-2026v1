@@ -31,16 +31,23 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
   const profileWithDefaults = useReactMemo(() => {
     if (!authUser) return null;
 
-    // EMERGENCY ADMIN BYPASS IDENTITIES (INCLUDING CLUSTERED ACCOUNTS)
+    // --- PRIMARY ADMINISTRATIVE BYPASS (SOVEREIGN IDENTITIES) ---
+    const adminEmails = [
+        'abusufiyan.belif@gmail.com', 
+        'baitulmalss.solapur@gmail.com', 
+        'maazshaikh.official@gmail.com',
+        'admin@example.com'
+    ];
+    
+    const adminUids = [
+        'cyMl1lQME0Yur1YS3VCms1AvrOJ2', // BaitulMal System Admin
+        'S5efNV5jpTPoxYNv6SnAlv3jNPO2', // Abusufiyan Belif (Primary)
+        '3gKwUE2JrBT8wngoUxTTN6tLJk03'  // Maaz A. Rauf Shaikh
+    ];
+
     const isAdminIdentity = 
-        authUser.email === 'abusufiyan.belif@gmail.com' || 
-        authUser.email === 'baitulmalss.solapur@gmail.com' || 
-        authUser.email === 'maazshaikh.official@gmail.com' || // Maaz A. Rauf Shaikh
-        authUser.email === 'admin@example.com' || 
-        authUser.uid === 'cyMl1lQME0Yur1YS3VCms1AvrOJ2' ||
-        authUser.uid === 'S5efNV5jpTPoxYNv6SnAlv3jNPO2' ||
-        authUser.phoneNumber === '+919270946423' ||
-        authUser.phoneNumber === '+917887646583' ||
+        adminEmails.includes(authUser.email || '') || 
+        adminUids.includes(authUser.uid) ||
         userProfile?.role === 'Admin';
 
     if (!userProfile) {

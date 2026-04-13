@@ -1,9 +1,8 @@
-
 'use client';
 
 /**
- * @fileOverview Hardened barrel file for Firebase SDKs.
- * Explicitly exports named functions to prevent circular dependency runtime errors.
+ * @fileOverview Refactored Firebase SDK barrel file.
+ * Explicitly manages naming to prevent SWC build collisions and circular dependencies.
  */
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -29,7 +28,7 @@ import {
 } from 'firebase/firestore';
 
 import { 
-    getAuth,
+    getAuth as getFirebaseAuth,
     signInWithPhoneNumber,
     RecaptchaVerifier,
     sendPasswordResetEmail,
@@ -38,7 +37,7 @@ import {
 } from 'firebase/auth';
 
 import { 
-    getStorage,
+    getStorage as getFirebaseStorage,
     ref as storageRef,
     uploadBytes,
     getDownloadURL,
@@ -53,9 +52,9 @@ export function initializeFirebase() {
   const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
   return {
     firebaseApp: app,
-    auth: getAuth(app),
+    auth: getFirebaseAuth(app),
     firestore: getFirestore(app),
-    storage: getStorage(app),
+    storage: getFirebaseStorage(app),
   };
 }
 
@@ -83,14 +82,13 @@ export {
     sendPasswordResetEmail,
     onAuthStateChanged,
     firebaseSignOut,
-    getAuth,
-    getFirestore,
-    getStorage,
+    getFirebaseAuth as getAuth, // Standardized alias
     storageRef,
     uploadBytes,
     getDownloadURL,
     deleteObject,
-    uploadString
+    uploadString,
+    getFirebaseStorage as getStorage // Standardized alias
 };
 
 export * from './provider';

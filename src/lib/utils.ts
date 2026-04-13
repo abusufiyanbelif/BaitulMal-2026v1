@@ -5,6 +5,9 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+/**
+ * Safely traverses an object to retrieve a nested value.
+ */
 export function getNestedValue(obj: any, path: string, defaultValue: any = undefined) {
     if (typeof path !== 'string') {
         console.warn('getNestedValue: Path Must Be A String.');
@@ -15,12 +18,15 @@ export function getNestedValue(obj: any, path: string, defaultValue: any = undef
     for (const key of keys) {
         result = result?.[key];
         if (result === undefined) {
-        return defaultValue;
+            return defaultValue;
         }
     }
     return result;
 }
 
+/**
+ * Safely sets a nested value within an object, creating intermediaries as needed.
+ */
 export function set(obj: any, path: string, value: any) {
     if (typeof path !== 'string') {
         console.warn('set: Path Must Be A String.');
@@ -39,6 +45,9 @@ export function set(obj: any, path: string, value: any) {
     return obj;
 }
 
+/**
+ * Extracts initials from a name for avatar fallbacks.
+ */
 export function getInitials(name: string | null | undefined): string {
     if (!name || name.trim().length === 0) return 'U';
     return name
