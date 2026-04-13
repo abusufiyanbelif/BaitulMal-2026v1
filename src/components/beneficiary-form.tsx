@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useState, useMemo } from 'react';
@@ -28,7 +29,7 @@ import {
   FormLabel,
   FormMessage,
   FormField,
-} from '@/components/ui/form';
+} from '@/form'; // Use central form components
 import { useToast } from '@/hooks/use-toast';
 import Resizer from 'react-image-file-resizer';
 import { useFirestore, useMemoFirebase, useDoc, doc, storageRef, uploadBytes, getDownloadURL } from '@/firebase';

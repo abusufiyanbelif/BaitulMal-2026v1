@@ -30,7 +30,7 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
   const profileWithDefaults = useReactMemo(() => {
     if (!authUser) return null;
 
-    // 1. Unified Admin Check
+    // 1. Unified Admin Check (Identity overrides database role)
     const isAdminIdentity = 
         authUser.email === 'abusufiyan.belif@gmail.com' || 
         authUser.email === 'baitulmalss.solapur@gmail.com' || 
