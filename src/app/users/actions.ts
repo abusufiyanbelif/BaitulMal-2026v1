@@ -1,3 +1,4 @@
+
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
@@ -210,6 +211,75 @@ export async function mirrorIndividualUserToDonorAction(userId: string, adminUse
         
         return { success: true, message: "Member identity successfully mirrored to donor registry." };
     } catch (error: any) {
+        return { success: false, message: error.message };
+    }
+}
+
+/**
+ * Interactive Identity Consolidation Action.
+ * Merges multiple user UIDs into a single primary record.
+ */
+export async function consolidateIdentitiesAction(
+    primaryUid: string, 
+    redundantUids: string[], 
+    updatedBy: { id: string, name: string }
+): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const batch = adminDb.batch();
+        const primaryRef = adminDb.collection('users').doc(primaryUid);
+        const primarySnap = await primaryRef.get();
+        if (!primarySnap.exists) throw new Error("Primary identity not found.");
+
+        const primaryData = primarySnap.data() as UserProfile;
+        const mergedPermissions = { ...(primaryData.permissions || {}) };
+        
+        for (const redundantUid of redundantUids) {
+            const redundantRef = adminDb.collection('users').doc(redundantUid);
+            const redundantSnap = await redundantRef.get();
+            if (!redundantSnap.exists) continue;
+
+            const rData = redundantSnap.data() as UserProfile;
+
+            // 1. Merge Permissions
+            if (rData.permissions) {
+                Object.keys(rData.permissions).forEach(mod => {
+                    if (!mergedPermissions[mod as keyof UserPermissions]) mergedPermissions[mod as keyof UserPermissions] = {};
+                    Object.assign(mergedPermissions[mod as keyof UserPermissions], rData.permissions[mod as keyof UserPermissions]);
+                });
+            }
+
+            // 2. Re-assign all donations pointing to redundant UID
+            const donationsSnap = await adminDb.collection('donations').where('donorId', '==', redundantUid).get();
+            donationsSnap.forEach(d => {
+                batch.update(d.ref, { 
+                    donorId: primaryUid,
+                    updatedAt: FieldValue.serverTimestamp(),
+                    notes: (d.data().notes || '') + ` (Profile consolidated into ${primaryUid})`
+                });
+            });
+
+            // 3. Delete redundant user and its lookups
+            batch.delete(redundantRef);
+            if (rData.loginId) batch.delete(adminDb.collection('user_lookups').doc(rData.loginId));
+            if (rData.phone) batch.delete(adminDb.collection('user_lookups').doc(rData.phone));
+            if (rData.userKey) batch.delete(adminDb.collection('user_lookups').doc(rData.userKey));
+        }
+
+        // 4. Finalize Primary
+        batch.update(primaryRef, {
+            permissions: mergedPermissions,
+            updatedAt: FieldValue.serverTimestamp()
+        });
+
+        await batch.commit();
+        revalidatePath('/users');
+        revalidatePath('/donations');
+        return { success: true, message: `Unified ${redundantUids.length + 1} records into primary ID: ${primaryUid}` };
+    } catch (error: any) {
+        console.error("Consolidation Failed:", error);
         return { success: false, message: error.message };
     }
 }

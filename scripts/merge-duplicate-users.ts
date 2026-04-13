@@ -3,13 +3,12 @@ import { getAdminServices } from '../src/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
 
 /**
- * UNIFIED IDENTITY CONSOLIDATION SCRIPT
+ * UNIFIED IDENTITY CONSOLIDATION SCRIPT (FIXED)
  * 
- * New Analysis Fix:
- * 1. Matches by Phone AND Email.
- * 2. Merges fragmented Staff, Donor, and Beneficiary records into a single "Golden Record".
- * 3. Re-assigns all historical Donations and Assistance to the Primary UID.
- * 4. Ensures Primary User Doc has correct linkedDonorId and linkedBeneficiaryId.
+ * Fixes:
+ * 1. Resolves "undefined" value error in batch.update.
+ * 2. Uses FieldValue.delete() for cleaning up stale data.
+ * 3. Handles multi-factor matching by Phone AND Email.
  */
 async function mergeDuplicateIdentities() {
     console.log('🔍 Starting Deep Identity Scan & Integration...');
@@ -19,12 +18,11 @@ async function mergeDuplicateIdentities() {
     try {
         const usersSnap = await adminDb.collection('users').get();
         const donorsSnap = await adminDb.collection('donors').get();
-        const beneficiariesSnap = await adminDb.collection('beneficiaries').get();
         const donationsSnap = await adminDb.collection('donations').get();
 
         const identityGroups: Record<string, any[]> = {};
         
-        // Group by Phone and Email
+        // Group by Phone and Email to find fragments
         usersSnap.forEach(doc => {
             const data = doc.data();
             const phone = data.phone?.replace(/\D/g, '');
@@ -85,7 +83,7 @@ async function mergeDuplicateIdentities() {
                     batch.update(d.ref, { 
                         donorId: primary.id,
                         updatedAt: FieldValue.serverTimestamp(),
-                        notes: (d.data().notes || '') + ` (Identity merged into ${primary.id})`
+                        notes: (d.data().notes || '') + ` (Automated identity merge)`
                     });
                     recordsProcessed++;
                 });
@@ -104,47 +102,36 @@ async function mergeDuplicateIdentities() {
                     batch.delete(oldDonorRef);
                 }
 
-                // 5. Move Master Beneficiary Data (if applicable)
-                const oldBenRef = adminDb.collection('beneficiaries').doc(redundant.id);
-                const primaryBenRef = adminDb.collection('beneficiaries').doc(primary.id);
-                const oldBenSnap = await oldBenRef.get();
-                if (oldBenSnap.exists) {
-                    batch.set(primaryBenRef, {
-                        ...oldBenSnap.data(),
-                        id: primary.id,
-                        updatedAt: FieldValue.serverTimestamp()
-                    }, { merge: true });
-                    batch.delete(oldBenRef);
-                    primaryLinkedBeneficiaryId = primary.id;
-                }
-
-                // 6. Purge Redundant User record
+                // 5. Purge Redundant User record
                 batch.delete(adminDb.collection('users').doc(redundant.id));
                 
-                // 7. Cleanup lookups
+                // 6. Cleanup lookups
                 if (redundant.loginId) batch.delete(adminDb.collection('user_lookups').doc(redundant.loginId));
                 if (redundant.phone) batch.delete(adminDb.collection('user_lookups').doc(redundant.phone));
                 
                 mergedCount++;
             }
 
-            // Update primary with unified metadata
-            batch.update(adminDb.collection('users').doc(primary.id), {
+            // SAFE UPDATE PAYLOAD (Prevents undefined errors)
+            const finalUpdate: any = {
                 permissions: mergedPermissions,
-                linkedDonorId: primaryLinkedDonorId,
-                linkedBeneficiaryId: primaryLinkedBeneficiaryId,
                 updatedAt: FieldValue.serverTimestamp()
-            });
+            };
+
+            if (primaryLinkedDonorId) finalUpdate.linkedDonorId = primaryLinkedDonorId;
+            if (primaryLinkedBeneficiaryId) finalUpdate.linkedBeneficiaryId = primaryLinkedBeneficiaryId;
+
+            batch.update(adminDb.collection('users').doc(primary.id), finalUpdate);
 
             await batch.commit();
         }
 
         console.log(`\n✅ CONSOLIDATION COMPLETE.`);
-        console.log(`   Profiles Merged: ${mergedCount}`);
-        console.log(`   Financial Records Synchronized: ${recordsProcessed}`);
+        console.log(`   Identities Unified: ${mergedCount}`);
+        console.log(`   Records Re-attributed: ${recordsProcessed}`);
         process.exit(0);
     } catch (error: any) {
-        console.error("❌ Consolidation Failed:", error);
+        console.error("❌ Consolidation Script Failed:", error);
         process.exit(1);
     }
 }

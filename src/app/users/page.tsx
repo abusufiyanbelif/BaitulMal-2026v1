@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
@@ -39,7 +40,9 @@ import {
     Users,
     Search,
     AlertCircle,
-    CheckCircle2
+    CheckCircle2,
+    DatabaseZap,
+    ArrowRight
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -66,9 +69,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { deleteUserAction, mirrorIndividualUserToDonorAction } from './actions';
+import { deleteUserAction, mirrorIndividualUserToDonorAction, consolidateIdentitiesAction } from './actions';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn, getNestedValue } from '@/lib/utils';
@@ -105,6 +107,7 @@ export default function UsersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isMirroring, setIsMirroring] = useState<string | null>(null);
+  const [isConsolidating, setIsConsolidating] = useState<string | null>(null);
 
   const usersRef = useMemoFirebase(() => (firestore && userProfile) ? collection(firestore, 'users') : null, [firestore, userProfile]);
   const donorsRef = useMemoFirebase(() => (firestore && userProfile) ? collection(firestore, 'donors') : null, [firestore, userProfile]);
@@ -137,6 +140,18 @@ export default function UsersPage() {
         toast({ title: "Mirroring Failed", description: res.message, variant: "destructive" });
     }
     setIsMirroring(null);
+  };
+
+  const handleConsolidate = async (primaryId: string, redundantIds: string[]) => {
+      if (!userProfile) return;
+      setIsConsolidating(primaryId);
+      const res = await consolidateIdentitiesAction(primaryId, redundantIds, { id: userProfile.id, name: userProfile.name });
+      if (res.success) {
+          toast({ title: "Unified Identity Secured", description: res.message, variant: "success" });
+      } else {
+          toast({ title: "Consolidation Failed", description: res.message, variant: "destructive" });
+      }
+      setIsConsolidating(null);
   };
 
   const handleDeleteClick = (id: string) => {
@@ -180,6 +195,33 @@ export default function UsersPage() {
     return items;
   }, [users, searchTerm, statusFilter, roleFilter, sortConfig]);
 
+  const duplicatesGroups = useMemo(() => {
+      if (!users) return [];
+      const groups: Record<string, UserProfile[]> = {};
+      users.forEach(u => {
+          const phone = u.phone?.replace(/\D/g, '');
+          const email = u.email?.toLowerCase().trim();
+          if (phone) {
+              if (!groups[phone]) groups[phone] = [];
+              if (!groups[phone].find(x => x.id === u.id)) groups[phone].push(u);
+          }
+          if (email && !email.includes('donor.demo.local')) {
+              if (!groups[email]) groups[email] = [];
+              if (!groups[email].find(x => x.id === u.id)) groups[email].push(u);
+          }
+      });
+      return Object.entries(groups)
+        .filter(([_, list]) => list.length > 1)
+        .map(([key, list]) => {
+            // Sort by priority for primary pick
+            const sorted = [...list].sort((a, b) => {
+                const priority: Record<string, number> = { Admin: 0, User: 1, Donor: 2, Beneficiary: 3 };
+                return (priority[a.role] ?? 99) - (priority[b.role] ?? 99);
+            });
+            return { key, primary: sorted[0], redundants: sorted.slice(1) };
+        });
+  }, [users]);
+
   const auditData = useMemo(() => {
       if (!users) return [];
       return users.map(u => {
@@ -213,8 +255,9 @@ export default function UsersPage() {
 
       <Tabs defaultValue="management" className="w-full space-y-6">
         <TabsList className="bg-primary/5 p-1 border border-primary/10 rounded-xl">
-            <TabsTrigger value="management" className="font-bold"><Users className="mr-2 h-4 w-4"/> Member Registry</TabsTrigger>
-            <TabsTrigger value="audit" className="font-bold text-amber-700"><Fingerprint className="mr-2 h-4 w-4"/> Identity Audit Hub</TabsTrigger>
+            <TabsTrigger value="management" className="font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Member Registry</TabsTrigger>
+            <TabsTrigger value="audit" className="font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Multi-Role Audit</TabsTrigger>
+            <TabsTrigger value="duplicates" className="font-bold text-amber-700 data-[state=active]:bg-amber-100"><DatabaseZap className="mr-2 h-4 w-4"/> Resolution Center</TabsTrigger>
         </TabsList>
 
         <TabsContent value="management" className="animate-fade-in-up mt-0">
@@ -223,7 +266,7 @@ export default function UsersPage() {
                     <div className="flex flex-wrap items-center gap-2">
                         <Input placeholder="Search Name, Email..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-xs h-9 text-xs" />
                         <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}><SelectTrigger className="w-[140px] h-9 text-xs"><SelectValue placeholder="Status"/></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem></SelectContent></Select>
-                        <Select value={roleFilter} onValueChange={(v) => { setRoleFilter(v); setCurrentPage(1); }}><SelectTrigger className="w-[140px] h-9 text-xs"><SelectValue placeholder="Role"/></SelectTrigger><SelectContent><SelectItem value="All">All Roles</SelectItem><SelectItem value="Admin">Admin</SelectItem><SelectItem value="User">User</SelectItem></SelectContent></Select>
+                        <Select value={roleFilter} onValueChange={(v) => { setRoleFilter(v); setCurrentPage(1); }}><SelectTrigger className="w-[140px] h-9 text-xs"><SelectValue placeholder="Role"/></SelectTrigger><SelectContent><SelectItem value="All">All Roles</SelectItem><SelectItem value="Admin">Admin</SelectItem><SelectItem value="User">User</SelectItem><SelectItem value="Donor">Donor</SelectItem><SelectItem value="Beneficiary">Beneficiary</SelectItem></SelectContent></Select>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -302,6 +345,81 @@ export default function UsersPage() {
                     </ScrollArea>
                 </CardContent>
             </Card>
+        </TabsContent>
+
+        <TabsContent value="duplicates" className="animate-fade-in-up mt-0 space-y-6">
+            <div className="grid gap-6">
+                {duplicatesGroups.length === 0 ? (
+                    <Card className="border-dashed border-primary/20 bg-primary/[0.01]">
+                        <CardContent className="flex flex-col items-center justify-center py-20 opacity-40">
+                            <CheckCircle2 className="h-12 w-12 mb-4 text-primary" />
+                            <p className="text-lg font-bold">Registry Is Clean</p>
+                            <p className="text-sm font-normal">No Fragmented Identities Detected By Phone Or Email.</p>
+                        </CardContent>
+                    </Card>
+                ) : (
+                    duplicatesGroups.map((group, gIdx) => (
+                        <Card key={gIdx} className="border-amber-200 bg-amber-50/30 overflow-hidden shadow-md">
+                            <CardHeader className="bg-amber-100/50 border-b border-amber-200 flex flex-row items-center justify-between">
+                                <div className="space-y-1">
+                                    <div className="flex items-center gap-2">
+                                        <AlertCircle className="h-5 w-5 text-amber-600" />
+                                        <CardTitle className="text-lg font-bold text-amber-900 tracking-tight">Identity Conflict Detected: {group.key}</CardTitle>
+                                    </div>
+                                    <CardDescription className="text-amber-800/60 font-medium">Found {group.redundants.length + 1} Competing Profiles For This Phone/Email.</CardDescription>
+                                </div>
+                                <Button 
+                                    onClick={() => handleConsolidate(group.primary.id, group.redundants.map(r => r.id))}
+                                    disabled={isConsolidating === group.primary.id}
+                                    className="bg-amber-600 hover:bg-amber-700 text-white font-bold h-10 px-6 rounded-xl shadow-lg active:scale-95 transition-all"
+                                >
+                                    {isConsolidating === group.primary.id ? <Loader2 className="h-4 w-4 animate-spin mr-2"/> : <DatabaseZap className="h-4 w-4 mr-2" />}
+                                    Resolve & Merge All
+                                </Button>
+                            </CardHeader>
+                            <CardContent className="p-0">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
+                                    <div className="space-y-3">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-amber-800/40">Primary Target (Golden Record)</Label>
+                                        <div className="p-4 rounded-2xl bg-white border-2 border-primary shadow-sm relative">
+                                            <Badge className="absolute -top-2 -right-2 bg-primary text-white font-black text-[8px] uppercase">Preserved</Badge>
+                                            <div className="flex items-center gap-4">
+                                                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center font-black text-primary text-lg">
+                                                    {group.primary.name.charAt(0)}
+                                                </div>
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-bold text-primary truncate">{group.primary.name}</p>
+                                                    <p className="text-[10px] font-mono text-muted-foreground">{group.primary.id}</p>
+                                                    <Badge variant="outline" className="mt-1 text-[9px] font-bold border-primary/20 text-primary">{group.primary.role}</Badge>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-3">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-amber-800/40">Redundant Fragments (To Be Purged)</Label>
+                                        <div className="space-y-2">
+                                            {group.redundants.map(r => (
+                                                <div key={r.id} className="p-3 rounded-xl bg-white/50 border border-amber-200 flex items-center justify-between group/row">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center font-bold text-[10px] text-muted-foreground">
+                                                            {r.name.charAt(0)}
+                                                        </div>
+                                                        <div className="min-w-0">
+                                                            <p className="text-xs font-bold text-primary/70">{r.name}</p>
+                                                            <Badge variant="secondary" className="text-[8px] h-4">{r.role}</Badge>
+                                                        </div>
+                                                    </div>
+                                                    <ArrowRight className="h-4 w-4 text-amber-400 opacity-0 group-hover/row:opacity-100 transition-opacity" />
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    ))
+                )}
+            </div>
         </TabsContent>
       </Tabs>
 
