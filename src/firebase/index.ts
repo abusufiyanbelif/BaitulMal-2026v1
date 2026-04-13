@@ -53,8 +53,8 @@ export function initializeFirebase() {
   return {
     firebaseApp: app,
     auth: getFirebaseAuth(app),
-    firestore: getFirestoreInstance(app),
-    storage: getStorageInstance(app),
+    firestore: getFirebaseFirestoreSDK(app),
+    storage: getFirebaseStorageSDK(app),
   };
 }
 
@@ -101,12 +101,3 @@ export * from './non-blocking-updates';
 export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';
-
-// Internal helpers for initialization to avoid naming collisions
-function getFirestoreInstance(app: any) {
-    return getFirebaseFirestoreSDK(app);
-}
-
-function getStorageInstance(app: any) {
-    return getFirebaseStorageSDK(app);
-}

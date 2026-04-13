@@ -3,6 +3,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 
 /**
  * Sanitizes an object by removing all undefined values.
+ * Essential to prevent Firestore WriteBatch crashes.
  */
 function sanitizePayload(data: Record<string, any>) {
     const sanitized: Record<string, any> = {};
@@ -15,7 +16,7 @@ function sanitizePayload(data: Record<string, any>) {
 }
 
 /**
- * UNIFIED IDENTITY CONSOLIDATION SCRIPT
+ * DEEP IDENTITY CONSOLIDATION SCRIPT
  * Consolidates fragmented profiles into a primary "Golden Record".
  * Atomic update of financial records, management logs, and authorship audit trails.
  */
@@ -67,8 +68,9 @@ async function mergeDuplicateIdentities() {
 
             const batch = adminDb.batch();
             const mergedPermissions = { ...(primary.permissions || {}) };
-            let primaryLinkedDonorId = primary.linkedDonorId || primary.id;
-            let primaryLinkedBeneficiaryId = primary.linkedBeneficiaryId;
+            
+            // Collect redundant IDs for authorship search
+            const redundantIds = redundants.map(r => r.id);
 
             for (const redundant of redundants) {
                 console.log(`   Merging Redundant Fragment: ${redundant.id} (Role: ${redundant.role})`);
@@ -81,14 +83,12 @@ async function mergeDuplicateIdentities() {
                     });
                 }
 
-                if (redundant.linkedDonorId) primaryLinkedDonorId = redundant.linkedDonorId;
-                if (redundant.linkedBeneficiaryId) primaryLinkedBeneficiaryId = redundant.linkedBeneficiaryId;
-
                 // 2. Re-assign all DONATIONS pointing to redundant UID
                 const linkedDonations = donationsSnap.docs.filter(d => d.data().donorId === redundant.id);
                 linkedDonations.forEach(d => {
                     batch.update(d.ref, { 
                         donorId: primary.id,
+                        donorName: primary.name,
                         updatedAt: FieldValue.serverTimestamp(),
                         notes: (d.data().notes || '') + ` (Unified from identity ${redundant.id})`
                     });
@@ -135,12 +135,12 @@ async function mergeDuplicateIdentities() {
                 mergedCount++;
             }
 
-            // SAFE PAYLOAD GENERATOR (Prevents "undefined" crashes)
+            // 6. Finalize Primary "Golden Record"
             const finalUpdate = sanitizePayload({
                 permissions: mergedPermissions,
                 updatedAt: FieldValue.serverTimestamp(),
-                linkedDonorId: primaryLinkedDonorId || null,
-                linkedBeneficiaryId: primaryLinkedBeneficiaryId || null
+                linkedDonorId: primary.id,
+                linkedBeneficiaryId: primary.linkedBeneficiaryId || null
             });
 
             batch.update(adminDb.collection('users').doc(primary.id), finalUpdate);
@@ -149,7 +149,7 @@ async function mergeDuplicateIdentities() {
 
         console.log(`\n✅ CONSOLIDATION COMPLETE.`);
         console.log(`   Identities Unified: ${mergedCount}`);
-        console.log(`   Audit Trails Updated: ${recordsProcessed} Financial/Management Records.`);
+        console.log(`   Audit Trails Re-attributed: ${recordsProcessed} Records.`);
         process.exit(0);
     } catch (error: any) {
         console.error("❌ Consolidation Script Failed:", error);

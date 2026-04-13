@@ -35,6 +35,7 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
     const isAdminIdentity = 
         authUser.email === 'abusufiyan.belif@gmail.com' || 
         authUser.email === 'baitulmalss.solapur@gmail.com' || 
+        authUser.email === 'maazshaikh.official@gmail.com' || // Maaz A. Rauf Shaikh
         authUser.email === 'admin@example.com' || 
         authUser.uid === 'cyMl1lQME0Yur1YS3VCms1AvrOJ2' ||
         authUser.uid === 'S5efNV5jpTPoxYNv6SnAlv3jNPO2' ||
