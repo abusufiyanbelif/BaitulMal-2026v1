@@ -93,7 +93,7 @@ async function mergeDuplicateIdentities() {
                         updates.uploadedById = primary.id;
                         updates.uploadedBy = primary.name;
                     }
-                    batch.update(d.ref, updates);
+                    batch.update(d.ref, sanitizePayload(updates));
                     auditRecordsUpdated++;
                 });
 
@@ -102,18 +102,18 @@ async function mergeDuplicateIdentities() {
                 for (const col of modules) {
                     const createdSnap = await adminDb.collection(col).where('createdById', '==', redundant.id).get();
                     createdSnap.forEach(doc => {
-                        batch.update(doc.ref, { 
+                        batch.update(doc.ref, sanitizePayload({ 
                             createdById: primary.id, 
                             createdByName: primary.name 
-                        });
+                        }));
                         auditRecordsUpdated++;
                     });
                     const updatedSnap = await adminDb.collection(col).where('updatedById', '==', redundant.id).get();
                     updatedSnap.forEach(doc => {
-                        batch.update(doc.ref, { 
+                        batch.update(doc.ref, sanitizePayload({ 
                             updatedById: primary.id, 
                             updatedByName: primary.name 
-                        });
+                        }));
                         auditRecordsUpdated++;
                     });
                 }

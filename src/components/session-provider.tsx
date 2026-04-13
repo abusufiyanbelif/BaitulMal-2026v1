@@ -54,7 +54,7 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
         if (isAdminIdentity) {
             return {
                 id: authUser.uid,
-                name: authUser.displayName || 'System Administrator',
+                name: authUser.displayName || (authUser.email === 'abusufiyan.belif@gmail.com' ? 'Abusufiyan Belif' : 'System Administrator'),
                 email: authUser.email || '',
                 loginId: 'admin',
                 userKey: 'super_admin_bypass',

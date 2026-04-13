@@ -28,7 +28,7 @@ import {
 } from 'firebase/firestore';
 
 import { 
-    getAuth as getFirebaseAuth,
+    getAuth,
     signInWithPhoneNumber,
     RecaptchaVerifier,
     sendPasswordResetEmail,
@@ -37,7 +37,7 @@ import {
 } from 'firebase/auth';
 
 import { 
-    getStorage as getFirebaseStorage,
+    getStorage,
     ref as storageRef,
     uploadBytes,
     getDownloadURL,
@@ -52,9 +52,9 @@ export function initializeFirebase() {
   const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
   return {
     firebaseApp: app,
-    auth: getFirebaseAuth(app),
+    auth: getAuth(app),
     firestore: getFirestore(app),
-    storage: getFirebaseStorage(app),
+    storage: getStorage(app),
   };
 }
 
@@ -82,13 +82,13 @@ export {
     sendPasswordResetEmail,
     onAuthStateChanged,
     firebaseSignOut,
-    getFirebaseAuth as getAuth, // Standardized alias
+    getAuth,
     storageRef,
     uploadBytes,
     getDownloadURL,
     deleteObject,
     uploadString,
-    getFirebaseStorage as getStorage // Standardized alias
+    getStorage
 };
 
 export * from './provider';
