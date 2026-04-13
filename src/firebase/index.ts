@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Refactored Firebase SDK barrel file.
- * Explicitly manages naming to prevent SWC build collisions and circular dependencies.
+ * Renamed internal helpers to avoid naming collisions with SDK exports.
  */
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
@@ -47,18 +47,6 @@ import {
 
 import { firebaseConfig } from '@/firebase/config';
 
-// Primary SDK Initializer
-export function initializeFirebase() {
-  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-  return {
-    firebaseApp: app,
-    auth: getAuth(app),
-    firestore: getFirestore(app),
-    storage: getStorage(app),
-  };
-}
-
-// Explicit Named Exports for components and hooks
 export {
     doc,
     collection,
@@ -99,3 +87,14 @@ export * from './non-blocking-updates';
 export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';
+
+// Primary SDK Initializer
+export function initializeFirebase() {
+  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  return {
+    firebaseApp: app,
+    auth: getAuth(app),
+    firestore: getFirestore(app),
+    storage: getStorage(app),
+  };
+}

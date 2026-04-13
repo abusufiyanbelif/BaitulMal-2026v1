@@ -1,32 +1,47 @@
 {
   "entities": {
     "UserProfile": {
-      "title": "User Profile",
-      "description": "Organizational staff member or donor profile.",
+      "title": "UserProfile",
+      "description": "Organizational member account including permissions and role mappings.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "name": { "type": "string" },
-        "email": { "type": "string" },
-        "phone": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
         "role": { "type": "string", "enum": ["Admin", "User", "Donor", "Beneficiary"] },
         "status": { "type": "string", "enum": ["Active", "Inactive"] },
         "permissions": { "type": "object" },
-        "linkedDonorId": { "type": "string" },
-        "linkedBeneficiaryId": { "type": "string" }
-      }
+        "organizationGroup": { "type": "string" },
+        "organizationRole": { "type": "string" }
+      },
+      "required": ["id", "name", "email", "role", "status"]
     },
     "PendingVerification": {
-      "title": "Pending Verification",
-      "description": "Staged data update awaiting peer review.",
+      "title": "PendingVerification",
+      "description": "Staged record modifications awaiting administrative sign-off.",
       "type": "object",
       "properties": {
-        "targetId": { "type": "string" },
-        "targetCollection": { "type": "string" },
+        "id": { "type": "string" },
         "module": { "type": "string" },
-        "status": { "type": "string", "enum": ["Pending", "Partially Approved", "Approved", "Rejected"] },
+        "targetId": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Approved", "Rejected", "Partially Approved"] },
+        "requestedBy": { "type": "object" },
         "assignedVerifierIds": { "type": "array", "items": { "type": "string" } },
-        "newValue": { "type": "object" }
+        "newValue": { "type": "object" },
+        "originalValue": { "type": "object" }
+      }
+    },
+    "Donation": {
+      "title": "Donation",
+      "description": "Financial contribution record with linked initiatives.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "amount": { "type": "number" },
+        "donorName": { "type": "string" },
+        "status": { "type": "string", "enum": ["Verified", "Pending", "Canceled", "Rejected"] },
+        "typeSplit": { "type": "array" },
+        "linkSplit": { "type": "array" }
       }
     }
   },
@@ -35,16 +50,36 @@
   },
   "firestore": {
     "/users/{userId}": {
-      "schema": "#/backend/entities/UserProfile",
-      "description": "Master user and staff directory."
+      "schema": { "$ref": "#/backend/entities/UserProfile" },
+      "description": "Primary user registry."
     },
-    "/pending_verifications/{id}": {
-      "schema": "#/backend/entities/PendingVerification",
-      "description": "Registry of staged modifications awaiting approval."
+    "/donors/{donorId}": {
+      "schema": { "type": "object" },
+      "description": "Contributor identity registry."
     },
-    "/donations/{id}": {
-      "schema": "Donation",
-      "description": "Financial contribution records."
+    "/donations/{donationId}": {
+      "schema": { "$ref": "#/backend/entities/Donation" },
+      "description": "Financial transaction ledger."
+    },
+    "/pending_verifications/{requestId}": {
+      "schema": { "$ref": "#/backend/entities/PendingVerification" },
+      "description": "Institutional audit and approval pipeline."
+    },
+    "/campaigns/{campaignId}": {
+      "schema": { "type": "object" },
+      "description": "Organizational project hub."
+    },
+    "/leads/{leadId}": {
+      "schema": { "type": "object" },
+      "description": "Individual community appeals."
+    },
+    "/settings/{configId}": {
+      "schema": { "type": "object" },
+      "description": "Global institutional parameters."
+    },
+    "/user_lookups/{identifier}": {
+      "schema": { "type": "object" },
+      "description": "Authentication mapping for phone/id sign-in."
     }
   }
 }
