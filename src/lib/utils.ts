@@ -52,7 +52,6 @@ export function getInitials(name: string | null | undefined): string {
 
 /**
  * Formats A Number As Indian Rupee (INR) Currency.
- * Follows The Professional Title Case Standard.
  */
 export function formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-IN', {

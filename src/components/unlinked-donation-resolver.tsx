@@ -58,7 +58,6 @@ interface UnlinkedDonationResolverProps {
 
 /**
  * Unlinked Donation Resolver - High-fidelity identity resolution hub.
- * Title Case typography enforced.
  */
 export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId }: UnlinkedDonationResolverProps) {
     const firestore = useFirestore();

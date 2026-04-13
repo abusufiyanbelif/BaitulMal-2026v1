@@ -29,11 +29,13 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
   const profileWithDefaults = useReactMemo(() => {
     if (!authUser) return null;
 
-    // 1. Check for specific administrative identities (Email or known Login IDs)
+    // 1. Check for specific administrative identities (Email, Phone, or UIDs)
     const isAdminIdentity = 
         authUser.email === 'abusufiyan.belif@gmail.com' || 
         authUser.email === 'baitulmalss.solapur@gmail.com' || 
         authUser.email === 'admin@example.com' || 
+        authUser.uid === 'cyMl1lQME0Yur1YS3VCms1AvrOJ2' ||
+        authUser.uid === 'S5efNV5jpTPoxYNv6SnAlv3jNPO2' ||
         userProfile?.loginId === 'admin' || 
         userProfile?.loginId === 'abusufiyan.belif';
 
