@@ -7,17 +7,30 @@ import type { Donation, Donor, DonationLink, TransactionDetail, Campaign, Lead }
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure Server Credentials Are Configured Correctly.";
 
 /**
+ * Sanitizes an object by removing all undefined values.
+ * Essential for Firestore compatibility.
+ */
+function sanitizePayload(data: Record<string, any>) {
+    const sanitized: Record<string, any> = {};
+    Object.keys(data).forEach(key => {
+        if (data[key] !== undefined) {
+            sanitized[key] = data[key];
+        }
+    });
+    return sanitized;
+}
+
+/**
  * Recalculates initiative totals for specific IDs.
  * Internal helper for atomicity within donation actions.
  */
 async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, links: DonationLink[]) {
     for (const link of links) {
-        if (link.linkId === 'unallocated') continue;
+        if (!link.linkId || link.linkId === 'unallocated') continue;
         
         const collectionName = link.linkType === 'campaign' ? 'campaigns' : 'leads';
         const initiativeRef = db.collection(collectionName).doc(link.linkId);
         
-        // Query all verified donations linked to this initiative
         const donationsSnap = await db.collection('donations')
             .where('status', '==', 'Verified')
             .get();
@@ -26,7 +39,7 @@ async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, li
         donationsSnap.docs.forEach(doc => {
             const d = doc.data() as Donation;
             const split = d.linkSplit?.find(l => l.linkId === link.linkId);
-            if (split) total += split.amount;
+            if (split) total += (Number(split.amount) || 0);
         });
 
         await initiativeRef.update({ collectedAmount: total, updatedAt: FieldValue.serverTimestamp() });
@@ -47,8 +60,8 @@ export async function upsertDonationWithDonorAction(
 
     try {
         let finalDonorId = donationData.donorId;
-        const donorPhone = donationData.donorPhone;
-        const donorName = donationData.donorName;
+        const donorPhone = donationData.donorPhone || '';
+        const donorName = donationData.donorName || 'Anonymous Donor';
 
         // 1. Unified Identity Discovery
         if (!finalDonorId && donorPhone && donorPhone.length >= 10) {
@@ -63,7 +76,7 @@ export async function upsertDonationWithDonorAction(
                     const newDonorRef = adminDb.collection('donors').doc();
                     await newDonorRef.set({
                         id: newDonorRef.id,
-                        name: donorName || 'Anonymous Donor',
+                        name: donorName,
                         phone: donorPhone,
                         status: 'Active',
                         createdAt: FieldValue.serverTimestamp(),
@@ -80,17 +93,26 @@ export async function upsertDonationWithDonorAction(
         const docRef = donationId ? adminDb.collection('donations').doc(donationId) : adminDb.collection('donations').doc();
         const id = docRef.id;
 
-        const finalDonationData = {
+        const payload = sanitizePayload({
             ...donationData,
             id,
             donorId: finalDonorId || null,
+            donorName: donorName,
+            donorPhone: donorPhone,
+            receiverName: donationData.receiverName || '',
+            amount: Number(donationData.amount) || 0,
+            donationDate: donationData.donationDate || new Date().toISOString().split('T')[0],
+            donationType: donationData.donationType || 'Other',
+            status: donationData.status || 'Pending',
+            typeSplit: donationData.typeSplit || [],
+            linkSplit: donationData.linkSplit || [],
             uploadedBy: uploadedBy.name,
             uploadedById: uploadedBy.id,
             updatedAt: FieldValue.serverTimestamp(),
             ...( !donationId && { createdAt: FieldValue.serverTimestamp() } ),
-        };
+        });
 
-        await docRef.set(finalDonationData, { merge: true });
+        await docRef.set(payload, { merge: true });
 
         // 3. Trigger Cross-Collection Financial Reconciliation
         if (donationData.linkSplit) {
@@ -225,12 +247,12 @@ export async function bulkImportDonationsAction(
             const docRef = record.id ? adminDb.collection('donations').doc(record.id) : adminDb.collection('donations').doc();
             const id = docRef.id;
             
-            const donationData = {
+            const donationData = sanitizePayload({
                 ...record,
                 id,
                 donorName: record.donorName || 'Anonymous Donor',
                 donorPhone: record.donorPhone || '',
-                amount: record.amount || 0,
+                amount: Number(record.amount) || 0,
                 donationDate: record.donationDate || new Date().toISOString().split('T')[0],
                 status: record.status || 'Verified',
                 donationType: record.donationType || 'Other',
@@ -239,7 +261,7 @@ export async function bulkImportDonationsAction(
                 createdAt: record.createdAt || FieldValue.serverTimestamp(),
                 updatedAt: FieldValue.serverTimestamp(),
                 donorId: record.donorId || null,
-            };
+            });
 
             if (initiativeContext) {
                 const currentLinks = (record.linkSplit || []) as any[];
@@ -249,7 +271,7 @@ export async function bulkImportDonationsAction(
                         linkId: initiativeContext.id,
                         linkName: initiativeContext.name,
                         linkType: initiativeContext.type,
-                        amount: record.amount || 0
+                        amount: Number(record.amount) || 0
                     });
                     (donationData as any).linkSplit = currentLinks;
                 }
@@ -377,8 +399,8 @@ export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success
             const data = d.data() as Donation;
             if (data.status !== 'Verified') return;
             (data.linkSplit || []).forEach((link: any) => {
-                if (link.linkType === 'campaign') campaignMap[link.linkId] = (campaignMap[link.linkId] || 0) + link.amount;
-                else if (link.linkType === 'lead') leadMap[link.linkId] = (leadMap[link.linkId] || 0) + link.amount;
+                if (link.linkType === 'campaign') campaignMap[link.linkId] = (campaignMap[link.linkId] || 0) + (Number(link.amount) || 0);
+                else if (link.linkType === 'lead') leadMap[link.linkId] = (leadMap[link.linkId] || 0) + (Number(link.amount) || 0);
             });
         });
 
@@ -393,5 +415,47 @@ export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success
         return { success: true, message: "Initiative financial totals re-synchronized." };
     } catch (error: any) {
         return { success: false, message: error.message };
+    }
+}
+
+export async function linkDonationToDonorAction(donationId: string, donorId: string, updatedBy: {id: string, name: string}): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    try {
+        await adminDb.collection('donations').doc(donationId).update({
+            donorId,
+            updatedAt: FieldValue.serverTimestamp()
+        });
+        revalidatePath('/donations');
+        return { success: true, message: 'Identity Resolution Finalized.' };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+
+export async function syncAllDonationsToDonorsAction(): Promise<{ success: boolean; message: string; count: number }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, count: 0 };
+    try {
+        const [donorsSnap, donationsSnap] = await Promise.all([
+            adminDb.collection('donors').get(),
+            adminDb.collection('donations').where('donorId', '==', null).get()
+        ]);
+        const donorPhoneMap = new Map(donorsSnap.docs.map(doc => [doc.data().phone, doc.id]));
+        const batch = adminDb.batch();
+        let count = 0;
+        donationsSnap.docs.forEach(doc => {
+            const data = doc.data();
+            const matchedId = donorPhoneMap.get(data.donorPhone);
+            if (matchedId) {
+                batch.update(doc.ref, { donorId: matchedId, updatedAt: FieldValue.serverTimestamp() });
+                count++;
+            }
+        });
+        if (count > 0) await batch.commit();
+        revalidatePath('/donations');
+        return { success: true, message: `Synchronized ${count} identities.`, count };
+    } catch (e: any) {
+        return { success: false, message: e.message, count: 0 };
     }
 }

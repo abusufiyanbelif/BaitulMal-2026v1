@@ -7,7 +7,7 @@
 
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { 
-    getFirestore,
+    getFirestore as getFirebaseFirestoreSDK,
     doc,
     collection,
     query,
@@ -37,7 +37,7 @@ import {
 } from 'firebase/auth';
 
 import { 
-    getStorage as getFirebaseStorage,
+    getStorage as getFirebaseStorageSDK,
     ref as storageRef,
     uploadBytes,
     getDownloadURL,
@@ -53,8 +53,8 @@ export function initializeFirebase() {
   return {
     firebaseApp: app,
     auth: getFirebaseAuth(app),
-    firestore: getFirestore(app),
-    storage: getFirebaseStorage(app),
+    firestore: getFirestoreInstance(app),
+    storage: getStorageInstance(app),
   };
 }
 
@@ -83,14 +83,15 @@ export {
     onAuthStateChanged,
     firebaseSignOut,
     getFirebaseAuth as getAuth,
-    getFirestore,
     storageRef,
     uploadBytes,
     getDownloadURL,
-    getFirebaseStorage as getStorage,
     deleteObject,
     uploadString
 };
+
+export { getFirebaseStorageSDK as getStorage };
+export { getFirebaseFirestoreSDK as getFirestore };
 
 export * from './provider';
 export * from './client-provider';
@@ -100,3 +101,12 @@ export * from './non-blocking-updates';
 export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';
+
+// Internal helpers for initialization to avoid naming collisions
+function getFirestoreInstance(app: any) {
+    return getFirebaseFirestoreSDK(app);
+}
+
+function getStorageInstance(app: any) {
+    return getFirebaseStorageSDK(app);
+}

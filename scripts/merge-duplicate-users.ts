@@ -2,6 +2,19 @@ import { getAdminServices } from '../src/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
 
 /**
+ * Sanitizes an object by removing all undefined values.
+ */
+function sanitizePayload(data: Record<string, any>) {
+    const sanitized: Record<string, any> = {};
+    Object.keys(data).forEach(key => {
+        if (data[key] !== undefined) {
+            sanitized[key] = data[key];
+        }
+    });
+    return sanitized;
+}
+
+/**
  * UNIFIED IDENTITY CONSOLIDATION SCRIPT
  * Consolidates fragmented profiles into a primary "Golden Record".
  * Atomic update of financial records, management logs, and authorship audit trails.
@@ -27,7 +40,7 @@ async function mergeDuplicateIdentities() {
             
             keys.forEach(key => {
                 if (!identityGroups[key]) identityGroups[key] = [];
-                if (!identityGroups[key].find(u => u.id === doc.id)) {
+                if (!identityGroups[key].find((u: any) => u.id === doc.id)) {
                     identityGroups[key].push({ id: doc.id, ...data });
                 }
             });
@@ -123,12 +136,12 @@ async function mergeDuplicateIdentities() {
             }
 
             // SAFE PAYLOAD GENERATOR (Prevents "undefined" crashes)
-            const finalUpdate: any = {
+            const finalUpdate = sanitizePayload({
                 permissions: mergedPermissions,
-                updatedAt: FieldValue.serverTimestamp()
-            };
-            if (primaryLinkedDonorId) finalUpdate.linkedDonorId = primaryLinkedDonorId;
-            if (primaryLinkedBeneficiaryId) finalUpdate.linkedBeneficiaryId = primaryLinkedBeneficiaryId;
+                updatedAt: FieldValue.serverTimestamp(),
+                linkedDonorId: primaryLinkedDonorId || null,
+                linkedBeneficiaryId: primaryLinkedBeneficiaryId || null
+            });
 
             batch.update(adminDb.collection('users').doc(primary.id), finalUpdate);
             await batch.commit();

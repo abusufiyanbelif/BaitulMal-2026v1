@@ -10,6 +10,20 @@ import { bulkRecalculateInitiativeTotalsAction } from '@/app/donations/actions';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually means the server is missing credentials. Please ensure your 'serviceAccountKey.json' is correctly placed in the project root or that Application Default Credentials are configured.";
 
+/**
+ * Sanitizes an object by removing all undefined values.
+ * Firestore .update() and .set() fail if any key is explicitly undefined.
+ */
+function sanitizePayload(data: Record<string, any>) {
+    const sanitized: Record<string, any> = {};
+    Object.keys(data).forEach(key => {
+        if (data[key] !== undefined) {
+            sanitized[key] = data[key];
+        }
+    });
+    return sanitized;
+}
+
 export async function createUserAuthAction(data: UserFormData): Promise<{ success: boolean; message: string; uid?: string; }> {
     const { adminAuth } = getAdminServices();
     if (!adminAuth) {
@@ -54,7 +68,6 @@ export async function deleteUserAction(uidToDelete: string): Promise<{ success: 
         const batch = adminDb.batch();
         batch.delete(userRef);
         
-        // UNLINK associated donations to keep contributions intact as "dummy" records
         const donationsSnap = await adminDb.collection('donations').where('donorId', '==', uidToDelete).get();
         donationsSnap.forEach(docSnap => {
             batch.update(docSnap.ref, { 
@@ -63,7 +76,6 @@ export async function deleteUserAction(uidToDelete: string): Promise<{ success: 
             });
         });
 
-        // Delete mirrored donor profile
         batch.delete(adminDb.collection('donors').doc(uidToDelete));
         
         if (userData?.loginId) batch.delete(adminDb.collection('user_lookups').doc(userData.loginId));
@@ -188,7 +200,7 @@ export async function mirrorIndividualUserToDonorAction(userId: string, adminUse
         
         const donorData: any = {
             id: userId,
-            name: user.name,
+            name: user.name || 'Unknown Member',
             phone: user.phone || '',
             email: user.email || '',
             status: user.status === 'Active' ? 'Active' : 'Inactive',
@@ -278,7 +290,7 @@ export async function consolidateIdentitiesAction(
                 const updatedSnap = await adminDb.collection(col).where('updatedById', '==', redundantUid).get();
                 updatedSnap.forEach(doc => {
                     batch.update(doc.ref, { 
-                        updatedById: primaryUid,
+                        updatedById: primaryUid, 
                         updatedByName: primaryData.name 
                     });
                 });
@@ -305,11 +317,14 @@ export async function consolidateIdentitiesAction(
         }
 
         // 6. Finalize Primary "Golden Record"
-        batch.update(primaryRef, {
+        const finalUpdate = sanitizePayload({
             permissions: mergedPermissions,
             updatedAt: FieldValue.serverTimestamp(),
-            linkedDonorId: primaryUid
+            linkedDonorId: primaryUid,
+            linkedBeneficiaryId: primaryData.linkedBeneficiaryId || null
         });
+
+        batch.update(primaryRef, finalUpdate);
 
         await batch.commit();
         

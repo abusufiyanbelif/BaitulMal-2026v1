@@ -1,10 +1,11 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // UNRESTRICTED ACCESS FOR TESTING & STABILIZATION PHASE
-    // As requested: all authenticated users have full read/write/modify/delete access.
+
+    // UNIVERSAL ACCESS FOR AUTHENTICATED USERS (TESTING PHASE)
     match /{document=**} {
       allow read, write: if request.auth != null;
     }
+
   }
 }

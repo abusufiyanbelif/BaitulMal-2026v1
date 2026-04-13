@@ -40,7 +40,7 @@ export function set(obj: any, path: string, value: any) {
 }
 
 export function getInitials(name: string | null | undefined): string {
-    if (!name) return 'U';
+    if (!name || name.trim().length === 0) return 'U';
     return name
       .trim()
       .split(/\s+/)
@@ -53,13 +53,14 @@ export function getInitials(name: string | null | undefined): string {
 /**
  * Formats A Number As Indian Rupee (INR) Currency.
  */
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: number | null | undefined): string {
+    const val = amount ?? 0;
     return new Intl.NumberFormat('en-IN', {
         style: 'currency',
         currency: 'INR',
         minimumFractionDigits: 0,
         maximumFractionDigits: 2,
-    }).format(amount);
+    }).format(val);
 }
 
 /**
