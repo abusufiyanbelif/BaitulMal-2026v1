@@ -26,8 +26,8 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { Switch } from '@/components/ui/switch';
 import { useToast } from '@/hooks/use-toast';
-import { useAuth, useFirestore, useMemoFirebase, useDoc, doc, sendPasswordResetEmail, serverTimestamp } from '@/firebase';
-import { createAdminPermissions, type UserPermissions, GROUPS, GROUP_IDS } from '@/lib/modules';
+import { useAuth, useFirestore, useMemoFirebase, useDoc, doc, sendPasswordResetEmail } from '@/firebase';
+import { createAdminPermissions, type UserPermissions, GROUPS } from '@/lib/modules';
 import type { UserProfile } from '@/lib/types';
 import { userFormSchema, type UserFormData } from '@/lib/schemas';
 import { Loader2, Send, Replace, Trash2, FileIcon, ScanLine, Save, X } from 'lucide-react';
@@ -37,7 +37,6 @@ import { useSession as useCurrentUserSession } from '@/hooks/use-session';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { writeBatch } from 'firebase/firestore';
 
 interface UserFormProps {
   user?: UserProfile | null;

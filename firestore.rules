@@ -2,9 +2,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     match /{document=**} {
-      // Wide open for authenticated users during testing phase
-      // Identity logic is handled at the UI layer
-      allow read, write: if request.auth != null;
+      allow read, write: if true;
     }
   }
 }

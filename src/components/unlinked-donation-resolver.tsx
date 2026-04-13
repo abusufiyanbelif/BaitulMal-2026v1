@@ -194,7 +194,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                                 ) : unlinkedDonations.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center py-20 text-center opacity-30">
                                         <CheckCircle2 className="h-10 w-10 mb-2"/>
-                                        <p className="text-xs font-bold capitalize tracking-widest">All Records Linked</p>
+                                        <p className="text-sm font-bold capitalize tracking-widest">All Records Linked</p>
                                     </div>
                                 ) : (
                                     paginatedDonations.map(d => (
