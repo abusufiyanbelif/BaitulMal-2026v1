@@ -1,4 +1,3 @@
-
 'use client';
 
 import { createContext, useMemo as useReactMemo, ReactNode } from 'react';
@@ -32,20 +31,22 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
   const profileWithDefaults = useReactMemo(() => {
     if (!authUser) return null;
 
-    // EMERGENCY ADMIN BYPASS IDENTITIES
+    // EMERGENCY ADMIN BYPASS IDENTITIES (INCLUDING CLUSTERED ACCOUNTS)
     const isAdminIdentity = 
         authUser.email === 'abusufiyan.belif@gmail.com' || 
         authUser.email === 'baitulmalss.solapur@gmail.com' || 
         authUser.email === 'admin@example.com' || 
         authUser.uid === 'cyMl1lQME0Yur1YS3VCms1AvrOJ2' ||
         authUser.uid === 'S5efNV5jpTPoxYNv6SnAlv3jNPO2' ||
+        authUser.phoneNumber === '+919270946423' ||
+        authUser.phoneNumber === '+917887646583' ||
         userProfile?.role === 'Admin';
 
     if (!userProfile) {
         if (isAdminIdentity) {
             return {
                 id: authUser.uid,
-                name: authUser.displayName || 'System Admin',
+                name: authUser.displayName || 'System Administrator',
                 email: authUser.email || '',
                 loginId: 'admin',
                 userKey: 'super_admin_bypass',

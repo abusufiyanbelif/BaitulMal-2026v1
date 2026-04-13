@@ -1,14 +1,13 @@
-
 import { getAdminServices } from '../src/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
 
 /**
- * UNIFIED IDENTITY CONSOLIDATION SCRIPT (FIXED)
+ * UNIFIED IDENTITY CONSOLIDATION SCRIPT (STABILIZED)
  * 
  * Fixes:
- * 1. Resolves "undefined" value error in batch.update.
- * 2. Uses FieldValue.delete() for cleaning up stale data.
- * 3. Handles multi-factor matching by Phone AND Email.
+ * 1. Sanitizes update payload to prevent "undefined value" Firestore errors.
+ * 2. Implements deep sync for institutional audit trails.
+ * 3. Handles cross-collection data re-attribution.
  */
 async function mergeDuplicateIdentities() {
     console.log('🔍 Starting Deep Identity Scan & Integration...');
@@ -17,7 +16,6 @@ async function mergeDuplicateIdentities() {
 
     try {
         const usersSnap = await adminDb.collection('users').get();
-        const donorsSnap = await adminDb.collection('donors').get();
         const donationsSnap = await adminDb.collection('donations').get();
 
         const identityGroups: Record<string, any[]> = {};
@@ -83,12 +81,25 @@ async function mergeDuplicateIdentities() {
                     batch.update(d.ref, { 
                         donorId: primary.id,
                         updatedAt: FieldValue.serverTimestamp(),
-                        notes: (d.data().notes || '') + ` (Automated identity merge)`
+                        notes: (d.data().notes || '') + ` (Automated identity merge into ${primary.id})`
                     });
                     recordsProcessed++;
                 });
 
-                // 4. Move Master Donor Data
+                // 4. Update Audit Trails in all modules
+                const modules = ['campaigns', 'leads', 'beneficiaries', 'donations'];
+                for (const col of modules) {
+                    const createdSnap = await adminDb.collection(col).where('createdById', '==', redundant.id).get();
+                    createdSnap.forEach(doc => {
+                        batch.update(doc.ref, { createdById: primary.id, createdByName: primary.name });
+                    });
+                    const updatedSnap = await adminDb.collection(col).where('updatedById', '==', redundant.id).get();
+                    updatedSnap.forEach(doc => {
+                        batch.update(doc.ref, { updatedById: primary.id, updatedByName: primary.name });
+                    });
+                }
+
+                // 5. Move Master Donor Data
                 const oldDonorRef = adminDb.collection('donors').doc(redundant.id);
                 const primaryDonorRef = adminDb.collection('donors').doc(primary.id);
                 const oldDonorSnap = await oldDonorRef.get();
@@ -102,17 +113,15 @@ async function mergeDuplicateIdentities() {
                     batch.delete(oldDonorRef);
                 }
 
-                // 5. Purge Redundant User record
+                // 6. Purge Redundant records
                 batch.delete(adminDb.collection('users').doc(redundant.id));
-                
-                // 6. Cleanup lookups
                 if (redundant.loginId) batch.delete(adminDb.collection('user_lookups').doc(redundant.loginId));
                 if (redundant.phone) batch.delete(adminDb.collection('user_lookups').doc(redundant.phone));
                 
                 mergedCount++;
             }
 
-            // SAFE UPDATE PAYLOAD (Prevents undefined errors)
+            // SAFE PAYLOAD GENERATOR (Prevents "undefined" crashes)
             const finalUpdate: any = {
                 permissions: mergedPermissions,
                 updatedAt: FieldValue.serverTimestamp()
@@ -122,7 +131,6 @@ async function mergeDuplicateIdentities() {
             if (primaryLinkedBeneficiaryId) finalUpdate.linkedBeneficiaryId = primaryLinkedBeneficiaryId;
 
             batch.update(adminDb.collection('users').doc(primary.id), finalUpdate);
-
             await batch.commit();
         }
 

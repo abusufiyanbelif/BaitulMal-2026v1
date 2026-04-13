@@ -1,12 +1,12 @@
-
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { revalidatePath } from 'next/cache';
 import type { UserFormData } from '@/lib/schemas';
-import type { UserProfile, Donor } from '@/lib/types';
-import { GROUP_IDS } from '@/lib/modules';
-import { FieldValue } from 'firebase-admin/firestore';
+import type { UserProfile, Donor, UserPermissions } from '@/lib/types';
+import { GROUP_IDS, createAdminPermissions } from '@/lib/modules';
+import { FieldValue, Timestamp } from 'firebase-admin/firestore';
+import { bulkRecalculateInitiativeTotalsAction } from '@/app/donations/actions';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually means the server is missing credentials. Please ensure your 'serviceAccountKey.json' is correctly placed in the project root or that Application Default Credentials are configured.";
 
@@ -216,8 +216,9 @@ export async function mirrorIndividualUserToDonorAction(userId: string, adminUse
 }
 
 /**
- * Interactive Identity Consolidation Action.
- * Merges multiple user UIDs into a single primary record.
+ * DEEP CONSOLIDATION ACTION
+ * Merges multiple identities into a primary "Golden Record".
+ * Re-assigns financial records and updates audit trails across the system.
  */
 export async function consolidateIdentitiesAction(
     primaryUid: string, 
@@ -228,7 +229,6 @@ export async function consolidateIdentitiesAction(
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        const batch = adminDb.batch();
         const primaryRef = adminDb.collection('users').doc(primaryUid);
         const primarySnap = await primaryRef.get();
         if (!primarySnap.exists) throw new Error("Primary identity not found.");
@@ -236,6 +236,8 @@ export async function consolidateIdentitiesAction(
         const primaryData = primarySnap.data() as UserProfile;
         const mergedPermissions = { ...(primaryData.permissions || {}) };
         
+        const batch = adminDb.batch();
+
         for (const redundantUid of redundantUids) {
             const redundantRef = adminDb.collection('users').doc(redundantUid);
             const redundantSnap = await redundantRef.get();
@@ -246,40 +248,82 @@ export async function consolidateIdentitiesAction(
             // 1. Merge Permissions
             if (rData.permissions) {
                 Object.keys(rData.permissions).forEach(mod => {
-                    if (!mergedPermissions[mod as keyof UserPermissions]) mergedPermissions[mod as keyof UserPermissions] = {};
-                    Object.assign(mergedPermissions[mod as keyof UserPermissions], rData.permissions[mod as keyof UserPermissions]);
+                    const typedMod = mod as keyof UserPermissions;
+                    if (!mergedPermissions[typedMod]) mergedPermissions[typedMod] = {};
+                    Object.assign(mergedPermissions[typedMod] as any, rData.permissions[typedMod] as any);
                 });
             }
 
-            // 2. Re-assign all donations pointing to redundant UID
+            // 2. Re-assign all DONATIONS pointing to redundant UID
             const donationsSnap = await adminDb.collection('donations').where('donorId', '==', redundantUid).get();
             donationsSnap.forEach(d => {
                 batch.update(d.ref, { 
                     donorId: primaryUid,
                     updatedAt: FieldValue.serverTimestamp(),
-                    notes: (d.data().notes || '') + ` (Profile consolidated into ${primaryUid})`
+                    notes: (d.data().notes || '') + ` (Unified into identity ${primaryUid})`
                 });
             });
 
-            // 3. Delete redundant user and its lookups
+            // 3. Update Audit Trails (Everything created/updated by this redundant UID)
+            const collectionsToUpdate = ['campaigns', 'leads', 'beneficiaries', 'donations'];
+            for (const col of collectionsToUpdate) {
+                const createdSnap = await adminDb.collection(col).where('createdById', '==', redundantUid).get();
+                createdSnap.forEach(doc => {
+                    batch.update(doc.ref, { 
+                        createdById: primaryUid,
+                        createdByName: primaryData.name 
+                    });
+                });
+
+                const updatedSnap = await adminDb.collection(col).where('updatedById', '==', redundantUid).get();
+                updatedSnap.forEach(doc => {
+                    batch.update(doc.ref, { 
+                        updatedById: primaryUid,
+                        updatedByName: primaryData.name 
+                    });
+                });
+            }
+
+            // 4. Move Master Donor Data if exists
+            const oldDonorRef = adminDb.collection('donors').doc(redundantUid);
+            const primaryDonorRef = adminDb.collection('donors').doc(primaryUid);
+            const oldDonorSnap = await oldDonorRef.get();
+            if (oldDonorSnap.exists) {
+                batch.set(primaryDonorRef, {
+                    ...oldDonorSnap.data(),
+                    id: primaryUid,
+                    updatedAt: FieldValue.serverTimestamp()
+                }, { merge: true });
+                batch.delete(oldDonorRef);
+            }
+
+            // 5. Delete redundant user and its lookups
             batch.delete(redundantRef);
             if (rData.loginId) batch.delete(adminDb.collection('user_lookups').doc(rData.loginId));
             if (rData.phone) batch.delete(adminDb.collection('user_lookups').doc(rData.phone));
             if (rData.userKey) batch.delete(adminDb.collection('user_lookups').doc(rData.userKey));
         }
 
-        // 4. Finalize Primary
+        // 6. Finalize Primary "Golden Record"
         batch.update(primaryRef, {
             permissions: mergedPermissions,
-            updatedAt: FieldValue.serverTimestamp()
+            updatedAt: FieldValue.serverTimestamp(),
+            linkedDonorId: primaryUid
         });
 
         await batch.commit();
+        
+        // Final reconciliation of totals
+        await bulkRecalculateInitiativeTotalsAction();
+
         revalidatePath('/users');
         revalidatePath('/donations');
-        return { success: true, message: `Unified ${redundantUids.length + 1} records into primary ID: ${primaryUid}` };
+        revalidatePath('/donors');
+        revalidatePath('/dashboard');
+        
+        return { success: true, message: `Successfully unified ${redundantUids.length + 1} records into identity: ${primaryData.name}` };
     } catch (error: any) {
-        console.error("Consolidation Failed:", error);
-        return { success: false, message: error.message };
+        console.error("Deep Consolidation Failed:", error);
+        return { success: false, message: `Reconciliation Error: ${error.message}` };
     }
 }
