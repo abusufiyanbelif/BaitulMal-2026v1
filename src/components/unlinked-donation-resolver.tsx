@@ -168,6 +168,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
         } else {
             toast({ title: 'Creation Failed', description: res.message, variant: 'destructive' });
         }
+        break;
         setIsResolving(null);
     };
 

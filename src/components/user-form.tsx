@@ -32,7 +32,7 @@ import type { UserProfile } from '@/lib/types';
 import { userFormSchema, type UserFormData } from '@/lib/schemas';
 import { Loader2, Send, Replace, Trash2, FileIcon, ScanLine, Save, X } from 'lucide-react';
 import { PermissionsTable } from './permissions-table';
-import { set } from '@/lib/utils';
+import { set, getInitials } from '@/lib/utils';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
@@ -261,13 +261,13 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <TabsTrigger value="permissions" className="font-bold data-[state=active]:shadow-sm">Permissions</TabsTrigger>
                             </TabsList>
                             <TabsContent value="profile" className="mt-6 space-y-6 animate-fade-in-up">
-                                <FormField control={control as any} name="name" render={({ field }) => (<FormItem>{renderLabel('Full Name', 'name')}<FormControl><Input placeholder="e.g. Moosa Shaikh" {...field} value={field.value ?? ''} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
-                                <FormField control={control as any} name="email" render={({ field }) => (<FormItem>{renderLabel('Email Address', 'email')}<FormControl><Input type="email" placeholder="user@example.com" {...field} value={field.value ?? ''} disabled={isFormDisabled || (isEditing && !isCurrentUserAdmin)} className="font-normal" /></FormControl><FormDescription className="font-normal text-xs opacity-70">Primary Institutional Contact And Authentication Identity.</FormDescription><FormMessage /></FormItem>)}/>
+                                <FormField control={control as any} name="name" render={({ field }) => (<FormItem>{renderLabel('Full Name', 'name')}<FormControl><Input placeholder="e.g. Moosa Shaikh" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
+                                <FormField control={control as any} name="email" render={({ field }) => (<FormItem>{renderLabel('Email Address', 'email')}<FormControl><Input type="email" placeholder="user@example.com" {...field} value={field.value || ''} disabled={isFormDisabled || (isEditing && !isCurrentUserAdmin)} className="font-normal" /></FormControl><FormDescription className="font-normal text-xs opacity-70">Primary Institutional Contact And Authentication Identity.</FormDescription><FormMessage /></FormItem>)}/>
                                  <FormField control={control as any} name="phone" render={({ field }) => (
                                      <FormItem>
                                          {renderLabel('Phone Number', 'phone')}
                                          <div className="flex gap-2">
-                                             <FormControl><Input placeholder="10-Digit Mobile Number" {...field} value={field.value ?? ''} disabled={isFormDisabled} className="font-normal flex-1" /></FormControl>
+                                             <FormControl><Input placeholder="10-Digit Mobile Number" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal flex-1" /></FormControl>
                                              {field.value && (
                                                  <Button 
                                                      type="button" 
@@ -286,11 +286,11 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                      </FormItem>
                                  )}/>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <FormField control={control as any} name="loginId" render={({ field }) => (<FormItem>{renderLabel('Login ID', 'loginId')}<FormControl><Input placeholder="Auto-generated from name" {...field} value={field.value ?? ''} disabled={isFormDisabled || (!isCurrentUserAdmin && isEditing)} className="font-normal" /></FormControl><FormDescription className="font-normal text-xs opacity-70">Unique Identifier For Account Access.</FormDescription><FormMessage /></FormItem>)}/>
+                                    <FormField control={control as any} name="loginId" render={({ field }) => (<FormItem>{renderLabel('Login ID', 'loginId')}<FormControl><Input placeholder="Auto-generated from name" {...field} value={field.value || ''} disabled={isFormDisabled || (!isCurrentUserAdmin && isEditing)} className="font-normal" /></FormControl><FormDescription className="font-normal text-xs opacity-70">Unique Identifier For Account Access.</FormDescription><FormMessage /></FormItem>)}/>
                                     <FormField control={control as any} name="userKey" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="font-bold text-primary opacity-60">System ID (User Key)</FormLabel>
-                                            <FormControl><Input placeholder="System-Generated" {...field} value={field.value ?? ''} readOnly disabled={true} className="bg-muted/30 font-mono opacity-60 font-normal" /></FormControl>
+                                            <FormControl><Input placeholder="System-Generated" {...field} value={field.value || ''} readOnly disabled={true} className="bg-muted/30 font-mono opacity-60 font-normal" /></FormControl>
                                         </FormItem>
                                     )}/>
                                 </div>
@@ -304,7 +304,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                         <FormDescription className="font-normal text-xs opacity-70 italic">Administrators Cannot Set Passwords Directly. Dispatch A Secure Reset Link To The Member's Email.</FormDescription>
                                     </div>
                                 ) : (
-                                    <FormField control={control as any} name="password" render={({ field }) => (<FormItem><FormLabel className="font-bold text-primary">Initial Password *</FormLabel><FormControl><Input type="password" placeholder="Minimum 6 Characters" {...field} value={field.value ?? ''} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
+                                    <FormField control={control as any} name="password" render={({ field }) => (<FormItem><FormLabel className="font-bold text-primary">Initial Password *</FormLabel><FormControl><Input type="password" placeholder="Minimum 6 Characters" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
                                 )}
                                 
                                 <Separator className="bg-primary/10" />
@@ -312,8 +312,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <div className="space-y-4 rounded-xl border border-primary/5 p-4 bg-primary/[0.02]">
                                     <h3 className="text-sm font-bold text-primary capitalize tracking-widest">Identification Evidence</h3>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <FormField control={control as any} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('ID Proof Type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} value={field.value ?? ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
-                                        <FormField control={control as any} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('ID Number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} value={field.value ?? ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                        <FormField control={control as any} name="idProofType" render={({ field }) => (<FormItem>{renderLabel('ID Proof Type', 'idProofType')}<FormControl><Input placeholder="Aadhaar, PAN, etc." {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                        <FormField control={control as any} name="idNumber" render={({ field }) => (<FormItem>{renderLabel('ID Number', 'idNumber')}<FormControl><Input placeholder="e.g. XXXX XXXX 1234" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                                     </div>
                                     <FormItem>
                                         {renderLabel('ID Proof Document', 'idProofFile')}
@@ -334,7 +334,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <FormField control={control as any} name="status" render={({ field }) => (
                                     <FormItem>
                                         {renderLabel('Account Status', 'status')}
-                                        <Select onValueChange={field.onChange} value={field.value} disabled={isFormDisabled}>
+                                        <Select onValueChange={field.onChange} value={field.value || ''} disabled={isFormDisabled}>
                                             <FormControl><SelectTrigger className="font-normal"><SelectValue/></SelectTrigger></FormControl>
                                             <SelectContent className="rounded-[12px] shadow-dropdown">
                                                 <SelectItem value="Active" className="font-normal text-primary">Active</SelectItem>
@@ -349,7 +349,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <FormField control={control as any} name="role" render={({ field }: any) => (
                                     <FormItem>
                                         {renderLabel('Access Role', 'role')}
-                                        <Select onValueChange={field.onChange} value={field.value} disabled={isFormDisabled}>
+                                        <Select onValueChange={field.onChange} value={field.value || ''} disabled={isFormDisabled}>
                                             <FormControl><SelectTrigger className="font-normal"><SelectValue/></SelectTrigger></FormControl>
                                             <SelectContent className="rounded-[12px] shadow-dropdown">
                                                 <SelectItem value="Admin" className="font-bold text-red-600">Admin (Superuser)</SelectItem>

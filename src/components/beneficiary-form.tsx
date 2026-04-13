@@ -345,7 +345,7 @@ export function BeneficiaryForm({
                                     <FormField control={control} name="status" render={({ field }) => (
                                         <FormItem>
                                             {renderLabel(isMasterForm ? 'Verification Status' : 'Disbursement Status', 'status')}
-                                            <Select onValueChange={field.onChange} value={field.value} disabled={formIsDisabled}>
+                                            <Select onValueChange={field.onChange} value={field.value || ''} disabled={formIsDisabled}>
                                                 <FormControl><SelectTrigger className="font-normal"><SelectValue/></SelectTrigger></FormControl>
                                                 <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                                     <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
@@ -355,7 +355,7 @@ export function BeneficiaryForm({
                                                     <SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem>
                                                 </SelectContent>
                                             </Select>
-                                            <FormMessage/Item>
+                                            <FormMessage />
                                         </FormItem>
                                     )}/>
                                 </div>
