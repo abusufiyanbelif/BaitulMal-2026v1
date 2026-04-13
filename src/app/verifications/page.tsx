@@ -57,14 +57,12 @@ export default function VerificationsPage() {
         
         const baseCol = collection(firestore, 'pending_verifications');
         
-        // SECURITY COMPLIANT QUERY:
-        // Use an explicit role check to decide whether to run a global or filtered query.
-        // This ensures the request always matches the Firestore Security Rules.
+        // With unrestricted Firestore rules (if true), we can simplify the query
+        // but we still apply the filter for Members to ensure they see relevant tasks.
         if (userProfile.role === 'Admin') {
             return query(baseCol, orderBy('createdAt', 'desc'));
         }
 
-        // Member: Strictly filter by assigned tasks only.
         return query(
             baseCol, 
             where('assignedVerifierIds', 'array-contains', userProfile.id),
