@@ -1,3 +1,4 @@
+
 {
   "name": "docuextract",
   "version": "0.1.0",
@@ -9,6 +10,7 @@
     "lint": "next lint",
     "db:seed": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" scripts/seed.ts",
     "db:erase": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" scripts/erase-data.ts",
+    "db:merge-duplicates": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" scripts/merge-duplicate-users.ts",
     "db:migrate-donations": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" scripts/migrate-donations.ts",
     "db:migrate-beneficiaries": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" scripts/migrate-beneficiaries.ts",
     "db:migrate-zakat": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" scripts/migrate-zakat.ts",

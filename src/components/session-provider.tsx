@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useMemo as useReactMemo, ReactNode } from 'react';
@@ -29,24 +30,23 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
   const profileWithDefaults = useReactMemo(() => {
     if (!authUser) return null;
 
-    // 1. Check for specific administrative identities (Email, Phone, or UIDs)
+    // 1. Unified Admin Check
     const isAdminIdentity = 
         authUser.email === 'abusufiyan.belif@gmail.com' || 
         authUser.email === 'baitulmalss.solapur@gmail.com' || 
         authUser.email === 'admin@example.com' || 
         authUser.uid === 'cyMl1lQME0Yur1YS3VCms1AvrOJ2' ||
         authUser.uid === 'S5efNV5jpTPoxYNv6SnAlv3jNPO2' ||
-        userProfile?.loginId === 'admin' || 
-        userProfile?.loginId === 'abusufiyan.belif';
+        userProfile?.loginId === 'abusufiyan.belif' ||
+        userProfile?.role === 'Admin';
 
-    // 2. If profile is missing but it's a known admin identity, provide a synthetic superuser profile
     if (!userProfile) {
         if (isAdminIdentity) {
             return {
                 id: authUser.uid,
                 name: authUser.displayName || 'System Admin',
                 email: authUser.email || '',
-                loginId: authUser.email?.split('@')[0] || 'admin',
+                loginId: 'admin',
                 userKey: 'super_admin_bypass',
                 role: 'Admin',
                 status: 'Active',
@@ -56,7 +56,7 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
         return null;
     }
     
-    // 3. If profile exists, ensure admin identities always have Admin role and full permissions
+    // 2. Return unified profile with highest privilege
     return {
         ...userProfile,
         role: isAdminIdentity ? 'Admin' : (userProfile.role || 'User'),
