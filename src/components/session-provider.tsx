@@ -27,19 +27,22 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
   const isLoading = isAuthenticating || (!!authUser && isProfileLoading);
   
   const profileWithDefaults = useReactMemo(() => {
+    if (!authUser) return null;
+
     // 1. Check for specific administrative identities (Email or known Login IDs)
     const isAdminIdentity = 
-        authUser?.email === 'abusufiyan.belif@gmail.com' || 
-        authUser?.email === 'admin@example.com' || 
+        authUser.email === 'abusufiyan.belif@gmail.com' || 
+        authUser.email === 'baitulmalss.solapur@gmail.com' || 
+        authUser.email === 'admin@example.com' || 
         userProfile?.loginId === 'admin' || 
         userProfile?.loginId === 'abusufiyan.belif';
 
     // 2. If profile is missing but it's a known admin identity, provide a synthetic superuser profile
     if (!userProfile) {
-        if (isAdminIdentity && authUser) {
+        if (isAdminIdentity) {
             return {
                 id: authUser.uid,
-                name: authUser.displayName || 'Super Administrator',
+                name: authUser.displayName || 'System Admin',
                 email: authUser.email || '',
                 loginId: authUser.email?.split('@')[0] || 'admin',
                 userKey: 'super_admin_bypass',
@@ -56,7 +59,7 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
         ...userProfile,
         role: isAdminIdentity ? 'Admin' : (userProfile.role || 'User'),
         permissions: isAdminIdentity ? createAdminPermissions() : (userProfile.permissions || {}),
-    };
+    } as UserProfile;
   }, [userProfile, authUser]);
 
   const contextValue = useReactMemo(() => ({

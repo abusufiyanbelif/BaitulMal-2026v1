@@ -1,9 +1,9 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Unrestricted access for prototype development as requested.
-    // UI-level role checks in the application will govern visible features.
     match /{document=**} {
+      // UNRESTRICTED ACCESS: As requested, allowing all operations for prototype testing.
+      // Access control is managed at the UI/Application layer.
       allow read, write: if true;
     }
   }
