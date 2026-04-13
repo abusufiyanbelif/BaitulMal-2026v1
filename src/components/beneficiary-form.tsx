@@ -340,12 +340,12 @@ export function BeneficiaryForm({
                                     {idProofFile?.length > 0 && !isReadOnly && (<Button type="button" className="w-full mt-2 font-bold shadow-md transition-transform active:scale-95" onClick={handleScanIdProof} disabled={isScanning || formIsDisabled}>{isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />} Scan & Autofill Details</Button>)}
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <FormField control={control} name="referralBy" render={({ field }) => (<FormItem>{renderLabel('Referred By', 'referralBy')}<FormControl><Input placeholder="e.g. Local Volunteer" {...field} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage/></FormItem>)}/>
-                                    {!hideKitAmount && (<FormField control={control} name="kitAmount" render={({ field }) => (<FormItem>{renderLabel(kitAmountLabel, 'kitAmount')}<FormControl><Input type="number" placeholder="0.00" {...field} disabled={formIsDisabled} className="bg-muted/30 font-normal" /></FormControl><FormMessage /></FormItem>)}/>)}
+                                    <FormField control={control} name="referralBy" render={({ field }) => (<FormItem>{renderLabel('Referred By', 'referralBy')}<FormControl><Input placeholder="e.g. Local Volunteer" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage/></FormItem>)}/>
+                                    {!hideKitAmount && (<FormField control={control} name="kitAmount" render={({ field }) => (<FormItem>{renderLabel(kitAmountLabel, 'kitAmount')}<FormControl><Input type="number" placeholder="0.00" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="bg-muted/30 font-normal" /></FormControl><FormMessage /></FormItem>)}/>)}
                                     <FormField control={control} name="status" render={({ field }) => (
                                         <FormItem>
                                             {renderLabel(isMasterForm ? 'Verification Status' : 'Disbursement Status', 'status')}
-                                            <Select onValueChange={field.onChange} value={field.value || ''} disabled={formIsDisabled}>
+                                            <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={formIsDisabled}>
                                                 <FormControl><SelectTrigger className="font-normal"><SelectValue/></SelectTrigger></FormControl>
                                                 <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
                                                     <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
@@ -380,7 +380,7 @@ export function BeneficiaryForm({
                             <Separator />
                             <div className="space-y-4 pb-10">
                                 <h3 className="text-lg font-bold text-primary tracking-tight">Institutional Notes</h3>
-                                <FormField control={control} name="notes" render={({ field }) => (<FormItem>{renderLabel('Internal Notes', 'notes')}<FormControl><Textarea placeholder="Vetting Details, Background Checks, Etc." {...field} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                <FormField control={control} name="notes" render={({ field }) => (<FormItem>{renderLabel('Internal Notes', 'notes')}<FormControl><Textarea placeholder="Vetting Details, Background Checks, Etc." {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                             </div>
                         </div>
                         <ScrollBar orientation="vertical" />

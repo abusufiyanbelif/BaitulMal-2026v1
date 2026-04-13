@@ -5,7 +5,7 @@
  * Re-engineered to prevent circular dependencies by exporting core functions first.
  */
 
-// 1. Explicitly export all core Firestore SDK functions first
+// 1. Explicitly export all core Firestore SDK functions
 export {
     doc,
     collection,

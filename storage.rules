@@ -1,52 +1,9 @@
 rules_version = '2';
-service firebase.storage {
+service border.storage {
   match /b/{bucket}/o {
-    function isAdmin() {
-      return request.auth != null && 
-             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin';
-    }
-    
-    function hasPermission(module, p) {
-      return request.auth != null && 
-             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.permissions[module][p] == true;
-    }
-
-    // Settings (Logo, QR Codes)
-    match /settings/{allPaths=**} {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    // User Artifacts
-    match /users/{userId}/{allPaths=**} {
-      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin() || hasPermission('users', 'read'));
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-
-    // Campaign Evidence
-    match /campaigns/{campaignId}/{allPaths=**} {
-      allow read: if firestore.get(/databases/(default)/documents/campaigns/$(campaignId)).data.publicVisibility == 'Published' ||
-                  (request.auth != null && (isAdmin() || hasPermission('campaigns', 'read')));
-      allow write: if isAdmin() || hasPermission('campaigns', 'update');
-    }
-
-    // Lead Evidence
-    match /leads/{leadId}/{allPaths=**} {
-      allow read: if firestore.get(/databases/(default)/documents/leads/$(leadId)).data.publicVisibility == 'Published' ||
-                  (request.auth != null && (isAdmin() || hasPermission('leads-members', 'read')));
-      allow write: if isAdmin() || hasPermission('leads-members', 'update');
-    }
-
-    // Beneficiary ID Proofs
-    match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-      allow read: if request.auth != null && (isAdmin() || hasPermission('beneficiaries', 'read'));
-      allow write: if request.auth != null;
-    }
-
-    // Donation Screenshots
-    match /donations/{donationId}/{allPaths=**} {
-      allow read: if request.auth != null && (isAdmin() || hasPermission('donations', 'read'));
-      allow write: if request.auth != null;
+    match /{allPaths=**} {
+      // UNRESTRICTED ACCESS FOR PROTOTYPE TESTING
+      allow read, write: if true;
     }
   }
 }
