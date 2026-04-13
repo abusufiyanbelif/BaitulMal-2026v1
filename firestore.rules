@@ -1,8 +1,93 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
+    
+    // Helper: Is the user a global Admin?
+    function isAdmin() {
+      return request.auth != null && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "Admin" ||
+         request.auth.token.email == "baitulmalss.solapur@gmail.com" ||
+         request.auth.token.email == "abusufiyan.belif@gmail.com" ||
+         request.auth.token.email == "admin@example.com");
+    }
+
+    // Helper: Does the user have a specific module permission?
+    function hasPermission(module, action) {
+      let user = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return isAdmin() || (request.auth != null && user.permissions[module][action] == true);
+    }
+
+    // Helper: Is the user the owner of the record? (For Donors/Beneficiaries)
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    // 1. Users Collection
+    match /users/{userId} {
+      allow read: if isAdmin() || isOwner(userId);
+      allow write: if isAdmin() || isOwner(userId);
+    }
+
+    // 2. Donations Collection
+    match /donations/{donationId} {
+      allow read: if isAdmin() || hasPermission('donations', 'read') || 
+                    (request.auth != null && resource.data.donorId == request.auth.uid);
+      allow write: if isAdmin() || hasPermission('donations', 'create') || hasPermission('donations', 'update');
+    }
+
+    // 3. Campaigns & Leads
+    match /campaigns/{id} {
+      allow read: if true; // Public can see campaigns
+      allow write: if isAdmin() || hasPermission('campaigns', 'update');
+      
+      match /beneficiaries/{benId} {
+        allow read: if isAdmin() || hasPermission('campaigns', 'read');
+        allow write: if isAdmin() || hasPermission('campaigns', 'update');
+      }
+    }
+
+    match /leads/{id} {
+      allow read: if true;
+      allow write: if isAdmin() || hasPermission('leads-members', 'update');
+      
+      match /beneficiaries/{benId} {
+        allow read: if isAdmin() || hasPermission('leads-members', 'read');
+        allow write: if isAdmin() || hasPermission('leads-members', 'update');
+      }
+    }
+
+    // 4. Beneficiaries Master Registry
+    match /beneficiaries/{benId} {
+      allow read: if isAdmin() || hasPermission('beneficiaries', 'read') || isOwner(benId);
+      allow write: if isAdmin() || hasPermission('beneficiaries', 'update');
+    }
+
+    // 5. Donors Registry
+    match /donors/{donorId} {
+      allow read: if isAdmin() || hasPermission('donors', 'read') || isOwner(donorId);
+      allow write: if isAdmin() || hasPermission('donors', 'update');
+    }
+
+    // 6. Verification Pipeline
+    match /pending_verifications/{docId} {
+      allow read: if isAdmin() || (request.auth != null && request.auth.uid in resource.data.assignedVerifierIds);
+      allow write: if request.auth != null; // Requests can be created by members
+    }
+
+    // 7. Settings (Publicly readable branding/payment)
+    match /settings/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // 8. Public Analytics
+    match /page_hits/{docId} {
       allow read, write: if true;
+    }
+    
+    // Global fallback for testing (Authenticated users can read/write most things if not strictly matched above)
+    match /{document=**} {
+      allow read, write: if request.auth != null;
     }
   }
 }

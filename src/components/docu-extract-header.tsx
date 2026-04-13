@@ -1,6 +1,6 @@
 'use client';
 
-import { LogOut, User, LogIn, Settings, LayoutDashboard, Heart, HandHelping } from 'lucide-react';
+import { LogOut, User, LogIn, Settings, LayoutDashboard, Heart, HandHelping, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/firebase';
@@ -32,7 +32,6 @@ export function DocuExtractHeader() {
 
   const handleLogout = async () => {
     if (auth) {
-      await session.forceRefetch();
       await signOut(auth);
       router.push('/login');
     }
@@ -43,7 +42,7 @@ export function DocuExtractHeader() {
   const userProfile = session.userProfile;
   
   const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
-  const homeHref = user ? '/dashboard' : '/';
+  const homeHref = user ? (session.isStaff ? '/dashboard' : '/donor-portal') : '/';
   
   return (
     <header className="bg-background/95 backdrop-blur-md border-b border-border sticky top-0 z-50 w-full py-4 flex items-center transition-all duration-500 shadow-sm">
@@ -81,7 +80,7 @@ export function DocuExtractHeader() {
                 <Skeleton className="h-10 w-10 rounded-full" />
             ) : user && userProfile ? (
               <div className="flex items-center gap-1 sm:gap-2">
-                <NotificationBell />
+                {session.isStaff && <NotificationBell />}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" className="relative h-10 w-10 rounded-full border-2 border-primary/10 p-0 transition-all hover:border-primary active:scale-95 shadow-sm">
@@ -105,13 +104,19 @@ export function DocuExtractHeader() {
                         <p className="text-[10px] font-normal text-muted-foreground pt-1 truncate tracking-tight">
                           {user.email}
                         </p>
-                        <Badge variant="outline" className="w-fit mt-3 text-[9px] font-bold border-primary/20 text-primary tracking-tight">
-                          {userProfile.role === 'Donor' ? 'Donor Account' : 'Member Account'}
-                        </Badge>
+                        <div className="flex flex-wrap gap-1 mt-3">
+                            <Badge variant="outline" className="text-[8px] font-bold border-primary/20 text-primary uppercase">
+                                {userProfile.role}
+                            </Badge>
+                            {session.isStaff && session.isContributor && (
+                                <Badge variant="eligible" className="text-[8px] font-bold uppercase">Multi-Role Profile</Badge>
+                            )}
+                        </div>
                       </div>
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-primary/5" />
-                     {(userProfile.role === 'Admin' || userProfile.role === 'User') && (
+                     
+                     {session.isStaff && (
                       <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
                         <Link href="/dashboard" className="flex items-center w-full">
                           <LayoutDashboard className="mr-3 h-4 w-4 opacity-60" />
@@ -120,16 +125,16 @@ export function DocuExtractHeader() {
                       </DropdownMenuItem>
                      )}
                      
-                     {(userProfile.role === 'Donor' || userProfile.linkedDonorId) && (
+                     {(userProfile.linkedDonorId || userProfile.role === 'Donor' || userProfile.role === 'Admin') && (
                       <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
                         <Link href="/donor-portal" className="flex items-center w-full">
                           <Heart className="mr-3 h-4 w-4 opacity-60" />
-                          <span>Donor Portal</span>
+                          <span>My Donor Portal</span>
                         </Link>
                       </DropdownMenuItem>
                      )}
 
-                     {userProfile.linkedBeneficiaryId && (
+                     {(userProfile.linkedBeneficiaryId || userProfile.role === 'Beneficiary') && (
                       <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
                         <Link href="/beneficiary-portal" className="flex items-center w-full">
                           <HandHelping className="mr-3 h-4 w-4 opacity-60" />
@@ -137,12 +142,14 @@ export function DocuExtractHeader() {
                         </Link>
                       </DropdownMenuItem>
                      )}
+
                     <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
                       <Link href="/profile" className="flex items-center w-full">
                         <User className="mr-3 h-4 w-4 opacity-60" />
                         <span>Profile Settings</span>
                       </Link>
                     </DropdownMenuItem>
+
                     {userProfile.role === 'Admin' && (
                       <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
                         <Link href="/settings" className="flex items-center w-full">

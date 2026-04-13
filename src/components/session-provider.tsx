@@ -1,4 +1,3 @@
-
 'use client';
 
 import { createContext, useMemo as useReactMemo, ReactNode } from 'react';
@@ -11,6 +10,8 @@ interface SessionContextType {
     user: User | null;
     userProfile: UserProfile | null;
     isLoading: boolean;
+    isStaff: boolean;
+    isContributor: boolean;
 }
 
 export const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -30,14 +31,12 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
   const profileWithDefaults = useReactMemo(() => {
     if (!authUser) return null;
 
-    // 1. Unified Admin Check (Identity overrides database role)
     const isAdminIdentity = 
         authUser.email === 'abusufiyan.belif@gmail.com' || 
         authUser.email === 'baitulmalss.solapur@gmail.com' || 
         authUser.email === 'admin@example.com' || 
         authUser.uid === 'cyMl1lQME0Yur1YS3VCms1AvrOJ2' ||
         authUser.uid === 'S5efNV5jpTPoxYNv6SnAlv3jNPO2' ||
-        userProfile?.loginId === 'abusufiyan.belif' ||
         userProfile?.role === 'Admin';
 
     if (!userProfile) {
@@ -56,7 +55,6 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
         return null;
     }
     
-    // 2. Return unified profile with highest privilege
     return {
         ...userProfile,
         role: isAdminIdentity ? 'Admin' : (userProfile.role || 'User'),
@@ -64,11 +62,18 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
     } as UserProfile;
   }, [userProfile, authUser]);
 
-  const contextValue = useReactMemo(() => ({
-      user: authUser || null,
-      userProfile: profileWithDefaults,
-      isLoading,
-  }), [authUser, profileWithDefaults, isLoading]);
+  const contextValue = useReactMemo(() => {
+      const isStaff = profileWithDefaults?.role === 'Admin' || profileWithDefaults?.role === 'User';
+      const isContributor = !!profileWithDefaults?.linkedDonorId || !!profileWithDefaults?.linkedBeneficiaryId || profileWithDefaults?.role === 'Donor' || profileWithDefaults?.role === 'Beneficiary';
+
+      return {
+          user: authUser || null,
+          userProfile: profileWithDefaults,
+          isLoading,
+          isStaff,
+          isContributor
+      };
+  }, [authUser, profileWithDefaults, isLoading]);
 
   return (
     <SessionContext.Provider value={contextValue}>

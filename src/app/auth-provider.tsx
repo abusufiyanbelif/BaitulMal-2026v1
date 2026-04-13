@@ -12,16 +12,16 @@ import { Button } from '@/components/ui/button';
 import { AlertTriangle } from 'lucide-react';
 
 /**
- * RouteGuard - Optimized for rapid initial mount.
- * Prevents long blocking states by allowing public views to render immediately.
+ * RouteGuard - Optimized for multi-role identity navigation.
+ * Ensures Staff see the dashboard first, while Donors are routed to their portal.
  */
 function RouteGuard({ children }: { children: ReactNode }) {
-    const { user, userProfile, isLoading } = useSession();
+    const { user, userProfile, isLoading, isStaff } = useSession();
     const router = useRouter();
     const pathname = usePathname();
     const [isRedirecting, setIsRedirecting] = useState(false);
 
-    const isPublicRoute = ['/login', '/seed', '/'].includes(pathname) || 
+    const isPublicRoute = ['/login', '/seed', '/', '/portal-login'].includes(pathname) || 
                           pathname.startsWith('/campaign-public') || 
                           pathname.startsWith('/leads-public') || 
                           pathname.startsWith('/info');
@@ -29,33 +29,34 @@ function RouteGuard({ children }: { children: ReactNode }) {
     useEffect(() => {
         if (isLoading) return;
         
-        if (user && pathname === '/login') {
+        // If logged in and at login page, redirect to primary dashboard
+        if (user && (pathname === '/login' || pathname === '/portal-login')) {
             setIsRedirecting(true);
-            router.push(userProfile?.role === 'Donor' ? '/donor-portal' : '/dashboard');
+            router.push(isStaff ? '/dashboard' : '/donor-portal');
             return;
         }
 
+        // Redirect guests away from private routes
         if (!user && !isPublicRoute) {
             setIsRedirecting(true);
             router.push('/login');
             return;
         }
         
+        // Handle landing page redirection for logged-in users
         if (user && pathname === '/') {
             setIsRedirecting(true);
-            router.push(userProfile?.role === 'Donor' ? '/donor-portal' : '/dashboard');
+            router.push(isStaff ? '/dashboard' : '/donor-portal');
             return;
         }
 
         setIsRedirecting(false);
-    }, [user, isLoading, isPublicRoute, pathname, router]);
+    }, [user, isLoading, isPublicRoute, pathname, router, isStaff]);
 
-    // Fast return for public routes to ensure snappy first paint
     if (isPublicRoute && !isRedirecting) {
         return <>{children}</>;
     }
 
-    // Only show the blocking loader if we are waiting for session OR in the middle of a private redirect.
     if (isLoading || isRedirecting) {
         return <BrandedLoader message="Synchronizing Access Controls..." />;
     }

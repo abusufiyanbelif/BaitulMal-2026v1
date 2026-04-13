@@ -2,20 +2,24 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
 import { useSession } from '@/hooks/use-session';
-import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, Database, FlaskConical, IndianRupee, Eye, BarChart, BookOpen, HeartHandshake } from 'lucide-react';
+import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, Database, FlaskConical, IndianRupee, Eye, BarChart, BookOpen, HeartHandshake, ShieldCheck } from 'lucide-react';
 import { getNestedValue } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Badge } from '@/components/ui/badge';
 import React from 'react';
 
-function HomeDashboardCard({ title, description, href, icon: Icon, delay }: { title: string, description: string, href: string, icon: React.ComponentType<{ className?: string }>, delay: string }) {
+function HomeDashboardCard({ title, description, href, icon: Icon, delay, badge }: { title: string, description: string, href: string, icon: React.ComponentType<{ className?: string }>, delay: string, badge?: string }) {
   return (
     <div className="animate-fade-in-up" style={{ animationDelay: delay, animationFillMode: 'backwards' }}>
       <Link href={href} className="block group">
         <Card className="h-full transition-all duration-300 ease-in-out group-hover:shadow-xl group-hover:-translate-y-1 group-hover:border-primary active:scale-95 border-primary/10">
           <div className="flex justify-between items-start gap-4">
             <div className="space-y-1">
-              <CardTitle className="text-md font-bold text-primary">{title}</CardTitle>
-              <CardDescription className="text-xs font-normal">{description}</CardDescription>
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-md font-bold text-primary">{title}</CardTitle>
+                {badge && <Badge variant="secondary" className="text-[8px] font-black uppercase px-1.5 h-4">{badge}</Badge>}
+              </div>
+              <CardDescription className="text-xs font-normal leading-relaxed">{description}</CardDescription>
             </div>
             <Icon className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-primary shrink-0" />
           </div>
@@ -25,11 +29,8 @@ function HomeDashboardCard({ title, description, href, icon: Icon, delay }: { ti
   );
 }
 
-/**
- * Member Dashboard - Optimized for Title Case and snappy navigation.
- */
 export default function Home() {
-    const { userProfile, isLoading } = useSession();
+    const { userProfile, isLoading, isContributor } = useSession();
 
     const allCards = [
         {
@@ -68,18 +69,18 @@ export default function Home() {
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations.read', false),
         },
         {
+            title: "Verification Pipeline",
+            description: "Audit And Approve Institutional Record Modifications.",
+            href: "/verifications",
+            icon: ShieldCheck,
+            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.read', false),
+        },
+        {
             title: "Guidance Center",
             description: "Manage Help Documents, Local Schemes, And Support Resources.",
             href: "/guidance",
             icon: BookOpen,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.guidance.read', false),
-        },
-         {
-            title: "Public Page Preview",
-            description: "Review Live Informational Content And Community Dashboards.",
-            href: "/public-summary",
-            icon: Eye,
-            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.read', false) || !!getNestedValue(userProfile, 'permissions.leads-members.read', false),
         },
         {
             title: "Smart Document Scanner",
@@ -87,13 +88,6 @@ export default function Home() {
             href: "/extractor",
             icon: ScanSearch,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.extractor.read', false),
-        },
-        {
-            title: "Case Story Creator",
-            description: "Automatically Generate Impact Narratives For Donor Transparency.",
-            href: "/story-creator",
-            icon: MessageSquare,
-            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.storyCreator.read', false),
         },
         {
             title: "User & Team Management",
@@ -117,11 +111,12 @@ export default function Home() {
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.analytics.read', false),
         },
         {
-            title: "System Health Checks",
-            description: "Verify Real-Time Connection Status Of All Organization Services.",
-            href: "/diagnostics",
-            icon: FlaskConical,
-            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.diagnostics.read', false),
+            title: "My Donor Portal",
+            description: "Switch To Personal View To See Your Own Contributions And Receipts.",
+            href: "/donor-portal",
+            icon: HeartHandshake,
+            isVisible: isContributor,
+            badge: "Self Service"
         },
     ];
 
@@ -137,9 +132,12 @@ export default function Home() {
                 </div>
             ) : userProfile ? (
             <div className="space-y-8 animate-fade-in-zoom">
-                <h2 className="text-3xl font-bold tracking-tight mb-4 text-primary">
-                    Assalamu Alaikum, {userProfile.name}!
-                </h2>
+                <div className="flex items-center justify-between">
+                    <h2 className="text-3xl font-bold tracking-tight text-primary">
+                        Assalamu Alaikum, {userProfile.name}!
+                    </h2>
+                    <Badge variant="outline" className="font-bold border-primary/20 text-primary capitalize px-3 h-7">{userProfile.role} Account</Badge>
+                </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8">
                     {visibleCards.map((card, index) => (
@@ -150,6 +148,7 @@ export default function Home() {
                             href={card.href}
                             icon={card.icon}
                             delay={`${200 + index * 50}ms`}
+                            badge={card.badge}
                         />
                     ))}
                 </div>
