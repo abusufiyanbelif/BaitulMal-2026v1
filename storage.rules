@@ -1,8 +1,7 @@
 rules_version = '2';
-service border.storage {
+service firebase.storage {
   match /b/{bucket}/o {
     match /{allPaths=**} {
-      // UNRESTRICTED ACCESS FOR PROTOTYPE TESTING
       allow read, write: if true;
     }
   }

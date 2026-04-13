@@ -334,8 +334,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <FormField control={control as any} name="status" render={({ field }) => (
                                     <FormItem>
                                         {renderLabel('Account Status', 'status')}
-                                        <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isFormDisabled}>
-                                            <FormControl><SelectTrigger className="font-normal"><SelectValue/></SelectTrigger></FormControl>
+                                        <Select onValueChange={field.onChange} value={field.value ?? 'Active'} disabled={isFormDisabled}>
+                                            <FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl>
                                             <SelectContent className="rounded-[12px] shadow-dropdown">
                                                 <SelectItem value="Active" className="font-normal text-primary">Active</SelectItem>
                                                 <SelectItem value="Inactive" className="font-normal text-destructive">Inactive</SelectItem>
@@ -349,8 +349,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <FormField control={control as any} name="role" render={({ field }: any) => (
                                     <FormItem>
                                         {renderLabel('Access Role', 'role')}
-                                        <Select onValueChange={field.onChange} value={field.value ?? ''} disabled={isFormDisabled}>
-                                            <FormControl><SelectTrigger className="font-normal"><SelectValue/></SelectTrigger></FormControl>
+                                        <Select onValueChange={field.onChange} value={field.value ?? 'User'} disabled={isFormDisabled}>
+                                            <FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl>
                                             <SelectContent className="rounded-[12px] shadow-dropdown">
                                                 <SelectItem value="Admin" className="font-bold text-red-600">Admin (Superuser)</SelectItem>
                                                 <SelectItem value="User" className="font-normal">User (Standard)</SelectItem>
