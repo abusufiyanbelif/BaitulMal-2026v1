@@ -1,18 +1,46 @@
 'use client';
 import { useState, useMemo } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
+import { 
+    useFirestore, 
+    useMemoFirebase, 
+    useCollection, 
+    collection,
+    doc,
+    updateDoc
+} from '@/firebase';
 import { errorEmitter } from '@/firebase/error-emitter';
 import { FirestorePermissionError } from '@/firebase/errors';
 import { useSession } from '@/hooks/use-session';
-import { doc, updateDoc, collection } from 'firebase/firestore';
-import type { UserProfile } from '@/lib/types';
+import type { UserProfile, Donor, Beneficiary } from '@/lib/types';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, MoreHorizontal, PlusCircle, Trash2, ShieldAlert, UserCheck, UserX, Database, ArrowUp, ArrowDown, RefreshCw, ShieldCheck, Loader2, Eye } from 'lucide-react';
+import { 
+    ArrowLeft, 
+    Edit, 
+    MoreHorizontal, 
+    PlusCircle, 
+    Trash2, 
+    ShieldAlert, 
+    UserCheck, 
+    UserX, 
+    Database, 
+    ArrowUp, 
+    ArrowDown, 
+    RefreshCw, 
+    ShieldCheck, 
+    Loader2, 
+    Eye,
+    Fingerprint,
+    HeartHandshake,
+    Users,
+    Search,
+    AlertCircle,
+    CheckCircle2
+} from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -36,6 +64,7 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -77,14 +106,13 @@ export default function UsersPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [isMirroring, setIsMirroring] = useState<string | null>(null);
 
-  const usersCollectionRef = useMemoFirebase(() => {
-    if (!firestore || !userProfile || userProfile.role !== 'Admin') {
-      return null;
-    }
-    return collection(firestore, 'users');
-  }, [firestore, userProfile]);
+  const usersRef = useMemoFirebase(() => (firestore && userProfile) ? collection(firestore, 'users') : null, [firestore, userProfile]);
+  const donorsRef = useMemoFirebase(() => (firestore && userProfile) ? collection(firestore, 'donors') : null, [firestore, userProfile]);
+  const beneficiariesRef = useMemoFirebase(() => (firestore && userProfile) ? collection(firestore, 'beneficiaries') : null, [firestore, userProfile]);
   
-  const { data: users, isLoading: areUsersLoading } = useCollection<UserProfile>(usersCollectionRef);
+  const { data: users, isLoading: areUsersLoading } = useCollection<UserProfile>(usersRef);
+  const { data: donors } = useCollection<Donor>(donorsRef);
+  const { data: beneficiaries } = useCollection<Beneficiary>(beneficiariesRef);
 
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<string | null>(null);
@@ -93,11 +121,6 @@ export default function UsersPage() {
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.users.update', false);
   const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.users.delete', false);
   const canRead = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.users.read', false);
-
-  const handleAdd = () => {
-    if (!canCreate) return;
-    router.push('/users/create');
-  };
 
   const handleEdit = (user: UserProfile) => {
     if (!canUpdate) return;
@@ -123,374 +146,167 @@ export default function UsersPage() {
   };
   
   const handleToggleStatus = (userToUpdate: UserProfile) => {
-    if (!firestore || !canUpdate) {
-        toast({ title: 'Permission Denied', description: 'You Do Not Have Permission To Update Users.', variant: 'destructive'});
-        return;
-    };
-    if (userToUpdate.userKey === 'admin') {
-        toast({ title: 'Action Forbidden', description: 'The Default Admin User Cannot Be Deactivated.', variant: 'destructive' });
-        return;
-    }
-    if (userToUpdate.id === userProfile?.id) {
-        toast({ title: 'Action Forbidden', description: 'You Cannot Deactivate Your Own Account.', variant: 'destructive' });
-        return;
-    }
-
+    if (!firestore || !canUpdate) return;
     const newStatus = userToUpdate.status === 'Active' ? 'Inactive' : 'Active';
     const docRef = doc(firestore, 'users', userToUpdate.id);
-    const updatedData = { status: newStatus };
-
-    updateDoc(docRef, updatedData)
-        .then(() => {
-            toast({ title: 'Success', description: `${userToUpdate.name}'s Account Is Now ${newStatus}.`, variant: 'success' });
-        })
-        .catch(async (serverError: any) => {
-            const permissionError = new FirestorePermissionError({
-                path: docRef.path,
-                operation: 'update',
-                requestResourceData: updatedData,
-            });
-            errorEmitter.emit('permission-error', permissionError);
-        });
+    updateDoc(docRef, { status: newStatus }).catch(err => errorEmitter.emit('permission-error', new FirestorePermissionError({ path: docRef.path, operation: 'update', requestResourceData: { status: newStatus } })));
   };
 
   const handleDeleteConfirm = async () => {
-    if (!userToDelete || !canDelete || !users) {
-        toast({ title: 'Permission Denied', description: 'You Do Not Have Permission To Delete Users.', variant: 'destructive'});
-        return;
-    };
-
-    const userBeingDeleted = users.find(u => u.id === userToDelete);
-    if (!userBeingDeleted) return;
-
-    if (userBeingDeleted.userKey === 'admin') {
-        toast({ title: 'Action Forbidden', description: 'The Default Admin User Cannot Be Deleted.', variant: 'destructive' });
-        setUserToDelete(null);
-        setIsDeleteDialogOpen(false);
-        return;
-    }
-
-    if (userBeingDeleted.id === userProfile?.id) {
-        toast({ title: 'Action Forbidden', description: 'You Cannot Delete Your Own Account.', variant: 'destructive' });
-        setUserToDelete(null);
-        setIsDeleteDialogOpen(false);
-        return;
-    }
-    
+    if (!userToDelete || !canDelete) return;
     setIsDeleteDialogOpen(false);
-
     const result = await deleteUserAction(userToDelete);
-
-    if (result.success) {
-        toast({ title: 'User Deleted', description: result.message, variant: 'success' });
-    } else {
-        toast({ title: 'Deletion Failed', description: result.message, variant: 'destructive' });
-    }
-    
+    if (result.success) toast({ title: 'User Deleted', description: result.message, variant: 'success' });
+    else toast({ title: 'Deletion Failed', description: result.message, variant: 'destructive' });
     setUserToDelete(null);
   };
   
-  const handleSort = (key: SortKey) => {
-    let direction: 'ascending' | 'descending' = 'ascending';
-    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'ascending') {
-        direction = 'descending';
-    }
-    setSortConfig({ key, direction });
-    setCurrentPage(1);
-  };
-
   const filteredAndSortedUsers = useMemo(() => {
     if (!users) return [];
-    let sortableItems = [...users];
-
-    // Filtering
-    if (statusFilter !== 'All') {
-        sortableItems = sortableItems.filter(u => u.status === statusFilter);
-    }
-    if (roleFilter !== 'All') {
-        sortableItems = sortableItems.filter(u => u.role === roleFilter);
-    }
+    let items = [...users];
+    if (statusFilter !== 'All') items = items.filter(u => u.status === statusFilter);
+    if (roleFilter !== 'All') items = items.filter(u => u.role === roleFilter);
     if (searchTerm) {
-        const lowercasedTerm = searchTerm.toLowerCase();
-        sortableItems = sortableItems.filter(u => 
-            (u.name || '').toLowerCase().includes(lowercasedTerm) ||
-            (u.email || '').toLowerCase().includes(lowercasedTerm) ||
-            (u.phone || '').toLowerCase().includes(lowercasedTerm) ||
-            (u.loginId || '').toLowerCase().includes(lowercasedTerm) ||
-            (u.userKey || '').toLowerCase().includes(lowercasedTerm)
-        );
+        const lower = searchTerm.toLowerCase();
+        items = items.filter(u => (u.name || '').toLowerCase().includes(lower) || (u.email || '').toLowerCase().includes(lower) || (u.phone || '').includes(searchTerm));
     }
-
-    // Sorting
-    if (sortConfig !== null) {
-        sortableItems.sort((a, b) => {
-            if (sortConfig.key === 'srNo') return 0;
-            const aValue = (a[sortConfig.key as keyof UserProfile] ?? '').toString().toLowerCase();
-            const bValue = (b[sortConfig.key as keyof UserProfile] ?? '').toString().toLowerCase();
-            
-            if (aValue < bValue) {
-                return sortConfig.direction === 'ascending' ? -1 : 1;
-            }
-            if (aValue > bValue) {
-                return sortConfig.direction === 'ascending' ? 1 : -1;
-            }
-            return 0;
+    if (sortConfig) {
+        items.sort((a, b) => {
+            const aVal = (a[sortConfig.key as keyof UserProfile] ?? '').toString().toLowerCase();
+            const bVal = (b[sortConfig.key as keyof UserProfile] ?? '').toString().toLowerCase();
+            return sortConfig.direction === 'ascending' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
         });
     }
-
-    return sortableItems;
+    return items;
   }, [users, searchTerm, statusFilter, roleFilter, sortConfig]);
 
+  const auditData = useMemo(() => {
+      if (!users) return [];
+      return users.map(u => {
+          const isDonor = donors?.some(d => d.id === u.id || (d.phone === u.phone && !!u.phone));
+          const isBeneficiary = beneficiaries?.some(b => b.id === u.id || (b.phone === u.phone && !!u.phone));
+          const multiRole = (isDonor ? 1 : 0) + (isBeneficiary ? 1 : 0) > 0;
+          return { ...u, isDonor, isBeneficiary, multiRole };
+      });
+  }, [users, donors, beneficiaries]);
+
   const totalPages = Math.ceil(filteredAndSortedUsers.length / itemsPerPage);
-  const paginatedUsers = useMemo(() => {
-    const startIndex = (currentPage - 1) * itemsPerPage;
-    return filteredAndSortedUsers.slice(startIndex, startIndex + itemsPerPage);
-  }, [filteredAndSortedUsers, currentPage, itemsPerPage]);
+  const paginatedUsers = filteredAndSortedUsers.slice((currentPage - 1) * itemsPerPage, (currentPage - 1) * itemsPerPage + itemsPerPage);
 
   const isLoading = areUsersLoading || isProfileLoading;
   
-  if (isLoading) {
-    return (
-        <main className="container mx-auto p-4 md:p-8 text-primary">
-            <Card>
-                <CardHeader><Skeleton className="h-8 w-48" /></CardHeader>
-                <CardContent>
-                    <Skeleton className="h-40 w-full" />
-                </CardContent>
-            </Card>
-        </main>
-    )
-  }
-  
-  if (!canRead) {
-    return (
-        <main className="container mx-auto p-4 md:p-8 text-primary">
-            <div className="mb-4">
-                <Button variant="outline" asChild className="text-primary border-primary/20">
-                    <Link href="/">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back To Home
-                    </Link>
-                </Button>
-            </div>
-            <Alert variant="destructive">
-                <ShieldAlert className="h-4 w-4" />
-                <AlertTitle className="font-bold">Access Denied</AlertTitle>
-                <AlertDescription className="font-normal text-primary/70">
-                You Do Not Have The Required Permissions To Manage Users.
-                </AlertDescription>
-            </Alert>
-        </main>
-    )
-  }
+  if (isLoading) return <SectionLoader label="Retrieving Member Registry..." description="Synchronizing Identity Records." />;
+  if (!canRead) return <main className="container mx-auto p-8"><Alert variant="destructive"><ShieldAlert className="h-4 w-4"/><AlertTitle className="font-bold">Access Denied</AlertTitle><AlertDescription className="font-normal">Missing Permissions To Manage Users.</AlertDescription></Alert></main>;
 
   return (
-    <main className="container mx-auto p-4 md:p-8 text-primary font-normal">
-      <div className="mb-4">
-          <Button variant="outline" asChild className="text-primary border-primary/20 font-bold transition-transform active:scale-95">
-              <Link href="/dashboard">
-                  <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back To Dashboard
-              </Link>
-          </Button>
-      </div>
-
-      <Card className="animate-fade-in-zoom border-primary/10 shadow-sm overflow-hidden bg-white">
-        <CardHeader className="bg-primary/5 border-b">
-          <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-4">
-            <div className="flex-1 space-y-2">
-                <CardTitle className="text-primary font-bold">User Management ({filteredAndSortedUsers.length})</CardTitle>
-                <div className="flex flex-wrap items-center gap-2">
-                    <Input 
-                        placeholder="Search Name, Email, Phone..."
-                        value={searchTerm}
-                        onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                        className="max-w-sm font-normal text-primary h-9 text-xs"
-                    />
-                    <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-auto md:w-[150px] text-primary font-normal h-9 text-xs">
-                            <SelectValue placeholder="All Statuses" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-[12px] shadow-dropdown">
-                            <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
-                            <SelectItem value="Active" className="font-normal">Active</SelectItem>
-                            <SelectItem value="Inactive" className="font-normal">Inactive</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <Select value={roleFilter} onValueChange={(value) => { setRoleFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-auto md:w-[150px] text-primary font-normal h-9 text-xs">
-                            <SelectValue placeholder="All Roles" />
-                        </SelectTrigger>
-                        <SelectContent className="rounded-[12px] shadow-dropdown">
-                            <SelectItem value="All" className="font-normal">All Roles</SelectItem>
-                            <SelectItem value="Admin" className="font-normal text-primary">Admin</SelectItem>
-                            <SelectItem value="User" className="font-normal">User</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
-            <div className="flex items-center gap-2">
-                {userProfile?.role === 'Admin' && (
-                      <Button variant="outline" asChild className="text-primary border-primary/20 font-bold h-9">
-                        <Link href="/seed">
-                            <Database className="mr-2 h-4 w-4" />
-                            Database Hub
-                        </Link>
-                    </Button>
-                )}
-                {canCreate && (
-                    <Button onClick={handleAdd} disabled={areUsersLoading} className="font-bold text-white shadow-md h-9">
-                        <PlusCircle className="mr-2 h-4 w-4" />
-                        Add New User
-                    </Button>
-                )}
+    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
+      <div className="flex flex-col gap-2">
+          <Button variant="outline" asChild className="w-fit font-bold border-primary/10 text-primary transition-transform active:scale-95"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Dashboard</Link></Button>
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <h1 className="text-3xl font-bold tracking-tight text-primary">Member & Identity Center</h1>
+            <div className="flex gap-2">
+                <Button variant="outline" asChild className="font-bold border-primary/20 text-primary"><Link href="/seed"><Database className="mr-2 h-4 w-4"/> Database Hub</Link></Button>
+                {canCreate && <Button onClick={() => router.push('/users/create')} className="font-bold shadow-md rounded-[12px]"><PlusCircle className="mr-2 h-4 w-4" /> Register Member</Button>}
             </div>
           </div>
-        </CardHeader>
-        <CardContent className="p-0">
-          <ScrollArea className="w-full">
-              <div className="min-w-[1000px]">
-                  <Table>
-                      <TableHeader>
-                          <TableRow className="bg-[hsl(var(--table-header-bg))]">
-                              <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort} className="pl-4">#</SortableHeader>
-                              <SortableHeader sortKey="name" sortConfig={sortConfig} handleSort={handleSort}>Full Name</SortableHeader>
-                              <SortableHeader sortKey="email" sortConfig={sortConfig} handleSort={handleSort}>Email Address</SortableHeader>
-                              <SortableHeader sortKey="phone" sortConfig={sortConfig} handleSort={handleSort}>Phone Number</SortableHeader>
-                              <SortableHeader sortKey="loginId" sortConfig={sortConfig} handleSort={handleSort}>Login ID</SortableHeader>
-                              <SortableHeader sortKey="userKey" sortConfig={sortConfig} handleSort={handleSort}>User Key</SortableHeader>
-                              <SortableHeader sortKey="role" sortConfig={sortConfig} handleSort={handleSort}>Access Role</SortableHeader>
-                              <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort}>Account Status</SortableHeader>
-                                {(canUpdate || canDelete) && <TableHead className="w-[100px] text-right pr-4 font-bold">Actions</TableHead>}
-                          </TableRow>
-                      </TableHeader>
-                      <TableBody className="font-normal text-primary">
-                          {areUsersLoading ? (
-                              [...Array(5)].map((_, i) => (
-                                  <TableRow key={`skeleton-${i}`}>
-                                      <TableCell><Skeleton className="h-5 w-5" /></TableCell>
-                                      <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                                      <TableCell><Skeleton className="h-5 w-40" /></TableCell>
-                                      <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                                      <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                                      <TableCell><Skeleton className="h-5 w-20" /></TableCell>
-                                      <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                                      <TableCell><Skeleton className="h-5 w-16" /></TableCell>
-                                      {(canUpdate || canDelete) && <TableCell><Skeleton className="h-5 w-10 ml-auto" /></TableCell>}
-                                  </TableRow>
-                              ))
-                          ) : paginatedUsers.length > 0 ? (
-                              paginatedUsers.map((user, index) => (
-                              <TableRow key={user.id} onClick={() => handleEdit(user)} className="cursor-pointer bg-white border-b border-primary/10 hover:bg-[hsl(var(--table-row-hover))] transition-colors group">
-                                  <TableCell className="pl-4 font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + index + 1}</TableCell>
-                                  <TableCell className="font-bold text-sm text-primary">{user.name}</TableCell>
-                                  <TableCell className="text-xs font-normal">{user.email}</TableCell>
-                                  <TableCell className="font-mono text-xs font-normal">{user.phone}</TableCell>
-                                  <TableCell className="text-xs font-normal">{user.loginId}</TableCell>
-                                  <TableCell className="font-mono text-xs opacity-60 font-normal">{user.userKey}</TableCell>
-                                  <TableCell>
-                                  <Badge variant={user.role === 'Admin' ? 'destructive' : 'secondary'} className="text-[10px] font-bold">{user.role}</Badge>
-                                  </TableCell>
-                                  <TableCell>
-                                  <Badge variant={user.status === 'Active' ? 'active' : 'outline'} className="text-[10px] font-bold">{user.status}</Badge>
-                                  </TableCell>
-                                  {(canUpdate || canDelete) && (
-                                  <TableCell className="text-right pr-4" onClick={e => e.stopPropagation()}>
-                                      <DropdownMenu>
-                                          <DropdownMenuTrigger asChild>
-                                              <Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90">
-                                                  <MoreHorizontal className="h-4 w-4" />
-                                              </Button>
-                                          </DropdownMenuTrigger>
-                                          <DropdownMenuContent align="end" className="rounded-[12px] border-border shadow-dropdown">
-                                              <DropdownMenuItem onClick={() => handleEdit(user)} className="text-primary font-normal cursor-pointer">
-                                                  <Edit className="mr-2 h-4 w-4 opacity-60" />
-                                                  View / Edit Profile
-                                              </DropdownMenuItem>
-                                              
-                                              {canUpdate && (
-                                                  <DropdownMenuItem 
-                                                    onClick={() => handleMirrorToDonor(user.id)} 
-                                                    disabled={isMirroring === user.id}
-                                                    className="text-primary font-normal cursor-pointer"
-                                                  >
-                                                      {isMirroring === user.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ShieldCheck className="mr-2 h-4 w-4 opacity-60"/>}
-                                                      Mirror To Donor Registry
-                                                  </DropdownMenuItem>
-                                              )}
+      </div>
 
-                                              {canUpdate && <DropdownMenuSeparator className="bg-primary/5" />}
-                                              
-                                              {canUpdate && user.status === 'Active' ? (
-                                                  <DropdownMenuItem onClick={() => handleToggleStatus(user)} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="font-normal text-destructive cursor-pointer">
-                                                      <UserX className="mr-2 h-4 w-4" />
-                                                      Deactivate Member
-                                                  </DropdownMenuItem>
-                                              ) : canUpdate ? (
-                                                  <DropdownMenuItem onClick={() => handleToggleStatus(user)} className="font-normal text-primary cursor-pointer">
-                                                      <UserCheck className="mr-2 h-4 w-4" />
-                                                      Activate Member
-                                                  </DropdownMenuItem>
-                                              ) : null}
-                                              
-                                              {canDelete && (
-                                                  <>
-                                                    <DropdownMenuSeparator className="bg-primary/5" />
-                                                    <DropdownMenuItem onClick={() => handleDeleteClick(user.id)} disabled={user.userKey === 'admin' || user.id === userProfile?.id} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal cursor-pointer">
-                                                        <Trash2 className="mr-2 h-4 w-4" />
-                                                        Permanently Delete
-                                                    </DropdownMenuItem>
-                                                  </>
-                                              )}
-                                          </DropdownMenuContent>
-                                      </DropdownMenu>
-                                  </TableCell>
-                                  )}
-                              </TableRow>
-                          ))
-                          ) : (
-                          <TableRow>
-                              <TableCell colSpan={canUpdate || canDelete ? 9 : 8} className="text-center h-24 text-muted-foreground font-normal italic">
-                                  No Users Found Matching Your Search Criteria.
-                              </TableCell>
-                          </TableRow>
-                          )}
-                      </TableBody>
-                  </Table>
-              </div>
-              <ScrollBar orientation="horizontal" className="h-1.5" />
-          </ScrollArea>
-        </CardContent>
-        {totalPages > 1 && (
-            <CardFooter className="flex items-center justify-between border-t bg-primary/5 p-4">
-              <p className="text-xs font-bold text-muted-foreground">
-                  Showing {paginatedUsers.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0} To {Math.min(currentPage * itemsPerPage, filteredAndSortedUsers.length)} Of {filteredAndSortedUsers.length} Members
-              </p>
-              <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold h-8 border-primary/20 text-primary transition-transform active:scale-95">Previous</Button>
-                  <Button variant="outline" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold h-8 border-primary/20 text-primary transition-transform active:scale-95">Next</Button>
-              </div>
-            </CardFooter>
-        )}
-      </Card>
-      
+      <Tabs defaultValue="management" className="w-full space-y-6">
+        <TabsList className="bg-primary/5 p-1 border border-primary/10 rounded-xl">
+            <TabsTrigger value="management" className="font-bold"><Users className="mr-2 h-4 w-4"/> Member Registry</TabsTrigger>
+            <TabsTrigger value="audit" className="font-bold text-amber-700"><Fingerprint className="mr-2 h-4 w-4"/> Identity Audit Hub</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="management" className="animate-fade-in-up mt-0">
+            <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm">
+                <CardHeader className="bg-primary/5 border-b pb-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <Input placeholder="Search Name, Email..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-xs h-9 text-xs" />
+                        <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}><SelectTrigger className="w-[140px] h-9 text-xs"><SelectValue placeholder="Status"/></SelectTrigger><SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem></SelectContent></Select>
+                        <Select value={roleFilter} onValueChange={(v) => { setRoleFilter(v); setCurrentPage(1); }}><SelectTrigger className="w-[140px] h-9 text-xs"><SelectValue placeholder="Role"/></SelectTrigger><SelectContent><SelectItem value="All">All Roles</SelectItem><SelectItem value="Admin">Admin</SelectItem><SelectItem value="User">User</SelectItem></SelectContent></Select>
+                    </div>
+                </CardHeader>
+                <CardContent className="p-0">
+                    <ScrollArea className="w-full">
+                        <div className="min-w-[1000px]">
+                            <Table>
+                                <TableHeader className="bg-primary/5"><TableRow><TableHead className="pl-4">#</TableHead><TableHead>Name</TableHead><TableHead>Identity</TableHead><TableHead>Contact</TableHead><TableHead>Role</TableHead><TableHead>Status</TableHead><TableHead className="text-right pr-4">Actions</TableHead></TableRow></TableHeader>
+                                <TableBody>
+                                    {paginatedUsers.map((u, i) => (
+                                        <TableRow key={u.id} className="hover:bg-primary/[0.02] cursor-pointer" onClick={() => handleEdit(u)}>
+                                            <TableCell className="pl-4 font-mono text-xs opacity-60">{(currentPage-1)*itemsPerPage + i + 1}</TableCell>
+                                            <TableCell className="font-bold text-sm text-primary">{u.name}</TableCell>
+                                            <TableCell className="text-xs font-mono opacity-60">{u.userKey}</TableCell>
+                                            <TableCell className="text-xs">{u.email}<br/><span className="font-mono text-[10px] opacity-60">{u.phone}</span></TableCell>
+                                            <TableCell><Badge variant={u.role === 'Admin' ? 'destructive' : 'secondary'} className="text-[9px] font-bold">{u.role}</Badge></TableCell>
+                                            <TableCell><Badge variant={u.status === 'Active' ? 'eligible' : 'outline'} className="text-[9px] font-bold">{u.status}</Badge></TableCell>
+                                            <TableCell className="text-right pr-4" onClick={e=>e.stopPropagation()}><DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger><DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown"><DropdownMenuItem onClick={()=>handleEdit(u)} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Profile</DropdownMenuItem><DropdownMenuItem onClick={()=>handleMirrorToDonor(u.id)} disabled={!!isMirroring} className="text-primary font-normal"><ShieldCheck className="mr-2 h-4 w-4 opacity-60"/> Mirror to Donor</DropdownMenuItem><DropdownMenuSeparator className="bg-primary/5"/><DropdownMenuItem onClick={()=>handleToggleStatus(u)} className="text-amber-600 font-normal">{u.status === 'Active' ? <UserX className="mr-2 h-4 w-4"/> : <UserCheck className="mr-2 h-4 w-4"/>} {u.status === 'Active' ? 'Deactivate' : 'Activate'}</DropdownMenuItem>{canDelete && <DropdownMenuItem onClick={()=>handleDeleteClick(u.id)} className="text-destructive font-normal"><Trash2 className="mr-2 h-4 w-4"/> Delete Permanently</DropdownMenuItem>}</DropdownMenuContent></DropdownMenu></TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                        <ScrollBar orientation="horizontal" />
+                    </ScrollArea>
+                </CardContent>
+                {totalPages > 1 && (
+                    <CardFooter className="flex justify-between items-center py-4 border-t bg-primary/5 px-4"><p className="text-[10px] font-bold text-muted-foreground">Registry Page {currentPage} Of {totalPages}</p><div className="flex gap-2"><Button variant="outline" size="sm" onClick={()=>setCurrentPage(p=>Math.max(1,p-1))} disabled={currentPage===1} className="font-bold h-8 border-primary/10">Previous</Button><Button variant="outline" size="sm" onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))} disabled={currentPage===totalPages} className="font-bold h-8 border-primary/10">Next</Button></div></CardFooter>
+                )}
+            </Card>
+        </TabsContent>
+
+        <TabsContent value="audit" className="animate-fade-in-up mt-0 space-y-6">
+            <Card className="border-primary/10 bg-white shadow-sm overflow-hidden">
+                <CardHeader className="bg-primary/5 border-b">
+                    <CardTitle className="flex items-center gap-2 font-bold text-primary"><ShieldCheck className="h-5 w-5"/> Multi-Profile Identity Audit</CardTitle>
+                    <CardDescription className="font-normal text-primary/70">Cross-collection reconciliation of members serving multiple organizational roles.</CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                    <ScrollArea className="w-full">
+                        <div className="min-w-[1000px]">
+                            <Table>
+                                <TableHeader className="bg-primary/5">
+                                    <TableRow>
+                                        <TableHead className="pl-6">Institutional Member</TableHead>
+                                        <TableHead>System Access</TableHead>
+                                        <TableHead className="text-center">Donor Footprint</TableHead>
+                                        <TableHead className="text-center">Beneficiary Map</TableHead>
+                                        <TableHead className="text-right pr-6">Identity Status</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {auditData.map(u => (
+                                        <TableRow key={u.id} className="hover:bg-primary/[0.02] border-b border-primary/5 bg-white">
+                                            <TableCell className="pl-6 py-4">
+                                                <p className="font-bold text-sm text-primary">{u.name}</p>
+                                                <p className="text-[10px] text-muted-foreground font-mono">{u.email}</p>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={u.role === 'Admin' ? 'destructive' : 'secondary'} className="text-[9px] font-black">{u.role}</Badge>
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                {u.isDonor ? <Badge variant="eligible" className="text-[8px] font-bold"><CheckCircle2 className="h-2.5 w-2.5 mr-1"/> Mirrored</Badge> : <Badge variant="outline" className="text-[8px] opacity-30">None</Badge>}
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                {u.isBeneficiary ? <Badge variant="eligible" className="text-[8px] font-bold"><CheckCircle2 className="h-2.5 w-2.5 mr-1"/> Mirrored</Badge> : <Badge variant="outline" className="text-[8px] opacity-30">None</Badge>}
+                                            </TableCell>
+                                            <TableCell className="text-right pr-6">
+                                                {u.multiRole ? <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-[9px] font-bold">Unified Identity</Badge> : <Badge variant="secondary" className="text-[9px] font-bold">Member Only</Badge>}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                        <ScrollBar orientation="horizontal" />
+                    </ScrollArea>
+                </CardContent>
+            </Card>
+        </TabsContent>
+      </Tabs>
+
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent className="rounded-[16px] border-border shadow-dropdown">
-            <AlertDialogHeader>
-                <AlertDialogTitle className="font-bold text-destructive">Confirm Permanent Deletion?</AlertDialogTitle>
-                <AlertDialogDescription className="font-normal text-primary/70">
-                    This Action Will Permanently Erase The Member's Account, Institutional Profile, And All Verification Artifacts. This Process Cannot Be Undone.
-                </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-                <AlertDialogCancel className="font-bold border-border">Cancel</AlertDialogCancel>
-                <AlertDialogAction 
-                    onClick={handleDeleteConfirm} 
-                    className="bg-destructive hover:bg-destructive/90 text-white font-bold shadow-lg transition-transform active:scale-95 rounded-[12px]">
-                        Confirm Deletion
-                </AlertDialogAction>
-            </AlertDialogFooter>
-        </AlertDialogContent>
+        <AlertDialogContent className="rounded-[16px] border-border shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Confirm Permanent Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">This Action Will Permanently Erase The Member's Account, Institutional Profile, And All Verification Artifacts. This Process Cannot Be Undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-border">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive hover:bg-destructive/90 text-white font-bold shadow-lg transition-transform active:scale-95 rounded-[12px]">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
     </main>
   );

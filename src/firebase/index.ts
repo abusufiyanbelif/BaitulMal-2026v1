@@ -1,6 +1,6 @@
 'use client';
 
-// 1. Export core SDK functions first to ensure they are available to sub-modules and avoid circular dependency undefined issues.
+// 1. Export core SDK functions first to ensure they are available to sub-modules.
 export {
     doc,
     collection,
@@ -25,7 +25,9 @@ export {
     ref as storageRef,
     uploadBytes,
     getDownloadURL,
-    getStorage
+    getStorage,
+    deleteObject,
+    uploadString
 } from 'firebase/storage';
 
 export {

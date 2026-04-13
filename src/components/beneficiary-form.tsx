@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import Resizer from 'react-image-file-resizer';
-import { useFirestore, useMemoFirebase, useDoc, doc } from '@/firebase';
+import { useFirestore, useMemoFirebase, useDoc, doc, storageRef, uploadBytes, getDownloadURL } from '@/firebase';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { VerificationRequestDialog } from './verification-request-dialog';
@@ -288,7 +288,7 @@ export function BeneficiaryForm({
                                         <FormItem>
                                             {renderLabel('Phone Number', 'phone')}
                                             <div className="flex gap-2">
-                                                <FormControl><Input placeholder="10-digit mobile number" {...field} disabled={formIsDisabled} className="font-normal flex-1" /></FormControl>
+                                                <FormControl><Input placeholder="10-digit mobile number" {...field} value={field.value ?? ''} disabled={formIsDisabled} className="font-normal flex-1" /></FormControl>
                                                 {field.value && (
                                                     <Button 
                                                         type="button" 
@@ -355,7 +355,7 @@ export function BeneficiaryForm({
                                                     <SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem>
                                                 </SelectContent>
                                             </Select>
-                                            <FormMessage/>
+                                            <FormMessage/Item>
                                         </FormItem>
                                     )}/>
                                 </div>
