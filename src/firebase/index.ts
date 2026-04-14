@@ -1,83 +1,44 @@
 'use client';
 
-/**
- * @fileOverview Refactored Firebase SDK barrel file.
- * Renamed internal helpers to avoid naming collisions with SDK exports.
- */
-
-import { initializeApp, getApps, getApp } from 'firebase/app';
-import { 
-    getFirestore,
-    doc,
-    collection,
-    query,
-    where,
-    getDoc,
-    getDocs,
-    setDoc,
-    updateDoc,
-    deleteDoc,
-    serverTimestamp,
-    deleteField,
-    Timestamp,
-    increment,
-    writeBatch,
-    orderBy,
-    limit,
-    onSnapshot,
-} from 'firebase/firestore';
-
-import { 
-    getAuth,
-    signInWithPhoneNumber,
-    RecaptchaVerifier,
-    sendPasswordResetEmail,
-    onAuthStateChanged,
-    signOut as firebaseSignOut
-} from 'firebase/auth';
-
-import { 
-    getStorage,
-    ref as storageRef,
-    uploadBytes,
-    getDownloadURL,
-    deleteObject,
-    uploadString
-} from 'firebase/storage';
-
 import { firebaseConfig } from '@/firebase/config';
+import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore'
 
-export {
-    doc,
-    collection,
-    query,
-    where,
-    getDoc,
-    getDocs,
-    setDoc,
-    updateDoc,
-    deleteDoc,
-    serverTimestamp,
-    deleteField,
-    Timestamp,
-    increment,
-    writeBatch,
-    orderBy,
-    limit,
-    onSnapshot,
-    signInWithPhoneNumber,
-    RecaptchaVerifier,
-    sendPasswordResetEmail,
-    onAuthStateChanged,
-    firebaseSignOut,
-    getAuth,
-    storageRef,
-    uploadBytes,
-    getDownloadURL,
-    deleteObject,
-    uploadString,
-    getStorage
-};
+// IMPORTANT: DO NOT MODIFY THIS FUNCTION
+export function initializeFirebase() {
+  if (!getApps().length) {
+    // Important! initializeApp() is called without any arguments because Firebase App Hosting
+    // integrates with the initializeApp() function to provide the environment variables needed to
+    // populate the FirebaseOptions in production. It is critical that we attempt to call initializeApp()
+    // without arguments.
+    let firebaseApp;
+    try {
+      // Attempt to initialize via Firebase App Hosting environment variables
+      firebaseApp = initializeApp();
+    } catch (e) {
+      // Only warn in production because it's normal to use the firebaseConfig to initialize
+      // during development
+      if (process.env.NODE_ENV === "production") {
+        console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
+      }
+      firebaseApp = initializeApp(firebaseConfig);
+    }
+
+    return getSdks(firebaseApp);
+  }
+
+  // If already initialized, return the SDKs with the already initialized App
+  return getSdks(getApp());
+}
+
+export function getSdks(firebaseApp: FirebaseApp) {
+  return {
+    firebaseApp,
+    auth: getAuth(firebaseApp),
+    firestore: getFirestore(firebaseApp)
+  };
+}
 
 export * from './provider';
 export * from './client-provider';
@@ -87,14 +48,3 @@ export * from './non-blocking-updates';
 export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';
-
-// Primary SDK Initializer
-export function initializeFirebase() {
-  const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-  return {
-    firebaseApp: app,
-    auth: getAuth(app),
-    firestore: getFirestore(app),
-    storage: getStorage(app),
-  };
-}

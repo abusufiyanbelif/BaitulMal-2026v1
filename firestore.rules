@@ -1,35 +1,137 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // --- ADMINISTRATIVE BYPASS ---
-    // Specifically identifying the three primary identities for absolute oversight.
-    function isSystemAdmin() {
-      return request.auth != null && (
-        request.auth.uid == "cyMl1lQME0Yur1YS3VCms1AvrOJ2" || // System Admin
-        request.auth.uid == "S5efNV5jpTPoxYNv6SnAlv3jNPO2" || // Abusufiyan Belif
-        request.auth.uid == "3gKwUE2JrBT8wngoUxTTN6tLJk03" || // Maaz A. Rauf Shaikh
-        request.auth.token.email == "baitulmalss.solapur@gmail.com" ||
-        request.auth.token.email == "abusufiyan.belif@gmail.com"
-      );
+
+    /**
+     * DocuExtract Security Rules
+     *
+     * Core Philosophy: This ruleset enforces a strict user-ownership model using hierarchical paths. 
+     * All data is structurally segregated under a top-level /users/{userId} collection.
+     *
+     * Data Structure:
+     * - /users/{userId}: The root profile for an authenticated user.
+     * - /users/{userId}/documents/{documentId}: Metadata for files uploaded by the user.
+     * - /users/{userId}/documents/{documentId}/[extractedText|identityProofs|billingStatements|medicalReports]: 
+     *   Specialized extraction data nested under the document and owner.
+     *
+     * Key Security Decisions:
+     * - Path-Based Authorization: Authorization relies on comparing request.auth.uid to the {userId} wildcard.
+     * - Relational Integrity: On creation, we enforce that the document's internal userId field matches the path.
+     * - Immutability: Critical relational fields like userId and documentId are immutable once set.
+     * - Prototyping Flexibility: Rules do not validate general data types or non-relational fields.
+     */
+
+    // --- Global Helper Functions ---
+
+    /** @description Checks if the request is from an authenticated user. */
+    function isSignedIn() {
+      return request.auth != null;
     }
 
-    // --- GLOBAL RULE FOR TESTING PHASE ---
-    // Per your request, we allow all authenticated users full access.
-    // The UI-level role checks will manage the professional dashboard presentation.
-    match /{document=**} {
-      allow read, write: if request.auth != null;
+    /** @description Checks if the authenticated user matches the provided ID. */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
     }
 
-    // Explicitly allow listing for the verification pipeline to resolve the reported error.
-    match /pending_verifications/{request} {
-      allow list, get: if request.auth != null;
-      allow write: if request.auth != null;
+    /** @description Verifies ownership and ensures the document exists for state-changing operations. */
+    function isExistingOwner(userId) {
+      return isOwner(userId) && resource != null;
     }
 
-    match /user_lookups/{identifier} {
-      allow read: if true;
-      allow write: if request.auth != null;
+    // --- Collection Rules ---
+
+    /**
+     * @description Rules for user profile documents.
+     * @path /users/{userId}
+     * @allow (create) if auth.uid matches userId and data.id matches userId.
+     * @deny (get) if auth.uid does not match userId.
+     * @principle Enforces self-creation and strict private ownership of user profiles.
+     */
+    match /users/{userId} {
+      allow get, list: if isOwner(userId);
+      allow create: if isOwner(userId) && request.resource.data.id == userId;
+      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
+      allow delete: if isExistingOwner(userId);
+
+      /**
+       * @description Rules for metadata of uploaded documents.
+       * @path /users/{userId}/documents/{documentId}
+       * @allow (update) if is the owner and userId field remains unchanged.
+       * @deny (create) if the internal userId field does not match the path userId.
+       * @principle Ensures document metadata is only accessible and manageable by the owner.
+       */
+      match /documents/{documentId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isExistingOwner(userId) && request.resource.data.userId == resource.data.userId;
+        allow delete: if isExistingOwner(userId);
+
+        /**
+         * @description Rules for raw and edited extracted text.
+         * @path /users/{userId}/documents/{documentId}/extractedTexts/{textId}
+         * @allow (get) if the user owns the parent document.
+         * @deny (list) if the user is not the owner of the document path.
+         * @principle Inherits authorization from the parent document path.
+         */
+        match /extractedTexts/{textId} {
+          allow get, list: if isOwner(userId);
+          allow create: if isOwner(userId) && request.resource.data.documentId == documentId;
+          allow update: if isExistingOwner(userId) && request.resource.data.documentId == resource.data.documentId;
+          allow delete: if isExistingOwner(userId);
+        }
+
+        /**
+         * @description Rules for structured identity proof data.
+         * @path /users/{userId}/documents/{documentId}/identityProofs/{proofId}
+         * @allow (create) if the user is the owner and links to correct documentId.
+         * @principle Validates relational consistency between the path and the identity proof data.
+         */
+        match /identityProofs/{proofId} {
+          allow get, list: if isOwner(userId);
+          allow create: if isOwner(userId) && request.resource.data.documentId == documentId;
+          allow update: if isExistingOwner(userId) && request.resource.data.documentId == resource.data.documentId;
+          allow delete: if isExistingOwner(userId);
+        }
+
+        /**
+         * @description Rules for structured billing statement data.
+         * @path /users/{userId}/documents/{documentId}/billingStatements/{statementId}
+         * @allow (list) if the user is the owner of the path.
+         * @principle Ensures billing data is private and restricted to the document owner.
+         */
+        match /billingStatements/{statementId} {
+          allow get, list: if isOwner(userId);
+          allow create: if isOwner(userId) && request.resource.data.documentId == documentId;
+          allow update: if isExistingOwner(userId) && request.resource.data.documentId == resource.data.documentId;
+          allow delete: if isExistingOwner(userId);
+
+          /**
+           * @description Rules for individual line items within a billing statement.
+           * @path /users/{userId}/documents/{documentId}/billingStatements/{statementId}/billingItems/{itemId}
+           * @allow (create) if the owner matches and links to the parent statementId.
+           * @principle Deeply nested relational integrity and ownership check.
+           */
+          match /billingItems/{itemId} {
+            allow get, list: if isOwner(userId);
+            allow create: if isOwner(userId) && request.resource.data.billingStatementId == statementId;
+            allow update: if isExistingOwner(userId) && request.resource.data.billingStatementId == resource.data.billingStatementId;
+            allow delete: if isExistingOwner(userId);
+          }
+        }
+
+        /**
+         * @description Rules for structured medical report findings.
+         * @path /users/{userId}/documents/{documentId}/medicalReports/{reportId}
+         * @allow (delete) if the user is the owner of the medical report.
+         * @principle Secures highly sensitive medical data via user-centric pathing.
+         */
+        match /medicalReports/{reportId} {
+          allow get, list: if isOwner(userId);
+          allow create: if isOwner(userId) && request.resource.data.documentId == documentId;
+          allow update: if isExistingOwner(userId) && request.resource.data.documentId == resource.data.documentId;
+          allow delete: if isExistingOwner(userId);
+        }
+      }
     }
   }
 }
