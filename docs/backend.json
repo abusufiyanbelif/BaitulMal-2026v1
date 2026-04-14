@@ -1,537 +1,71 @@
+
 {
   "entities": {
-    "User": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "User",
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Institutional member or donor account details.",
       "type": "object",
-      "description": "Represents an authenticated user within the DocuExtract application.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the User entity."
-        },
-        "email": {
-          "type": "string",
-          "description": "The email address of the user.",
-          "format": "email"
-        },
-        "createdAt": {
-          "type": "string",
-          "description": "Timestamp when the user account was created.",
-          "format": "date-time"
-        },
-        "updatedAt": {
-          "type": "string",
-          "description": "Timestamp when the user account was last updated.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "email",
-        "createdAt",
-        "updatedAt"
-      ]
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "role": { "type": "string", "enum": ["Admin", "User", "Donor", "Beneficiary"] },
+        "status": { "type": "string", "enum": ["Active", "Inactive"] },
+        "permissions": { "type": "object" },
+        "organizationGroup": { "type": "string" },
+        "organizationRole": { "type": "string" },
+        "userKey": { "type": "string" },
+        "loginId": { "type": "string" }
+      }
     },
-    "Document": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Document",
+    "PendingVerification": {
+      "title": "Pending Verification",
+      "description": "A request to update or create a record that requires institutional approval.",
       "type": "object",
-      "description": "Represents an uploaded image or document submitted for processing.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the Document entity."
-        },
-        "userId": {
-          "type": "string",
-          "description": "Reference to the User who uploaded this document. (Relationship: User 1:N Document)"
-        },
-        "originalFilename": {
-          "type": "string",
-          "description": "The original filename of the uploaded document."
-        },
-        "storagePath": {
-          "type": "string",
-          "description": "The URI or path where the original document file is stored in cloud storage.",
-          "format": "uri"
-        },
-        "uploadDateTime": {
-          "type": "string",
-          "description": "Timestamp when the document was uploaded.",
-          "format": "date-time"
-        },
-        "documentType": {
-          "type": "string",
-          "description": "The type of document, categorizing its content for specialized extraction.",
-          "items": {
-            "type": "string"
+        "id": { "type": "string" },
+        "targetId": { "type": "string" },
+        "targetCollection": { "type": "string" },
+        "module": { "type": "string" },
+        "status": { "type": "string", "enum": ["Pending", "Partially Approved", "Approved", "Rejected"] },
+        "requestedBy": { 
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" }
           }
         },
-        "processingStatus": {
-          "type": "string",
-          "description": "The current processing status of the document within the DocuExtract pipeline.",
-          "items": {
-            "type": "string"
-          }
-        },
-        "thumbnailPath": {
-          "type": "string",
-          "description": "Optional URI or path to a generated thumbnail image for quick preview.",
-          "format": "uri"
-        }
-      },
-      "required": [
-        "id",
-        "userId",
-        "originalFilename",
-        "storagePath",
-        "uploadDateTime",
-        "documentType",
-        "processingStatus"
-      ]
-    },
-    "ExtractedText": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ExtractedText",
-      "type": "object",
-      "description": "Stores the raw and potentially user-edited text extracted from a Document.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the ExtractedText entity."
-        },
-        "documentId": {
-          "type": "string",
-          "description": "Reference to the Document from which this text was extracted. (Relationship: Document 1:1 ExtractedText)"
-        },
-        "rawText": {
-          "type": "string",
-          "description": "The complete raw text extracted by the AI/OCR engine."
-        },
-        "editedText": {
-          "type": "string",
-          "description": "The text after users have made corrections or edits, if any."
-        },
-        "extractionDateTime": {
-          "type": "string",
-          "description": "Timestamp when the text was first extracted from the document.",
-          "format": "date-time"
-        },
-        "lastEditedDateTime": {
-          "type": "string",
-          "description": "Timestamp when the extracted text was last modified by a user.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "documentId",
-        "rawText",
-        "extractionDateTime"
-      ]
-    },
-    "IdentityProof": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "IdentityProof",
-      "type": "object",
-      "description": "Stores structured data extracted from identity documents.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the IdentityProof entity."
-        },
-        "documentId": {
-          "type": "string",
-          "description": "Reference to the original Document that is an identity proof. (Relationship: Document 1:1 IdentityProof)"
-        },
-        "extractedTextId": {
-          "type": "string",
-          "description": "Reference to the ExtractedText associated with this identity proof. (Relationship: ExtractedText 1:1 IdentityProof)"
-        },
-        "name": {
-          "type": "string",
-          "description": "The full name of the person on the identity document."
-        },
-        "address": {
-          "type": "string",
-          "description": "The address mentioned on the identity document."
-        },
-        "dateOfBirth": {
-          "type": "string",
-          "description": "The date of birth of the person on the identity document.",
-          "format": "date"
-        },
-        "documentNumber": {
-          "type": "string",
-          "description": "The unique identification number of the document (e.g., passport number, driver's license number)."
-        },
-        "issueDate": {
-          "type": "string",
-          "description": "The date the identity document was issued.",
-          "format": "date"
-        },
-        "expiryDate": {
-          "type": "string",
-          "description": "The date the identity document expires.",
-          "format": "date"
-        },
-        "nationality": {
-          "type": "string",
-          "description": "The nationality stated on the identity document."
-        },
-        "documentType": {
-          "type": "string",
-          "description": "The specific type of identity document (e.g., Passport, DriverLicense, NationalID)."
-        }
-      },
-      "required": [
-        "id",
-        "documentId",
-        "extractedTextId",
-        "name",
-        "documentNumber",
-        "documentType"
-      ]
-    },
-    "BillingStatement": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "BillingStatement",
-      "type": "object",
-      "description": "Stores structured data extracted from billing documents.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the BillingStatement entity."
-        },
-        "documentId": {
-          "type": "string",
-          "description": "Reference to the original Document that is a billing statement. (Relationship: Document 1:1 BillingStatement)"
-        },
-        "extractedTextId": {
-          "type": "string",
-          "description": "Reference to the ExtractedText associated with this billing statement. (Relationship: ExtractedText 1:1 BillingStatement)"
-        },
-        "vendorName": {
-          "type": "string",
-          "description": "The name of the vendor or service provider."
-        },
-        "invoiceNumber": {
-          "type": "string",
-          "description": "The unique invoice number for the billing statement."
-        },
-        "invoiceDate": {
-          "type": "string",
-          "description": "The date the invoice was issued.",
-          "format": "date"
-        },
-        "dueDate": {
-          "type": "string",
-          "description": "The date the payment is due.",
-          "format": "date"
-        },
-        "totalAmount": {
-          "type": "number",
-          "description": "The total amount due on the billing statement."
-        },
-        "currency": {
-          "type": "string",
-          "description": "The currency of the total amount (e.g., USD, EUR)."
-        },
-        "billingAddress": {
-          "type": "string",
-          "description": "The billing address specified on the statement."
-        }
-      },
-      "required": [
-        "id",
-        "documentId",
-        "extractedTextId",
-        "vendorName",
-        "invoiceNumber",
-        "invoiceDate",
-        "totalAmount",
-        "currency"
-      ]
-    },
-    "BillingItem": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "BillingItem",
-      "type": "object",
-      "description": "Represents an individual line item found within a BillingStatement.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the BillingItem entity."
-        },
-        "billingStatementId": {
-          "type": "string",
-          "description": "Reference to the BillingStatement this item belongs to. (Relationship: BillingStatement 1:N BillingItem)"
-        },
-        "description": {
-          "type": "string",
-          "description": "A description of the billed item or service."
-        },
-        "quantity": {
-          "type": "number",
-          "description": "The quantity of the item or service."
-        },
-        "unitPrice": {
-          "type": "number",
-          "description": "The unit price of the item or service."
-        },
-        "lineTotal": {
-          "type": "number",
-          "description": "The total cost for this line item (quantity * unitPrice)."
-        }
-      },
-      "required": [
-        "id",
-        "billingStatementId",
-        "description",
-        "quantity",
-        "unitPrice",
-        "lineTotal"
-      ]
-    },
-    "MedicalReport": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "MedicalReport",
-      "type": "object",
-      "description": "Stores structured diagnostic and patient details extracted from hospital reports.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the MedicalReport entity."
-        },
-        "documentId": {
-          "type": "string",
-          "description": "Reference to the original Document that is a medical report. (Relationship: Document 1:1 MedicalReport)"
-        },
-        "extractedTextId": {
-          "type": "string",
-          "description": "Reference to the ExtractedText associated with this medical report. (Relationship: ExtractedText 1:1 MedicalReport)"
-        },
-        "patientName": {
-          "type": "string",
-          "description": "The full name of the patient mentioned in the report."
-        },
-        "patientId": {
-          "type": "string",
-          "description": "The patient's unique identifier from the medical system."
-        },
-        "reportDate": {
-          "type": "string",
-          "description": "The date the medical report was issued.",
-          "format": "date"
-        },
-        "doctorName": {
-          "type": "string",
-          "description": "The name of the doctor who issued or signed the report."
-        },
-        "hospitalName": {
-          "type": "string",
-          "description": "The name of the hospital or clinic where the report originated."
-        },
-        "diagnosis": {
-          "type": "string",
-          "description": "The primary medical diagnosis stated in the report."
-        },
-        "chiefComplaint": {
-          "type": "string",
-          "description": "The patient's primary reason for seeking medical attention, as stated in the report."
-        },
-        "findings": {
-          "type": "string",
-          "description": "Detailed medical findings from examinations, tests, or observations."
-        },
-        "recommendations": {
-          "type": "string",
-          "description": "Medical recommendations or treatment plans outlined in the report."
-        }
-      },
-      "required": [
-        "id",
-        "documentId",
-        "extractedTextId",
-        "patientName",
-        "patientId",
-        "reportDate",
-        "doctorName",
-        "hospitalName",
-        "diagnosis"
-      ]
+        "assignedVerifiers": { "type": "array" },
+        "assignedVerifierIds": { "type": "array" },
+        "newValue": { "type": "object" },
+        "originalValue": { "type": "object" },
+        "revalidatePath": { "type": "string" },
+        "description": { "type": "string" },
+        "createdAt": { "type": "object" },
+        "updatedAt": { "type": "object" }
+      }
     }
   },
   "auth": {
-    "providers": [
-      "password",
-      "anonymous"
-    ]
+    "providers": ["password", "phone"]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "User",
-          "schema": {
-            "$ref": "#/backend/entities/User"
-          },
-          "description": "Stores user profile information, directly identified by their authentication UID. This path ensures all user data is strictly private to the owner. The 'id' field within the document must match the 'userId' path parameter.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user, typically matching Firebase Authentication's UID."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/documents/{documentId}",
-        "definition": {
-          "entityName": "Document",
-          "schema": {
-            "$ref": "#/backend/entities/Document"
-          },
-          "description": "A subcollection storing metadata for documents uploaded by a specific user. Access is strictly controlled by the 'userId' in the path, ensuring only the owner can manage their documents. Includes denormalized 'userId' for invariant checks, though authorization relies on the path. Contains 'processingStatus' for explicit state management.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user who owns the document."
-            },
-            {
-              "name": "documentId",
-              "description": "The unique identifier for the specific document."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/documents/{documentId}/extractedTexts/{extractedTextId}",
-        "definition": {
-          "entityName": "ExtractedText",
-          "schema": {
-            "$ref": "#/backend/entities/ExtractedText"
-          },
-          "description": "Stores the raw and potentially edited text extracted from a specific document. This is a subcollection, inheriting authorization from its parent document and user. Includes denormalized 'documentId' and 'userId' for invariant checks.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user who owns the parent document."
-            },
-            {
-              "name": "documentId",
-              "description": "The unique identifier for the parent document."
-            },
-            {
-              "name": "extractedTextId",
-              "description": "The unique identifier for the extracted text entry."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/documents/{documentId}/identityProofs/{identityProofId}",
-        "definition": {
-          "entityName": "IdentityProof",
-          "schema": {
-            "$ref": "#/backend/entities/IdentityProof"
-          },
-          "description": "Stores structured data extracted from identity documents. This is a subcollection, inheriting authorization from its parent document and user. Includes denormalized 'documentId', 'extractedTextId', and 'userId' for invariant checks.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user who owns the parent document."
-            },
-            {
-              "name": "documentId",
-              "description": "The unique identifier for the parent identity document."
-            },
-            {
-              "name": "identityProofId",
-              "description": "The unique identifier for the extracted identity proof data."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/documents/{documentId}/billingStatements/{billingStatementId}",
-        "definition": {
-          "entityName": "BillingStatement",
-          "schema": {
-            "$ref": "#/backend/entities/BillingStatement"
-          },
-          "description": "Stores structured data extracted from billing statements. This is a subcollection, inheriting authorization from its parent document and user. Includes denormalized 'documentId', 'extractedTextId', and 'userId' for invariant checks.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user who owns the parent document."
-            },
-            {
-              "name": "documentId",
-              "description": "The unique identifier for the parent billing document."
-            },
-            {
-              "name": "billingStatementId",
-              "description": "The unique identifier for the extracted billing statement data."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/documents/{documentId}/billingStatements/{billingStatementId}/billingItems/{billingItemId}",
-        "definition": {
-          "entityName": "BillingItem",
-          "schema": {
-            "$ref": "#/backend/entities/BillingItem"
-          },
-          "description": "A subcollection storing individual line items for a specific billing statement. This further nests authorization under the user and document paths. Includes denormalized 'billingStatementId', 'documentId', and 'userId' for invariant checks.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user who owns the top-level document."
-            },
-            {
-              "name": "documentId",
-              "description": "The unique identifier for the parent document of the billing statement."
-            },
-            {
-              "name": "billingStatementId",
-              "description": "The unique identifier for the parent billing statement."
-            },
-            {
-              "name": "billingItemId",
-              "description": "The unique identifier for the billing item."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/documents/{documentId}/medicalReports/{medicalReportId}",
-        "definition": {
-          "entityName": "MedicalReport",
-          "schema": {
-            "$ref": "#/backend/entities/MedicalReport"
-          },
-          "description": "Stores structured data extracted from medical reports. This is a subcollection, inheriting authorization from its parent document and user. Includes denormalized 'documentId', 'extractedTextId', and 'userId' for invariant checks.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier of the user who owns the parent document."
-            },
-            {
-              "name": "documentId",
-              "description": "The unique identifier for the parent medical report document."
-            },
-            {
-              "name": "medicalReportId",
-              "description": "The unique identifier for the extracted medical report data."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "The recommended Firestore structure for DocuExtract prioritizes user-centric data organization, leveraging hierarchical paths to ensure strict access control, authorization independence, and robust query capabilities. All user-specific data is nested under a top-level `/users/{userId}` collection. This pattern makes the owner of the data (the `userId`) an explicit part of the document path, which is critical for simple and efficient security rules. For instance, a document and all its related extracted data (text, identity proof, billing statement, medical report) are securely nested under the owning user's path.\n\n**Authorization Independence:** This structure achieves Authorization Independence by embedding the primary authorization context (the `userId`) directly into the path of every relevant document. When a user attempts to access any document within `/users/{userId}/...`, the Firestore security rules can directly compare `request.auth.uid` with the `{userId}` wildcard in the path. This eliminates the need for `get()` operations within rules to fetch parent documents or denormalized `ownerId` fields for authorization decisions, making rules atomic, faster, and easier to debug. While fields like `userId`, `documentId`, `extractedTextId` are still included in the document data, their primary role is for data integrity (invariants) and querying, not for the core authorization decision.\n\n**QAPs (Query-Able Paths):** The design directly supports Query-Able Paths by ensuring that collections have a homogeneous security posture. Any `list` operation on a collection like `/users/{request.auth.uid}/documents` will inherently only return documents belonging to the authenticated user, as enforced by the path-based security rule `allow read: if request.auth.uid == userId;`. This means the Firestore rules are not attempting to *filter* results after a broad read; instead, they are strictly defining *which paths* are readable by `request.auth.uid`. This prevents unauthorized data leakage through broad list queries and simplifies application logic, as clients can trust the data returned by a query is authorized.\n\n**Structural Segregation:** Each collection within the user's hierarchy maintains a consistent security posture: private to the owning user. There is no mixing of public and private data or different access levels within the same collection. For example, `/users/{userId}/documents` only contains documents owned by that specific `userId`. Subcollections like `/extractedTexts` within a document's path are also implicitly owned by the same user, maintaining consistent access requirements.\n\n**Explicit State Modeling:** The `Document` entity includes a `processingStatus` field, providing a clear finite state machine for the document's lifecycle within the extraction pipeline. This avoids ambiguity and simplifies rule logic related to document state."
+    "/users/{userId}": {
+      "schema": { "$ref": "#/backend/entities/UserProfile" },
+      "description": "Core identity registry for staff and donors."
+    },
+    "/donors/{donorId}": {
+      "schema": { "type": "object" },
+      "description": "Mirrored profile for community contributors."
+    },
+    "/donations/{donationId}": {
+      "schema": { "type": "object" },
+      "description": "Financial registry of verified and pending contributions."
+    },
+    "/pending_verifications/{id}": {
+      "schema": { "$ref": "#/backend/entities/PendingVerification" },
+      "description": "Staged record modifications awaiting audit."
+    }
   }
 }

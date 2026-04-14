@@ -1,3 +1,4 @@
+
 'use client';
 
 import { ReactNode, useEffect, useState } from 'react';
@@ -13,10 +14,8 @@ import { cn } from '@/lib/utils';
 import { ThemeProvider, useTheme } from 'next-themes';
 import { THEME_SUGGESTIONS } from '@/lib/themes';
 import { VerificationManager } from '@/components/verification-manager';
+import { InactivityMonitor } from '@/components/inactivity-monitor';
 
-/**
- * ThemeSync - Ensures '.dark' class matches the selected data-theme metadata.
- */
 function ThemeSync() {
   const { theme, resolvedTheme } = useTheme();
 
@@ -58,6 +57,7 @@ export function Providers({ children }: { children: ReactNode }) {
           
           <AuthProvider>
               <PWABadgeHandler />
+              <InactivityMonitor />
               <div className="relative z-10 flex flex-col min-h-screen w-full overflow-x-hidden">
                  <DocuExtractHeader />
                  <main className={cn("flex-1 w-full", isLoginPage && "flex items-center justify-center p-4")}>
