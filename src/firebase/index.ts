@@ -48,3 +48,23 @@ export * from './non-blocking-updates';
 export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';
+
+// Re-export specific firestore methods used across components directly from `@/firebase`
+export { 
+  collection, 
+  query, 
+  where, 
+  doc, 
+  orderBy, 
+  limit, 
+  getDoc, 
+  getDocs, 
+  setDoc, 
+  updateDoc, 
+  deleteDoc,
+  serverTimestamp,
+  arrayUnion,
+  arrayRemove,
+  increment,
+  writeBatch
+} from 'firebase/firestore';

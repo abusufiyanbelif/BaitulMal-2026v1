@@ -70,6 +70,9 @@ async function mergeDuplicateIdentities() {
             const batch = adminDb.batch();
             const mergedPermissions = { ...(primary.permissions || {}) };
 
+            let mergedLinkedBeneficiaryId = primary.linkedBeneficiaryId || null;
+            let mergedLinkedDonorId = primary.linkedDonorId || primary.id;
+
             for (const redundant of redundants) {
                 console.log(`   Consolidating Redundant Fragment: ${redundant.id} (Role: ${redundant.role})`);
 
@@ -81,12 +84,17 @@ async function mergeDuplicateIdentities() {
                     });
                 }
 
+                const redundantDonorId = redundant.linkedDonorId || redundant.id;
+                const redundantBeneficiaryId = redundant.linkedBeneficiaryId;
+
                 // 2. Re-assign all DONATIONS pointing to redundant UID
-                const linkedDonations = donationsSnap.docs.filter(d => d.data().donorId === redundant.id || d.data().uploadedById === redundant.id);
+                const linkedDonations = donationsSnap.docs.filter(d => 
+                    d.data().donorId === redundantDonorId || d.data().uploadedById === redundant.id
+                );
                 linkedDonations.forEach(d => {
                     const updates: any = { updatedAt: FieldValue.serverTimestamp() };
-                    if (d.data().donorId === redundant.id) {
-                        updates.donorId = primary.id;
+                    if (d.data().donorId === redundantDonorId) {
+                        updates.donorId = mergedLinkedDonorId;
                         updates.donorName = primary.name;
                     }
                     if (d.data().uploadedById === redundant.id) {
@@ -118,17 +126,38 @@ async function mergeDuplicateIdentities() {
                     });
                 }
 
-                // 4. Migrate Master Role Profiles
-                const oldDonorRef = adminDb.collection('donors').doc(redundant.id);
-                const primaryDonorRef = adminDb.collection('donors').doc(primary.id);
-                const oldDonorSnap = await oldDonorRef.get();
-                if (oldDonorSnap.exists) {
-                    batch.set(primaryDonorRef, sanitizePayload({
-                        ...oldDonorSnap.data(),
-                        id: primary.id,
-                        updatedAt: FieldValue.serverTimestamp()
-                    }), { merge: true });
-                    batch.delete(oldDonorRef);
+                // 4. Migrate Master Role Profiles (Donor)
+                if (redundantDonorId !== mergedLinkedDonorId) {
+                    const oldDonorRef = adminDb.collection('donors').doc(redundantDonorId);
+                    const primaryDonorRef = adminDb.collection('donors').doc(mergedLinkedDonorId);
+                    const oldDonorSnap = await oldDonorRef.get();
+                    if (oldDonorSnap.exists) {
+                        batch.set(primaryDonorRef, sanitizePayload({
+                            ...oldDonorSnap.data(),
+                            id: mergedLinkedDonorId,
+                            updatedAt: FieldValue.serverTimestamp()
+                        }), { merge: true });
+                        batch.delete(oldDonorRef);
+                    }
+                }
+
+                // Migrate Master Role Profiles (Beneficiary)
+                if (redundantBeneficiaryId && redundantBeneficiaryId !== mergedLinkedBeneficiaryId) {
+                    if (!mergedLinkedBeneficiaryId) {
+                        mergedLinkedBeneficiaryId = redundantBeneficiaryId;
+                    } else {
+                        const oldBenRef = adminDb.collection('beneficiaries').doc(redundantBeneficiaryId);
+                        const primaryBenRef = adminDb.collection('beneficiaries').doc(mergedLinkedBeneficiaryId);
+                        const oldBenSnap = await oldBenRef.get();
+                        if (oldBenSnap.exists) {
+                            batch.set(primaryBenRef, sanitizePayload({
+                                ...oldBenSnap.data(),
+                                id: mergedLinkedBeneficiaryId,
+                                updatedAt: FieldValue.serverTimestamp()
+                            }), { merge: true });
+                            batch.delete(oldBenRef);
+                        }
+                    }
                 }
 
                 // 5. Purge Redundant Identity Records
@@ -143,8 +172,8 @@ async function mergeDuplicateIdentities() {
             const finalUpdate = sanitizePayload({
                 permissions: mergedPermissions,
                 updatedAt: FieldValue.serverTimestamp(),
-                linkedDonorId: primary.id,
-                linkedBeneficiaryId: primary.linkedBeneficiaryId || null
+                linkedDonorId: mergedLinkedDonorId,
+                linkedBeneficiaryId: mergedLinkedBeneficiaryId
             });
 
             batch.update(adminDb.collection('users').doc(primary.id), finalUpdate);
