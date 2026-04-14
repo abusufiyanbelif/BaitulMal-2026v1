@@ -19,7 +19,8 @@
     "db:migrate-beneficiary-status": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" scripts/migrate-beneficiary-status.ts",
     "db:migrate-priority": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" scripts/migrate-priority.ts",
     "db:migrate-donations-goal": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" scripts/migrate-donations-goal.ts",
-    "db:migrate-donors": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" scripts/migrate-donors-to-users.ts"
+    "db:migrate-donors": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" scripts/migrate-donors-to-users.ts",
+    "db:scan": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" scripts/identify-abusufiyan.ts"
   },
   "dependencies": {
     "@genkit-ai/google-genai": "^1.0.0",
