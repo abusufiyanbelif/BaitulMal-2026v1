@@ -17,6 +17,8 @@ function sanitizePayload(data: Record<string, any>) {
             sanitized[key] = data[key];
         } else if (data[key] === null) {
             sanitized[key] = null;
+        } else {
+            sanitized[key] = data[key];
         }
     });
     return sanitized;
@@ -414,8 +416,8 @@ export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success
         ];
 
         for (const init of allInitiatives) {
-            const allowedTypes = init.data.allowedDonationTypes && init.data.allowedDonationTypes.length > 0
-                ? init.data.allowedDonationTypes
+            const allowedTypes = (init.data as any).allowedDonationTypes && (init.data as any).allowedDonationTypes.length > 0
+                ? (init.data as any).allowedDonationTypes
                 : [...donationCategories];
 
             let total = 0;
@@ -441,7 +443,7 @@ export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success
         }
         
         await batch.commit();
-        revalidatePath('/campaigns');
+        revalidatePath('/campaign-members');
         revalidatePath('/leads-members');
         revalidatePath('/dashboard');
         return { success: true, message: "Initiative financial totals re-synchronized." };

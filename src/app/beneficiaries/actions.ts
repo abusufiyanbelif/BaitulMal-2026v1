@@ -7,6 +7,9 @@ import { FieldValue } from 'firebase-admin/firestore';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure Server Credentials Are Configured Correctly.";
 
+/**
+ * Creates a new beneficiary in the master registry.
+ */
 export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
@@ -34,8 +37,105 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
 }
 
 /**
+ * Updates a master beneficiary record.
+ */
+export async function updateMasterBeneficiaryAction(beneficiaryId: string, data: Partial<Beneficiary>, updatedBy: {id: string, name: string}): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    try {
+        await adminDb.collection('beneficiaries').doc(beneficiaryId).update({
+            ...data,
+            updatedAt: FieldValue.serverTimestamp(),
+            updatedById: updatedBy.id,
+            updatedByName: updatedBy.name,
+        });
+        revalidatePath(`/beneficiaries/${beneficiaryId}`);
+        revalidatePath('/beneficiaries');
+        return { success: true, message: 'Master profile updated.' };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+
+/**
+ * Bulk updates master status.
+ */
+export async function bulkUpdateMasterBeneficiaryStatusAction(ids: string[], status: Beneficiary['status'], updatedBy: {id: string, name: string}): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    try {
+        const batch = adminDb.batch();
+        ids.forEach(id => {
+            batch.update(adminDb.collection('beneficiaries').doc(id), { status, updatedById: updatedBy.id, updatedByName: updatedBy.name, updatedAt: FieldValue.serverTimestamp() });
+        });
+        await batch.commit();
+        revalidatePath('/beneficiaries');
+        return { success: true, message: `Updated ${ids.length} records.` };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+
+/**
+ * Bulk updates zakat eligibility.
+ */
+export async function bulkUpdateMasterZakatAction(ids: string[], isEligibleForZakat: boolean, updatedBy: {id: string, name: string}): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    try {
+        const batch = adminDb.batch();
+        ids.forEach(id => {
+            batch.update(adminDb.collection('beneficiaries').doc(id), { isEligibleForZakat, updatedById: updatedBy.id, updatedByName: updatedBy.name, updatedAt: FieldValue.serverTimestamp() });
+        });
+        await batch.commit();
+        revalidatePath('/beneficiaries');
+        return { success: true, message: `Zakat status updated for ${ids.length} records.` };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+
+/**
+ * Bulk imports beneficiaries from CSV.
+ */
+export async function bulkImportBeneficiariesAction(records: Partial<Beneficiary>[], createdBy: {id: string, name: string}, initiativeContext?: { type: 'campaign' | 'lead', id: string }): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    try {
+        const batch = adminDb.batch();
+        for (const record of records) {
+            const id = record.id || adminDb.collection('beneficiaries').doc().id;
+            const ref = adminDb.collection('beneficiaries').doc(id);
+            const payload = {
+                ...record,
+                id,
+                status: record.status || 'Pending',
+                addedDate: record.addedDate || new Date().toISOString().split('T')[0],
+                createdAt: record.createdAt || FieldValue.serverTimestamp(),
+                createdById: createdBy.id,
+                createdByName: createdBy.name,
+                updatedAt: FieldValue.serverTimestamp(),
+                updatedById: createdBy.id,
+                updatedByName: createdBy.name,
+            };
+            batch.set(ref, payload, { merge: true });
+
+            if (initiativeContext) {
+                const subRef = adminDb.doc(`${initiativeContext.type === 'campaign' ? 'campaigns' : 'leads'}/${initiativeContext.id}/beneficiaries/${id}`);
+                batch.set(subRef, payload, { merge: true });
+            }
+        }
+        await batch.commit();
+        revalidatePath('/beneficiaries');
+        if (initiativeContext) revalidatePath(`/${initiativeContext.type}s-members/${initiativeContext.id}/beneficiaries`);
+        return { success: true, message: `Successfully synchronized ${records.length} records.` };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+
+/**
  * Robust server-side action to upsert a beneficiary within an initiative context.
- * Performs real-time reconciliation of target goals and audit trails.
  */
 export async function upsertInitiativeBeneficiaryAction(
     initiativeType: 'campaign' | 'lead',
@@ -98,6 +198,99 @@ export async function upsertInitiativeBeneficiaryAction(
         return { success: true, message: 'Beneficiary records synchronized successfully.' };
     } catch (error: any) {
         return { success: false, message: `Update Failed: ${error.message}` };
+    }
+}
+
+/**
+ * Bulk updates disbursement status within an initiative.
+ */
+export async function bulkUpdateInitiativeBeneficiaryStatusAction(
+    type: 'campaign' | 'lead',
+    id: string,
+    beneficiaryIds: string[],
+    status: Beneficiary['status']
+): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    try {
+        const batch = adminDb.batch();
+        const collectionName = type === 'campaign' ? 'campaigns' : 'leads';
+        beneficiaryIds.forEach(bId => {
+            const ref = adminDb.doc(`${collectionName}/${id}/beneficiaries/${bId}`);
+            batch.update(ref, { status, updatedAt: FieldValue.serverTimestamp() });
+        });
+        await batch.commit();
+        revalidatePath(`/${collectionName}-members/${id}/beneficiaries`);
+        return { success: true, message: `Updated ${beneficiaryIds.length} disbursement statuses.` };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+
+/**
+ * Bulk updates verification (vetting) status across master and initiative.
+ */
+export async function bulkUpdateBeneficiaryVettingAction(
+    ids: string[],
+    status: Beneficiary['status'],
+    updatedBy: {id: string, name: string},
+    initiativeContext: { type: 'campaign' | 'lead', id: string }
+): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    try {
+        const batch = adminDb.batch();
+        const collectionName = initiativeContext.type === 'campaign' ? 'campaigns' : 'leads';
+        ids.forEach(id => {
+            batch.update(adminDb.collection('beneficiaries').doc(id), { status, updatedById: updatedBy.id, updatedByName: updatedBy.name, updatedAt: FieldValue.serverTimestamp() });
+            batch.update(adminDb.doc(`${collectionName}/${initiativeContext.id}/beneficiaries/${id}`), { verificationStatus: status, updatedAt: FieldValue.serverTimestamp() });
+        });
+        await batch.commit();
+        revalidatePath('/beneficiaries');
+        revalidatePath(`/${collectionName}-members/${initiativeContext.id}/beneficiaries`);
+        return { success: true, message: `Vetting status updated for ${ids.length} records.` };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+
+/**
+ * Legacy sync helper.
+ */
+export async function syncMasterBeneficiaryListAction(): Promise<{ success: boolean; message: string }> {
+    revalidatePath('/beneficiaries');
+    return { success: true, message: 'Registry Refreshed.' };
+}
+
+/**
+ * Updates initiative-specific beneficiary details.
+ */
+export async function updateInitiativeBeneficiaryDetailsAction(type: 'campaign' | 'lead', id: string, bId: string, data: any): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    try {
+        const collectionName = type === 'campaign' ? 'campaigns' : 'leads';
+        await adminDb.doc(`${collectionName}/${id}/beneficiaries/${bId}`).set(data, { merge: true });
+        revalidatePath(`/${collectionName}-members/${id}/beneficiaries`);
+        return { success: true, message: 'Initiative details updated.' };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+
+/**
+ * Updates single beneficiary status in initiative.
+ */
+export async function updateBeneficiaryStatusInInitiativeAction(type: 'campaign' | 'lead', id: string, bId: string, status: any): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    try {
+        const collectionName = type === 'campaign' ? 'campaigns' : 'leads';
+        await adminDb.doc(`${collectionName}/${id}/beneficiaries/${bId}`).update({ status, updatedAt: FieldValue.serverTimestamp() });
+        revalidatePath(`/${collectionName}-members/${id}/beneficiaries`);
+        return { success: true, message: 'Status updated.' };
+    } catch (e: any) {
+        return { success: false, message: e.message };
     }
 }
 
