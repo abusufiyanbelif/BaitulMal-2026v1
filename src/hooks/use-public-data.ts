@@ -139,7 +139,7 @@ export function usePublicData() {
           const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
           const isAllowed = allowedTypes.includes(category as DonationCategory);
           
-          // Count Zakat by default unless explicitly false
+          // Logic Fix: Count Zakat as inclusive by default unless explicitly marked false
           const isForGoal = category !== 'Zakat' || split.forFundraising !== false;
 
           if (isAllowed && isForGoal) {
@@ -195,7 +195,7 @@ export function usePublicData() {
         const links = (d.linkSplit && d.linkSplit.length > 0)
             ? d.linkSplit
             : (d as any).campaignId 
-                ? [{ linkId: (d as any).campaignId, amount: d.amount, linkType: 'campaign' }] 
+                ? [{ linkId: (d as any).campaignId, amount: donation.amount, linkType: 'campaign' }] 
                 : [];
 
         links.forEach(l => {
