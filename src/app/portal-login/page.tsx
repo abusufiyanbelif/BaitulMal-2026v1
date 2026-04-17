@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Loader2, AlertTriangle, ArrowLeft, Phone, ShieldCheck } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
+import { BrandedLoader } from '@/components/branded-loader';
 
 // Extension for window object to hold recaptcha verifier
 declare global {
@@ -32,6 +33,10 @@ const otpSchema = z.object({
   otp: z.string().length(6, 'OTP must be 6 digits.'),
 });
 
+/**
+ * Portal Login Page - Optimized for Supporter and Beneficiary OTP access.
+ * Securely resolves mobile identities to institutional profiles.
+ */
 export default function PortalLoginPage() {
   const router = useRouter();
   const auth = useAuth();
@@ -76,6 +81,7 @@ export default function PortalLoginPage() {
         setStep('otp');
         toast({ title: 'OTP Sent!', description: 'Please Check Your Mobile Messages.', variant: 'success' });
     } catch (err: any) {
+        console.error("OTP send error:", err);
         setLoginError(err.message || 'Failed To Send OTP. Try Again Later.');
     } finally {
         setIsLoading(false);
@@ -89,6 +95,7 @@ export default function PortalLoginPage() {
       try {
           await verificationResult.confirm(data.otp);
           toast({ title: 'Securely Logged In', description: 'Redirecting To Your Portal...', variant: 'success' });
+          // Redirect handled by AuthProvider's RouteGuard
       } catch (err: any) {
           setLoginError('Invalid OTP Code. Please Try Again.');
       } finally {
@@ -97,7 +104,7 @@ export default function PortalLoginPage() {
   };
 
   if (isBrandingLoading) {
-      return <BrandedLoader message="Fetching Portal Config..." />;
+      return <BrandedLoader message="Syncing Portal Identity Hub..." />;
   }
 
   if (!isPortalsEnabled) {
@@ -106,25 +113,25 @@ export default function PortalLoginPage() {
               <ShieldCheck className="h-20 w-20 text-destructive mb-6" />
               <h1 className="text-3xl font-bold tracking-tight text-primary">Portal Access Suspended</h1>
               <p className="mt-2 text-muted-foreground text-center font-normal">Organization Administrators Have Currently Disabled Self-Service Portal Access.</p>
-              <Button asChild className="mt-8 font-bold"><Link href="/">Return To Home</Link></Button>
+              <Button asChild className="mt-8 font-bold border-primary/20 text-primary transition-transform active:scale-95" variant="outline"><Link href="/">Return To Home</Link></Button>
           </div>
       );
   }
 
   return (
-    <div className="w-full max-w-sm pt-20 mx-auto min-h-screen">
+    <div className="w-full max-w-sm pt-20 mx-auto min-h-screen animate-fade-in-up">
       <div className="mb-4">
-        <Button variant="outline" asChild className="font-bold border-primary/20 text-primary">
+        <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
           <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Home</Link>
         </Button>
       </div>
 
-      <Card className="animate-fade-in-up border-primary/10 shadow-2xl">
-        <CardHeader className="text-center">
-            <div className="mx-auto bg-primary/5 p-3 rounded-2xl w-fit mb-4">
+      <Card className="border-primary/10 shadow-2xl bg-white overflow-hidden">
+        <CardHeader className="text-center bg-primary/5 border-b mb-6">
+            <div className="mx-auto bg-white p-3 rounded-2xl w-fit shadow-sm border border-primary/10 mb-2">
                 <Phone className="h-8 w-8 text-primary" />
             </div>
-          <CardTitle className="font-bold text-primary text-2xl">Supporter Portal</CardTitle>
+          <CardTitle className="font-bold text-primary text-2xl tracking-tight">Supporter Portal</CardTitle>
           <CardDescription className="font-normal px-2">Access Your Impact History Securely Via Mobile.</CardDescription>
         </CardHeader>
         
@@ -137,18 +144,17 @@ export default function PortalLoginPage() {
                             name="phone"
                             render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="font-bold">10-Digit Mobile Number</FormLabel>
+                                <FormLabel className="font-bold text-primary opacity-60">10-Digit Mobile Number</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="9876543210" {...field} className="h-12 text-lg text-center tracking-widest font-bold" />
+                                    <Input placeholder="9876543210" {...field} className="h-12 text-lg text-center tracking-widest font-bold border-primary/20 focus:border-primary" />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
                             )}
                         />
                         <div id="recaptcha-container"></div>
-                        <Button type="submit" className="w-full h-12 font-bold" disabled={isLoading}>
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Send Secure Code
+                        <Button type="submit" className="w-full h-12 font-bold shadow-lg active:scale-95 transition-all" disabled={isLoading}>
+                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Send Secure Code'}
                         </Button>
                     </form>
                 </Form>
@@ -160,19 +166,18 @@ export default function PortalLoginPage() {
                             name="otp"
                             render={({ field }) => (
                             <FormItem>
-                                <FormLabel className="font-bold text-primary">Enter 6-Digit Code</FormLabel>
+                                <FormLabel className="font-bold text-primary opacity-60">Enter 6-Digit Code</FormLabel>
                                 <FormControl>
-                                    <Input placeholder="XXXXXX" {...field} className="h-12 text-2xl text-center tracking-[1rem] font-bold" maxLength={6} />
+                                    <Input placeholder="XXXXXX" {...field} className="h-12 text-2xl text-center tracking-[0.5rem] font-bold border-primary/20 focus:border-primary" maxLength={6} />
                                 </FormControl>
                                 <FormMessage />
                             </FormItem>
                             )}
                         />
-                        <Button type="submit" className="w-full h-12 font-bold" disabled={isLoading}>
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Verify & Enter Portal
+                        <Button type="submit" className="w-full h-12 font-bold shadow-lg active:scale-95 transition-all" disabled={isLoading}>
+                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Verify & Enter Portal'}
                         </Button>
-                        <Button variant="ghost" onClick={() => setStep('phone')} type="button" className="w-full mt-2 font-bold opacity-60">
+                        <Button variant="ghost" onClick={() => setStep('phone')} type="button" className="w-full mt-2 font-bold opacity-60 text-xs">
                             Use A Different Number
                         </Button>
                     </form>
@@ -180,17 +185,17 @@ export default function PortalLoginPage() {
             )}
 
             {loginError && (
-                <Alert variant="destructive" className="mt-4">
+                <Alert variant="destructive" className="mt-4 animate-fade-in-down">
                     <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Authentication Failed</AlertTitle>
-                    <AlertDescription>{loginError}</AlertDescription>
+                    <AlertTitle className="font-bold">Authentication Failed</AlertTitle>
+                    <AlertDescription className="text-xs font-normal">{loginError}</AlertDescription>
                 </Alert>
             )}
         </CardContent>
       </Card>
       
       <p className="text-center w-full mt-12 text-sm opacity-60 font-bold block">
-         Staff Members: <Link href="/login" className="underline text-primary">Use The Member Login Area.</Link>
+         Staff Members: <Link href="/login" className="underline text-primary hover:text-primary/80 transition-colors">Use The Member Login Area.</Link>
       </p>
     </div>
   );

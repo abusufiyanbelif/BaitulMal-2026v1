@@ -116,7 +116,6 @@ export function usePublicData() {
             : [];
       
       links.forEach((link: any) => {
-        // Normalize ID (strip prefix if present for lookup)
         const rawLinkId = String(link.linkId || '');
         const cleanId = (rawLinkId.startsWith('campaign_') || rawLinkId.startsWith('lead_')) 
             ? rawLinkId.split('_')[1] 
@@ -140,7 +139,7 @@ export function usePublicData() {
           const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
           const isAllowed = allowedTypes.includes(category as DonationCategory);
           
-          // Logic Fix: count Zakat by default unless explicitly false (for goal progress)
+          // Count Zakat by default unless explicitly false
           const isForGoal = category !== 'Zakat' || split.forFundraising !== false;
 
           if (isAllowed && isForGoal) {
@@ -291,6 +290,7 @@ export function usePublicData() {
       recentDonationsFormatted,
       summaryDateRange: (startDate || endDate) ? { start: startDate, end: endDate } : null,
       isTickerActiveVisible,
+      isTickerDonationVisible,
       isTickerCompletedVisible,
       skipIds,
       maxCompleted
