@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
@@ -218,7 +217,9 @@ export default function LeadSummaryPage() {
     const fundingData = useMemo(() => {
         if (!allDonations || !lead || !beneficiaries) return null;
 
-        const donations = allDonations.filter(d => d.linkSplit?.some(link => link.linkId === lead.id && link.linkType === 'lead'));
+        const donations = allDonations.filter(d => 
+            d.linkSplit?.some(link => link.linkId === lead.id || link.linkId === `lead_${lead.id}`)
+        );
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
@@ -226,7 +227,7 @@ export default function LeadSummaryPage() {
         let zakatForGoalAmount = 0;
 
         verifiedDonationsList.forEach(d => {
-            const leadAllocation = d.linkSplit?.find(link => link.linkId === lead.id);
+            const leadAllocation = d.linkSplit?.find(link => link.linkId === lead.id || link.linkId === `lead_${lead.id}`);
             if (!leadAllocation) return;
 
             const paymentType = d.donationType || 'Other';
@@ -244,7 +245,9 @@ export default function LeadSummaryPage() {
                 if (amountsByCategory.hasOwnProperty(category)) {
                     const allocatedAmount = split.amount * allocationProportion;
                     amountsByCategory[category as DonationCategory] += allocatedAmount;
-                    const isForFundraising = category !== 'Zakat' || split.forFundraising === true;
+                    
+                    // Logic Fix: Count Zakat by default unless explicitly false
+                    const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
                     if (category === 'Zakat' && isForFundraising) zakatForGoalAmount += allocatedAmount;
                 }
             });

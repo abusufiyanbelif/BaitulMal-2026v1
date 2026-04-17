@@ -9,7 +9,7 @@ import { donationCategories } from '@/lib/modules';
 
 /**
  * usePublicData - Strict filtering for public-facing organizational reporting.
- * Handles both modern linkSplit and legacy campaignId structures.
+ * Hardened to handle both prefixed and raw IDs, and ensure Zakat defaults to inclusive for goal progress.
  */
 export function usePublicData() {
   const firestore = useFirestore();
@@ -116,7 +116,13 @@ export function usePublicData() {
             : [];
       
       links.forEach((link: any) => {
-        const item = itemsById.get(link.linkId);
+        // Normalize ID (strip prefix if present for lookup)
+        const rawLinkId = String(link.linkId || '');
+        const cleanId = (rawLinkId.startsWith('campaign_') || rawLinkId.startsWith('lead_')) 
+            ? rawLinkId.split('_')[1] 
+            : rawLinkId;
+
+        const item = itemsById.get(cleanId);
         if (!item) return;
 
         const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
@@ -133,7 +139,9 @@ export function usePublicData() {
         const applicableAmountInDonation = typeSplits.reduce((acc, split) => {
           const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
           const isAllowed = allowedTypes.includes(category as DonationCategory);
-          const isForGoal = category !== 'Zakat' || split.forFundraising === true;
+          
+          // Logic Fix: count Zakat by default unless explicitly false (for goal progress)
+          const isForGoal = category !== 'Zakat' || split.forFundraising !== false;
 
           if (isAllowed && isForGoal) {
             return acc + split.amount;
@@ -142,17 +150,17 @@ export function usePublicData() {
         }, 0);
         
         const itemContribution = applicableAmountInDonation * proportionForThisItem;
-        const currentLifetimeCollected = collectedAmounts.get(link.linkId) || 0;
-        collectedAmounts.set(link.linkId, currentLifetimeCollected + itemContribution);
+        const currentLifetimeCollected = collectedAmounts.get(cleanId) || 0;
+        collectedAmounts.set(cleanId, currentLifetimeCollected + itemContribution);
 
         if (donationYear && isWithinRange) {
             yearlyData[donationYear].totalGoalReceived += itemContribution;
         }
       });
 
-      const isUnlinked = !donation.linkSplit || donation.linkSplit.length === 0 || donation.linkSplit.some(l => l.linkId === 'unallocated');
+      const isUnlinked = !donation.linkSplit || donation.linkSplit.length === 0 || donation.linkSplit.some(l => l.linkId === 'unallocated' || l.linkId === 'unlinked');
       if (isUnlinked) {
-          const unallocatedPart = (donation.linkSplit || []).find(l => l.linkId === 'unallocated')?.amount ?? donation.amount;
+          const unallocatedPart = (donation.linkSplit || []).find(l => l.linkId === 'unallocated' || l.linkId === 'unlinked')?.amount ?? donation.amount;
           grandTotalUnlinked += unallocatedPart;
       }
     });
@@ -192,7 +200,12 @@ export function usePublicData() {
                 : [];
 
         links.forEach(l => {
-            const item = itemsById.get(l.linkId);
+            const rawLinkId = String(l.linkId || '');
+            const cleanId = (rawLinkId.startsWith('campaign_') || rawLinkId.startsWith('lead_')) 
+                ? rawLinkId.split('_')[1] 
+                : rawLinkId;
+
+            const item = itemsById.get(cleanId);
             if (!item) return;
             
             const allowedTypes = item.allowedDonationTypes && item.allowedDonationTypes.length > 0
@@ -204,7 +217,7 @@ export function usePublicData() {
             const eligible = splits.reduce((acc, s) => {
                 const cat = (s.category as any) === 'General' ? 'Sadaqah' : s.category;
                 const isAllowed = allowedTypes.includes(cat as DonationCategory);
-                const isForGoal = cat !== 'Zakat' || s.forFundraising === true;
+                const isForGoal = cat !== 'Zakat' || s.forFundraising !== false;
                 return (isAllowed && isForGoal) ? acc + s.amount : acc;
             }, 0);
             totalCollectedForGoalsInRange += (eligible * prop);
@@ -254,9 +267,9 @@ export function usePublicData() {
                 id: d.id,
                 text: `₹${d.amount.toLocaleString('en-IN')} For ${initiativeName}`,
                 href: (primaryLink?.linkType === 'campaign') 
-                    ? `/campaign-public/${primaryLink.linkId}/summary` 
+                    ? `/campaign-public/${primaryLink.linkId.replace('campaign_', '')}/summary` 
                     : (primaryLink?.linkType === 'lead') 
-                        ? `/leads-public/${primaryLink.linkId}/summary` 
+                        ? `/leads-public/${primaryLink.linkId.replace('lead_', '')}/summary` 
                         : '#'
             };
         }) : [];

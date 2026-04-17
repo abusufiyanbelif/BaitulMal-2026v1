@@ -243,7 +243,11 @@ export default function CampaignSummaryPage() {
         
         const donationsList = allDonations.filter(d => {
             if (d.linkSplit && d.linkSplit.length > 0) {
-                return d.linkSplit.some(link => link.linkId === campaign.id && link.linkType === 'campaign');
+                // Support both prefixed and raw IDs
+                return d.linkSplit.some(link => 
+                    link.linkId === campaign.id || 
+                    link.linkId === `campaign_${campaign.id}`
+                );
             }
             return (d as any).campaignId === campaign.id;
         });
@@ -256,7 +260,10 @@ export default function CampaignSummaryPage() {
 
         verifiedDonationsList.forEach(d => {
             let amountForThisCampaign = 0;
-            const campaignLink = d.linkSplit?.find((l: any) => l.linkId === campaign.id && l.linkType === 'campaign');
+            const campaignLink = d.linkSplit?.find((l: any) => 
+                l.linkId === campaign.id || l.linkId === `campaign_${campaign.id}`
+            );
+
             if (campaignLink) {
                 amountForThisCampaign = campaignLink.amount;
             } else if ((!d.linkSplit || d.linkSplit.length === 0) && (d as any).campaignId === campaign.id) {
@@ -282,7 +289,9 @@ export default function CampaignSummaryPage() {
                 if (amountsByCategory.hasOwnProperty(category)) {
                     const allocatedAmount = split.amount * proportionForThisCampaign;
                     amountsByCategory[category as DonationCategory] += allocatedAmount;
-                    const isForFundraising = category !== 'Zakat' || split.forFundraising === true;
+                    
+                    // Logic Fix: count Zakat by default unless explicitly false
+                    const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
                     if (category === 'Zakat' && isForFundraising) zakatForGoalAmount += allocatedAmount;
                 }
             });

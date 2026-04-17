@@ -26,14 +26,20 @@ function sanitizePayload(data: Record<string, any>) {
 
 /**
  * Recalculates initiative totals for specific IDs.
- * Uses high-fidelity logic to match UI progress bars.
+ * Uses high-fidelity logic to match UI progress bars, handling prefixed and raw IDs.
  */
 async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, links: DonationLink[]) {
     for (const link of links) {
-        if (!link.linkId || link.linkId === 'unallocated') continue;
+        if (!link.linkId || link.linkId === 'unallocated' || link.linkId === 'unlinked') continue;
         
+        // Strip prefix for lookup if present (campaign_ or lead_)
+        const rawLinkId = String(link.linkId);
+        const cleanId = (rawLinkId.startsWith('campaign_') || rawLinkId.startsWith('lead_')) 
+            ? rawLinkId.split('_')[1] 
+            : rawLinkId;
+
         const collectionName = link.linkType === 'campaign' ? 'campaigns' : 'leads';
-        const initiativeRef = db.collection(collectionName).doc(link.linkId);
+        const initiativeRef = db.collection(collectionName).doc(cleanId);
         const initiativeSnap = await initiativeRef.get();
         if (!initiativeSnap.exists) continue;
         
@@ -49,16 +55,22 @@ async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, li
         let total = 0;
         donationsSnap.docs.forEach(doc => {
             const d = doc.data() as Donation;
-            const split = d.linkSplit?.find(l => l.linkId === link.linkId);
+            const split = d.linkSplit?.find(l => 
+                l.linkId === cleanId || 
+                l.linkId === `campaign_${cleanId}` || 
+                l.linkId === `lead_${cleanId}`
+            );
+
             if (split) {
-                // High-fidelity progress calculation logic
                 const totalDonation = d.amount || 1;
                 const prop = split.amount / totalDonation;
                 const typeSplits = d.typeSplit || [];
                 const eligible = typeSplits.reduce((acc, s) => {
                     const cat = (s.category as any) === 'General' ? 'Sadaqah' : s.category;
                     const isAllowed = allowedTypes.includes(cat as any);
-                    const isForGoal = cat !== 'Zakat' || s.forFundraising === true;
+                    
+                    // Logic Fix: count Zakat by default unless explicitly false
+                    const isForGoal = cat !== 'Zakat' || s.forFundraising !== false;
                     return (isAllowed && isForGoal) ? acc + s.amount : acc;
                 }, 0);
                 total += (eligible * prop);
@@ -282,7 +294,7 @@ export async function bulkImportDonationsAction(
 
             if (initiativeContext) {
                 const currentLinks = (record.linkSplit || []) as any[];
-                const exists = currentLinks.some(l => l.linkId === initiativeContext.id);
+                const exists = currentLinks.some(l => l.linkId === initiativeContext.id || l.linkId === `${initiativeContext.type}_${initiativeContext.id}`);
                 if (!exists) {
                     currentLinks.push({
                         linkId: initiativeContext.id,
@@ -425,7 +437,12 @@ export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success
                 const d = doc.data() as Donation;
                 if (d.status !== 'Verified') return;
                 
-                const split = d.linkSplit?.find(l => l.linkId === init.id);
+                const split = d.linkSplit?.find(l => 
+                    l.linkId === init.id || 
+                    l.linkId === `campaign_${init.id}` || 
+                    l.linkId === `lead_${init.id}`
+                );
+
                 if (split) {
                     const totalDonation = d.amount || 1;
                     const prop = split.amount / totalDonation;
@@ -433,7 +450,7 @@ export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success
                     const eligible = typeSplits.reduce((acc, s) => {
                         const cat = (s.category as any) === 'General' ? 'Sadaqah' : s.category;
                         const isAllowed = allowedTypes.includes(cat as any);
-                        const isForGoal = cat !== 'Zakat' || s.forFundraising === true;
+                        const isForGoal = cat !== 'Zakat' || s.forFundraising !== false;
                         return (isAllowed && isForGoal) ? acc + s.amount : acc;
                     }, 0);
                     total += (eligible * prop);
