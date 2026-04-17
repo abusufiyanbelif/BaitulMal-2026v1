@@ -415,7 +415,6 @@ export default function LeadSummaryPage() {
             updatedAt: serverTimestamp(),
         };
 
-        // For high-integrity build, we'll stage ALL summary updates from this page for verification
         setPendingSaveData(saveData);
         setIsVerificationDialogOpen(true);
         setIsSubmitting(false);
@@ -963,7 +962,7 @@ export default function LeadSummaryPage() {
                     </div>
                 )}
 
-                {isVisible('documents') && (
+                {isVisible('documents') && publicDocuments.length > 0 && (
                     <Card className="animate-fade-in-up bg-white shadow-sm border-primary/10 transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '400ms' }}>
                         <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight capitalize">Case Documents & Evidence</CardTitle></CardHeader>
                         <CardContent className="font-normal text-primary pt-6">
