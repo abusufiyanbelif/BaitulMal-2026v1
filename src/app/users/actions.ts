@@ -1,4 +1,3 @@
-
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
@@ -21,6 +20,8 @@ function sanitizePayload(data: Record<string, any>) {
             sanitized[key] = data[key];
         } else if (data[key] === null) {
             sanitized[key] = null;
+        } else {
+            sanitized[key] = data[key];
         }
     });
     return sanitized;

@@ -2,19 +2,40 @@
 
 /**
  * @fileOverview Aggregator barrel file for Firebase SDKs and hooks.
- * This file re-exports everything from sub-modules using relative imports
+ * This file is a pure aggregator. Internal files should use relative imports
  * to prevent circular dependency loops during Next.js compilation.
  */
 
-export * from './provider';
-export * from './client-provider';
-export * from './init';
-export * from './firestore/use-collection';
-export * from './firestore/use-doc';
-export * from './non-blocking-updates';
-export * from './non-blocking-login';
-export * from './errors';
-export * from './error-emitter';
+export { 
+  FirebaseProvider, 
+  useFirebase, 
+  useAuth, 
+  useFirestore, 
+  useStorage, 
+  useFirebaseApp, 
+  useMemoFirebase, 
+  useUser 
+} from './provider';
+
+export { FirebaseClientProvider } from './client-provider';
+export { initializeFirebase } from './init';
+export { useCollection } from './firestore/use-collection';
+export { useDoc } from './firestore/use-doc';
+export { 
+  setDocumentNonBlocking, 
+  addDocumentNonBlocking, 
+  updateDocumentNonBlocking, 
+  deleteDocumentNonBlocking 
+} from './non-blocking-updates';
+
+export { 
+  initiateAnonymousSignIn, 
+  initiateEmailSignUp, 
+  initiateEmailSignIn 
+} from './non-blocking-login';
+
+export { FirestorePermissionError } from './errors';
+export { errorEmitter } from './error-emitter';
 
 // Re-export common Firestore SDK functions for convenience
 export { 
@@ -34,11 +55,18 @@ export {
   arrayRemove,
   increment,
   writeBatch,
-  Timestamp
+  Timestamp,
+  getFirestore
 } from 'firebase/firestore';
 
 // Re-export Storage SDK functions
-export { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+export { 
+  ref as storageRef, 
+  uploadBytes, 
+  getDownloadURL, 
+  deleteObject,
+  getStorage
+} from 'firebase/storage';
 
 // Re-export Auth SDK functions required for Staff and Portal access
 export { 

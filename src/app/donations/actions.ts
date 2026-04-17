@@ -9,6 +9,7 @@ const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure 
 
 /**
  * Sanitizes an object by removing all undefined values.
+ * Essential to prevent Firestore Update() crashes.
  */
 function sanitizePayload(data: Record<string, any>) {
     const sanitized: Record<string, any> = {};
