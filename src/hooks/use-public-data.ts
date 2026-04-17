@@ -126,9 +126,13 @@ export function usePublicData() {
           ? donation.typeSplit
           : (donation.type ? [{ category: donation.type as DonationCategory, amount: donation.amount, forFundraising: true }] : []);
         
+        const allowedTypes = item.allowedDonationTypes && item.allowedDonationTypes.length > 0
+            ? item.allowedDonationTypes
+            : [...donationCategories];
+
         const applicableAmountInDonation = typeSplits.reduce((acc, split) => {
           const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-          const isAllowed = item.allowedDonationTypes?.includes(category as DonationCategory);
+          const isAllowed = allowedTypes.includes(category as DonationCategory);
           const isForGoal = category !== 'Zakat' || split.forFundraising === true;
 
           if (isAllowed && isForGoal) {
@@ -190,11 +194,16 @@ export function usePublicData() {
         links.forEach(l => {
             const item = itemsById.get(l.linkId);
             if (!item) return;
+            
+            const allowedTypes = item.allowedDonationTypes && item.allowedDonationTypes.length > 0
+                ? item.allowedDonationTypes
+                : [...donationCategories];
+
             const splits = d.typeSplit || [];
             const prop = l.amount / (d.amount || 1);
             const eligible = splits.reduce((acc, s) => {
                 const cat = (s.category as any) === 'General' ? 'Sadaqah' : s.category;
-                const isAllowed = item.allowedDonationTypes?.includes(cat as DonationCategory);
+                const isAllowed = allowedTypes.includes(cat as DonationCategory);
                 const isForGoal = cat !== 'Zakat' || s.forFundraising === true;
                 return (isAllowed && isForGoal) ? acc + s.amount : acc;
             }, 0);

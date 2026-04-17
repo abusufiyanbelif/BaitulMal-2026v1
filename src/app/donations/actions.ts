@@ -3,12 +3,12 @@ import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
 import type { Donation, Donor, DonationLink, TransactionDetail, Campaign, Lead } from '@/lib/types';
+import { donationCategories } from '@/lib/modules';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure Server Credentials Are Configured Correctly.";
 
 /**
  * Sanitizes an object by removing all undefined values.
- * Essential to prevent Firestore WriteBatch crashes.
  */
 function sanitizePayload(data: Record<string, any>) {
     const sanitized: Record<string, any> = {};
@@ -24,6 +24,7 @@ function sanitizePayload(data: Record<string, any>) {
 
 /**
  * Recalculates initiative totals for specific IDs.
+ * Uses high-fidelity logic to match UI progress bars.
  */
 async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, links: DonationLink[]) {
     for (const link of links) {
@@ -31,7 +32,14 @@ async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, li
         
         const collectionName = link.linkType === 'campaign' ? 'campaigns' : 'leads';
         const initiativeRef = db.collection(collectionName).doc(link.linkId);
+        const initiativeSnap = await initiativeRef.get();
+        if (!initiativeSnap.exists) continue;
         
+        const initiativeData = initiativeSnap.data() as Campaign | Lead;
+        const allowedTypes = initiativeData.allowedDonationTypes && initiativeData.allowedDonationTypes.length > 0
+            ? initiativeData.allowedDonationTypes
+            : [...donationCategories];
+
         const donationsSnap = await db.collection('donations')
             .where('status', '==', 'Verified')
             .get();
@@ -40,7 +48,19 @@ async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, li
         donationsSnap.docs.forEach(doc => {
             const d = doc.data() as Donation;
             const split = d.linkSplit?.find(l => l.linkId === link.linkId);
-            if (split) total += (Number(split.amount) || 0);
+            if (split) {
+                // High-fidelity progress calculation logic
+                const totalDonation = d.amount || 1;
+                const prop = split.amount / totalDonation;
+                const typeSplits = d.typeSplit || [];
+                const eligible = typeSplits.reduce((acc, s) => {
+                    const cat = (s.category as any) === 'General' ? 'Sadaqah' : s.category;
+                    const isAllowed = allowedTypes.includes(cat as any);
+                    const isForGoal = cat !== 'Zakat' || s.forFundraising === true;
+                    return (isAllowed && isForGoal) ? acc + s.amount : acc;
+                }, 0);
+                total += (eligible * prop);
+            }
         });
 
         await initiativeRef.update({ collectedAmount: total, updatedAt: FieldValue.serverTimestamp() });
@@ -49,7 +69,6 @@ async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, li
 
 /**
  * Robust action to save or update a donation while handling unified identity linking.
- * Implements a "Search-First" strategy to prevent profile fragmentation.
  */
 export async function upsertDonationWithDonorAction(
     donationId: string | null,
@@ -64,19 +83,15 @@ export async function upsertDonationWithDonorAction(
         const donorPhone = donationData.donorPhone || '';
         const donorName = donationData.donorName || 'Anonymous Donor';
 
-        // --- UNIFIED IDENTITY SEARCH ---
-        // 1. Check if a User (Admin/Staff) exists with this phone first
         if (!finalDonorId && donorPhone && donorPhone.length >= 10) {
             const userMatch = await adminDb.collection('users').where('phone', '==', donorPhone).limit(1).get();
             if (!userMatch.empty) {
                 finalDonorId = userMatch.docs[0].id;
             } else {
-                // 2. Check if a mirrored Donor profile exists
                 const donorMatch = await adminDb.collection('donors').where('phone', '==', donorPhone).limit(1).get();
                 if (!donorMatch.empty) {
                     finalDonorId = donorMatch.docs[0].id;
                 } else {
-                    // 3. Create a new linked Donor profile if no identity discovered
                     const newDonorRef = adminDb.collection('donors').doc();
                     await newDonorRef.set({
                         id: newDonorRef.id,
@@ -93,7 +108,6 @@ export async function upsertDonationWithDonorAction(
             }
         }
 
-        // --- RECORD FINANCIAL DATA ---
         const docRef = donationId ? adminDb.collection('donations').doc(donationId) : adminDb.collection('donations').doc();
         const id = docRef.id;
 
@@ -118,7 +132,6 @@ export async function upsertDonationWithDonorAction(
 
         await docRef.set(payload, { merge: true });
 
-        // --- TRIGGER RECONCILIATION ---
         if (donationData.linkSplit) {
             await syncInitiativeCollectedTotals(adminDb, donationData.linkSplit);
         }
@@ -394,21 +407,38 @@ export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success
             adminDb.collection('donations').get(),
         ]);
 
-        const campaignMap: Record<string, number> = {};
-        const leadMap: Record<string, number> = {};
-
-        donationsSnap.docs.forEach(d => {
-            const data = d.data() as Donation;
-            if (data.status !== 'Verified') return;
-            (data.linkSplit || []).forEach((link: any) => {
-                if (link.linkType === 'campaign') campaignMap[link.linkId] = (campaignMap[link.linkId] || 0) + (Number(link.amount) || 0);
-                else if (link.linkType === 'lead') leadMap[link.linkId] = (leadMap[link.linkId] || 0) + (Number(link.amount) || 0);
-            });
-        });
-
         const batch = adminDb.batch();
-        campaignsSnap.docs.forEach(d => batch.update(d.ref, { collectedAmount: campaignMap[d.id] || 0 }));
-        leadsSnap.docs.forEach(d => batch.update(d.ref, { collectedAmount: leadMap[d.id] || 0 }));
+        const allInitiatives = [
+            ...campaignsSnap.docs.map(d => ({ ref: d.ref, id: d.id, type: 'campaign', data: d.data() as Campaign })),
+            ...leadsSnap.docs.map(d => ({ ref: d.ref, id: d.id, type: 'lead', data: d.data() as Lead }))
+        ];
+
+        for (const init of allInitiatives) {
+            const allowedTypes = init.data.allowedDonationTypes && init.data.allowedDonationTypes.length > 0
+                ? init.data.allowedDonationTypes
+                : [...donationCategories];
+
+            let total = 0;
+            donationsSnap.docs.forEach(doc => {
+                const d = doc.data() as Donation;
+                if (d.status !== 'Verified') return;
+                
+                const split = d.linkSplit?.find(l => l.linkId === init.id);
+                if (split) {
+                    const totalDonation = d.amount || 1;
+                    const prop = split.amount / totalDonation;
+                    const typeSplits = d.typeSplit || [];
+                    const eligible = typeSplits.reduce((acc, s) => {
+                        const cat = (s.category as any) === 'General' ? 'Sadaqah' : s.category;
+                        const isAllowed = allowedTypes.includes(cat as any);
+                        const isForGoal = cat !== 'Zakat' || s.forFundraising === true;
+                        return (isAllowed && isForGoal) ? acc + s.amount : acc;
+                    }, 0);
+                    total += (eligible * prop);
+                }
+            });
+            batch.update(init.ref, { collectedAmount: total, updatedAt: FieldValue.serverTimestamp() });
+        }
         
         await batch.commit();
         revalidatePath('/campaigns');

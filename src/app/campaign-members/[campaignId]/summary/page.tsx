@@ -199,7 +199,8 @@ export default function CampaignSummaryPage() {
     const beneficiaryGroups = useMemo(() => {
         if (!campaign || !beneficiaries) return [];
         const categories = (campaign.itemCategories || []).filter(c => c.name !== 'Item Price List');
-        return categories.map(cat => {
+        
+        const groups = categories.map(cat => {
             const count = beneficiaries.filter(b => b.itemCategoryId === cat.id).length;
             const kitAmount = cat.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
             
@@ -211,6 +212,26 @@ export default function CampaignSummaryPage() {
 
             return { id: cat.id, name: displayName, count, kitAmount, totalAmount: count * kitAmount };
         });
+
+        // Fallback for legacy or uncategorized beneficiaries
+        const categorizedIds = new Set(categories.map(c => c.id));
+        const uncategorized = beneficiaries.filter(b => !b.itemCategoryId || !categorizedIds.has(b.itemCategoryId));
+        
+        if (uncategorized.length > 0) {
+            const avgKitAmount = groups.length > 0 
+                ? groups.reduce((sum, g) => sum + g.kitAmount, 0) / groups.length 
+                : (campaign.targetAmount || 0) / beneficiaries.length;
+            
+            groups.push({
+                id: 'uncategorized',
+                name: 'Uncategorized / Legacy',
+                count: uncategorized.length,
+                kitAmount: avgKitAmount || 0,
+                totalAmount: uncategorized.reduce((sum, b) => sum + (b.kitAmount || 0), 0) || (uncategorized.length * (avgKitAmount || 0))
+            });
+        }
+
+        return groups;
     }, [campaign, beneficiaries, isRationInitiative]);
 
     const calculatedRequirementTotal = useMemo(() => {
@@ -273,8 +294,12 @@ export default function CampaignSummaryPage() {
         const zakatAvailableForGoal = Math.max(0, zakatForGoalAmount - zakatAllocated);
         const totalZakatBalance = (amountsByCategory.Zakat || 0) - zakatAllocated;
 
+        const allowedTypes = campaign.allowedDonationTypes && campaign.allowedDonationTypes.length > 0
+            ? campaign.allowedDonationTypes
+            : [...donationCategories];
+
         const totalCollectedForGoal = Object.entries(amountsByCategory)
-            .filter(([category]) => campaign.allowedDonationTypes?.includes(category as DonationCategory))
+            .filter(([category]) => allowedTypes.includes(category as DonationCategory))
             .reduce((sum, [category, amount]) => {
                 if (category === 'Zakat') return sum + zakatAvailableForGoal;
                 return sum + amount;
@@ -429,8 +454,6 @@ export default function CampaignSummaryPage() {
             updatedAt: serverTimestamp(),
         };
 
-        // If user is not an Admin or specifically wants verification, we stage it
-        // For this high-integrity build, we'll stage ALL summary updates from this page
         setPendingSaveData(saveData);
         setIsVerificationDialogOpen(true);
         setIsSubmitting(false);
@@ -938,6 +961,45 @@ export default function CampaignSummaryPage() {
                     </Card>
                 )}
             </div>
+
+            <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
+                <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden rounded-[24px] border-primary/10 shadow-2xl">
+                    <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary tracking-tight text-sm">{imageToView?.name}</DialogTitle></DialogHeader>
+                    <div className="p-4 bg-secondary/20 flex-1 overflow-hidden relative min-h-[70vh]">
+                        {imageToView && (
+                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                        )}
+                    </div>
+                    <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">
+                        <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><ZoomIn className="mr-1 h-4 w-4"/> In</Button>
+                        <Button variant="outline" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5))} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><ZoomOut className="mr-1 h-4 w-4"/> Out</Button>
+                        <Button variant="outline" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
+                        <Button variant="outline" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold border-primary/20 text-primary h-8 text-[10px] active:scale-95 transition-transform"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {userProfile && pendingSaveData && (
+                <VerificationRequestDialog
+                    isOpen={isVerificationDialogOpen}
+                    onOpenChange={setIsVerificationDialogOpen}
+                    user={{ id: userProfile.id, name: userProfile.name }}
+                    payload={{
+                        targetId: campaignId,
+                        module: 'campaigns',
+                        action: 'update',
+                        newData: pendingSaveData,
+                        oldData: campaign,
+                        description: `Update campaign summary: ${campaign.name}`
+                    }}
+                    onSuccess={() => {
+                        setEditMode(false);
+                        setPendingSaveData(null);
+                    }}
+                />
+            )}
+
+            <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
         </main>
     );
 }
