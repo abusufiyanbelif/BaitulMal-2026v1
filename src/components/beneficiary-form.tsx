@@ -29,7 +29,7 @@ import {
   FormLabel,
   FormMessage,
   FormField,
-} from '@/form'; // Use central form components
+} from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import Resizer from 'react-image-file-resizer';
 import { useFirestore, useMemoFirebase, useDoc, doc, storageRef, uploadBytes, getDownloadURL } from '@/firebase';

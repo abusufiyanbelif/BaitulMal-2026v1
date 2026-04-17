@@ -61,3 +61,5 @@ export {
 } from 'firebase/firestore';
 
 export { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+
+export { sendPasswordResetEmail } from 'firebase/auth';
