@@ -1,18 +1,131 @@
-
-// RE-DEPLOY CACHE BUSTER
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Unrestricted testing rules for authenticated members as requested during stabilization
-    match /{document=**} {
-      allow read: if true;
-      allow write: if request.auth != null;
+    
+    // ----------------------------------------------------------------------
+    // Helper Functions
+    // ----------------------------------------------------------------------
+
+    function isSignedIn() {
+      return request.auth != null;
     }
     
-    // Explicit list grant for verification pipeline
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isUserAdmin() {
+      return isSignedIn() &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'Admin';
+    }
+
+    // Role checks
+    // We check if the user is an Admin, OR if they have the specific permission.
+    function hasPermission(module, action) {
+      return isSignedIn() &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+             (
+               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'Admin' || 
+               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('permissions', {}).get(module, {}).get(action, false) == true
+             );
+    }
+
+    function canCreate(module) { return hasPermission(module, 'create'); }
+    function canUpdate(module) { return hasPermission(module, 'update'); }
+    function canDelete(module) { return hasPermission(module, 'delete'); }
+    
+    // ----------------------------------------------------------------------
+    // Collection Rules
+    // ----------------------------------------------------------------------
+
+    match /campaigns/{campaignId} {
+      allow read: if true;
+      allow create: if canCreate('campaigns');
+      allow update: if canUpdate('campaigns');
+      allow delete: if canDelete('campaigns');
+      
+      match /beneficiaries/{beneficiaryId} {
+        allow read: if true;
+        allow create: if canCreate('campaigns');
+        allow update: if canUpdate('campaigns');
+        allow delete: if canDelete('campaigns');
+      }
+    }
+
+    match /leads/{leadId} {
+      allow read: if true;
+      allow create: if canCreate('leads-members');
+      allow update: if canUpdate('leads-members');
+      allow delete: if canDelete('leads-members');
+      
+      match /beneficiaries/{beneficiaryId} {
+        allow read: if true;
+        allow create: if canCreate('leads-members');
+        allow update: if canUpdate('leads-members');
+        allow delete: if canDelete('leads-members');
+      }
+    }
+
+    match /beneficiaries/{beneficiaryId} {
+      allow read: if true;
+      allow create: if canCreate('beneficiaries');
+      allow update: if canUpdate('beneficiaries');
+      allow delete: if canDelete('beneficiaries');
+    }
+
+    match /donations/{donationId} {
+      allow read: if true;
+      allow create: if canCreate('donations');
+      allow update: if canUpdate('donations');
+      allow delete: if canDelete('donations');
+    }
+
+    match /donors/{donorId} {
+      allow read: if true;
+      allow create: if canCreate('donors');
+      allow update: if canUpdate('donors');
+      allow delete: if canDelete('donors');
+    }
+
+    match /settings/{docId} {
+      allow read: if true;
+      allow create: if canCreate('settings');
+      allow update: if canUpdate('settings');
+      allow delete: if canDelete('settings');
+    }
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isUserAdmin() || canUpdate('users') || canCreate('users');
+      allow list: if isUserAdmin() || canUpdate('users') || canCreate('users');
+      // allow users to create their own profile during signup, or admins to create profiles
+      allow create: if isOwner(userId) || canCreate('users');
+      // allow users to update their own profile, or admins to update
+      allow update: if isOwner(userId) || canUpdate('users');
+      allow delete: if canDelete('users');
+      
+      match /documents/{documentId} {
+        allow read: if isOwner(userId) || isUserAdmin() || canUpdate('users');
+        allow create: if isOwner(userId) || canCreate('users');
+        allow update: if isOwner(userId) || canUpdate('users');
+        allow delete: if isOwner(userId) || canDelete('users');
+        
+        match /{documentDetailsType}/{detailId} {
+           allow read, write: if isOwner(userId) || isUserAdmin() || canUpdate('users');
+        }
+      }
+    }
+
     match /pending_verifications/{id} {
-      allow list: if true;
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isUserAdmin() || canDelete('donations') || canDelete('campaigns') || canDelete('leads-members') || canDelete('beneficiaries') || canDelete('users');
+    }
+    
+    match /user_lookups/{lookupId} {
+      allow read: if true;
+      allow create, update, delete: if isUserAdmin() || canCreate('users') || canUpdate('users');
     }
   }
 }
-
