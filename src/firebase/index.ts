@@ -1,9 +1,12 @@
 'use client';
 
 /**
- * @fileOverview Hardened barrel file for Firebase SDKs.
- * Uses explicit exports to prevent circular dependency loops during Next.js compilation.
+ * @fileOverview Pure aggregator for Firebase SDKs.
+ * Uses relative imports to resolve circular dependency cycles.
  */
+
+import { initializeFirebase } from './init';
+export { initializeFirebase };
 
 export { 
   FirebaseProvider, 
@@ -17,7 +20,6 @@ export {
 } from './provider';
 
 export { FirebaseClientProvider } from './client-provider';
-export { initializeFirebase } from './init';
 export { useCollection } from './firestore/use-collection';
 export { useDoc } from './firestore/use-doc';
 

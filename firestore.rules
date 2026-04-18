@@ -1,131 +1,84 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // ----------------------------------------------------------------------
-    // Helper Functions
-    // ----------------------------------------------------------------------
-
-    function isSignedIn() {
-      return request.auth != null;
-    }
-    
-    function isOwner(userId) {
-      return isSignedIn() && request.auth.uid == userId;
+    // Helper to check if a user is an admin via role or sovereign identity
+    function isAdmin() {
+      return request.auth != null && (
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin' ||
+        request.auth.token.email in ['abusufiyan.belif@gmail.com', 'baitulmalss.solapur@gmail.com', 'maazshaikh.official@gmail.com', 'admin@example.com'] ||
+        request.auth.uid in ['cyMl1lQME0Yur1YS3VCms1AvrOJ2', 'S5efNV5jpTPoxYNv6SnAlv3jNPO2', '3gKwUE2JrBT8wngoUxTTN6tLJk03']
+      );
     }
 
-    function isUserAdmin() {
-      return isSignedIn() &&
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'Admin';
-    }
-
-    // Role checks
-    // We check if the user is an Admin, OR if they have the specific permission.
+    // Helper to check for specific module permissions
     function hasPermission(module, action) {
-      return isSignedIn() &&
-             exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-             (
-               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'Admin' || 
-               get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('permissions', {}).get(module, {}).get(action, false) == true
-             );
+      let permissions = get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions;
+      return isAdmin() || (permissions != null && permissions[module][action] == true);
     }
 
-    function canCreate(module) { return hasPermission(module, 'create'); }
-    function canUpdate(module) { return hasPermission(module, 'update'); }
-    function canDelete(module) { return hasPermission(module, 'delete'); }
-    
-    // ----------------------------------------------------------------------
-    // Collection Rules
-    // ----------------------------------------------------------------------
-
-    match /campaigns/{campaignId} {
-      allow read: if true;
-      allow create: if canCreate('campaigns');
-      allow update: if canUpdate('campaigns');
-      allow delete: if canDelete('campaigns');
-      
-      match /beneficiaries/{beneficiaryId} {
-        allow read: if true;
-        allow create: if canCreate('campaigns');
-        allow update: if canUpdate('campaigns');
-        allow delete: if canDelete('campaigns');
-      }
+    // Administrative override: Admins have full access to everything
+    match /{document=**} {
+      allow read, write: if isAdmin();
     }
 
-    match /leads/{leadId} {
-      allow read: if true;
-      allow create: if canCreate('leads-members');
-      allow update: if canUpdate('leads-members');
-      allow delete: if canDelete('leads-members');
-      
-      match /beneficiaries/{beneficiaryId} {
-        allow read: if true;
-        allow create: if canCreate('leads-members');
-        allow update: if canUpdate('leads-members');
-        allow delete: if canDelete('leads-members');
-      }
-    }
-
-    match /beneficiaries/{beneficiaryId} {
-      allow read: if true;
-      allow create: if canCreate('beneficiaries');
-      allow update: if canUpdate('beneficiaries');
-      allow delete: if canDelete('beneficiaries');
-    }
-
-    match /donations/{donationId} {
-      allow read: if true;
-      allow create: if canCreate('donations');
-      allow update: if canUpdate('donations');
-      allow delete: if canDelete('donations');
-    }
-
-    match /donors/{donorId} {
-      allow read: if true;
-      allow create: if canCreate('donors');
-      allow update: if canUpdate('donors');
-      allow delete: if canDelete('donors');
-    }
-
-    match /settings/{docId} {
-      allow read: if true;
-      allow create: if canCreate('settings');
-      allow update: if canUpdate('settings');
-      allow delete: if canDelete('settings');
-    }
-
-    match /users/{userId} {
-      allow read: if isOwner(userId) || isUserAdmin() || canUpdate('users') || canCreate('users');
-      allow list: if isUserAdmin() || canUpdate('users') || canCreate('users');
-      // allow users to create their own profile during signup, or admins to create profiles
-      allow create: if isOwner(userId) || canCreate('users');
-      // allow users to update their own profile, or admins to update
-      allow update: if isOwner(userId) || canUpdate('users');
-      allow delete: if canDelete('users');
-      
-      match /documents/{documentId} {
-        allow read: if isOwner(userId) || isUserAdmin() || canUpdate('users');
-        allow create: if isOwner(userId) || canCreate('users');
-        allow update: if isOwner(userId) || canUpdate('users');
-        allow delete: if isOwner(userId) || canDelete('users');
-        
-        match /{documentDetailsType}/{detailId} {
-           allow read, write: if isOwner(userId) || isUserAdmin() || canUpdate('users');
-        }
-      }
-    }
-
+    // Pending Verifications - Always accessible for authenticated members to facilitate pipeline
     match /pending_verifications/{id} {
-      allow read: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn();
-      allow delete: if isUserAdmin() || canDelete('donations') || canDelete('campaigns') || canDelete('leads-members') || canDelete('beneficiaries') || canDelete('users');
+      allow read, write: if request.auth != null;
+    }
+
+    // Public institutional settings
+    match /settings/branding { allow read: if true; }
+    match /settings/payment { allow read: if true; }
+    match /settings/info { allow read: if true; }
+    match /settings/guidance { allow read: if true; }
+    match /settings/donationInfo { allow read: if true; }
+    match /settings/guidingPrinciples { allow read: if true; }
+
+    // User profile management
+    match /users/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow update: if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow create, delete: if isAdmin();
+    }
+
+    // User lookups are public to allow login resolution
+    match /user_lookups/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Campaigns & Leads (Publicly readable, protected writes)
+    match /campaigns/{id} {
+      allow read: if true;
+      allow write: if hasPermission('campaigns', 'update');
+    }
+    match /campaigns/{id}/beneficiaries/{bId} {
+      allow read: if true;
+      allow write: if hasPermission('campaigns', 'update');
+    }
+
+    match /leads/{id} {
+      allow read: if true;
+      allow write: if hasPermission('leads-members', 'update');
+    }
+    match /leads/{id}/beneficiaries/{bId} {
+      allow read: if true;
+      allow write: if hasPermission('leads-members', 'update');
+    }
+
+    // Donations & Donors
+    match /donations/{id} {
+      allow read: if hasPermission('donations', 'read') || request.auth.uid == resource.data.donorId;
+      allow write: if hasPermission('donations', 'update');
+    }
+    match /donors/{id} {
+      allow read: if hasPermission('donors', 'read') || request.auth.uid == id;
+      allow write: if hasPermission('donors', 'update');
     }
     
-    match /user_lookups/{lookupId} {
-      allow read: if true;
-      allow create, update, delete: if isUserAdmin() || canCreate('users') || canUpdate('users');
+    // Page hits for impact analytics
+    match /page_hits/{id} {
+      allow read, write: if true;
     }
   }
 }

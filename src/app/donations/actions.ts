@@ -9,7 +9,7 @@ const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure 
 
 /**
  * Sanitizes an object by removing all undefined values.
- * Essential to prevent Firestore Update() crashes.
+ * Essential to prevent Firestore Update() crashes during identity merges.
  */
 function sanitizePayload(data: Record<string, any>) {
     const sanitized: Record<string, any> = {};
@@ -49,6 +49,7 @@ async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, li
             ? initiativeData.allowedDonationTypes
             : [...donationCategories];
 
+        // Fetch all verified donations linked to this clean initiative ID
         const donationsSnap = await db.collection('donations')
             .where('status', '==', 'Verified')
             .get();
@@ -56,6 +57,7 @@ async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, li
         let total = 0;
         donationsSnap.docs.forEach(doc => {
             const d = doc.data() as Donation;
+            // Handle both prefixed and raw IDs in the linked records
             const split = d.linkSplit?.find(l => 
                 l.linkId === cleanId || 
                 l.linkId === `campaign_${cleanId}` || 
@@ -70,7 +72,7 @@ async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, li
                     const cat = (s.category as any) === 'General' ? 'Sadaqah' : s.category;
                     const isAllowed = allowedTypes.includes(cat as any);
                     
-                    // Logic Fix: count Zakat by default unless explicitly false
+                    // Logic: Count Zakat surplus towards goal unless explicitly excluded
                     const isForGoal = cat !== 'Zakat' || s.forFundraising !== false;
                     return (isAllowed && isForGoal) ? acc + s.amount : acc;
                 }, 0);
@@ -98,6 +100,7 @@ export async function upsertDonationWithDonorAction(
         const donorPhone = donationData.donorPhone || '';
         const donorName = donationData.donorName || 'Anonymous Donor';
 
+        // Unified Identity: Check if phone matches an existing member or donor
         if (!finalDonorId && donorPhone && donorPhone.length >= 10) {
             const userMatch = await adminDb.collection('users').where('phone', '==', donorPhone).limit(1).get();
             if (!userMatch.empty) {
@@ -107,6 +110,7 @@ export async function upsertDonationWithDonorAction(
                 if (!donorMatch.empty) {
                     finalDonorId = donorMatch.docs[0].id;
                 } else {
+                    // Create new mirrored donor profile
                     const newDonorRef = adminDb.collection('donors').doc();
                     await newDonorRef.set({
                         id: newDonorRef.id,
@@ -147,6 +151,7 @@ export async function upsertDonationWithDonorAction(
 
         await docRef.set(payload, { merge: true });
 
+        // Trigger atomic financial reconciliation
         if (donationData.linkSplit) {
             await syncInitiativeCollectedTotals(adminDb, donationData.linkSplit);
         }
@@ -174,6 +179,7 @@ export async function deleteDonationAction(donationId: string): Promise<{ succes
 
         await docRef.delete();
 
+        // Reconcile initiative totals after deletion
         if (links.length > 0) {
             await syncInitiativeCollectedTotals(adminDb, links);
         }
@@ -208,6 +214,7 @@ export async function bulkUpdateDonationStatusAction(
         }
         await batch.commit();
 
+        // Perform bulk reconciliation for all affected initiatives
         if (affectedLinks.length > 0) {
             const uniqueLinks = Array.from(new Set(affectedLinks.map(l => `${l.linkType}_${l.linkId}`)))
                 .map(key => {

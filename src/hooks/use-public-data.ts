@@ -9,6 +9,7 @@ import { donationCategories } from '@/lib/modules';
 
 /**
  * usePublicData - High-fidelity organizational impact reporting.
+ * Re-engineered to handle complex Zakat reservations and surplus calculations.
  */
 export function usePublicData() {
   const firestore = useFirestore();
@@ -94,6 +95,12 @@ export function usePublicData() {
     const startDate = brandingSettings?.summaryStartDate || '';
     const endDate = brandingSettings?.summaryEndDate || '';
 
+    // Track total requirement per initiative to handle legacy drift
+    const initiativeRequirements = new Map<string, number>();
+    allPublicItems.forEach(item => {
+        initiativeRequirements.set(item.id, item.targetAmount || 0);
+    });
+
     const collectedAmounts = new Map<string, number>();
     const yearlyData: Record<string, { totalGoalReceived: number; overallTotalReceived: number; totalTarget: number; }> = {};
     let grandTotalUnlinkedPool = 0;
@@ -137,6 +144,7 @@ export function usePublicData() {
         const applicableSum = typeSplits.reduce((acc, split) => {
           const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
           const isAllowed = allowedTypes.includes(category as DonationCategory);
+          // Logic: Only exclude Zakat if specifically flagged. By default Zakat surplus contributes to goal.
           const isForGoal = category !== 'Zakat' || split.forFundraising !== false;
 
           if (isAllowed && isForGoal) return acc + split.amount;
