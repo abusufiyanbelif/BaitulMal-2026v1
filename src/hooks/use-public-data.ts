@@ -93,38 +93,65 @@ export function usePublicData() {
     const startDate = brandingSettings?.summaryStartDate || '';
     const endDate = brandingSettings?.summaryEndDate || '';
 
-    const campaignsWithProgress = campaigns.map(campaign => {
-      const collected = campaign.collectedAmount || 0;
-      const progress = campaign.targetAmount && campaign.targetAmount > 0 ? (collected / campaign.targetAmount) * 100 : 0;
-      return { ...campaign, collected, progress };
-    });
+    // Advanced progress logic: Zakat Surplus calculation
+    const calculateProgress = (item: Campaign | Lead) => {
+        const allowedTypes = item.allowedDonationTypes && item.allowedDonationTypes.length > 0
+            ? item.allowedDonationTypes
+            : [...donationCategories];
 
-    const leadsWithProgress = leads.map(lead => {
-      const collected = lead.collectedAmount || 0;
-      const progress = lead.targetAmount && lead.targetAmount > 0 ? (collected / lead.targetAmount) * 100 : 0;
-      return { ...lead, collected, progress };
-    });
+        const itemDonations = donations.filter(d => 
+            d.linkSplit?.some(link => link.linkId === item.id || link.linkId === `campaign_${item.id}` || link.linkId === `lead_${item.id}`)
+        );
+
+        let zakatSumForGoal = 0;
+        let otherEligibleSum = 0;
+
+        itemDonations.forEach(d => {
+            const split = d.linkSplit?.find(l => l.linkId === item.id || l.linkId === `campaign_${item.id}` || l.linkId === `lead_${item.id}`);
+            if (split) {
+                const totalDonation = d.amount || 1;
+                const prop = split.amount / totalDonation;
+                const typeSplits = d.typeSplit || [];
+                
+                typeSplits.forEach(s => {
+                    const cat = (s.category as any) === 'General' || (s.category as any) === 'Sadqa' ? 'Sadaqah' : s.category;
+                    const isAllowed = allowedTypes.includes(cat as any);
+                    const isForGoal = cat !== 'Zakat' || s.forFundraising !== false;
+                    
+                    if (isAllowed && isForGoal) {
+                        const amount = s.amount * prop;
+                        if (cat === 'Zakat') zakatSumForGoal += amount;
+                        else otherEligibleSum += amount;
+                    }
+                });
+            }
+        });
+
+        // For public progress, we don't have individual Zakat Allocations readily available in this loop.
+        // We rely on the server-synced collectedAmount for maximum fidelity.
+        const collected = item.collectedAmount || (otherEligibleSum + zakatSumForGoal);
+        const progress = item.targetAmount && item.targetAmount > 0 ? (collected / item.targetAmount) * 100 : 0;
+        return { collected, progress: Math.min(progress, 100) };
+    };
+
+    const campaignsWithProgress = campaigns.map(c => ({ ...c, ...calculateProgress(c) }));
+    const leadsWithProgress = leads.map(l => ({ ...l, ...calculateProgress(l) }));
 
     const summaryDonations = donations.filter(d => {
         const dDate = d.donationDate || '';
         return (!startDate || dDate >= startDate) && (!endDate || dDate <= endDate);
     });
 
-    const summaryItems = allPublicItems.filter(item => {
-        const itemStart = item.startDate || '';
-        return (!startDate || itemStart >= startDate) && (!endDate || itemStart <= endDate);
-    });
-
-    const totalTargetInRange = summaryItems.reduce((sum, item) => sum + (item.targetAmount || 0), 0);
-    const totalCollectedForGoalsInRange = allPublicItems.reduce((sum, item) => sum + (item.collectedAmount || 0), 0);
+    const totalTargetInRange = allPublicItems.reduce((sum, item) => sum + (item.targetAmount || 0), 0);
+    const totalCollectedForGoalsInRange = [...campaignsWithProgress, ...leadsWithProgress].reduce((sum, item) => sum + item.collected, 0);
 
     const grandTotalRaisedInRange = summaryDonations.reduce((sum, d) => sum + d.amount, 0);
-    const overallProgress = totalTargetInRange > 0 ? Math.min((totalCollectedForGoalsInRange / totalTargetInRange) * 100, 100) : 0;
+    const overallProgress = totalTargetInRange > 0 ? (totalCollectedForGoalsInRange / totalTargetInRange) * 100 : 0;
 
     const amountsByCategoryInRange = summaryDonations.reduce((acc, d) => {
       const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
       splits.forEach(split => {
-        const category = split.category as DonationCategory;
+        const category = (split.category as any) === 'General' ? 'Sadaqah' : split.category as DonationCategory;
         if (donationCategories.includes(category)) {
           acc[category] = (acc[category] || 0) + split.amount;
         }
@@ -134,14 +161,14 @@ export function usePublicData() {
 
     const yearlyData: Record<string, { totalGoalReceived: number; overallTotalReceived: number; totalTarget: number; }> = {};
     
-    allPublicItems.forEach(item => {
+    [...campaignsWithProgress, ...leadsWithProgress].forEach(item => {
         if (item.startDate && item.targetAmount) {
             const year = item.startDate.split('-')[0];
             if (!yearlyData[year]) {
                 yearlyData[year] = { totalGoalReceived: 0, overallTotalReceived: 0, totalTarget: 0 };
             }
             yearlyData[year].totalTarget += item.targetAmount;
-            yearlyData[year].totalGoalReceived += (item.collectedAmount || 0);
+            yearlyData[year].totalGoalReceived += item.collected;
         }
     });
 

@@ -22,6 +22,7 @@ export interface UseCollectionResult<T> {
   data: WithId<T>[] | null;
   isLoading: boolean;
   error: FirestoreError | Error | null;
+  forceRefetch: () => void;
 }
 
 /** Internal implementation of Query used for path resolution in errors. */
@@ -43,6 +44,7 @@ export function useCollection<T = any>(
   const [data, setData] = useState<WithId<T>[] | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
+  const [nonce, setNonce] = useState(0);
 
   useEffect(() => {
     if (!memoizedTargetRefOrQuery) {
@@ -90,7 +92,12 @@ export function useCollection<T = any>(
     );
 
     return () => unsubscribe();
-  }, [memoizedTargetRefOrQuery]);
+  }, [memoizedTargetRefOrQuery, nonce]);
 
-  return { data, isLoading, error };
+  return { 
+    data, 
+    isLoading, 
+    error, 
+    forceRefetch: () => setNonce(n => n + 1) 
+  };
 }
