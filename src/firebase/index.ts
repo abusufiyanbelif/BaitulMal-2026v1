@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Pure aggregator for Firebase SDKs.
- * Uses relative imports to resolve circular dependency cycles.
+ * Uses strictly one-way re-exports to resolve circular dependency cycles.
  */
 
 import { initializeFirebase } from './init';
