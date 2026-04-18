@@ -663,10 +663,11 @@ export default function CampaignDetailsPage() {
         forceRefetchCampaign();
         forceRefetchBeneficiaries();
     } catch (e: any) {
+        console.error("Batch sync failed:", e);
         errorEmitter.emit('permission-error', new FirestorePermissionError({
             path: `campaigns/${campaignId}`,
             operation: 'write',
-            requestResourceData: { note: `Batch Sync For ${beneficiaries.length} Beneficiaries` }
+            requestResourceData: { note: `Batch Sync For ${beneficiaries.length} Beneficiaries. Real error: ${e.message}` }
         }));
     } finally {
         setIsSyncing(false);
