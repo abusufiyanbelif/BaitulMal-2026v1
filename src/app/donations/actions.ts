@@ -30,17 +30,21 @@ function sanitizePayload(data: Record<string, any>) {
  * Uses high-fidelity logic to match UI progress bars, handling prefixed and raw IDs.
  */
 async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, links: DonationLink[]) {
-    for (const link of links) {
-        if (!link.linkId || link.linkId === 'unallocated' || link.linkId === 'unlinked') continue;
-        
-        // Strip prefix for lookup if present (campaign_ or lead_)
-        const rawLinkId = String(link.linkId);
-        const cleanId = (rawLinkId.startsWith('campaign_') || rawLinkId.startsWith('lead_')) 
-            ? rawLinkId.split('_')[1] 
-            : rawLinkId;
+    // Unique identifier resolution (Campaigns vs Leads)
+    const targets = Array.from(new Set(links.map(l => {
+        const rawId = String(l.linkId);
+        const cleanId = (rawId.startsWith('campaign_') || rawId.startsWith('lead_')) ? rawId.split('_')[1] : rawId;
+        return `${l.linkType}_${cleanId}`;
+    })));
 
-        const collectionName = link.linkType === 'campaign' ? 'campaigns' : 'leads';
-        const initiativeRef = db.collection(collectionName).doc(cleanId);
+    // Fetch all verified donations for a systemic reconciliation sweep
+    const donationsSnap = await db.collection('donations').where('status', '==', 'Verified').get();
+    const allVerifiedDonations = donationsSnap.docs.map(doc => doc.data() as Donation);
+
+    for (const targetKey of targets) {
+        const [type, id] = targetKey.split('_');
+        const collectionName = type === 'campaign' ? 'campaigns' : 'leads';
+        const initiativeRef = db.collection(collectionName).doc(id);
         const initiativeSnap = await initiativeRef.get();
         if (!initiativeSnap.exists) continue;
         
@@ -49,38 +53,41 @@ async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, li
             ? initiativeData.allowedDonationTypes
             : [...donationCategories];
 
-        // Fetch all verified donations linked to this clean initiative ID
-        const donationsSnap = await db.collection('donations')
-            .where('status', '==', 'Verified')
-            .get();
-            
-        let total = 0;
-        donationsSnap.docs.forEach(doc => {
-            const d = doc.data() as Donation;
-            // Handle both prefixed and raw IDs in the linked records
-            const split = d.linkSplit?.find(l => 
-                l.linkId === cleanId || 
-                l.linkId === `campaign_${cleanId}` || 
-                l.linkId === `lead_${cleanId}`
-            );
+        // Fetch Zakat allocations (Reservations) for this initiative
+        const beneficiariesSnap = await db.collection(collectionName).doc(id).collection('beneficiaries').get();
+        const zakatAllocatedSum = beneficiariesSnap.docs.reduce((sum, bDoc) => {
+            const bData = bDoc.data();
+            return sum + (bData.isEligibleForZakat ? (Number(bData.zakatAllocation) || 0) : 0);
+        }, 0);
 
+        let zakatSumForGoal = 0;
+        let otherEligibleSum = 0;
+
+        allVerifiedDonations.forEach(d => {
+            const split = d.linkSplit?.find(l => l.linkId === id || l.linkId === `${type}_${id}`);
             if (split) {
                 const totalDonation = d.amount || 1;
                 const prop = split.amount / totalDonation;
                 const typeSplits = d.typeSplit || [];
-                const eligible = typeSplits.reduce((acc, s) => {
-                    const cat = (s.category as any) === 'General' ? 'Sadaqah' : s.category;
+                
+                typeSplits.forEach(s => {
+                    const cat = (s.category as any) === 'General' || (s.category as any) === 'Sadqa' ? 'Sadaqah' : s.category;
                     const isAllowed = allowedTypes.includes(cat as any);
-                    
-                    // Logic: Count Zakat surplus towards goal unless explicitly excluded
                     const isForGoal = cat !== 'Zakat' || s.forFundraising !== false;
-                    return (isAllowed && isForGoal) ? acc + s.amount : acc;
-                }, 0);
-                total += (eligible * prop);
+                    
+                    if (isAllowed && isForGoal) {
+                        const amount = s.amount * prop;
+                        if (cat === 'Zakat') zakatSumForGoal += amount;
+                        else otherEligibleSum += amount;
+                    }
+                });
             }
         });
 
-        await initiativeRef.update({ collectedAmount: total, updatedAt: FieldValue.serverTimestamp() });
+        const zakatSurplus = Math.max(0, zakatSumForGoal - zakatAllocatedSum);
+        const finalCollected = otherEligibleSum + zakatSurplus;
+
+        await initiativeRef.update({ collectedAmount: finalCollected, updatedAt: FieldValue.serverTimestamp() });
     }
 }
 

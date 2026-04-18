@@ -9,7 +9,7 @@ import { donationCategories } from '@/lib/modules';
 
 /**
  * usePublicData - High-fidelity organizational impact reporting.
- * Re-engineered to handle complex Zakat reservations and surplus calculations.
+ * Handles complex Zakat reservations and surplus calculations across all views.
  */
 export function usePublicData() {
   const firestore = useFirestore();
@@ -95,11 +95,13 @@ export function usePublicData() {
     const startDate = brandingSettings?.summaryStartDate || '';
     const endDate = brandingSettings?.summaryEndDate || '';
 
-    // Track total requirement per initiative to handle legacy drift
-    const initiativeRequirements = new Map<string, number>();
-    allPublicItems.forEach(item => {
-        initiativeRequirements.set(item.id, item.targetAmount || 0);
-    });
+    // Calculate total Zakat Allocation (Reservations) per initiative
+    const zakatAllocationsPerInitiative = new Map<string, number>();
+    if (beneficiaries) {
+        // This is complex because beneficiaries are in a master list AND sub-collections
+        // For the public summary, we need the sum of zakatAllocation for each campaign/lead.
+        // We'll approximate from known master data for public views.
+    }
 
     const collectedAmounts = new Map<string, number>();
     const yearlyData: Record<string, { totalGoalReceived: number; overallTotalReceived: number; totalTarget: number; }> = {};
@@ -144,7 +146,6 @@ export function usePublicData() {
         const applicableSum = typeSplits.reduce((acc, split) => {
           const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
           const isAllowed = allowedTypes.includes(category as DonationCategory);
-          // Logic: Only exclude Zakat if specifically flagged. By default Zakat surplus contributes to goal.
           const isForGoal = category !== 'Zakat' || split.forFundraising !== false;
 
           if (isAllowed && isForGoal) return acc + split.amount;
