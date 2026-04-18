@@ -9,7 +9,6 @@ import { donationCategories } from '@/lib/modules';
 
 /**
  * usePublicData - High-fidelity organizational impact reporting.
- * Hardened to handle both prefixed and raw IDs, and ensure Zakat defaults to inclusive for goal progress.
  */
 export function usePublicData() {
   const firestore = useFirestore();

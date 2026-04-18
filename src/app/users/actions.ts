@@ -12,7 +12,6 @@ const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Verify 
 
 /**
  * Sanitizes an object by removing all undefined values.
- * Crucial for preventing Firestore Update() crashes.
  */
 function sanitizePayload(data: Record<string, any>) {
     const sanitized: Record<string, any> = {};
@@ -92,7 +91,6 @@ export async function getPublicMembersAction(): Promise<Partial<UserProfile>[]> 
 /**
  * DEEP IDENTITY CONSOLIDATION ACTION
  * Merges multiple fragmented identities into a primary "Golden Record".
- * Rewrites historical audit trails and re-assigns financial history across all modules.
  */
 export async function consolidateIdentitiesAction(
     primaryUid: string, 
@@ -139,10 +137,9 @@ export async function consolidateIdentitiesAction(
                 });
             });
 
-            // 3. Update Audit Trails System-Wide (Rewriting History)
+            // 3. Update Audit Trails System-Wide
             const collectionsToUpdate = ['campaigns', 'leads', 'beneficiaries', 'donations'];
             for (const col of collectionsToUpdate) {
-                // Re-attribute CREATED BY
                 const createdSnap = await adminDb.collection(col).where('createdById', '==', redundantUid).get();
                 createdSnap.forEach(doc => {
                     batch.update(doc.ref, { 
@@ -151,7 +148,6 @@ export async function consolidateIdentitiesAction(
                     });
                 });
 
-                // Re-attribute UPDATED BY
                 const updatedSnap = await adminDb.collection(col).where('updatedById', '==', redundantUid).get();
                 updatedSnap.forEach(doc => {
                     batch.update(doc.ref, { 
@@ -174,13 +170,11 @@ export async function consolidateIdentitiesAction(
                 batch.delete(oldDonorRef);
             }
 
-            // 5. Purge redundant profile and lookup identifiers
             batch.delete(redundantRef);
             if (rData.loginId) batch.delete(adminDb.collection('user_lookups').doc(rData.loginId));
             if (rData.phone) batch.delete(adminDb.collection('user_lookups').doc(rData.phone));
         }
 
-        // 6. Finalize Primary "Golden Record"
         const finalUpdate = sanitizePayload({
             permissions: mergedPermissions,
             updatedAt: FieldValue.serverTimestamp(),
@@ -189,10 +183,8 @@ export async function consolidateIdentitiesAction(
         });
 
         batch.update(primaryRef, finalUpdate);
-
         await batch.commit();
         
-        // Trigger a systemic recalculation to ensure no drift
         await bulkRecalculateInitiativeTotalsAction();
 
         revalidatePath('/users');
@@ -200,7 +192,7 @@ export async function consolidateIdentitiesAction(
         revalidatePath('/donors');
         revalidatePath('/dashboard');
         
-        return { success: true, message: `Successfully Unified Fragmented Profiles Into identity: ${primaryData.name}` };
+        return { success: true, message: `Successfully Unified Profiles into: ${primaryData.name}` };
     } catch (error: any) {
         console.error("Deep Consolidation Failed:", error);
         return { success: false, message: `Reconciliation Error: ${error.message}` };
@@ -213,7 +205,7 @@ export async function updateUserAuthAction(uid: string, updates: { email?: strin
     try {
         await adminAuth.updateUser(uid, updates);
         revalidatePath(`/users/${uid}`);
-        return { success: true, message: 'Institutional Authentication Details Updated.' };
+        return { success: true, message: 'Authentication Details Updated.' };
     } catch (error: any) {
         return { success: false, message: `Operation Failed: ${error.message}` };
     }
@@ -246,7 +238,7 @@ export async function syncAllUsersToDonorsAction(adminUserId: string, adminUserN
         }
         if (count > 0) await batch.commit();
         revalidatePath('/donors');
-        return { success: true, message: `Mirrored ${count} Members Into Donor Registry.`, count };
+        return { success: true, message: `Mirrored ${count} Members into Donor Registry.`, count };
     } catch (error: any) {
         return { success: false, message: error.message, count: 0 };
     }
