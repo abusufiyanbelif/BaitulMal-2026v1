@@ -1,31 +1,8 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Helper to check if a user is an admin
-    function isAdmin() {
-      return request.auth != null && (
-        request.auth.uid == 'cyMl1lQME0Yur1YS3VCms1AvrOJ2' || // System Admin
-        request.auth.uid == 'S5efNV5jpTPoxYNv6SnAlv3jNPO2' || // Abusufiyan Belif
-        request.auth.uid == '3gKwUE2JrBT8wngoUxTTN6tLJk03' || // Maaz Shaikh
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin'
-      );
-    }
-
-    // Primary rule: Allow all authenticated users full access for development stabilization.
-    // Role-based logic is still maintained at the UI level for professional boundaries.
     match /{document=**} {
       allow read, write: if request.auth != null;
-    }
-    
-    // Public access for settings and published initiatives
-    match /settings/{docId} {
-      allow read: if true;
-    }
-    match /campaigns/{campaignId} {
-      allow read: if resource.data.publicVisibility == 'Published' || request.auth != null;
-    }
-    match /leads/{leadId} {
-      allow read: if resource.data.publicVisibility == 'Published' || request.auth != null;
     }
   }
 }

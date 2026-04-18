@@ -1,9 +1,8 @@
-
 {
   "entities": {
     "UserProfile": {
-      "title": "User Profile",
-      "description": "Institutional member or donor account details.",
+      "title": "UserProfile",
+      "description": "Organizational profile for staff, volunteers, and portal users.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
@@ -12,38 +11,44 @@
         "phone": { "type": "string" },
         "role": { "type": "string", "enum": ["Admin", "User", "Donor", "Beneficiary"] },
         "status": { "type": "string", "enum": ["Active", "Inactive"] },
-        "permissions": { "type": "object" },
         "organizationGroup": { "type": "string" },
-        "organizationRole": { "type": "string" },
-        "userKey": { "type": "string" },
-        "loginId": { "type": "string" }
+        "organizationRole": { "type": "string" }
+      },
+      "required": ["id", "name", "email", "role", "status"]
+    },
+    "Campaign": {
+      "title": "Campaign",
+      "description": "Institutional projects like Ration Kits or Relief efforts.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "status": { "type": "string", "enum": ["Upcoming", "Active", "Completed"] },
+        "targetAmount": { "type": "number" },
+        "collectedAmount": { "type": "number" }
+      }
+    },
+    "Donation": {
+      "title": "Donation",
+      "description": "Verified financial contribution records.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "donorName": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string", "enum": ["Verified", "Pending", "Canceled"] }
       }
     },
     "PendingVerification": {
-      "title": "Pending Verification",
-      "description": "A request to update or create a record that requires institutional approval.",
+      "title": "PendingVerification",
+      "description": "Audit records for modifications awaiting administrative approval.",
       "type": "object",
       "properties": {
         "id": { "type": "string" },
         "targetId": { "type": "string" },
-        "targetCollection": { "type": "string" },
         "module": { "type": "string" },
         "status": { "type": "string", "enum": ["Pending", "Partially Approved", "Approved", "Rejected"] },
-        "requestedBy": { 
-          "type": "object",
-          "properties": {
-            "id": { "type": "string" },
-            "name": { "type": "string" }
-          }
-        },
-        "assignedVerifiers": { "type": "array" },
-        "assignedVerifierIds": { "type": "array" },
-        "newValue": { "type": "object" },
-        "originalValue": { "type": "object" },
-        "revalidatePath": { "type": "string" },
-        "description": { "type": "string" },
-        "createdAt": { "type": "object" },
-        "updatedAt": { "type": "object" }
+        "assignedVerifierIds": { "type": "array", "items": { "type": "string" } }
       }
     }
   },
@@ -51,21 +56,9 @@
     "providers": ["password", "phone"]
   },
   "firestore": {
-    "/users/{userId}": {
-      "schema": { "$ref": "#/backend/entities/UserProfile" },
-      "description": "Core identity registry for staff and donors."
-    },
-    "/donors/{donorId}": {
-      "schema": { "type": "object" },
-      "description": "Mirrored profile for community contributors."
-    },
-    "/donations/{donationId}": {
-      "schema": { "type": "object" },
-      "description": "Financial registry of verified and pending contributions."
-    },
-    "/pending_verifications/{id}": {
-      "schema": { "$ref": "#/backend/entities/PendingVerification" },
-      "description": "Staged record modifications awaiting audit."
-    }
+    "/users/{userId}": { "schema": { "$ref": "#/entities/UserProfile" }, "description": "Member profiles." },
+    "/campaigns/{campaignId}": { "schema": { "$ref": "#/entities/Campaign" }, "description": "Project hubs." },
+    "/donations/{donationId}": { "schema": { "$ref": "#/entities/Donation" }, "description": "Verified contributions." },
+    "/pending_verifications/{requestId}": { "schema": { "$ref": "#/entities/PendingVerification" }, "description": "Approval pipeline." }
   }
 }
