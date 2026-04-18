@@ -8,7 +8,7 @@ import type { Campaign, Lead, Donation, DonationCategory, BrandingSettings, Bene
 import { donationCategories } from '@/lib/modules';
 
 /**
- * usePublicData - Strict filtering for public-facing organizational reporting.
+ * usePublicData - High-fidelity organizational impact reporting.
  * Hardened to handle both prefixed and raw IDs, and ensure Zakat defaults to inclusive for goal progress.
  */
 export function usePublicData() {
@@ -97,17 +97,17 @@ export function usePublicData() {
 
     const collectedAmounts = new Map<string, number>();
     const yearlyData: Record<string, { totalGoalReceived: number; overallTotalReceived: number; totalTarget: number; }> = {};
-    let grandTotalUnlinked = 0;
+    let grandTotalUnlinkedPool = 0;
 
     donations.forEach(donation => {
-      const donationDate = donation.donationDate || '';
-      const isWithinRange = (!startDate || donationDate >= startDate) && (!endDate || donationDate <= endDate);
+      const dDate = donation.donationDate || '';
+      const isWithinRange = (!startDate || dDate >= startDate) && (!endDate || dDate <= endDate);
 
-      const donationYear = donationDate ? donationDate.split('-')[0] : null;
-      if (donationYear && !yearlyData[donationYear]) {
-          yearlyData[donationYear] = { totalGoalReceived: 0, overallTotalReceived: 0, totalTarget: 0 };
+      const dYear = dDate ? dDate.split('-')[0] : null;
+      if (dYear && !yearlyData[dYear]) {
+          yearlyData[dYear] = { totalGoalReceived: 0, overallTotalReceived: 0, totalTarget: 0 };
       }
-      if (donationYear && isWithinRange) yearlyData[donationYear].overallTotalReceived += donation.amount;
+      if (dYear && isWithinRange) yearlyData[dYear].overallTotalReceived += donation.amount;
 
       const links = (donation.linkSplit && donation.linkSplit.length > 0)
         ? donation.linkSplit
@@ -124,8 +124,8 @@ export function usePublicData() {
         const item = itemsById.get(cleanId);
         if (!item) return;
 
-        const totalDonationAmount = donation.amount > 0 ? donation.amount : 1;
-        const proportionForThisItem = link.amount / totalDonationAmount;
+        const totalDonation = donation.amount > 0 ? donation.amount : 1;
+        const proportion = link.amount / totalDonation;
 
         const typeSplits = (donation.typeSplit && donation.typeSplit.length > 0)
           ? donation.typeSplit
@@ -135,32 +135,26 @@ export function usePublicData() {
             ? item.allowedDonationTypes
             : [...donationCategories];
 
-        const applicableAmountInDonation = typeSplits.reduce((acc, split) => {
+        const applicableSum = typeSplits.reduce((acc, split) => {
           const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
           const isAllowed = allowedTypes.includes(category as DonationCategory);
-          
-          // Logic Fix: Count Zakat as inclusive by default unless explicitly marked false
           const isForGoal = category !== 'Zakat' || split.forFundraising !== false;
 
-          if (isAllowed && isForGoal) {
-            return acc + split.amount;
-          }
+          if (isAllowed && isForGoal) return acc + split.amount;
           return acc;
         }, 0);
         
-        const itemContribution = applicableAmountInDonation * proportionForThisItem;
-        const currentLifetimeCollected = collectedAmounts.get(cleanId) || 0;
-        collectedAmounts.set(cleanId, currentLifetimeCollected + itemContribution);
+        const contribution = applicableSum * proportion;
+        const currentVal = collectedAmounts.get(cleanId) || 0;
+        collectedAmounts.set(cleanId, currentVal + contribution);
 
-        if (donationYear && isWithinRange) {
-            yearlyData[donationYear].totalGoalReceived += itemContribution;
-        }
+        if (dYear && isWithinRange) yearlyData[dYear].totalGoalReceived += contribution;
       });
 
       const isUnlinked = !donation.linkSplit || donation.linkSplit.length === 0 || donation.linkSplit.some(l => l.linkId === 'unallocated' || l.linkId === 'unlinked');
       if (isUnlinked) {
           const unallocatedPart = (donation.linkSplit || []).find(l => l.linkId === 'unallocated' || l.linkId === 'unlinked')?.amount ?? donation.amount;
-          grandTotalUnlinked += unallocatedPart;
+          grandTotalUnlinkedPool += unallocatedPart;
       }
     });
 
@@ -175,8 +169,6 @@ export function usePublicData() {
       const progress = lead.targetAmount && lead.targetAmount > 0 ? (collected / lead.targetAmount) * 100 : 0;
       return { ...lead, collected, progress };
     });
-
-    const familiesImpacted = beneficiaries?.length || 0;
 
     const summaryDonations = donations.filter(d => {
         const dDate = d.donationDate || '';
@@ -195,7 +187,7 @@ export function usePublicData() {
         const links = (d.linkSplit && d.linkSplit.length > 0)
             ? d.linkSplit
             : (d as any).campaignId 
-                ? [{ linkId: (d as any).campaignId, amount: donation.amount, linkType: 'campaign' }] 
+                ? [{ linkId: (d as any).campaignId, amount: d.amount, linkType: 'campaign' }] 
                 : [];
 
         links.forEach(l => {
@@ -280,9 +272,9 @@ export function usePublicData() {
         totalTarget: totalTargetInRange,
         grandTotalRaised: grandTotalRaisedInRange,
         totalCollectedForGoals: totalCollectedForGoalsInRange,
-        grandTotalUnlinked,
+        grandTotalUnlinked: grandTotalUnlinkedPool,
         progress: overallProgress,
-        familiesImpacted,
+        familiesImpacted: beneficiaries?.length || 0,
         showUnlinkedFunds: user ? (visSettings?.member_unlinked_funds !== false) : (visSettings?.public_unlinked_funds === true)
       },
       yearlySummary: sortedYearlyData,

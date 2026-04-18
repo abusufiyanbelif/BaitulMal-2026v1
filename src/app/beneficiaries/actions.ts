@@ -5,7 +5,7 @@ import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { FieldValue } from 'firebase-admin/firestore';
 
-const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure Server Credentials Are Configured Correctly.";
+const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Verify Server Credentials.";
 
 /**
  * Creates a new beneficiary in the master registry.
@@ -66,7 +66,12 @@ export async function bulkUpdateMasterBeneficiaryStatusAction(ids: string[], sta
     try {
         const batch = adminDb.batch();
         ids.forEach(id => {
-            batch.update(adminDb.collection('beneficiaries').doc(id), { status, updatedById: updatedBy.id, updatedByName: updatedBy.name, updatedAt: FieldValue.serverTimestamp() });
+            batch.update(adminDb.collection('beneficiaries').doc(id), { 
+                status, 
+                updatedById: updatedBy.id, 
+                updatedByName: updatedBy.name, 
+                updatedAt: FieldValue.serverTimestamp() 
+            });
         });
         await batch.commit();
         revalidatePath('/beneficiaries');
@@ -85,7 +90,12 @@ export async function bulkUpdateMasterZakatAction(ids: string[], isEligibleForZa
     try {
         const batch = adminDb.batch();
         ids.forEach(id => {
-            batch.update(adminDb.collection('beneficiaries').doc(id), { isEligibleForZakat, updatedById: updatedBy.id, updatedByName: updatedBy.name, updatedAt: FieldValue.serverTimestamp() });
+            batch.update(adminDb.collection('beneficiaries').doc(id), { 
+                isEligibleForZakat, 
+                updatedById: updatedBy.id, 
+                updatedByName: updatedBy.name, 
+                updatedAt: FieldValue.serverTimestamp() 
+            });
         });
         await batch.commit();
         revalidatePath('/beneficiaries');

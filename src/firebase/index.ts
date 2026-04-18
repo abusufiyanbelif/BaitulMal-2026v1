@@ -1,9 +1,8 @@
 'use client';
 
 /**
- * @fileOverview Aggregator barrel file for Firebase SDKs and hooks.
- * This file is a pure aggregator. Internal files should use relative imports
- * to prevent circular dependency loops during Next.js compilation.
+ * @fileOverview Hardened barrel file for Firebase SDKs.
+ * Uses explicit exports to prevent circular dependency loops during Next.js compilation.
  */
 
 export { 
@@ -21,6 +20,7 @@ export { FirebaseClientProvider } from './client-provider';
 export { initializeFirebase } from './init';
 export { useCollection } from './firestore/use-collection';
 export { useDoc } from './firestore/use-doc';
+
 export { 
   setDocumentNonBlocking, 
   addDocumentNonBlocking, 
@@ -37,7 +37,7 @@ export {
 export { FirestorePermissionError } from './errors';
 export { errorEmitter } from './error-emitter';
 
-// Re-export common Firestore SDK functions for convenience
+// Re-export specific SDK methods required for Portals and Management
 export { 
   collection, 
   query, 
@@ -56,25 +56,21 @@ export {
   increment,
   writeBatch,
   Timestamp,
-  getFirestore
 } from 'firebase/firestore';
 
-// Re-export Storage SDK functions
 export { 
   ref as storageRef, 
   uploadBytes, 
   getDownloadURL, 
-  deleteObject,
-  getStorage
+  deleteObject 
 } from 'firebase/storage';
 
-// Re-export Auth SDK functions required for Staff and Portal access
 export { 
-  sendPasswordResetEmail, 
   signInWithPhoneNumber, 
   RecaptchaVerifier,
   onAuthStateChanged,
   getAuth,
   signOut,
-  signInWithEmailAndPassword
+  signInWithEmailAndPassword,
+  sendPasswordResetEmail
 } from 'firebase/auth';

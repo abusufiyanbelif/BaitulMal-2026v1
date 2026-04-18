@@ -5,18 +5,18 @@ import { errorEmitter } from '../firebase/error-emitter';
 import { FirestorePermissionError } from '../firebase/errors';
 
 /**
- * An invisible component that listens for globally emitted 'permission-error' events.
- * Uses a deferred update to avoid React hydration/HotReload render collisions.
+ * Global Firestore Permission Error Listener.
+ * Fixes the "HotReload" hydration warning by deferring state updates using setTimeout.
  */
 export function FirebaseErrorListener() {
   const [error, setError] = useState<FirestorePermissionError | null>(null);
 
   useEffect(() => {
-    const handleError = (error: FirestorePermissionError) => {
-      // Defer the state update to ensure it happens outside the current render cycle.
-      // This resolves the "Cannot update a component while rendering another" warning.
+    const handleError = (incomingError: FirestorePermissionError) => {
+      // CRITICAL FIX: Defer the update to the next task cycle to avoid
+      // updating state during a render cycle (causes HotReload warnings).
       setTimeout(() => {
-        setError(error);
+        setError(incomingError);
       }, 0);
     };
 
@@ -28,6 +28,7 @@ export function FirebaseErrorListener() {
   }, []);
 
   if (error) {
+    // Throw the error so it can be caught by the nearest Error Boundary
     throw error;
   }
 

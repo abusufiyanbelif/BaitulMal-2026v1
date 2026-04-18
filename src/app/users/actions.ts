@@ -3,15 +3,16 @@
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { revalidatePath } from 'next/cache';
 import type { UserFormData } from '@/lib/schemas';
-import type { UserProfile, Donor, UserPermissions } from '@/lib/types';
+import type { UserProfile, Donor, UserPermissions, Campaign, Lead, Donation, Beneficiary } from '@/lib/types';
 import { GROUP_IDS, createAdminPermissions } from '@/lib/modules';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { bulkRecalculateInitiativeTotalsAction } from '@/app/donations/actions';
 
-const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK initialization failed. This usually means the server is missing credentials.";
+const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Verify Server Credentials.";
 
 /**
  * Sanitizes an object by removing all undefined values.
+ * Crucial for preventing Firestore Update() crashes.
  */
 function sanitizePayload(data: Record<string, any>) {
     const sanitized: Record<string, any> = {};
@@ -39,9 +40,9 @@ export async function createUserAuthAction(data: UserFormData): Promise<{ succes
             disabled: data.status === 'Inactive',
         });
         revalidatePath('/users');
-        return { success: true, message: 'User created in Firebase Authentication.', uid: userRecord.uid };
+        return { success: true, message: 'User Created In Firebase Authentication.', uid: userRecord.uid };
     } catch (error: any) {
-        return { success: false, message: `Failed to create authentication user: ${error.message}` };
+        return { success: false, message: `Auth Registration Failed: ${error.message}` };
     }
 }
 
@@ -64,9 +65,9 @@ export async function deleteUserAction(uidToDelete: string): Promise<{ success: 
 
         await batch.commit();
         revalidatePath('/users');
-        return { success: true, message: 'Account purged from registry.' };
+        return { success: true, message: 'Account Purged From Organizational Registry.' };
     } catch (error: any) {
-        return { success: false, message: `Removal failed: ${error.message}` };
+        return { success: false, message: `Removal Operation Failed: ${error.message}` };
     }
 }
 
@@ -89,9 +90,9 @@ export async function getPublicMembersAction(): Promise<Partial<UserProfile>[]> 
 }
 
 /**
- * DEEP CONSOLIDATION ACTION
- * Merges multiple identities into a primary "Golden Record".
- * Re-assigns financial records and updates audit trails across the system.
+ * DEEP IDENTITY CONSOLIDATION ACTION
+ * Merges multiple fragmented identities into a primary "Golden Record".
+ * Rewrites historical audit trails and re-assigns financial history across all modules.
  */
 export async function consolidateIdentitiesAction(
     primaryUid: string, 
@@ -134,13 +135,14 @@ export async function consolidateIdentitiesAction(
                     donorId: primaryUid,
                     donorName: primaryData.name,
                     updatedAt: FieldValue.serverTimestamp(),
-                    notes: (d.data().notes || '') + ` (Unified into identity ${primaryUid})`
+                    notes: (d.data().notes || '') + ` (Unified Identity Merge from ${redundantUid})`
                 });
             });
 
-            // 3. Update Audit Trails (Everything created/updated by this redundant UID)
+            // 3. Update Audit Trails System-Wide (Rewriting History)
             const collectionsToUpdate = ['campaigns', 'leads', 'beneficiaries', 'donations'];
             for (const col of collectionsToUpdate) {
+                // Re-attribute CREATED BY
                 const createdSnap = await adminDb.collection(col).where('createdById', '==', redundantUid).get();
                 createdSnap.forEach(doc => {
                     batch.update(doc.ref, { 
@@ -149,6 +151,7 @@ export async function consolidateIdentitiesAction(
                     });
                 });
 
+                // Re-attribute UPDATED BY
                 const updatedSnap = await adminDb.collection(col).where('updatedById', '==', redundantUid).get();
                 updatedSnap.forEach(doc => {
                     batch.update(doc.ref, { 
@@ -158,7 +161,7 @@ export async function consolidateIdentitiesAction(
                 });
             }
 
-            // 4. Move Master Donor Data if exists
+            // 4. Move Master Donor Registry Data if exists
             const oldDonorRef = adminDb.collection('donors').doc(redundantUid);
             const primaryDonorRef = adminDb.collection('donors').doc(primaryUid);
             const oldDonorSnap = await oldDonorRef.get();
@@ -171,7 +174,7 @@ export async function consolidateIdentitiesAction(
                 batch.delete(oldDonorRef);
             }
 
-            // 5. Delete redundant user and its lookups
+            // 5. Purge redundant profile and lookup identifiers
             batch.delete(redundantRef);
             if (rData.loginId) batch.delete(adminDb.collection('user_lookups').doc(rData.loginId));
             if (rData.phone) batch.delete(adminDb.collection('user_lookups').doc(rData.phone));
@@ -188,6 +191,8 @@ export async function consolidateIdentitiesAction(
         batch.update(primaryRef, finalUpdate);
 
         await batch.commit();
+        
+        // Trigger a systemic recalculation to ensure no drift
         await bulkRecalculateInitiativeTotalsAction();
 
         revalidatePath('/users');
@@ -195,7 +200,7 @@ export async function consolidateIdentitiesAction(
         revalidatePath('/donors');
         revalidatePath('/dashboard');
         
-        return { success: true, message: `Successfully unified fragmented profiles into identity: ${primaryData.name}` };
+        return { success: true, message: `Successfully Unified Fragmented Profiles Into identity: ${primaryData.name}` };
     } catch (error: any) {
         console.error("Deep Consolidation Failed:", error);
         return { success: false, message: `Reconciliation Error: ${error.message}` };
@@ -208,9 +213,9 @@ export async function updateUserAuthAction(uid: string, updates: { email?: strin
     try {
         await adminAuth.updateUser(uid, updates);
         revalidatePath(`/users/${uid}`);
-        return { success: true, message: 'Auth details updated.' };
+        return { success: true, message: 'Institutional Authentication Details Updated.' };
     } catch (error: any) {
-        return { success: false, message: `Failed: ${error.message}` };
+        return { success: false, message: `Operation Failed: ${error.message}` };
     }
 }
 
@@ -241,7 +246,7 @@ export async function syncAllUsersToDonorsAction(adminUserId: string, adminUserN
         }
         if (count > 0) await batch.commit();
         revalidatePath('/donors');
-        return { success: true, message: `Mirrored ${count} members.`, count };
+        return { success: true, message: `Mirrored ${count} Members Into Donor Registry.`, count };
     } catch (error: any) {
         return { success: false, message: error.message, count: 0 };
     }

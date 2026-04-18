@@ -16,33 +16,25 @@ type WithId<T> = T & { id: string };
 
 /**
  * Interface for the return value of the useDoc hook.
- * @template T Type of the document data.
  */
 export interface UseDocResult<T> {
-  data: WithId<T> | null; // Document data with ID, or null.
-  isLoading: boolean;       // True if loading.
-  error: FirestoreError | Error | null; // Error object, or null.
+  data: WithId<T> | null;
+  isLoading: boolean;
+  error: FirestoreError | Error | null;
+  forceRefetch: () => void;
 }
 
 /**
- * React hook to subscribe to a single Firestore document in real-time.
- * Handles nullable references.
- * 
- * IMPORTANT! YOU MUST MEMOIZE the inputted memoizedTargetRefOrQuery.
- *
- * @template T Optional type for document data. Defaults to any.
- * @param {DocumentReference<DocumentData> | null | undefined} docRef -
- * The Firestore DocumentReference. Waits if null/undefined.
- * @returns {UseDocResult<T>} Object with data, isLoading, error.
+ * Real-time document listener hook.
+ * Uses relative imports to prevent circular dependency cycles.
  */
 export function useDoc<T = any>(
   memoizedDocRef: DocumentReference<DocumentData> | null | undefined,
 ): UseDocResult<T> {
-  type StateDataType = WithId<T> | null;
-
-  const [data, setData] = useState<StateDataType>(null);
+  const [data, setData] = useState<WithId<T> | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
+  const [nonce, setNonce] = useState(0);
 
   useEffect(() => {
     if (!memoizedDocRef) {
@@ -66,29 +58,31 @@ export function useDoc<T = any>(
         setError(null);
         setIsLoading(false);
       },
-      (error: FirestoreError) => {
-        if (error.code === 'permission-denied') {
+      (err: FirestoreError) => {
+        if (err.code === 'permission-denied') {
           const contextualError = new FirestorePermissionError({
             operation: 'get',
             path: memoizedDocRef.path,
-          })
+          });
 
-          setError(contextualError)
-          setData(null)
-          setIsLoading(false)
-
+          setError(contextualError);
           errorEmitter.emit('permission-error', contextualError);
         } else {
-          setError(error);
-          setData(null);
-          setIsLoading(false);
-          console.error('[useDoc Error]', error.code, error.message);
+          setError(err);
+          console.error('[useDoc Error]', err.code, err.message);
         }
+        setData(null);
+        setIsLoading(false);
       }
     );
 
     return () => unsubscribe();
-  }, [memoizedDocRef]);
+  }, [memoizedDocRef, nonce]);
 
-  return { data, isLoading, error };
+  return { 
+    data, 
+    isLoading, 
+    error,
+    forceRefetch: () => setNonce(n => n + 1)
+  };
 }
