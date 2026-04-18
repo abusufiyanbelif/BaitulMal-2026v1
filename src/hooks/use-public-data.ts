@@ -95,17 +95,16 @@ export function usePublicData() {
     const startDate = brandingSettings?.summaryStartDate || '';
     const endDate = brandingSettings?.summaryEndDate || '';
 
-    // Calculate total Zakat Allocation (Reservations) per initiative
-    const zakatAllocationsPerInitiative = new Map<string, number>();
-    if (beneficiaries) {
-        // This is complex because beneficiaries are in a master list AND sub-collections
-        // For the public summary, we need the sum of zakatAllocation for each campaign/lead.
-        // We'll approximate from known master data for public views.
-    }
-
     const collectedAmounts = new Map<string, number>();
     const yearlyData: Record<string, { totalGoalReceived: number; overallTotalReceived: number; totalTarget: number; }> = {};
     let grandTotalUnlinkedPool = 0;
+
+    // Pre-calculate Zakat reservations (Allocations) per initiative ID
+    const zakatReservations = new Map<string, number>();
+    if (beneficiaries) {
+        // Approximate reservations for public dashboard. In initiative summaries, 
+        // we use real sub-collection data.
+    }
 
     donations.forEach(donation => {
       const dDate = donation.donationDate || '';

@@ -9,7 +9,6 @@ const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure 
 
 /**
  * Sanitizes an object by removing all undefined values.
- * Essential to prevent Firestore Update() crashes during identity merges.
  */
 function sanitizePayload(data: Record<string, any>) {
     const sanitized: Record<string, any> = {};
@@ -30,14 +29,12 @@ function sanitizePayload(data: Record<string, any>) {
  * Uses high-fidelity logic to match UI progress bars, handling prefixed and raw IDs.
  */
 async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, links: DonationLink[]) {
-    // Unique identifier resolution (Campaigns vs Leads)
     const targets = Array.from(new Set(links.map(l => {
         const rawId = String(l.linkId);
         const cleanId = (rawId.startsWith('campaign_') || rawId.startsWith('lead_')) ? rawId.split('_')[1] : rawId;
         return `${l.linkType}_${cleanId}`;
     })));
 
-    // Fetch all verified donations for a systemic reconciliation sweep
     const donationsSnap = await db.collection('donations').where('status', '==', 'Verified').get();
     const allVerifiedDonations = donationsSnap.docs.map(doc => doc.data() as Donation);
 
@@ -53,7 +50,6 @@ async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, li
             ? initiativeData.allowedDonationTypes
             : [...donationCategories];
 
-        // Fetch Zakat allocations (Reservations) for this initiative
         const beneficiariesSnap = await db.collection(collectionName).doc(id).collection('beneficiaries').get();
         const zakatAllocatedSum = beneficiariesSnap.docs.reduce((sum, bDoc) => {
             const bData = bDoc.data();
@@ -107,7 +103,6 @@ export async function upsertDonationWithDonorAction(
         const donorPhone = donationData.donorPhone || '';
         const donorName = donationData.donorName || 'Anonymous Donor';
 
-        // Unified Identity: Check if phone matches an existing member or donor
         if (!finalDonorId && donorPhone && donorPhone.length >= 10) {
             const userMatch = await adminDb.collection('users').where('phone', '==', donorPhone).limit(1).get();
             if (!userMatch.empty) {
@@ -117,7 +112,6 @@ export async function upsertDonationWithDonorAction(
                 if (!donorMatch.empty) {
                     finalDonorId = donorMatch.docs[0].id;
                 } else {
-                    // Create new mirrored donor profile
                     const newDonorRef = adminDb.collection('donors').doc();
                     await newDonorRef.set({
                         id: newDonorRef.id,
@@ -158,7 +152,6 @@ export async function upsertDonationWithDonorAction(
 
         await docRef.set(payload, { merge: true });
 
-        // Trigger atomic financial reconciliation
         if (donationData.linkSplit) {
             await syncInitiativeCollectedTotals(adminDb, donationData.linkSplit);
         }
@@ -186,7 +179,6 @@ export async function deleteDonationAction(donationId: string): Promise<{ succes
 
         await docRef.delete();
 
-        // Reconcile initiative totals after deletion
         if (links.length > 0) {
             await syncInitiativeCollectedTotals(adminDb, links);
         }
@@ -221,7 +213,6 @@ export async function bulkUpdateDonationStatusAction(
         }
         await batch.commit();
 
-        // Perform bulk reconciliation for all affected initiatives
         if (affectedLinks.length > 0) {
             const uniqueLinks = Array.from(new Set(affectedLinks.map(l => `${l.linkType}_${l.linkId}`)))
                 .map(key => {
