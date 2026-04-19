@@ -90,7 +90,7 @@ import {
     SelectValue,
 } from "@/components/ui/select";
 import { cn, getNestedValue } from '@/lib/utils';
-import { bulkUpdateDonationStatusAction, bulkImportDonationsAction, upsertDonationWithDonorAction, deleteDonationAction, bulkMapDonorsAction, bulkUnmapDonorsAction, bulkLinkInitiativeAction, bulkManualMapDonorsAction } from './actions';
+import { bulkUpdateDonationStatusAction, bulkImportDonationsAction, upsertDonationWithDonorAction, deleteDonationAction, bulkMapDonorsAction, bulkUnmapDonorsAction, bulkManualMapDonorsAction } from './actions';
 import { donationCategories } from '@/lib/modules';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -168,7 +168,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
 
     return (
         <div className="flex flex-col">
-            <div onClick={() => setIsOpen(!isOpen)} className={cn("cursor-pointer bg-white hover:bg-[hsl(var(--table-row-hover))] group transition-colors border-b border-primary/10", donationGridClass)}>
+            <div onClick={() => setIsOpen(!isOpen)} className={cn("cursor-pointer bg-white border-b border-primary/10 hover:bg-[hsl(var(--table-row-hover))] group transition-colors", donationGridClass)}>
                 <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                     <Checkbox 
                         checked={isSelected}
@@ -613,4 +613,12 @@ function DonationListContent() {
         <DonationImportDialog open={isImportOpen} onOpenChange={setIsImportOpen} onImport={handleImport} />
     </main>
   );
+}
+
+export default function DonationsPage() {
+    return (
+        <Suspense fallback={<BrandedLoader message="Syncing Global Registry..." />}>
+            <DonationListContent />
+        </Suspense>
+    );
 }
