@@ -581,7 +581,7 @@ export default function LeadSummaryPage() {
                                     </div>
                                     
                                     {editableLead.purpose === 'Education' && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5 animate-fade-in-zoom border-primary/10">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-xl bg-primary/5 animate-fade-in-zoom border-primary/10">
                                             <div className="space-y-1"><Label className="font-bold text-xs capitalize">Degree</Label><Select value={editableLead.degree} onValueChange={(val) => handleFieldChange('degree', val)}><SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{educationDegrees.map(d=><SelectItem key={d} value={d} className="font-normal">{d}</SelectItem>)}</SelectContent></Select></div>
                                             <div className="space-y-1"><Label className="font-bold text-xs capitalize">Year</Label><Select value={editableLead.year} onValueChange={(val) => handleFieldChange('year', val)}><SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{educationYears.map(y=><SelectItem key={y} value={y} className="font-normal">{y}</SelectItem>)}</SelectContent></Select></div>
                                             <div className="space-y-1"><Label className="font-bold text-xs capitalize">Semester</Label><Select value={editableLead.semester} onValueChange={(val) => handleFieldChange('semester', val)}><SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{educationSemesters.map(s=><SelectItem key={s} value={s} className="font-normal">{s}</SelectItem>)}</SelectContent></Select></div>
@@ -589,7 +589,7 @@ export default function LeadSummaryPage() {
                                     )}
 
                                     {editableLead.purpose === 'Medical' && (
-                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-md bg-primary/5 border-primary/10 animate-fade-in-up">
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 border rounded-xl bg-primary/5 border-primary/10 animate-fade-in-up">
                                             <div className="space-y-1"><Label className="font-bold text-xs capitalize">Disease</Label><Input value={editableLead.diseaseIdentified || ''} onChange={(e) => handleFieldChange('diseaseIdentified', e.target.value)} className="font-bold text-primary border-primary/10"/></div>
                                             <div className="space-y-1"><Label className="font-bold text-xs capitalize">Stage</Label><Input value={editableLead.diseaseStage || ''} onChange={(e) => handleFieldChange('diseaseStage', e.target.value)} className="font-bold text-primary border-primary/10"/></div>
                                             <div className="space-y-1"><Label className="font-bold text-xs capitalize">Seriousness</Label><Select value={editableLead.seriousness || ''} onValueChange={(val) => handleFieldChange('seriousness', val)}><SelectTrigger className="font-bold text-primary border-primary/10"><SelectValue/></SelectTrigger><SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{leadSeriousnessLevels.map(l=><SelectItem key={l} value={l} className="font-normal">{l}</SelectItem>)}</SelectContent></Select></div>
@@ -608,7 +608,7 @@ export default function LeadSummaryPage() {
                                     
                                     <div className="space-y-2">
                                         <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Allowed Donation Types For Goal</Label>
-                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border rounded-md p-3 bg-white border-primary/10">
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border rounded-xl p-3 bg-white border-primary/10">
                                             {donationCategories.map(type => (
                                                 <div key={type} className="flex items-center space-x-2 transition-all duration-300 hover:translate-x-1">
                                                     <Checkbox 
@@ -648,7 +648,7 @@ export default function LeadSummaryPage() {
                                         <div className="space-y-1 p-3 rounded-lg bg-primary/5 transition-all duration-300 hover:bg-primary/10 hover:shadow-sm"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">End Date</p><p className="font-bold text-primary text-sm">{lead?.endDate || 'N/A'}</p></div>
                                     </div>
                                     {(lead?.purpose === 'Education' || lead?.purpose === 'Medical') && (
-                                        <div className="mt-4 p-4 rounded-md border border-primary/10 bg-primary/5 grid grid-cols-1 sm:grid-cols-3 gap-4 font-bold transition-all duration-300 hover:shadow-md">
+                                        <div className="mt-4 p-4 rounded-xl border border-primary/10 bg-primary/5 grid grid-cols-1 sm:grid-cols-3 gap-4 font-bold transition-all duration-300 hover:shadow-md">
                                             {lead.purpose === 'Education' ? (
                                                 <>
                                                     <div className="space-y-1"><p className="text-[10px] text-muted-foreground tracking-tight capitalize">Degree / Class</p><p className="text-sm">{lead.degree || 'N/A'}</p></div>
@@ -1080,7 +1080,9 @@ export default function LeadSummaryPage() {
                         action: 'update',
                         newData: pendingSaveData,
                         oldData: lead,
-                        description: `Update appeal details: ${lead.name}`
+                        description: `Update appeal details: ${lead.name}`,
+                        targetCollection: 'leads',
+                        revalidatePath: `/leads-members/${leadId}/summary`
                     }}
                     onSuccess={() => {
                         setEditMode(false);

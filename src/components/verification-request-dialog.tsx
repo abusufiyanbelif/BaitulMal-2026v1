@@ -47,7 +47,9 @@
    const { data: users, isLoading } = useCollection<UserProfile>(usersRef);
  
    const filteredUsers = (users || []).filter(u => 
-     u.id !== user.id && ( // Don't allow self-verification
+     u.id !== user.id && 
+     (u.role === 'Admin' || u.role === 'User') && // ONLY Org Members and Admins
+     (
        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
        u.loginId.toLowerCase().includes(searchTerm.toLowerCase())
      )
