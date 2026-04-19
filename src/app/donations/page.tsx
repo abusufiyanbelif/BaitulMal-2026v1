@@ -96,7 +96,6 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
 import { DonationImportDialog } from '@/components/donation-import-dialog';
-import { BulkLinkInitiativeDialog } from '@/components/bulk-link-initiative-dialog';
 import { DonorSearchDialog } from '@/components/donor-search-dialog';
 import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -202,7 +201,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                 <div className="text-right pr-4" onClick={e => e.stopPropagation()}>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary active:scale-90 transition-transform"><MoreHorizontal className="h-4 w-4"/></Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
                             <DropdownMenuItem onClick={() => router.push(`/donations/${donation.id}`)} className="text-primary font-normal cursor-pointer"><Eye className="mr-2 h-4 w-4 opacity-60"/> View Details</DropdownMenuItem>
@@ -438,11 +437,44 @@ function DonationListContent() {
     }
   };
 
-  const handleViewImage = (url: string) => {
-    setImageToView(url);
-    setZoom(1);
-    setRotation(0);
-    setIsImageViewerOpen(true);
+  const handleDeleteConfirm = async () => {
+    if (!donationToDelete) return;
+    setIsSubmitting(true);
+    setIsDeleteDialogOpen(false);
+    try {
+        const result = await deleteDonationAction(donationToDelete);
+        toast({ title: result.success ? "Success" : "Error", description: result.message, variant: result.success ? "success" : "destructive" });
+    } finally {
+        setIsSubmitting(false);
+        setDonationToDelete(null);
+    }
+  };
+
+  const handleImport = async (records: Partial<Donation>[]) => {
+    if (!userProfile) return;
+    setIsSubmitting(true);
+    try {
+        const res = await bulkImportDonationsAction(records, { id: userProfile.id, name: userProfile.name });
+        if (res && res.success) toast({ title: 'Import Complete', description: res.message, variant: 'success' });
+        else toast({ title: 'Import Failed', description: res?.message || "Import Operation Failed.", variant: 'destructive' });
+    } finally {
+        setIsSubmitting(false);
+    }
+  };
+
+  const handleBulkMapDonors = async () => {
+      if (selectedIds.length === 0 || !userProfile) return;
+      setIsBulkUpdating(true);
+      setIsSubmitting(true);
+      try {
+          const res = await bulkMapDonorsAction(selectedIds, { id: userProfile.id, name: userProfile.name });
+          if (res.success) {
+              toast({ title: "Auto-Mapping Complete", description: res.message, variant: "success" });
+              setSelectedIds([]);
+          } else {
+              toast({ title: "Auto-Mapping Failed", description: res.message, variant: "destructive" });
+          }
+      } finally { setIsBulkUpdating(false); setIsSubmitting(false); }
   };
 
   if (areDonationsLoading || isProfileLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Organization Database." />;
