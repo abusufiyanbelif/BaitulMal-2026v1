@@ -316,15 +316,8 @@ function DonationListContent() {
   
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
-  const [isBulkLinkModalOpen, setIsBulkLinkModalOpen] = useState(false);
   const [isManualMapOpen, setIsManualMapOpen] = useState(false);
-  const [bulkLinkMode, setBulkLinkMode] = useState<'link' | 'unlink'>('link');
-
-  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
-  const [imageToView, setImageToView] = useState<string | null>(null);
-  const [zoom, setZoom] = useState(1);
-  const [rotation, setRotation] = useState(0);
-
+  
   const donationsCollectionRef = useMemoFirebase(() => (firestore && user) ? collection(firestore, 'donations') : null, [firestore, user]);
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
 
@@ -477,6 +470,19 @@ function DonationListContent() {
       } finally { setIsBulkUpdating(false); setIsSubmitting(false); }
   };
 
+  const toggleSelectAll = (checked: boolean | string) => {
+    const isChecked = checked === true;
+    if (isChecked) {
+        setSelectedIds(paginatedDonations.map(d => d.id));
+    } else {
+        setSelectedIds([]);
+    }
+  };
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+  };
+
   if (areDonationsLoading || isProfileLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Organization Database." />;
 
   return (
@@ -545,7 +551,7 @@ function DonationListContent() {
                                 index={(currentPage - 1) * itemsPerPage + i + 1} 
                                 handleEdit={() => { setEditingDonation(d); setIsFormOpen(true); }} 
                                 handleDeleteClick={() => { setDonationToDelete(d.id); setIsDeleteDialogOpen(true); }} 
-                                handleViewImage={handleViewImage}
+                                handleViewImage={(url) => { setImageToView(url); setZoom(1); setRotation(0); setIsImageViewerOpen(true); }}
                             />
                         ))}
                     </div>
@@ -575,6 +581,30 @@ function DonationListContent() {
                 <AlertDialogFooter><AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold rounded-[12px] shadow-md">Delete</AlertDialogAction></AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
+        
+        <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
+            <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 rounded-[12px] border-primary/10 overflow-hidden shadow-2xl animate-fade-in-zoom">
+                <DialogHeader className="px-6 py-4 bg-primary/5 border-b">
+                    <DialogTitle className="text-xl font-bold text-primary tracking-tight capitalize tracking-widest">Evidence Viewer</DialogTitle>
+                </DialogHeader>
+                <ScrollArea className="flex-1 bg-secondary/20">
+                    <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
+                        {imageToView && (
+                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Evidence Document" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                        )}
+                    </div>
+                    <ScrollBar orientation="horizontal" />
+                    <ScrollBar orientation="vertical" />
+                </ScrollArea>
+                <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white flex">
+                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
+                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5)) } className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
+                    <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
+                    <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+
         <DonationImportDialog open={isImportOpen} onOpenChange={setIsImportOpen} onImport={handleImport} />
     </main>
   );
