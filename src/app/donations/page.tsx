@@ -1,5 +1,5 @@
 'use client';
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, Suspense } from 'react';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useFirestore, useCollection, useStorage, useAuth, storageRef, uploadBytes, getDownloadURL, useMemoFirebase } from '@/firebase';
@@ -107,7 +107,18 @@ type SortKey = keyof Donation | 'srNo';
 
 const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1100px]";
 
-function StatCard({ title, count, description, icon: Icon, delay, isCurrency = false, colorClass, onClick }: { title: string, count: number | string, description: string, icon: any, delay: string, isCurrency?: boolean, colorClass?: string, onClick?: () => void }) {
+interface StatCardProps {
+    title: string;
+    count: number | string;
+    description: string;
+    icon: any;
+    delay: string;
+    isCurrency?: boolean;
+    colorClass?: string;
+    onClick?: () => void;
+}
+
+function StatCard({ title, count, description, icon: Icon, delay, isCurrency = false, colorClass, onClick }: StatCardProps) {
     return (
         <Card 
             onClick={onClick}
@@ -312,7 +323,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
     );
 }
 
-export default function DonationsPage() {
+function DonationListContent() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -413,12 +424,12 @@ export default function DonationsPage() {
         items.sort((a, b) => {
             if (sortConfig.key === 'srNo') return 0;
             const aVal = (a[sortConfig.key as keyof Donation] ?? '').toString().toLowerCase();
-            const bValue = (b[sortConfig.key as keyof Donation] ?? '').toString().toLowerCase();
+            const bVal = (b[sortConfig.key as keyof Donation] ?? '').toString().toLowerCase();
             
-            if (aVal < bValue) {
+            if (aVal < bVal) {
                 return sortConfig.direction === 'ascending' ? -1 : 1;
             }
-            if (aVal > bValue) {
+            if (aVal > bVal) {
                 return sortConfig.direction === 'ascending' ? 1 : -1;
             }
             return 0;
@@ -662,9 +673,15 @@ export default function DonationsPage() {
     }
   };
 
-  const isLoading = areDonationsLoading || isProfileLoading || isSubmitting;
-  
-  if (isLoading && !donations) return <SectionLoader label="Loading Donation Records..." description="Retrieving Organization Database." />;
+  const canRead = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations.read', false);
+
+  if (areDonationsLoading || isProfileLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Organization Database." />;
+
+  if (!canRead) return (
+      <main className="container mx-auto p-8">
+          <Alert variant="destructive"><ShieldAlert className="h-4 w-4"/><AlertTitle className="font-bold">Access Denied</AlertTitle><AlertDescription className="font-normal text-primary/70">Missing Permissions To View Donation Records.</AlertDescription></Alert>
+      </main>
+  );
 
   return (
     <main className="container mx-auto p-4 md:p-8 font-normal text-primary relative">
@@ -689,7 +706,7 @@ export default function DonationsPage() {
         </div>
 
         <div className="border-b mb-4">
-            <ScrollArea className="w-full">
+            <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex w-max space-x-2 pb-2">
                     <Link href="/donations/summary" className={cn(
                         "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
@@ -978,4 +995,12 @@ export default function DonationsPage() {
         />
     </main>
   );
+}
+
+export default function DonationsPage() {
+    return (
+        <Suspense fallback={<BrandedLoader message="Syncing All Donations..." />}>
+            <DonationListContent />
+        </Suspense>
+    );
 }
