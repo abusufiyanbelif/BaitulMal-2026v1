@@ -93,43 +93,9 @@ export function usePublicData() {
     const startDate = brandingSettings?.summaryStartDate || '';
     const endDate = brandingSettings?.summaryEndDate || '';
 
-    // Advanced progress logic: Zakat Surplus calculation
+    // Advanced progress logic: Use server-synced collectedAmount for reliability
     const calculateProgress = (item: Campaign | Lead) => {
-        const allowedTypes = item.allowedDonationTypes && item.allowedDonationTypes.length > 0
-            ? item.allowedDonationTypes
-            : [...donationCategories];
-
-        const itemDonations = donations.filter(d => 
-            d.linkSplit?.some(link => link.linkId === item.id || link.linkId === `campaign_${item.id}` || link.linkId === `lead_${item.id}`)
-        );
-
-        let zakatSumForGoal = 0;
-        let otherEligibleSum = 0;
-
-        itemDonations.forEach(d => {
-            const split = d.linkSplit?.find(l => l.linkId === item.id || l.linkId === `campaign_${item.id}` || l.linkId === `lead_${item.id}`);
-            if (split) {
-                const totalDonation = d.amount || 1;
-                const prop = split.amount / totalDonation;
-                const typeSplits = d.typeSplit || [];
-                
-                typeSplits.forEach(s => {
-                    const cat = (s.category as any) === 'General' || (s.category as any) === 'Sadqa' ? 'Sadaqah' : s.category;
-                    const isAllowed = allowedTypes.includes(cat as any);
-                    const isForGoal = cat !== 'Zakat' || s.forFundraising !== false;
-                    
-                    if (isAllowed && isForGoal) {
-                        const amount = s.amount * prop;
-                        if (cat === 'Zakat') zakatSumForGoal += amount;
-                        else otherEligibleSum += amount;
-                    }
-                });
-            }
-        });
-
-        // For public progress, we don't have individual Zakat Allocations readily available in this loop.
-        // We rely on the server-synced collectedAmount for maximum fidelity.
-        const collected = item.collectedAmount || (otherEligibleSum + zakatSumForGoal);
+        const collected = item.collectedAmount || 0;
         const progress = item.targetAmount && item.targetAmount > 0 ? (collected / item.targetAmount) * 100 : 0;
         return { collected, progress: Math.min(progress, 100) };
     };

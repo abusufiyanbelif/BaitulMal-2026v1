@@ -1,69 +1,96 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // --- HELPER FUNCTIONS ---
+    // --- ADMINISTRATIVE HELPERS ---
     
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    function isAdmin() {
-      // Primary Superuser Bypass (UIDs and Emails)
-      let superusers = [
-        'cyMl1lQME0Yur1YS3VCms1AvrOJ2', // System Admin
-        'S5efNV5jpTPoxYNv6SnAlv3jNPO2', // Abusufiyan Belif
-        '3gKwUE2JrBT8wngoUxTTN6tLJk03'  // Maaz
-      ];
-      let superEmails = [
-        'abusufiyan.belif@gmail.com',
-        'baitulmalss.solapur@gmail.com',
-        'maazshaikh.official@gmail.com',
-        'admin@example.com'
-      ];
-      
-      return isSignedIn() && (
-        request.auth.uid in superusers || 
-        request.auth.token.email in superEmails ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin'
+    // Hardcoded Superuser Bypasses (for Abusufiyan, Maaz, and System Admin)
+    function isSuperAdmin() {
+      return request.auth != null && (
+        request.auth.token.email == "abusufiyan.belif@gmail.com" ||
+        request.auth.token.email == "maazshaikh.official@gmail.com" ||
+        request.auth.token.email == "baitulmalss.solapur@gmail.com" ||
+        request.auth.token.email == "admin@example.com" ||
+        request.auth.uid == "cyMl1lQME0Yur1YS3VCms1AvrOJ2" ||
+        request.auth.uid == "S5efNV5jpTPoxYNv6SnAlv3jNPO2" ||
+        request.auth.uid == "3gKwUE2JrBT8wngoUxTTN6tLJk03"
       );
     }
 
-    // --- RULES ---
-
-    // Allow wide-open read/write for testing phase if authenticated
-    // This resolves the immediate permission error while keeping the data private from guests.
-    match /{document=**} {
-      allow read, write: if isSignedIn();
+    // Role Based Access Control (RBAC) via User Profile
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
 
-    // Public configurations
-    match /settings/branding {
-      allow read: if true;
-    }
-    match /settings/payment {
-      allow read: if true;
-    }
-    match /settings/info {
-      allow read: if true;
-    }
-    match /settings/donationInfo {
-      allow read: if true;
-    }
-    match /settings/guidingPrinciples {
-      allow read: if true;
-    }
-    match /settings/guidance {
-      allow read: if true;
-    }
-    match /user_lookups/{id} {
-      allow read: if true;
+    function isAdmin() {
+      return request.auth != null && (isSuperAdmin() || getUserRole() == "Admin");
     }
     
-    // Support the Verification Pipeline Hub
-    match /pending_verifications/{id} {
-      allow read, list, write: if isSignedIn();
+    function isMember() {
+      return request.auth != null && (isAdmin() || getUserRole() == "User");
+    }
+
+    // --- COLLECTION RULES ---
+
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow write: if isAdmin() || request.auth.uid == userId;
+    }
+
+    match /donors/{donorId} {
+      allow read: if request.auth != null;
+      allow write: if isMember();
+    }
+
+    match /donations/{donationId} {
+      allow read: if request.auth != null;
+      allow write: if isMember();
+    }
+
+    match /beneficiaries/{beneficiaryId} {
+      allow read: if request.auth != null;
+      allow write: if isMember();
+    }
+
+    match /campaigns/{campaignId} {
+      allow read: if true;
+      allow write: if isMember();
+      
+      match /beneficiaries/{benId} {
+        allow read: if true;
+        allow write: if isMember();
+      }
+    }
+
+    match /leads/{leadId} {
+      allow read: if true;
+      allow write: if isMember();
+      
+      match /beneficiaries/{benId} {
+        allow read: if true;
+        allow write: if isMember();
+      }
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /user_lookups/{lookupId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /pending_verifications/{requestId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if isMember();
+    }
+
+    match /page_hits/{pageId} {
+      allow read: if true;
+      allow write: if true;
     }
   }
 }

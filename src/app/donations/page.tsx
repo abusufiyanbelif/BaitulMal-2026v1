@@ -280,42 +280,6 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                 </div>
                             </div>
                         </div>
-                        <div className="space-y-3">
-                            <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight capitalize"><ImageIcon className="h-3 w-3"/> Transaction Documents</h4>
-                            <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
-                                <ScrollArea className="w-full">
-                                    <div className="min-w-[600px]">
-                                        <Table>
-                                            <TableHeader className="bg-primary/5">
-                                                <TableRow>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight capitalize">Amount</TableHead>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight capitalize">Ref. ID</TableHead>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight capitalize">Date</TableHead>
-                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight pr-6 capitalize">Evidence</TableHead>
-                                                </TableRow>
-                                            </TableHeader>
-                                            <TableBody>
-                                                {(donation.transactions || []).map((tx) => (
-                                                    <TableRow key={tx.id} className="hover:bg-primary/[0.02]">
-                                                        <TableCell className="font-bold font-mono text-primary text-[11px] py-2">₹{tx.amount.toFixed(2)}</TableCell>
-                                                        <TableCell className="font-mono text-[10px] py-2 text-primary/80 whitespace-nowrap">{tx.transactionId || 'N/A'}</TableCell>
-                                                        <TableCell className="text-[10px] font-normal text-muted-foreground py-2 whitespace-nowrap">{tx.date || donation.donationDate}</TableCell>
-                                                        <TableCell className="text-right py-2 pr-6">
-                                                            {tx.screenshotUrl ? (
-                                                                <Button variant="outline" size="sm" className="h-7 text-[9px] font-bold border-primary/20 text-primary hover:bg-primary/5 transition-all active:scale-95 shadow-sm" onClick={(e) => { e.stopPropagation(); handleViewImage(tx.screenshotUrl!); }}>
-                                                                    <ImageIcon className="mr-1.5 h-3 w-3" /> View Evidence
-                                                                </Button>
-                                                            ) : <span className="text-muted-foreground text-[9px] font-normal opacity-40 tracking-tight">No Artifact</span>}
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </TableBody>
-                                        </Table>
-                                    </div>
-                                    <ScrollBar orientation="horizontal" className="h-1.5" />
-                                </ScrollArea>
-                            </div>
-                        </div>
                     </div>
                 </div>
             )}
@@ -384,27 +348,17 @@ function DonationListContent() {
     if (!donations) return [];
     let items = [...donations];
 
-    if (statusFilter !== 'All') {
-        items = items.filter(d => d.status === statusFilter);
-    }
-    
-    if (identityFilter === 'Unlinked') {
-        items = items.filter(d => !d.donorId);
-    } else if (identityFilter === 'Linked') {
-        items = items.filter(d => !!d.donorId);
-    }
-
-    if (methodFilter !== 'All') {
-        items = items.filter(d => d.donationType === methodFilter);
-    }
+    if (statusFilter !== 'All') items = items.filter(d => d.status === statusFilter);
+    if (identityFilter === 'Unlinked') items = items.filter(d => !d.donorId);
+    else if (identityFilter === 'Linked') items = items.filter(d => !!d.donorId);
+    if (methodFilter !== 'All') items = items.filter(d => d.donationType === methodFilter);
 
     if (searchTerm) {
         const lower = searchTerm.toLowerCase();
         items = items.filter(d => 
             d.donorName.toLowerCase().includes(lower) || 
             d.donorPhone.includes(searchTerm) ||
-            d.id.toLowerCase().includes(lower) ||
-            d.receiverName.toLowerCase().includes(lower)
+            d.id.toLowerCase().includes(lower)
         );
     }
 
@@ -425,14 +379,7 @@ function DonationListContent() {
             if (sortConfig.key === 'srNo') return 0;
             const aVal = (a[sortConfig.key as keyof Donation] ?? '').toString().toLowerCase();
             const bVal = (b[sortConfig.key as keyof Donation] ?? '').toString().toLowerCase();
-            
-            if (aVal < bVal) {
-                return sortConfig.direction === 'ascending' ? -1 : 1;
-            }
-            if (aVal > bVal) {
-                return sortConfig.direction === 'ascending' ? 1 : -1;
-            }
-            return 0;
+            return sortConfig.direction === 'ascending' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
         });
     }
     return items;
@@ -459,22 +406,18 @@ function DonationListContent() {
 
   const totalPages = Math.ceil(filteredAndSortedDonations.length / itemsPerPage);
 
-  const handleAdd = () => {
-    setEditingDonation(null);
-    setIsFormOpen(true);
-  };
-
-  const toggleSelectAll = (checked: boolean | string) => {
-    const isChecked = checked === true;
-    if (isChecked) {
-        setSelectedIds(paginatedDonations.map(d => d.id));
-    } else {
-        setSelectedIds([]);
+  const handleFormSubmit = async (data: DonationFormData) => {
+    if (!firestore || !storage || !userProfile || !allCampaigns || !allLeads) return;
+    setIsFormOpen(false);
+    setIsSubmitting(true);
+    try {
+        const result = await upsertDonationWithDonorAction(editingDonation?.id || null, data as any, { id: userProfile.id, name: userProfile.name });
+        if (result.success) toast({ title: "Success", description: result.message, variant: 'success' });
+        else toast({ title: "Error", description: result.message, variant: 'destructive' });
+    } finally {
+        setIsSubmitting(false);
+        setEditingDonation(null);
     }
-  };
-
-  const toggleSelect = (id: string) => {
-    setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
   const handleBulkStatusChange = async (newStatus: Donation['status']) => {
@@ -495,162 +438,6 @@ function DonationListContent() {
     }
   };
 
-  const handleBulkMapDonors = async () => {
-      if (selectedIds.length === 0 || !userProfile) return;
-      setIsBulkUpdating(true);
-      setIsSubmitting(true);
-      try {
-          const res = await bulkMapDonorsAction(selectedIds, { id: userProfile.id, name: userProfile.name });
-          if (res.success) {
-              toast({ title: "Identity Mapping Completed", description: res.message, variant: "success" });
-              setSelectedIds([]);
-          } else {
-              toast({ title: "Mapping Error", description: res.message, variant: "destructive" });
-          }
-      } finally { setIsBulkUpdating(false); setIsSubmitting(false); }
-  };
-
-  const handleBulkUnmapDonors = async () => {
-      if (selectedIds.length === 0 || !userProfile) return;
-      setIsBulkUpdating(true);
-      setIsSubmitting(true);
-      try {
-          const res = await bulkUnmapDonorsAction(selectedIds, { id: userProfile.id, name: userProfile.name });
-          if (res.success) {
-              toast({ title: "Unmapped Selected Records", description: res.message, variant: "success" });
-              setSelectedIds([]);
-          } else {
-              toast({ title: "Unmap Failed", description: res.message, variant: "destructive" });
-          }
-      } finally { setIsBulkUpdating(false); setIsSubmitting(false); }
-  };
-
-  const handleBulkManualMap = async (donor: Donor) => {
-      if (selectedIds.length === 0 || !userProfile || !donor.id) return;
-      setIsBulkUpdating(true);
-      setIsSubmitting(true);
-      try {
-          const res = await bulkManualMapDonorsAction(selectedIds, donor.id, { id: userProfile.id, name: userProfile.name });
-          if (res.success) {
-              toast({ title: "Manual Mapping Complete", description: res.message, variant: "success" });
-              setSelectedIds([]);
-              setIsManualMapOpen(false);
-          } else {
-              toast({ title: "Manual Mapping Failed", description: res.message, variant: "destructive" });
-          }
-      } finally { setIsBulkUpdating(false); setIsSubmitting(false); }
-  };
-
-  const handleBulkLinkInitiative = async (initiativeContext?: {id: string, type: 'campaign'|'lead', name: string}, splitOptions?: { shouldSplit: boolean; fillAmount: number }) => {
-      if (selectedIds.length === 0 || !userProfile) return;
-      setIsBulkUpdating(true);
-      setIsSubmitting(true);
-      try {
-          const res = await bulkLinkInitiativeAction(selectedIds, bulkLinkMode, initiativeContext, { id: userProfile.id, name: userProfile.name }, splitOptions);
-          if (res.success) {
-              toast({ title: "Bulk Allocation Updated", description: res.message, variant: "success" });
-              setSelectedIds([]);
-              setIsBulkLinkModalOpen(false);
-          } else {
-              toast({ title: "Allocation Failed", description: res.message, variant: "destructive" });
-          }
-      } finally { setIsBulkUpdating(false); setIsSubmitting(false); }
-  };
-
-  const handleFormSubmit = async (data: DonationFormData) => {
-    if (!firestore || !storage || !userProfile || !allCampaigns || !allLeads) return;
-    
-    const hasFilesToUpload = data.transactions.some(tx => tx.screenshotFile && (tx.screenshotFile as FileList).length > 0);
-    if (hasFilesToUpload && !auth?.currentUser) {
-        toast({ title: "Authentication Error", description: "Authorization Expired. Please Re-Login.", variant: "destructive" });
-        return;
-    }
-
-    setIsFormOpen(false);
-    setIsSubmitting(true);
-    
-    try {
-        const transactionPromises = data.transactions.map(async (transaction) => {
-            let screenshotUrl = transaction.screenshotUrl || '';
-            const fileList = transaction.screenshotFile as FileList | undefined;
-            if (fileList && fileList.length > 0) {
-                const file = fileList[0];
-                const resizedBlob = await new Promise<Blob>((resolve) => { (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob'); });
-                const tempId = editingDonation?.id || `new_${Date.now()}`;
-                const filePath = `donations/${tempId}/${data.donationDate}_${transaction.id}.png`;
-                const fileRef = storageRef(storage, filePath);
-                await uploadBytes(fileRef, resizedBlob);
-                screenshotUrl = await getDownloadURL(fileRef);
-            }
-            return {
-                id: transaction.id,
-                amount: transaction.amount,
-                transactionId: transaction.transactionId || '',
-                date: transaction.date || '',
-                upiId: transaction.upiId || '',
-                screenshotUrl: screenshotUrl,
-                screenshotIsPublic: transaction.screenshotIsPublic || false,
-            };
-        });
-
-        const finalTransactions = await Promise.all(transactionPromises);
-
-        const finalLinkSplit = data.linkSplit?.map(split => {
-            if (!split.linkId || split.linkId === 'unlinked') {
-                return split.amount > 0 ? { linkId: 'unallocated', linkName: 'Unallocated', linkType: 'general' as const, amount: split.amount } : null;
-            }
-            const [type, id] = split.linkId.split('_');
-            const linkType = type as 'campaign' | 'lead';
-            const source = linkType === 'campaign' ? allCampaigns : allLeads;
-            const linkedItem = source?.find(item => item.id === id);
-            return { linkId: id, linkName: linkedItem?.name || 'Unknown', linkType, amount: split.amount };
-        }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
-
-        const { transactions, ...donationCoreData } = data;
-        
-        const processedDonationData = {
-            ...donationCoreData,
-            transactions: finalTransactions,
-            amount: finalTransactions.reduce((sum, t) => sum + t.amount, 0),
-            linkSplit: finalLinkSplit,
-        };
-
-        const result = await upsertDonationWithDonorAction(
-            editingDonation?.id || null,
-            processedDonationData as any,
-            { id: userProfile.id, name: userProfile.name }
-        );
-
-        if (result.success) {
-            toast({ title: "Success", description: result.message, variant: 'success' });
-        } else {
-            toast({ title: "Error", description: result.message, variant: 'destructive' });
-        }
-    } catch (error: any) {
-        toast({ title: "Failed", description: error.message, variant: 'destructive' });
-    } finally {
-        setIsSubmitting(false);
-        setEditingDonation(null);
-    }
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!donationToDelete) return;
-    setIsDeleteDialogOpen(false);
-    setIsSubmitting(true);
-    try {
-        const res = await deleteDonationAction(donationToDelete);
-        if (res && res.success) {
-            toast({ title: 'Deleted', description: res.message, variant: 'success' });
-        } else {
-            toast({ title: 'Error', description: res?.message || 'Delete Failed.', variant: 'destructive' });
-        }
-    } finally {
-        setDonationToDelete(null);
-        setIsSubmitting(false);
-    }
-  };
-
   const handleViewImage = (url: string) => {
     setImageToView(url);
     setZoom(1);
@@ -658,232 +445,65 @@ function DonationListContent() {
     setIsImageViewerOpen(true);
   };
 
-  const handleImport = async (records: Partial<Donation>[]) => {
-    if (!userProfile) return;
-    setIsSubmitting(true);
-    try {
-        const res = await bulkImportDonationsAction(records, { id: userProfile.id, name: userProfile.name });
-        if (res && res.success) {
-            toast({ title: 'Import Complete', description: res.message, variant: 'success' });
-        } else {
-            toast({ title: 'Import Failed', description: res?.message || "Operation Failed.", variant: 'destructive' });
-        }
-    } finally {
-        setIsSubmitting(false);
-    }
-  };
-
-  const canRead = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations.read', false);
-
   if (areDonationsLoading || isProfileLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Organization Database." />;
-
-  if (!canRead) return (
-      <main className="container mx-auto p-8">
-          <Alert variant="destructive"><ShieldAlert className="h-4 w-4"/><AlertTitle className="font-bold">Access Denied</AlertTitle><AlertDescription className="font-normal text-primary/70">Missing Permissions To View Donation Records.</AlertDescription></Alert>
-      </main>
-  );
 
   return (
     <main className="container mx-auto p-4 md:p-8 font-normal text-primary relative">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
             <div className="flex flex-col gap-2">
-                <Button variant="outline" asChild className="w-fit font-bold border-primary/20 text-primary transition-transform active:scale-95">
-                    <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Dashboard</Link>
-                </Button>
-                <h1 className="text-3xl font-bold tracking-tight text-primary">Master Donation Registry</h1>
+                <Button variant="outline" asChild className="w-fit font-bold border-primary/20 text-primary transition-transform active:scale-95"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Dashboard</Link></Button>
+                <h1 className="text-3xl font-bold tracking-tight text-primary">Donation Registry</h1>
             </div>
             <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                <Button variant="outline" size="sm" onClick={() => { if(!filteredAndSortedDonations.length) return; const headers = ['ID', 'Donor Name', 'Donor Phone', 'Receiver Name', 'Referral', 'Amount', 'Donation Date', 'Status', 'DonationType', 'Comments', 'Suggestions']; const rows = filteredAndSortedDonations.map(d => [ d.id, `"${d.donorName || ''}"`, d.donorPhone || '', `"${d.receiverName || ''}"`, `"${(d.referral || '').replace(/"/g, '""')}"`, d.amount || 0, d.donationDate || '', d.status || 'Pending', d.donationType || '', `"${(d.comments || '').replace(/"/g, '""')}"`, `"${(d.suggestions || '').replace(/"/g, '""')}"` ]); const csvContent = "data:text/csv;charset=utf-8," + [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); link.setAttribute("download", "master_donation_registry.csv"); document.body.appendChild(link); link.click(); document.body.removeChild(link); }} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
-                    <Download className="mr-2 h-4 w-4" /> Export CSV
-                </Button>
-                <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
-                    <UploadCloud className="mr-2 h-4 w-4" /> Import Data
-                </Button>
-                <Button onClick={handleAdd} className="bg-primary hover:bg-primary/90 text-white font-bold text-xs active:scale-95 transition-transform shadow-md rounded-[12px]">
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add Record
-                </Button>
+                <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><UploadCloud className="mr-2 h-4 w-4" /> Import Data</Button>
+                <Button onClick={() => setIsFormOpen(true)} className="bg-primary hover:bg-primary/90 text-white font-bold text-xs active:scale-95 transition-transform shadow-md rounded-[12px]"><PlusCircle className="mr-2 h-4 w-4" /> Add Record</Button>
             </div>
-        </div>
-
-        <div className="border-b mb-4">
-            <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex w-max space-x-2 pb-2">
-                    <Link href="/donations/summary" className={cn(
-                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
-                        pathname === '/donations/summary' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                    )}>Donation Summary</Link>
-                    <Link href="/donations" className={cn(
-                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
-                        pathname === '/donations' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                    )}>Donation List</Link>
-                </div>
-                <ScrollBar orientation="horizontal" />
-            </ScrollArea>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-            <StatCard 
-                title="Total Count" 
-                count={stats.total} 
-                description="All Records Logged" 
-                icon={Users} 
-                delay="100ms" 
-                onClick={() => { setStatusFilter('All'); setIdentityFilter('All'); setMethodFilter('All'); setSearchTerm(''); }}
-            />
-            <StatCard 
-                title="Verified Sum" 
-                count={stats.totalAmount.toLocaleString('en-IN')} 
-                description="Confirmed Funds" 
-                icon={CheckCircle2} 
-                delay="150ms" 
-                isCurrency 
-                onClick={() => { setStatusFilter('Verified'); setIdentityFilter('All'); }}
-            />
-            <StatCard 
-                title="Pending Sum" 
-                count={stats.pendingAmount.toLocaleString('en-IN')} 
-                description="Awaiting Vetting" 
-                icon={Hourglass} 
-                delay="200ms" 
-                isCurrency 
-                onClick={() => { setStatusFilter('Pending'); setIdentityFilter('All'); }}
-            />
-            <StatCard 
-                title="Unlinked" 
-                count={stats.unlinked} 
-                description="Needs Profile Mapping" 
-                icon={AlertCircle} 
-                delay="250ms" 
-                colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} 
-                onClick={() => { setIdentityFilter('Unlinked'); setStatusFilter('All'); }}
-            />
-            <StatCard 
-                title="Online Pay" 
-                count={stats.online} 
-                description="Digital Transfers" 
-                icon={Smartphone} 
-                delay="300ms" 
-                onClick={() => { setMethodFilter('Online Payment'); }}
-            />
-            <StatCard 
-                title="Cash" 
-                count={stats.cash} 
-                description="Physical Collections" 
-                icon={Wallet} 
-                delay="350ms" 
-                onClick={() => { setMethodFilter('Cash'); }}
-            />
+            <StatCard title="Total" count={stats.total} description="All Records Logged" icon={Users} delay="100ms" onClick={() => { setStatusFilter('All'); setIdentityFilter('All'); setMethodFilter('All'); setSearchTerm(''); }} />
+            <StatCard title="Verified Sum" count={stats.totalAmount.toLocaleString('en-IN')} description="Confirmed Funds" icon={CheckCircle2} delay="150ms" isCurrency onClick={() => { setStatusFilter('Verified'); }} />
+            <StatCard title="Pending Sum" count={stats.pendingAmount.toLocaleString('en-IN')} description="Awaiting Vetting" icon={Hourglass} delay="200ms" isCurrency onClick={() => { setStatusFilter('Pending'); }} />
+            <StatCard title="Unlinked" count={stats.unlinked} description="Needs Profile Mapping" icon={AlertCircle} delay="250ms" colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} onClick={() => { setIdentityFilter('Unlinked'); }} />
         </div>
 
-        <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
+        <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm">
             <CardHeader className="bg-primary/5 border-b">
                 <ScrollArea className="w-full">
                     <div className="flex flex-nowrap gap-2 pb-2">
-                        <Input placeholder="Search Donor, Phone, ID..." value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-[250px] h-9 text-xs border-primary/10 focus-visible:ring-primary text-primary font-normal bg-primary/[0.02] rounded-[10px] shrink-0"/>
-                        
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button variant="outline" className={cn("w-[220px] shrink-0 justify-start h-9 text-xs border-primary/10 text-primary font-bold rounded-[10px] bg-white transition-all hover:border-primary/30", !dateRange && "text-muted-foreground")}>
-                                    <CalendarIcon className="mr-2 h-3 w-3 opacity-40" />
-                                    {dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd, y")) : "Filter Entry Date"}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0" align="start">
-                                <Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); setCurrentPage(1); }} numberOfMonths={2} />
-                            </PopoverContent>
-                        </Popover>
-                        {dateRange && <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/40 hover:text-primary shrink-0" onClick={() => { setDateRange(undefined); setCurrentPage(1); }}><X className="h-4 w-4"/></Button>}
-
+                        <Input placeholder="Search Donor, Phone, ID..." value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-[250px] h-9 text-xs border-primary/10 rounded-[10px] shrink-0"/>
                         <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
-                            <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-primary/[0.02] font-normal shrink-0"><SelectValue placeholder="All Statuses"/></SelectTrigger>
-                            <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                                <SelectItem value="All" className="font-normal">All Statuses</SelectItem>
-                                <SelectItem value="Verified" className="font-normal text-primary">Verified</SelectItem>
-                                <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
-                                <SelectItem value="Canceled" className="font-normal text-destructive">Canceled</SelectItem>
-                            </SelectContent>
-                        </Select>
-
-                        <Select value={identityFilter} onValueChange={v => { setIdentityFilter(v); setCurrentPage(1); }}>
-                            <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-primary/[0.02] font-normal shrink-0"><SelectValue placeholder="Identity Linkage"/></SelectTrigger>
-                            <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                                <SelectItem value="All" className="font-normal">All Identities</SelectItem>
-                                <SelectItem value="Linked" className="font-normal text-primary">Fully Linked</SelectItem>
-                                <SelectItem value="Unlinked" className="font-normal text-amber-600 font-bold">Needs Resolution</SelectItem>
-                            </SelectContent>
-                        </Select>
-
-                        <Select value={methodFilter} onValueChange={v => { setMethodFilter(v); setCurrentPage(1); }}>
-                            <SelectTrigger className="w-[160px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-primary/[0.02] font-normal shrink-0"><SelectValue placeholder="Payment Method"/></SelectTrigger>
-                            <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                                <SelectItem value="All" className="font-normal">All Methods</SelectItem>
-                                <SelectItem value="Online Payment" className="font-normal">Online Payment</SelectItem>
-                                <SelectItem value="Cash" className="font-normal">Cash</SelectItem>
-                                <SelectItem value="Check" className="font-normal">Check</SelectItem>
-                                <SelectItem value="Other" className="font-normal">Other</SelectItem>
-                            </SelectContent>
+                            <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 rounded-[10px]"><SelectValue placeholder="All Statuses"/></SelectTrigger>
+                            <SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Canceled">Canceled</SelectItem></SelectContent>
                         </Select>
                         {selectedIds.length > 0 && (
                             <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button className="w-[180px] h-9 text-xs font-bold shrink-0 shadow-md bg-primary text-white">
-                                        Bulk Actions ({selectedIds.length})
-                                        <ChevronDown className="ml-2 h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
+                                <DropdownMenuTrigger asChild><Button className="h-9 text-xs font-bold bg-primary text-white">Bulk Actions ({selectedIds.length}) <ChevronDown className="ml-2 h-4 w-4" /></Button></DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-56 rounded-[12px] shadow-dropdown border-primary/10">
-                                    <DropdownMenuItem onClick={handleBulkMapDonors} className="font-bold text-primary">
-                                        <RefreshCw className="mr-2 h-4 w-4 opacity-60" /> Auto-Map Identities
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => setIsManualMapOpen(true)} className="font-bold text-primary">
-                                        <Users className="mr-2 h-4 w-4 opacity-60" /> Manually Map to Donor
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={handleBulkUnmapDonors} className="font-bold text-destructive">
-                                        <XCircle className="mr-2 h-4 w-4" /> Unmap from Donor
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator className="bg-primary/5" />
-                                    <DropdownMenuItem onClick={() => { setBulkLinkMode('link'); setIsBulkLinkModalOpen(true); }} className="font-bold text-primary">
-                                        <FolderKanban className="mr-2 h-4 w-4 opacity-60" /> Link to Initiative
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => { setBulkLinkMode('unlink'); setIsBulkLinkModalOpen(true); }} className="font-bold text-amber-600">
-                                        <X className="mr-2 h-4 w-4 opacity-60" /> Unlink Initiative
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator className="bg-primary/5" />
-                                    <DropdownMenuSub>
-                                        <DropdownMenuSubTrigger className="font-bold text-primary"><CheckSquare className="mr-2 h-4 w-4 opacity-60" /> Set Verification</DropdownMenuSubTrigger>
-                                        <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-bold text-primary">Verified</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-bold text-primary">Pending</DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => handleBulkStatusChange('Canceled')} className="font-bold text-destructive">Canceled</DropdownMenuItem>
-                                        </DropdownMenuSubContent>
-                                    </DropdownMenuSub>
+                                    <DropdownMenuItem onClick={handleBulkMapDonors} className="font-bold text-primary"><RefreshCw className="mr-2 h-4 w-4 opacity-60" /> Auto-Map Identities</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-bold text-primary">Mark Verified</DropdownMenuItem>
+                                    <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-bold">Mark Pending</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         )}
                     </div>
-                    <ScrollBar orientation="horizontal" className="h-1.5" />
+                    <ScrollBar orientation="horizontal" />
                 </ScrollArea>
             </CardHeader>
             <CardContent className="p-0">
                 <ScrollArea className="w-full">
                     <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold text-[hsl(var(--table-header-fg))] tracking-tight", donationGridClass)}>
-                        <div className="flex justify-center">
-                            <Checkbox 
-                                checked={paginatedDonations.length > 0 && selectedIds.length === paginatedDonations.length}
-                                onCheckedChange={toggleSelectAll}
-                                className="border-primary/40 data-[state=checked]:bg-primary"
-                            />
-                        </div>
-                        <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort}>Sr. No.</SortableHeader>
+                        <div className="flex justify-center"><Checkbox checked={paginatedDonations.length > 0 && selectedIds.length === paginatedDonations.length} onCheckedChange={toggleSelectAll} className="border-primary/40" /></div>
+                        <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
                         <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor Name</SortableHeader>
                         <SortableHeader sortKey="amount" sortConfig={sortConfig} handleSort={handleSort} className="text-right">Amount (₹)</SortableHeader>
                         <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Entry Date</SortableHeader>
-                        <div className="text-center font-bold text-[10px] tracking-tight">Method</div>
-                        <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Verification Status</SortableHeader>
-                        <div className="font-bold text-[10px] tracking-tight">Target Initiative</div>
-                        <div className="text-right pr-4 font-bold text-[10px] tracking-tight">Actions</div>
+                        <div className="text-center font-bold text-[10px]">Method</div>
+                        <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Status</SortableHeader>
+                        <div className="font-bold text-[10px]">Target</div>
+                        <div className="text-right pr-4 font-bold text-[10px]">Actions</div>
                     </div>
-                    <div className="w-full max-h-[70vh]">
+                    <div className="w-full">
                         {paginatedDonations.map((d, i) => (
                             <DonationRow 
                                 key={d.id} 
@@ -896,20 +516,15 @@ function DonationListContent() {
                                 handleViewImage={handleViewImage}
                             />
                         ))}
-                        {paginatedDonations.length === 0 && (
-                            <div className="text-center py-24 text-primary/40 font-bold bg-primary/[0.02] italic tracking-widest capitalize">No Donation Records Found.</div>
-                        )}
                     </div>
-                    <ScrollBar orientation="horizontal" />
-                    <ScrollBar orientation="vertical" />
                 </ScrollArea>
             </CardContent>
             {totalPages > 1 && (
                 <CardFooter className="flex justify-between items-center py-4 border-t bg-primary/5 px-4">
                     <p className="text-[10px] font-bold text-muted-foreground">Page {currentPage} Of {totalPages}</p>
                     <div className="flex gap-2">
-                        <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold h-8 border-primary/10 text-primary transition-transform active:scale-95">Previous</Button>
-                        <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold h-8 border-primary/10 text-primary transition-transform active:scale-95">Next</Button>
+                        <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold h-8 border-primary/10 transition-transform active:scale-95">Previous</Button>
+                        <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold h-8 border-primary/10 transition-transform active:scale-95">Next</Button>
                     </div>
                 </CardFooter>
             )}
@@ -917,82 +532,18 @@ function DonationListContent() {
 
         <Dialog open={isFormOpen} onOpenChange={(open) => { setIsFormOpen(open); if(!open) setEditingDonation(null); }}>
             <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
-                <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0">
-                    <DialogTitle className="text-xl font-bold text-primary tracking-tight">
-                        {editingDonation ? 'Modify Donation Profile' : 'Register New Contribution'}
-                    </DialogTitle>
-                </DialogHeader>
-                <div className="flex-1 min-h-0 relative overflow-hidden flex flex-col">
-                    <DonationForm 
-                        donation={editingDonation} 
-                        onSubmit={handleFormSubmit} 
-                        onCancel={() => setIsFormOpen(false)} 
-                        leads={allLeads || []} 
-                        campaigns={allCampaigns || []} 
-                        defaultLinkId={'unlinked'} 
-                    />
-                </div>
-                <DialogFooter className="bg-primary/5 border-t p-4 flex justify-between items-center shrink-0">
-                    <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Securing Institutional Records</p>
-                    <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary">Close Form</Button>
-                </DialogFooter>
+                <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0"><DialogTitle className="text-xl font-bold text-primary">Manage Donation</DialogTitle></DialogHeader>
+                <div className="flex-1 overflow-hidden relative"><DonationForm donation={editingDonation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} leads={allLeads || []} campaigns={allCampaigns || []} defaultLinkId={'unlinked'} /></div>
             </DialogContent>
         </Dialog>
-
-        <DonationImportDialog open={isImportOpen} onOpenChange={setIsImportOpen} onImport={handleImport} />
-
+        
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
             <AlertDialogContent className="rounded-[16px] border-border shadow-dropdown">
-                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive capitalize">Confirm Permanent Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record And All Attached Verification Evidence. This Action Is Irreversible.</AlertDialogDescription></AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel className="font-bold border-border">Cancel</AlertDialogCancel>
-                    <AlertDialogAction 
-                        onClick={handleDeleteConfirm} 
-                        className="bg-destructive hover:bg-destructive/90 text-white font-bold rounded-[12px] shadow-md transition-transform active:scale-95">Confirm Deletion</AlertDialogAction>
-                </AlertDialogFooter>
+                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Confirm Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record?</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogFooter><AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold rounded-[12px] shadow-md">Delete</AlertDialogAction></AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
-
-        <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-            <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 rounded-[12px] border-primary/10 overflow-hidden shadow-2xl animate-fade-in-zoom">
-                <DialogHeader className="px-6 py-4 bg-primary/5 border-b">
-                    <DialogTitle className="text-xl font-bold text-primary tracking-tight">Evidence Artifact Viewer</DialogTitle>
-                </DialogHeader>
-                <ScrollArea className="flex-1 bg-secondary/20">
-                    <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
-                        {imageToView && (
-                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Evidence Document" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
-                        )}
-                    </div>
-                    <ScrollBar orientation="horizontal" />
-                    <ScrollBar orientation="vertical" />
-                </ScrollArea>
-                <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white flex">
-                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
-                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5)) } className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
-                    <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
-                    <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-
-        <BulkLinkInitiativeDialog 
-            open={isBulkLinkModalOpen} 
-            onOpenChange={setIsBulkLinkModalOpen} 
-            mode={bulkLinkMode}
-            selectedDonations={donations?.filter(d => selectedIds.includes(d.id)) || []} 
-            allDonations={donations || []}
-            campaigns={allCampaigns || []} 
-            leads={allLeads || []} 
-            onConfirm={handleBulkLinkInitiative} 
-            isSubmitting={isSubmitting} 
-        />
-
-        <DonorSearchDialog 
-            open={isManualMapOpen} 
-            onOpenChange={setIsManualMapOpen} 
-            onSelectDonor={handleBulkManualMap} 
-        />
+        <DonationImportDialog open={isImportOpen} onOpenChange={setIsImportOpen} onImport={handleImport} />
     </main>
   );
 }
