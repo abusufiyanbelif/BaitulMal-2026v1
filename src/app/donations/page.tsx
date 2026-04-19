@@ -193,7 +193,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                 <div className="whitespace-nowrap text-xs font-normal text-primary/80 text-center">{donation.donationDate}</div>
                 <div className="text-center"><Badge variant="secondary" className="text-[9px] font-bold">{donation.donationType}</Badge></div>
                 <div className="text-center">
-                    <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'active'} className="text-[9px] font-bold">
+                    <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="text-[9px] font-bold">
                         {donation.status}
                     </Badge>
                 </div>

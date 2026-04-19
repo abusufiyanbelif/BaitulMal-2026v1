@@ -24,7 +24,7 @@ import {
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
-import type { Lead, Beneficiary, Donation, CampaignDocument, DonationCategory } from '@/lib/types';
+import type { Lead, Beneficiary, Donation, CampaignDocument, DonationCategory, Campaign } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -177,7 +177,9 @@ export default function LeadSummaryPage() {
     const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
     
     const visibilityRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_visibility') : null, [firestore]);
+    const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_config') : null, [firestore]);
     const { data: visibilitySettings } = useDoc<any>(visibilityRef);
+    const { data: configSettings } = useDoc<any>(configRef);
 
     useEffect(() => { setIsClient(true); }, []);
 
@@ -247,7 +249,7 @@ export default function LeadSummaryPage() {
                     amountsByCategory[category as DonationCategory] += allocatedAmount;
                     
                     // Logic Fix: Count Zakat by default unless explicitly false
-                    const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
+                    const isForFundraising = category !== 'Zakat' || split.forFundraising === true;
                     if (category === 'Zakat' && isForFundraising) zakatForGoalAmount += allocatedAmount;
                 }
             });
@@ -442,6 +444,8 @@ export default function LeadSummaryPage() {
     if (isLoadingPage) return <BrandedLoader message="Initializing Appeal Summary..." />;
 
     if (!lead) return <p className="text-center mt-20 text-primary font-bold">Lead Record Not Found.</p>;
+
+    const publicDocuments = lead.documents?.filter(d => d.isPublic) || [];
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
@@ -793,7 +797,7 @@ export default function LeadSummaryPage() {
                                                     <Table>
                                                         <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                             <TableRow>
-                                                                <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Group Name</TableHead>
+                                                                <TableHead className="font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Category Name</TableHead>
                                                                 <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Beneficiaries</TableHead>
                                                                 <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Unit Amount</TableHead>
                                                                 <TableHead className="text-right font-semibold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Total Amount</TableHead>
@@ -830,7 +834,7 @@ export default function LeadSummaryPage() {
                                                         </TableHeader>
                                                         <TableBody>
                                                             {lead?.itemCategories?.[0]?.items.map((item, idx) => (
-                                                                <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white border-b border-primary/5">
+                                                                <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white border-b border-primary/5 last:border-none">
                                                                     <TableCell className="font-medium text-xs transition-transform group-hover:translate-x-1">{item.name}</TableCell>
                                                                     <TableCell className="text-right text-xs">{item.quantity} {item.quantityType}</TableCell>
                                                                     <TableCell className="text-right font-mono font-bold text-xs">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
@@ -1022,7 +1026,7 @@ export default function LeadSummaryPage() {
 
                 <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                     <CardHeader className="bg-primary/5 border-b pb-3">
-                        <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight capitalize"><History className="h-4 w-4 opacity-40"/> Activity History Log</CardTitle>
+                        <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight capitalize"><History className="h-4 w-4 opacity-40"/> Institutional Audit Log</CardTitle>
                     </CardHeader>
                     <CardContent className="pt-6 space-y-4">
                         <div className="flex items-start gap-3">
