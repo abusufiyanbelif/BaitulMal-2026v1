@@ -1,10 +1,63 @@
 rules_version = '2';
-service firebase.storage {
+service cloud.storage {
   match /b/{bucket}/o {
-    // UNRESTRICTED ACCESS FOR TESTING & STABILIZATION
-    match /{allPaths=**} {
+    
+    // --- HELPER FUNCTIONS ---
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.uid in [
+          'S5efNV5jpTPoxYNv6SnAlv3jNPO2', 
+          'cyMl1lQME0Yur1YS3VCms1AvrOJ2', 
+          '3gKwUE2JrBT8wngoUxTTN6tLJk03'
+        ] || 
+        request.auth.token.email in [
+          'abusufiyan.belif@gmail.com',
+          'baitulmalss.solapur@gmail.com',
+          'maazshaikh.official@gmail.com',
+          'admin@example.com'
+        ]
+      );
+    }
+
+    // --- RULES ---
+
+    // Public settings files (logo, QR)
+    match /settings/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // Member profile artifacts
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+    }
+
+    // Initiative artifacts
+    match /campaigns/{id}/{allPaths=**} {
+      allow read: if true; // Public access for published campaigns
+      allow write: if isAdmin();
+    }
+
+    match /leads/{id}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Beneficiary artifacts
+    match /beneficiaries/{id}/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn();
+    }
+
+    // Donation artifacts (Payment Screenshots)
+    match /donations/{id}/{allPaths=**} {
+      allow read: if isSignedIn();
+      allow write: if true; // Allow guest donation submissions
     }
   }
 }

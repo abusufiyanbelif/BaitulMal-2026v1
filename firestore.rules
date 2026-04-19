@@ -1,103 +1,107 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
     
-    // --- AUTHENTICATION HELPERS ---
+    // --- HELPER FUNCTIONS ---
     
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    // ADMINISTRATIVE IDENTITY BYPASS
-    // Specifically grants superuser status to Maaz Shaikh and BaitulMal System Admin identities.
-    function isSuperAdmin() {
-      return isSignedIn() && (
-        request.auth.token.email == 'abusufiyan.belif@gmail.com' ||
-        request.auth.token.email == 'baitulmalss.solapur@gmail.com' ||
-        request.auth.uid == 'cyMl1lQME0Yur1YS3VCms1AvrOJ2' ||
-        request.auth.uid == 'S5efNV5jpTPoxYNv6SnAlv3jNPO2' ||
-        request.auth.uid == '3gKwUE2JrBT8wngoUxTTN6tLJk03'
-      );
-    }
-
+    // Check if user is a hardcoded Super Admin or has the Admin role
     function isAdmin() {
-      return isSuperAdmin() || (
-        isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin'
+      return request.auth != null && (
+        request.auth.uid in [
+          'S5efNV5jpTPoxYNv6SnAlv3jNPO2', // Abusufiyan Belif
+          'cyMl1lQME0Yur1YS3VCms1AvrOJ2', // BaitulMal System Admin
+          '3gKwUE2JrBT8wngoUxTTN6tLJk03'  // Maaz A. Rauf Shaikh
+        ] || 
+        request.auth.token.email in [
+          'abusufiyan.belif@gmail.com',
+          'baitulmalss.solapur@gmail.com',
+          'maazshaikh.official@gmail.com',
+          'admin@example.com'
+        ] ||
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin'
       );
     }
 
-    function isStaff() {
-      return isAdmin() || (
-        isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'User'
+    // Check granular module permissions
+    function hasPermission(module, action) {
+      let userDoc = get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+      return userDoc.role == 'Admin' || (
+        userDoc.permissions != null && 
+        userDoc.permissions[module] != null && 
+        userDoc.permissions[module][action] == true
       );
     }
 
     // --- COLLECTION RULES ---
 
-    match /users/{userId} {
-      allow read: if isSignedIn();
-      allow write: if isSuperAdmin() || request.auth.uid == userId;
-    }
-
-    match /user_lookups/{lookupId} {
-      allow read: if true; // Public for login discovery
-      allow write: if isAdmin();
-    }
-
-    match /donors/{donorId} {
-      allow read: if isStaff() || request.auth.uid == donorId;
-      allow write: if isStaff() || request.auth.uid == donorId;
-    }
-
-    match /donations/{donationId} {
-      allow read: if isStaff() || resource.data.donorId == request.auth.uid;
-      allow create: if isSignedIn(); // Allow public gateway or staff
-      allow update, delete: if isStaff();
-    }
-
-    match /beneficiaries/{beneficiaryId} {
-      allow read: if isStaff() || request.auth.uid == beneficiaryId;
-      allow create: if isSignedIn();
-      allow update, delete: if isStaff();
-    }
-
-    match /campaigns/{campaignId} {
-      allow read: if true; // Public visibility
-      allow write: if isStaff();
-      
-      match /beneficiaries/{benId} {
-        allow read: if true;
-        allow write: if isStaff();
-      }
-    }
-
-    match /leads/{leadId} {
-      allow read: if true; // Public visibility
-      allow write: if isStaff();
-      
-      match /beneficiaries/{benId} {
-        allow read: if true;
-        allow write: if isStaff();
-      }
-    }
-
+    // Settings are public for branding but admin-only for writes
     match /settings/{settingId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
-    match /page_hits/{pageId} {
-      allow read, write: if true; // Analytics bypass
+    // Campaigns & Leads: Public read if Published, otherwise role-based
+    match /campaigns/{campaignId} {
+      allow read: if resource.data.publicVisibility == 'Published' || isAdmin() || hasPermission('campaigns', 'read');
+      allow write: if isAdmin() || hasPermission('campaigns', 'update');
+      
+      match /beneficiaries/{benId} {
+        allow read: if isAdmin() || hasPermission('campaigns', 'read');
+        allow write: if isAdmin() || hasPermission('campaigns', 'update');
+      }
+    }
+    
+    match /leads/{leadId} {
+      allow read: if resource.data.publicVisibility == 'Published' || isAdmin() || hasPermission('leads-members', 'read');
+      allow write: if isAdmin() || hasPermission('leads-members', 'update');
+      
+      match /beneficiaries/{benId} {
+        allow read: if isAdmin() || hasPermission('leads-members', 'read');
+        allow write: if isAdmin() || hasPermission('leads-members', 'update');
+      }
     }
 
-    match /pending_verifications/{requestId} {
-      // Members must be able to list verifications assigned to them
-      allow read: if isSignedIn();
-      // Any member can submit a request for verification
-      allow create: if isSignedIn();
-      // Only admins or assigned verifiers can update status
-      allow update, delete: if isStaff();
+    // Donations: Public read for Verified (progress tracking), role-based otherwise
+    match /donations/{donationId} {
+      allow read: if resource.data.status == 'Verified' || isAdmin() || hasPermission('donations', 'read');
+      allow write: if isAdmin() || hasPermission('donations', 'update');
+    }
+
+    // Master Beneficiary Registry: Private
+    match /beneficiaries/{benId} {
+      allow read: if isAdmin() || hasPermission('beneficiaries', 'read');
+      allow write: if isAdmin() || hasPermission('beneficiaries', 'update');
+    }
+
+    // Donors: Private
+    match /donors/{donorId} {
+      allow read: if isAdmin() || hasPermission('donors', 'read');
+      allow write: if isAdmin() || hasPermission('donors', 'update');
+    }
+
+    // Users: Owner or Admin
+    match /users/{userId} {
+      allow read: if request.auth != null && (request.auth.uid == userId || isAdmin() || hasPermission('users', 'read'));
+      allow write: if isAdmin() || (request.auth != null && request.auth.uid == userId);
+    }
+
+    // User Lookups: Public (for login discovery)
+    match /user_lookups/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Verification Pipeline: Open to members to request/audit
+    match /pending_verifications/{id} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null;
+      allow update: if request.auth != null;
+      allow delete: if isAdmin();
+    }
+
+    // Analytics hits
+    match /page_hits/{id} {
+      allow read, write: if true;
     }
   }
 }

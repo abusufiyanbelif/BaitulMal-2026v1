@@ -26,7 +26,7 @@ function sanitizePayload(data: Record<string, any>) {
 
 /**
  * Recalculates initiative totals for specific IDs.
- * Uses high-fidelity logic to match UI progress bars, handling prefixed and raw IDs.
+ * Correctly accounts for Zakat surpluses by subtracting reservations (allocations).
  */
 async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, links: DonationLink[]) {
     const targets = Array.from(new Set(links.map(l => {

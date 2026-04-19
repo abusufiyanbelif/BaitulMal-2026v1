@@ -483,6 +483,11 @@ function DonationListContent() {
     setSelectedIds(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
 
+  const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+  const [imageToView, setImageToView] = useState<string | null>(null);
+  const [zoom, setZoom] = useState(1);
+  const [rotation, setRotation] = useState(0);
+
   if (areDonationsLoading || isProfileLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Organization Database." />;
 
   return (
@@ -562,7 +567,7 @@ function DonationListContent() {
                     <p className="text-[10px] font-bold text-muted-foreground">Page {currentPage} Of {totalPages}</p>
                     <div className="flex gap-2">
                         <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold h-8 border-primary/10 transition-transform active:scale-95">Previous</Button>
-                        <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold h-8 border-primary/10 transition-transform active:scale-95">Next</Button>
+                        <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold h-8 transition-transform active:scale-95">Next</Button>
                     </div>
                 </CardFooter>
             )}
@@ -608,12 +613,4 @@ function DonationListContent() {
         <DonationImportDialog open={isImportOpen} onOpenChange={setIsImportOpen} onImport={handleImport} />
     </main>
   );
-}
-
-export default function DonationsPage() {
-    return (
-        <Suspense fallback={<BrandedLoader message="Syncing All Donations..." />}>
-            <DonationListContent />
-        </Suspense>
-    );
 }

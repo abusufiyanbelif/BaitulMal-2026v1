@@ -36,7 +36,7 @@ interface InternalQuery extends Query<DocumentData> {
 
 /**
  * Real-time collection listener hook.
- * Uses relative imports to prevent circular dependency cycles.
+ * Uses relative imports to prevent circular dependency cycles with the aggregator.
  */
 export function useCollection<T = any>(
     memoizedTargetRefOrQuery: ((CollectionReference<DocumentData> | Query<DocumentData>) & {__memo?: boolean})  | null | undefined,

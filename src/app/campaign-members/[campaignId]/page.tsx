@@ -251,7 +251,7 @@ export default function CampaignDetailsPage() {
          .catch(async (serverError: any) => {
             const permissionError = new FirestorePermissionError({
                 path: campaignDocRef.path,
-                operation: 'write', // Updated to write to match rule
+                operation: 'write',
                 requestResourceData: saveData,
             } satisfies SecurityRuleContext);
             errorEmitter.emit('permission-error', permissionError);
@@ -611,7 +611,7 @@ export default function CampaignDetailsPage() {
       let appliedCategoryId = '';
       
       if (editableCampaign.category === 'Ration') {
-        const members = beneficiary.members || 1; // Default to 1 to ensure a match
+        const members = beneficiary.members || 1; 
         
         const matchingCategories = sanitizedEditableItemCategories.filter(
           cat => cat.name !== 'Item Price List' && members >= (cat.minMembers ?? 0) && members <= (cat.maxMembers ?? 999)
@@ -1142,7 +1142,7 @@ export default function CampaignDetailsPage() {
                     .catch(async (serverError: any) => {
                         errorEmitter.emit('permission-error', new FirestorePermissionError({
                             path: campaignDocRef!.path,
-                            operation: 'write', // Updated to write to match rules
+                            operation: 'write',
                             requestResourceData: pendingUpdates,
                         } satisfies SecurityRuleContext));
                     })

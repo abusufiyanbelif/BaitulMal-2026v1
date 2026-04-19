@@ -2,7 +2,7 @@
 
 /**
  * @fileOverview Pure aggregator for Firebase SDKs.
- * Uses strictly one-way re-exports to resolve circular dependency cycles.
+ * Cleaned of logic to prevent circular dependency cycles during Next.js compilation.
  */
 
 import { initializeFirebase } from './init';
@@ -39,7 +39,7 @@ export {
 export { FirestorePermissionError } from './errors';
 export { errorEmitter } from './error-emitter';
 
-// Re-export specific SDK methods required for Portals and Management
+// Re-export specific SDK methods
 export { 
   collection, 
   query, 
