@@ -58,7 +58,8 @@ import {
     ChevronRight,
     History,
     Clock,
-    Calendar
+    Calendar,
+    HeartHandshake
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
@@ -298,38 +299,13 @@ export default function LeadSummaryPage() {
         }));
     }, [fundingData]);
 
-    useEffect(() => {
-        if (lead && !editMode) {
-             setEditableLead({
-                name: lead.name || '',
-                description: lead.description || '',
-                purpose: lead.purpose || 'General',
-                category: lead.category || '',
-                startDate: lead.startDate || '',
-                endDate: lead.endDate || '',
-                status: lead.status || 'Upcoming',
-                priority: lead.priority || 'Low',
-                requiredAmount: lead.requiredAmount || 0,
-                targetAmount: lead.targetAmount || 0,
-                authenticityStatus: lead.authenticityStatus || 'Pending Verification',
-                publicVisibility: lead.publicVisibility || 'Hold',
-                allowedDonationTypes: lead.allowedDonationTypes || [...donationCategories],
-                imageUrl: lead.imageUrl || '',
-                documents: lead.documents || [],
-                degree: lead.degree || '',
-                year: lead.year || '',
-                semester: lead.semester || '',
-                diseaseIdentified: lead.diseaseIdentified || '',
-                diseaseStage: lead.diseaseStage || '',
-                seriousness: lead.seriousness || null,
-            });
-            setExistingDocuments(lead.documents || []);
-            setImagePreview(lead.imageUrl || null);
-            setIsImageDeleted(false);
-            setImageFile(null);
-            setNewDocuments([]);
-        }
-    }, [lead, editMode]);
+    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
+    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.update', false);
+    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
+    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
+    
+    const publicDocuments = lead?.documents?.filter(d => d.isPublic) || [];
+    const FallbackIcon = lead?.purpose === 'Education' ? GraduationCap : lead?.purpose === 'Medical' ? HeartPulse : lead?.purpose === 'Relief' ? LifeBuoy : lead?.purpose === 'Other' ? Info : HandHelping;
 
     const handleFieldChange = (field: keyof Lead, value: any) => {
         setEditableLead(p => (p ? { ...p, [field]: value } : null));
@@ -431,19 +407,7 @@ export default function LeadSummaryPage() {
         setIsImageViewerOpen(true);
     };
 
-    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
-    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.update', false);
-    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
-    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.read', false);
-    const FallbackIcon = lead?.purpose === 'Education' ? GraduationCap : lead?.purpose === 'Medical' ? HeartPulse : lead?.purpose === 'Relief' ? LifeBuoy : lead?.purpose === 'Other' ? Info : HandHelping;
-
-    const isLoadingPage = isLeadLoading || isProfileLoading || areBeneficiariesLoading || isBrandingLoading || isPaymentLoading;
-
     if (isLoadingPage) return <BrandedLoader message="Initializing Appeal Summary..." />;
-
-    if (!lead) return <p className="text-center mt-20 text-primary font-bold">Lead Record Not Found.</p>;
-
-    const publicDocuments = lead.documents?.filter(d => d.isPublic) || [];
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
@@ -1057,7 +1021,7 @@ export default function LeadSummaryPage() {
                         action: 'update',
                         newData: pendingSaveData,
                         oldData: lead,
-                        description: `Update appeal details: ${lead.name}`,
+                        description: `Update appeal details: ${lead?.name}`,
                         targetCollection: 'leads',
                         revalidatePath: `/leads-members/${leadId}/summary`
                     }}
@@ -1071,7 +1035,8 @@ export default function LeadSummaryPage() {
     );
 }
 
-function HistorySection({ lead }: { lead: Lead }) {
+function HistorySection({ lead }: { lead: Lead | null }) {
+    if (!lead) return null;
     return (
         <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
             <CardHeader className="bg-primary/5 border-b pb-3">

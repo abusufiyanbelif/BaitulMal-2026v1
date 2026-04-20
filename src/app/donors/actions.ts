@@ -9,27 +9,24 @@ const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure 
 
 /**
  * Creates a new donor profile. 
- * Includes a duplicate check by phone number to prevent registry fragmentation.
  */
 export async function createDonorAction(data: Partial<Donor>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        // 1. Prevent duplicate profiles by phone number
         if (data.phone && data.phone.trim().length >= 10) {
             const existingQuery = await adminDb.collection('donors').where('phone', '==', data.phone.trim()).limit(1).get();
             if (!existingQuery.empty) {
                 const existingDonor = existingQuery.docs[0];
                 return { 
                     success: false, 
-                    message: `A verified profile for '${existingDonor.data().name}' already exists with this phone number. Please link this contribution to the existing profile instead.`,
+                    message: `A verified profile for '${existingDonor.data().name}' already exists with this phone number.`,
                     id: existingDonor.id
                 };
             }
         }
 
-        // 2. Register New Identity
         const docRef = adminDb.collection('donors').doc();
         await docRef.set({
             ...data,
@@ -75,8 +72,8 @@ export async function updateDonorAction(donorId: string, data: Partial<Donor>, u
  * Removes a donor profile after safely unlinking all associated donations.
  */
 export async function deleteDonorAction(donorId: string): Promise<{ success: boolean; message: string }> {
-    const { adminDb, adminStorage } = getAdminServices();
-    if (!adminDb || !adminStorage) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
         const donorRef = adminDb.collection('donors').doc(donorId);
@@ -87,10 +84,7 @@ export async function deleteDonorAction(donorId: string): Promise<{ success: boo
         }
 
         const batch = adminDb.batch();
-        
-        // 1. Identification & Unlinking: Preserve financial audit trail
         const donationsSnap = await adminDb.collection('donations').where('donorId', '==', donorId).get();
-        
         donationsSnap.forEach(docSnap => {
             batch.update(docSnap.ref, { 
                 donorId: null, 
@@ -98,9 +92,7 @@ export async function deleteDonorAction(donorId: string): Promise<{ success: boo
             });
         });
 
-        // 2. Delete the actual identity profile
         batch.delete(donorRef);
-        
         await batch.commit();
         
         revalidatePath('/donors');

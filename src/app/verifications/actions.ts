@@ -81,8 +81,6 @@
              const targetRef = adminDb.doc(`${request.targetCollection}/${request.targetId}`);
  
              // Profile modules: use set(merge) to preserve existing fields not in the update payload.
-             // Array-heavy modules (campaigns/leads/donations/beneficiaries): use update() so
-             // array fields are fully replaced rather than merged — prevents stale nested data.
              const profileModules: string[] = ['donors', 'users'];
              if (profileModules.includes(request.module)) {
                  await targetRef.set(request.newValue, { merge: true });

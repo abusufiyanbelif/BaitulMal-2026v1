@@ -292,7 +292,7 @@ export async function bulkImportDonationsAction(
                 status: record.status || 'Verified',
                 donationType: record.donationType || 'Other',
                 uploadedBy: uploadedBy.name,
-                uploadedById: uploadedBy.id,
+                uploadedById: uploadedById,
                 createdAt: record.createdAt || FieldValue.serverTimestamp(),
                 updatedAt: FieldValue.serverTimestamp(),
                 donorId: record.donorId || null,

@@ -9,7 +9,7 @@ import { donationCategories } from '@/lib/modules';
 
 /**
  * usePublicData - High-fidelity organizational impact reporting.
- * Hardened to provide 100% calculation accuracy for landing page summaries.
+ * Strictly filters for Published/Verified initiatives for all public-facing calculations.
  */
 export function usePublicData() {
   const firestore = useFirestore();
@@ -82,7 +82,7 @@ export function usePublicData() {
       };
     }
 
-    const allPublicItems = [...campaigns, ...leads];
+    const activeInitiativeIds = new Set([...campaigns.map(c => c.id), ...leads.map(l => l.id)]);
     const skipIds = new Set(brandingSettings?.tickerSkipIds || []);
     const maxDonations = brandingSettings?.tickerMaxDonations ?? 15;
     const maxCompleted = brandingSettings?.tickerMaxCompleted ?? 5;
@@ -96,44 +96,46 @@ export function usePublicData() {
     // --- RECONCILIATION ENGINE ---
     // Calculates verified contributions for an individual initiative
     const reconcileInitiative = (item: Campaign | Lead, isCampaign: boolean) => {
-        const itemDonations = donations.filter(d => 
-            d.linkSplit?.some(l => l.linkId === item.id || l.linkId === `${isCampaign ? 'campaign' : 'lead'}_${item.id}`)
-        );
-
-        const allowedTypes = item.allowedDonationTypes && item.allowedDonationTypes.length > 0
-            ? item.allowedDonationTypes
-            : [...donationCategories];
-
-        let collected = item.collectedAmount || 0;
-        const target = item.targetAmount || 0;
+        let collected = Number(item.collectedAmount) || 0;
+        const target = Number(item.targetAmount) || 0;
         const progress = target > 0 ? (collected / target) * 100 : 0;
-
         return { collected, target, progress: Math.min(progress, 100) };
     };
 
     const campaignsWithProgress = campaigns.map(c => ({ ...c, ...reconcileInitiative(c, true) }));
     const leadsWithProgress = leads.map(l => ({ ...l, ...reconcileInitiative(l, false) }));
 
-    const summaryDonations = donations.filter(d => {
+    // FILTER DONATIONS: Only those linked to Published & Verified initiatives
+    const publicLinkedDonations = donations.filter(d => {
         const dDate = d.donationDate || '';
-        return (!startDate || dDate >= startDate) && (!endDate || dDate <= endDate);
+        const inDateRange = (!startDate || dDate >= startDate) && (!endDate || dDate <= endDate);
+        if (!inDateRange) return false;
+
+        const isLinkedToPublic = d.linkSplit?.some(l => activeInitiativeIds.has(l.linkId));
+        return isLinkedToPublic;
     });
 
     // --- OVERALL CALCULATION ---
-    // Use the combined set of reconciled items for perfect progress alignment
     const combinedItems = [...campaignsWithProgress, ...leadsWithProgress];
-    const totalTarget = combinedItems.reduce((sum, item) => sum + (item.target || 0), 0);
-    const totalGoalReceived = combinedItems.reduce((sum, item) => sum + (item.collected || 0), 0);
-    const grandTotalRaised = summaryDonations.reduce((sum, d) => sum + (d.amount || 0), 0);
+    const totalTarget = combinedItems.reduce((sum, item) => sum + item.target, 0);
+    const totalGoalReceived = combinedItems.reduce((sum, item) => sum + item.collected, 0);
+    
+    // grandTotalRaised: Sum of all verified donations linked to these public initiatives
+    const grandTotalRaised = publicLinkedDonations.reduce((sum, d) => sum + (d.amount || 0), 0);
 
     const overallProgress = totalTarget > 0 ? (totalGoalReceived / totalTarget) * 100 : 0;
 
-    const amountsByCategoryInRange = summaryDonations.reduce((acc, d) => {
+    const amountsByCategory = publicLinkedDonations.reduce((acc, d) => {
+      const totalAmount = d.amount || 1;
+      // Proportion of donation amount actually linked to public initiatives
+      const linkedAmount = d.linkSplit?.filter(l => activeInitiativeIds.has(l.linkId)).reduce((s, l) => s + l.amount, 0) || 0;
+      const proportion = linkedAmount / totalAmount;
+
       const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
       splits.forEach(split => {
         const category = (split.category as any) === 'General' ? 'Sadaqah' : split.category as DonationCategory;
         if (donationCategories.includes(category)) {
-          acc[category] = (acc[category] || 0) + split.amount;
+          acc[category] = (acc[category] || 0) + (split.amount * proportion);
         }
       });
       return acc;
@@ -152,7 +154,7 @@ export function usePublicData() {
         }
     });
 
-    donations.forEach(donation => {
+    publicLinkedDonations.forEach(donation => {
         const year = donation.donationDate?.split('-')[0];
         if (year && yearlyData[year]) {
             yearlyData[year].overallTotalReceived += donation.amount;
@@ -168,11 +170,11 @@ export function usePublicData() {
         .filter(y => y.totalGoalReceived > 0 || y.overallTotalReceived > 0)
         .sort((a, b) => parseInt(b.year) - parseInt(a.year));
 
-    const recentDonationsFormatted = isTickerDonationVisible ? [...donations]
+    const recentDonationsFormatted = isTickerDonationVisible ? publicLinkedDonations
         .sort((a, b) => new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime())
         .slice(0, maxDonations)
         .map(d => {
-            const primaryLink = d.linkSplit?.find(l => l.linkType !== 'general');
+            const primaryLink = d.linkSplit?.find(l => activeInitiativeIds.has(l.linkId));
             const initiativeName = primaryLink?.linkName || 'General Fund';
             return {
                 id: d.id,
@@ -185,25 +187,20 @@ export function usePublicData() {
             };
         }) : [];
 
-    const grandTotalUnlinkedPool = donations.reduce((sum, d) => {
-        const allocated = d.linkSplit?.reduce((s, l) => s + l.amount, 0) || 0;
-        return sum + Math.max(0, d.amount - allocated);
-    }, 0);
-
     return {
       campaignsWithProgress,
       leadsWithProgress,
       overallSummary: {
-        totalTarget: totalTarget,
-        grandTotalRaised: grandTotalRaised,
+        totalTarget,
+        grandTotalRaised,
         totalCollectedForGoals: totalGoalReceived,
-        grandTotalUnlinked: grandTotalUnlinkedPool,
+        grandTotalUnlinked: 0, // In public view, we don't show global unlinked pool
         progress: overallProgress,
         familiesImpacted: beneficiaries?.length || 0,
-        showUnlinkedFunds: user ? (visSettings?.member_unlinked_funds !== false) : (visSettings?.public_unlinked_funds === true)
+        showUnlinkedFunds: false
       },
       yearlySummary: sortedYearlyData,
-      categorySummary: Object.entries(amountsByCategoryInRange).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` })),
+      categorySummary: Object.entries(amountsByCategory).map(([name, value]) => ({ name, value, fill: `var(--color-${name.replace(/\s+/g, '')})` })),
       recentDonationsFormatted,
       summaryDateRange: (startDate || endDate) ? { start: startDate, end: endDate } : null,
       isTickerActiveVisible,
