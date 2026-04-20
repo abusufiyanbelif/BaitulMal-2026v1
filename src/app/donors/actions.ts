@@ -89,7 +89,6 @@ export async function deleteDonorAction(donorId: string): Promise<{ success: boo
         const batch = adminDb.batch();
         
         // 1. Identification & Unlinking: Preserve financial audit trail
-        // We find every donation specifically linked to this donor ID
         const donationsSnap = await adminDb.collection('donations').where('donorId', '==', donorId).get();
         
         donationsSnap.forEach(docSnap => {
@@ -104,12 +103,11 @@ export async function deleteDonorAction(donorId: string): Promise<{ success: boo
         
         await batch.commit();
         
-        // Ensure all analytical and registry views refresh
         revalidatePath('/donors');
         revalidatePath('/donations');
         revalidatePath('/dashboard');
         
-        return { success: true, message: 'Donor Profile Purged. Associated donations have been preserved as unlinked "dummy" records.' };
+        return { success: true, message: 'Donor Profile Purged. Associated donations preserved as unlinked records.' };
     } catch (error: any) {
         console.error("Error Deleting Donor Record:", error);
         return { success: false, message: `Removal operation failed: ${error.message}` };

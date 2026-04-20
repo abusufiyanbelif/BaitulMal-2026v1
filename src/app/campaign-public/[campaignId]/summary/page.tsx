@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -153,7 +152,7 @@ export default function PublicCampaignSummaryPage() {
         
         const donationsList = allDonations.filter(d => {
             if (d.linkSplit && d.linkSplit.length > 0) {
-                return d.linkSplit.some(link => link.linkId === campaign.id && link.linkType === 'campaign');
+                return d.linkSplit.some(link => link.linkId === campaign.id || link.linkId === `campaign_${campaign.id}`);
             }
             return (d as any).campaignId === campaign.id;
         });
@@ -166,7 +165,7 @@ export default function PublicCampaignSummaryPage() {
 
         verifiedDonationsList.forEach(d => {
             let amountForThisCampaign = 0;
-            const campaignLink = d.linkSplit?.find((l: any) => l.linkId === campaign.id && l.linkType === 'campaign');
+            const campaignLink = d.linkSplit?.find((l: any) => l.linkId === campaign.id || l.linkId === `campaign_${campaign.id}`);
             if (campaignLink) {
                 amountForThisCampaign = campaignLink.amount;
             } else if ((!d.linkSplit || d.linkSplit.length === 0) && (d as any).campaignId === campaign.id) {
@@ -201,13 +200,14 @@ export default function PublicCampaignSummaryPage() {
         const zakatAllocated = beneficiaries.filter(b => b.isEligibleForZakat && b.zakatAllocation).reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
         const zakatGiven = beneficiaries.filter(b => b.isEligibleForZakat && b.zakatAllocation && b.status === 'Given').reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
         const zakatPending = zakatAllocated - zakatGiven;
-        const zakatAvailableForGoal = Math.max(0, zakatForGoalAmount - zakatAllocated);
         const totalZakatBalance = (amountsByCategory.Zakat || 0) - zakatAllocated;
+
+        const zakatSurplus = Math.max(0, zakatForGoalAmount - zakatAllocated);
 
         const totalCollectedForGoal = Object.entries(amountsByCategory)
             .filter(([category]) => campaign.allowedDonationTypes?.includes(category as DonationCategory))
             .reduce((sum, [category, amount]) => {
-                if (category === 'Zakat') return sum + zakatAvailableForGoal;
+                if (category === 'Zakat') return sum + zakatSurplus;
                 return sum + amount;
             }, 0);
 
@@ -220,7 +220,7 @@ export default function PublicCampaignSummaryPage() {
             totalBeneficiaries: beneficiaries.length, 
             beneficiariesGiven: beneficiaries.filter(b => b.status === 'Given').length, 
             beneficiariesPending: beneficiaries.length - beneficiaries.filter(b => b.status === 'Given').length, 
-            zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, totalZakatBalance, amountsByCategory, paymentTypeStats,
+            zakatAllocated, zakatGiven, zakatPending, zakatSurplus, totalZakatBalance, amountsByCategory, paymentTypeStats,
             grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
         };
     }, [allDonations, campaign, beneficiaries, calculatedRequirementTotal]);
@@ -502,7 +502,7 @@ export default function PublicCampaignSummaryPage() {
                                             </div>
                                             <div className="flex justify-between items-center text-[10px] font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded italic opacity-60">
                                                 <span>Contribution to Goal</span>
-                                                <span className="font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span>
+                                                <span className="font-mono">₹{fundingData.zakatSurplus.toLocaleString('en-IN')}</span>
                                             </div>
                                         </div>
                                     </CardContent>
@@ -510,7 +510,7 @@ export default function PublicCampaignSummaryPage() {
                             )}
                         </div>
 
-                        <div className="grid gap-6 lg:grid-cols-2 font-normal">
+                        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2 font-normal">
                             {isVisible('donations_by_category') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
                                     <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-[10px] tracking-tight capitalize opacity-60">Donations By Category</CardTitle></CardHeader>
@@ -523,14 +523,14 @@ export default function PublicCampaignSummaryPage() {
                                                 </BarChart>
                                             </ResponsiveContainer>
                                         </ChartContainer>
-                                        ) : <Skeleton className="h-[300px] w-full"/>}
+                                        ) : <Skeleton className="h-[300px] w-full rounded-md"/>}
                                     </CardContent>
                                 </Card>
                             )}
 
                             {isVisible('donations_by_payment_type') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-[10px] tracking-tight capitalize opacity-60">Donations By Payment Type</CardTitle></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="flex items-center gap-2 font-bold text-primary text-[10px] tracking-tight capitalize opacity-60">Donations By Payment Type</CardTitle><CardDescription className="font-normal text-primary/70">Breakdown Of Funds By Contribution Channel.</CardDescription></CardHeader>
                                     <CardContent className="pt-6">
                                         {isClient ? (
                                             <ChartContainer config={donationPaymentTypeChartConfig} className="h-[250px] w-full">
@@ -550,13 +550,15 @@ export default function PublicCampaignSummaryPage() {
                                                             } 
                                                         />
                                                         <Pie data={paymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={5} className="transition-all duration-1000 ease-out focus:outline-none">
-                                                            {paymentTypeChartData.map((entry) => (<Cell key={`cell-pay-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />))}
+                                                            {paymentTypeChartData.map((entry) => (
+                                                                <Cell key={`cell-pay-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />
+                                                            ))}
                                                         </Pie>
                                                         <ChartLegend content={<ChartLegendContent />} />
                                                     </PieChart>
                                                 </ResponsiveContainer>
                                             </ChartContainer>
-                                        ) : <Skeleton className="h-[250px] w-full"/>}
+                                        ) : <Skeleton className="h-[250px] w-full rounded-md"/>}
                                     </CardContent>
                                 </Card>
                             )}

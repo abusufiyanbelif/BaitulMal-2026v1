@@ -172,14 +172,12 @@ export default function LeadSummaryPage() {
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
     const allDonationsCollectionRef = useMemoFirebase(() => (firestore) ? collection(firestore, 'donations') : null, [firestore]);
 
-    const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
+    const { data: lead, isLoading: isLeadLoading, forceRefetch: forceRefetchLead } = useDoc<Lead>(leadDocRef);
     const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
     const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
     
     const visibilityRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_visibility') : null, [firestore]);
-    const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_config') : null, [firestore]);
     const { data: visibilitySettings } = useDoc<any>(visibilityRef);
-    const { data: configSettings } = useDoc<any>(configRef);
 
     useEffect(() => { setIsClient(true); }, []);
 
@@ -248,8 +246,7 @@ export default function LeadSummaryPage() {
                     const allocatedAmount = split.amount * allocationProportion;
                     amountsByCategory[category as DonationCategory] += allocatedAmount;
                     
-                    // Logic Fix: Count Zakat by default unless explicitly false
-                    const isForFundraising = category !== 'Zakat' || split.forFundraising === true;
+                    const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
                     if (category === 'Zakat' && isForFundraising) zakatForGoalAmount += allocatedAmount;
                 }
             });
@@ -258,13 +255,14 @@ export default function LeadSummaryPage() {
         const zakatAllocated = beneficiaries.filter(b => b.isEligibleForZakat && b.zakatAllocation).reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
         const zakatGiven = beneficiaries.filter(b => b.isEligibleForZakat && b.zakatAllocation && b.status === 'Given').reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
         const zakatPending = zakatAllocated - zakatGiven;
-        const zakatAvailableForGoal = Math.max(0, zakatForGoalAmount - zakatAllocated);
         const totalZakatBalance = (amountsByCategory.Zakat || 0) - zakatAllocated;
+
+        const zakatSurplus = Math.max(0, zakatForGoalAmount - zakatAllocated);
         
         const totalCollectedForGoal = Object.entries(amountsByCategory)
             .filter(([category]) => lead.allowedDonationTypes?.includes(category as DonationCategory))
             .reduce((sum, [category, amount]) => {
-                if (category === 'Zakat') return sum + zakatAvailableForGoal;
+                if (category === 'Zakat') return sum + zakatSurplus;
                 return sum + amount;
             }, 0);
 
@@ -276,7 +274,7 @@ export default function LeadSummaryPage() {
             targetAmount,
             amountsByCategory,
             paymentTypeStats,
-            zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, totalZakatBalance,
+            zakatAllocated, zakatGiven, zakatPending, zakatSurplus, totalZakatBalance,
             totalBeneficiaries: beneficiaries.length,
             beneficiariesGiven: beneficiaries.filter(b => b.status === 'Given').length,
             beneficiariesPending: beneficiaries.length - beneficiaries.filter(b => b.status === 'Given').length,
@@ -695,7 +693,7 @@ export default function LeadSummaryPage() {
                                                 className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
                                                 onClick={() => router.push(`/leads-members/${leadId}/donations?status=Verified`)}
                                             >
-                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize group-hover:text-primary transition-colors opacity-60">Raised For Goal</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize group-hover:text-primary transition-colors opacity-60">Raised For Goal (Synced)</p>
                                                 <p className="text-3xl font-bold text-primary font-mono flex items-center justify-center md:justify-start gap-2">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
                                             </div>
                                             <div className="transition-transform hover:translate-x-1 duration-300 relative group/target">
@@ -712,7 +710,7 @@ export default function LeadSummaryPage() {
                                                                 const res = await recalculateLeadGoalAction(leadId);
                                                                 if (res.success) {
                                                                     toast({ title: res.message, variant: "success" });
-                                                                    router.refresh();
+                                                                    forceRefetchLead();
                                                                 } else {
                                                                     toast({ title: "Recalculation Failed", description: res.message, variant: "destructive" });
                                                                 }
@@ -729,7 +727,7 @@ export default function LeadSummaryPage() {
                                                 className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
                                                 onClick={() => router.push(`/leads-members/${leadId}/donations?status=Verified`)}
                                             >
-                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize group-hover:text-primary transition-colors opacity-60">Total Funds Received</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize group-hover:text-primary transition-colors opacity-60">Grand Total Received</p>
                                                 <p className="text-2xl font-bold text-primary font-mono flex items-center justify-center md:justify-start gap-2">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
                                             </div>
                                         </div>
@@ -966,7 +964,7 @@ export default function LeadSummaryPage() {
                     </div>
                 )}
 
-                {isVisible('documents') && publicDocuments.length > 0 && (
+                {isVisible('documents') && (
                     <Card className="animate-fade-in-up bg-white shadow-sm border-primary/10 transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '400ms' }}>
                         <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight capitalize">Case Documents & Evidence</CardTitle></CardHeader>
                         <CardContent className="font-normal text-primary pt-6">

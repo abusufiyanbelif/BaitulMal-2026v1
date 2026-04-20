@@ -179,16 +179,6 @@ export default function CampaignSummaryPage() {
 
     useEffect(() => { setIsClient(true); }, []);
 
-    const isLegacyData = useMemo(() => {
-        return !!(campaign && !campaign.itemCategories && (campaign as any).rationLists);
-    }, [campaign]);
-
-    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
-    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.update', false) || !!getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
-    const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
-    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
-    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.read', false);
-
     const isRationInitiative = useMemo(() => {
         return campaign?.category === 'Ration';
     }, [campaign]);
@@ -213,7 +203,6 @@ export default function CampaignSummaryPage() {
             return { id: cat.id, name: displayName, count, kitAmount, totalAmount: count * kitAmount };
         });
 
-        // Fallback for legacy or uncategorized beneficiaries
         const categorizedIds = new Set(categories.map(c => c.id));
         const uncategorized = beneficiaries.filter(b => !b.itemCategoryId || !categorizedIds.has(b.itemCategoryId));
         
@@ -243,7 +232,6 @@ export default function CampaignSummaryPage() {
         
         const donationsList = allDonations.filter(d => {
             if (d.linkSplit && d.linkSplit.length > 0) {
-                // Support both prefixed and raw IDs
                 return d.linkSplit.some(link => 
                     link.linkId === campaign.id || 
                     link.linkId === `campaign_${campaign.id}`
@@ -289,8 +277,6 @@ export default function CampaignSummaryPage() {
                 if (amountsByCategory.hasOwnProperty(category)) {
                     const allocatedAmount = split.amount * proportionForThisCampaign;
                     amountsByCategory[category as DonationCategory] += allocatedAmount;
-                    
-                    // Logic Fix: count Zakat by default unless explicitly false
                     const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
                     if (category === 'Zakat' && isForFundraising) zakatForGoalAmount += allocatedAmount;
                 }
@@ -300,17 +286,18 @@ export default function CampaignSummaryPage() {
         const zakatAllocated = beneficiaries.filter(b => b.isEligibleForZakat && b.zakatAllocation).reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
         const zakatGiven = beneficiaries.filter(b => b.isEligibleForZakat && b.zakatAllocation && b.status === 'Given').reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
         const zakatPending = zakatAllocated - zakatGiven;
-        const zakatAvailableForGoal = Math.max(0, zakatForGoalAmount - zakatAllocated);
         const totalZakatBalance = (amountsByCategory.Zakat || 0) - zakatAllocated;
 
         const allowedTypes = campaign.allowedDonationTypes && campaign.allowedDonationTypes.length > 0
             ? campaign.allowedDonationTypes
             : [...donationCategories];
 
+        const zakatSurplus = Math.max(0, zakatForGoalAmount - zakatAllocated);
+
         const totalCollectedForGoal = Object.entries(amountsByCategory)
             .filter(([category]) => allowedTypes.includes(category as DonationCategory))
             .reduce((sum, [category, amount]) => {
-                if (category === 'Zakat') return sum + zakatAvailableForGoal;
+                if (category === 'Zakat') return sum + zakatSurplus;
                 return sum + amount;
             }, 0);
 
@@ -323,7 +310,7 @@ export default function CampaignSummaryPage() {
             totalBeneficiaries: beneficiaries.length, 
             beneficiariesGiven: beneficiaries.filter(b => b.status === 'Given').length, 
             beneficiariesPending: beneficiaries.length - beneficiaries.filter(b => b.status === 'Given').length, 
-            zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, totalZakatBalance, amountsByCategory, paymentTypeStats,
+            zakatAllocated, zakatGiven, zakatPending, zakatSurplus, totalZakatBalance, amountsByCategory, paymentTypeStats,
             grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
         };
     }, [allDonations, campaign, beneficiaries, calculatedRequirementTotal]);
@@ -479,6 +466,7 @@ export default function CampaignSummaryPage() {
         setIsImageViewerOpen(true);
     };
 
+    const publicDocuments = campaign.documents?.filter(d => d.isPublic) || [];
     const FallbackIcon = campaign?.category === 'Ration' ? Utensils : campaign?.category === 'Relief' ? LifeBuoy : HandHelping;
 
     return (
@@ -677,7 +665,7 @@ export default function CampaignSummaryPage() {
                                                 className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
                                                 onClick={() => router.push(`/campaign-members/${campaignId}/donations?status=Verified`)}
                                             >
-                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight group-hover:text-primary transition-colors opacity-60">Raised For Goal</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight group-hover:text-primary transition-colors opacity-60">Raised For Goal (Synced)</p>
                                                 <p className="text-3xl font-bold text-primary font-mono flex items-center justify-center md:justify-start gap-2">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
                                             </div>
                                             <div className="transition-transform hover:translate-x-1 duration-300 relative group/target">
@@ -711,7 +699,7 @@ export default function CampaignSummaryPage() {
                                                 className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
                                                 onClick={() => router.push(`/campaign-members/${campaignId}/donations?status=Verified`)}
                                             >
-                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight group-hover:text-primary transition-colors opacity-60">Total Funds Received</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight group-hover:text-primary transition-colors opacity-60">Grand Total Received</p>
                                                 <p className="text-2xl font-bold text-primary font-mono flex items-center justify-center md:justify-start gap-2">₹{(fundingData?.grandTotal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
                                             </div>
                                         </div>
@@ -999,7 +987,9 @@ export default function CampaignSummaryPage() {
                         action: 'update',
                         newData: pendingSaveData,
                         oldData: campaign,
-                        description: `Update campaign summary: ${campaign.name}`
+                        description: `Update campaign summary: ${campaign.name}`,
+                        targetCollection: 'campaigns',
+                        revalidatePath: `/campaign-members/${campaignId}/summary`
                     }}
                     onSuccess={() => {
                         setEditMode(false);

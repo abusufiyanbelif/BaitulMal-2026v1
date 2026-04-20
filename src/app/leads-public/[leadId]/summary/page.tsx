@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useMemo, useState, useRef, useEffect } from 'react';
@@ -156,7 +155,7 @@ export default function PublicLeadSummaryPage() {
     const fundingData = useMemo(() => {
         if (!allDonations || !lead || !beneficiaries) return null;
 
-        const donations = allDonations.filter(d => d.linkSplit?.some(link => link.linkId === lead.id && link.linkType === 'lead'));
+        const donations = allDonations.filter(d => d.linkSplit?.some(link => link.linkId === lead.id || link.linkId === `lead_${lead.id}`));
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
@@ -164,7 +163,7 @@ export default function PublicLeadSummaryPage() {
         let zakatForGoalAmount = 0;
 
         verifiedDonationsList.forEach(d => {
-            const leadAllocation = d.linkSplit?.find(link => link.linkId === lead.id);
+            const leadAllocation = d.linkSplit?.find(link => link.linkId === lead.id || link.linkId === `lead_${lead.id}`);
             if (!leadAllocation) return;
 
             const paymentType = d.donationType || 'Other';
@@ -191,13 +190,14 @@ export default function PublicLeadSummaryPage() {
         const zakatAllocated = beneficiaries.filter(b => b.isEligibleForZakat && b.zakatAllocation).reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
         const zakatGiven = beneficiaries.filter(b => b.isEligibleForZakat && b.zakatAllocation && b.status === 'Given').reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
         const zakatPending = zakatAllocated - zakatGiven;
-        const zakatAvailableForGoal = Math.max(0, zakatForGoalAmount - zakatAllocated);
         const totalZakatBalance = (amountsByCategory.Zakat || 0) - zakatAllocated;
         
+        const zakatSurplus = Math.max(0, zakatForGoalAmount - zakatAllocated);
+
         const totalCollectedForGoal = Object.entries(amountsByCategory)
             .filter(([category]) => lead.allowedDonationTypes?.includes(category as DonationCategory))
             .reduce((sum, [category, amount]) => {
-                if (category === 'Zakat') return sum + zakatAvailableForGoal;
+                if (category === 'Zakat') return sum + zakatSurplus;
                 return sum + amount;
             }, 0);
 
@@ -209,7 +209,7 @@ export default function PublicLeadSummaryPage() {
             targetAmount,
             amountsByCategory,
             paymentTypeStats,
-            zakatAllocated, zakatGiven, zakatPending, zakatAvailableForGoal, totalZakatBalance,
+            zakatAllocated, zakatGiven, zakatPending, zakatSurplus, totalZakatBalance,
             totalBeneficiaries: beneficiaries.length,
             beneficiariesGiven: beneficiaries.filter(b => b.status === 'Given').length,
             beneficiariesPending: beneficiaries.length - beneficiaries.filter(b => b.status === 'Given').length,
@@ -353,7 +353,7 @@ export default function PublicLeadSummaryPage() {
 
                         {isVisible('quick_stats') && (
                             <div className="grid gap-6 sm:grid-cols-3 font-normal">
-                                <Card className="bg-white border-primary/10 shadow-sm transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight capitalize">Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
+                                <Card className="bg-white border-primary/10 shadow-sm transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight capitalize">Total Beneficiaries</CardTitle><Users className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.totalBeneficiaries ?? 0}</div></CardContent></Card>
                                 <Card className="bg-white border-primary/10 shadow-sm transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight capitalize">{itemGivenLabel}</CardTitle><Gift className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesGiven ?? 0}</div></CardContent></Card>
                                 <Card className="bg-white border-primary/10 shadow-sm transition-all hover:shadow-lg"><CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2"><CardTitle className="text-[10px] font-bold text-primary tracking-tight capitalize">{itemPendingLabel}</CardTitle><Hourglass className="h-4 w-4 text-muted-foreground" /></CardHeader><CardContent><div className="text-2xl font-bold text-primary">{fundingData?.beneficiariesPending ?? 0}</div></CardContent></Card>
                             </div>
@@ -413,7 +413,7 @@ export default function PublicLeadSummaryPage() {
                                                     <TableBody>
                                                         {lead.itemCategories?.[0]?.items.map((item, idx) => (
                                                             <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white border-b border-primary/5 last:border-none">
-                                                                <TableCell className="font-medium text-xs">{item.name}</TableCell>
+                                                                <TableCell className="font-medium text-xs transition-transform group-hover:translate-x-1">{item.name}</TableCell>
                                                                 <TableCell className="text-right text-xs">{item.quantity} {item.quantityType}</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-xs">₹{(item.price / (item.quantity || 1)).toLocaleString('en-IN')}</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-xs">₹{(item.price || 0).toLocaleString('en-IN')}</TableCell>
@@ -490,7 +490,7 @@ export default function PublicLeadSummaryPage() {
                                             </div>
                                             <div className="flex justify-between items-center text-[10px] font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded italic opacity-60">
                                                 <span>Contribution to Goal</span>
-                                                <span className="font-mono">₹{fundingData.zakatAvailableForGoal.toLocaleString('en-IN')}</span>
+                                                <span className="font-mono">₹{fundingData.zakatSurplus.toLocaleString('en-IN')}</span>
                                             </div>
                                         </div>
                                     </CardContent>
@@ -511,7 +511,7 @@ export default function PublicLeadSummaryPage() {
                                                 </BarChart>
                                             </ResponsiveContainer>
                                         </ChartContainer>
-                                        ) : <Skeleton className="h-[250px] w-full"/>}
+                                        ) : <Skeleton className="h-[250px] w-full rounded-md"/>}
                                     </CardContent>
                                 </Card>
                             )}
@@ -538,13 +538,15 @@ export default function PublicLeadSummaryPage() {
                                                             } 
                                                         />
                                                         <Pie data={paymentTypeChartData} dataKey="value" nameKey="name" innerRadius={60} outerRadius={80} paddingAngle={5} className="transition-all duration-1000 ease-out focus:outline-none">
-                                                            {paymentTypeChartData.map((entry) => (<Cell key={`cell-pay-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />))}
+                                                            {paymentTypeChartData.map((entry) => (
+                                                                <Cell key={`cell-pay-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />
+                                                            ))}
                                                         </Pie>
                                                         <ChartLegend content={<ChartLegendContent />} />
                                                     </PieChart>
                                                 </ResponsiveContainer>
                                             </ChartContainer>
-                                        ) : <Skeleton className="h-[250px] w-full"/>}
+                                        ) : <Skeleton className="h-[250px] w-full rounded-md"/>}
                                     </CardContent>
                                 </Card>
                             )}
@@ -583,7 +585,7 @@ export default function PublicLeadSummaryPage() {
 
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
                 <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 overflow-hidden rounded-[24px] border-primary/10 shadow-2xl">
-                    <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary tracking-tight text-sm capitalize">{imageToView?.name}</DialogTitle></DialogHeader>
+                    <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary tracking-tight text-sm">{imageToView?.name}</DialogTitle></DialogHeader>
                     <div className="p-4 bg-secondary/20 flex-1 overflow-hidden relative min-h-[70vh]">
                         {imageToView && (
                             <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
