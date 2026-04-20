@@ -4,7 +4,7 @@
  import { revalidatePath } from 'next/cache';
  import type { PendingVerification, Beneficiary, Donation, Donor, Campaign, Lead } from '@/lib/types';
  import { FieldValue, Timestamp } from 'firebase-admin/firestore';
- import { bulkRecalculateInitiativeTotalsAction } from '@/app/donations/actions';
+ import { bulkRecalculateInitiativeTotalsAction, syncInitiativeCollectedTotals } from '@/app/donations/actions';
  
  const ADMIN_SDK_ERROR_MESSAGE = 'Operational Failure: Administrative Services Unavailable.';
  
@@ -91,6 +91,31 @@
              // Special handling for donations: Trigger recalculation of initiative totals
              if (request.module === 'donations') {
                  await bulkRecalculateInitiativeTotalsAction();
+             }
+ 
+             // Special handling for beneficiaries: Adjust initiative targetAmount if kitAmount changed
+             if (request.module === 'beneficiaries' && request.targetCollection.includes('/beneficiaries')) {
+                 const pathParts = request.targetCollection.split('/');
+                 if (pathParts.length >= 2) {
+                     const initiativeCollection = pathParts[0];
+                     const initiativeId = pathParts[1];
+                     const oldKitAmount = (request.originalValue as any)?.kitAmount || 0;
+                     const newKitAmount = (request.newValue as any)?.kitAmount;
+                     
+                     if (newKitAmount !== undefined && newKitAmount !== oldKitAmount) {
+                         const diff = Number(newKitAmount) - Number(oldKitAmount);
+                         await adminDb.collection(initiativeCollection).doc(initiativeId).update({
+                             targetAmount: FieldValue.increment(diff),
+                             updatedAt: FieldValue.serverTimestamp()
+                         });
+ 
+                         // Recalculate surplus logic
+                         await syncInitiativeCollectedTotals(adminDb, [{ 
+                             linkId: initiativeId, 
+                             linkType: initiativeCollection === 'campaigns' ? 'campaign' : 'lead' 
+                         }]);
+                     }
+                 }
              }
  
              // Cleanup: Delete the pending request

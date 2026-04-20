@@ -3,6 +3,7 @@
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
+import { bulkRecalculateInitiativeTotalsAction } from '../../donations/actions';
 
 const ADMIN_SDK_ERROR_MESSAGE = 'Operational Failure: Administrative Services Unavailable.';
 
@@ -559,50 +560,11 @@ export async function fixDataIssuesAction(
     }
 }
 
+
 /**
  * Recalculate all initiative collected amounts from scratch (verified donations only).
+ * Now leverages the robust Zakat surplus reconciliation logic.
  */
 export async function recalculateAllCollectedAmountsAction(): Promise<{ success: boolean; message: string }> {
-    const { adminDb } = getAdminServices();
-    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
-
-    try {
-        const [campaignsSnap, leadsSnap, donationsSnap] = await Promise.all([
-            adminDb.collection('campaigns').get(),
-            adminDb.collection('leads').get(),
-            adminDb.collection('donations').get(),
-        ]);
-
-        const campaignMap: Record<string, number> = {};
-        const leadMap: Record<string, number> = {};
-
-        donationsSnap.docs.forEach(d => {
-            const data = d.data();
-            if (data.status !== 'Verified') return;
-            (data.linkSplit || []).forEach((link: any) => {
-                if (link.linkType === 'campaign') campaignMap[link.linkId] = (campaignMap[link.linkId] || 0) + link.amount;
-                else if (link.linkType === 'lead') leadMap[link.linkId] = (leadMap[link.linkId] || 0) + link.amount;
-            });
-        });
-
-        const CHUNK = 450;
-        const allEntries: { ref: FirebaseFirestore.DocumentReference; val: number }[] = [
-            ...campaignsSnap.docs.map(d => ({ ref: d.ref, val: campaignMap[d.id] || 0 })),
-            ...leadsSnap.docs.map(d => ({ ref: d.ref, val: leadMap[d.id] || 0 })),
-        ];
-
-        for (let i = 0; i < allEntries.length; i += CHUNK) {
-            const batch = adminDb.batch();
-            allEntries.slice(i, i + CHUNK).forEach(e => batch.update(e.ref, { collectedAmount: e.val }));
-            await batch.commit();
-        }
-
-        revalidatePath('/campaigns');
-        revalidatePath('/leads-members');
-        revalidatePath('/dashboard');
-
-        return { success: true, message: `Recalculated collectedAmount for ${campaignsSnap.size} campaigns and ${leadsSnap.size} leads.` };
-    } catch (error: any) {
-        return { success: false, message: error.message };
-    }
+    return await bulkRecalculateInitiativeTotalsAction();
 }

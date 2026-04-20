@@ -44,9 +44,9 @@ export async function copyLeadAction(options: CopyLeadOptions): Promise<{ succes
                 collectedAmount: 0,               // reset — no donations yet
                 createdAt: FieldValue.serverTimestamp() as any,
                 updatedAt: FieldValue.serverTimestamp() as any,
-                createdById: undefined,
-                createdByName: undefined,
-                leadNumber: undefined,            // will be assigned on save if needed
+                createdById: null,
+                createdByName: null,
+                leadNumber: null,            // will be assigned on save if needed
             };
 
             // Strip runtime-only fields that should not be carried over

@@ -13,11 +13,7 @@ const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure 
 function sanitizePayload(data: Record<string, any>) {
     const sanitized: Record<string, any> = {};
     Object.keys(data).forEach(key => {
-        if (data[key] !== undefined && data[key] !== null) {
-            sanitized[key] = data[key];
-        } else if (data[key] === null) {
-            sanitized[key] = null;
-        } else {
+        if (data[key] !== undefined) {
             sanitized[key] = data[key];
         }
     });
@@ -28,7 +24,7 @@ function sanitizePayload(data: Record<string, any>) {
  * Recalculates initiative totals for specific IDs.
  * Correctly accounts for Zakat surpluses by subtracting reservations (allocations).
  */
-async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, links: DonationLink[]) {
+export async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, links: DonationLink[]) {
     const targets = Array.from(new Set(links.map(l => {
         const rawId = String(l.linkId);
         const cleanId = (rawId.startsWith('campaign_') || rawId.startsWith('lead_')) ? rawId.split('_')[1] : rawId;
@@ -424,7 +420,7 @@ export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success
         const [campaignsSnap, leadsSnap, donationsSnap] = await Promise.all([
             adminDb.collection('campaigns').get(),
             adminDb.collection('leads').get(),
-            adminDb.collection('donations').get(),
+            adminDb.collection('donations').where('status', '==', 'Verified').get(),
         ]);
 
         const batch = adminDb.batch();
@@ -438,10 +434,18 @@ export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success
                 ? (init.data as any).allowedDonationTypes
                 : [...donationCategories];
 
-            let total = 0;
+            const collectionName = init.type === 'campaign' ? 'campaigns' : 'leads';
+            const beneficiariesSnap = await adminDb.collection(collectionName).doc(init.id).collection('beneficiaries').get();
+            const zakatAllocatedSum = beneficiariesSnap.docs.reduce((sum, bDoc) => {
+                const bData = bDoc.data();
+                return sum + (bData.isEligibleForZakat ? (Number(bData.zakatAllocation) || 0) : 0);
+            }, 0);
+
+            let zakatSumForGoal = 0;
+            let otherEligibleSum = 0;
+
             donationsSnap.docs.forEach(doc => {
                 const d = doc.data() as Donation;
-                if (d.status !== 'Verified') return;
                 
                 const split = d.linkSplit?.find(l => 
                     l.linkId === init.id || 
@@ -453,16 +457,25 @@ export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success
                     const totalDonation = d.amount || 1;
                     const prop = split.amount / totalDonation;
                     const typeSplits = d.typeSplit || [];
-                    const eligible = typeSplits.reduce((acc, s) => {
-                        const cat = (s.category as any) === 'General' ? 'Sadaqah' : s.category;
+                    
+                    typeSplits.forEach(s => {
+                        const cat = (s.category as any) === 'General' || (s.category as any) === 'Sadqa' ? 'Sadaqah' : s.category;
                         const isAllowed = allowedTypes.includes(cat as any);
                         const isForGoal = cat !== 'Zakat' || s.forFundraising !== false;
-                        return (isAllowed && isForGoal) ? acc + s.amount : acc;
-                    }, 0);
-                    total += (eligible * prop);
+                        
+                        if (isAllowed && isForGoal) {
+                            const amount = s.amount * prop;
+                            if (cat === 'Zakat') zakatSumForGoal += amount;
+                            else otherEligibleSum += amount;
+                        }
+                    });
                 }
             });
-            batch.update(init.ref, { collectedAmount: total, updatedAt: FieldValue.serverTimestamp() });
+
+            const zakatSurplus = Math.max(0, zakatSumForGoal - zakatAllocatedSum);
+            const finalCollected = otherEligibleSum + zakatSurplus;
+
+            batch.update(init.ref, { collectedAmount: finalCollected, updatedAt: FieldValue.serverTimestamp() });
         }
         
         await batch.commit();

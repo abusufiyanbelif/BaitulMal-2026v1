@@ -157,14 +157,25 @@ function SortableHeader({ sortKey, children, className, sortConfig, handleSort }
     );
 };
 
-function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handleDeleteClick, handleViewImage }: { donation: Donation, index: number, isSelected: boolean, onToggle: () => void, handleEdit: () => void, handleDeleteClick: () => void, handleViewImage: (url: string) => void }) {
+interface DonationRowProps {
+    donation: Donation;
+    index: number;
+    isSelected: boolean;
+    onToggle: () => void;
+    handleEdit: () => void;
+    handleDeleteClick: () => void;
+    handleViewImage: (url: string) => void;
+}
+
+function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handleDeleteClick, handleViewImage }: DonationRowProps) {
     const [isOpen, setIsOpen] = useState(false);
     const router = useRouter();
     const { userProfile } = useSession();
     const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations.update', false);
     const canDelete = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations.delete', false);
 
-    const primaryInitiative = donation.linkSplit?.[0]?.linkName || (donation as any).campaignName || 'Unlinked';
+    const donationAny = donation as Record<string, any>;
+    const primaryInitiative = donation.linkSplit?.[0]?.linkName || donationAny.campaignName || 'Unlinked';
 
     return (
         <div className="flex flex-col">
@@ -271,7 +282,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                     {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
                                                         <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated General Fund</TableCell></TableRow>
                                                     )}
-                                                </Table>
+                                                </TableBody>
                                             </Table>
                                         </div>
                                         <ScrollBar orientation="horizontal" className="h-1.5" />

@@ -45,7 +45,7 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
                 collectedAmount: 0,                    // reset — no donations yet
                 createdAt: FieldValue.serverTimestamp() as any,
                 updatedAt: FieldValue.serverTimestamp() as any,
-                campaignNumber: undefined,             // will be assigned on save if needed
+                campaignNumber: null,             // will be assigned on save if needed
             };
             // Strip runtime-only fields that should not be carried over
             delete (newCampaignData as any).id;
