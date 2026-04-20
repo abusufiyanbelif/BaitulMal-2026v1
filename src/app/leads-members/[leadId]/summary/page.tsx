@@ -1072,7 +1072,6 @@ export default function LeadSummaryPage() {
 }
 
 function HistorySection({ lead }: { lead: Lead }) {
-    const publicDocuments = lead.documents?.filter(d => d.isPublic) || [];
     return (
         <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
             <CardHeader className="bg-primary/5 border-b pb-3">

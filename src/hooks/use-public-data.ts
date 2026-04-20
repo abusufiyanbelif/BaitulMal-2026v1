@@ -9,7 +9,7 @@ import { donationCategories } from '@/lib/modules';
 
 /**
  * usePublicData - High-fidelity organizational impact reporting.
- * Hardened to correctly handle Zakat surpluses and multiple ID formats.
+ * Hardened to correctly handle Zakat surpluses and strictly filter Published content.
  */
 export function usePublicData() {
   const firestore = useFirestore();
@@ -23,6 +23,7 @@ export function usePublicData() {
 
   const campaignsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
+    // Strict visibility check for public consumption
     return query(
       collection(firestore, 'campaigns'),
       where('authenticityStatus', '==', 'Verified'),
@@ -32,6 +33,7 @@ export function usePublicData() {
 
   const leadsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
+    // Strict visibility check for public consumption
     return query(
       collection(firestore, 'leads'),
       where('authenticityStatus', '==', 'Verified'),
@@ -95,6 +97,7 @@ export function usePublicData() {
 
     // ADVANCED RECONCILIATION ENGINE
     const reconcileInitiative = (item: Campaign | Lead, isCampaign: boolean) => {
+        // Find donations linked to this specific item
         const itemDonations = donations.filter(d => 
             d.linkSplit?.some(l => l.linkId === item.id || l.linkId === `${isCampaign ? 'campaign' : 'lead'}_${item.id}`)
         );
@@ -103,8 +106,6 @@ export function usePublicData() {
             ? item.allowedDonationTypes
             : [...donationCategories];
 
-        // 1. Calculate Gross Totals per Category
-        const catTotals: Record<string, number> = {};
         let zakatReceivedForThisItem = 0;
         let otherEligibleSum = 0;
         let absoluteGrandTotal = 0;
@@ -134,18 +135,9 @@ export function usePublicData() {
         });
 
         // 2. Handle Zakat Surplus (Subtract Reservations)
-        // We only have Zakat allocations if beneficiaries are loaded and linked
-        const zakatReserved = beneficiaries 
-            ? beneficiaries
-                .filter(b => b.isEligibleForZakat && (b as any).itemCategoryId) // Assuming only linked beneficiaries in public data view if filtered by subcollection, but here beneficiaries is master list.
-                // NOTE: For true accuracy in public view, we need the subcollection beneficiaries count.
-                // Since this hook is global, we rely on the item's targetAmount which is synced server-side.
-                .reduce((sum, b) => sum + (b.zakatAllocation || 0), 0)
-            : 0;
-
-        // Fallback: If we are in public view and don't have all subcollection data, 
-        // we use the item.collectedAmount which is synced by the server actions with full knowledge.
-        const collected = item.collectedAmount || (otherEligibleSum + Math.max(0, zakatReceivedForThisItem - zakatReserved));
+        // Note: For true accuracy in public view, we rely on the document's collectedAmount 
+        // which is recalculated server-side with full knowledge of subcollections.
+        const collected = item.collectedAmount || (otherEligibleSum + Math.max(0, zakatReceivedForThisItem));
         const progress = item.targetAmount && item.targetAmount > 0 ? (collected / item.targetAmount) * 100 : 0;
 
         return { collected, progress: Math.min(progress, 100), absoluteGrandTotal };
@@ -159,6 +151,7 @@ export function usePublicData() {
         return (!startDate || dDate >= startDate) && (!endDate || dDate <= endDate);
     });
 
+    // Only Published initiatives count towards the target and goal metrics
     const totalTargetInRange = allPublicItems.reduce((sum, item) => sum + (item.targetAmount || 0), 0);
     const totalCollectedForGoalsInRange = [...campaignsWithProgress, ...leadsWithProgress].reduce((sum, item) => sum + item.collected, 0);
 
@@ -209,7 +202,7 @@ export function usePublicData() {
         .sort((a, b) => new Date(b.donationDate).getTime() - new Date(a.donationDate).getTime())
         .slice(0, maxDonations)
         .map(d => {
-            const primaryLink = d.linkSplit?.[0] || ( (d as any).campaignId ? { linkName: (d as any).campaignName || 'Campaign', linkId: (d as any).campaignId, linkType: 'campaign', amount: d.amount } : null );
+            const primaryLink = d.linkSplit?.find(l => l.linkType !== 'general') || ( (d as any).campaignId ? { linkName: (d as any).campaignName || 'Campaign', linkId: (d as any).campaignId, linkType: 'campaign', amount: d.amount } : null );
             const initiativeName = primaryLink?.linkName || 'General Fund';
             return {
                 id: d.id,

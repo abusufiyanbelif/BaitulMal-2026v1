@@ -8,9 +8,7 @@ import {
     doc, 
     getDoc, 
     updateDoc, 
-    serverTimestamp,
-    Firestore,
-    FieldValue
+    serverTimestamp
 } from 'firebase/firestore';
 import type { Donation, Campaign, Lead, DonationLink, DonationCategory } from './types';
 import { donationCategories } from './modules';
@@ -19,6 +17,7 @@ import { donationCategories } from './modules';
  * Systemic Financial Reconciliation Utility.
  * Ensures the 'collectedAmount' field on Campaigns and Leads perfectly matches 
  * the high-fidelity 'Raised For Goal' logic used in the UI.
+ * Handles Zakat Surpluses correctly (Zakat Received - Zakat Allocated).
  */
 export async function syncInitiativeCollectedTotals(db: any, links: DonationLink[]) {
     if (!db) return;
@@ -49,10 +48,11 @@ export async function syncInitiativeCollectedTotals(db: any, links: DonationLink
             ? initiativeData.allowedDonationTypes
             : [...donationCategories];
 
-        // 3. Fetch current Zakat allocations for this initiative
+        // 3. Fetch current Zakat allocations for this specific initiative
         const beneficiariesSnap = await getDocs(collection(db, collectionName, id, 'beneficiaries'));
         const zakatAllocatedSum = beneficiariesSnap.docs.reduce((sum, bDoc) => {
             const bData = bDoc.data();
+            // Important: we only subtract reservations if they are eligible for zakat
             return sum + (bData.isEligibleForZakat ? (Number(bData.zakatAllocation) || 0) : 0);
         }, 0);
 
@@ -61,6 +61,7 @@ export async function syncInitiativeCollectedTotals(db: any, links: DonationLink
         let otherEligibleSum = 0;
 
         allVerifiedDonations.forEach(d => {
+            // Support both prefixed and raw IDs for robustness
             const split = d.linkSplit?.find(l => l.linkId === id || l.linkId === `${type}_${id}`);
             if (split) {
                 const totalDonation = d.amount || 1;
@@ -81,6 +82,7 @@ export async function syncInitiativeCollectedTotals(db: any, links: DonationLink
             }
         });
 
+        // The key reconciliation rule: Only Zakat received BEYOND current family allocations counts toward the goal progress bar.
         const zakatSurplus = Math.max(0, zakatSumForGoal - zakatAllocatedSum);
         const finalCollected = otherEligibleSum + zakatSurplus;
 
