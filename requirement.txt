@@ -1,0 +1,41 @@
+SYSTEMIC AUDIT & RECOVERY PLAN: DOCUEXTRACT PLATFORM
+=====================================================
+
+1. COMPLETED CORE STABILIZATIONS (DONE)
+---------------------------------------
+- CIRCULAR DEPENDENCY FIX: Refactored the Firebase SDK layer (index.ts, provider.tsx, use-collection.tsx) to use relative imports. This resolved the server startup hangs (500 errors) and Ghost 404s.
+- SYNTAX ERROR PURGE: Fixed multiple instances of invalid TypeScript syntax (success: boolean: false) in server actions across all modules.
+- RUNTIME CRASH RESOLUTION: Restored the missing 'forceRefetch' function in the useCollection hook, fixing crashes on the Campaign and Lead management hubs.
+- IDENTITY SOVEREIGNTY: Hardcoded the SessionProvider and Security Rules to recognize System Admin, Abusufiyan, and Maaz as superusers with absolute write bypass.
+- COMPONENT INTEGRITY: Cleaned up the Donation Registry page (donations/page.tsx) to remove duplicate code and JSX parsing errors.
+- REFERENCE ERROR FIX: Defined 'publicDocuments' in the Lead Summary page to resolve the crash when viewing artifacts.
+
+2. RECENT LOGIC ALIGNMENT (DONE - READY FOR VERIFICATION)
+---------------------------------------------------------
+- ZAKAT ALLOCATION FLAW: Updated 'upsertInitiativeBeneficiaryAction' to explicitly handle numeric removal. When an allocation (e.g., 10,000) is cleared, the system now forces a '0' in Firestore rather than ignoring the update.
+- PUBLIC DATA ISOLATION: Refactored the 'usePublicData' hook to strictly filter for [publicVisibility === 'Published'] AND [authenticityStatus === 'Verified']. Internal drafts no longer affect progress bars.
+
+3. DEEP SCAN PLAN (IN PROGRESS / NOT DONE)
+------------------------------------------
+The following items are currently being audited for 100% data integrity:
+
+A. FINANCIAL RECONCILIATION ENGINE:
+- AUDIT: Ensure that 'collectedAmount' on Campaign/Lead documents is not stale.
+- LOGIC: The "Raised For Goal" metric must calculate: [Sum of Verified Donations of Allowed Types] MINUS [Allocated Zakat for that Initiative].
+- ID SYNC: Scan for donations linked via raw IDs vs prefixed IDs (campaign_ID) and consolidate them.
+
+B. DATA FIELD INTEGRITY:
+- NULL VS UNDEFINED: Scan all 1100+ documents for 'undefined' values that should be 'null' or '0' (especially in financial splits).
+- TRIGGER AUDIT: Verify that every 'add/update/delete' interaction in the UI triggers the 'syncInitiativeCollectedTotals' recalculation action.
+
+C. SECURITY & VISIBILITY:
+- STORAGE RULES: Verify that guest users can only access files where the 'isPublic' flag is TRUE in the corresponding Firestore document.
+- ROLE FILTERING: Ensure the 'Verification Member List' only shows staff (Admin/User) and never donors/beneficiaries.
+
+D. HOUSEKEEPING:
+- STORAGE CLEANUP: Verify and move stray files (e.g., /settings/logo) into the new secure hierarchical structure (/settings/branding/logo.png).
+- ACTION REVALIDATION: Check that every server action explicitly calls 'revalidatePath' to ensure the UI updates without manual refreshes.
+
+=====================================================
+STATUS: STABILIZED | RECONCILIATION IN PROGRESS
+=====================================================
