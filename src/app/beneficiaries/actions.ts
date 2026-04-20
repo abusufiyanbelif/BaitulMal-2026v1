@@ -183,7 +183,6 @@ export async function upsertInitiativeBeneficiaryAction(
 
             // 2. Update Initiative-Specific Record
             // Explicitly normalize numeric fields to 0 if they are undefined or null
-            // This ensures removal (clearing a field) works correctly with Firestore's merge behavior.
             const initiativeBeneficiaryData = {
                 ...beneficiaryData,
                 kitAmount: Number(kitAmount) || 0,
@@ -211,6 +210,7 @@ export async function upsertInitiativeBeneficiaryAction(
         
         return { success: true, message: 'Beneficiary records synchronized successfully.' };
     } catch (error: any) {
+        console.error("Update Failed:", error);
         return { success: false, message: `Update Failed: ${error.message}` };
     }
 }
