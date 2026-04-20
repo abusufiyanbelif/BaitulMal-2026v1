@@ -1022,30 +1022,9 @@ export default function LeadSummaryPage() {
                     </Card>
                 )}
 
-                <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
-                    <CardHeader className="bg-primary/5 border-b pb-3">
-                        <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight capitalize"><History className="h-4 w-4 opacity-40"/> Institutional Audit Log</CardTitle>
-                    </CardHeader>
-                    <CardContent className="pt-6 space-y-4">
-                        <div className="flex items-start gap-3">
-                            <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Clock className="h-3.5 w-3.5"/></div>
-                            <div>
-                                <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-tighter">Record Created By</p>
-                                <p className="text-xs font-bold text-primary">{lead?.createdByName || 'Organization System'}</p>
-                                <p className="text-[9px] font-mono opacity-60">Staff ID: {lead?.createdById || 'System'}</p>
-                            </div>
-                        </div>
-                        {lead?.createdAt && (
-                            <div className="flex items-start gap-3">
-                                <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Calendar className="h-3.5 w-3.5"/></div>
-                               <div>
-                                    <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-tighter">Date Recorded</p>
-                                    <p className="text-xs font-bold text-primary">{(lead.createdAt as any).toDate?.().toLocaleString() || new Date(lead.createdAt as any).toLocaleString()}</p>
-                                </div>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
+                <div className="mt-8 animate-fade-in-up">
+                    <HistorySection lead={lead} />
+                </div>
             </div>
 
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
@@ -1089,5 +1068,35 @@ export default function LeadSummaryPage() {
                 />
             )}
         </main>
+    );
+}
+
+function HistorySection({ lead }: { lead: Lead }) {
+    const publicDocuments = lead.documents?.filter(d => d.isPublic) || [];
+    return (
+        <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+            <CardHeader className="bg-primary/5 border-b pb-3">
+                <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight capitalize"><History className="h-4 w-4 opacity-40"/> Institutional Audit Log</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6 space-y-4">
+                <div className="flex items-start gap-3">
+                    <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Clock className="h-3.5 w-3.5"/></div>
+                    <div>
+                        <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-tighter">Record Created By</p>
+                        <p className="text-xs font-bold text-primary">{lead?.createdByName || 'Organization System'}</p>
+                        <p className="text-[9px] font-mono opacity-60">Staff ID: {lead?.createdById || 'System'}</p>
+                    </div>
+                </div>
+                {lead?.createdAt && (
+                    <div className="flex items-start gap-3">
+                        <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Calendar className="h-3.5 w-3.5"/></div>
+                        <div>
+                            <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-tighter">Date Recorded</p>
+                            <p className="text-xs font-bold text-primary">{(lead.createdAt as any).toDate?.().toLocaleString() || new Date(lead.createdAt as any).toLocaleString()}</p>
+                        </div>
+                    </div>
+                )}
+            </CardContent>
+        </Card>
     );
 }

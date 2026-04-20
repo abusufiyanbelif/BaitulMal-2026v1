@@ -182,8 +182,12 @@ export async function upsertInitiativeBeneficiaryAction(
             }, { merge: true });
 
             // 2. Update Initiative-Specific Record
+            // Explicitly normalize numeric fields to 0 if they are undefined or null
+            // This ensures removal (clearing a field) works correctly with Firestore's merge behavior.
             const initiativeBeneficiaryData = {
                 ...beneficiaryData,
+                kitAmount: Number(kitAmount) || 0,
+                zakatAllocation: Number(zakatAllocation) || 0,
                 verificationStatus: masterStatusToSave,
                 updatedAt: FieldValue.serverTimestamp(),
                 updatedById: updatedBy.id,
@@ -193,7 +197,7 @@ export async function upsertInitiativeBeneficiaryAction(
 
             // 3. Adjust Initiative Total Goal if this is a new link or amount changed
             const oldAmount = subSnap.exists ? (subSnap.data()?.kitAmount || 0) : 0;
-            const diff = (kitAmount || 0) - oldAmount;
+            const diff = (Number(kitAmount) || 0) - oldAmount;
             
             if (diff !== 0) {
                 const currentInitiative = initiativeSnap.data() as Campaign | Lead;
