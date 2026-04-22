@@ -16,6 +16,10 @@ import {
   XAxis,
   YAxis,
   CartesianGrid,
+  RadialBarChart,
+  RadialBar,
+  PolarAngleAxis,
+  ResponsiveContainer
 } from 'recharts';
 import { DateRange } from 'react-day-picker';
 import { format, startOfMonth, endOfMonth, startOfQuarter, subMonths, startOfYear, endOfQuarter, endOfYear } from 'date-fns';
@@ -24,7 +28,7 @@ import type { Donation, DonationCategory, Campaign, Lead } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ArrowLeft, Loader2, Wallet, Calendar as CalendarIcon, TrendingUp, FolderKanban, Lightbulb, ShieldAlert, IndianRupee } from 'lucide-react';
+import { ArrowLeft, Loader2, Wallet, Calendar as CalendarIcon, TrendingUp, FolderKanban, Lightbulb, ShieldAlert, IndianRupee, Target, Hourglass } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -229,7 +233,14 @@ export default function DonationsSummaryPage() {
             .sort((a, b) => b.amount - a.amount);
 
 
+        const totalInstitutionalTarget = (campaigns?.reduce((sum, c) => sum + (c.targetAmount || 0), 0) || 0) + (leads?.reduce((sum, l) => sum + (l.targetAmount || 0), 0) || 0);
+        const totalRaisedForGoals = sortedInitiatives.reduce((sum, i) => sum + i.amount, 0);
+        const institutionalProgress = totalInstitutionalTarget > 0 ? (totalRaisedForGoals / totalInstitutionalTarget) * 100 : 0;
+
         return {
+            totalInstitutionalTarget,
+            totalRaisedForGoals,
+            institutionalProgress,
             allocatedCount,
             unallocatedCount,
             totalCount: filteredDonations.length,
@@ -311,21 +322,29 @@ export default function DonationsSummaryPage() {
                 <h1 className="text-3xl font-bold tracking-tight">Donation Summary</h1>
             </div>
 
-            <div className="border-b mb-4">
-                <ScrollArea className="w-full whitespace-nowrap">
-                    <div className="flex w-max space-x-2 pb-2">
-                        <Link href="/donations/summary" className={cn(
-                            "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
-                            pathname === '/donations/summary' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                        )}>Donation Summary</Link>
-                        <Link href="/donations" className={cn(
-                            "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
-                            pathname === '/donations' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                        )}>Donation List</Link>
-                    </div>
-                    <ScrollBar orientation="horizontal" />
-                </ScrollArea>
-            </div>
+        <div className="border-b mb-6 border-primary/10 pb-1">
+            <ScrollArea className="w-full whitespace-nowrap">
+                <div className="flex w-max gap-2 pb-1">
+                    <Link href="/donations" className={cn(
+                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
+                        pathname === '/donations' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                    )}>Donation List</Link>
+                    <Link href="/donations/summary" className={cn(
+                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
+                        pathname === '/donations/summary' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                    )}>Donation Summary</Link>
+                    <Link href="/verifications?module=donations" className={cn(
+                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
+                        pathname === '/verifications' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                    )}>Pending Verifications</Link>
+                    <Link href="/donors" className={cn(
+                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
+                        pathname === '/donors' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                    )}>Donor Registry</Link>
+                </div>
+                <ScrollBar orientation="horizontal" className="h-1" />
+            </ScrollArea>
+        </div>
 
             <div className="flex flex-col sm:flex-row gap-4 mb-6">
                 <Popover>
@@ -390,6 +409,67 @@ export default function DonationsSummaryPage() {
             </div>
             
             <div className="space-y-6 animate-fade-in-zoom">
+                {/* Institutional Progress Hub */}
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <Card className="lg:col-span-4 border-primary/10 shadow-sm overflow-hidden bg-white">
+                        <CardHeader className="bg-primary/5 border-b pb-3">
+                            <CardTitle className="text-sm font-bold text-primary flex items-center gap-2">
+                                <Target className="h-4 w-4 opacity-40"/> Institutional Roadmap
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-6 flex flex-col items-center justify-center min-h-[240px]">
+                            <div className="relative h-40 w-40">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <RadialBarChart 
+                                        innerRadius="70%" 
+                                        outerRadius="100%" 
+                                        barSize={20} 
+                                        data={[{ name: 'Progress', value: summaryData?.institutionalProgress || 0, fill: 'hsl(var(--primary))' }]} 
+                                        startAngle={90} 
+                                        endAngle={-270}
+                                    >
+                                        <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+                                        <RadialBar background dataKey="value" cornerRadius={10} />
+                                    </RadialBarChart>
+                                </ResponsiveContainer>
+                                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                                    <p className="text-3xl font-black text-primary">{(summaryData?.institutionalProgress || 0).toFixed(1)}%</p>
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Achieved</p>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <div className="lg:col-span-8 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <Card className="p-6 bg-white border-primary/10 shadow-sm flex flex-col justify-between">
+                            <div className="space-y-1">
+                                <div className="p-2 w-fit rounded-lg bg-primary/10 text-primary mb-3"><Target className="h-5 w-5"/></div>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Institutional Goal</p>
+                                <p className="text-2xl font-black text-primary font-mono tracking-tighter">₹{summaryData?.totalInstitutionalTarget.toLocaleString('en-IN')}</p>
+                            </div>
+                            <p className="text-[10px] font-medium text-muted-foreground mt-4 italic">Total Target Across All Initiatives</p>
+                        </Card>
+
+                        <Card className="p-6 bg-primary text-white border-primary shadow-lg flex flex-col justify-between">
+                            <div className="space-y-1">
+                                <div className="p-2 w-fit rounded-lg bg-white/20 text-white mb-3"><TrendingUp className="h-5 w-5"/></div>
+                                <p className="text-[10px] font-bold text-white/70 uppercase tracking-widest">Raised For Goals</p>
+                                <p className="text-2xl font-black text-white font-mono tracking-tighter">₹{summaryData?.totalRaisedForGoals.toLocaleString('en-IN')}</p>
+                            </div>
+                            <p className="text-[10px] font-medium text-white/70 mt-4 italic">Directly Allocated Contributions</p>
+                        </Card>
+
+                        <Card className="p-6 bg-white border-primary/10 shadow-sm flex flex-col justify-between">
+                            <div className="space-y-1">
+                                <div className="p-2 w-fit rounded-lg bg-amber-50 text-amber-600 mb-3"><Hourglass className="h-5 w-5"/></div>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Remaining Balance</p>
+                                <p className="text-2xl font-black text-primary font-mono tracking-tighter">₹{(Math.max(0, (summaryData?.totalInstitutionalTarget || 0) - (summaryData?.totalRaisedForGoals || 0))).toLocaleString('en-IN')}</p>
+                            </div>
+                            <p className="text-[10px] font-medium text-muted-foreground mt-4 italic">Outstanding Fundraising Requirement</p>
+                        </Card>
+                    </div>
+                </div>
+
                 <Card className="border-primary/10 shadow-sm overflow-hidden bg-white">
                     <CardHeader className="bg-primary/5 border-b">
                         <CardTitle className="flex items-center gap-2 font-bold text-primary">

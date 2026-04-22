@@ -611,6 +611,30 @@ function DonationListContent() {
             </div>
         </div>
 
+        <div className="border-b mb-6 border-primary/10 pb-1">
+            <ScrollArea className="w-full whitespace-nowrap">
+                <div className="flex w-max gap-2 pb-1">
+                    <Link href="/donations" className={cn(
+                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
+                        pathname === '/donations' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                    )}>Donation List</Link>
+                    <Link href="/donations/summary" className={cn(
+                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
+                        pathname === '/donations/summary' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                    )}>Donation Summary</Link>
+                    <Link href="/verifications?module=donations" className={cn(
+                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
+                        pathname === '/verifications' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                    )}>Pending Verifications</Link>
+                    <Link href="/donors" className={cn(
+                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
+                        pathname === '/donors' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
+                    )}>Donor Registry</Link>
+                </div>
+                <ScrollBar orientation="horizontal" className="h-1" />
+            </ScrollArea>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
             <StatCard title="Total" count={stats.total} description="All Records Logged" icon={Users} delay="100ms" onClick={() => { setStatusFilter([]); setIdentityFilter([]); setMethodFilter([]); setCategoryFilter([]); setSearchTerm(''); }} />
             <StatCard title="Verified Sum" count={stats.totalAmount.toLocaleString('en-IN')} description="Confirmed Funds" icon={IndianRupee} delay="150ms" isCurrency onClick={() => setStatusFilter(['Verified'])} />
