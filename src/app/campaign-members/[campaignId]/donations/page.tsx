@@ -48,7 +48,12 @@ import {
     Save,
     Calculator,
     Target,
-    DatabaseZap
+    DatabaseZap,
+    Filter,
+    Check,
+    Trophy,
+    Flag,
+    TrendingUp
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -102,6 +107,71 @@ import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+
+function MultiSelectFilter({ title, options, selected, onChange }: { title: string, options: string[], selected: string[], onChange: (val: string[]) => void }) {
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-white font-bold transition-all hover:border-primary/30 min-w-[130px] justify-between shadow-sm">
+                    <div className="flex items-center gap-2 truncate">
+                        <Filter className={cn("h-3 w-3 shrink-0", selected.length > 0 ? "text-primary opacity-100" : "opacity-40")} />
+                        <span className="truncate">{selected.length === 0 ? `All ${title}s` : `${selected.length} ${title}${selected.length > 1 ? 's' : ''}`}</span>
+                    </div>
+                    <ChevronDown className="h-3 w-3 opacity-50 shrink-0" />
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0 rounded-[12px] shadow-dropdown border-primary/10 overflow-hidden" align="start">
+                <Command className="w-full">
+                    <CommandInput placeholder={`Search ${title}...`} className="h-9 text-xs font-normal px-3 outline-none w-full border-b" />
+                    <CommandList className="max-h-[300px] overflow-y-auto p-1">
+                        <CommandEmpty className="py-4 text-center text-xs text-muted-foreground font-normal">No results found.</CommandEmpty>
+                        <CommandGroup>
+                            <CommandItem onSelect={() => onChange([])} className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-bold text-xs mb-1">
+                                <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors", selected.length === 0 ? "bg-primary text-white" : "bg-transparent")}>
+                                    {selected.length === 0 && <Check className="h-3 w-3 stroke-[3]" />}
+                                </div>
+                                <span className="flex-1 truncate">All {title}s</span>
+                            </CommandItem>
+                            
+                            <div className="h-px bg-primary/5 my-1" />
+
+                            {options.map((opt) => (
+                                <CommandItem 
+                                    key={opt} 
+                                    onSelect={() => {
+                                        const next = selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt];
+                                        onChange(next);
+                                    }} 
+                                    className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-medium text-xs"
+                                >
+                                    <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors", selected.includes(opt) ? "bg-primary text-white" : "bg-transparent")}>
+                                        {selected.includes(opt) && <Check className="h-3 w-3 stroke-[3]" />}
+                                    </div>
+                                    <span className="flex-1 truncate">{opt}</span>
+                                </CommandItem>
+                            ))}
+                        </CommandGroup>
+                    </CommandList>
+                    {selected.length > 0 && (
+                        <div className="p-1 border-t bg-primary/[0.02]">
+                            <Button variant="ghost" size="sm" onClick={() => onChange([])} className="w-full h-8 text-[10px] font-bold text-primary hover:bg-primary/10 rounded-md">
+                                Clear All Selections
+                            </Button>
+                        </div>
+                    )}
+                </Command>
+            </PopoverContent>
+        </Popover>
+    );
+}
 
 const donationGridClass = "grid grid-cols-[40px_60px_180px_110px_110px_100px_100px_100px_120px_80px] items-center gap-4 px-4 py-3 min-w-[1150px]";
 
@@ -197,16 +267,17 @@ function DonationListContent() {
   const [rotation, setRotation] = useState(0);
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState(initialStatus);
-  const [identityFilter, setIdentityFilter] = useState(initialIdentity);
-  const [methodFilter, setMethodFilter] = useState('All');
-  const [categoryFilter, setCategoryFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [identityFilter, setIdentityFilter] = useState<string[]>([]);
+  const [methodFilter, setMethodFilter] = useState<string[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [calculationFilter, setCalculationFilter] = useState<'All' | 'Included' | 'Zakat' | 'Other'>('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [openRows, setOpenRows] = useState<Record<string, boolean>>({});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(15);
+  const [includedFilter, setIncludedFilter] = useState<string[]>([]);
 
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
@@ -235,16 +306,26 @@ function DonationListContent() {
         );
         const amountForThisCampaign = campaignLink?.amount || ((d as any).campaignId === campaignId ? d.amount : 0);
         
-        // Calculate if included in fundraising
-        const isVerified = d.status === 'Verified';
         const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type, amount: d.amount }] : []);
-        const isIncludedInFundraising = isVerified && splits.some(s => {
+        const totalDonationAmount = d.amount || 1;
+        const ratio = amountForThisCampaign / totalDonationAmount;
+        
+        let amountIncludedInGoal = 0;
+        splits.forEach(s => {
             const cat = s.category || '';
             const normalized = cat.toLowerCase() === 'sadqa' || cat.toLowerCase() === 'general' ? 'sadaqah' : cat.toLowerCase();
-            return !campaign?.allowedDonationTypes || campaign.allowedDonationTypes.some(t => t.toLowerCase() === normalized);
+            const isAllowed = !campaign?.allowedDonationTypes || campaign.allowedDonationTypes.some(t => t.toLowerCase() === normalized);
+            const isForFundraising = normalized !== 'zakat' || (s as any).forFundraising !== false;
+            
+            if (isAllowed && isForFundraising) {
+                amountIncludedInGoal += (s.amount * ratio);
+            }
         });
+        
+        const isVerified = d.status === 'Verified';
+        const isIncludedInFundraising = isVerified && amountIncludedInGoal > 0;
 
-        return { ...d, amountForThisCampaign, isIncludedInFundraising };
+        return { ...d, amountForThisCampaign, isIncludedInFundraising, amountIncludedInGoal };
       });
   }, [allDonations, campaignId]);
 
@@ -258,25 +339,27 @@ function DonationListContent() {
     if (!donations) return [];
     let items = [...donations];
 
-    if (statusFilter !== 'All') {
-        items = items.filter(d => d.status === statusFilter);
+    if (statusFilter.length > 0) items = items.filter(d => statusFilter.includes(d.status));
+    
+    if (identityFilter.length > 0) {
+        items = items.filter(d => {
+            const isLinked = !!d.donorId;
+            if (identityFilter.includes('Linked') && isLinked) return true;
+            if (identityFilter.includes('Unlinked') && !isLinked) return true;
+            return false;
+        });
     }
 
-    if (identityFilter === 'Unlinked') {
-        items = items.filter(d => !d.donorId);
-    } else if (identityFilter === 'Linked') {
-        items = items.filter(d => !!d.donorId);
+    if (methodFilter.length > 0) {
+        items = items.filter(d => methodFilter.includes(d.donationType));
     }
 
-    if (methodFilter !== 'All') {
-        items = items.filter(d => d.donationType === methodFilter);
-    }
-    if (categoryFilter !== 'All') {
+    if (categoryFilter.length > 0) {
         items = items.filter(d => {
             if (d.typeSplit && d.typeSplit.length > 0) {
-                return d.typeSplit.some(s => s.category === categoryFilter);
+                return d.typeSplit.some(s => categoryFilter.includes(s.category));
             }
-            return d.type === categoryFilter;
+            return categoryFilter.includes(d.type || 'Other');
         });
     }
 
@@ -293,6 +376,15 @@ function DonationListContent() {
             if (!(d as any).isIncludedInFundraising) return false;
             const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type, amount: d.amount }] : []);
             return splits.some(s => s.category?.toLowerCase() !== 'zakat');
+        });
+    }
+
+    if (includedFilter.length > 0) {
+        items = items.filter(d => {
+            const isIncluded = (d as any).isIncludedInFundraising;
+            if (includedFilter.includes('Included') && isIncluded) return true;
+            if (includedFilter.includes('Excluded') && !isIncluded) return true;
+            return false;
         });
     }
 
@@ -323,7 +415,7 @@ function DonationListContent() {
       });
     }
     return items;
-  }, [donations, searchTerm, statusFilter, identityFilter, methodFilter, categoryFilter, calculationFilter, dateRange, sortConfig]);
+  }, [donations, searchTerm, statusFilter, identityFilter, methodFilter, categoryFilter, calculationFilter, includedFilter, dateRange, sortConfig]);
 
   const stats = useMemo(() => {
       const allData = donations || [];
@@ -334,15 +426,18 @@ function DonationListContent() {
       
       verified.forEach(d => {
           if ((d as any).isIncludedInFundraising) {
-              includedInGoal += (d as any).amountForThisCampaign;
-              
-              // Calculate Zakat portion
-              const totalAmount = d.amount || 1;
-              const ratio = (d as any).amountForThisCampaign / totalAmount;
+              includedInGoal += (d as any).amountIncludedInGoal;
               
               const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type, amount: d.amount }] : []);
+              const totalDonationAmount = d.amount || 1;
+              const ratio = (d as any).amountForThisCampaign / totalDonationAmount;
+
               splits.forEach(s => {
-                  if (s.category?.toLowerCase() === 'zakat') {
+                  const normalized = s.category?.toLowerCase() === 'sadqa' || s.category?.toLowerCase() === 'general' ? 'sadaqah' : s.category?.toLowerCase();
+                  const isAllowed = !campaign?.allowedDonationTypes || campaign.allowedDonationTypes.some(t => t.toLowerCase() === normalized);
+                  const isForFundraising = normalized !== 'zakat' || (s as any).forFundraising !== false;
+
+                  if (normalized === 'zakat' && isAllowed && isForFundraising) {
                       zakatIncluded += s.amount * ratio;
                   }
               });
@@ -351,8 +446,8 @@ function DonationListContent() {
 
       return {
           total: allData.length,
-          verified: verified.length,
-          pending: allData.filter(d => d.status === 'Pending').length,
+          verifiedCount: verified.length,
+          pendingCount: allData.filter(d => d.status === 'Pending').length,
           unlinked: allData.filter(d => !d.donorId).length,
           totalAmount: verified.reduce((sum, d) => sum + (d as any).amountForThisCampaign, 0),
           pendingAmount: allData.filter(d => d.status === 'Pending').reduce((sum, d) => sum + (d as any).amountForThisCampaign, 0),
@@ -387,6 +482,10 @@ function DonationListContent() {
 
   const totalPages = Math.ceil(filteredAndSortedDonations.length / itemsPerPage);
   const paginatedDonations = useMemo(() => filteredAndSortedDonations.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [filteredAndSortedDonations, currentPage, itemsPerPage]);
+
+  const filteredTotalAmount = useMemo(() => {
+    return filteredAndSortedDonations.reduce((sum, d) => sum + (d.amountForThisCampaign || 0), 0);
+  }, [filteredAndSortedDonations]);
 
   const toggleSelectAll = (checked: boolean | string) => {
     const isChecked = checked === true;
@@ -599,34 +698,63 @@ function DonationListContent() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
             <StatCard 
+                title="Campaign Target" 
+                count={(campaign?.targetAmount || 0).toLocaleString('en-IN')} 
+                description="Institutional Goal" 
+                icon={Flag} 
+                delay="0ms" 
+                isCurrency 
+                colorClass="bg-primary/5 border-primary/20"
+            />
+            <StatCard 
+                title="Total Collected" 
+                count={stats.totalAmount.toLocaleString('en-IN')} 
+                description="All Confirmed Funds" 
+                icon={Trophy} 
+                delay="50ms" 
+                isCurrency 
+                colorClass="bg-amber-50 border-amber-200"
+                onClick={() => setStatusFilter(['Verified'])}
+            />
+            <StatCard 
+                title="Achievement" 
+                count={`${((stats.totalAmount / (campaign?.targetAmount || 1)) * 100).toFixed(1)}%`} 
+                description="Progress to Target" 
+                icon={TrendingUp} 
+                delay="100ms" 
+                colorClass="bg-indigo-50 border-indigo-200"
+            />
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <StatCard 
                 title="Raised For Goal" 
                 count={stats.includedInGoal.toLocaleString('en-IN')} 
                 description="Included In Fundraising" 
                 icon={Target} 
-                delay="50ms" 
+                delay="150ms" 
                 isCurrency 
                 colorClass="bg-green-50 border-green-200"
-                onClick={() => setCalculationFilter('Included')}
+                onClick={() => setIncludedFilter(['Included'])}
             />
             <StatCard 
                 title="Zakat Allocated" 
                 count={stats.zakatIncluded.toLocaleString('en-IN')} 
                 description="Zakat Portion Linked" 
                 icon={DatabaseZap} 
-                delay="100ms" 
+                delay="200ms" 
                 isCurrency 
                 colorClass="bg-blue-50 border-blue-200"
-                onClick={() => setCalculationFilter('Zakat')}
+                onClick={() => setCategoryFilter(['Zakat'])}
             />
             <StatCard 
                 title="Remaining (Goal)" 
                 count={stats.otherIncluded.toLocaleString('en-IN')} 
                 description="Non-Zakat Funds" 
                 icon={IndianRupee} 
-                delay="150ms" 
-                isCurrency 
-                colorClass="bg-amber-50 border-amber-200"
-                onClick={() => setCalculationFilter('Other')}
+                delay="250ms" 
+                isCurrency
+                onClick={() => setCategoryFilter(donationCategories.filter(c => c !== 'Zakat'))}
             />
         </div>
 
@@ -636,51 +764,49 @@ function DonationListContent() {
                 count={stats.total} 
                 description="All Records Logged" 
                 icon={Users} 
-                delay="100ms" 
-                onClick={() => { setStatusFilter('All'); setIdentityFilter('All'); setMethodFilter('All'); setCategoryFilter('All'); setCalculationFilter('All'); setSearchTerm(''); }}
+                delay="300ms" 
+                onClick={() => { setStatusFilter([]); setIdentityFilter([]); setMethodFilter([]); setCategoryFilter([]); setIncludedFilter([]); setSearchTerm(''); }}
             />
             <StatCard 
                 title="Verified" 
-                count={stats.totalAmount.toLocaleString('en-IN')} 
-                description="Confirmed Funds" 
+                count={stats.verifiedCount} 
+                description="Finalized Records" 
                 icon={CheckCircle2} 
-                delay="150ms" 
-                isCurrency 
-                onClick={() => { setStatusFilter('Verified'); setIdentityFilter('All'); }}
+                delay="350ms" 
+                onClick={() => setStatusFilter(['Verified'])}
             />
             <StatCard 
                 title="Pending" 
-                count={stats.pendingAmount.toLocaleString('en-IN')} 
-                description="Awaiting Vetting" 
+                count={stats.pendingCount} 
+                description="Awaiting Review" 
                 icon={Hourglass} 
-                delay="200ms" 
-                isCurrency 
-                onClick={() => { setStatusFilter('Pending'); setIdentityFilter('All'); }}
+                delay="400ms" 
+                onClick={() => setStatusFilter(['Pending'])}
             />
             <StatCard 
                 title="Unlinked" 
                 count={stats.unlinked} 
                 description="Needs Profile Mapping" 
                 icon={AlertCircle} 
-                delay="250ms" 
+                delay="450ms" 
                 colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} 
-                onClick={() => { setIdentityFilter('Unlinked'); setStatusFilter('All'); }}
+                onClick={() => setIdentityFilter(['Unlinked'])}
             />
             <StatCard 
                 title="Online Pay" 
                 count={stats.online} 
                 description="Digital Transfers" 
                 icon={Smartphone} 
-                delay="300ms" 
-                onClick={() => { setMethodFilter('Online Payment'); }}
+                delay="500ms" 
+                onClick={() => setMethodFilter(['Online Payment'])}
             />
             <StatCard 
                 title="Cash" 
                 count={stats.cash} 
                 description="Physical Collections" 
                 icon={Wallet} 
-                delay="350ms" 
-                onClick={() => { setMethodFilter('Cash'); }}
+                delay="550ms" 
+                onClick={() => setMethodFilter(['Cash'])}
             />
         </div>
 
@@ -742,37 +868,41 @@ function DonationListContent() {
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-4">
                     <Input placeholder="Search Donor..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-[200px] h-9 text-xs font-normal" />
-                    <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[140px] h-9 text-xs text-primary font-bold border-primary/20"><SelectValue placeholder="Status" /></SelectTrigger>
-                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="All" className="font-bold">All Statuses</SelectItem><SelectItem value="Verified" className="font-bold text-primary">Verified</SelectItem><SelectItem value="Pending" className="font-bold">Pending</SelectItem><SelectItem value="Canceled" className="font-bold text-destructive">Canceled</SelectItem></SelectContent>
-                    </Select>
-                    <Select value={identityFilter} onValueChange={v => { setIdentityFilter(v); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-white font-normal shrink-0"><SelectValue placeholder="Identity Linkage"/></SelectTrigger>
-                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                            <SelectItem value="All" className="font-normal">All Identities</SelectItem>
-                            <SelectItem value="Linked" className="font-normal text-primary">Fully Linked</SelectItem>
-                            <SelectItem value="Unlinked" className="font-normal text-amber-600 font-bold">Needs Resolution</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <Select value={methodFilter} onValueChange={v => { setMethodFilter(v); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[160px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-white font-normal shrink-0"><SelectValue placeholder="Method"/></SelectTrigger>
-                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                            <SelectItem value="All">All Methods</SelectItem>
-                            <SelectItem value="Online Payment">Online Payment</SelectItem>
-                            <SelectItem value="Cash">Cash</SelectItem>
-                            <SelectItem value="Check">Check</SelectItem>
-                            <SelectItem value="Other">Other</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <Select value={categoryFilter} onValueChange={v => { setCategoryFilter(v); setCurrentPage(1); }}>
-                        <SelectTrigger className="w-[160px] h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-white font-normal shrink-0"><SelectValue placeholder="Category"/></SelectTrigger>
-                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                            <SelectItem value="All">All Categories</SelectItem>
-                            {donationCategories.map(cat => (
-                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                    
+                    <MultiSelectFilter 
+                        title="Status" 
+                        options={['Verified', 'Pending', 'Canceled']} 
+                        selected={statusFilter} 
+                        onChange={setStatusFilter} 
+                    />
+                    
+                    <MultiSelectFilter 
+                        title="Identity" 
+                        options={['Linked', 'Unlinked']} 
+                        selected={identityFilter} 
+                        onChange={setIdentityFilter} 
+                    />
+
+                    <MultiSelectFilter 
+                        title="Method" 
+                        options={['Online Payment', 'Cash', 'Check', 'Other']} 
+                        selected={methodFilter} 
+                        onChange={setMethodFilter} 
+                    />
+
+                    <MultiSelectFilter 
+                        title="Fundraising" 
+                        options={['Included', 'Excluded']} 
+                        selected={includedFilter} 
+                        onChange={setIncludedFilter} 
+                    />
+
+                    <MultiSelectFilter 
+                        title="Category" 
+                        options={donationCategories} 
+                        selected={categoryFilter} 
+                        onChange={setCategoryFilter} 
+                    />
                 </div>
             </CardHeader>
             <CardContent className="p-0">
@@ -879,6 +1009,14 @@ function DonationListContent() {
                                 </React.Fragment>
                             );
                         })}
+                        <div className={cn("bg-primary/5 border-t border-primary/20 font-bold py-3", donationGridClass)}>
+                            <div />
+                            <div />
+                            <div className="text-right">Page Total:</div>
+                            <div className="text-right font-mono text-primary text-sm pr-1">₹{paginatedDonations.reduce((sum, d) => sum + d.amountForThisCampaign, 0).toLocaleString('en-IN')}</div>
+                            <div className="col-span-5" />
+                            <div className="text-right pr-4 text-[10px] text-muted-foreground">Filtered Total: ₹{filteredTotalAmount.toLocaleString('en-IN')}</div>
+                        </div>
                         {paginatedDonations.length === 0 && <div className="text-center py-20 text-muted-foreground italic font-normal bg-primary/[0.02] tracking-widest capitalize">No Donation Records Linked.</div>}
                     </div>
                     <ScrollBar orientation="horizontal" />

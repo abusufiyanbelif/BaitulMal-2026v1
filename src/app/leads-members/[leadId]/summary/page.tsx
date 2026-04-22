@@ -260,10 +260,14 @@ export default function LeadSummaryPage() {
 
         const zakatSurplus = Math.max(0, zakatForGoalAmount - zakatAllocated);
         
+        const allowedTypes = lead.allowedDonationTypes && lead.allowedDonationTypes.length > 0
+            ? lead.allowedDonationTypes
+            : [...donationCategories];
+
         const totalCollectedForGoal = Object.entries(amountsByCategory)
-            .filter(([category]) => lead.allowedDonationTypes?.includes(category as DonationCategory))
+            .filter(([category]) => allowedTypes.some(t => t.toLowerCase() === category.toLowerCase()))
             .reduce((sum, [category, amount]) => {
-                if (category === 'Zakat') return sum + zakatSurplus;
+                if (category === 'Zakat') return sum + zakatForGoalAmount;
                 return sum + amount;
             }, 0);
 

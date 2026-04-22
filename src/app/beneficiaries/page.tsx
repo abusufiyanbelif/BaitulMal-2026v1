@@ -118,6 +118,63 @@ function SortableHeader({ sortKey, children, className, sortConfig, handleSort }
     );
 };
 
+function MultiSelectFilter({ title, options, selected, onChange }: { title: string, options: string[], selected: string[], onChange: (val: string[]) => void }) {
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-white font-bold transition-all hover:border-primary/30 min-w-[130px] justify-between shadow-sm">
+                    <div className="flex items-center gap-2 truncate">
+                        <Filter className={cn("h-3 w-3 shrink-0", selected.length > 0 ? "text-primary opacity-100" : "opacity-40")} />
+                        <span className="truncate">{selected.length === 0 ? `All ${title}s` : `${selected.length} ${title}${selected.length > 1 ? 's' : ''}`}</span>
+                    </div>
+                    <ChevronDown className="h-3 w-3 opacity-50 shrink-0" />
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0 rounded-[12px] shadow-dropdown border-primary/10 overflow-hidden" align="start">
+                <Command className="w-full">
+                    <CommandInput placeholder={`Search ${title}...`} className="h-9 text-xs font-normal px-3 outline-none w-full border-b" />
+                    <CommandList className="max-h-[300px] overflow-y-auto p-1">
+                        <CommandEmpty className="py-4 text-center text-xs text-muted-foreground font-normal">No results found.</CommandEmpty>
+                        <CommandGroup>
+                            <CommandItem onSelect={() => onChange([])} className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-bold text-xs mb-1">
+                                <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors", selected.length === 0 ? "bg-primary text-white" : "bg-transparent")}>
+                                    {selected.length === 0 && <Check className="h-3 w-3 stroke-[3]" />}
+                                </div>
+                                <span className="flex-1 truncate">All {title}s</span>
+                            </CommandItem>
+                            
+                            <div className="h-px bg-primary/5 my-1" />
+
+                            {options.map((opt) => (
+                                <CommandItem 
+                                    key={opt} 
+                                    onSelect={() => {
+                                        const next = selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt];
+                                        onChange(next);
+                                    }} 
+                                    className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-medium text-xs"
+                                >
+                                    <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors", selected.includes(opt) ? "bg-primary text-white" : "bg-transparent")}>
+                                        {selected.includes(opt) && <Check className="h-3 w-3 stroke-[3]" />}
+                                    </div>
+                                    <span className="flex-1 truncate">{opt}</span>
+                                </CommandItem>
+                            ))}
+                        </CommandGroup>
+                    </CommandList>
+                    {selected.length > 0 && (
+                        <div className="p-1 border-t bg-primary/[0.02]">
+                            <Button variant="ghost" size="sm" onClick={() => onChange([])} className="w-full h-8 text-[10px] font-bold text-primary hover:bg-primary/10 rounded-md">
+                                Clear All Selections
+                            </Button>
+                        </div>
+                    )}
+                </Command>
+            </PopoverContent>
+        </Popover>
+    );
+}
+
 export default function BeneficiariesPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -125,8 +182,8 @@ export default function BeneficiariesPage() {
   const { user, userProfile, isLoading: isProfileLoading } = useSession();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [zakatFilter, setZakatFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [zakatFilter, setZakatFilter] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [selectedReferrals, setSelectedReferrals] = useState<string[]>([]);
   const [isSyncing, setIsSyncing] = useState(false);
@@ -169,8 +226,8 @@ export default function BeneficiariesPage() {
         const matchesSearch = (b.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
                              (b.phone || '').includes(searchTerm) ||
                              (b.address || '').toLowerCase().includes(searchTerm.toLowerCase());
-        const matchesStatus = statusFilter === 'All' || (b.status || 'Pending') === statusFilter;
-        const matchesZakat = zakatFilter === 'All' || (zakatFilter === 'Eligible' ? b.isEligibleForZakat : !b.isEligibleForZakat);
+        const matchesStatus = statusFilter.length === 0 || statusFilter.includes(b.status || 'Pending');
+        const matchesZakat = zakatFilter.length === 0 || (zakatFilter.includes('Eligible') ? b.isEligibleForZakat : !b.isEligibleForZakat);
         const matchesReferral = selectedReferrals.length === 0 || (b.referralBy && selectedReferrals.includes(b.referralBy.trim()));
         
         let matchesDate = true;
@@ -382,7 +439,7 @@ export default function BeneficiariesPage() {
             description="All Registry Records" 
             icon={Users} 
             delay="100ms" 
-            onClick={() => { setStatusFilter('All'); setZakatFilter('All'); setSearchTerm(''); }}
+            onClick={() => { setStatusFilter([]); setZakatFilter([]); setSelectedReferrals([]); setSearchTerm(''); }}
           />
           <StatCard 
             title="Pending" 
@@ -390,7 +447,7 @@ export default function BeneficiariesPage() {
             description="Awaiting Verification" 
             icon={Hourglass} 
             delay="150ms" 
-            onClick={() => { setStatusFilter('Pending'); setZakatFilter('All'); }}
+            onClick={() => { setStatusFilter(['Pending']); }}
           />
           <StatCard 
             title="Verified" 
@@ -398,7 +455,7 @@ export default function BeneficiariesPage() {
             description="Confirmed Profiles" 
             icon={CheckCircle2} 
             delay="200ms" 
-            onClick={() => { setStatusFilter('Verified'); setZakatFilter('All'); }}
+            onClick={() => { setStatusFilter(['Verified']); }}
           />
           <StatCard 
             title="On Hold" 
@@ -406,7 +463,7 @@ export default function BeneficiariesPage() {
             description="Suspended Profiles" 
             icon={XCircle} 
             delay="150ms" 
-            onClick={() => { setStatusFilter('Hold'); setZakatFilter('All'); }}
+            onClick={() => { setStatusFilter(['Hold']); }}
           />
           <StatCard 
             title="Need Details" 
@@ -414,7 +471,7 @@ export default function BeneficiariesPage() {
             description="Incomplete Profiles" 
             icon={Info} 
             delay="300ms" 
-            onClick={() => { setStatusFilter('Need More Details'); setZakatFilter('All'); }}
+            onClick={() => { setStatusFilter(['Need More Details']); }}
           />
           <StatCard 
             title="Zakat" 
@@ -422,7 +479,7 @@ export default function BeneficiariesPage() {
             description="Eligible For Support" 
             icon={Coins} 
             delay="350ms" 
-            onClick={() => { setZakatFilter('Eligible'); setStatusFilter('All'); }}
+            onClick={() => { setZakatFilter(['Eligible']); }}
           />
       </div>
 
@@ -492,24 +549,19 @@ export default function BeneficiariesPage() {
                     </PopoverContent>
                 </Popover>
 
-                <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[180px] shrink-0 h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white"><SelectValue placeholder="Verification Status" /></SelectTrigger>
-                    <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                        <SelectItem value="All" className="font-normal">All Verification</SelectItem>
-                        <SelectItem value="Verified" className="font-normal">Verified</SelectItem>
-                        <SelectItem value="Pending" className="font-normal">Pending</SelectItem>
-                        <SelectItem value="Hold" className="font-normal">Hold</SelectItem>
-                        <SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem>
-                    </SelectContent>
-                </Select>
-                <Select value={zakatFilter} onValueChange={v => { setZakatFilter(v); setCurrentPage(1); }}>
-                    <SelectTrigger className="w-[180px] shrink-0 h-10 text-sm border-primary/10 text-primary font-normal rounded-[12px] bg-white"><SelectValue placeholder="Zakat Eligibility" /></SelectTrigger>
-                    <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                        <SelectItem value="All" className="font-normal">All Zakat Status</SelectItem>
-                        <SelectItem value="Eligible" className="font-normal">Eligible</SelectItem>
-                        <SelectItem value="Not Eligible" className="font-normal">Not Eligible</SelectItem>
-                    </SelectContent>
-                </Select>
+                <MultiSelectFilter 
+                    title="Status" 
+                    options={['Pending', 'Verified', 'Hold', 'Need More Details']} 
+                    selected={statusFilter} 
+                    onChange={(v) => { setStatusFilter(v); setCurrentPage(1); }} 
+                />
+
+                <MultiSelectFilter 
+                    title="Zakat Eligibility" 
+                    options={['Eligible', 'Not Eligible']} 
+                    selected={zakatFilter} 
+                    onChange={(v) => { setZakatFilter(v); setCurrentPage(1); }} 
+                />
             </div>
             <ScrollBar orientation="horizontal" className="h-1.5" />
         </ScrollArea>

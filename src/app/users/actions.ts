@@ -243,3 +243,31 @@ export async function syncAllUsersToDonorsAction(adminUserId: string, adminUserN
         return { success: false, message: error.message, count: 0 };
     }
 }
+export async function mirrorIndividualUserToDonorAction(uid: string, admin: { id: string, name: string }): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    try {
+        const userRef = adminDb.collection('users').doc(uid);
+        const userSnap = await userRef.get();
+        if (!userSnap.exists) return { success: false, message: 'Source user not found.' };
+        const user = userSnap.data() as UserProfile;
+        
+        const donorRef = adminDb.collection('donors').doc(uid);
+        await donorRef.set({
+            id: uid,
+            name: user.name,
+            phone: user.phone || '',
+            email: user.email || '',
+            status: user.status === 'Active' ? 'Active' : 'Inactive',
+            updatedAt: FieldValue.serverTimestamp(),
+            createdById: admin.id,
+            createdByName: admin.name,
+        }, { merge: true });
+
+        revalidatePath('/donors');
+        revalidatePath('/users');
+        return { success: true, message: 'Identity Mirrored To Donor Registry.' };
+    } catch (error: any) {
+        return { success: false, message: error.message };
+    }
+}

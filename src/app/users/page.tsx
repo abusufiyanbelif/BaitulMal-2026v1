@@ -76,6 +76,7 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { usePageHit } from '@/hooks/use-page-hit';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
+import { SectionLoader } from '@/components/section-loader';
 
 type SortKey = keyof UserProfile | 'srNo';
 
@@ -96,6 +97,7 @@ export default function UsersPage() {
   const [itemsPerPage, setItemsPerPage] = useState(15);
   const [isMirroring, setIsMirroring] = useState<string | null>(null);
   const [isConsolidating, setIsConsolidating] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const usersRef = useMemoFirebase(() => (firestore && userProfile) ? collection(firestore, 'users') : null, [firestore, userProfile]);
   const donorsRef = useMemoFirebase(() => (firestore && userProfile) ? collection(firestore, 'donors') : null, [firestore, userProfile]);
@@ -190,6 +192,35 @@ export default function UsersPage() {
       if (res.success) toast({ title: "Unified Identity Secured", description: res.message, variant: "success" });
       else toast({ title: "Consolidation Failed", description: res.message, variant: "destructive" });
       setIsConsolidating(null);
+  };
+
+  const handleMirrorToDonor = async (id: string) => {
+      if (!userProfile) return;
+      setIsMirroring(id);
+      try {
+          const res = await mirrorIndividualUserToDonorAction(id, { id: userProfile.id, name: userProfile.name });
+          if (res.success) toast({ title: "Mirroring Successful", description: res.message, variant: "success" });
+          else toast({ title: "Mirroring Failed", description: res.message, variant: "destructive" });
+      } finally {
+          setIsMirroring(null);
+      }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!userToDelete || !canDelete) return;
+    setIsSubmitting(true);
+    try {
+        const result = await deleteUserAction(userToDelete);
+        if (result.success) {
+            toast({ title: "Account Purged", description: result.message, variant: "success" });
+            setIsDeleteDialogOpen(false);
+            setUserToDelete(null);
+        } else {
+            toast({ title: "Purge Failed", description: result.message, variant: "destructive" });
+        }
+    } finally {
+        setIsSubmitting(false);
+    }
   };
 
   const isLoading = areUsersLoading || isProfileLoading;
@@ -441,8 +472,10 @@ export default function UsersPage() {
                     <AlertDialogCancel className="font-bold border-primary/10 text-primary flex-1 h-11 rounded-xl">Discard</AlertDialogCancel>
                     <AlertDialogAction 
                         onClick={handleDeleteConfirm} 
+                        disabled={isSubmitting}
                         className="bg-red-600 hover:bg-red-700 text-white font-bold flex-1 h-11 rounded-xl shadow-lg active:scale-95 transition-all"
                     >
+                        {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
                         Purge Account
                     </AlertDialogAction>
                 </AlertDialogFooter>

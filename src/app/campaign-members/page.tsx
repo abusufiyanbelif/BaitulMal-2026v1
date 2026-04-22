@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, Calendar as CalendarIcon, X, Utensils, LifeBuoy, ChevronDown, Globe, ShieldCheck, Clock, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle, FileLock, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, Calendar as CalendarIcon, X, Utensils, LifeBuoy, ChevronDown, Globe, ShieldCheck, Clock, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle, FileLock, Loader2, DatabaseZap, Filter, Check } from 'lucide-react';
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { doc, updateDoc, collection } from 'firebase/firestore';
@@ -61,6 +61,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import Autoplay from "embla-carousel-autoplay";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
 
 const getPriorityIcon = (priority?: string) => {
   const p = priority || 'Medium';
@@ -268,16 +269,73 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
     );
 }
 
+function MultiSelectFilter({ title, options, selected, onChange }: { title: string, options: string[], selected: string[], onChange: (val: string[]) => void }) {
+    return (
+        <Popover>
+            <PopoverTrigger asChild>
+                <Button variant="outline" size="sm" className="h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-white font-bold transition-all hover:border-primary/30 min-w-[130px] justify-between shadow-sm">
+                    <div className="flex items-center gap-2 truncate">
+                        <Filter className={cn("h-3 w-3 shrink-0", selected.length > 0 ? "text-primary opacity-100" : "opacity-40")} />
+                        <span className="truncate">{selected.length === 0 ? `All ${title}s` : `${selected.length} ${title}${selected.length > 1 ? 's' : ''}`}</span>
+                    </div>
+                    <ChevronDown className="h-3 w-3 opacity-50 shrink-0" />
+                </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[200px] p-0 rounded-[12px] shadow-dropdown border-primary/10 overflow-hidden" align="start">
+                <Command className="w-full">
+                    <CommandInput placeholder={`Search ${title}...`} className="h-9 text-xs font-normal px-3 outline-none w-full border-b" />
+                    <CommandList className="max-h-[300px] overflow-y-auto p-1">
+                        <CommandEmpty className="py-4 text-center text-xs text-muted-foreground font-normal">No results found.</CommandEmpty>
+                        <CommandGroup>
+                            <CommandItem onSelect={() => onChange([])} className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-bold text-xs mb-1">
+                                <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors", selected.length === 0 ? "bg-primary text-white" : "bg-transparent")}>
+                                    {selected.length === 0 && <Check className="h-3 w-3 stroke-[3]" />}
+                                </div>
+                                <span className="flex-1 truncate">All {title}s</span>
+                            </CommandItem>
+                            
+                            <div className="h-px bg-primary/5 my-1" />
+
+                            {options.map((opt) => (
+                                <CommandItem 
+                                    key={opt} 
+                                    onSelect={() => {
+                                        const next = selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt];
+                                        onChange(next);
+                                    }} 
+                                    className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-medium text-xs"
+                                >
+                                    <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors", selected.includes(opt) ? "bg-primary text-white" : "bg-transparent")}>
+                                        {selected.includes(opt) && <Check className="h-3 w-3 stroke-[3]" />}
+                                    </div>
+                                    <span className="flex-1 truncate">{opt}</span>
+                                </CommandItem>
+                            ))}
+                        </CommandGroup>
+                    </CommandList>
+                    {selected.length > 0 && (
+                        <div className="p-1 border-t bg-primary/[0.02]">
+                            <Button variant="ghost" size="sm" onClick={() => onChange([])} className="w-full h-8 text-[10px] font-bold text-primary hover:bg-primary/10 rounded-md">
+                                Clear All Selections
+                            </Button>
+                        </div>
+                    )}
+                </Command>
+            </PopoverContent>
+        </Popover>
+    );
+}
+
 export default function CampaignPage() {
   const router = useRouter();
   const firestore = useFirestore();
   const { toast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [categoryFilter, setCategoryFilter] = useState('All');
-  const [authenticityFilter, setAuthenticityFilter] = useState('All');
-  const [visibilityFilter, setVisibilityFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState<string[]>([]);
+  const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
+  const [authenticityFilter, setAuthenticityFilter] = useState<string[]>([]);
+  const [visibilityFilter, setVisibilityFilter] = useState<string[]>([]);
   const [selectedYear, setSelectedYear] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
 
@@ -368,13 +426,14 @@ export default function CampaignPage() {
   
   const filteredCampaigns = useMemo(() => {
     if (!campaignsWithProgress) return [];
-    let items = campaignsWithProgress.filter(c => 
-        (statusFilter === 'All' || c.status === statusFilter) &&
-        (categoryFilter === 'All' || c.category === categoryFilter) &&
-        (authenticityFilter === 'All' || c.authenticityStatus === authenticityFilter) &&
-        (visibilityFilter === 'All' || c.publicVisibility === visibilityFilter) &&
-        c.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    let items = campaignsWithProgress.filter(c => {
+        const matchesStatus = statusFilter.length === 0 || statusFilter.includes(c.status);
+        const matchesCategory = categoryFilter.length === 0 || categoryFilter.includes(c.category);
+        const matchesAuth = authenticityFilter.length === 0 || authenticityFilter.includes(c.authenticityStatus);
+        const matchesVisibility = visibilityFilter.length === 0 || visibilityFilter.includes(c.publicVisibility);
+        const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase());
+        return matchesSearch && matchesStatus && matchesCategory && matchesAuth && matchesVisibility;
+    });
 
     if (dateRange?.from) {
         const from = startOfDay(dateRange.from);
@@ -445,10 +504,35 @@ export default function CampaignPage() {
             <ScrollArea className="w-full">
                 <div className="flex flex-nowrap items-center gap-3 pb-2">
                     <Input placeholder="Search Campaigns..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary text-primary font-normal" disabled={isLoading}/>
-                    <Select value={statusFilter} onValueChange={setStatusFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Statuses" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Statuses</SelectItem><SelectItem value="Active" className="font-normal">Active</SelectItem><SelectItem value="Completed" className="font-normal">Completed</SelectItem><SelectItem value="Upcoming" className="font-normal">Upcoming</SelectItem></SelectContent></Select>
-                    <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}><SelectTrigger className="w-[130px] h-9 text-xs font-normal border-primary/20 text-primary"><SelectValue placeholder="All Categories" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Categories</SelectItem><SelectItem value="Ration" className="font-normal">Ration</SelectItem><SelectItem value="Relief" className="font-normal">Relief</SelectItem><SelectItem value="General" className="font-normal">General</SelectItem></SelectContent></Select>
-                    <Select value={authenticityFilter} onValueChange={setAuthenticityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Authenticity" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Authenticity</SelectItem><SelectItem value="Pending Verification" className="font-normal">Pending</SelectItem><SelectItem value="Verified" className="font-normal text-primary">Verified</SelectItem><SelectItem value="On Hold" className="font-normal">On Hold</SelectItem><SelectItem value="Rejected" className="font-normal text-destructive">Rejected</SelectItem><SelectItem value="Need More Details" className="font-normal">Need Details</SelectItem></SelectContent></Select>
-                    <Select value={visibilityFilter} onValueChange={setVisibilityFilter} disabled={isLoading}><SelectTrigger className="w-[150px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="All Visibilities" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">All Visibilities</SelectItem><SelectItem value="Hold" className="font-normal">Hold (Private)</SelectItem><SelectItem value="Ready to Publish" className="font-normal">Ready To Publish</SelectItem><SelectItem value="Published" className="font-normal text-primary">Published</SelectItem></SelectContent></Select>
+                    
+                    <MultiSelectFilter 
+                        title="Status" 
+                        options={['Active', 'Completed', 'Upcoming']} 
+                        selected={statusFilter} 
+                        onChange={setStatusFilter} 
+                    />
+
+                    <MultiSelectFilter 
+                        title="Category" 
+                        options={['Ration', 'Relief', 'General']} 
+                        selected={categoryFilter} 
+                        onChange={setCategoryFilter} 
+                    />
+
+                    <MultiSelectFilter 
+                        title="Authenticity" 
+                        options={['Pending Verification', 'Verified', 'On Hold', 'Rejected', 'Need More Details']} 
+                        selected={authenticityFilter} 
+                        onChange={setAuthenticityFilter} 
+                    />
+
+                    <MultiSelectFilter 
+                        title="Visibility" 
+                        options={['Hold', 'Ready to Publish', 'Published']} 
+                        selected={visibilityFilter} 
+                        onChange={setVisibilityFilter} 
+                    />
+
                     <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
                         <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-normal">{y}</SelectItem>)}</SelectContent></Select>
                         <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-normal border-primary/20 text-primary", !dateRange ? "opacity-60" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Date Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>

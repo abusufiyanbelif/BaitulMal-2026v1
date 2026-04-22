@@ -225,7 +225,8 @@ function LeadBeneficiaryListContent() {
           given: allData.filter(b => b.status === 'Given').length,
           hold: allData.filter(b => b.verificationStatus === 'Hold').length,
           needDetails: allData.filter(b => b.verificationStatus === 'Need More Details').length,
-          totalAmount: allData.reduce((sum, b) => sum + (b.kitAmount || 0), 0)
+          totalAmount: allData.reduce((sum, b) => sum + (b.kitAmount || 0), 0),
+          totalZakat: allData.reduce((sum, b) => sum + (b.zakatAllocation || 0), 0)
       };
   }, [beneficiaries]);
 
@@ -457,7 +458,10 @@ function LeadBeneficiaryListContent() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1">
             <h2 className="text-3xl font-bold text-primary tracking-tight">Beneficiary Registry ({beneficiaries?.length || 0})</h2>
-            <p className="text-sm font-bold text-muted-foreground opacity-70">Total Requirement: <span className="font-mono text-primary">₹{stats.totalAmount.toLocaleString('en-IN')}</span></p>
+            <div className="flex gap-4">
+                <p className="text-sm font-bold text-muted-foreground opacity-70">Total Requirement: <span className="font-mono text-primary">₹{stats.totalAmount.toLocaleString('en-IN')}</span></p>
+                <p className="text-sm font-bold text-muted-foreground opacity-70">Zakat Allocated: <span className="font-mono text-primary">₹{stats.totalZakat.toLocaleString('en-IN')}</span></p>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button variant="outline" size="sm" onClick={handleExport} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
@@ -518,12 +522,13 @@ function LeadBeneficiaryListContent() {
                 onClick={() => { setStatusFilter('Hold'); }}
             />
             <StatCard 
-                title="Need Details" 
-                count={stats.needDetails} 
-                description="Review Required" 
-                icon={Info} 
+                title="Zakat Sum" 
+                count={stats.totalZakat.toLocaleString('en-IN')} 
+                description="Total Zakat Allocated" 
+                icon={Coins} 
                 delay="350ms" 
-                onClick={() => { setStatusFilter('Need More Details'); }}
+                isCurrency
+                colorClass="bg-blue-50 border-blue-200"
             />
         </div>
 
