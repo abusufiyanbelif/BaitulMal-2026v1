@@ -256,6 +256,13 @@ export default function UnlinkedDonationDetailsPage() {
                                     <DetailItem label="Donation Date" value={donation.donationDate} />
                                     <DetailItem label="Status" value={<Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="font-bold">{donation.status}</Badge>} />
                                     <DetailItem label="Payment Method" value={<Badge variant="outline" className="font-bold border-primary/20 text-primary">{donation.donationType}</Badge>} />
+                                    <DetailItem label="Fund Categories" value={
+                                        <div className="flex flex-wrap gap-1">
+                                            {typeSplit.map((s: any) => (
+                                                <Badge key={s.category} variant="secondary" className="text-[10px] font-bold">{s.category}</Badge>
+                                            ))}
+                                        </div>
+                                    } />
                                 </CardContent>
                             </Card>
 

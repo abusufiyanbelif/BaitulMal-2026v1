@@ -141,6 +141,14 @@ export default function CampaignSummaryPage() {
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
     const { download } = useDownloadAs();
 
+    const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.summary.read', false);
+    const canReadRation = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.ration.read', false);
+    const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.beneficiaries.read', false);
+    const canReadDonations = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.donations.read', false);
+    const canUpdateSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.update', false) || !!getNestedValue(userProfile, 'permissions.campaigns.summary.update', false);
+
+
+
     const [editMode, setEditMode] = useState(false);
     const [editableCampaign, setEditableCampaign] = useState<Partial<Campaign>>({});
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -173,6 +181,10 @@ export default function CampaignSummaryPage() {
     const { data: campaign, isLoading: isCampaignLoading, forceRefetch: forceRefetchCampaign } = useDoc<Campaign>(campaignDocRef);
     const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
     const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
+
+    const isLegacyData = useMemo(() => {
+        return !!(campaign && !campaign.itemCategories && (campaign as any).rationLists);
+    }, [campaign]);
     
     const visibilityRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'campaign_visibility') : null, [firestore]);
     const { data: visibilitySettings } = useDoc<any>(visibilityRef);
@@ -191,7 +203,9 @@ export default function CampaignSummaryPage() {
         const categories = (campaign.itemCategories || []).filter(c => c.name !== 'Item Price List');
         
         const groups = categories.map(cat => {
-            const count = beneficiaries.filter(b => b.itemCategoryId === cat.id).length;
+            const groupBeneficiaries = beneficiaries.filter(b => b.itemCategoryId === cat.id);
+            const count = groupBeneficiaries.length;
+            const totalAmount = groupBeneficiaries.reduce((sum, b) => sum + (b.kitAmount || 0), 0);
             const kitAmount = cat.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
             
             let displayName = cat.name;
@@ -200,23 +214,22 @@ export default function CampaignSummaryPage() {
                 else if (cat.minMembers !== undefined && cat.maxMembers !== undefined) displayName = `Members (${cat.minMembers}-${cat.maxMembers})`;
             }
 
-            return { id: cat.id, name: displayName, count, kitAmount, totalAmount: count * kitAmount };
+            return { id: cat.id, name: displayName, count, kitAmount, totalAmount };
         });
 
         const categorizedIds = new Set(categories.map(c => c.id));
         const uncategorized = beneficiaries.filter(b => !b.itemCategoryId || !categorizedIds.has(b.itemCategoryId));
         
         if (uncategorized.length > 0) {
-            const avgKitAmount = groups.length > 0 
-                ? groups.reduce((sum, g) => sum + g.kitAmount, 0) / groups.length 
-                : (campaign.targetAmount || 0) / beneficiaries.length;
+            const totalAmount = uncategorized.reduce((sum, b) => sum + (b.kitAmount || 0), 0);
+            const avgKitAmount = totalAmount / uncategorized.length;
             
             groups.push({
                 id: 'uncategorized',
                 name: 'Uncategorized / Legacy',
                 count: uncategorized.length,
                 kitAmount: avgKitAmount || 0,
-                totalAmount: uncategorized.reduce((sum, b) => sum + (b.kitAmount || 0), 0) || (uncategorized.length * (avgKitAmount || 0))
+                totalAmount: totalAmount
             });
         }
 
@@ -234,7 +247,8 @@ export default function CampaignSummaryPage() {
             if (d.linkSplit && d.linkSplit.length > 0) {
                 return d.linkSplit.some(link => 
                     link.linkId === campaign.id || 
-                    link.linkId === `campaign_${campaign.id}`
+                    link.linkId === `campaign_${campaign.id}` ||
+                    (link.linkType === 'campaign' && link.linkId === campaign.id)
                 );
             }
             return (d as any).campaignId === campaign.id;
@@ -243,13 +257,17 @@ export default function CampaignSummaryPage() {
         const verifiedDonationsList = donationsList.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
+        const categoryMap = donationCategories.reduce((acc, cat) => ({...acc, [cat.toLowerCase()]: cat}), {} as Record<string, DonationCategory>);
+        
         const paymentTypeStats: Record<string, { count: number, amount: number }> = {};
         let zakatForGoalAmount = 0;
 
         verifiedDonationsList.forEach(d => {
             let amountForThisCampaign = 0;
             const campaignLink = d.linkSplit?.find((l: any) => 
-                l.linkId === campaign.id || l.linkId === `campaign_${campaign.id}`
+                l.linkId === campaign.id || 
+                l.linkId === `campaign_${campaign.id}` ||
+                (l.linkType === 'campaign' && l.linkId === campaign.id)
             );
 
             if (campaignLink) {
@@ -273,10 +291,13 @@ export default function CampaignSummaryPage() {
             const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
             
             splits.forEach((split: any) => {
-                const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-                if (amountsByCategory.hasOwnProperty(category)) {
+                const rawCategory = (split.category as string || '').trim();
+                const normalizedCategory = rawCategory === 'General' || rawCategory === 'Sadqa' ? 'Sadaqah' : rawCategory;
+                const category = categoryMap[normalizedCategory.toLowerCase()];
+
+                if (category) {
                     const allocatedAmount = split.amount * proportionForThisCampaign;
-                    amountsByCategory[category as DonationCategory] += allocatedAmount;
+                    amountsByCategory[category] += allocatedAmount;
                     const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
                     if (category === 'Zakat' && isForFundraising) zakatForGoalAmount += allocatedAmount;
                 }
@@ -295,9 +316,12 @@ export default function CampaignSummaryPage() {
         const zakatSurplus = Math.max(0, zakatForGoalAmount - zakatAllocated);
 
         const totalCollectedForGoal = Object.entries(amountsByCategory)
-            .filter(([category]) => allowedTypes.includes(category as DonationCategory))
+            .filter(([category]) => {
+                const cat = category as DonationCategory;
+                return allowedTypes.some(t => t.toLowerCase() === cat.toLowerCase());
+            })
             .reduce((sum, [category, amount]) => {
-                if (category === 'Zakat') return sum + zakatSurplus;
+                if (category === 'Zakat') return sum + zakatForGoalAmount;
                 return sum + amount;
             }, 0);
 

@@ -47,7 +47,8 @@ import {
     ArrowLeft,
     CalendarIcon,
     AlertCircle,
-    Save
+    Save,
+    Calculator
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -104,7 +105,7 @@ import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 type SortKey = keyof Donation | 'srNo';
 
-const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_150px_80px] items-center gap-4 px-4 py-3 min-w-[1100px]";
+const donationGridClass = "grid grid-cols-[40px_60px_180px_110px_110px_100px_100px_100px_120px_80px] items-center gap-4 px-4 py-3 min-w-[1150px]";
 
 interface StatCardProps {
     title: string;
@@ -200,9 +201,21 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                     </div>
                     <div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone || 'N/A'}</div>
                 </div>
-                <div className="text-right font-bold font-mono text-primary text-sm">₹{donation.amount.toFixed(2)}</div>
+                <div className="text-right font-bold font-mono text-primary text-sm flex items-center justify-end gap-1">
+                    {donation.status === 'Verified' && <Calculator className="h-3 w-3 text-green-600 opacity-60" />}
+                    ₹{donation.amount.toFixed(2)}
+                </div>
                 <div className="whitespace-nowrap text-xs font-normal text-primary/80 text-center">{donation.donationDate}</div>
                 <div className="text-center"><Badge variant="secondary" className="text-[9px] font-bold">{donation.donationType}</Badge></div>
+                <div className="flex flex-wrap justify-center gap-1 overflow-hidden">
+                    {(donation.typeSplit && donation.typeSplit.length > 0) ? (
+                        donation.typeSplit.map(s => (
+                            <Badge key={s.category} variant="outline" className="text-[8px] px-1 py-0 border-primary/20 text-primary/70">{s.category}</Badge>
+                        ))
+                    ) : (
+                        <Badge variant="outline" className="text-[8px] px-1 py-0 border-primary/20 text-primary/70">{donation.type || 'N/A'}</Badge>
+                    )}
+                </div>
                 <div className="text-center">
                     <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="text-[9px] font-bold">
                         {donation.status}
@@ -314,6 +327,7 @@ function DonationListContent() {
   const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [identityFilter, setIdentityFilter] = useState(initialIdentity);
   const [methodFilter, setMethodFilter] = useState('All');
+  const [categoryFilter, setCategoryFilter] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [currentPage, setCurrentPage] = useState(1);
@@ -355,6 +369,14 @@ function DonationListContent() {
     if (identityFilter === 'Unlinked') items = items.filter(d => !d.donorId);
     else if (identityFilter === 'Linked') items = items.filter(d => !!d.donorId);
     if (methodFilter !== 'All') items = items.filter(d => d.donationType === methodFilter);
+    if (categoryFilter !== 'All') {
+        items = items.filter(d => {
+            if (d.typeSplit && d.typeSplit.length > 0) {
+                return d.typeSplit.some(s => s.category === categoryFilter);
+            }
+            return d.type === categoryFilter;
+        });
+    }
 
     if (searchTerm) {
         const lower = searchTerm.toLowerCase();
@@ -515,7 +537,7 @@ function DonationListContent() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-            <StatCard title="Total" count={stats.total} description="All Records Logged" icon={Users} delay="100ms" onClick={() => { setStatusFilter('All'); setIdentityFilter('All'); setMethodFilter('All'); setSearchTerm(''); }} />
+            <StatCard title="Total" count={stats.total} description="All Records Logged" icon={Users} delay="100ms" onClick={() => { setStatusFilter('All'); setIdentityFilter('All'); setMethodFilter('All'); setCategoryFilter('All'); setSearchTerm(''); }} />
             <StatCard title="Verified Sum" count={stats.totalAmount.toLocaleString('en-IN')} description="Confirmed Funds" icon={CheckCircle2} delay="150ms" isCurrency onClick={() => { setStatusFilter('Verified'); }} />
             <StatCard title="Pending Sum" count={stats.pendingAmount.toLocaleString('en-IN')} description="Awaiting Vetting" icon={Hourglass} delay="200ms" isCurrency onClick={() => { setStatusFilter('Pending'); }} />
             <StatCard title="Unlinked" count={stats.unlinked} description="Needs Profile Mapping" icon={AlertCircle} delay="250ms" colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} onClick={() => { setIdentityFilter('Unlinked'); }} />
@@ -527,8 +549,25 @@ function DonationListContent() {
                     <div className="flex flex-nowrap gap-2 pb-2">
                         <Input placeholder="Search Donor, Phone, ID..." value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-[250px] h-9 text-xs border-primary/10 rounded-[10px] shrink-0"/>
                         <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setCurrentPage(1); }}>
-                            <SelectTrigger className="w-[180px] h-9 text-xs border-primary/10 rounded-[10px]"><SelectValue placeholder="All Statuses"/></SelectTrigger>
-                            <SelectContent><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Canceled">Canceled</SelectItem></SelectContent>
+                            <SelectTrigger className="w-[140px] h-9 text-xs border-primary/10 rounded-[10px]"><SelectValue placeholder="Status"/></SelectTrigger>
+                            <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Verified">Verified</SelectItem><SelectItem value="Pending">Pending</SelectItem><SelectItem value="Canceled">Canceled</SelectItem></SelectContent>
+                        </Select>
+                        <Select value={categoryFilter} onValueChange={v => { setCategoryFilter(v); setCurrentPage(1); }}>
+                            <SelectTrigger className="w-[140px] h-9 text-xs border-primary/10 rounded-[10px]"><SelectValue placeholder="Category"/></SelectTrigger>
+                            <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                                <SelectItem value="All">All Categories</SelectItem>
+                                {donationCategories.map(cat => (
+                                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                        <Select value={methodFilter} onValueChange={v => { setMethodFilter(v); setCurrentPage(1); }}>
+                            <SelectTrigger className="w-[140px] h-9 text-xs border-primary/10 rounded-[10px]"><SelectValue placeholder="Method"/></SelectTrigger>
+                            <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="All">All Methods</SelectItem><SelectItem value="Online Payment">Online Payment</SelectItem><SelectItem value="Cash">Cash</SelectItem><SelectItem value="Check">Check</SelectItem><SelectItem value="Other">Other</SelectItem></SelectContent>
+                        </Select>
+                        <Select value={identityFilter} onValueChange={v => { setIdentityFilter(v); setCurrentPage(1); }}>
+                            <SelectTrigger className="w-[140px] h-9 text-xs border-primary/10 rounded-[10px]"><SelectValue placeholder="Identity"/></SelectTrigger>
+                            <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="All">All Identities</SelectItem><SelectItem value="Linked">Linked</SelectItem><SelectItem value="Unlinked">Unlinked</SelectItem></SelectContent>
                         </Select>
                         {selectedIds.length > 0 && (
                             <DropdownMenu>
@@ -550,9 +589,10 @@ function DonationListContent() {
                         <div className="flex justify-center"><Checkbox checked={paginatedDonations.length > 0 && selectedIds.length === paginatedDonations.length} onCheckedChange={toggleSelectAll} className="border-primary/40" /></div>
                         <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
                         <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor Name</SortableHeader>
-                        <SortableHeader sortKey="amount" sortConfig={sortConfig} handleSort={handleSort} className="text-right">Amount (₹)</SortableHeader>
+                        <SortableHeader sortKey="amount" sortConfig={sortConfig} handleSort={handleSort} className="text-right"><Calculator className="mr-1 h-3 w-3 opacity-40"/> Amount (₹)</SortableHeader>
                         <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Entry Date</SortableHeader>
                         <div className="text-center font-bold text-[10px]">Method</div>
+                        <div className="text-center font-bold text-[10px]">Category</div>
                         <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Status</SortableHeader>
                         <div className="font-bold text-[10px]">Target</div>
                         <div className="text-right pr-4 font-bold text-[10px]">Actions</div>
