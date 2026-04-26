@@ -62,6 +62,7 @@ export const settingsSubModules = [
     { id: 'beneficiary', name: 'Beneficiary Settings', permissions: crudPermissions },
     { id: 'donor', name: 'Donor Settings', permissions: crudPermissions },
     { id: 'user', name: 'User Settings', permissions: crudPermissions },
+    { id: 'resources', name: 'Resource Config', permissions: crudPermissions },
     { id: 'data-health', name: '🩺 Data Health', permissions: simpleReadPermission },
 ] as const;
 
@@ -125,6 +126,7 @@ export const modules = [
   { id: 'storyCreator', name: 'Story Creator', permissions: simpleReadPermission },
   { id: 'diagnostics', name: 'Diagnostics', permissions: simpleReadPermission },
   { id: 'analytics', name: 'Data Analytics', permissions: simpleReadPermission },
+  { id: 'messages', name: 'Messaging Module', permissions: crudPermissions },
   { 
     id: 'settings', 
     name: 'Settings', 

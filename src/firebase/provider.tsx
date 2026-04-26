@@ -3,9 +3,10 @@
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
 import { Firestore } from 'firebase/firestore';
-import { Auth, User, onAuthStateChanged } from 'firebase/auth';
+import { Auth, User, onIdTokenChanged } from 'firebase/auth';
 import { FirebaseStorage } from 'firebase/storage';
 import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import { createSessionAction, clearSessionAction } from '@/app/auth/actions';
 
 interface FirebaseProviderProps {
   children: ReactNode;
@@ -73,9 +74,17 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       return;
     }
 
-    const unsubscribe = onAuthStateChanged(
+    const unsubscribe = onIdTokenChanged(
       auth,
-      (firebaseUser) => {
+      async (firebaseUser) => {
+        if (firebaseUser) {
+          // Sync token to server session cookie
+          const idToken = await firebaseUser.getIdToken();
+          await createSessionAction(idToken);
+        } else {
+          // Clear server session cookie
+          await clearSessionAction();
+        }
         setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
       },
       (error) => {

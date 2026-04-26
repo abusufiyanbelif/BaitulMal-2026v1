@@ -111,6 +111,9 @@ import type { ChartConfig } from '@/components/ui/chart';
 import { recalculateLeadGoalAction } from '../../actions';
 import { PendingUpdateWarning } from '@/components/pending-update-warning';
 import { VerificationRequestDialog } from '@/components/verification-request-dialog';
+import { checkPendingVerificationAction } from '@/app/verifications/actions';
+import { notifyLeadAction } from '@/app/messages/actions';
+import type { PendingVerification } from '@/lib/types';
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-3))" },
@@ -155,6 +158,7 @@ export default function LeadSummaryPage() {
     
     const [newDocuments, setNewDocuments] = useState<File[]>([]);
     const [existingDocuments, setExistingDocuments] = useState<CampaignDocument[]>([]);
+    const [shopPhonePrefix, setShopPhonePrefix] = useState('+91');
 
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [shareDialogData, setShareDialogData] = useState({ title: '', text: '', url: '' });
@@ -166,8 +170,14 @@ export default function LeadSummaryPage() {
 
     const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
     const [pendingSaveData, setPendingSaveData] = useState<any>(null);
+    const [existingPendingRequest, setExistingPendingRequest] = useState<PendingVerification | null>(null);
 
     const summaryRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!leadId) return;
+        checkPendingVerificationAction(leadId).then(setExistingPendingRequest);
+    }, [leadId, editMode]);
 
     const leadDocRef = useMemoFirebase(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
@@ -179,6 +189,18 @@ export default function LeadSummaryPage() {
     
     const visibilityRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_visibility') : null, [firestore]);
     const { data: visibilitySettings } = useDoc<any>(visibilityRef);
+
+    const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_config') : null, [firestore]);
+    const { data: configSettings } = useDoc<any>(configRef);
+
+    const effectiveVerificationMode = useMemo(() => {
+        const rawMode = configSettings?.verificationMode || (configSettings?.isVerificationRequired ? 'Mandatory' : 'Disabled');
+        // Per user request: Active or Completed records make approval optional (bypassable)
+        if (rawMode !== 'Disabled' && rawMode !== 'disabled' && (lead?.status === 'Active' || lead?.status === 'Completed')) {
+            return 'Optional';
+        }
+        return rawMode;
+    }, [configSettings, lead?.status]);
 
     useEffect(() => { setIsClient(true); }, []);
 
@@ -311,6 +333,52 @@ export default function LeadSummaryPage() {
     const publicDocuments = lead?.documents?.filter(d => d.isPublic) || [];
     const FallbackIcon = lead?.purpose === 'Education' ? GraduationCap : lead?.purpose === 'Medical' ? HeartPulse : lead?.purpose === 'Relief' ? LifeBuoy : lead?.purpose === 'Other' ? Info : HandHelping;
 
+    useEffect(() => {
+        if (lead && !editMode) {
+            setEditableLead({
+                name: lead.name || '',
+                description: lead.description || '',
+                startDate: lead.startDate || '',
+                endDate: lead.endDate || '',
+                category: lead.category || '',
+                purpose: lead.purpose || 'Other',
+                status: lead.status || 'Active',
+                priority: lead.priority || 'Low',
+                targetAmount: lead.targetAmount || 0,
+                requiredAmount: lead.requiredAmount || 0,
+                authenticityStatus: lead.authenticityStatus || 'Pending Verification',
+                publicVisibility: lead.publicVisibility || 'Hold',
+                allowedDonationTypes: lead.allowedDonationTypes || [...donationCategories],
+                imageUrl: lead.imageUrl || '',
+                purposeDetails: lead.purposeDetails || '',
+                categoryDetails: lead.categoryDetails || '',
+                notes: lead.notes || '',
+                priceDate: lead.priceDate || '',
+                shopName: lead.shopName || '',
+                shopContact: lead.shopContact || '',
+                shopAddress: lead.shopAddress || '',
+                degree: lead.degree || '',
+                year: lead.year || '',
+                semester: lead.semester || '',
+                diseaseIdentified: lead.diseaseIdentified || '',
+                diseaseStage: lead.diseaseStage || '',
+                seriousness: lead.seriousness || null,
+                itemCategories: lead.itemCategories || [],
+            });
+            if (lead.shopContact && lead.shopContact.startsWith('+')) {
+                const match = lead.shopContact.match(/^(\+\d+)/);
+                if (match) {
+                    setShopPhonePrefix(match[1]);
+                }
+            }
+            setExistingDocuments(lead.documents || []);
+            setImagePreview(lead.imageUrl || null);
+            setIsImageDeleted(false);
+            setImageFile(null);
+            setNewDocuments([]);
+        }
+    }, [lead, editMode]);
+
     const handleFieldChange = (field: keyof Lead, value: any) => {
         setEditableLead(p => (p ? { ...p, [field]: value } : null));
     };
@@ -394,9 +462,30 @@ export default function LeadSummaryPage() {
             documents: finalDocuments,
             updatedAt: serverTimestamp(),
         };
-
         setPendingSaveData(saveData);
-        setIsVerificationDialogOpen(true);
+
+        const isApprovalRequired = effectiveVerificationMode !== 'Disabled' && effectiveVerificationMode !== 'disabled';
+
+        if (isApprovalRequired) {
+            setIsVerificationDialogOpen(true);
+        } else {
+            // Apply changes directly
+            if (leadId && firestore && lead) {
+                // Calculate changed fields for notification
+                const changedFields = Object.keys(saveData).filter(key => 
+                    JSON.stringify((saveData as any)[key]) !== JSON.stringify((lead as any)[key])
+                ).map(key => key.charAt(0).toUpperCase() + key.slice(1));
+                
+                await updateDoc(doc(firestore, 'leads', leadId), saveData);
+                await notifyLeadAction(leadId, 'lead_updated', {
+                    actionType: 'Direct Summary Update',
+                    summary: changedFields.length > 0 ? `Updated: ${changedFields.join(', ')}` : 'Manual record re-save'
+                });
+                toast({ title: 'Summary Updated', description: 'Changes applied successfully.', variant: 'success' });
+                setEditMode(false);
+                forceRefetchLead();
+            }
+        }
         setIsSubmitting(false);
     };
     
@@ -411,7 +500,11 @@ export default function LeadSummaryPage() {
         setIsImageViewerOpen(true);
     };
 
+    const isLoadingPage = isLeadLoading || areBeneficiariesLoading || areDonationsLoading || isProfileLoading || isBrandingLoading || isPaymentLoading;
+
     if (isLoadingPage) return <BrandedLoader message="Initializing Appeal Summary..." />;
+
+    if (!lead) return <p className="text-center mt-20 text-primary font-bold">Appeal Record Not Found.</p>;
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
@@ -450,12 +543,72 @@ export default function LeadSummaryPage() {
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                            <Button onClick={() => { if(lead) setShareDialogData({ title: `Appeal: ${lead.name}`, text: lead.description || '', url: window.location.origin + `/leads-public/${leadId}/summary` }); setIsShareDialogOpen(true); }} variant="outline" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md border-primary/20 text-primary">
+                            <Button 
+                                onClick={() => { 
+                                    if(lead && fundingData) {
+                                        const richText = `*Appeal: ${lead.name}*\n` +
+                                            `🆔 ID: ${lead.id}\n` +
+                                            `🎯 Purpose: ${lead.purpose} (${lead.category})\n` +
+                                            `💰 Target Goal: ₹${fundingData.targetAmount.toLocaleString('en-IN')}\n` +
+                                            `📈 Collected: ₹${fundingData.totalCollectedForGoal.toLocaleString('en-IN')}\n` +
+                                            `🗓️ Period: ${lead.startDate || 'N/A'} to ${lead.endDate || 'N/A'}\n\n` +
+                                            `${lead.description?.substring(0, 500) || 'Help us make a difference.'}`;
+                                            
+                                        setShareDialogData({ 
+                                            title: `Appeal: ${lead.name}`, 
+                                            text: richText, 
+                                            url: window.location.origin + `/leads-public/${leadId}/summary` 
+                                        }); 
+                                        setIsShareDialogOpen(true); 
+                                    } 
+                                }} 
+                                variant="outline" 
+                                className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md border-primary/20 text-primary"
+                            >
                                 <Share2 className="mr-2 h-4 w-4" /> Share
                             </Button>
                         </>
                     )}
-                    {canUpdateSummary && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)} className="font-bold border-primary/20 text-primary transition-transform">Cancel</Button><Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Save className="mr-2 h-4 w-4" /> Secure Changes</Button></div>) )}
+                    {canUpdateSummary && userProfile && (
+                        <>
+                            {!editMode && (
+                                <Button 
+                                    variant="outline" 
+                                    onClick={async () => {
+                                        setIsSubmitting(true);
+                                        try {
+                                            const res = await recalculateLeadGoalAction(leadId as string);
+                                            toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' });
+                                            if (res.success) forceRefetchLead();
+                                        } finally {
+                                            setIsSubmitting(false);
+                                        }
+                                    }}
+                                    className="font-bold border-primary/20 text-primary hover:bg-primary/5"
+                                >
+                                    <RefreshCw className="mr-2 h-4 w-4" /> Recalculate Goal
+                                </Button>
+                            )}
+                            { !editMode ? ( 
+                                <Button 
+                                    onClick={() => setEditMode(true)} 
+                                    disabled={!!existingPendingRequest}
+                                    className={cn(
+                                        "font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl",
+                                        existingPendingRequest ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-white"
+                                    )}
+                                >
+                                    <Edit className="mr-2 h-4 w-4" /> 
+                                    {existingPendingRequest ? "Approval Pending" : "Edit Summary"}
+                                </Button> 
+                            ) : ( 
+                                <div className="flex gap-2">
+                                    <Button variant="outline" onClick={() => setEditMode(false)} className="font-bold border-primary/20 text-primary transition-transform">Cancel</Button>
+                                    <Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Save className="mr-2 h-4 w-4" /> Secure Changes</Button>
+                                </div>
+                            ) }
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -571,6 +724,51 @@ export default function LeadSummaryPage() {
                                         <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Start Date</Label><Input id="startDate" type="date" value={editableLead.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
                                         <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">End Date</Label><Input id="endDate" type="date" value={editableLead.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
                                     </div>
+
+                                    <div className="space-y-4 p-4 border rounded-xl bg-muted/5 border-primary/10 animate-fade-in-up">
+                                        <h4 className="text-xs font-bold text-primary tracking-tight uppercase opacity-60">Shopping & Price Reference</h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1"><Label className="font-bold text-xs capitalize">Shop Name</Label><Input value={editableLead.shopName || ''} onChange={(e) => handleFieldChange('shopName', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
+                                            <div className="space-y-1">
+                                                <Label className="font-bold text-xs capitalize">Shop Contact</Label>
+                                                <div className="flex gap-2">
+                                                    <div className="w-24 shrink-0">
+                                                        <Select value={shopPhonePrefix} onValueChange={(v) => {
+                                                            setShopPhonePrefix(v);
+                                                            const current = editableLead.shopContact || '';
+                                                            const number = current.replace(/^\+\d+/, '');
+                                                            handleFieldChange('shopContact', `${v}${number}`);
+                                                        }}>
+                                                            <SelectTrigger className="font-bold border-primary/10 h-10">
+                                                                <SelectValue />
+                                                            </SelectTrigger>
+                                                            <SelectContent className="rounded-xl shadow-dropdown border-primary/10">
+                                                                <SelectItem value="+91">🇮🇳 +91</SelectItem>
+                                                                <SelectItem value="+1">🇺🇸 +1</SelectItem>
+                                                                <SelectItem value="+44">🇬🇧 +44</SelectItem>
+                                                                <SelectItem value="+971">🇦🇪 +971</SelectItem>
+                                                                <SelectItem value="+966">🇸🇦 +966</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <Input 
+                                                        value={(editableLead.shopContact || '').replace(/^\+\d+/, '')} 
+                                                        onChange={(e) => handleFieldChange('shopContact', `${shopPhonePrefix}${e.target.value.replace(/\D/g, '')}`)} 
+                                                        className="font-bold text-primary border-primary/10 flex-1" 
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            <div className="space-y-1"><Label className="font-bold text-xs capitalize">Shop Address</Label><Input value={editableLead.shopAddress || ''} onChange={(e) => handleFieldChange('shopAddress', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
+                                            <div className="space-y-1"><Label className="font-bold text-xs capitalize">Price Quoted Date</Label><Input type="date" value={editableLead.priceDate || ''} onChange={(e) => handleFieldChange('priceDate', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Institutional Notes (Private)</Label>
+                                        <Textarea value={editableLead.notes || ''} onChange={(e) => handleFieldChange('notes', e.target.value)} rows={3} className="text-primary font-normal transition-all duration-300 focus:shadow-md border-primary/10" />
+                                    </div>
                                     
                                     <div className="space-y-2">
                                         <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Allowed Donation Types For Goal</Label>
@@ -628,6 +826,22 @@ export default function LeadSummaryPage() {
                                                     <div className="space-y-1"><p className="text-[10px] text-muted-foreground tracking-tight capitalize">Urgency Level</p><p className="text-sm">{lead?.seriousness || 'N/A'}</p></div>
                                                 </>
                                             )}
+                                        </div>
+                                    )}
+                                    
+                                    {(lead?.shopName || lead?.priceDate) && (
+                                        <div className="mt-4 p-4 rounded-xl border border-primary/10 bg-muted/5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 animate-fade-in-up">
+                                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">Shop Name</p><p className="text-sm font-bold text-primary">{lead.shopName || 'N/A'}</p></div>
+                                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">Shop Contact</p><p className="text-sm font-bold text-primary">{lead.shopContact || 'N/A'}</p></div>
+                                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">Shop Address</p><p className="text-sm font-bold text-primary">{lead.shopAddress || 'N/A'}</p></div>
+                                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">Price Quoted Date</p><p className="text-sm font-bold text-primary">{lead.priceDate || 'N/A'}</p></div>
+                                        </div>
+                                    )}
+
+                                    {lead?.notes && (
+                                        <div className="mt-4 p-4 rounded-xl border border-primary/10 bg-amber-50/30 animate-fade-in-up">
+                                            <Label className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Institutional Notes (Private)</Label>
+                                            <p className="mt-1 text-sm font-normal text-muted-foreground leading-relaxed italic">{lead.notes}</p>
                                         </div>
                                     )}
                                 </>
@@ -1019,19 +1233,30 @@ export default function LeadSummaryPage() {
                     isOpen={isVerificationDialogOpen}
                     onOpenChange={setIsVerificationDialogOpen}
                     user={{ id: userProfile.id, name: userProfile.name }}
-                    payload={{
-                        targetId: leadId,
-                        module: 'leads',
-                        action: 'update',
-                        newData: pendingSaveData,
-                        oldData: lead,
-                        description: `Update appeal details: ${lead?.name}`,
-                        targetCollection: 'leads',
-                        revalidatePath: `/leads-members/${leadId}/summary`
+                    isOptional={effectiveVerificationMode.toLowerCase() === 'optional'}
+                    minApprovals={configSettings?.minApprovalsRequired || 1}
+                    authorizedVerifiers={configSettings?.authorizedVerifiers}
+                    onBypass={async () => {
+                        setIsVerificationDialogOpen(false);
+                        if (leadId && firestore) {
+                            await updateDoc(doc(firestore, 'leads', leadId), pendingSaveData);
+                            toast({ title: 'Summary Updated', description: 'Changes applied directly.', variant: 'success' });
+                            setEditMode(false);
+                            forceRefetchLead();
+                        }
                     }}
                     onSuccess={() => {
                         setEditMode(false);
-                        setPendingSaveData(null);
+                        forceRefetchLead();
+                    }}
+                    payload={{
+                        targetId: leadId,
+                        module: 'leads',
+                        description: `Update summary for lead: ${lead?.name}`,
+                        targetCollection: 'leads',
+                        originalValue: lead || {},
+                        newValue: pendingSaveData,
+                        revalidatePath: `/leads-members/${leadId}/summary`
                     }}
                 />
             )}

@@ -37,6 +37,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import { updateDonorAction, deleteDonorAction } from '../actions';
+import { checkPendingVerificationAction } from '@/app/verifications/actions';
+import type { PendingVerification } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -117,6 +119,12 @@ export default function DonorProfilePage() {
  
     const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
     const [pendingUpdates, setPendingUpdates] = useState<Partial<Donor> | null>(null);
+    const [existingPendingRequest, setExistingPendingRequest] = useState<PendingVerification | null>(null);
+
+    useEffect(() => {
+        if (!donorId) return;
+        checkPendingVerificationAction(donorId).then(setExistingPendingRequest);
+    }, [donorId, isEditMode]);
 
     const donorDocRef = useMemoFirebase(() => donorId && firestore ? doc(firestore, 'donors', donorId) as DocumentReference<Donor> : null, [donorId, firestore]);
     const { data: donor, isLoading: donorLoading, forceRefetch } = useDoc<Donor>(donorDocRef);
@@ -205,7 +213,11 @@ export default function DonorProfilePage() {
                 notes: formData.get('notes') as string,
             };
 
-            if (configSettings?.verificationMode && configSettings.verificationMode !== 'Disabled' && donor) {
+            const isApprovalRequired = configSettings?.verificationMode 
+                ? (configSettings.verificationMode !== 'Disabled' && configSettings.verificationMode !== 'disabled')
+                : !!configSettings?.isVerificationRequired;
+
+            if (isApprovalRequired && donor) {
                  setPendingUpdates(updates);
                  setIsVerificationDialogOpen(true);
                  return;
@@ -264,8 +276,16 @@ export default function DonorProfilePage() {
                     <Badge variant={donor.status === 'Active' ? 'active' : 'outline'} className="font-bold text-[10px]">{donor.status}</Badge>
                     <div className="flex gap-2 shrink-0">
                         {canUpdate && !isEditMode && (
-                            <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-sm active:scale-95 transition-transform h-9 px-4">
-                                <Edit className="mr-2 h-4 w-4"/> Edit Profile
+                            <Button 
+                                onClick={() => setIsEditMode(true)} 
+                                disabled={!!existingPendingRequest}
+                                className={cn(
+                                    "font-bold shadow-sm active:scale-95 transition-transform h-9 px-4",
+                                    existingPendingRequest ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-white"
+                                )}
+                            >
+                                <Edit className="mr-2 h-4 w-4"/> 
+                                {existingPendingRequest ? "Approval Pending" : "Edit Profile"}
                             </Button>
                         )}
                         {canDelete && !isEditMode && (
@@ -584,7 +604,7 @@ export default function DonorProfilePage() {
                      isOpen={isVerificationDialogOpen}
                      onOpenChange={setIsVerificationDialogOpen}
                      user={{ id: userProfile.id, name: userProfile.name }}
-                     isOptional={configSettings?.verificationMode === 'Optional'}
+                     isOptional={configSettings?.verificationMode === 'Optional' || configSettings?.verificationMode === 'optional'}
                      onBypass={async () => {
                          setIsVerificationDialogOpen(false);
                          const res = await updateDonorAction(donorId, pendingUpdates, { id: userProfile.id, name: userProfile.name });

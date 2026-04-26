@@ -39,7 +39,8 @@ function RouteGuard({ children }: { children: ReactNode }) {
         // Redirect guests away from private routes
         if (!user && !isPublicRoute) {
             setIsRedirecting(true);
-            router.push('/login');
+            const callbackParam = pathname !== '/' ? `?callbackUrl=${encodeURIComponent(pathname)}` : '';
+            router.push(`/login${callbackParam}`);
             return;
         }
         

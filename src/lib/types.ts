@@ -60,6 +60,59 @@ export interface InfoSettings extends DocumentData {
   isGuidanceDirectoryPublic?: boolean;
 }
 
+export interface ResourceSettings extends DocumentData {
+  // WhatsApp Configuration
+  whatsappApiUrl?: string;
+  whatsappApiKey?: string;
+  isAutoWhatsAppEnabled?: boolean;
+  
+  // Base URLs
+  baseUrl?: string;
+
+  // AI & Analytics
+  geminiApiKey?: string;
+  googleApiKey?: string;
+
+  // Infrastructure (Reference)
+  firebaseConfig?: {
+    apiKey?: string;
+    authDomain?: string;
+    projectId?: string;
+    storageBucket?: string;
+    messagingSenderId?: string;
+    appId?: string;
+    measurementId?: string;
+  };
+}
+
+export interface MessageTemplate extends DocumentData {
+  id: string;
+  name: string;
+  subject: string;
+  body: string;
+  type: 'WhatsApp' | 'Email' | 'SMS';
+  category: 'Verification' | 'Alert' | 'Update' | 'Marketing';
+  variables: string[]; // e.g. ["name", "recordId", "module", "url"]
+  isActive: boolean;
+  updatedAt?: Timestamp | FieldValue;
+}
+
+export interface MessageLog extends DocumentData {
+  id: string;
+  recipient: string;
+  content: string;
+  type: 'WhatsApp' | 'Email' | 'SMS';
+  status: 'Sent' | 'Failed' | 'Pending';
+  error?: string;
+  timestamp: Timestamp | FieldValue;
+  metadata?: {
+    moduleId?: string;
+    recordId?: string;
+    userId?: string;
+    templateId?: string;
+  };
+}
+
 export interface ExternalResource {
   id: string;
   name: string;

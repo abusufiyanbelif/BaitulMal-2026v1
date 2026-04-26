@@ -407,8 +407,8 @@ export default function LeadPage() {
     let items = [...leadsWithProgress].filter(l => {
         const matchesStatus = statusFilter.length === 0 || statusFilter.includes(l.status);
         const matchesPurpose = purposeFilter.length === 0 || purposeFilter.includes(l.purpose);
-        const matchesAuth = authenticityFilter.length === 0 || authenticityFilter.includes(l.authenticityStatus);
-        const matchesVisibility = visibilityFilter.length === 0 || visibilityFilter.includes(l.publicVisibility);
+        const matchesAuth = authenticityFilter.length === 0 || authenticityFilter.includes(l.authenticityStatus || 'Pending Verification');
+        const matchesVisibility = visibilityFilter.length === 0 || visibilityFilter.includes(l.publicVisibility || 'Hold');
         const matchesSearch = l.name.toLowerCase().includes(searchTerm.toLowerCase());
         
         return matchesSearch && matchesStatus && matchesPurpose && matchesAuth && matchesVisibility;

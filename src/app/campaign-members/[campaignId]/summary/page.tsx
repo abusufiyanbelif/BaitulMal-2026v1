@@ -108,6 +108,9 @@ import type { ChartConfig } from '@/components/ui/chart';
 import { recalculateCampaignGoalAction } from '../../actions';
 import { PendingUpdateWarning } from '@/components/pending-update-warning';
 import { VerificationRequestDialog } from '@/components/verification-request-dialog';
+import { checkPendingVerificationAction } from '@/app/verifications/actions';
+import { notifyCampaignAction } from '@/app/messages/actions';
+import type { PendingVerification } from '@/lib/types';
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-3))" },
@@ -160,6 +163,7 @@ export default function CampaignSummaryPage() {
 
     const [newDocuments, setNewDocuments] = useState<File[]>([]);
     const [existingDocuments, setExistingDocuments] = useState<CampaignDocument[]>([]);
+    const [shopPhonePrefix, setShopPhonePrefix] = useState('+91');
     
     const [isShareDialogOpen, setIsShareDialogOpen] = useState(false);
     const [shareDialogData, setShareDialogData] = useState({ title: '', text: '', url: '' });
@@ -171,8 +175,14 @@ export default function CampaignSummaryPage() {
 
     const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
     const [pendingSaveData, setPendingSaveData] = useState<any>(null);
+    const [existingPendingRequest, setExistingPendingRequest] = useState<PendingVerification | null>(null);
 
     const summaryRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!campaignId) return;
+        checkPendingVerificationAction(campaignId).then(setExistingPendingRequest);
+    }, [campaignId, editMode]);
 
     const campaignDocRef = useMemoFirebase(() => (firestore && campaignId) ? doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign> : null, [firestore, campaignId]);
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && campaignId) ? collection(firestore, `campaigns/${campaignId}/beneficiaries`) : null, [firestore, campaignId]);
@@ -188,6 +198,18 @@ export default function CampaignSummaryPage() {
     
     const visibilityRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'campaign_visibility') : null, [firestore]);
     const { data: visibilitySettings } = useDoc<any>(visibilityRef);
+
+    const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'campaign_config') : null, [firestore]);
+    const { data: configSettings } = useDoc<any>(configRef);
+
+    const effectiveVerificationMode = useMemo(() => {
+        const rawMode = configSettings?.verificationMode || (configSettings?.isVerificationRequired ? 'Mandatory' : 'Disabled');
+        // Per user request: Active or Completed records make approval optional (bypassable)
+        if (rawMode !== 'Disabled' && rawMode !== 'disabled' && (campaign?.status === 'Active' || campaign?.status === 'Completed')) {
+            return 'Optional';
+        }
+        return rawMode;
+    }, [configSettings, campaign?.status]);
 
     useEffect(() => { setIsClient(true); }, []);
 
@@ -358,20 +380,31 @@ export default function CampaignSummaryPage() {
     useEffect(() => {
         if (campaign && !editMode) {
              setEditableCampaign({
-                name: campaign?.name || '',
-                description: campaign?.description || '',
-                startDate: campaign?.startDate || '',
-                endDate: campaign?.endDate || '',
-                category: campaign?.category || 'General',
-                status: campaign?.status || 'Upcoming',
-                priority: campaign?.priority || 'Low',
-                targetAmount: campaign?.targetAmount || 0,
-                authenticityStatus: campaign?.authenticityStatus || 'Pending Verification',
-                publicVisibility: campaign?.publicVisibility || 'Hold',
-                allowedDonationTypes: campaign?.allowedDonationTypes || [...donationCategories],
-                imageUrl: campaign?.imageUrl || '',
-                imageUrlFilename: campaign?.imageUrlFilename || '',
+                name: campaign.name || '',
+                description: campaign.description || '',
+                startDate: campaign.startDate || '',
+                endDate: campaign.endDate || '',
+                category: campaign.category || 'General',
+                status: campaign.status || 'Upcoming',
+                priority: campaign.priority || 'Low',
+                targetAmount: campaign.targetAmount || 0,
+                authenticityStatus: campaign.authenticityStatus || 'Pending Verification',
+                publicVisibility: campaign.publicVisibility || 'Hold',
+                allowedDonationTypes: campaign.allowedDonationTypes || [...donationCategories],
+                imageUrl: campaign.imageUrl || '',
+                imageUrlFilename: campaign.imageUrlFilename || '',
+                shopName: campaign.shopName || '',
+                shopContact: campaign.shopContact || '',
+                shopAddress: campaign.shopAddress || '',
+                priceDate: campaign.priceDate || '',
+                itemCategories: campaign.itemCategories || [],
             });
+            if (campaign.shopContact && campaign.shopContact.startsWith('+')) {
+                const match = campaign.shopContact.match(/^(\+\d+)/);
+                if (match) {
+                    setShopPhonePrefix(match[1]);
+                }
+            }
             setExistingDocuments(campaign?.documents || []);
             setImagePreview(campaign?.imageUrl || null);
             setIsImageDeleted(false);
@@ -473,9 +506,30 @@ export default function CampaignSummaryPage() {
             documents: finalDocuments,
             updatedAt: serverTimestamp(),
         };
-
         setPendingSaveData(saveData);
-        setIsVerificationDialogOpen(true);
+
+        const isApprovalRequired = effectiveVerificationMode !== 'Disabled' && effectiveVerificationMode !== 'disabled';
+
+        if (isApprovalRequired) {
+            setIsVerificationDialogOpen(true);
+        } else {
+            // Apply changes directly
+            if (campaignId && firestore && campaign) {
+                // Calculate changed fields for notification
+                const changedFields = Object.keys(saveData).filter(key => 
+                    JSON.stringify((saveData as any)[key]) !== JSON.stringify((campaign as any)[key])
+                ).map(key => key.charAt(0).toUpperCase() + key.slice(1));
+
+                await updateDoc(doc(firestore, 'campaigns', campaignId), saveData);
+                await notifyCampaignAction(campaignId, 'campaign_milestone', {
+                    actionType: 'Direct Summary Update',
+                    summary: changedFields.length > 0 ? `Updated: ${changedFields.join(', ')}` : 'Manual record re-save'
+                });
+                toast({ title: 'Summary Updated', description: 'Changes applied successfully.', variant: 'success' });
+                setEditMode(false);
+                forceRefetchCampaign();
+            }
+        }
         setIsSubmitting(false);
     };
     
@@ -519,10 +573,72 @@ export default function CampaignSummaryPage() {
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild><Button variant="outline" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md border-primary/20 text-primary"><Download className="mr-2 h-4 w-4" /> Download</Button></DropdownMenuTrigger>
                                 <DropdownMenuContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown"><DropdownMenuItem onClick={() => handleDownload('png')} className="font-normal text-primary">Image (PNG)</DropdownMenuItem><DropdownMenuItem onClick={() => handleDownload('pdf')} className="font-normal text-primary">PDF File</DropdownMenuItem></DropdownMenuContent></DropdownMenu>
-                            <Button onClick={() => { if(campaign) setShareDialogData({ title: `Campaign: ${campaign.name}`, text: campaign.description || '', url: window.location.origin + `/campaign-public/${campaignId}/summary` }); setIsShareDialogOpen(true); }} variant="outline" className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md border-primary/20 text-primary"><Share2 className="mr-2 h-4 w-4" /> Share</Button>
+                            <Button 
+                                onClick={() => { 
+                                    if(campaign && fundingData) {
+                                        const richText = `*Campaign: ${campaign.name}*\n` +
+                                            `🆔 ID: ${campaign.id}\n` +
+                                            `🏷️ Category: ${campaign.category}\n` +
+                                            `💰 Target Goal: ₹${fundingData.targetAmount.toLocaleString('en-IN')}\n` +
+                                            `📈 Collected: ₹${fundingData.totalCollectedForGoal.toLocaleString('en-IN')}\n` +
+                                            `🗓️ Period: ${campaign.startDate || 'N/A'} to ${campaign.endDate || 'N/A'}\n\n` +
+                                            `${campaign.description?.substring(0, 500) || 'Support our mission.'}`;
+                                            
+                                        setShareDialogData({ 
+                                            title: `Campaign: ${campaign.name}`, 
+                                            text: richText, 
+                                            url: window.location.origin + `/campaign-public/${campaignId}/summary` 
+                                        }); 
+                                        setIsShareDialogOpen(true); 
+                                    } 
+                                }} 
+                                variant="outline" 
+                                className="font-bold active:scale-95 transition-all duration-300 hover:shadow-md border-primary/20 text-primary"
+                            >
+                                <Share2 className="mr-2 h-4 w-4" /> Share
+                            </Button>
                         </>
                     )}
-                    {canUpdateSummary && userProfile && ( !editMode ? ( <Button onClick={() => setEditMode(true)} disabled={isLegacyData} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Edit className="mr-2 h-4 w-4" /> Edit Summary</Button> ) : ( <div className="flex gap-2"><Button variant="outline" onClick={() => setEditMode(false)} className="font-bold border-primary/20 text-primary transition-transform">Cancel</Button><Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Save className="mr-2 h-4 w-4" /> Save Modifications</Button></div> ) )}
+                    {canUpdateSummary && userProfile && (
+                        <>
+                            {!editMode && (
+                                <Button 
+                                    variant="outline" 
+                                    onClick={async () => {
+                                        setIsSubmitting(true);
+                                        try {
+                                            const res = await recalculateCampaignGoalAction(campaignId as string);
+                                            toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' });
+                                            if (res.success) forceRefetchCampaign();
+                                        } finally {
+                                            setIsSubmitting(false);
+                                        }
+                                    }}
+                                    className="font-bold border-primary/20 text-primary hover:bg-primary/5"
+                                >
+                                    <RefreshCw className="mr-2 h-4 w-4" /> Recalculate Goal
+                                </Button>
+                            )}
+                            { !editMode ? ( 
+                                <Button 
+                                    onClick={() => setEditMode(true)} 
+                                    disabled={isLegacyData || !!existingPendingRequest} 
+                                    className={cn(
+                                        "font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl",
+                                        (isLegacyData || existingPendingRequest) ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-white"
+                                    )}
+                                >
+                                    <Edit className="mr-2 h-4 w-4" /> 
+                                    {existingPendingRequest ? "Approval Pending" : "Edit Summary"}
+                                </Button> 
+                            ) : ( 
+                                <div className="flex gap-2">
+                                    <Button variant="outline" onClick={() => setEditMode(false)} className="font-bold border-primary/20 text-primary transition-transform">Cancel</Button>
+                                    <Button onClick={handleSave} className="bg-primary hover:bg-primary/90 text-white font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl"><Save className="mr-2 h-4 w-4" /> Save Modifications</Button>
+                                </div> 
+                            ) }
+                        </>
+                    )}
                 </div>
             </div>
 
@@ -622,6 +738,46 @@ export default function CampaignSummaryPage() {
                                     <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Start Date</Label><Input id="startDate" type="date" value={editableCampaign.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="text-foreground font-bold border-primary/10" /></div>
                                     <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">End Date</Label><Input id="endDate" type="date" value={editableCampaign.endDate || ''} onChange={(e) => handleFieldChange('endDate', e.target.value)} className="text-foreground font-bold border-primary/10" /></div>
                                 </div>
+
+                                <div className="space-y-4 p-4 border rounded-xl bg-muted/5 border-primary/10 animate-fade-in-up">
+                                    <h4 className="text-xs font-bold text-primary tracking-tight uppercase opacity-60">Shopping & Price Reference</h4>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1"><Label className="font-bold text-xs capitalize">Shop Name</Label><Input value={editableCampaign.shopName || ''} onChange={(e) => handleFieldChange('shopName', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
+                                        <div className="space-y-1">
+                                            <Label className="font-bold text-xs capitalize">Shop Contact</Label>
+                                            <div className="flex gap-2">
+                                                <div className="w-24 shrink-0">
+                                                    <Select value={shopPhonePrefix} onValueChange={(v) => {
+                                                        setShopPhonePrefix(v);
+                                                        const current = editableCampaign.shopContact || '';
+                                                        const number = current.replace(/^\+\d+/, '');
+                                                        handleFieldChange('shopContact', `${v}${number}`);
+                                                    }}>
+                                                        <SelectTrigger className="font-bold border-primary/10 h-10">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="rounded-xl shadow-dropdown border-primary/10">
+                                                            <SelectItem value="+91">🇮🇳 +91</SelectItem>
+                                                            <SelectItem value="+1">🇺🇸 +1</SelectItem>
+                                                            <SelectItem value="+44">🇬🇧 +44</SelectItem>
+                                                            <SelectItem value="+971">🇦🇪 +971</SelectItem>
+                                                            <SelectItem value="+966">🇸🇦 +966</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                </div>
+                                                <Input 
+                                                    value={(editableCampaign.shopContact || '').replace(/^\+\d+/, '')} 
+                                                    onChange={(e) => handleFieldChange('shopContact', `${shopPhonePrefix}${e.target.value.replace(/\D/g, '')}`)} 
+                                                    className="font-bold text-primary border-primary/10 flex-1" 
+                                                />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-1"><Label className="font-bold text-xs capitalize">Shop Address</Label><Input value={editableCampaign.shopAddress || ''} onChange={(e) => handleFieldChange('shopAddress', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs capitalize">Price Quoted Date</Label><Input type="date" value={editableCampaign.priceDate || ''} onChange={(e) => handleFieldChange('priceDate', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
+                                    </div>
+                                </div>
                                 <div className="space-y-2">
                                     <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Donation Types Included In Goal</Label>
                                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border rounded-md p-3 bg-white border-primary/10">
@@ -656,6 +812,15 @@ export default function CampaignSummaryPage() {
                                     <Label className="text-muted-foreground text-[10px] font-bold tracking-tight capitalize">Mission Description</Label>
                                     <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{campaign?.description || 'No detailed description available.'}</p>
                                 </div>
+                                
+                                {(campaign?.shopName || campaign?.priceDate) && (
+                                    <div className="mt-4 p-4 rounded-xl border border-primary/10 bg-muted/5 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 animate-fade-in-up">
+                                        <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">Shop Name</p><p className="text-sm font-bold text-primary">{campaign.shopName || 'N/A'}</p></div>
+                                        <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">Shop Contact</p><p className="text-sm font-bold text-primary">{campaign.shopContact || 'N/A'}</p></div>
+                                        <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">Shop Address</p><p className="text-sm font-bold text-primary">{campaign.shopAddress || 'N/A'}</p></div>
+                                        <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">Price Quoted Date</p><p className="text-sm font-bold text-primary">{campaign.priceDate || 'N/A'}</p></div>
+                                    </div>
+                                )}
                             </>
                         )}
                     </CardContent>
@@ -1005,19 +1170,30 @@ export default function CampaignSummaryPage() {
                     isOpen={isVerificationDialogOpen}
                     onOpenChange={setIsVerificationDialogOpen}
                     user={{ id: userProfile.id, name: userProfile.name }}
-                    payload={{
-                        targetId: campaignId,
-                        module: 'campaigns',
-                        action: 'update',
-                        newData: pendingSaveData,
-                        oldData: campaign,
-                        description: `Update campaign summary: ${campaign.name}`,
-                        targetCollection: 'campaigns',
-                        revalidatePath: `/campaign-members/${campaignId}/summary`
+                    isOptional={effectiveVerificationMode.toLowerCase() === 'optional'}
+                    minApprovals={configSettings?.minApprovalsRequired || 1}
+                    authorizedVerifiers={configSettings?.authorizedVerifiers}
+                    onBypass={async () => {
+                        setIsVerificationDialogOpen(false);
+                        if (campaignId && firestore) {
+                            await updateDoc(doc(firestore, 'campaigns', campaignId), pendingSaveData);
+                            toast({ title: 'Summary Updated', description: 'Changes applied directly.', variant: 'success' });
+                            setEditMode(false);
+                            forceRefetchCampaign();
+                        }
                     }}
                     onSuccess={() => {
                         setEditMode(false);
-                        setPendingSaveData(null);
+                        forceRefetchCampaign();
+                    }}
+                    payload={{
+                        targetId: campaignId,
+                        module: 'campaigns',
+                        description: `Update campaign summary: ${campaign?.name}`,
+                        targetCollection: 'campaigns',
+                        originalValue: campaign || {},
+                        newValue: pendingSaveData,
+                        revalidatePath: `/campaign-members/${campaignId}/summary`
                     }}
                 />
             )}

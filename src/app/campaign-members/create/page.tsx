@@ -28,6 +28,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { FileUploader } from '@/components/file-uploader';
 import { BrandedLoader } from '@/components/branded-loader';
+import { notifyCampaignAction } from '@/app/messages/actions';
 
 const campaignSchema = z.object({
   name: z.string().min(3, 'Campaign Name Must Be At Least 3 Characters.'),
@@ -219,6 +220,14 @@ export default function CreateCampaignPage() {
         setProgress(100);
         setLoadingMessage('Creation successful.');
         toast({ title: 'Success', description: 'Campaign Created Successfully.', variant: 'success' });
+
+        // Notify Admins about new campaign
+        try {
+            await notifyCampaignAction(newCampaignId, 'campaign_created');
+        } catch (e) {
+            console.error('Campaign notification failed:', e);
+        }
+
         router.push(`/campaign-members`);
     } catch (serverError: any) {
         errorEmitter.emit('permission-error', new FirestorePermissionError({

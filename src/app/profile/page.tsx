@@ -16,7 +16,10 @@ import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase
 import { doc, writeBatch, collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { processPortalProfileUpdateAction } from '@/app/verifications/actions';
+import { processPortalProfileUpdateAction, checkPendingVerificationAction } from '@/app/verifications/actions';
+import type { PendingVerification } from '@/lib/types';
+import { PendingUpdateWarning } from '@/components/pending-update-warning';
+import { cn } from '@/lib/utils';
 
 function ProfileDetail({ icon, label, value, children, isEditing }: { icon: React.ReactNode, label: string, value?: React.ReactNode, children?: React.ReactNode, isEditing?: boolean }) {
     return (
@@ -40,6 +43,7 @@ export default function ProfilePage() {
     const [phone, setPhone] = useState('');
     
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [existingPendingRequest, setExistingPendingRequest] = useState<PendingVerification | null>(null);
     
     const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
     const [imageToView, setImageToView] = useState<string | null>(null);
@@ -50,8 +54,9 @@ export default function ProfilePage() {
         if (userProfile) {
             setName(userProfile.name);
             setPhone(userProfile.phone || '');
+            checkPendingVerificationAction(userProfile.id).then(setExistingPendingRequest);
         }
-    }, [userProfile]);
+    }, [userProfile, isEditMode]);
 
     const isDirty = useMemo(() => {
         if (!isEditMode || !userProfile) return false;
@@ -161,7 +166,10 @@ export default function ProfilePage() {
                     </Link>
                 </Button>
             </div>
-            <Card className="max-w-2xl mx-auto animate-fade-in-zoom">
+
+            <PendingUpdateWarning targetId={userProfile?.id || ''} module="users" />
+
+            <Card className="max-w-2xl mx-auto animate-fade-in-zoom mt-6">
                 <CardHeader>
                     <div className="flex justify-between items-center">
                         <div>
@@ -169,7 +177,17 @@ export default function ProfilePage() {
                             <CardDescription>This is your personal information as it appears in the system.</CardDescription>
                         </div>
                          {!isEditMode ? (
-                            <Button onClick={handleEdit}><Edit className="mr-2 h-4 w-4" /> Edit</Button>
+                            <Button 
+                                onClick={handleEdit} 
+                                disabled={!!existingPendingRequest}
+                                className={cn(
+                                    "font-bold shadow-md active:scale-95 transition-transform",
+                                    existingPendingRequest ? "bg-muted text-muted-foreground" : ""
+                                )}
+                            >
+                                <Edit className="mr-2 h-4 w-4" /> 
+                                {existingPendingRequest ? "Approval Pending" : "Edit"}
+                            </Button>
                          ) : (
                             <div className="flex gap-2">
                                 <Button variant="ghost" onClick={handleCancel} disabled={isSubmitting}>Cancel</Button>

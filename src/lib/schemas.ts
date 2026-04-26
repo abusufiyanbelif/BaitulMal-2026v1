@@ -7,7 +7,7 @@ import type { UserPermissions } from './modules';
 export const userFormSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters." }),
   email: z.string().email({ message: "Please enter a valid email address."}).optional().or(z.literal('')),
-  phone: z.string().regex(/^\d{10}$/, { message: "Phone must be 10 digits." }).optional().or(z.literal('')),
+  phone: z.string().regex(/^\+?[1-9]\d{1,14}$/, { message: "Please enter a valid phone number with country code." }).optional().or(z.literal('')),
   loginId: z.string().min(3, { message: "Login ID must be at least 3 characters." }).regex(/^[a-z0-9_.]+$/, { message: 'Login ID can only contain lowercase letters, numbers, underscores, and periods.' }),
   userKey: z.string().min(1, { message: 'User Key is required.'}),
   role: z.enum(['Admin', 'User', 'Donor', 'Beneficiary']),

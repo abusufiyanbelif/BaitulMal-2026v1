@@ -111,6 +111,13 @@ export default function Home() {
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.analytics.read', false),
         },
         {
+            title: "Messaging Module",
+            description: "Monitor All Notifications, WhatsApp Alerts, And Message Templates.",
+            href: "/messages",
+            icon: MessageSquare,
+            isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.messages.read', false),
+        },
+        {
             title: "My Donor Portal",
             description: "Switch To Personal View To See Your Own Contributions And Receipts.",
             href: "/donor-portal",

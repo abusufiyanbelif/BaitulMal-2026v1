@@ -3,8 +3,8 @@
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { revalidatePath } from 'next/cache';
 import type { UserFormData } from '@/lib/schemas';
-import type { UserProfile, Donor, UserPermissions, Campaign, Lead, Donation, Beneficiary } from '@/lib/types';
-import { GROUP_IDS, createAdminPermissions } from '@/lib/modules';
+import type { UserProfile, Donor, Campaign, Lead, Donation, Beneficiary } from '@/lib/types';
+import { GROUP_IDS, createAdminPermissions, type UserPermissions } from '@/lib/modules';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { bulkRecalculateInitiativeTotalsAction } from '@/app/donations/actions';
 

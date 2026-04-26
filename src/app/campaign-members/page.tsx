@@ -429,8 +429,8 @@ export default function CampaignPage() {
     let items = campaignsWithProgress.filter(c => {
         const matchesStatus = statusFilter.length === 0 || statusFilter.includes(c.status);
         const matchesCategory = categoryFilter.length === 0 || categoryFilter.includes(c.category);
-        const matchesAuth = authenticityFilter.length === 0 || authenticityFilter.includes(c.authenticityStatus);
-        const matchesVisibility = visibilityFilter.length === 0 || visibilityFilter.includes(c.publicVisibility);
+        const matchesAuth = authenticityFilter.length === 0 || authenticityFilter.includes(c.authenticityStatus || 'Pending Verification');
+        const matchesVisibility = visibilityFilter.length === 0 || visibilityFilter.includes(c.publicVisibility || 'Hold');
         const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase());
         return matchesSearch && matchesStatus && matchesCategory && matchesAuth && matchesVisibility;
     });

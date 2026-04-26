@@ -8,9 +8,17 @@ import { Settings, Save, Loader2, CheckSquare, Edit, X, RefreshCw, DatabaseZap, 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Button } from '@/components/ui/button';
+import { useCollection } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
+import type { UserProfile } from '@/lib/types';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { UserCheck, Users, Search } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
 import { syncAllDonationsToDonorsAction, bulkRecalculateInitiativeTotalsAction } from '@/app/donations/actions';
 
 const VISIBILITY_OPTIONS = [
@@ -55,20 +63,42 @@ export default function DonationSettingsPage() {
   const [localVis, setLocalVis] = useState<Record<string, boolean>>({});
   const [localMandatory, setLocalMandatory] = useState<Record<string, boolean>>({});
   const [localVerificationMode, setLocalVerificationMode] = useState('Disabled');
- 
+  const [minApprovalsRequired, setMinApprovalsRequired] = useState(1);
+  const [authorizedVerifiers, setAuthorizedVerifiers] = useState<string[]>([]);
+  const [userSearchTerm, setUserSearchTerm] = useState('');
+
+  const usersRef = useMemoFirebase(() => (firestore) ? query(collection(firestore, 'users'), where('status', '==', 'Active')) : null, [firestore]);
+  const { data: allUsers } = useCollection<UserProfile>(usersRef);
+
+  const availableVerifiers = useMemo(() => {
+    return (allUsers || []).filter(u => 
+        (u.role === 'Admin' || u.role === 'User') &&
+        (u.name.toLowerCase().includes(userSearchTerm.toLowerCase()) || u.loginId.toLowerCase().includes(userSearchTerm.toLowerCase()))
+    );
+  }, [allUsers, userSearchTerm]);
+  
    useEffect(() => {
      if (visibilitySettings) setLocalVis(visibilitySettings);
      if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
-     if (configSettings?.verificationMode) setLocalVerificationMode(configSettings.verificationMode);
-     else if (configSettings?.isVerificationRequired) setLocalVerificationMode('Mandatory');
+     if (configSettings?.verificationMode) {
+         const mode = configSettings.verificationMode;
+         const capitalized = mode.charAt(0).toUpperCase() + mode.slice(1).toLowerCase();
+         setLocalVerificationMode(capitalized);
+     } else if (configSettings?.isVerificationRequired) {
+         setLocalVerificationMode('Mandatory');
+     }
+     if (configSettings?.minApprovalsRequired !== undefined) setMinApprovalsRequired(configSettings.minApprovalsRequired);
+     if (configSettings?.authorizedVerifiers) setAuthorizedVerifiers(configSettings.authorizedVerifiers);
    }, [visibilitySettings, configSettings]);
- 
-   const isDirty = useMemo(() => {
-     const visChanged = JSON.stringify(localVis) !== JSON.stringify(visibilitySettings || {});
-     const mandatoryChanged = JSON.stringify(localMandatory) !== JSON.stringify(configSettings?.mandatoryFields || {});
-     const verificationModeChanged = localVerificationMode !== (configSettings?.verificationMode || 'Disabled');
-     return visChanged || mandatoryChanged || verificationModeChanged;
-   }, [localVis, localMandatory, localVerificationMode, visibilitySettings, configSettings]);
+
+    const isDirty = useMemo(() => {
+        const visChanged = JSON.stringify(localVis) !== JSON.stringify(visibilitySettings || {});
+        const mandatoryChanged = JSON.stringify(localMandatory) !== JSON.stringify(configSettings?.mandatoryFields || {});
+        const verificationModeChanged = localVerificationMode !== (configSettings?.verificationMode || 'Disabled');
+        const minApprovalsChanged = Number(minApprovalsRequired) !== (configSettings?.minApprovalsRequired || 1);
+        const authorizedChanged = JSON.stringify(authorizedVerifiers) !== JSON.stringify(configSettings?.authorizedVerifiers || []);
+        return visChanged || mandatoryChanged || verificationModeChanged || minApprovalsChanged || authorizedChanged;
+    }, [localVis, localMandatory, localVerificationMode, minApprovalsRequired, authorizedVerifiers, visibilitySettings, configSettings]);
 
   const handleVisToggle = (id: string, group: 'public' | 'member') => {
     const key = `${group}_${id}`;
@@ -88,7 +118,9 @@ export default function DonationSettingsPage() {
              setDoc(configRef, { 
                  mandatoryFields: localMandatory, 
                  isVerificationRequired: localVerificationMode !== 'Disabled',
-                 verificationMode: localVerificationMode
+                 verificationMode: localVerificationMode,
+                 minApprovalsRequired: Number(minApprovalsRequired) || 1,
+                 authorizedVerifiers: authorizedVerifiers
              }, { merge: true })
          ]);
         toast({ title: "Settings saved", variant: "success" });
@@ -125,10 +157,23 @@ export default function DonationSettingsPage() {
   const handleCancel = () => {
      if (visibilitySettings) setLocalVis(visibilitySettings);
      if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
-     if (configSettings?.verificationMode) setLocalVerificationMode(configSettings.verificationMode);
-     else if (configSettings?.isVerificationRequired) setLocalVerificationMode('Mandatory');
-     else setLocalVerificationMode('Disabled');
+     if (configSettings?.verificationMode) {
+         const mode = configSettings.verificationMode;
+         const capitalized = mode.charAt(0).toUpperCase() + mode.slice(1).toLowerCase();
+         setLocalVerificationMode(capitalized);
+     } else if (configSettings?.isVerificationRequired) {
+         setLocalVerificationMode('Mandatory');
+     }
+     if (configSettings?.minApprovalsRequired !== undefined) setMinApprovalsRequired(configSettings.minApprovalsRequired);
+     if (configSettings?.authorizedVerifiers) setAuthorizedVerifiers(configSettings.authorizedVerifiers);
      setIsEditMode(false);
+   };
+
+   const toggleVerifier = (userId: string) => {
+       if (!isEditMode) return;
+       setAuthorizedVerifiers(prev => 
+           prev.includes(userId) ? prev.filter(id => id !== userId) : [...prev, userId]
+       );
    };
 
   if (isVisLoading || isConfigLoading) return <BrandedLoader />;
@@ -279,6 +324,76 @@ export default function DonationSettingsPage() {
                         Control how modifications to donations are handled by default.
                      </p>
                  </div>
+
+                 {localVerificationMode !== 'Disabled' && (
+                     <div className="flex flex-col space-y-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10 animate-fade-in mt-4">
+                         <Label className="font-bold text-sm tracking-tight text-primary">Required Approvals</Label>
+                         <Input 
+                             type="number" 
+                             min={1} 
+                             max={10}
+                             value={minApprovalsRequired} 
+                             onChange={(e) => setMinApprovalsRequired(parseInt(e.target.value))}
+                             disabled={!isEditMode}
+                             className="font-bold border-primary/20 bg-white shadow-sm w-full"
+                         />
+                         <p className="text-[10px] text-muted-foreground font-medium">
+                             Number of members required to approve a single change request.
+                         </p>
+                     </div>
+                 )}
+
+                 {localVerificationMode !== 'Disabled' && (
+                     <div className="flex flex-col space-y-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10 animate-fade-in mt-4">
+                         <div className="flex items-center justify-between">
+                             <Label className="font-bold text-sm tracking-tight text-primary">Designated Verifiers</Label>
+                             <Badge variant="outline" className="text-[10px] border-primary/20 text-primary">{authorizedVerifiers.length} Selected</Badge>
+                         </div>
+                         <p className="text-[10px] text-muted-foreground font-medium">
+                             If specified, only these users will be allowed to verify changes. Leave empty to allow any Admin or Organization Member.
+                         </p>
+                         
+                         <div className="relative mt-2">
+                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                             <Input 
+                                 placeholder="Filter members..." 
+                                 className="pl-9 text-xs h-9 border-primary/10"
+                                 value={userSearchTerm}
+                                 onChange={(e) => setUserSearchTerm(e.target.value)}
+                                 disabled={!isEditMode}
+                             />
+                         </div>
+
+                         <ScrollArea className="max-h-[240px] border rounded-lg bg-white p-2 border-primary/10">
+                             <div className="space-y-1">
+                                 {availableVerifiers.map(u => (
+                                     <div 
+                                         key={u.id}
+                                         onClick={() => toggleVerifier(u.id)}
+                                         className={cn(
+                                             "flex items-center justify-between p-2 rounded-md cursor-pointer transition-colors",
+                                             authorizedVerifiers.includes(u.id) ? "bg-primary/10" : "hover:bg-primary/5"
+                                         )}
+                                     >
+                                         <div className="flex items-center gap-2">
+                                             <Checkbox 
+                                                 checked={authorizedVerifiers.includes(u.id)} 
+                                                 onCheckedChange={() => toggleVerifier(u.id)}
+                                                 disabled={!isEditMode}
+                                                 className="data-[state=checked]:bg-primary"
+                                             />
+                                             <div className="flex flex-col">
+                                                 <span className="text-xs font-bold">{u.name}</span>
+                                                 <span className="text-[9px] text-muted-foreground">{u.role} | {u.loginId}</span>
+                                             </div>
+                                         </div>
+                                         {authorizedVerifiers.includes(u.id) && <UserCheck className="h-3 w-3 text-primary" />}
+                                     </div>
+                                 ))}
+                             </div>
+                         </ScrollArea>
+                     </div>
+                 )}
              </CardContent>
          </Card>
      </div>

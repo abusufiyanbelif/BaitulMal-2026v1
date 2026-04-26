@@ -94,12 +94,51 @@ export function usePublicData() {
     const endDate = brandingSettings?.summaryEndDate || '';
 
     // --- RECONCILIATION ENGINE ---
-    // Calculates verified contributions for an individual initiative
+    // Calculates verified contributions for an individual initiative by summing donations on-the-fly
     const reconcileInitiative = (item: Campaign | Lead, isCampaign: boolean) => {
-        let collected = Number(item.collectedAmount) || 0;
+        const itemType = isCampaign ? 'campaign' : 'lead';
+        
+        // Filter donations linked to this specific initiative
+        const itemDonations = donations.filter(d => 
+            d.linkSplit?.some(l => l.linkId === item.id || l.linkId === `${itemType}_${item.id}`)
+        );
+
+        let totalCollected = 0;
+        const allowedTypes = item.allowedDonationTypes && item.allowedDonationTypes.length > 0
+            ? item.allowedDonationTypes
+            : [...donationCategories];
+
+        itemDonations.forEach(d => {
+            const link = d.linkSplit?.find(l => l.linkId === item.id || l.linkId === `${itemType}_${item.id}`);
+            if (!link) return;
+
+            const amountForThisItem = link.amount;
+            const totalDonationAmount = d.amount > 0 ? d.amount : 1;
+            const proportion = amountForThisItem / totalDonationAmount;
+
+            const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
+            
+            splits.forEach((split: any) => {
+                const rawCategory = (split.category as string || '').trim();
+                const normalizedCategory = rawCategory === 'General' || rawCategory === 'Sadqa' ? 'Sadaqah' : rawCategory;
+                
+                const isAllowed = allowedTypes.some(t => t.toLowerCase() === normalizedCategory.toLowerCase());
+                
+                if (isAllowed) {
+                    const isForFundraising = normalizedCategory.toLowerCase() !== 'zakat' || split.forFundraising !== false;
+                    if (isForFundraising) {
+                        totalCollected += split.amount * proportion;
+                    }
+                }
+            });
+        });
+
         const target = Number(item.targetAmount) || 0;
-        const progress = target > 0 ? (collected / target) * 100 : 0;
-        return { collected, target, progress: Math.min(progress, 100) };
+        // Fallback to document field if on-the-fly calculation is 0 but document says otherwise (to handle edge cases)
+        const finalCollected = totalCollected > 0 ? totalCollected : (Number(item.collectedAmount) || 0);
+        const progress = target > 0 ? (finalCollected / target) * 100 : 0;
+        
+        return { collected: finalCollected, target, progress: Math.min(progress, 100) };
     };
 
     const campaignsWithProgress = campaigns.map(c => ({ ...c, ...reconcileInitiative(c, true) }));
@@ -127,14 +166,16 @@ export function usePublicData() {
 
     const amountsByCategory = publicLinkedDonations.reduce((acc, d) => {
       const totalAmount = d.amount || 1;
-      // Proportion of donation amount actually linked to public initiatives
       const linkedAmount = d.linkSplit?.filter(l => activeInitiativeIds.has(l.linkId)).reduce((s, l) => s + l.amount, 0) || 0;
       const proportion = linkedAmount / totalAmount;
 
       const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
       splits.forEach(split => {
-        const category = (split.category as any) === 'General' ? 'Sadaqah' : split.category as DonationCategory;
-        if (donationCategories.includes(category)) {
+        const rawCategory = (split.category as string || '').trim();
+        const normalizedCategory = rawCategory === 'General' || rawCategory === 'Sadqa' ? 'Sadaqah' : rawCategory;
+        const category = donationCategories.find(c => c.toLowerCase() === normalizedCategory.toLowerCase());
+        
+        if (category) {
           acc[category] = (acc[category] || 0) + (split.amount * proportion);
         }
       });

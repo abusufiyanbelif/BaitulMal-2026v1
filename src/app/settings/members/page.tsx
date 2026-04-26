@@ -103,7 +103,7 @@ export default function OrganizationMembersPage() {
                                                                 className="h-7 w-7 text-green-600 hover:bg-green-50 hover:text-green-700" 
                                                                 onClick={(e) => {
                                                                     e.stopPropagation();
-                                                                    window.open(`https://wa.me/91${member.phone!.replace(/\D/g, '')}`, '_blank');
+                                                                    window.open(`https://wa.me/${member.phone!.replace(/\D/g, '')}`, '_blank');
                                                                 }}
                                                                 title="Message on WhatsApp"
                                                             >

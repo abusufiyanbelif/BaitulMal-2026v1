@@ -115,7 +115,7 @@ import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 type SortKey = keyof Donation | 'srNo';
 
-function MultiSelectFilter({ title, options, selected, onChange }: { title: string, options: string[], selected: string[], onChange: (val: string[]) => void }) {
+function MultiSelectFilter({ title, options, selected, onChange }: { title: string, options: readonly string[], selected: string[], onChange: (val: string[]) => void }) {
     return (
         <Popover>
             <PopoverTrigger asChild>
@@ -392,7 +392,7 @@ function DonationListContent() {
   const [methodFilter, setMethodFilter] = useState<string[]>([]);
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
-  const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
+  const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(15);
   const [editingDonation, setEditingDonation] = useState<Donation | null>(null);

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -40,6 +40,8 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get('callbackUrl');
   const auth = useAuth();
   const firestore = useFirestore();
   const { toast } = useToast();
@@ -75,7 +77,16 @@ export default function LoginPage() {
     try {
       await signInWithLoginId(auth, firestore, data.loginId, data.password);
       toast({ title: 'Login successful', description: "Welcome back!", variant: 'success' });
-      // Redirect is handled automatically by the auth-provider RouteGuard based on user role
+      
+      // Redirect to callbackUrl if it exists, otherwise default to role-based dashboard
+      if (callbackUrl) {
+          router.push(callbackUrl);
+      } else {
+          // Note: The RouteGuard in auth-provider will also handle this, 
+          // but we do it here for immediate feedback.
+          // router.push(isStaff ? '/dashboard' : '/donor-portal');
+          // Actually, we don't have isStaff here easily, so we just let RouteGuard handle it if no callback
+      }
     } catch (error: any) {
       if (error.code === 'auth/configuration-not-found') {
             setSetupError(error.message);

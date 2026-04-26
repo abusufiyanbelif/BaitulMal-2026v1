@@ -24,6 +24,13 @@ service cloud.storage {
       );
     }
 
+    function isStaff() {
+      return isSignedIn() && (
+        isAdmin() || 
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'User'
+      );
+    }
+
     // --- RULES ---
 
     // Public settings files (logo, QR)
@@ -34,29 +41,30 @@ service cloud.storage {
 
     // Member profile artifacts
     match /users/{userId}/{allPaths=**} {
-      allow read, write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow read: if isSignedIn() && (request.auth.uid == userId || isStaff());
+      allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
     }
 
     // Initiative artifacts
     match /campaigns/{id}/{allPaths=**} {
-      allow read: if isSignedIn() || firestore.get(/databases/(default)/documents/campaigns/$(id)).data.isPublic == true || firestore.get(/databases/(default)/documents/campaigns/$(id)).data.publicVisibility == 'Published';
+      allow read: if isStaff() || firestore.get(/databases/(default)/documents/campaigns/$(id)).data.isPublic == true || firestore.get(/databases/(default)/documents/campaigns/$(id)).data.publicVisibility == 'Published';
       allow write: if isAdmin();
     }
 
     match /leads/{id}/{allPaths=**} {
-      allow read: if isSignedIn() || firestore.get(/databases/(default)/documents/leads/$(id)).data.isPublic == true || firestore.get(/databases/(default)/documents/leads/$(id)).data.publicVisibility == 'Published';
+      allow read: if isStaff() || firestore.get(/databases/(default)/documents/leads/$(id)).data.isPublic == true || firestore.get(/databases/(default)/documents/leads/$(id)).data.publicVisibility == 'Published';
       allow write: if isAdmin();
     }
 
     // Beneficiary artifacts
     match /beneficiaries/{id}/{allPaths=**} {
-      allow read: if isSignedIn() || firestore.get(/databases/(default)/documents/beneficiaries/$(id)).data.isPublic == true || firestore.get(/databases/(default)/documents/beneficiaries/$(id)).data.idProofIsPublic == true;
-      allow write: if isSignedIn();
+      allow read: if isStaff() || firestore.get(/databases/(default)/documents/beneficiaries/$(id)).data.isPublic == true || firestore.get(/databases/(default)/documents/beneficiaries/$(id)).data.idProofIsPublic == true;
+      allow write: if isStaff();
     }
 
     // Donation artifacts (Payment Screenshots)
     match /donations/{id}/{allPaths=**} {
-      allow read: if isSignedIn() || firestore.get(/databases/(default)/documents/donations/$(id)).data.isPublic == true || firestore.get(/databases/(default)/documents/donations/$(id)).data.screenshotIsPublic == true;
+      allow read: if isStaff() || firestore.get(/databases/(default)/documents/donations/$(id)).data.isPublic == true || firestore.get(/databases/(default)/documents/donations/$(id)).data.screenshotIsPublic == true;
       allow write: if true; // Allow guest donation submissions
     }
   }

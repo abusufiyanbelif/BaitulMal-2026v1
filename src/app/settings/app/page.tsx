@@ -487,7 +487,7 @@ export default function AppSettingsPage() {
 
     const isFormDisabled = !isEditMode || isSubmitting;
 
-    const displayData = isEditMode && editableData ? editableData : {
+    const displayData = (isEditMode && editableData) ? editableData : {
         name: brandingSettings?.name || '',
         logoUrl: brandingSettings?.logoUrl || '',
         logoWidth: brandingSettings?.logoWidth || 40,
@@ -505,6 +505,26 @@ export default function AppSettingsPage() {
         isLandingDonateNowVisible: brandingSettings?.isLandingDonateNowVisible ?? true,
         summaryStartDate: brandingSettings?.summaryStartDate || '',
         summaryEndDate: brandingSettings?.summaryEndDate || '',
+        qrCodeUrl: paymentSettings?.qrCodeUrl || '',
+        qrWidth: paymentSettings?.qrWidth || 120,
+        qrHeight: paymentSettings?.qrHeight || 120,
+        upiId: paymentSettings?.upiId || '',
+        paymentMobileNumber: paymentSettings?.paymentMobileNumber || '',
+        contactEmail: paymentSettings?.contactEmail || '',
+        contactPhone: paymentSettings?.contactPhone || '',
+        regNo: paymentSettings?.regNo || '',
+        pan: paymentSettings?.pan || '',
+        address: paymentSettings?.address || '',
+        website: paymentSettings?.website || '',
+        copyright: paymentSettings?.copyright || '',
+        bankAccountName: paymentSettings?.bankAccountName || '',
+        bankAccountNumber: paymentSettings?.bankAccountNumber || '',
+        bankIfsc: paymentSettings?.bankIfsc || '',
+        isGuidingPrinciplesPublic: guidingPrinciplesData?.isGuidingPrinciplesPublic || false,
+        gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
+        gpDescription: guidingPrinciplesData?.description || '',
+        principles: guidingPrinciplesData?.principles || [],
+        focusAreas: guidingPrinciplesData?.focusAreas || [],
         isTickerActiveVisible: brandingSettings?.isTickerActiveVisible ?? true,
         isTickerDonationVisible: brandingSettings?.isTickerDonationVisible ?? true,
         isTickerCompletedVisible: brandingSettings?.isTickerCompletedVisible ?? true,
@@ -654,7 +674,7 @@ export default function AppSettingsPage() {
                                 </h5>
                                 <p className="text-[10px] text-muted-foreground font-normal">Select specific initiatives that should never appear in the rolling ticker.</p>
                                 <div className="border rounded-lg bg-muted/5 p-2">
-                                    <ScrollArea className="h-48 w-full">
+                                    <ScrollArea className="max-h-48 w-full">
                                         <div className="space-y-1">
                                             {[...(allCampaigns || []), ...(allLeads || [])].map((item) => {
                                                 const isSkipped = displayData.tickerSkipIds.includes(item.id);

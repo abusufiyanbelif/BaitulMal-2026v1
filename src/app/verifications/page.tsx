@@ -10,6 +10,7 @@ import {
     orderBy,
     where
 } from '@/firebase';
+import { useSearchParams } from 'next/navigation';
 import { useSession } from '@/hooks/use-session';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -30,13 +31,16 @@ import {
     History,
     IndianRupee,
     FolderKanban,
-    Lightbulb
+    Lightbulb,
+    Users,
+    HeartHandshake,
+    Ban
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { approveVerificationAction, rejectVerificationAction } from './actions';
+import { approveVerificationAction, rejectVerificationAction, cancelVerificationAction } from './actions';
 import type { PendingVerification } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
@@ -46,6 +50,9 @@ export default function VerificationsPage() {
     const firestore = useFirestore();
     const { userProfile, isLoading: isProfileLoading } = useSession();
     const { toast } = useToast();
+    const searchParams = useSearchParams();
+    const targetRequestId = searchParams.get('requestId');
+    
     const [selectedRequest, setSelectedRequest] = useState<PendingVerification | null>(null);
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [isActionLoading, setIsActionLoading] = useState(false);
@@ -71,6 +78,17 @@ export default function VerificationsPage() {
     }, [firestore, userProfile]);
 
     const { data: verifications, isLoading: isVerificationsLoading } = useCollection<PendingVerification>(verificationsRef);
+
+    // Deep link handling: Open the requested ID automatically
+    React.useEffect(() => {
+        if (!isVerificationsLoading && verifications && targetRequestId) {
+            const found = verifications.find(v => v.id === targetRequestId);
+            if (found) {
+                setSelectedRequest(found);
+                setIsDetailOpen(true);
+            }
+        }
+    }, [isVerificationsLoading, verifications, targetRequestId]);
 
     const handleApprove = async (requestId: string) => {
         if (!userProfile) return;
@@ -106,6 +124,21 @@ export default function VerificationsPage() {
         }
     };
 
+    const handleWithdraw = async (requestId: string) => {
+        if (!confirm('Are you sure you want to withdraw this request?')) return;
+        setIsActionLoading(true);
+        try {
+            const res = await cancelVerificationAction(requestId);
+            if (res.success) {
+                toast({ title: "Withdrawn", description: res.message, variant: "success" });
+            } else {
+                toast({ title: "Failed", description: res.message, variant: "destructive" });
+            }
+        } finally {
+            setIsActionLoading(false);
+        }
+    };
+
     const isLoading = isProfileLoading || isVerificationsLoading;
 
     if (isLoading) return <BrandedLoader message="Syncing Verification Pipeline..." />;
@@ -115,7 +148,10 @@ export default function VerificationsPage() {
         v.assignedVerifiers.some(av => av.id === userProfile?.id && av.status === 'Pending')
     );
 
-    const allRequests = verifications || [];
+    // If targetRequestId is present, we show that first in the "all" list or filter it
+    const allRequests = targetRequestId 
+        ? (verifications || []).filter(v => v.id === targetRequestId) 
+        : (verifications || []);
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal">
@@ -147,6 +183,7 @@ export default function VerificationsPage() {
                                     key={v.id} 
                                     request={v} 
                                     onView={() => { setSelectedRequest(v); setIsDetailOpen(true); }} 
+                                    onWithdraw={v.requestedBy.id === userProfile?.id ? () => handleWithdraw(v.id) : undefined}
                                 />
                             ))}
                         </div>
@@ -168,6 +205,7 @@ export default function VerificationsPage() {
                                 key={v.id} 
                                 request={v} 
                                 onView={() => { setSelectedRequest(v); setIsDetailOpen(true); }} 
+                                onWithdraw={v.requestedBy.id === userProfile?.id && (v.status === 'Pending' || v.status === 'Partially Approved') ? () => handleWithdraw(v.id) : undefined}
                             />
                         ))}
                     </div>
@@ -311,7 +349,7 @@ export default function VerificationsPage() {
     );
 }
 
-function VerificationCard({ request, onView }: { request: PendingVerification, onView: () => void }) {
+function VerificationCard({ request, onView, onWithdraw }: { request: PendingVerification, onView: () => void, onWithdraw?: () => void }) {
     const statusColor = {
         'Pending': 'bg-orange-100 text-orange-800 border-orange-200',
         'Partially Approved': 'bg-blue-100 text-blue-800 border-blue-200',
@@ -368,13 +406,24 @@ function VerificationCard({ request, onView }: { request: PendingVerification, o
                         ))}
                     </div>
                 </div>
-                <Button 
-                    variant="ghost" 
-                    className="w-full mt-2 font-bold text-xs h-9 border-primary/10 hover:bg-primary hover:text-white transition-all group-hover:shadow-md"
-                    onClick={onView}
-                >
-                    Perform Review <Eye className="ml-2 h-3.5 w-3.5" />
-                </Button>
+                <div className="flex gap-2">
+                    <Button 
+                        variant="ghost" 
+                        className="flex-1 mt-2 font-bold text-xs h-9 border-primary/10 hover:bg-primary hover:text-white transition-all group-hover:shadow-md"
+                        onClick={onView}
+                    >
+                        Review <Eye className="ml-2 h-3.5 w-3.5" />
+                    </Button>
+                    {onWithdraw && (
+                        <Button 
+                            variant="outline"
+                            className="mt-2 font-bold text-xs h-9 border-red-200 text-red-600 hover:bg-red-50"
+                            onClick={onWithdraw}
+                        >
+                            <Ban className="h-3.5 w-3.5" />
+                        </Button>
+                    )}
+                </div>
             </CardContent>
         </Card>
     );

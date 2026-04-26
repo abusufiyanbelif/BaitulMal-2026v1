@@ -187,12 +187,14 @@ export default function PublicCampaignSummaryPage() {
             const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
             
             splits.forEach((split: any) => {
-                const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
-                if (amountsByCategory.hasOwnProperty(category)) {
+                const rawCategory = (split.category as string || '').trim();
+                const normalizedCategory = rawCategory === 'General' || rawCategory === 'Sadqa' ? 'Sadaqah' : rawCategory;
+                
+                if (amountsByCategory.hasOwnProperty(normalizedCategory)) {
                     const allocatedAmount = split.amount * proportionForThisCampaign;
-                    amountsByCategory[category as DonationCategory] += allocatedAmount;
-                    const isForFundraising = category !== 'Zakat' || split.forFundraising === true;
-                    if (category === 'Zakat' && isForFundraising) zakatForGoalAmount += allocatedAmount;
+                    amountsByCategory[normalizedCategory as DonationCategory] += allocatedAmount;
+                    const isForFundraising = normalizedCategory !== 'Zakat' || split.forFundraising !== false;
+                    if (normalizedCategory === 'Zakat' && isForFundraising) zakatForGoalAmount += allocatedAmount;
                 }
             });
         });
@@ -204,10 +206,17 @@ export default function PublicCampaignSummaryPage() {
 
         const zakatSurplus = Math.max(0, zakatForGoalAmount - zakatAllocated);
 
+        const allowedTypes = campaign.allowedDonationTypes && campaign.allowedDonationTypes.length > 0
+            ? campaign.allowedDonationTypes
+            : [...donationCategories];
+
         const totalCollectedForGoal = Object.entries(amountsByCategory)
-            .filter(([category]) => campaign.allowedDonationTypes?.includes(category as DonationCategory))
+            .filter(([category]) => {
+                const cat = category as DonationCategory;
+                return allowedTypes.some(t => t.toLowerCase() === cat.toLowerCase());
+            })
             .reduce((sum, [category, amount]) => {
-                if (category === 'Zakat') return sum + zakatSurplus;
+                if (category === 'Zakat') return sum + zakatForGoalAmount;
                 return sum + amount;
             }, 0);
 

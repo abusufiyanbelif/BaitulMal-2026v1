@@ -12,10 +12,42 @@
   * Mock helper for WhatsApp notifications.
   * In a production environment, this would integrate with Twilio or WhatsApp Business API.
   */
- async function sendWhatsAppNotification(phone: string, message: string) {
-     console.log(`[WHATSAPP NOTIFICATION QUIET-LOG] To: ${phone} | Content: ${message}`);
-     // TODO: Integration point for external messaging API
-     return true;
+ import { sendWhatsAppAction, notifyLeadAction, notifyCampaignAction, notifyDonationVerifiedAction, notifyBeneficiaryStatusAction } from '@/app/messages/actions';
+ 
+ /**
+  * Deeply serializes Firestore data by converting Timestamps to ISO strings.
+  * This is required because Next.js Server Actions cannot return non-plain objects like Timestamps.
+  */
+ function serializeForClient(data: any): any {
+     if (data === null || data === undefined) return data;
+     
+     // Handle Firestore Timestamp (Admin SDK)
+     if (typeof data.toDate === 'function') {
+         return data.toDate().toISOString();
+     }
+     
+     // Handle Date objects
+     if (data instanceof Date) {
+         return data.toISOString();
+     }
+ 
+     // Handle Array
+     if (Array.isArray(data)) {
+         return data.map(serializeForClient);
+     }
+ 
+     // Handle Plain Object
+     if (typeof data === 'object' && data.constructor === Object) {
+         const serialized: any = {};
+         for (const key in data) {
+             if (Object.prototype.hasOwnProperty.call(data, key)) {
+                 serialized[key] = serializeForClient(data[key]);
+             }
+         }
+         return serialized;
+     }
+ 
+     return data;
  }
  
  export async function requestVerificationAction(
@@ -26,32 +58,102 @@
  
      try {
          const verificationsRef = adminDb.collection('pending_verifications');
+ 
+         // --- CONFLICT CHECK ---
+         // Prevent multiple pending requests for the same record
+         const existingSnap = await verificationsRef
+             .where('targetId', '==', verificationData.targetId)
+             .where('status', 'in', ['Pending', 'Partially Approved'])
+             .limit(1)
+             .get();
+ 
+         if (!existingSnap.empty) {
+             return { 
+                 success: false, 
+                 message: 'Conflict: A change request for this record is already awaiting approval. Please resolve the existing request first.' 
+             };
+         }
+ 
          const newDoc = verificationsRef.doc();
          
          const payload: PendingVerification = {
              ...verificationData,
              id: newDoc.id,
-             assignedVerifierIds: verificationData.assignedVerifiers.map(v => v.id),
+             assignedVerifierIds: verificationData.assignedVerifiers.map((v: { id: string }) => v.id),
              status: 'Pending',
              createdAt: Timestamp.now(),
              updatedAt: Timestamp.now(),
          } as PendingVerification;
  
          await newDoc.set(payload);
+
+        let sentCount = 0;
+        let failCount = 0;
  
-         // Notify assigned verifiers
-         for (const verifier of payload.assignedVerifiers) {
-             // In a real app, we'd fetch the verifier's phone number here
-             await sendWhatsAppNotification('9999999999', `Verification Required: ${payload.requestedBy.name} has requested your approval for a ${payload.module} record update. Record ID: ${payload.targetId}`);
-         }
- 
-         revalidatePath(payload.revalidatePath);
-         return { success: true, message: 'Verification Request Dispatched To Assigned Members.' };
-     } catch (error: any) {
-         console.error('Request Verification Error:', error);
-         return { success: false, message: `Dispatch Failed: ${error.message}` };
-     }
- }
+        // Notify assigned verifiers
+        for (const verifier of payload.assignedVerifiers) {
+            try {
+                const verifierSnap = await adminDb.collection('users').doc(verifier.id).get();
+                const verifierPhone = verifierSnap.data()?.phone;
+                
+                if (verifierPhone && verifierPhone !== 'Unknown') {
+                    // Get Base URL from Firestore if available
+                    let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
+                    try {
+                        const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+                        if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
+                            baseUrl = resourceSnap.data()?.baseUrl;
+                        }
+                    } catch (e) {}
+
+                    const notifyResult = await sendWhatsAppAction({
+                        to: verifierPhone,
+                        templateId: 'verification_request',
+                        variables: {
+                            verifierName: verifier.name,
+                            requesterName: payload.requestedBy.name,
+                            purpose: payload.description || 'Data Update',
+                            module: payload.module.toUpperCase(),
+                            recordId: payload.targetId,
+                            requestId: payload.id,
+                            url: `${baseUrl}/verifications?requestId=${payload.id}`
+                        },
+                        metadata: {
+                            moduleId: payload.module,
+                            recordId: payload.targetId,
+                            userId: verifier.id,
+                            templateId: 'verification_request'
+                        }
+                    });
+                    
+                    if (notifyResult.success) sentCount++;
+                    else failCount++;
+                } else {
+                    failCount++;
+                }
+            } catch (notifyError) {
+                failCount++;
+                console.error(`Failed to process notification for verifier ${verifier.id}:`, notifyError);
+            }
+        }
+
+        revalidatePath(payload.revalidatePath);
+        
+        const notificationStatus = failCount === 0 
+            ? `All ${sentCount} notifications dispatched.`
+            : sentCount > 0 
+                ? `${sentCount} sent, ${failCount} skipped or failed.`
+                : `Automated notifications were skipped (disabled or unavailable).`;
+
+        return { 
+            success: true, 
+            message: `Verification Dispatched. ${notificationStatus}` 
+        };
+    } catch (error: any) {
+        console.error('Request Verification Error:', error);
+        return { success: false, message: `Dispatch Failed: ${error.message}` };
+    }
+}
  
  export async function approveVerificationAction(
      requestId: string,
@@ -88,6 +190,24 @@
                  await targetRef.update(request.newValue);
              }
  
+             // --- TRIGGER MODULE-SPECIFIC NOTIFICATIONS ---
+             try {
+                 if (request.module === 'leads') {
+                     await notifyLeadAction(request.targetId, 'lead_updated', {
+                         actionType: 'Approved Modification',
+                         summary: request.description || 'Verified via Approval Workflow'
+                     });
+                 } else if (request.module === 'campaigns') {
+                     await notifyCampaignAction(request.targetId, 'campaign_milestone');
+                 } else if (request.module === 'donations') {
+                     await notifyDonationVerifiedAction(request.targetId);
+                 } else if (request.module === 'beneficiaries') {
+                     await notifyBeneficiaryStatusAction(request.targetId, (request.newValue as any).status || 'Updated');
+                 }
+             } catch (notifyError) {
+                 console.error(`Approval notification failed for ${request.module}:`, notifyError);
+             }
+ 
              // Special handling for donations: Trigger recalculation of initiative totals
              if (request.module === 'donations') {
                  await bulkRecalculateInitiativeTotalsAction();
@@ -112,7 +232,9 @@
                          // Recalculate surplus logic
                          await syncInitiativeCollectedTotals(adminDb, [{ 
                              linkId: initiativeId, 
-                             linkType: initiativeCollection === 'campaigns' ? 'campaign' : 'lead' 
+                             linkType: initiativeCollection === 'campaigns' ? 'campaign' : 'lead',
+                             linkName: '',
+                             amount: 0
                          }]);
                      }
                  }
@@ -120,6 +242,32 @@
  
              // Cleanup: Delete the pending request
              await docRef.delete();
+            
+            // Notify Requester
+            try {
+                const requesterSnap = await adminDb.collection('users').doc(request.requestedBy.id).get();
+                const requesterPhone = requesterSnap.data()?.phone;
+                if (requesterPhone && requesterPhone !== 'Unknown') {
+                    await sendWhatsAppAction({
+                        to: requesterPhone,
+                        templateId: 'verification_approved',
+                        variables: {
+                            requesterName: request.requestedBy.name,
+                            module: request.module.toUpperCase(),
+                            recordId: request.targetId,
+                            purpose: request.description || 'Data Update'
+                        },
+                        metadata: {
+                            moduleId: request.module,
+                            recordId: request.targetId,
+                            userId: request.requestedBy.id,
+                            templateId: 'verification_approved'
+                        }
+                    });
+                }
+            } catch (notifyError) {
+                console.error('Failed to notify requester of approval:', notifyError);
+            }
              
              revalidatePath(request.revalidatePath, 'page');
              revalidatePath('/dashboard', 'layout');
@@ -164,7 +312,33 @@
            updatedAt: Timestamp.now()
          });
  
-         revalidatePath(request.revalidatePath);
+         // Notify Requester
+        try {
+            const requesterSnap = await adminDb.collection('users').doc(request.requestedBy.id).get();
+            const requesterPhone = requesterSnap.data()?.phone;
+            if (requesterPhone && requesterPhone !== 'Unknown') {
+                await sendWhatsAppAction({
+                    to: requesterPhone,
+                    templateId: 'verification_rejected',
+                    variables: {
+                        requesterName: request.requestedBy.name,
+                        module: request.module.toUpperCase(),
+                        recordId: request.targetId,
+                        reason: reason || 'Criteria not met or data discrepancy found.'
+                    },
+                    metadata: {
+                        moduleId: request.module,
+                        recordId: request.targetId,
+                        userId: request.requestedBy.id,
+                        templateId: 'verification_rejected'
+                    }
+                });
+            }
+        } catch (notifyError) {
+            console.error('Failed to notify requester of rejection:', notifyError);
+        }
+
+        revalidatePath(request.revalidatePath);
          return { success: true, message: 'Change Request Rejected.' };
      } catch (error: any) {
          console.error('Reject Verification Error:', error);
@@ -203,7 +377,7 @@
             originalValue: originalSnap.exists ? originalSnap.data() : null,
             requestedBy: { id: userId, name: userName },
             assignedVerifiers,
-            assignedVerifierIds: assignedVerifiers.map(v => v.id),
+            assignedVerifierIds: assignedVerifiers.map((v: { id: string }) => v.id),
             status: 'Pending',
             createdAt: Timestamp.now(),
             updatedAt: Timestamp.now(),
@@ -212,10 +386,108 @@
         };
 
         await adminDb.doc(`pending_verifications/${payload.id}`).set(payload);
+        
+        let sentCount = 0;
+        let failCount = 0;
+ 
+        // Notify assigned verifiers (Admins)
+        for (const verifier of payload.assignedVerifiers) {
+            try {
+                const verifierSnap = await adminDb.collection('users').doc(verifier.id).get();
+                const verifierPhone = verifierSnap.data()?.phone;
+                
+                if (verifierPhone && verifierPhone !== 'Unknown') {
+                    // Get Base URL from Firestore if available
+                    let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
+                    try {
+                        const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+                        if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
+                            baseUrl = resourceSnap.data()?.baseUrl;
+                        }
+                    } catch (e) {}
 
-        return { success: true, message: 'Profile update dispatched for administrative approval.' };
+                    const notifyResult = await sendWhatsAppAction({
+                        to: verifierPhone,
+                        templateId: 'portal_profile_update',
+                        variables: {
+                            verifierName: verifier.name,
+                            userName: userName,
+                            requestId: payload.id,
+                            url: `${baseUrl}/verifications?requestId=${payload.id}`
+                        },
+                        metadata: {
+                            moduleId: 'users',
+                            recordId: userId,
+                            userId: verifier.id,
+                            templateId: 'portal_profile_update'
+                        }
+                    });
+                    
+                    if (notifyResult.success) sentCount++;
+                    else failCount++;
+                } else {
+                    failCount++;
+                }
+            } catch (notifyError) {
+                failCount++;
+                console.error(`Failed to notify admin for portal update:`, notifyError);
+            }
+        }
+
+        const notificationStatus = failCount === 0 
+            ? `All ${sentCount} admins notified.`
+            : sentCount > 0 
+                ? `${sentCount} notified, ${failCount} skipped or failed.`
+                : `Automated notifications were skipped (disabled or unavailable).`;
+
+        return { success: true, message: `Profile update dispatched for administrative approval. ${notificationStatus}` };
     } catch (error: any) {
         console.error('Failed to submit portal profile change:', error);
         return { success: false, message: `Failed: ${error.message}` };
     }
  }
+
+/**
+ * Check if a specific record has a pending verification
+ */
+export async function checkPendingVerificationAction(targetId: string) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return null;
+
+    try {
+        const snap = await adminDb.collection('pending_verifications')
+            .where('targetId', '==', targetId)
+            .where('status', 'in', ['Pending', 'Partially Approved'])
+            .limit(1)
+            .get();
+
+        if (snap.empty) return null;
+        return serializeForClient(snap.docs[0].data()) as PendingVerification;
+    } catch (e) {
+        return null;
+    }
+}
+
+/**
+ * Cancel/Withdraw a verification request
+ */
+export async function cancelVerificationAction(requestId: string) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: 'DB Unavailable' };
+
+    try {
+        const docRef = adminDb.collection('pending_verifications').doc(requestId);
+        const snap = await docRef.get();
+        
+        if (!snap.exists) return { success: false, message: 'Request not found.' };
+        
+        const data = snap.data() as PendingVerification;
+        await docRef.delete();
+        
+        if (data.revalidatePath) revalidatePath(data.revalidatePath);
+        
+        return { success: true, message: 'Verification request withdrawn.' };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}

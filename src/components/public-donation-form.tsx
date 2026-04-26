@@ -55,7 +55,7 @@ import { Badge } from '@/components/ui/badge';
 
 const donationSchema = z.object({
   donorName: z.string().min(2, "Name must be at least 2 characters."),
-  donorPhone: z.string().min(10, "Valid phone number is required."),
+  donorPhone: z.string().regex(/^\+?[1-9]\d{1,14}$/, { message: "Please enter a valid phone number with country code." }),
   donorEmail: z.string().email("Invalid email address.").optional().or(z.literal('')),
   amount: z.coerce.number().min(1, "Minimum donation is ₹1."),
   paymentMethod: z.enum(['UPI', 'Bank Transfer']),
@@ -203,7 +203,44 @@ export function PublicDonationForm({
                                         render={({ field }) => (
                                             <FormItem>
                                                 <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">Phone Number (WhatsApp)</FormLabel>
-                                                <FormControl><Input placeholder="10-digit Mobile" {...field} className="h-11 rounded-xl border-primary/10 transition-all font-normal" /></FormControl>
+                                                <div className="flex gap-2">
+                                                    <div className="w-24 shrink-0">
+                                                        <Select 
+                                                            defaultValue="+91" 
+                                                            value={field.value?.startsWith('+') ? field.value.slice(0, 3) : '+91'}
+                                                            onValueChange={(val) => {
+                                                                const currentNumber = field.value?.replace(/^\+\d{2}/, '') || '';
+                                                                field.onChange(val + currentNumber);
+                                                            }}
+                                                        >
+                                                            <FormControl>
+                                                                <SelectTrigger className="h-11 rounded-xl border-primary/10 transition-all font-bold">
+                                                                    <SelectValue />
+                                                                </SelectTrigger>
+                                                            </FormControl>
+                                                            <SelectContent className="rounded-xl shadow-dropdown border-primary/10">
+                                                                <SelectItem value="+91">🇮🇳 +91</SelectItem>
+                                                                <SelectItem value="+1">🇺🇸 +1</SelectItem>
+                                                                <SelectItem value="+44">🇬🇧 +44</SelectItem>
+                                                                <SelectItem value="+971">🇦🇪 +971</SelectItem>
+                                                                <SelectItem value="+966">🇸🇦 +966</SelectItem>
+                                                            </SelectContent>
+                                                        </Select>
+                                                    </div>
+                                                    <FormControl>
+                                                        <Input 
+                                                            placeholder="Mobile Number" 
+                                                            {...field} 
+                                                            value={field.value?.startsWith('+') ? field.value.slice(3) : field.value || ''} 
+                                                            onChange={(e) => {
+                                                                const prefix = field.value?.startsWith('+') ? field.value.slice(0, 3) : '+91';
+                                                                const val = e.target.value.replace(/\D/g, '');
+                                                                field.onChange(prefix + val);
+                                                            }}
+                                                            className="h-11 rounded-xl border-primary/10 transition-all font-normal flex-1" 
+                                                        />
+                                                    </FormControl>
+                                                </div>
                                                 <FormDescription className="text-[10px] font-normal italic">Mandatory for secure tracking.</FormDescription>
                                                 <FormMessage />
                                             </FormItem>

@@ -63,8 +63,17 @@ export default function LeadDetailsPage() {
   }, [firestore, leadId]);
   const { data: beneficiaries, isLoading: areBeneficiariesLoading, forceRefetch: forceRefetchBeneficiaries } = useCollection<Beneficiary>(beneficiariesCollectionRef);
  
-   const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_config') : null, [firestore]);
-   const { data: configSettings } = useDoc<any>(configRef);
+    const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_config') : null, [firestore]);
+    const { data: configSettings } = useDoc<any>(configRef);
+
+    const effectiveVerificationMode = useMemo(() => {
+        const rawMode = configSettings?.verificationMode || (configSettings?.isVerificationRequired ? 'Mandatory' : 'Disabled');
+        // Per user request: Active or Completed records make approval optional (bypassable)
+        if (rawMode !== 'Disabled' && rawMode !== 'disabled' && (lead?.status === 'Active' || lead?.status === 'Completed')) {
+            return 'Optional';
+        }
+        return rawMode;
+    }, [configSettings, lead?.status]);
 
   const [editMode, setEditMode] = useState(false);
   const [editableLead, setEditableLead] = useState<Lead | null>(null);
@@ -151,7 +160,11 @@ export default function LeadDetailsPage() {
          itemCategories: editableLead.itemCategories,
      };
  
-     if (configSettings?.verificationMode && configSettings.verificationMode !== 'Disabled') {
+     const isApprovalRequired = configSettings?.verificationMode 
+         ? (configSettings.verificationMode !== 'Disabled' && configSettings.verificationMode !== 'disabled')
+         : !!configSettings?.isVerificationRequired;
+
+     if (isApprovalRequired) {
          setPendingUpdates(saveData);
          setIsVerificationDialogOpen(true);
          return;
@@ -400,7 +413,8 @@ export default function LeadDetailsPage() {
             isOpen={isVerificationDialogOpen}
             onOpenChange={setIsVerificationDialogOpen}
             user={{ id: userProfile.id, name: userProfile.name }}
-            isOptional={configSettings?.verificationMode === 'Optional'}
+            isOptional={effectiveVerificationMode.toLowerCase() === 'optional'}
+            minApprovals={configSettings?.minApprovalsRequired || 1}
             onBypass={() => {
                 setIsVerificationDialogOpen(false);
                 updateDoc(leadDocRef!, pendingUpdates)

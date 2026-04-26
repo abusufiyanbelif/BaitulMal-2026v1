@@ -4,6 +4,7 @@ import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
 import type { Donation, Donor, DonationLink, TransactionDetail, Campaign, Lead } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
+import { sendWhatsAppAction } from '@/app/messages/actions';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure Server Credentials Are Configured Correctly.";
 
@@ -78,6 +79,39 @@ export async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firest
 
         const zakatSurplus = Math.max(0, zakatSumForGoal - zakatAllocatedSum);
         const finalCollected = otherEligibleSum + zakatSurplus;
+        const targetAmount = initiativeData.targetAmount || 0;
+
+        // Milestone Alert Logic
+        if (targetAmount > 0) {
+            const oldPercent = Math.floor(((initiativeData.collectedAmount || 0) / targetAmount) * 100);
+            const newPercent = Math.floor((finalCollected / targetAmount) * 100);
+            
+            // Trigger alerts at 25%, 50%, 75%, 100%
+            const milestones = [25, 50, 75, 100];
+            const reachedMilestone = milestones.find(m => oldPercent < m && newPercent >= m);
+
+            if (reachedMilestone) {
+                try {
+                    // Notify Admins about milestone
+                    const resourceSnap = await db.collection('settings').doc('resources').get();
+                    const baseUrl = resourceSnap.data()?.baseUrl || 'https://baitulamalsolapur.com';
+                    
+                    await sendWhatsAppAction({
+                        to: '917887646583', // Default admin or institution number
+                        templateId: 'campaign_milestone',
+                        variables: {
+                            campaignName: initiativeData.name,
+                            amount: `₹${finalCollected.toLocaleString('en-IN')}`,
+                            percent: newPercent.toString(),
+                            url: `${baseUrl}/${type === 'campaign' ? 'campaign-members' : 'leads-members'}/${id}/summary`
+                        },
+                        metadata: { moduleId: type === 'campaign' ? 'campaigns' : 'leads', recordId: id, templateId: 'campaign_milestone' }
+                    });
+                } catch (e) {
+                    console.error('Milestone notification failed:', e);
+                }
+            }
+        }
 
         await initiativeRef.update({ collectedAmount: finalCollected, updatedAt: FieldValue.serverTimestamp() });
     }
@@ -120,6 +154,18 @@ export async function upsertDonationWithDonorAction(
                         notes: `Profile established via verified donation registry.`,
                     });
                     finalDonorId = newDonorRef.id;
+
+                    // Notify New Donor (Onboarding)
+                    try {
+                        await sendWhatsAppAction({
+                            to: donorPhone,
+                            templateId: 'donor_onboarding',
+                            variables: { donorName: donorName },
+                            metadata: { moduleId: 'donors', recordId: finalDonorId, templateId: 'donor_onboarding' }
+                        });
+                    } catch (e) {
+                        console.error('Failed to send welcome message:', e);
+                    }
                 }
             }
         }
@@ -150,6 +196,15 @@ export async function upsertDonationWithDonorAction(
 
         if (donationData.linkSplit) {
             await syncInitiativeCollectedTotals(adminDb, donationData.linkSplit);
+        }
+
+        if (payload.status === 'Verified') {
+            try {
+                const { notifyDonationVerifiedAction } = await import('@/app/messages/actions');
+                await notifyDonationVerifiedAction(id);
+            } catch (e) {
+                console.error('Donation notification failed:', e);
+            }
         }
 
         revalidatePath('/donations');
@@ -208,6 +263,18 @@ export async function bulkUpdateDonationStatusAction(
             }
         }
         await batch.commit();
+
+        // Notify for verified donations
+        if (newStatus === 'Verified') {
+            try {
+                const { notifyDonationVerifiedAction } = await import('@/app/messages/actions');
+                for (const id of ids) {
+                    await notifyDonationVerifiedAction(id);
+                }
+            } catch (e) {
+                console.error('Bulk donation notification failed:', e);
+            }
+        }
 
         if (affectedLinks.length > 0) {
             const uniqueLinks = Array.from(new Set(affectedLinks.map(l => `${l.linkType}_${l.linkId}`)))
@@ -288,7 +355,7 @@ export async function bulkImportDonationsAction(
                 status: record.status || 'Verified',
                 donationType: record.donationType || 'Other',
                 uploadedBy: uploadedBy.name,
-                uploadedById: uploadedById,
+                uploadedById: uploadedBy.id,
                 createdAt: record.createdAt || FieldValue.serverTimestamp(),
                 updatedAt: FieldValue.serverTimestamp(),
                 donorId: record.donorId || null,
@@ -388,7 +455,7 @@ export async function bulkLinkInitiativeAction(
                     finalLinkAmount = splitOptions.fillAmount;
                 }
 
-                const links = [{ linkId: initiativeContext.id, linkName: initiativeContext.name, linkType: initiativeContext.type, amount: finalLinkAmount }];
+                const links: DonationLink[] = [{ linkId: initiativeContext.id, linkName: initiativeContext.name, linkType: initiativeContext.type, amount: finalLinkAmount }];
                 if (finalLinkAmount < d.amount) {
                     links.push({ linkId: 'unallocated', linkName: 'Unallocated', linkType: 'general', amount: d.amount - finalLinkAmount });
                 }

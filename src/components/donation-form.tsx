@@ -265,6 +265,15 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
 
   const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donation_config') : null, [firestore]);
   const { data: configSettings } = useDoc<any>(configRef);
+
+  const effectiveVerificationMode = useMemo(() => {
+    const rawMode = configSettings?.verificationMode || (configSettings?.isVerificationRequired ? 'Mandatory' : 'Disabled');
+    // Per user request: Verified donations make approval optional (bypassable)
+    if (rawMode !== 'Disabled' && rawMode !== 'disabled' && donation?.status === 'Verified') {
+        return 'Optional';
+    }
+    return rawMode;
+  }, [configSettings, donation?.status]);
   const mandatoryFields = useMemo(() => configSettings?.mandatoryFields || {}, [configSettings]);
   
   const form = useForm<DonationFormData>({
@@ -363,7 +372,9 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     if (!userProfile) return;
 
     // Verification Check for Edits
-    if (donation && configSettings?.verificationMode && configSettings.verificationMode !== 'Disabled') {
+    const isApprovalRequired = effectiveVerificationMode !== 'Disabled' && effectiveVerificationMode !== 'disabled';
+
+    if (donation && isApprovalRequired) {
         setPendingFormData(data);
         setIsVerificationDialogOpen(true);
         return;
@@ -485,8 +496,43 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                             <FormItem>
                                 {renderLabel('Phone Number', 'donorPhone')}
                                 <div className="flex gap-2">
-                                    <FormControl><Input placeholder="10 Digits" {...field} disabled={isReadOnly} className="font-mono text-primary flex-1"/></FormControl>
-                                    {!isReadOnly && !donorId && donorPhone?.length === 10 && (
+                                    <div className="w-24 shrink-0">
+                                        <Select 
+                                            defaultValue="+91" 
+                                            value={field.value?.startsWith('+') ? field.value.slice(0, 3) : '+91'}
+                                            onValueChange={(val) => {
+                                                const currentNumber = field.value?.replace(/^\+\d{2}/, '') || '';
+                                                field.onChange(val + currentNumber);
+                                            }}
+                                            disabled={isReadOnly}
+                                        >
+                                            <SelectTrigger className="font-bold">
+                                                <SelectValue />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl shadow-dropdown">
+                                                <SelectItem value="+91">🇮🇳 +91</SelectItem>
+                                                <SelectItem value="+1">🇺🇸 +1</SelectItem>
+                                                <SelectItem value="+44">🇬🇧 +44</SelectItem>
+                                                <SelectItem value="+971">🇦🇪 +971</SelectItem>
+                                                <SelectItem value="+966">🇸🇦 +966</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <FormControl>
+                                        <Input 
+                                            placeholder="Number" 
+                                            {...field} 
+                                            value={field.value?.startsWith('+') ? field.value.slice(3) : field.value || ''} 
+                                            onChange={(e) => {
+                                                const prefix = field.value?.startsWith('+') ? field.value.slice(0, 3) : '+91';
+                                                const val = e.target.value.replace(/\D/g, '');
+                                                field.onChange(prefix + val);
+                                            }}
+                                            disabled={isReadOnly} 
+                                            className="font-mono text-primary flex-1" 
+                                        />
+                                    </FormControl>
+                                    {!isReadOnly && !donorId && (donorPhone?.length || 0) >= 10 && (
                                         <Button type="button" variant="secondary" size="sm" onClick={verifyDonorByPhone} disabled={isVerifying} className="h-10 font-bold px-3">
                                             {isVerifying ? <Loader2 className="h-4 w-4 animate-spin"/> : <CheckCircle2 className="h-4 w-4"/>}
                                         </Button>
@@ -642,8 +688,11 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
         <VerificationRequestDialog
             isOpen={isVerificationDialogOpen}
             onOpenChange={setIsVerificationDialogOpen}
-            isOptional={configSettings?.verificationMode === 'Optional'}
+            isOptional={effectiveVerificationMode.toLowerCase() === 'optional'}
+            minApprovals={configSettings?.minApprovalsRequired || 1}
+            authorizedVerifiers={configSettings?.authorizedVerifiers}
             onBypass={async () => {
+
                 setIsSubmitting(true);
                 try {
                     await onSubmit(pendingFormData);

@@ -161,7 +161,7 @@ function MultiSelectFilter({ title, options, selected, onChange }: { title: stri
 
 const gridClass = "grid grid-cols-[40px_40px_50px_200px_120px_140px_140px_100px_120px_120px_150px_60px] items-center gap-4 px-4 py-3 min-w-[1300px]";
 
-function StatCard({ title, count, description, icon: Icon, colorClass, delay, onClick }: { title: string, count: number, description: string, icon: any, colorClass?: string, delay: string, onClick?: () => void }) {
+function StatCard({ title, count, description, icon: Icon, colorClass, delay, onClick, isCurrency }: { title: string, count: number | string, description: string, icon: any, colorClass?: string, delay: string, onClick?: () => void, isCurrency?: boolean }) {
     return (
         <Card 
             onClick={onClick}
@@ -556,7 +556,7 @@ function BeneficiaryListContent() {
                 description="Assistance Secured" 
                 icon={CheckCircle2} 
                 delay="200ms" 
-                onClick={() => { setStatusFilter('Verified'); }}
+                onClick={() => { setStatusFilter(['Verified']); }}
             />
             <StatCard 
                 title="Given" 
@@ -565,7 +565,7 @@ function BeneficiaryListContent() {
                 icon={CheckCircle2} 
                 delay="250ms" 
                 colorClass="border-primary/10 bg-primary/5 shadow-inner" 
-                onClick={() => { setStatusFilter('Given'); }}
+                onClick={() => { setStatusFilter(['Given']); }}
             />
             <StatCard 
                 title="Hold" 
@@ -573,7 +573,7 @@ function BeneficiaryListContent() {
                 description="Suspended Profiles" 
                 icon={XCircle} 
                 delay="300ms" 
-                onClick={() => { setStatusFilter('Hold'); }}
+                onClick={() => { setStatusFilter(['Hold']); }}
             />
             <StatCard 
                 title="Zakat Sum" 

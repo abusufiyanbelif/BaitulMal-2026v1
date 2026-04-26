@@ -27,8 +27,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { cn } from '@/lib/utils';
 import { upsertDonationWithDonorAction } from '../actions';
+import { sendDonationReceiptAction } from '@/app/messages/actions';
 import { UnlinkedDonationResolver } from '@/components/unlinked-donation-resolver';
+import { checkPendingVerificationAction } from '@/app/verifications/actions';
+import type { PendingVerification } from '@/lib/types';
+import { PendingUpdateWarning } from '@/components/pending-update-warning';
 
 const DetailItem = ({ label, value, isMono = false }: { label: string; value: React.ReactNode; isMono?: boolean }) => (
     <div className="space-y-1">
@@ -61,6 +66,13 @@ export default function UnlinkedDonationDetailsPage() {
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isSendingWhatsApp, setIsSendingWhatsApp] = useState(false);
+    const [existingPendingRequest, setExistingPendingRequest] = useState<PendingVerification | null>(null);
+
+    useEffect(() => {
+        if (!donationId) return;
+        checkPendingVerificationAction(donationId).then(setExistingPendingRequest);
+    }, [donationId, isFormOpen]);
 
     const donationDocRef = useMemoFirebase(() => (firestore && donationId) ? doc(firestore, 'donations', donationId) as DocumentReference<Donation> : null, [firestore, donationId]);
     const { data: donation, isLoading: isDonationLoading } = useDoc<Donation>(donationDocRef);
@@ -167,6 +179,21 @@ export default function UnlinkedDonationDetailsPage() {
         setIsImageViewerOpen(true);
     };
 
+    const handleSendWhatsAppReceipt = async () => {
+        if (!donationId) return;
+        setIsSendingWhatsApp(true);
+        try {
+            const res = await sendDonationReceiptAction(donationId);
+            if (res.success) {
+                toast({ title: "Receipt Dispatched", description: "The official receipt has been sent via WhatsApp.", variant: "success" });
+            } else {
+                toast({ title: "Dispatch Failed", description: res.message, variant: "destructive" });
+            }
+        } finally {
+            setIsSendingWhatsApp(false);
+        }
+    };
+
     const isLoading = isProfileLoading || isBrandingLoading || isPaymentLoading || isDonationLoading || areAllCampaignsLoading || areAllLeadsLoading;
 
     if (isLoading) return <BrandedLoader />;
@@ -197,10 +224,27 @@ export default function UnlinkedDonationDetailsPage() {
                 </Button>
                 <div className="flex gap-2">
                     {canUpdate && (
-                        <Button onClick={() => setIsFormOpen(true)} className="font-bold shadow-md active:scale-95 transition-transform">
-                            <Edit className="mr-2 h-4 w-4" /> Edit Record
+                        <Button 
+                            onClick={() => setIsFormOpen(true)} 
+                            disabled={!!existingPendingRequest}
+                            className={cn(
+                                "font-bold shadow-md active:scale-95 transition-transform",
+                                existingPendingRequest ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-white"
+                            )}
+                        >
+                            <Edit className="mr-2 h-4 w-4" /> 
+                            {existingPendingRequest ? "Approval Pending" : "Edit Record"}
                         </Button>
                     )}
+                    <Button 
+                        variant="outline" 
+                        onClick={handleSendWhatsAppReceipt} 
+                        disabled={isSendingWhatsApp || !donation?.donorPhone}
+                        className="font-bold border-primary/20 text-green-600 hover:bg-green-50 active:scale-95 transition-transform"
+                    >
+                        {isSendingWhatsApp ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MessageSquare className="mr-2 h-4 w-4" />}
+                        WhatsApp
+                    </Button>
                     <Button variant="outline" onClick={handleShare} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform">
                         <Share2 className="mr-2 h-4 w-4" /> Share
                     </Button>
@@ -224,6 +268,8 @@ export default function UnlinkedDonationDetailsPage() {
                     </DropdownMenu>
                 </div>
             </div>
+
+            <PendingUpdateWarning targetId={donationId} module="donations" />
 
             <div className="space-y-6">
                 {!donation.donorId && (

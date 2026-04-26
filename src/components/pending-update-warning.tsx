@@ -1,52 +1,122 @@
 'use client';
- 
- import React from 'react';
- import { useFirestore, useCollection, collection, query, where, useMemoFirebase } from '@/firebase';
- import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
- import { AlertCircle, Clock } from 'lucide-react';
- import { Badge } from '@/components/ui/badge';
- import { useSession } from '@/hooks/use-session';
- 
- interface PendingUpdateWarningProps {
-     targetId: string;
-     module: string;
- }
- 
- export function PendingUpdateWarning({ targetId, module }: PendingUpdateWarningProps) {
-     const firestore = useFirestore();
-     const { userProfile } = useSession();
-     
-     const q = useMemoFirebase(() => {
-         if (!firestore || !targetId || !userProfile) return null;
-         return query(
-             collection(firestore, 'pending_verifications'),
-             where('targetId', '==', targetId),
-             where('status', '==', 'pending')
-         );
-     }, [firestore, targetId, userProfile]);
- 
-     const { data: pendingRequests, isLoading } = useCollection<any>(q);
- 
-     if (!userProfile || isLoading || !pendingRequests || pendingRequests.length === 0) return null;
- 
-     return (
-         <div className="animate-fade-in-up">
-             <Alert variant="warning" className="bg-amber-50 border-amber-200 text-amber-800 rounded-2xl shadow-sm">
-                 <AlertCircle className="h-4 w-4 text-amber-600" />
-                 <AlertTitle className="font-bold flex items-center gap-2">
-                     Pending Transaction Integrity Review
-                     <Badge variant="outline" className="bg-amber-100 text-amber-700 border-amber-300 font-bold text-[10px] animate-pulse">
-                         Awaiting Approval
-                     </Badge>
-                 </AlertTitle>
-                 <AlertDescription className="font-normal text-amber-700/80 mt-1 flex flex-col gap-1">
-                     <p>This record has {pendingRequests.length} suggested update{pendingRequests.length > 1 ? 's' : ''} currently under institutional review.</p>
-                     <div className="flex items-center gap-1.5 text-[10px] font-bold opacity-70">
-                         <Clock className="h-3 w-3" />
-                         Public display values will remain locked until a verifier confirms the changes.
-                     </div>
-                 </AlertDescription>
-             </Alert>
-         </div>
-     );
- }
+
+import React, { useState, useEffect } from 'react';
+import { AlertCircle, Clock, CheckCircle2, XCircle, ChevronRight, Ban } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { checkPendingVerificationAction, cancelVerificationAction } from '@/app/verifications/actions';
+import { useToast } from '@/hooks/use-toast';
+import type { PendingVerification } from '@/lib/types';
+import { cn } from '@/lib/utils';
+
+interface PendingUpdateWarningProps {
+  targetId: string;
+  module?: string; // Kept for compatibility
+  onUpdate?: () => void;
+}
+
+export function PendingUpdateWarning({ targetId, onUpdate }: PendingUpdateWarningProps) {
+  const [pending, setPending] = useState<PendingVerification | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    async function fetchPending() {
+      const data = await checkPendingVerificationAction(targetId);
+      setPending(data);
+      setIsLoading(false);
+    }
+    fetchPending();
+  }, [targetId]);
+
+  const handleCancel = async () => {
+    if (!pending || !confirm('Are you sure you want to withdraw this approval request? Any unsaved changes linked to this request will be lost.')) return;
+    
+    setIsCancelling(true);
+    try {
+      const result = await cancelVerificationAction(pending.id);
+      if (result.success) {
+        toast({ title: 'Request Withdrawn', variant: 'success' });
+        setPending(null);
+        if (onUpdate) onUpdate();
+      } else {
+        toast({ title: 'Action Failed', description: result.message, variant: 'destructive' });
+      }
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  if (isLoading || !pending) return null;
+
+  return (
+    <div className="animate-fade-in-up">
+        <Alert className="border-amber-200 bg-amber-50 shadow-sm overflow-hidden rounded-2xl">
+        <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
+            <div className="flex items-center gap-3">
+            <div className="p-2 rounded-full bg-amber-100 text-amber-600 animate-pulse">
+                <Clock className="h-5 w-5" />
+            </div>
+            <div>
+                <AlertTitle className="text-amber-900 font-bold flex items-center gap-2">
+                Modification Pending Approval
+                <Badge variant="outline" className="bg-white border-amber-200 text-[10px] h-4 font-bold text-amber-700">
+                    {pending.status.toUpperCase()}
+                </Badge>
+                </AlertTitle>
+                <AlertDescription className="text-amber-800 text-xs mt-0.5 leading-relaxed font-normal">
+                Requested by <span className="font-bold">{pending.requestedBy.name}</span>.
+                Existing data is locked for updates until this request is resolved.
+                </AlertDescription>
+            </div>
+            </div>
+
+            <div className="flex items-center gap-2 sm:ml-auto shrink-0">
+            <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleCancel}
+                disabled={isCancelling}
+                className="h-8 text-[10px] font-bold border-amber-200 hover:bg-amber-100 text-amber-900 bg-white"
+            >
+                {isCancelling ? <Clock className="h-3 w-3 animate-spin mr-1" /> : <Ban className="h-3 w-3 mr-1" />}
+                Withdraw Request
+            </Button>
+            <Button 
+                variant="secondary" 
+                size="sm" 
+                asChild
+                className="h-8 text-[10px] font-bold bg-amber-600 hover:bg-amber-700 text-white border-none shadow-sm"
+            >
+                <a href="/verifications">
+                Review Request <ChevronRight className="h-3 w-3 ml-1" />
+                </a>
+            </Button>
+            </div>
+        </div>
+        
+        {/* Verifier Progress Bar */}
+        <div className="mt-3 pt-3 border-t border-amber-200/50 flex items-center gap-2 flex-wrap">
+            <span className="text-[9px] font-bold text-amber-700/60 uppercase tracking-widest">Awaiting:</span>
+            {pending.assignedVerifiers.map((v) => (
+            <div key={v.id} className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border border-amber-100 text-[10px]">
+                {v.status === 'Approved' ? (
+                <CheckCircle2 className="h-3 w-3 text-green-500" />
+                ) : v.status === 'Rejected' ? (
+                <XCircle className="h-3 w-3 text-red-500" />
+                ) : (
+                <Clock className="h-3 w-3 text-amber-400" />
+                )}
+                <span className={cn(
+                "font-medium",
+                v.status === 'Approved' ? "text-green-700" : "text-muted-foreground"
+                )}>{v.name}</span>
+            </div>
+            ))}
+        </div>
+        </Alert>
+    </div>
+  );
+}

@@ -2,7 +2,7 @@
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
-import type { Beneficiary } from '@/lib/types';
+import type { Beneficiary, Campaign, Lead, DonationLink } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { FieldValue, DocumentData } from 'firebase-admin/firestore';
 import { syncInitiativeCollectedTotals } from '../donations/actions';
@@ -143,8 +143,16 @@ export async function upsertInitiativeBeneficiaryAction(
         revalidatePath(`/${pathPrefix}/${initiativeId}/summary`);
         revalidatePath(`/${publicPrefix}/${initiativeId}/summary`);
         
-        await syncInitiativeCollectedTotals(adminDb, [{ linkId: initiativeId, linkType: initiativeType }]);
+        await syncInitiativeCollectedTotals(adminDb, [{ linkId: initiativeId, linkType: initiativeType, linkName: '', amount: 0 }]);
         
+        // Notify about beneficiary status change
+        try {
+            const { notifyBeneficiaryStatusAction } = await import('@/app/messages/actions');
+            await notifyBeneficiaryStatusAction(beneficiaryData.id, beneficiaryData.status || 'Verified');
+        } catch (e) {
+            console.error('Beneficiary notification failed:', e);
+        }
+
         return { success: true, message: 'Beneficiary records synchronized successfully.' };
     } catch (error: any) {
         console.error("Update Failed:", error);
@@ -364,7 +372,7 @@ export async function bulkImportBeneficiariesAction(
         await batch.commit();
 
         if (initiativeContext) {
-            await syncInitiativeCollectedTotals(adminDb, [{ linkId: initiativeContext.id, linkType: initiativeContext.type }]);
+            await syncInitiativeCollectedTotals(adminDb, [{ linkId: initiativeContext.id, linkType: initiativeContext.type, linkName: '', amount: 0 }]);
         }
 
         revalidatePath('/beneficiaries');
@@ -443,7 +451,7 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
 
         // Find every instance of this beneficiary in initiatives to adjust goals
         const subquery = await adminDb.collectionGroup('beneficiaries').where('id', '==', beneficiaryId).get();
-        const affectedLinks: { linkId: string, linkType: 'campaign' | 'lead' }[] = [];
+        const affectedLinks: DonationLink[] = [];
         
         for (const subDoc of subquery.docs) {
             const data = subDoc.data() as Beneficiary;
@@ -457,7 +465,7 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
                 updatedAt: FieldValue.serverTimestamp()
             });
             batch.delete(subDoc.ref);
-            affectedLinks.push({ linkId: initiativeId, linkType: initiativeType });
+            affectedLinks.push({ linkId: initiativeId, linkType: initiativeType, linkName: '', amount: 0 });
         }
 
         batch.delete(masterRef);

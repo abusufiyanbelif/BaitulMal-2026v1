@@ -28,6 +28,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { FileUploader } from '@/components/file-uploader';
 import { BrandedLoader } from '@/components/branded-loader';
+import { notifyLeadAction } from '@/app/messages/actions';
 
 const leadSchema = z.object({
   name: z.string().min(3, 'Lead Name Must Be At Least 3 Characters.'),
@@ -255,10 +256,18 @@ export default function CreateLeadPage() {
     }
 
     setDoc(newLeadRef, newLeadData)
-      .then(() => {
+      .then(async () => {
         setProgress(100);
         setLoadingMessage('Lead Appeal Registered.');
         toast({ title: 'Success', description: 'Lead Created Successfully.', variant: 'success' });
+        
+        // Notify Admins about new lead with rich template
+        try {
+            await notifyLeadAction(newLeadId, 'lead_created');
+        } catch (e) {
+            console.error('Lead notification failed:', e);
+        }
+
         router.push(`/leads-members`);
       })
       .catch((serverError: any) => {

@@ -13,9 +13,14 @@ import {
 } from 'firebase/firestore';
 
 export const signInWithLoginId = async (auth: Auth, firestore: Firestore, loginId: string, password?: string) => {
-    
-    // This could be a loginId or a phone number
-    const lookupDocRef = doc(firestore, 'user_lookups', loginId);
+    // Sanitize loginId: if it's a 10-digit number, prefix with +91 for standardized lookup
+    let sanitizedLoginId = loginId.trim();
+    const numericOnly = sanitizedLoginId.replace(/\D/g, '');
+    if (numericOnly.length === 10 && !sanitizedLoginId.startsWith('+')) {
+        sanitizedLoginId = '+91' + numericOnly;
+    }
+
+    const lookupDocRef = doc(firestore, 'user_lookups', sanitizedLoginId);
     
     try {
         const lookupDoc = await getDoc(lookupDocRef);

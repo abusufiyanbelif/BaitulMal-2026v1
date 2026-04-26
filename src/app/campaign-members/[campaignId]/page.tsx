@@ -96,6 +96,15 @@ export default function CampaignDetailsPage() {
    const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'campaign_config') : null, [firestore]);
    const { data: configSettings } = useDoc<any>(configRef);
 
+   const effectiveVerificationMode = useMemo(() => {
+       const rawMode = configSettings?.verificationMode || (configSettings?.isVerificationRequired ? 'Mandatory' : 'Disabled');
+       // Per user request: Active or Completed records make approval optional (bypassable)
+       if (rawMode !== 'Disabled' && rawMode !== 'disabled' && (campaign?.status === 'Active' || campaign?.status === 'Completed')) {
+           return 'Optional';
+       }
+       return rawMode;
+   }, [configSettings, campaign?.status]);
+
   const [editMode, setEditMode] = useState(false);
   const [editableCampaign, setEditableCampaign] = useState<Campaign | null>(null);
   const [isAddCategoryOpen, setIsAddCategoryOpen] = useState(false);
@@ -241,7 +250,9 @@ export default function CampaignDetailsPage() {
          itemCategories: sanitizedEditableItemCategories,
      };
  
-     if (configSettings?.verificationMode && configSettings.verificationMode !== 'Disabled') {
+     const isApprovalRequired = effectiveVerificationMode !== 'Disabled' && effectiveVerificationMode !== 'disabled';
+
+     if (isApprovalRequired) {
          setPendingUpdates(saveData);
          setIsVerificationDialogOpen(true);
          return;
@@ -1135,7 +1146,8 @@ export default function CampaignDetailsPage() {
             isOpen={isVerificationDialogOpen}
             onOpenChange={setIsVerificationDialogOpen}
             user={{ id: userProfile.id, name: userProfile.name }}
-            isOptional={configSettings?.verificationMode === 'Optional'}
+            isOptional={effectiveVerificationMode.toLowerCase() === 'optional'}
+            minApprovals={configSettings?.minApprovalsRequired || 1}
             onBypass={() => {
                 setIsVerificationDialogOpen(false);
                 updateDoc(campaignDocRef!, pendingUpdates)

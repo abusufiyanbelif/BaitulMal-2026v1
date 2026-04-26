@@ -26,8 +26,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSub, D
 import { BeneficiaryForm, type BeneficiaryFormData } from '@/components/beneficiary-form';
 import { useToast } from '@/hooks/use-toast';
 import { updateMasterBeneficiaryAction, updateInitiativeBeneficiaryDetailsAction, updateBeneficiaryStatusInInitiativeAction } from '../actions';
+import { checkPendingVerificationAction } from '@/app/verifications/actions';
+import type { PendingVerification } from '@/lib/types';
 import { useSession } from '@/hooks/use-session';
 import { BrandedLoader } from '@/components/branded-loader';
+import { PendingUpdateWarning } from '@/components/pending-update-warning';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -66,6 +69,12 @@ export default function BeneficiaryDetailsPage() {
   const [initiativeContext, setInitiativeContext] = useState<{ type: 'campaign' | 'lead', id: string } | null>(null);
   const [initiativeBeneficiaryData, setInitiativeBeneficiaryData] = useState<Partial<Beneficiary> | null>(null);
   const [isInitiativeDataLoading, setIsInitiativeDataLoading] = useState(false);
+  const [existingPendingRequest, setExistingPendingRequest] = useState<PendingVerification | null>(null);
+
+  useEffect(() => {
+      if (!beneficiaryId) return;
+      checkPendingVerificationAction(beneficiaryId).then(setExistingPendingRequest);
+  }, [beneficiaryId, isEditMode]);
 
   useEffect(() => {
     if (redirectUrl) {
@@ -259,6 +268,8 @@ export default function BeneficiaryDetailsPage() {
         </div>
       </div>
 
+      <PendingUpdateWarning targetId={beneficiaryId} module="beneficiaries" />
+
       <div className="space-y-4 animate-fade-in-up">
           <div className="flex flex-col sm:flex-row sm:items-center gap-4">
               <h1 className="text-4xl font-bold tracking-tight text-primary">{beneficiary.name}</h1>
@@ -297,8 +308,16 @@ export default function BeneficiaryDetailsPage() {
                         <CardDescription className="text-xs font-normal">Personal Details and Identification Evidence.</CardDescription>
                     </div>
                     {canUpdate && !isEditMode && ( 
-                        <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md active:scale-95 transition-transform">
-                            <Edit className="mr-2 h-4 w-4"/>Edit Profile
+                        <Button 
+                            onClick={() => setIsEditMode(true)} 
+                            disabled={!!existingPendingRequest}
+                            className={cn(
+                                "font-bold shadow-md active:scale-95 transition-transform",
+                                existingPendingRequest ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-white"
+                            )}
+                        >
+                            <Edit className="mr-2 h-4 w-4"/>
+                            {existingPendingRequest ? "Approval Pending" : "Edit Profile"}
                         </Button> 
                     )}
                 </CardHeader>

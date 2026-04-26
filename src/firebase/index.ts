@@ -60,6 +60,17 @@ export {
   Timestamp,
 } from 'firebase/firestore';
 
+export type {
+  DocumentData,
+  QueryDocumentSnapshot,
+  DocumentReference,
+  CollectionReference,
+  Query,
+  FieldValue,
+  OrderByDirection,
+  WhereFilterOp,
+} from 'firebase/firestore';
+
 export { 
   ref as storageRef, 
   uploadBytes, 

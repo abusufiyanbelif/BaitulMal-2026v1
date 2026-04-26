@@ -106,6 +106,7 @@ export default function DonorRegistryPage() {
 
   const [bankDetails, setBankDetails] = useState<BankDetail[]>([{ bankName: '', accountNumber: '', ifscCode: '' }]);
   const [upiIds, setUpiIds] = useState<string[]>(['']);
+  const [phonePrefix, setPhonePrefix] = useState('+91');
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 15;
@@ -182,7 +183,7 @@ export default function DonorRegistryPage() {
 
         const data: Partial<Donor> = {
             name: formData.get('name') as string,
-            phone: formData.get('phone') as string,
+            phone: `${phonePrefix}${formData.get('phone') as string}`,
             email: formData.get('email') as string,
             address: formData.get('address') as string,
             bankDetails: validBanks,
@@ -361,7 +362,7 @@ export default function DonorRegistryPage() {
                                                 className="h-6 w-6 text-green-600 hover:bg-green-50 hover:text-green-700 ml-1" 
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    window.open(`https://wa.me/91${donor.phone!.replace(/\D/g, '')}`, '_blank');
+                                                    window.open(`https://wa.me/${donor.phone!.replace(/\D/g, '')}`, '_blank');
                                                 }}
                                                 title="Message on WhatsApp"
                                             >
@@ -428,7 +429,26 @@ export default function DonorRegistryPage() {
                             <h4 className="text-xs font-bold text-muted-foreground capitalize tracking-widest border-b pb-2">Core Identity</h4>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground capitalize tracking-widest">Full Name *</Label><Input name="name" required className="font-bold h-11 rounded-xl" placeholder="Full Legal Name"/></div>
-                                <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground capitalize tracking-widest">Primary Contact *</Label><Input name="phone" required className="font-mono h-11 rounded-xl" placeholder="10-Digit Mobile"/></div>
+                                <div className="space-y-2">
+                                    <Label className="font-bold text-[10px] text-muted-foreground capitalize tracking-widest">Primary Contact *</Label>
+                                    <div className="flex gap-2">
+                                        <div className="w-24 shrink-0">
+                                            <Select value={phonePrefix} onValueChange={setPhonePrefix}>
+                                                <SelectTrigger className="font-bold h-11 rounded-xl">
+                                                    <SelectValue />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-xl shadow-dropdown border-primary/10">
+                                                    <SelectItem value="+91">🇮🇳 +91</SelectItem>
+                                                    <SelectItem value="+1">🇺🇸 +1</SelectItem>
+                                                    <SelectItem value="+44">🇬🇧 +44</SelectItem>
+                                                    <SelectItem value="+971">🇦🇪 +971</SelectItem>
+                                                    <SelectItem value="+966">🇸🇦 +966</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <Input name="phone" required className="font-mono h-11 rounded-xl flex-1" placeholder="Mobile Number"/>
+                                    </div>
+                                </div>
                             </div>
                             <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground capitalize tracking-widest">Email Identity</Label><Input name="email" type="email" className="font-normal h-11 rounded-xl" placeholder="email@address.com"/></div>
                             <div className="space-y-2"><Label className="font-bold text-[10px] text-muted-foreground capitalize tracking-widest">Residential Address</Label><Input name="address" className="font-normal h-11 rounded-xl" placeholder="Full Postal Address"/></div>
