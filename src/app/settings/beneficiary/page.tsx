@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Settings, Save, Loader2, CheckSquare, Edit, X, RefreshCw, DatabaseZap, ShieldCheck } from 'lucide-react';
+import { Settings, Save, Loader2, CheckSquare, Edit, X, RefreshCw, DatabaseZap, ShieldCheck, Bell, Smartphone } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -53,20 +53,26 @@ export default function BeneficiarySettingsPage() {
   const [localVis, setLocalVis] = useState<Record<string, boolean>>({});
   const [localMandatory, setLocalMandatory] = useState<Record<string, boolean>>({});
   const [localVerificationMode, setLocalVerificationMode] = useState('Disabled');
+  const [localWhatsAppNotify, setLocalWhatsAppNotify] = useState(true);
+  const [localInAppNotify, setLocalInAppNotify] = useState(true);
  
    useEffect(() => {
      if (visibilitySettings) setLocalVis(visibilitySettings);
      if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
      if (configSettings?.verificationMode) setLocalVerificationMode(configSettings.verificationMode);
      else if (configSettings?.isVerificationRequired) setLocalVerificationMode('Mandatory');
+     setLocalWhatsAppNotify(configSettings?.enableWhatsAppNotifications !== false);
+     setLocalInAppNotify(configSettings?.enableInAppNotifications !== false);
    }, [visibilitySettings, configSettings]);
  
    const isDirty = useMemo(() => {
      const visChanged = JSON.stringify(localVis) !== JSON.stringify(visibilitySettings || {});
      const mandatoryChanged = JSON.stringify(localMandatory) !== JSON.stringify(configSettings?.mandatoryFields || {});
      const verificationChanged = localVerificationMode !== (configSettings?.verificationMode || 'Disabled');
-     return visChanged || mandatoryChanged || verificationChanged;
-   }, [localVis, localMandatory, localVerificationMode, visibilitySettings, configSettings]);
+     const whatsappChanged = localWhatsAppNotify !== (configSettings?.enableWhatsAppNotifications !== false);
+     const inAppChanged = localInAppNotify !== (configSettings?.enableInAppNotifications !== false);
+     return visChanged || mandatoryChanged || verificationChanged || whatsappChanged || inAppChanged;
+   }, [localVis, localMandatory, localVerificationMode, localWhatsAppNotify, localInAppNotify, visibilitySettings, configSettings]);
 
   const handleVisToggle = (id: string, group: 'public' | 'member') => {
     const key = `${group}_${id}`;
@@ -86,7 +92,9 @@ export default function BeneficiarySettingsPage() {
              setDoc(configRef, { 
                  mandatoryFields: localMandatory, 
                  isVerificationRequired: localVerificationMode !== 'Disabled',
-                 verificationMode: localVerificationMode
+                 verificationMode: localVerificationMode,
+                 enableWhatsAppNotifications: localWhatsAppNotify,
+                 enableInAppNotifications: localInAppNotify
              }, { merge: true })
          ]);
         toast({ title: "Settings saved", variant: "success" });
@@ -103,6 +111,8 @@ export default function BeneficiarySettingsPage() {
      if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
      if (configSettings?.verificationMode) setLocalVerificationMode(configSettings.verificationMode);
      else if (configSettings?.isVerificationRequired) setLocalVerificationMode('Mandatory');
+     setLocalWhatsAppNotify(configSettings?.enableWhatsAppNotifications !== false);
+     setLocalInAppNotify(configSettings?.enableInAppNotifications !== false);
      setIsEditMode(false);
    };
 

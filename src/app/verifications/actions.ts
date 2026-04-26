@@ -5,6 +5,8 @@
  import type { PendingVerification, Beneficiary, Donation, Donor, Campaign, Lead } from '@/lib/types';
  import { FieldValue, Timestamp } from 'firebase-admin/firestore';
  import { bulkRecalculateInitiativeTotalsAction, syncInitiativeCollectedTotals } from '@/app/donations/actions';
+import { recordAuditLogAction } from '@/app/audit/actions';
+import { generateChanges } from '@/lib/utils';
  
  const ADMIN_SDK_ERROR_MESSAGE = 'Operational Failure: Administrative Services Unavailable.';
  
@@ -123,7 +125,8 @@
                             recordId: payload.targetId,
                             userId: verifier.id,
                             templateId: 'verification_request'
-                        }
+                        },
+                        moduleId: payload.module.replace(/s$/, '') as any // Map plurals to singular
                     });
                     
                     if (notifyResult.success) sentCount++;
@@ -240,6 +243,24 @@
                  }
              }
  
+             // Record Audit Log before deletion
+             await recordAuditLogAction({
+                 targetId: request.targetId,
+                 targetCollection: request.targetCollection,
+                 module: request.module,
+                 action: 'APPROVE',
+                 description: `Change request finalized: ${request.description}`,
+                 performedBy: { id: verifierId, name: updatedVerifiers.find(v => v.id === verifierId)?.name || 'Verifier' },
+                 changes: generateChanges(request.originalValue, request.newValue),
+                 originalValue: request.originalValue,
+                 newValue: request.newValue,
+                 metadata: {
+                     requestId: request.id,
+                     requestedBy: request.requestedBy,
+                     approvedBy: updatedVerifiers.filter(v => v.status === 'Approved').map(v => ({ id: v.id, name: v.name }))
+                 }
+             });
+
              // Cleanup: Delete the pending request
              await docRef.delete();
             
@@ -262,7 +283,8 @@
                             recordId: request.targetId,
                             userId: request.requestedBy.id,
                             templateId: 'verification_approved'
-                        }
+                        },
+                        moduleId: request.module.replace(/s$/, '') as any
                     });
                 }
             } catch (notifyError) {
@@ -312,6 +334,24 @@
            updatedAt: Timestamp.now()
          });
  
+         // Record Audit Log for Rejection
+         await recordAuditLogAction({
+             targetId: request.targetId,
+             targetCollection: request.targetCollection,
+             module: request.module,
+             action: 'REJECT',
+             description: reason ? `Modification rejected: ${reason}` : 'Modification rejected by verifier.',
+             performedBy: { id: verifierId, name: request.assignedVerifiers.find(v => v.id === verifierId)?.name || 'Verifier' },
+             changes: generateChanges(request.originalValue, request.newValue),
+             originalValue: request.originalValue,
+             newValue: request.newValue,
+             metadata: {
+                 requestId: request.id,
+                 requestedBy: request.requestedBy,
+                 rejectionReason: reason
+             }
+         });
+ 
          // Notify Requester
         try {
             const requesterSnap = await adminDb.collection('users').doc(request.requestedBy.id).get();
@@ -331,7 +371,8 @@
                         recordId: request.targetId,
                         userId: request.requestedBy.id,
                         templateId: 'verification_rejected'
-                    }
+                    },
+                    moduleId: request.module.replace(/s$/, '') as any
                 });
             }
         } catch (notifyError) {
@@ -420,7 +461,8 @@
                             recordId: userId,
                             userId: verifier.id,
                             templateId: 'portal_profile_update'
-                        }
+                        },
+                        moduleId: 'user'
                     });
                     
                     if (notifyResult.success) sentCount++;

@@ -28,12 +28,15 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { cn } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { upsertDonationWithDonorAction } from '../actions';
 import { sendDonationReceiptAction } from '@/app/messages/actions';
 import { UnlinkedDonationResolver } from '@/components/unlinked-donation-resolver';
 import { checkPendingVerificationAction } from '@/app/verifications/actions';
+import { AuditHistory } from '@/components/audit-history';
 import type { PendingVerification } from '@/lib/types';
 import { PendingUpdateWarning } from '@/components/pending-update-warning';
+import { MessageSquare } from 'lucide-react';
 
 const DetailItem = ({ label, value, isMono = false }: { label: string; value: React.ReactNode; isMono?: boolean }) => (
     <div className="space-y-1">
@@ -293,10 +296,20 @@ export default function UnlinkedDonationDetailsPage() {
                 )}
 
                 <div ref={summaryRef} className="space-y-6">
+            <Tabs defaultValue="summary" className="w-full">
+                <TabsList className="bg-transparent border-b border-primary/10 rounded-none h-auto p-0 gap-8 mb-6">
+                    <TabsTrigger value="summary" className="px-0 py-3 text-sm font-bold data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none shadow-none transition-all">Summary</TabsTrigger>
+                    <TabsTrigger value="allocation" className="px-0 py-3 text-sm font-bold data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none shadow-none transition-all">Item Split</TabsTrigger>
+                    <TabsTrigger value="audit" className="px-0 py-3 text-sm font-bold data-[state=active]:bg-transparent data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none shadow-none transition-all">Audit Trail</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="summary" className="mt-0 space-y-6 focus-visible:outline-none">
                     <div className="grid gap-6 grid-cols-1 lg:grid-cols-12">
                         <div className="lg:col-span-8 space-y-6">
                             <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
-                                <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Donation Summary</CardTitle></CardHeader>
+                                <CardHeader className="bg-primary/5 border-b">
+                                    <CardTitle className="text-lg font-bold tracking-tight text-primary">Donation Summary</CardTitle>
+                                </CardHeader>
                                 <CardContent className="grid gap-6 sm:grid-cols-2 pt-6">
                                     <DetailItem label="Total Amount" value={`₹${donation.amount.toFixed(2)}`} isMono />
                                     <DetailItem label="Donation Date" value={donation.donationDate} />
@@ -312,55 +325,62 @@ export default function UnlinkedDonationDetailsPage() {
                                 </CardContent>
                             </Card>
 
-                            <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
-                                <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Allocation Details</CardTitle></CardHeader>
-                                <CardContent className="grid gap-6 md:grid-cols-2 pt-6">
-                                    <div className="space-y-3">
-                                        <h3 className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Category Distribution</h3>
+                            {donation.transactions && donation.transactions.length > 0 && (
+                                <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Verified Transaction Logs</CardTitle></CardHeader>
+                                    <CardContent className="pt-6">
                                         <div className="border border-primary/5 rounded-xl overflow-hidden shadow-inner">
                                             <ScrollArea className="w-full">
-                                                <Table>
-                                                    <TableHeader className="bg-primary/5">
-                                                        <TableRow><TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Category</TableHead><TableHead className="text-right font-bold text-primary text-[9px] capitalize tracking-tighter">Amount</TableHead></TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
-                                                        {typeSplit.map((s: { category: string, amount: number }) => (
-                                                            <TableRow key={s.category} className="hover:bg-primary/[0.02] border-b border-primary/5"><TableCell className="font-medium text-xs">{s.category}</TableCell><TableCell className="text-right font-bold font-mono text-primary text-xs">₹{s.amount.toFixed(2)}</TableCell></TableRow>
-                                                        ))}
-                                                    </TableBody>
-                                                </Table>
-                                                <ScrollBar orientation="horizontal" />
-                                            </ScrollArea>
-                                        </div>
-                                    </div>
-                                    <div className="space-y-3">
-                                        <h3 className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Target Initiatives</h3>
-                                        <div className="border border-primary/5 rounded-xl overflow-hidden shadow-inner">
-                                            <ScrollArea className="w-full">
-                                                <Table>
-                                                    <TableHeader className="bg-primary/5">
-                                                        <TableRow><TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Target</TableHead><TableHead className="text-right font-bold text-primary text-[9px] capitalize tracking-tighter">Amount</TableHead></TableRow>
-                                                    </TableHeader>
-                                                    <TableBody>
-                                                        {donation.linkSplit && donation.linkSplit.length > 0 ? donation.linkSplit.map((link: DonationLink) => (
-                                                            <TableRow key={link.linkId} className="hover:bg-primary/[0.02] border-b border-primary/5">
-                                                                <TableCell className="flex items-center gap-2 py-2">
-                                                                    {link.linkType === 'campaign' ? <FolderKanban className="h-3.5 w-3.5 text-primary/40" /> : <Lightbulb className="h-3.5 w-3.5 text-primary/40" />}
-                                                                    <span className="font-bold text-xs truncate max-w-[150px]">{link.linkName}</span>
-                                                                </TableCell>
-                                                                <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{link.amount.toFixed(2)}</TableCell>
+                                                <div className="min-w-[800px]">
+                                                    <Table>
+                                                        <TableHeader className="bg-primary/5">
+                                                            <TableRow>
+                                                                <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Transaction Value</TableHead>
+                                                                <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Reference ID</TableHead>
+                                                                <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Date Record</TableHead>
+                                                                <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Sender UPI</TableHead>
+                                                                <TableHead className="text-right font-bold text-primary text-[9px] capitalize tracking-tighter pr-6">Documents</TableHead>
                                                             </TableRow>
-                                                        )) : (
-                                                            <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated General Funds</TableCell></TableRow>
-                                                        )}
-                                                    </TableBody>
-                                                </Table>
+                                                        </TableHeader>
+                                                        <TableBody>
+                                                            {donation.transactions.map((tx: TransactionDetail) => (
+                                                                <TableRow key={tx.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
+                                                                    <TableCell className="font-bold font-mono text-primary text-xs">₹{tx.amount.toFixed(2)}</TableCell>
+                                                                    <TableCell className="text-xs font-mono opacity-60">{tx.transactionId || 'N/A'}</TableCell>
+                                                                    <TableCell className="text-xs font-normal">{tx.date || donation.donationDate}</TableCell>
+                                                                    <TableCell className="text-xs font-mono opacity-60">{tx.upiId || 'N/A'}</TableCell>
+                                                                    <TableCell className="text-right pr-6">
+                                                                        {tx.screenshotUrl ? (
+                                                                            <Button variant="outline" size="sm" className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform" onClick={() => handleViewImage(tx.screenshotUrl!, 'Transaction Evidence')}>
+                                                                                <ImageIcon className="mr-1.5 h-3 w-3"/> View Document
+                                                                            </Button>
+                                                                        ) : <span className="text-muted-foreground text-[10px] italic">No document attached</span>}
+                                                                    </TableCell>
+                                                                </TableRow>
+                                                            ))}
+                                                        </TableBody>
+                                                    </Table>
+                                                </div>
                                                 <ScrollBar orientation="horizontal" />
                                             </ScrollArea>
                                         </div>
-                                    </div>
-                                </CardContent>
-                            </Card>
+                                    </CardContent>
+                                </Card>
+                            )}
+
+                            {(donation.comments || donation.suggestions) && (
+                                <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Team Notes & Remarks</CardTitle></CardHeader>
+                                    <CardContent className="space-y-6 pt-6">
+                                        {donation.comments && (
+                                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Donor Remarks</p><p className="text-sm font-normal bg-primary/[0.02] p-4 rounded-lg italic border border-primary/5 leading-relaxed">"{donation.comments}"</p></div>
+                                        )}
+                                        {donation.suggestions && (
+                                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Staff Suggestions</p><p className="text-sm font-normal bg-primary/[0.02] p-4 rounded-lg italic border border-primary/5 leading-relaxed">"{donation.suggestions}"</p></div>
+                                        )}
+                                    </CardContent>
+                                </Card>
+                            )}
                         </div>
 
                         <div className="lg:col-span-4 space-y-6">
@@ -380,90 +400,68 @@ export default function UnlinkedDonationDetailsPage() {
                                     <DetailItem label="Referral Notes" value={donation.referral} />
                                 </CardContent>
                             </Card>
-
-                            <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
-                                <CardHeader className="bg-primary/5 border-b pb-3">
-                                    <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight capitalize"><History className="h-4 w-4 opacity-40"/> Activity History Log</CardTitle>
-                                </CardHeader>
-                                <CardContent className="pt-6 space-y-4">
-                                    <div className="flex items-start gap-3">
-                                        <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Clock className="h-3.5 w-3.5"/></div>
-                                        <div>
-                                            <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-tighter">Record Saved By</p>
-                                            <p className="text-xs font-bold text-primary">{donation.uploadedBy}</p>
-                                            <p className="text-[9px] font-mono opacity-60">Staff ID: {donation.uploadedById}</p>
-                                        </div>
-                                    </div>
-                                    {donation.createdAt && (
-                                        <div className="flex items-start gap-3">
-                                            <div className="mt-1 p-1.5 rounded bg-primary/5 text-primary"><Calendar className="h-3.5 w-3.5"/></div>
-                                            <div>
-                                                <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-tighter">Date Recorded</p>
-                                                <p className="text-xs font-bold text-primary">{(donation.createdAt as any).toDate?.().toLocaleString() || new Date(donation.createdAt as any).toLocaleString()}</p>
-                                            </div>
-                                        </div>
-                                    )}
-                                </CardContent>
-                            </Card>
                         </div>
                     </div>
+                </TabsContent>
 
-                    {donation.transactions && donation.transactions.length > 0 && (
-                        <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
-                            <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Verified Transaction Logs</CardTitle></CardHeader>
-                            <CardContent className="pt-6">
+                <TabsContent value="allocation" className="mt-0 focus-visible:outline-none">
+                    <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Allocation Details</CardTitle></CardHeader>
+                        <CardContent className="grid gap-6 md:grid-cols-2 pt-6">
+                            <div className="space-y-3">
+                                <h3 className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Category Distribution</h3>
                                 <div className="border border-primary/5 rounded-xl overflow-hidden shadow-inner">
                                     <ScrollArea className="w-full">
-                                        <div className="min-w-[800px]">
-                                            <Table>
-                                                <TableHeader className="bg-primary/5">
-                                                    <TableRow>
-                                                        <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Transaction Value</TableHead>
-                                                        <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Reference ID</TableHead>
-                                                        <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Date Record</TableHead>
-                                                        <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Sender UPI</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary text-[9px] capitalize tracking-tighter pr-6">Documents</TableHead>
-                                                    </TableRow>
-                                                </TableHeader>
-                                                <TableBody>
-                                                    {donation.transactions.map((tx: TransactionDetail) => (
-                                                        <TableRow key={tx.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
-                                                            <TableCell className="font-bold font-mono text-primary text-xs">₹{tx.amount.toFixed(2)}</TableCell>
-                                                            <TableCell className="text-xs font-mono opacity-60">{tx.transactionId || 'N/A'}</TableCell>
-                                                            <TableCell className="text-xs font-normal">{tx.date || donation.donationDate}</TableCell>
-                                                            <TableCell className="text-xs font-mono opacity-60">{tx.upiId || 'N/A'}</TableCell>
-                                                            <TableCell className="text-right pr-6">
-                                                                {tx.screenshotUrl ? (
-                                                                    <Button variant="outline" size="sm" className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform" onClick={() => handleViewImage(tx.screenshotUrl!, 'Transaction Evidence')}>
-                                                                        <ImageIcon className="mr-1.5 h-3 w-3"/> View Document
-                                                                    </Button>
-                                                                ) : <span className="text-muted-foreground text-[10px] italic">No document attached</span>}
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ))}
-                                                </TableBody>
-                                            </Table>
-                                        </div>
+                                        <Table>
+                                            <TableHeader className="bg-primary/5">
+                                                <TableRow><TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Category</TableHead><TableHead className="text-right font-bold text-primary text-[9px] capitalize tracking-tighter">Amount</TableHead></TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {typeSplit.map((s: { category: string, amount: number }) => (
+                                                    <TableRow key={s.category} className="hover:bg-primary/[0.02] border-b border-primary/5"><TableCell className="font-medium text-xs">{s.category}</TableCell><TableCell className="text-right font-bold font-mono text-primary text-xs">₹{s.amount.toFixed(2)}</TableCell></TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
                                         <ScrollBar orientation="horizontal" />
                                     </ScrollArea>
                                 </div>
-                            </CardContent>
-                        </Card>
-                    )}
+                            </div>
+                            <div className="space-y-3">
+                                <h3 className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Target Initiatives</h3>
+                                <div className="border border-primary/5 rounded-xl overflow-hidden shadow-inner">
+                                    <ScrollArea className="w-full">
+                                        <Table>
+                                            <TableHeader className="bg-primary/5">
+                                                <TableRow><TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Target</TableHead><TableHead className="text-right font-bold text-primary text-[9px] capitalize tracking-tighter">Amount</TableHead></TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {donation.linkSplit && donation.linkSplit.length > 0 ? donation.linkSplit.map((link: DonationLink) => (
+                                                    <TableRow key={link.linkId} className="hover:bg-primary/[0.02] border-b border-primary/5">
+                                                        <TableCell className="flex items-center gap-2 py-2">
+                                                            {link.linkType === 'campaign' ? <FolderKanban className="h-3.5 w-3.5 text-primary/40" /> : <Lightbulb className="h-3.5 w-3.5 text-primary/40" />}
+                                                            <span className="font-bold text-xs truncate max-w-[150px]">{link.linkName}</span>
+                                                        </TableCell>
+                                                        <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{link.amount.toFixed(2)}</TableCell>
+                                                    </TableRow>
+                                                )) : (
+                                                    <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated General Funds</TableCell></TableRow>
+                                                )}
+                                            </TableBody>
+                                        </Table>
+                                        <ScrollBar orientation="horizontal" />
+                                    </ScrollArea>
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
 
-                    {(donation.comments || donation.suggestions) && (
-                        <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
-                            <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Team Notes & Remarks</CardTitle></CardHeader>
-                            <CardContent className="space-y-6 pt-6">
-                                {donation.comments && (
-                                    <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Donor Remarks</p><p className="text-sm font-normal bg-primary/[0.02] p-4 rounded-lg italic border border-primary/5 leading-relaxed">"{donation.comments}"</p></div>
-                                )}
-                                {donation.suggestions && (
-                                    <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Staff Suggestions</p><p className="text-sm font-normal bg-primary/[0.02] p-4 rounded-lg italic border border-primary/5 leading-relaxed">"{donation.suggestions}"</p></div>
-                                )}
-                            </CardContent>
-                        </Card>
-                    )}
+                <TabsContent value="audit" className="mt-0 focus-visible:outline-none">
+                    <div className="max-w-4xl">
+                        <AuditHistory targetId={donationId} module="donations" />
+                    </div>
+                </TabsContent>
+            </Tabs>
                 </div>
             </div>
 

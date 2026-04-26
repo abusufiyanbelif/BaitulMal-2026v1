@@ -4,7 +4,7 @@
  import { useFirestore, useMemoFirebase, useDoc } from '@/firebase';
  import { doc, setDoc } from 'firebase/firestore';
  import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
- import { Settings, Save, Loader2, CheckSquare, Edit, X, UserSearch, ShieldCheck } from 'lucide-react';
+ import { Settings, Save, Loader2, CheckSquare, Edit, X, UserSearch, ShieldCheck, Bell, Smartphone } from 'lucide-react';
  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
  import { Checkbox } from '@/components/ui/checkbox';
  import { Label } from '@/components/ui/label';
@@ -43,20 +43,26 @@
    const [localVis, setLocalVis] = useState<Record<string, boolean>>({});
    const [localMandatory, setLocalMandatory] = useState<Record<string, boolean>>({});
    const [localVerificationMode, setLocalVerificationMode] = useState('Disabled');
+   const [localWhatsAppNotify, setLocalWhatsAppNotify] = useState(true);
+   const [localInAppNotify, setLocalInAppNotify] = useState(true);
  
    useEffect(() => {
      if (visibilitySettings) setLocalVis(visibilitySettings);
      if (configSettings?.mandatoryFields) setLocalMandatory(configSettings.mandatoryFields);
      if (configSettings?.verificationMode) setLocalVerificationMode(configSettings.verificationMode);
      else if (configSettings?.isVerificationRequired) setLocalVerificationMode('Mandatory');
+     setLocalWhatsAppNotify(configSettings?.enableWhatsAppNotifications !== false);
+     setLocalInAppNotify(configSettings?.enableInAppNotifications !== false);
    }, [visibilitySettings, configSettings]);
  
    const isDirty = useMemo(() => {
      const visChanged = JSON.stringify(localVis) !== JSON.stringify(visibilitySettings || {});
      const mandatoryChanged = JSON.stringify(localMandatory) !== JSON.stringify(configSettings?.mandatoryFields || {});
      const verificationChanged = localVerificationMode !== (configSettings?.verificationMode || 'Disabled');
-     return visChanged || mandatoryChanged || verificationChanged;
-   }, [localVis, localMandatory, localVerificationMode, visibilitySettings, configSettings]);
+     const whatsappChanged = localWhatsAppNotify !== (configSettings?.enableWhatsAppNotifications !== false);
+     const inAppChanged = localInAppNotify !== (configSettings?.enableInAppNotifications !== false);
+     return visChanged || mandatoryChanged || verificationChanged || whatsappChanged || inAppChanged;
+   }, [localVis, localMandatory, localVerificationMode, localWhatsAppNotify, localInAppNotify, visibilitySettings, configSettings]);
  
    const handleVisToggle = (id: string) => {
      setLocalVis(prev => ({ ...prev, [id]: !prev[id] }));
@@ -75,7 +81,9 @@
              setDoc(configRef, {
                  mandatoryFields: localMandatory,
                  isVerificationRequired: localVerificationMode !== 'Disabled',
-                 verificationMode: localVerificationMode
+                 verificationMode: localVerificationMode,
+                 enableWhatsAppNotifications: localWhatsAppNotify,
+                 enableInAppNotifications: localInAppNotify
              }, { merge: true })
          ]);
          toast({ title: "Settings Saved Successfully", variant: "success" });
@@ -93,6 +101,8 @@
      if (configSettings?.verificationMode) setLocalVerificationMode(configSettings.verificationMode);
      else if (configSettings?.isVerificationRequired) setLocalVerificationMode('Mandatory');
      else setLocalVerificationMode('Disabled');
+     setLocalWhatsAppNotify(configSettings?.enableWhatsAppNotifications !== false);
+     setLocalInAppNotify(configSettings?.enableInAppNotifications !== false);
      setIsEditMode(false);
    };
  
@@ -212,6 +222,51 @@
                  </div>
              </CardContent>
          </Card>
-     </div>
+          <Card className="animate-fade-in-up border-primary/10 bg-white shadow-sm overflow-hidden mt-6">
+              <CardHeader className="bg-primary/5 border-b">
+                  <CardTitle className="flex items-center gap-2 font-bold text-primary">
+                      <Bell className="h-5 w-5" /> Notification Settings
+                  </CardTitle>
+                  <CardDescription className="font-normal text-primary/70">
+                      Configure how members and admins are notified about donor events.
+                  </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-4">
+                  <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
+                      <Checkbox 
+                          id="donor_whatsapp_notify" 
+                          checked={localWhatsAppNotify} 
+                          onCheckedChange={(checked) => setLocalWhatsAppNotify(!!checked)} 
+                          disabled={!isEditMode}
+                          className="data-[state=checked]:bg-primary"
+                      />
+                      <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                             <Smartphone className="h-3 w-3 text-green-500" />
+                             <Label htmlFor="donor_whatsapp_notify" className="cursor-pointer font-bold text-sm tracking-tight text-primary">WhatsApp Notifications</Label>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground font-medium">Send automated WhatsApp alerts for donor profile changes and verifications.</p>
+                      </div>
+                  </div>
+
+                  <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
+                      <Checkbox 
+                          id="donor_inapp_notify" 
+                          checked={localInAppNotify} 
+                          onCheckedChange={(checked) => setLocalInAppNotify(!!checked)} 
+                          disabled={!isEditMode}
+                          className="data-[state=checked]:bg-primary"
+                      />
+                      <div className="space-y-0.5">
+                          <div className="flex items-center gap-2">
+                             <Bell className="h-3 w-3 text-blue-500" />
+                             <Label htmlFor="donor_inapp_notify" className="cursor-pointer font-bold text-sm tracking-tight text-primary">In-App Notifications</Label>
+                          </div>
+                          <p className="text-[10px] text-muted-foreground font-medium">Show alerts on profile dashboard and approval toast messages after login.</p>
+                      </div>
+                  </div>
+              </CardContent>
+          </Card>
+      </div>
    );
  }

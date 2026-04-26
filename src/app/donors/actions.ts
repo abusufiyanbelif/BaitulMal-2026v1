@@ -4,6 +4,8 @@ import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import type { Donor } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { FieldValue } from 'firebase-admin/firestore';
+import { recordAuditLogAction } from '../audit/actions';
+import { generateChanges } from '@/lib/utils';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure Server Credentials Are Configured Correctly.";
 
@@ -52,12 +54,31 @@ export async function updateDonorAction(donorId: string, data: Partial<Donor>, u
 
     try {
         const docRef = adminDb.collection('donors').doc(donorId);
-        await docRef.update({
+        const oldSnap = await docRef.get();
+        const oldData = oldSnap.exists ? oldSnap.data() : {};
+
+        const updatePayload: any = {
             ...data,
             updatedAt: FieldValue.serverTimestamp(),
             updatedById: updatedBy.id,
             updatedByName: updatedBy.name,
-        });
+        };
+
+        await docRef.update(updatePayload);
+
+        // Log Audit
+        const changes = generateChanges(oldData, updatePayload);
+        if (changes.length > 0) {
+            await recordAuditLogAction({
+                module: 'donors',
+                targetId: donorId,
+                action: 'Update',
+                description: `Manual update to donor profile for ${oldData?.name || donorId}`,
+                changes,
+                performedBy: updatedBy,
+                timestamp: new Date().toISOString()
+            });
+        }
 
         revalidatePath(`/donors/${donorId}`);
         revalidatePath('/donors');

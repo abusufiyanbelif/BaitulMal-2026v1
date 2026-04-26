@@ -33,6 +33,8 @@ export interface BrandingSettings extends DocumentData {
   isDonorLoginEnabled?: boolean;
   isBeneficiaryLoginEnabled?: boolean;
   isDonorSelfRecordPaymentEnabled?: boolean;
+  portalAuthMethod?: 'OTP' | 'Password';
+  isPortalPasswordEnabled?: boolean;
 }
 
 export interface PaymentSettings extends DocumentData {
@@ -428,6 +430,7 @@ export interface UserProfile extends DocumentData {
   organizationRole?: string;
   linkedDonorId?: string;
   linkedBeneficiaryId?: string;
+  password?: string; // Encrypted/Hashed password for manual login
 }
  
 export interface PendingVerification extends DocumentData {
@@ -445,4 +448,19 @@ export interface PendingVerification extends DocumentData {
   updatedAt: Timestamp | FieldValue;
   module: 'donations' | 'beneficiaries' | 'campaigns' | 'leads' | 'donors' | 'users';
   description?: string;
+}
+ 
+export interface AuditLog extends DocumentData {
+  id: string;
+  targetId: string;
+  targetCollection: string;
+  module: 'donations' | 'beneficiaries' | 'campaigns' | 'leads' | 'donors' | 'users';
+  action: 'CREATE' | 'UPDATE' | 'DELETE' | 'LINK' | 'UNLINK' | 'SPLIT' | 'MAP' | 'UNMAP' | 'APPROVE' | 'REJECT' | 'OTHER';
+  description: string;
+  performedBy: { id: string, name: string };
+  changes?: { field: string, old: any, new: any }[];
+  originalValue?: any;
+  newValue?: any;
+  timestamp: Timestamp | FieldValue;
+  metadata?: any;
 }

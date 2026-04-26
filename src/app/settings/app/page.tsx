@@ -113,6 +113,8 @@ interface FormDataType {
     isDonorLoginEnabled: boolean;
     isBeneficiaryLoginEnabled: boolean;
     isDonorSelfRecordPaymentEnabled: boolean;
+    portalAuthMethod: 'OTP' | 'Password';
+    isPortalPasswordEnabled: boolean;
 }
 
 function VerifiableItem({ icon: Icon, label, value, isEditing, id, onChange, placeholder }: { 
@@ -308,6 +310,8 @@ export default function AppSettingsPage() {
                 isDonorLoginEnabled: brandingSettings?.isDonorLoginEnabled ?? true,
                 isBeneficiaryLoginEnabled: brandingSettings?.isBeneficiaryLoginEnabled ?? true,
                 isDonorSelfRecordPaymentEnabled: brandingSettings?.isDonorSelfRecordPaymentEnabled ?? false,
+                portalAuthMethod: brandingSettings?.portalAuthMethod || 'OTP',
+                isPortalPasswordEnabled: brandingSettings?.isPortalPasswordEnabled ?? true,
             });
         }
     }, [isEditMode, brandingSettings, paymentSettings, guidingPrinciplesData]);
@@ -426,6 +430,8 @@ export default function AppSettingsPage() {
                 isDonorLoginEnabled: editableData.isDonorLoginEnabled,
                 isBeneficiaryLoginEnabled: editableData.isBeneficiaryLoginEnabled,
                 isDonorSelfRecordPaymentEnabled: editableData.isDonorSelfRecordPaymentEnabled,
+                portalAuthMethod: editableData.portalAuthMethod,
+                isPortalPasswordEnabled: editableData.isPortalPasswordEnabled,
             };
             batch.set(doc(firestore, 'settings', 'branding'), brandingData, { merge: true });
 
@@ -815,6 +821,42 @@ export default function AppSettingsPage() {
                             onChange={(val) => handleFieldChange('isBeneficiaryLoginEnabled', val)}
                             disabled={isFormDisabled}
                         />
+
+                        <div className="md:col-span-2 p-4 rounded-xl border border-primary/10 bg-primary/5 space-y-4">
+                            <h4 className="text-xs font-bold text-primary flex items-center gap-2 tracking-tight uppercase opacity-60">
+                                <Smartphone className="h-4 w-4" /> Portal Authentication Framework
+                            </h4>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-bold uppercase opacity-40">Verification Method</Label>
+                                    <Select 
+                                        value={displayData.portalAuthMethod || 'OTP'} 
+                                        onValueChange={(val) => handleFieldChange('portalAuthMethod', val as any)}
+                                        disabled={isFormDisabled}
+                                    >
+                                        <SelectTrigger className="font-bold border-primary/10 h-10 bg-white">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="OTP">Mobile OTP (Firebase SMS)</SelectItem>
+                                            <SelectItem value="Password">Mobile/ID + Password (Internal DB)</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <p className="text-[9px] text-muted-foreground leading-relaxed italic">Password method allows login without SMS costs, verifying credentials directly against the institution's encrypted database.</p>
+                                </div>
+                                <div className="flex items-center gap-4 pt-4">
+                                     <div className="flex items-center space-x-2">
+                                        <Checkbox 
+                                            id="portal-password-enabled" 
+                                            checked={displayData.isPortalPasswordEnabled ?? true} 
+                                            onCheckedChange={(val) => handleFieldChange('isPortalPasswordEnabled', !!val)}
+                                            disabled={isFormDisabled}
+                                        />
+                                        <Label htmlFor="portal-password-enabled" className="text-xs font-bold">Allow Password Entry</Label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <VisibilityToggle 
                             id="donor-payment-self-record"
                             label="Donor Self-Payment Record"

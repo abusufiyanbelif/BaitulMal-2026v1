@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Settings, Save, Loader2, CheckSquare, Edit, X, RefreshCw, DatabaseZap, ShieldCheck } from 'lucide-react';
+import { Settings, Save, Loader2, CheckSquare, Edit, X, RefreshCw, DatabaseZap, ShieldCheck, Bell, Smartphone } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -65,6 +65,8 @@ export default function DonationSettingsPage() {
   const [localVerificationMode, setLocalVerificationMode] = useState('Disabled');
   const [minApprovalsRequired, setMinApprovalsRequired] = useState(1);
   const [authorizedVerifiers, setAuthorizedVerifiers] = useState<string[]>([]);
+  const [localWhatsAppNotify, setLocalWhatsAppNotify] = useState(true);
+  const [localInAppNotify, setLocalInAppNotify] = useState(true);
   const [userSearchTerm, setUserSearchTerm] = useState('');
 
   const usersRef = useMemoFirebase(() => (firestore) ? query(collection(firestore, 'users'), where('status', '==', 'Active')) : null, [firestore]);
@@ -89,6 +91,8 @@ export default function DonationSettingsPage() {
      }
      if (configSettings?.minApprovalsRequired !== undefined) setMinApprovalsRequired(configSettings.minApprovalsRequired);
      if (configSettings?.authorizedVerifiers) setAuthorizedVerifiers(configSettings.authorizedVerifiers);
+     setLocalWhatsAppNotify(configSettings?.enableWhatsAppNotifications !== false);
+     setLocalInAppNotify(configSettings?.enableInAppNotifications !== false);
    }, [visibilitySettings, configSettings]);
 
     const isDirty = useMemo(() => {
@@ -97,8 +101,10 @@ export default function DonationSettingsPage() {
         const verificationModeChanged = localVerificationMode !== (configSettings?.verificationMode || 'Disabled');
         const minApprovalsChanged = Number(minApprovalsRequired) !== (configSettings?.minApprovalsRequired || 1);
         const authorizedChanged = JSON.stringify(authorizedVerifiers) !== JSON.stringify(configSettings?.authorizedVerifiers || []);
-        return visChanged || mandatoryChanged || verificationModeChanged || minApprovalsChanged || authorizedChanged;
-    }, [localVis, localMandatory, localVerificationMode, minApprovalsRequired, authorizedVerifiers, visibilitySettings, configSettings]);
+        const whatsappChanged = localWhatsAppNotify !== (configSettings?.enableWhatsAppNotifications !== false);
+        const inAppChanged = localInAppNotify !== (configSettings?.enableInAppNotifications !== false);
+        return visChanged || mandatoryChanged || verificationModeChanged || minApprovalsChanged || authorizedChanged || whatsappChanged || inAppChanged;
+    }, [localVis, localMandatory, localVerificationMode, minApprovalsRequired, authorizedVerifiers, localWhatsAppNotify, localInAppNotify, visibilitySettings, configSettings]);
 
   const handleVisToggle = (id: string, group: 'public' | 'member') => {
     const key = `${group}_${id}`;
@@ -120,7 +126,9 @@ export default function DonationSettingsPage() {
                  isVerificationRequired: localVerificationMode !== 'Disabled',
                  verificationMode: localVerificationMode,
                  minApprovalsRequired: Number(minApprovalsRequired) || 1,
-                 authorizedVerifiers: authorizedVerifiers
+                 authorizedVerifiers: authorizedVerifiers,
+                 enableWhatsAppNotifications: localWhatsAppNotify,
+                 enableInAppNotifications: localInAppNotify
              }, { merge: true })
          ]);
         toast({ title: "Settings saved", variant: "success" });
@@ -166,6 +174,8 @@ export default function DonationSettingsPage() {
      }
      if (configSettings?.minApprovalsRequired !== undefined) setMinApprovalsRequired(configSettings.minApprovalsRequired);
      if (configSettings?.authorizedVerifiers) setAuthorizedVerifiers(configSettings.authorizedVerifiers);
+     setLocalWhatsAppNotify(configSettings?.enableWhatsAppNotifications !== false);
+     setLocalInAppNotify(configSettings?.enableInAppNotifications !== false);
      setIsEditMode(false);
    };
 
@@ -394,6 +404,51 @@ export default function DonationSettingsPage() {
                          </ScrollArea>
                      </div>
                  )}
+             </CardContent>
+         </Card>
+         <Card className="animate-fade-in-up border-primary/10 bg-white shadow-sm overflow-hidden mt-6">
+             <CardHeader className="bg-primary/5 border-b">
+                 <CardTitle className="flex items-center gap-2 font-bold text-primary">
+                     <Bell className="h-5 w-5" /> Notification Settings
+                 </CardTitle>
+                 <CardDescription className="font-normal text-primary/70">
+                     Configure how members and admins are notified about donation events.
+                 </CardDescription>
+             </CardHeader>
+             <CardContent className="pt-6 space-y-4">
+                 <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
+                     <Checkbox 
+                         id="donation_whatsapp_notify" 
+                         checked={localWhatsAppNotify} 
+                         onCheckedChange={(checked) => setLocalWhatsAppNotify(!!checked)} 
+                         disabled={!isEditMode}
+                         className="data-[state=checked]:bg-primary"
+                     />
+                     <div className="space-y-0.5">
+                         <div className="flex items-center gap-2">
+                            <Smartphone className="h-3 w-3 text-green-500" />
+                            <Label htmlFor="donation_whatsapp_notify" className="cursor-pointer font-bold text-sm tracking-tight text-primary">WhatsApp Notifications</Label>
+                         </div>
+                         <p className="text-[10px] text-muted-foreground font-medium">Send automated WhatsApp alerts for donation submissions and verifications.</p>
+                     </div>
+                 </div>
+
+                 <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
+                     <Checkbox 
+                         id="donation_inapp_notify" 
+                         checked={localInAppNotify} 
+                         onCheckedChange={(checked) => setLocalInAppNotify(!!checked)} 
+                         disabled={!isEditMode}
+                         className="data-[state=checked]:bg-primary"
+                     />
+                     <div className="space-y-0.5">
+                         <div className="flex items-center gap-2">
+                            <Bell className="h-3 w-3 text-blue-500" />
+                            <Label htmlFor="donation_inapp_notify" className="cursor-pointer font-bold text-sm tracking-tight text-primary">In-App Notifications</Label>
+                         </div>
+                         <p className="text-[10px] text-muted-foreground font-medium">Show alerts on profile dashboard and approval toast messages after login.</p>
+                     </div>
+                 </div>
              </CardContent>
          </Card>
      </div>

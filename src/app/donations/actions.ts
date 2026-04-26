@@ -2,6 +2,7 @@
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { FieldValue } from 'firebase-admin/firestore';
 import { revalidatePath } from 'next/cache';
+import { recordAuditLogAction } from '@/app/audit/actions';
 import type { Donation, Donor, DonationLink, TransactionDetail, Campaign, Lead } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 import { sendWhatsAppAction } from '@/app/messages/actions';
@@ -318,6 +319,15 @@ export async function bulkMapDonorsAction(donationIds: string[], uploadedBy: {id
 
             if (foundDonorId) {
                 await snap.ref.update({ donorId: foundDonorId, updatedAt: FieldValue.serverTimestamp() });
+                await recordAuditLogAction({
+                    targetId: snap.id,
+                    targetCollection: 'donations',
+                    module: 'donations',
+                    action: 'MAP',
+                    description: `Auto-linked to profile ID: ${foundDonorId} via phone matching.`,
+                    performedBy: { id: uploadedBy.id, name: uploadedBy.name },
+                    metadata: { donorId: foundDonorId }
+                });
                 mappedCount++;
             }
         }
@@ -401,6 +411,16 @@ export async function bulkUnmapDonorsAction(donationIds: string[], uploadedBy: {
             batch.update(adminDb.collection('donations').doc(id), { donorId: null, updatedAt: FieldValue.serverTimestamp() });
         }
         await batch.commit();
+        for (const id of donationIds) {
+            await recordAuditLogAction({
+                targetId: id,
+                targetCollection: 'donations',
+                module: 'donations',
+                action: 'UNMAP',
+                description: 'Donor identity removed from record.',
+                performedBy: { id: uploadedBy.id, name: uploadedBy.name },
+            });
+        }
         revalidatePath('/donations');
         return { success: true, message: `Successfully unlinked ${donationIds.length} records.` };
     } catch (error: any) {
@@ -417,6 +437,17 @@ export async function bulkManualMapDonorsAction(donationIds: string[], donorId: 
             batch.update(adminDb.collection('donations').doc(id), { donorId, updatedAt: FieldValue.serverTimestamp() });
         }
         await batch.commit();
+        for (const id of donationIds) {
+            await recordAuditLogAction({
+                targetId: id,
+                targetCollection: 'donations',
+                module: 'donations',
+                action: 'MAP',
+                description: `Manually linked to donor profile ID: ${donorId}`,
+                performedBy: { id: updatedBy.id, name: updatedBy.name },
+                metadata: { donorId }
+            });
+        }
         revalidatePath('/donations');
         return { success: true, message: `Successfully mapped ${donationIds.length} records.` };
     } catch (error: any) {
@@ -464,6 +495,19 @@ export async function bulkLinkInitiativeAction(
             }
         }
         await batch.commit();
+        for (const id of donationIds) {
+            await recordAuditLogAction({
+                targetId: id,
+                targetCollection: 'donations',
+                module: 'donations',
+                action: action === 'link' ? 'LINK' : 'UNLINK',
+                description: action === 'link' 
+                   ? `Allocated to ${initiativeContext?.type}: ${initiativeContext?.name}` 
+                   : 'Unlinked from specific initiative (returned to general pool)',
+                performedBy: updatedBy || { id: 'system', name: 'System' },
+                metadata: { action, initiativeContext, splitOptions }
+            });
+        }
 
         const uniqueLinks = Array.from(new Set(affectedLinks.map(l => `${l.linkType}_${l.linkId}`)))
             .map(key => {
@@ -562,6 +606,15 @@ export async function linkDonationToDonorAction(donationId: string, donorId: str
         await adminDb.collection('donations').doc(donationId).update({
             donorId,
             updatedAt: FieldValue.serverTimestamp()
+        });
+        await recordAuditLogAction({
+            targetId: donationId,
+            targetCollection: 'donations',
+            module: 'donations',
+            action: 'MAP',
+            description: `Linked to donor profile ID: ${donorId}`,
+            performedBy: { id: updatedBy.id, name: updatedBy.name },
+            metadata: { donorId }
         });
         revalidatePath('/donations');
         return { success: true, message: 'Identity Resolution Finalized.' };

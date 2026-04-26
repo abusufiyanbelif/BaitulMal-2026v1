@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Settings, Save, Loader2, CheckSquare, Edit, X, ShieldCheck } from 'lucide-react';
+import { Settings, Save, Loader2, CheckSquare, Edit, X, ShieldCheck, Bell, Smartphone } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
@@ -60,6 +60,8 @@ export default function CampaignSettingsPage() {
   const [minApprovalsRequired, setMinApprovalsRequired] = useState(1);
   const [authorizedVerifiers, setAuthorizedVerifiers] = useState<string[]>([]);
   const [localDonateNow, setLocalDonateNow] = useState(false);
+  const [localWhatsAppNotify, setLocalWhatsAppNotify] = useState(true);
+  const [localInAppNotify, setLocalInAppNotify] = useState(true);
   const [userSearchTerm, setUserSearchTerm] = useState('');
 
   const usersRef = useMemoFirebase(() => (firestore) ? query(collection(firestore, 'users'), where('status', '==', 'Active')) : null, [firestore]);
@@ -85,6 +87,8 @@ export default function CampaignSettingsPage() {
      if (configSettings?.minApprovalsRequired !== undefined) setMinApprovalsRequired(configSettings.minApprovalsRequired);
      if (configSettings?.authorizedVerifiers) setAuthorizedVerifiers(configSettings.authorizedVerifiers);
      if (configSettings?.isDonateNowVisible) setLocalDonateNow(configSettings.isDonateNowVisible);
+     setLocalWhatsAppNotify(configSettings?.enableWhatsAppNotifications !== false);
+     setLocalInAppNotify(configSettings?.enableInAppNotifications !== false);
    }, [visibilitySettings, configSettings]);
 
    const isDirty = useMemo(() => {
@@ -94,8 +98,10 @@ export default function CampaignSettingsPage() {
      const minApprovalsChanged = Number(minApprovalsRequired) !== (configSettings?.minApprovalsRequired || 1);
      const authorizedChanged = JSON.stringify(authorizedVerifiers) !== JSON.stringify(configSettings?.authorizedVerifiers || []);
      const donateNowChanged = localDonateNow !== (configSettings?.isDonateNowVisible || false);
-     return visChanged || mandatoryChanged || verificationChanged || minApprovalsChanged || authorizedChanged || donateNowChanged;
-   }, [localVis, localMandatory, localVerificationMode, minApprovalsRequired, authorizedVerifiers, localDonateNow, visibilitySettings, configSettings]);
+     const whatsappChanged = localWhatsAppNotify !== (configSettings?.enableWhatsAppNotifications !== false);
+     const inAppChanged = localInAppNotify !== (configSettings?.enableInAppNotifications !== false);
+     return visChanged || mandatoryChanged || verificationChanged || minApprovalsChanged || authorizedChanged || donateNowChanged || whatsappChanged || inAppChanged;
+   }, [localVis, localMandatory, localVerificationMode, minApprovalsRequired, authorizedVerifiers, localDonateNow, localWhatsAppNotify, localInAppNotify, visibilitySettings, configSettings]);
 
   const handleVisToggle = (id: string, group: 'public' | 'member') => {
     const key = `${group}_${id}`;
@@ -118,7 +124,9 @@ export default function CampaignSettingsPage() {
                  verificationMode: localVerificationMode,
                  minApprovalsRequired: Number(minApprovalsRequired) || 1,
                  authorizedVerifiers: authorizedVerifiers,
-                 isDonateNowVisible: localDonateNow
+                 isDonateNowVisible: localDonateNow,
+                 enableWhatsAppNotifications: localWhatsAppNotify,
+                 enableInAppNotifications: localInAppNotify
              }, { merge: true })
          ]);
         toast({ title: "Settings saved", variant: "success" });
@@ -143,6 +151,8 @@ export default function CampaignSettingsPage() {
      if (configSettings?.minApprovalsRequired !== undefined) setMinApprovalsRequired(configSettings.minApprovalsRequired);
      if (configSettings?.authorizedVerifiers) setAuthorizedVerifiers(configSettings.authorizedVerifiers);
      if (configSettings?.isDonateNowVisible) setLocalDonateNow(configSettings.isDonateNowVisible);
+     setLocalWhatsAppNotify(configSettings?.enableWhatsAppNotifications !== false);
+     setLocalInAppNotify(configSettings?.enableInAppNotifications !== false);
      setIsEditMode(false);
    };
 
@@ -353,32 +363,78 @@ export default function CampaignSettingsPage() {
                      </CardContent>
                 </Card>
 
-                <Card className="animate-fade-in-up border-primary/10 bg-white shadow-sm overflow-hidden">
-                    <CardHeader className="bg-primary/5 border-b">
-                        <CardTitle className="flex items-center gap-2 font-bold text-primary">
-                            <Save className="h-5 w-5" /> Donation Controls
-                        </CardTitle>
-                        <CardDescription className="font-normal text-primary/70">
-                            Manage public-facing donation options for campaigns.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-6">
-                        <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
-                            <Checkbox 
-                                id="is_donate_now_visible" 
-                                checked={localDonateNow} 
-                                onCheckedChange={(checked) => setLocalDonateNow(!!checked)} 
-                                disabled={!isEditMode}
-                                className="data-[state=checked]:bg-primary"
-                            />
-                            <div className="space-y-0.5">
-                                <Label htmlFor="is_donate_now_visible" className="cursor-pointer font-bold text-sm tracking-tight text-primary">Show "Donate Now" Button</Label>
-                                <p className="text-[10px] text-muted-foreground font-medium">Allow the public to initiate donations directly from the campaign page.</p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-            </div>
+                 <Card className="animate-fade-in-up border-primary/10 bg-white shadow-sm overflow-hidden">
+                     <CardHeader className="bg-primary/5 border-b">
+                         <CardTitle className="flex items-center gap-2 font-bold text-primary">
+                             <Save className="h-5 w-5" /> Donation Controls
+                         </CardTitle>
+                         <CardDescription className="font-normal text-primary/70">
+                             Manage public-facing donation options for campaigns.
+                         </CardDescription>
+                     </CardHeader>
+                     <CardContent className="pt-6">
+                         <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
+                             <Checkbox 
+                                 id="is_donate_now_visible" 
+                                 checked={localDonateNow} 
+                                 onCheckedChange={(checked) => setLocalDonateNow(!!checked)} 
+                                 disabled={!isEditMode}
+                                 className="data-[state=checked]:bg-primary"
+                             />
+                             <div className="space-y-0.5">
+                                 <Label htmlFor="is_donate_now_visible" className="cursor-pointer font-bold text-sm tracking-tight text-primary">Show "Donate Now" Button</Label>
+                                 <p className="text-[10px] text-muted-foreground font-medium">Allow the public to initiate donations directly from the campaign page.</p>
+                             </div>
+                         </div>
+                     </CardContent>
+                 </Card>
+
+                 <Card className="animate-fade-in-up border-primary/10 bg-white shadow-sm overflow-hidden">
+                     <CardHeader className="bg-primary/5 border-b">
+                         <CardTitle className="flex items-center gap-2 font-bold text-primary">
+                             <Bell className="h-5 w-5" /> Notification Settings
+                         </CardTitle>
+                         <CardDescription className="font-normal text-primary/70">
+                             Configure how members and admins are notified about campaign events.
+                         </CardDescription>
+                     </CardHeader>
+                     <CardContent className="pt-6 space-y-4">
+                         <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
+                             <Checkbox 
+                                 id="campaign_whatsapp_notify" 
+                                 checked={localWhatsAppNotify} 
+                                 onCheckedChange={(checked) => setLocalWhatsAppNotify(!!checked)} 
+                                 disabled={!isEditMode}
+                                 className="data-[state=checked]:bg-primary"
+                             />
+                             <div className="space-y-0.5">
+                                 <div className="flex items-center gap-2">
+                                    <Smartphone className="h-3 w-3 text-green-500" />
+                                    <Label htmlFor="campaign_whatsapp_notify" className="cursor-pointer font-bold text-sm tracking-tight text-primary">WhatsApp Notifications</Label>
+                                 </div>
+                                 <p className="text-[10px] text-muted-foreground font-medium">Send automated WhatsApp alerts for campaign creations and approvals.</p>
+                             </div>
+                         </div>
+
+                         <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
+                             <Checkbox 
+                                 id="campaign_inapp_notify" 
+                                 checked={localInAppNotify} 
+                                 onCheckedChange={(checked) => setLocalInAppNotify(!!checked)} 
+                                 disabled={!isEditMode}
+                                 className="data-[state=checked]:bg-primary"
+                             />
+                             <div className="space-y-0.5">
+                                 <div className="flex items-center gap-2">
+                                    <Bell className="h-3 w-3 text-blue-500" />
+                                    <Label htmlFor="campaign_inapp_notify" className="cursor-pointer font-bold text-sm tracking-tight text-primary">In-App Notifications</Label>
+                                 </div>
+                                 <p className="text-[10px] text-muted-foreground font-medium">Show alerts on profile dashboard and approval toast messages after login.</p>
+                             </div>
+                         </div>
+                     </CardContent>
+                 </Card>
+             </div>
         </div>
     </div>
   );

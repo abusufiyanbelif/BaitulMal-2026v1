@@ -50,6 +50,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ResetPasswordDialog } from '@/components/reset-password-dialog';
 import Link from 'next/link';
 import { cn, getNestedValue } from '@/lib/utils';
 import { 
@@ -63,6 +64,7 @@ import {
     PieChart
 } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
+import { AuditHistory } from '@/components/audit-history';
 import type { ChartConfig } from '@/components/ui/chart';
 import { format, parseISO } from 'date-fns';
 
@@ -288,6 +290,9 @@ export default function DonorProfilePage() {
                                 {existingPendingRequest ? "Approval Pending" : "Edit Profile"}
                             </Button>
                         )}
+                        {canUpdate && (
+                            <ResetPasswordDialog targetId={donorId} collectionName="donors" />
+                        )}
                         {canDelete && !isEditMode && (
                             <Button onClick={handleDelete} variant="ghost" className="font-bold text-destructive hover:bg-destructive/10 active:scale-95 transition-transform h-9 px-3">
                                 <Trash2 className="h-4 w-4"/>
@@ -325,9 +330,10 @@ export default function DonorProfilePage() {
 
             <Tabs defaultValue="profile" className="w-full space-y-6">
                 <ScrollArea className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 sm:w-[400px] h-12 bg-primary/5 p-1 rounded-xl">
+                    <TabsList className="grid w-full grid-cols-3 sm:w-[600px] h-12 bg-primary/5 p-1 rounded-xl">
                         <TabsTrigger value="profile" className="font-bold"><User className="mr-2 h-4 w-4"/> Donor Details</TabsTrigger>
                         <TabsTrigger value="donations" className="font-bold"><History className="mr-2 h-4 w-4"/> Contribution Log</TabsTrigger>
+                        <TabsTrigger value="audit" className="font-bold"><ShieldCheck className="mr-2 h-4 w-4"/> Audit History</TabsTrigger>
                     </TabsList>
                     <ScrollBar orientation="horizontal" className="hidden" />
                 </ScrollArea>
@@ -596,6 +602,10 @@ export default function DonorProfilePage() {
                             </ScrollArea>
                         </CardContent>
                     </Card>
+                </TabsContent>
+
+                <TabsContent value="audit" className="animate-fade-in-up mt-0">
+                    <AuditHistory targetId={donorId} module="donors" />
                 </TabsContent>
             </Tabs>
 

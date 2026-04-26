@@ -836,6 +836,7 @@ export default function CampaignDetailsPage() {
                      {canReadDonations && (
                         <Link href={`/campaign-members/${campaignId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/campaign-members/${campaignId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donations</Link>
                     )}
+                    <Link href={`/campaign-members/${campaignId}/audit`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.endsWith('/audit') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Audit Trail</Link>
                 </div>
                 <ScrollBar orientation="horizontal" className="hidden" />
             </ScrollArea>

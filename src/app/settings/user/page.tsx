@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Settings, Save, Loader2, CheckSquare, Edit, X, RefreshCw, Users, ShieldCheck } from 'lucide-react';
+import { Settings, Save, Loader2, CheckSquare, Edit, X, RefreshCw, Users, ShieldCheck, Bell, Smartphone } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -37,16 +37,23 @@ export default function UserSettingsPage() {
   const { data: configSettings, isLoading } = useDoc<any>(configRef);
 
   const [localMandatory, setLocalMandatory] = useState<Record<string, boolean>>({});
+  const [localWhatsAppNotify, setLocalWhatsAppNotify] = useState(true);
+  const [localInAppNotify, setLocalInAppNotify] = useState(true);
 
   useEffect(() => {
     if (configSettings?.mandatoryFields) {
         setLocalMandatory(configSettings.mandatoryFields);
     }
+    setLocalWhatsAppNotify(configSettings?.enableWhatsAppNotifications !== false);
+    setLocalInAppNotify(configSettings?.enableInAppNotifications !== false);
   }, [configSettings]);
 
   const isDirty = useMemo(() => {
-    return JSON.stringify(localMandatory) !== JSON.stringify(configSettings?.mandatoryFields || {});
-  }, [localMandatory, configSettings]);
+    const mandatoryChanged = JSON.stringify(localMandatory) !== JSON.stringify(configSettings?.mandatoryFields || {});
+    const whatsappChanged = localWhatsAppNotify !== (configSettings?.enableWhatsAppNotifications !== false);
+    const inAppChanged = localInAppNotify !== (configSettings?.enableInAppNotifications !== false);
+    return mandatoryChanged || whatsappChanged || inAppChanged;
+  }, [localMandatory, localWhatsAppNotify, localInAppNotify, configSettings]);
 
   const handleMandatoryToggle = (id: string) => {
     setLocalMandatory(prev => ({ ...prev, [id]: !prev[id] }));
@@ -56,7 +63,11 @@ export default function UserSettingsPage() {
     if (!configRef) return;
     setIsSubmitting(true);
     try {
-        await setDoc(configRef, { mandatoryFields: localMandatory }, { merge: true });
+        await setDoc(configRef, { 
+            mandatoryFields: localMandatory,
+            enableWhatsAppNotifications: localWhatsAppNotify,
+            enableInAppNotifications: localInAppNotify
+        }, { merge: true });
         toast({ title: "Settings saved", variant: "success" });
         setIsEditMode(false);
     } catch (e) {
@@ -82,6 +93,8 @@ export default function UserSettingsPage() {
     if (configSettings?.mandatoryFields) {
         setLocalMandatory(configSettings.mandatoryFields);
     }
+    setLocalWhatsAppNotify(configSettings?.enableWhatsAppNotifications !== false);
+    setLocalInAppNotify(configSettings?.enableInAppNotifications !== false);
     setIsEditMode(false);
   };
 
@@ -159,6 +172,51 @@ export default function UserSettingsPage() {
                 </div>
             </CardContent>
         </Card>
+         <Card className="animate-fade-in-up border-primary/10 bg-white shadow-sm overflow-hidden mt-6">
+             <CardHeader className="bg-primary/5 border-b">
+                 <CardTitle className="flex items-center gap-2 font-bold text-primary">
+                     <Bell className="h-5 w-5" /> Notification Settings
+                 </CardTitle>
+                 <CardDescription className="font-normal text-primary/70">
+                     Configure how members and admins are notified about account events.
+                 </CardDescription>
+             </CardHeader>
+             <CardContent className="pt-6 space-y-4">
+                 <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
+                     <Checkbox 
+                         id="user_whatsapp_notify" 
+                         checked={localWhatsAppNotify} 
+                         onCheckedChange={(checked) => setLocalWhatsAppNotify(!!checked)} 
+                         disabled={!isEditMode}
+                         className="data-[state=checked]:bg-primary"
+                     />
+                     <div className="space-y-0.5">
+                         <div className="flex items-center gap-2">
+                            <Smartphone className="h-3 w-3 text-green-500" />
+                            <Label htmlFor="user_whatsapp_notify" className="cursor-pointer font-bold text-sm tracking-tight text-primary">WhatsApp Notifications</Label>
+                         </div>
+                         <p className="text-[10px] text-muted-foreground font-medium">Send automated WhatsApp alerts for profile updates and account verifications.</p>
+                     </div>
+                 </div>
+
+                 <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
+                     <Checkbox 
+                         id="user_inapp_notify" 
+                         checked={localInAppNotify} 
+                         onCheckedChange={(checked) => setLocalInAppNotify(!!checked)} 
+                         disabled={!isEditMode}
+                         className="data-[state=checked]:bg-primary"
+                     />
+                     <div className="space-y-0.5">
+                         <div className="flex items-center gap-2">
+                            <Bell className="h-3 w-3 text-blue-500" />
+                            <Label htmlFor="user_inapp_notify" className="cursor-pointer font-bold text-sm tracking-tight text-primary">In-App Notifications</Label>
+                         </div>
+                         <p className="text-[10px] text-muted-foreground font-medium">Show alerts on profile dashboard and approval toast messages after login.</p>
+                     </div>
+                 </div>
+             </CardContent>
+         </Card>
     </div>
   );
 }

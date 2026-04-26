@@ -33,6 +33,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { updateUserAuthAction } from '../actions';
 import { sendWhatsAppAction } from '@/app/messages/actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { recordAuditLogAction } from '@/app/audit/actions';
+import { generateChanges } from '@/lib/utils';
+import { AuditHistory } from '@/components/audit-history';
 
 export default function UserDetailsPage() {
   const router = useRouter();
@@ -213,6 +216,19 @@ export default function UserDetailsPage() {
     try {
         await batch.commit();
         
+        // Log update
+        await recordAuditLogAction({
+            targetId: userId,
+            targetCollection: 'users',
+            module: 'users',
+            action: 'UPDATE',
+            description: `User profile and permissions updated`,
+            performedBy: { id: currentUserProfile.id, name: currentUserProfile.name },
+            changes: generateChanges(user, updateData),
+            originalValue: user,
+            newValue: updateData
+        });
+
         // --- TRIGGER SECURITY NOTIFICATION ---
         if (user.role !== data.role) {
             try {
@@ -324,7 +340,11 @@ export default function UserDetailsPage() {
               isReadOnly={!isEditMode || !canUpdate}
           />
         </CardContent>
-      </Card>
+       </Card>
+ 
+      <div className="max-w-4xl mx-auto mt-8 animate-fade-in-up">
+        <AuditHistory targetId={userId} module="users" />
+      </div>
     </main>
   );
 }

@@ -87,3 +87,30 @@ export function formatDate(dateInput: Date | string | null | undefined, options?
     };
     return new Intl.DateTimeFormat('en-IN', options || defaultOptions).format(date);
 }
+
+/**
+ * Helper to generate a change list from two objects.
+ */
+export function generateChanges(oldVal: any, newVal: any): { field: string, old: any, new: any }[] {
+    const changes: { field: string, old: any, new: any }[] = [];
+    if (!oldVal || !newVal) return changes;
+
+    const allKeys = Array.from(new Set([...Object.keys(oldVal), ...Object.keys(newVal)]));
+    
+    for (const key of allKeys) {
+        if (key === 'updatedAt' || key === 'createdAt' || key === 'id') continue;
+        
+        const oldValStr = JSON.stringify(oldVal[key]);
+        const newValStr = JSON.stringify(newVal[key]);
+        
+        if (oldValStr !== newValStr) {
+            changes.push({
+                field: key,
+                old: oldVal[key],
+                new: newVal[key]
+            });
+        }
+    }
+    
+    return changes;
+}

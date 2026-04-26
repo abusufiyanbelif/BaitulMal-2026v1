@@ -9,25 +9,31 @@ service cloud.storage {
     }
 
     function isAdmin() {
+      let masterAdmins = [
+        'S5efNV5jpTPoxYNv6SnAlv3jNPO2', 
+        'cyMl1lQME0Yur1YS3VCms1AvrOJ2', 
+        '3gKwUE2JrBT8wngoUxTTN6tLJk03'
+      ];
+      let masterEmails = [
+        'abusufiyan.belif@gmail.com',
+        'baitulmalss.solapur@gmail.com',
+        'maazshaikh.official@gmail.com',
+        'admin@example.com'
+      ];
+      
       return isSignedIn() && (
-        request.auth.uid in [
-          'S5efNV5jpTPoxYNv6SnAlv3jNPO2', 
-          'cyMl1lQME0Yur1YS3VCms1AvrOJ2', 
-          '3gKwUE2JrBT8wngoUxTTN6tLJk03'
-        ] || 
-        request.auth.token.email in [
-          'abusufiyan.belif@gmail.com',
-          'baitulmalss.solapur@gmail.com',
-          'maazshaikh.official@gmail.com',
-          'admin@example.com'
-        ]
+        request.auth.uid in masterAdmins || 
+        (request.auth.token.email != null && request.auth.token.email in masterEmails) ||
+        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
+         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin')
       );
     }
 
     function isStaff() {
       return isSignedIn() && (
         isAdmin() || 
-        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'User'
+        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
+         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'User')
       );
     }
 
@@ -45,26 +51,46 @@ service cloud.storage {
       allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
     }
 
-    // Initiative artifacts
+    // Initiative artifacts (Defensive exists checks to prevent permission crashes)
     match /campaigns/{id}/{allPaths=**} {
-      allow read: if isStaff() || firestore.get(/databases/(default)/documents/campaigns/$(id)).data.isPublic == true || firestore.get(/databases/(default)/documents/campaigns/$(id)).data.publicVisibility == 'Published';
+      allow read: if isStaff() || (
+        firestore.exists(/databases/(default)/documents/campaigns/$(id)) && (
+          firestore.get(/databases/(default)/documents/campaigns/$(id)).data.isPublic == true || 
+          firestore.get(/databases/(default)/documents/campaigns/$(id)).data.publicVisibility == 'Published'
+        )
+      );
       allow write: if isAdmin();
     }
 
     match /leads/{id}/{allPaths=**} {
-      allow read: if isStaff() || firestore.get(/databases/(default)/documents/leads/$(id)).data.isPublic == true || firestore.get(/databases/(default)/documents/leads/$(id)).data.publicVisibility == 'Published';
+      allow read: if isStaff() || (
+        firestore.exists(/databases/(default)/documents/leads/$(id)) && (
+          firestore.get(/databases/(default)/documents/leads/$(id)).data.isPublic == true || 
+          firestore.get(/databases/(default)/documents/leads/$(id)).data.publicVisibility == 'Published'
+        )
+      );
       allow write: if isAdmin();
     }
 
     // Beneficiary artifacts
     match /beneficiaries/{id}/{allPaths=**} {
-      allow read: if isStaff() || firestore.get(/databases/(default)/documents/beneficiaries/$(id)).data.isPublic == true || firestore.get(/databases/(default)/documents/beneficiaries/$(id)).data.idProofIsPublic == true;
+      allow read: if isStaff() || (
+        firestore.exists(/databases/(default)/documents/beneficiaries/$(id)) && (
+          firestore.get(/databases/(default)/documents/beneficiaries/$(id)).data.isPublic == true || 
+          firestore.get(/databases/(default)/documents/beneficiaries/$(id)).data.idProofIsPublic == true
+        )
+      );
       allow write: if isStaff();
     }
 
     // Donation artifacts (Payment Screenshots)
     match /donations/{id}/{allPaths=**} {
-      allow read: if isStaff() || firestore.get(/databases/(default)/documents/donations/$(id)).data.isPublic == true || firestore.get(/databases/(default)/documents/donations/$(id)).data.screenshotIsPublic == true;
+      allow read: if isStaff() || (
+        firestore.exists(/databases/(default)/documents/donations/$(id)) && (
+          firestore.get(/databases/(default)/documents/donations/$(id)).data.isPublic == true || 
+          firestore.get(/databases/(default)/documents/donations/$(id)).data.screenshotIsPublic == true
+        )
+      );
       allow write: if true; // Allow guest donation submissions
     }
   }

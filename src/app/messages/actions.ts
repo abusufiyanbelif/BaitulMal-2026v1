@@ -52,6 +52,7 @@ export async function sendWhatsAppAction(params: {
     metadata?: MessageLog['metadata'];
     configOverride?: Partial<ResourceSettings>;
     bypassAutoCheck?: boolean;
+    moduleId?: 'campaign' | 'lead' | 'donation' | 'beneficiary' | 'donor' | 'user';
 }) {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: 'Administrative Services Unavailable.' };
@@ -73,9 +74,18 @@ export async function sendWhatsAppAction(params: {
             return { success: false, message: 'Automated notifications are currently disabled in Resource Configuration.' };
         }
 
+        // 2. Check Module-Specific Toggle
+        if (params.moduleId && !params.bypassAutoCheck) {
+            const moduleConfigSnap = await adminDb.collection('settings').doc(`${params.moduleId}_config`).get();
+            const moduleConfig = moduleConfigSnap.data();
+            if (moduleConfig && moduleConfig.enableWhatsAppNotifications === false) {
+                return { success: false, message: `WhatsApp notifications are disabled for the ${params.moduleId} module.` };
+            }
+        }
+
         let finalMessage = params.customMessage || '';
 
-        // 2. Handle Template if provided
+        // 3. Handle Template if provided
         if (params.templateId) {
             const templateSnap = await adminDb.collection('settings').doc('message_templates').collection('templates').doc(params.templateId).get();
             if (templateSnap.exists) {
@@ -94,7 +104,7 @@ export async function sendWhatsAppAction(params: {
 
         if (!finalMessage) return { success: false, message: 'Message content is empty.' };
 
-        // 3. Dispatch or Simulate
+        // 4. Dispatch or Simulate
         let status: 'Sent' | 'Failed' = 'Sent';
         let error: string | undefined;
 
@@ -131,7 +141,7 @@ export async function sendWhatsAppAction(params: {
             }
         }
 
-        // 4. Log the message
+        // 5. Log the message
         const logRef = adminDb.collection('message_logs').doc();
 
         // Clean metadata to remove undefined values for Firestore
@@ -143,7 +153,7 @@ export async function sendWhatsAppAction(params: {
             content: finalMessage,
             type: 'WhatsApp',
             status,
-            error: error || null,
+            error: error || undefined,
             timestamp: Timestamp.now(),
             metadata: cleanMetadata
         };
@@ -375,6 +385,26 @@ export async function seedDefaultTemplatesAction() {
             type: 'WhatsApp',
             category: 'Security',
             variables: ['userName'],
+            isActive: true
+        },
+        {
+            id: 'security_password_reset',
+            name: 'Portal: Password Reset Alert',
+            subject: 'Institutional Security Alert',
+            body: '🛡️ *Portal Access Updated*\n\nHello {{name}},\n\nYour portal access password for *{{orgName}}* has been updated by the administration.\n\nIf you did not request this change, please contact us immediately for assistance.\n\n*Login URL:* {{url}}',
+            type: 'WhatsApp',
+            category: 'Security',
+            variables: ['name', 'orgName', 'url'],
+            isActive: true
+        },
+        {
+            id: 'security_access_credential',
+            name: 'Portal: New Access Credentials',
+            subject: 'Portal Access Provisioned',
+            body: '🔐 *Institutional Portal Access*\n\nYour secure portal access is now active. You can log in using your registered mobile and the credentials provided below.\n\n*ID/Mobile:* {{identifier}}\n*Temp Password:* {{password}}\n\n*Login Here:* {{url}}\n\n_Please change your password after your first successful login._',
+            type: 'WhatsApp',
+            category: 'Security',
+            variables: ['identifier', 'password', 'url'],
             isActive: true
         }
     ];
@@ -654,7 +684,8 @@ export async function notifyLeadAction(leadId: string, templateId: 'lead_created
             templateId,
             variables,
             metadata: { moduleId: 'leads', recordId: leadId, templateId },
-            bypassAutoCheck: true
+            bypassAutoCheck: false,
+            moduleId: 'lead'
         });
     } catch (e: any) {
         return { success: false, message: e.message };
@@ -702,7 +733,8 @@ export async function notifyCampaignAction(campaignId: string, templateId: 'camp
             templateId,
             variables,
             metadata: { moduleId: 'campaigns', recordId: campaignId, templateId },
-            bypassAutoCheck: true
+            bypassAutoCheck: false,
+            moduleId: 'campaign'
         });
     } catch (e: any) {
         return { success: false, message: e.message };
@@ -721,21 +753,45 @@ export async function notifyDonationVerifiedAction(donationId: string) {
         if (!donSnap.exists) return { success: false, message: 'Donation not found' };
         const data = donSnap.data() as any;
 
+        const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+        const baseUrl = resourceSnap.data()?.baseUrl || 'https://baitulamalsolapur.com';
+
         const variables: Record<string, string> = {
             donationId,
+            donationType: data.donationType || 'Sadaqah',
             amount: `₹${data.amount?.toLocaleString('en-IN') || '0'}`,
             donorName: data.donorName || 'Anonymous',
             linkName: data.linkName || 'General Fund',
-            linkId: data.linkId || 'general'
+            linkId: data.linkId || 'general',
+            url: `${baseUrl}/donations/receipt/${donationId}`
         };
 
-        return await sendWhatsAppAction({
+        // 1. Send Internal Alert to Admin
+        await sendWhatsAppAction({
             to: '917887646583',
             templateId: 'donation_verified_internal',
             variables,
             metadata: { moduleId: 'donations', recordId: donationId, templateId: 'donation_verified_internal' },
-            bypassAutoCheck: true
+            bypassAutoCheck: false,
+            moduleId: 'donation'
         });
+
+        // 2. Send Receipt to Donor (if phone available)
+        if (data.donorPhone && data.donorPhone.length >= 10) {
+            try {
+                await sendWhatsAppAction({
+                    to: data.donorPhone,
+                    templateId: 'donation_receipt',
+                    variables,
+                    metadata: { moduleId: 'donations', recordId: donationId, templateId: 'donation_receipt' },
+                    bypassAutoCheck: true
+                });
+            } catch (donorErr) {
+                console.error('Failed to send receipt to donor:', donorErr);
+            }
+        }
+
+        return { success: true };
     } catch (e: any) {
         return { success: false, message: e.message };
     }
@@ -770,7 +826,8 @@ export async function notifyBeneficiaryStatusAction(beneficiaryId: string, statu
             templateId: 'beneficiary_status_changed',
             variables,
             metadata: { moduleId: 'beneficiaries', recordId: beneficiaryId, templateId: 'beneficiary_status_changed' },
-            bypassAutoCheck: true
+            bypassAutoCheck: false,
+            moduleId: 'beneficiary'
         });
     } catch (e: any) {
         return { success: false, message: e.message };

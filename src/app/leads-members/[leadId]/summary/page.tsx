@@ -112,7 +112,10 @@ import { recalculateLeadGoalAction } from '../../actions';
 import { PendingUpdateWarning } from '@/components/pending-update-warning';
 import { VerificationRequestDialog } from '@/components/verification-request-dialog';
 import { checkPendingVerificationAction } from '@/app/verifications/actions';
+import { recordAuditLogAction } from '@/app/audit/actions';
+import { generateChanges } from '@/lib/utils';
 import { notifyLeadAction } from '@/app/messages/actions';
+import { AuditHistory } from '@/components/audit-history';
 import type { PendingVerification } from '@/lib/types';
 
 const donationCategoryChartConfig = {
@@ -621,6 +624,7 @@ export default function LeadSummaryPage() {
                       <Link href={`/leads-members/${leadId}`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-200 border border-primary/10 active:scale-95", pathname === `/leads-members/${leadId}` ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Item List</Link>
                       {canReadBeneficiaries && ( <Link href={`/leads-members/${leadId}/beneficiaries`} className={cn("inline-flex items-center justify-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/leads-members/${leadId}/beneficiaries`) ? "bg-primary text-white shadow-md" : "text-muted-foreground font-bold hover:bg-primary/10 hover:text-primary")}>Beneficiaries</Link> )}
                       {canReadDonations && ( <Link href={`/leads-members/${leadId}/donations`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.startsWith(`/leads-members/${leadId}/donations`) ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Donation Log</Link> )}
+                      <Link href={`/leads-members/${leadId}/audit`} className={cn("inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300 border border-primary/10 active:scale-95", pathname.endsWith('/audit') ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary")}>Audit Trail</Link>
                   </div>
                   <ScrollBar orientation="horizontal" className="hidden" />
               </ScrollArea>
@@ -1205,7 +1209,7 @@ export default function LeadSummaryPage() {
                 )}
 
                 <div className="mt-8 animate-fade-in-up">
-                    <HistorySection lead={lead} />
+                    <AuditHistory targetId={leadId} module="leads" />
                 </div>
             </div>
 
@@ -1240,6 +1244,20 @@ export default function LeadSummaryPage() {
                         setIsVerificationDialogOpen(false);
                         if (leadId && firestore) {
                             await updateDoc(doc(firestore, 'leads', leadId), pendingSaveData);
+                            
+                            // Log direct update
+                            await recordAuditLogAction({
+                                targetId: leadId,
+                                targetCollection: 'leads',
+                                module: 'leads',
+                                action: 'UPDATE',
+                                description: `Summary updated directly (Bypassed Verification)`,
+                                performedBy: { id: userProfile.id, name: userProfile.name },
+                                changes: generateChanges(lead, pendingSaveData),
+                                originalValue: lead,
+                                newValue: pendingSaveData
+                            });
+
                             toast({ title: 'Summary Updated', description: 'Changes applied directly.', variant: 'success' });
                             setEditMode(false);
                             forceRefetchLead();

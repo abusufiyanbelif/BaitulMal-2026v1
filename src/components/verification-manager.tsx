@@ -2,7 +2,7 @@
  
  import { useState, useMemo } from 'react';
  import { useSession } from '@/hooks/use-session';
- import { useCollection, useFirestore, useMemoFirebase, collection, query, where, orderBy } from '@/firebase';
+ import { useCollection, useFirestore, useMemoFirebase, useDoc, collection, query, where, orderBy, doc } from '@/firebase';
  import type { PendingVerification } from '@/lib/types';
  import { Card, CardContent } from '@/components/ui/card';
  import { Button } from '@/components/ui/button';
@@ -15,6 +15,47 @@
  import { cn } from '@/lib/utils';
  import { Label } from '@/components/ui/label';
  
+ function DiffItem({ label, oldVal, newVal, operation }: { label: string, oldVal?: any, newVal?: any, operation: 'CREATE' | 'UPDATE' | 'DELETE' }) {
+   const isChanged = JSON.stringify(oldVal) !== JSON.stringify(newVal);
+   if (operation === 'UPDATE' && !isChanged) return null;
+
+   const formatValue = (v: any): string => {
+     if (v === null || v === undefined) return 'N/A';
+     if (typeof v === 'boolean') return v ? 'Yes' : 'No';
+     if (typeof v === 'object') {
+       if (Array.isArray(v)) {
+         return v.length > 0 ? `[${v.length} Items]` : 'Empty List';
+       }
+       return '{...}';
+     }
+     return String(v);
+   };
+
+   return (
+     <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-white border border-primary/10 hover:border-primary/30 transition-colors shadow-sm group">
+       <span className="text-[11px] font-bold text-primary/40 uppercase tracking-wider group-hover:text-primary transition-colors">
+         {label.replace(/([A-Z])/g, ' $1').trim()}
+       </span>
+       <div className="flex items-center gap-3">
+         {operation !== 'CREATE' && (
+           <span className={cn(
+             "text-xs font-medium",
+             operation === 'DELETE' ? "text-destructive" : "line-through text-destructive/50"
+           )}>
+             {formatValue(oldVal)}
+           </span>
+         )}
+         {operation === 'UPDATE' && <ArrowRight className="h-3 w-3 text-muted-foreground" />}
+         {operation !== 'DELETE' && (
+           <span className="text-sm font-bold text-primary bg-primary/5 px-3 py-1 rounded-lg border border-primary/10">
+             {formatValue(newVal)}
+           </span>
+         )}
+       </div>
+     </div>
+   );
+ }
+
  /**
   * Verification Manager - Floating institutional feedback for pending approvals.
   * Title Case standard applied.
@@ -43,7 +84,7 @@
            orderBy('createdAt', 'desc')
          );
      }
-
+ 
      // Admin: Can query globally
      return query(
        baseCol,
@@ -54,14 +95,55 @@
  
    const { data: allRequests, isLoading: isRequestsLoading } = useCollection<PendingVerification>(verificationsRef);
  
+    // Config Refs
+    const campaignConfigRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'campaign_config') : null, [firestore]);
+    const leadConfigRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_config') : null, [firestore]);
+    const donationConfigRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donation_config') : null, [firestore]);
+    const beneficiaryConfigRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'beneficiary_config') : null, [firestore]);
+    const donorConfigRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donor_config') : null, [firestore]);
+    const userConfigRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'user_config') : null, [firestore]);
+
+    const { data: campaignConfig } = useDoc<any>(campaignConfigRef);
+    const { data: leadConfig } = useDoc<any>(leadConfigRef);
+    const { data: donationConfig } = useDoc<any>(donationConfigRef);
+    const { data: beneficiaryConfig } = useDoc<any>(beneficiaryConfigRef);
+    const { data: donorConfig } = useDoc<any>(donorConfigRef);
+    const { data: userConfig } = useDoc<any>(userConfigRef);
+
+    const moduleConfigs: Record<string, any> = useMemo(() => ({
+        'campaigns': campaignConfig,
+        'leads': leadConfig,
+        'donations': donationConfig,
+        'beneficiaries': beneficiaryConfig,
+        'donors': donorConfig,
+        'users': userConfig
+    }), [campaignConfig, leadConfig, donationConfig, beneficiaryConfig, donorConfig, userConfig]);
+
    const myTasks = useMemo(() => {
      if (!allRequests || !userProfile) return [];
+
+     // Filter based on In-App Notification toggle
+     const filteredRequests = allRequests.filter(req => {
+         const config = moduleConfigs[req.module];
+         return config?.enableInAppNotifications !== false;
+     });
+
      // For admins, show all. For members, show where they haven't approved yet.
-     if (userProfile.role === 'Admin') return allRequests;
-     return allRequests.filter(req => 
+     if (userProfile.role === 'Admin') return filteredRequests;
+     return filteredRequests.filter(req => 
        req.assignedVerifiers.some(v => v.id === userProfile.id && v.status === 'Pending')
      );
-   }, [allRequests, userProfile]);
+   }, [allRequests, userProfile, moduleConfigs]);
+
+   const operationType = useMemo(() => {
+     if (!selectedRequest) return 'UPDATE';
+     const hasOld = selectedRequest.originalValue && Object.keys(selectedRequest.originalValue).length > 0;
+     const hasNew = selectedRequest.newValue && Object.keys(selectedRequest.newValue).length > 0;
+     
+     if (!hasOld && hasNew) return 'CREATE';
+     if (hasOld && !hasNew) return 'DELETE';
+     return 'UPDATE';
+   }, [selectedRequest]);
  
    const handleReview = (req: PendingVerification) => {
      setSelectedRequest(req);
@@ -151,10 +233,14 @@
                  </div>
                  <div>
                    <DialogTitle className="text-2xl font-bold text-primary tracking-tight">Verification Review</DialogTitle>
-                   <DialogDescription className="font-medium text-primary/60 text-sm">Reviewing Update Request For {selectedRequest?.module} Record.</DialogDescription>
+                   <DialogDescription className="font-medium text-primary/60 text-sm">
+                     Reviewing <span className="text-primary font-bold">{operationType}</span> Request For {selectedRequest?.module} Record.
+                   </DialogDescription>
                  </div>
                </div>
-               <Badge variant="outline" className="bg-white border-primary/20 text-primary font-bold px-3 py-1 text-xs capitalize">{selectedRequest?.status}</Badge>
+               <Badge variant={operationType === 'DELETE' ? 'destructive' : operationType === 'CREATE' ? 'eligible' : 'outline'} className="font-bold px-3 py-1 text-xs capitalize">
+                 {operationType}
+               </Badge>
              </div>
            </DialogHeader>
  
@@ -167,33 +253,39 @@
                   <div className="flex-1">
                     <p className="text-[10px] font-bold text-primary/50 uppercase tracking-widest">Requested By</p>
                     <p className="text-lg font-bold text-primary">{selectedRequest?.requestedBy.name}</p>
-                    <p className="text-xs font-medium text-primary/60 italic">"I Have Updated This {selectedRequest?.module} Record. Please Verify."</p>
+                    <p className="text-xs font-medium text-primary/60 italic">
+                      {operationType === 'CREATE' ? 'I am creating a new record.' : operationType === 'DELETE' ? 'I am requesting to remove this record.' : 'I have modified some fields in this record.'}
+                    </p>
                   </div>
                </div>
  
                <div className="space-y-4">
                  <h4 className="font-bold text-sm text-primary/80 flex items-center gap-2 border-b border-primary/10 pb-2 capitalize tracking-tight">Proposed Modifications Breakdown</h4>
                  <div className="grid gap-3">
-                    {selectedRequest && Object.entries(selectedRequest.newValue).map(([key, value]) => {
-                      if (['id', 'updatedAt', 'createdAt', 'createdById', 'createdByName'].includes(key)) return null;
-                      if (typeof value === 'object' && value !== null) return null;
-                      if (selectedRequest.originalValue && selectedRequest.originalValue[key] === value) return null;
- 
-                      return (
-                        <div key={key} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl bg-white border border-primary/10 hover:border-primary/30 transition-colors shadow-sm group">
-                          <span className="text-[11px] font-bold text-primary/40 uppercase tracking-wider group-hover:text-primary transition-colors">{key.replace(/([A-Z])/g, ' $1').trim()}</span>
-                          <div className="flex items-center gap-3">
-                            {selectedRequest.originalValue && (
-                              <>
-                                <span className="text-xs line-through text-destructive/50 font-medium">{String(selectedRequest.originalValue[key] ?? 'N/A')}</span>
-                                <ArrowRight className="h-3 w-3 text-muted-foreground" />
-                              </>
-                            )}
-                            <span className="text-sm font-bold text-primary bg-primary/5 px-3 py-1 rounded-lg border border-primary/10">{String(value)}</span>
+                    {selectedRequest && (
+                      <>
+                        {Object.entries(operationType === 'DELETE' ? (selectedRequest.originalValue || {}) : (selectedRequest.newValue || {})).map(([key, value]) => {
+                          if (['id', 'updatedAt', 'createdAt', 'createdById', 'createdByName', 'assignedVerifiers', 'assignedVerifierIds', 'requestedBy', 'status', 'module', 'targetId', 'targetCollection', 'revalidatePath'].includes(key)) return null;
+                          
+                          return (
+                            <DiffItem 
+                              key={key} 
+                              label={key} 
+                              oldVal={selectedRequest.originalValue?.[key]} 
+                              newVal={selectedRequest.newValue?.[key]} 
+                              operation={operationType as any} 
+                            />
+                          );
+                        })}
+
+                        {selectedRequest.description && (
+                          <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs italic">
+                            <span className="font-bold uppercase tracking-tighter mr-2">Note:</span>
+                            {selectedRequest.description}
                           </div>
-                        </div>
-                      )
-                    })}
+                        )}
+                      </>
+                    )}
                  </div>
                </div>
  

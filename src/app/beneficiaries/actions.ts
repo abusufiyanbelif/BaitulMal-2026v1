@@ -6,6 +6,8 @@ import type { Beneficiary, Campaign, Lead, DonationLink } from '@/lib/types';
 import { revalidatePath } from 'next/cache';
 import { FieldValue, DocumentData } from 'firebase-admin/firestore';
 import { syncInitiativeCollectedTotals } from '../donations/actions';
+import { recordAuditLogAction } from '../audit/actions';
+import { generateChanges } from '@/lib/utils';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure Server Credentials Are Configured Correctly.";
 
@@ -45,6 +47,8 @@ export async function updateMasterBeneficiaryAction(
     }
     try {
         const masterBeneficiaryRef = adminDb.collection('beneficiaries').doc(beneficiaryId);
+        const oldSnap = await masterBeneficiaryRef.get();
+        const oldData = oldSnap.exists ? oldSnap.data() : {};
 
         const { zakatAllocation, kitAmount, status, ...masterData } = data;
         
@@ -61,6 +65,20 @@ export async function updateMasterBeneficiaryAction(
 
         await masterBeneficiaryRef.set(updatePayload, { merge: true });
         
+        // Log Audit
+        const changes = generateChanges(oldData, updatePayload);
+        if (changes.length > 0) {
+            await recordAuditLogAction({
+                module: 'beneficiaries',
+                targetId: beneficiaryId,
+                action: 'Update',
+                description: `Manual update to master profile for ${oldData?.name || beneficiaryId}`,
+                changes,
+                performedBy: updatedBy,
+                timestamp: new Date().toISOString()
+            });
+        }
+
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
         revalidatePath('/beneficiaries');
         revalidatePath('/campaign-members', 'layout');
@@ -134,6 +152,20 @@ export async function upsertInitiativeBeneficiaryAction(
                 const newTarget = (currentInitiative.targetAmount || 0) + diff;
                 transaction.update(initiativeRef, { targetAmount: newTarget, updatedAt: FieldValue.serverTimestamp() });
             }
+
+            // Record Audit (Transaction safe logging is complex with server actions, we do it after success)
+        });
+
+        // Audit Logging after transaction success
+        const changes = generateChanges({}, beneficiaryData); // Simplified for now as it's an upsert
+        await recordAuditLogAction({
+            module: 'beneficiaries',
+            targetId: beneficiaryData.id,
+            action: 'Upsert',
+            description: `Upserted beneficiary in ${initiativeType} ${initiativeId}`,
+            changes,
+            performedBy: updatedBy,
+            timestamp: new Date().toISOString()
         });
 
         revalidatePath(`/beneficiaries/${beneficiaryData.id}`);

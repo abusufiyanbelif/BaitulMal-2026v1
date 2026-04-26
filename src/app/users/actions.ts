@@ -7,6 +7,7 @@ import type { UserProfile, Donor, Campaign, Lead, Donation, Beneficiary } from '
 import { GROUP_IDS, createAdminPermissions, type UserPermissions } from '@/lib/modules';
 import { FieldValue, Timestamp } from 'firebase-admin/firestore';
 import { bulkRecalculateInitiativeTotalsAction } from '@/app/donations/actions';
+import { recordAuditLogAction } from '@/app/audit/actions';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Verify Server Credentials.";
 
@@ -185,6 +186,15 @@ export async function consolidateIdentitiesAction(
         batch.update(primaryRef, finalUpdate);
         await batch.commit();
         
+        await recordAuditLogAction({
+            module: 'users',
+            targetId: primaryUid,
+            action: 'CONSOLIDATE',
+            description: `Unified identities from ${redundantUids.length} records into: ${primaryData.name}`,
+            performedBy: updatedBy,
+            metadata: { redundantUids, primaryUid }
+        });
+
         await bulkRecalculateInitiativeTotalsAction();
 
         revalidatePath('/users');
@@ -263,6 +273,15 @@ export async function mirrorIndividualUserToDonorAction(uid: string, admin: { id
             createdById: admin.id,
             createdByName: admin.name,
         }, { merge: true });
+
+        await recordAuditLogAction({
+            module: 'users',
+            targetId: uid,
+            action: 'MIRROR',
+            description: `Profile mirrored to Donor Registry by administrative sync.`,
+            performedBy: admin,
+            metadata: { uid }
+        });
 
         revalidatePath('/donors');
         revalidatePath('/users');

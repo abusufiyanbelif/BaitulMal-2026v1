@@ -2,7 +2,61 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- EMERGENCY PUBLIC ACCESS (TOP PRIORITY) ---
+    // --- TEMPORARY DIAGNOSTIC ---
+    match /audit_logs/{logId} {
+      allow read, list: if true; 
+      allow write: if request.auth != null;
+    }
+
+    // --- GLOBAL HELPERS ---
+    
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      // Priority 1: Hardcoded Master Admins
+      let masterAdmins = [
+        'cyMl1lQME0Yur1YS3VCms1AvrOJ2', 
+        'S5efNV5jpTPoxYNv6SnAlv3jNPO2', 
+        '3gKwUE2JrBT8wngoUxTTN6tLJk03'
+      ];
+      let masterEmails = [
+        'baitulmalss.solapur@gmail.com', 
+        'abusufiyan.belif@gmail.com', 
+        'maazshaikh.official@gmail.com',
+        'admin@example.com'
+      ];
+      
+      return isSignedIn() && (
+        request.auth.uid in masterAdmins || 
+        (request.auth.token.email != null && request.auth.token.email in masterEmails) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin')
+      );
+    }
+
+    function isStaff() {
+      return isSignedIn() && (
+        isAdmin() || 
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'User')
+      );
+    }
+
+    function hasPermission(module, perm) {
+      return isSignedIn() && (
+        isAdmin() || (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+            (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions[module][perm] == true) ||
+            (module == 'leads' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions['leads-members'][perm] == true) ||
+            (module == 'leads-members' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions['leads'][perm] == true)
+          )
+        )
+      );
+    }
+
+    // --- EMERGENCY PUBLIC ACCESS ---
     match /settings/branding { allow read: if true; }
     match /settings/payment { allow read: if true; }
     match /settings/donation_visibility { allow read: if true; }
@@ -14,7 +68,6 @@ service cloud.firestore {
     match /settings/info { allow read: if true; }
     match /settings/guidance { allow read: if true; }
     
-    // Config documents used by public summary pages
     match /settings/campaign_config { allow read: if true; }
     match /settings/lead_config { allow read: if true; }
     match /settings/donation_config { allow read: if true; }
@@ -22,67 +75,24 @@ service cloud.firestore {
     match /settings/user_config { allow read: if true; }
     match /settings/donor_config { allow read: if true; }
 
-    // --- SETTINGS & CONFIGURATION ---
-    match /settings/{docId} {
-      allow read: if (request.auth != null && (isAdmin() || isStaff()));
-      allow write: if request.auth != null && isAdmin();
-
-      match /resources {
-        allow read: if request.auth != null && isStaff();
-        allow write: if request.auth != null && isAdmin();
-      }
-      match /message_templates/{allPaths=**} {
-        allow read: if request.auth != null && isStaff();
-        allow write: if request.auth != null && isAdmin();
-      }
-      match /{allSubCollections=**} {
-        allow read: if request.auth != null && isStaff();
-        allow write: if request.auth != null && isAdmin();
-      }
-    }
-
-    // --- ADMINISTRATIVE BYPASS ---
-    function isAdmin() {
-      let adminUids = ['cyMl1lQME0Yur1YS3VCms1AvrOJ2', 'S5efNV5jpTPoxYNv6SnAlv3jNPO2', '3gKwUE2JrBT8wngoUxTTN6tLJk03'];
-      let adminEmails = [
-        'baitulmalss.solapur@gmail.com', 
-        'abusufiyan.belif@gmail.com', 
-        'maazshaikh.official@gmail.com',
-        'admin@example.com'
-      ];
-      return request.auth != null && (
-        request.auth.uid in adminUids || 
-        (request.auth.token != null && request.auth.token.email in adminEmails) ||
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin'
-      );
-    }
-
-    function isStaff() {
-      return request.auth != null && (
-        isAdmin() || 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'User'
-      );
-    }
-
-    function hasPermission(module, perm) {
-      return request.auth != null && (
-        isAdmin() || (
-          isStaff() && 
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions[module][perm] == true
-        )
-      );
-    }
-
-    // --- MODULES ---
     match /message_logs/{logId} {
-      allow read: if request.auth != null && (request.auth.uid == 'cyMl1lQME0Yur1YS3VCms1AvrOJ2' || isAdmin() || hasPermission('messages', 'read'));
-      allow write: if request.auth != null && (request.auth.uid == 'cyMl1lQME0Yur1YS3VCms1AvrOJ2' || isAdmin());
+      allow read: if isStaff() || hasPermission('messages', 'read');
+      allow write: if isAdmin();
+    }
+
+    match /settings/{docId} {
+      allow read: if isStaff();
+      allow write: if isAdmin();
+      match /{allSubCollections=**} {
+        allow read: if isStaff();
+        allow write: if isAdmin();
+      }
     }
 
     match /donations/{donationId} {
-      allow read: if (resource.data.status == 'Verified') || 
-                   isStaff() || 
-                   (request.auth != null && request.auth.uid == resource.data.donorId);
+      allow read: if isStaff() || 
+                   (resource != null && resource.data.status == 'Verified') || 
+                   (isSignedIn() && resource != null && request.auth.uid == resource.data.donorId);
       allow write: if isAdmin() || hasPermission('donations', 'update');
       allow create: if true;
     }
@@ -98,7 +108,7 @@ service cloud.firestore {
 
     match /leads/{leadId} {
       allow read: if true;
-      allow write: if isAdmin() || hasPermission('leads-members', 'update');
+      allow write: if isAdmin() || hasPermission('leads', 'update') || hasPermission('leads-members', 'update');
       match /beneficiaries/{benId} {
         allow read: if true;
         allow write: if isStaff();
@@ -111,13 +121,13 @@ service cloud.firestore {
     }
 
     match /donors/{donorId} {
-      allow read: if request.auth != null && (request.auth.uid == donorId || isStaff());
+      allow read: if isStaff() || (isSignedIn() && request.auth.uid == donorId);
       allow write: if isAdmin() || hasPermission('donors', 'update');
     }
 
     match /users/{userId} {
-      allow read: if request.auth != null && (request.auth.uid == userId || isStaff());
-      allow write: if isAdmin() || (request.auth.uid == userId);
+      allow read: if isStaff() || (isSignedIn() && request.auth.uid == userId);
+      allow write: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
     }
 
     match /user_lookups/{lookupId} {
@@ -126,21 +136,13 @@ service cloud.firestore {
     }
 
     match /pending_verifications/{reqId} {
-      allow read: if request.auth != null && (
-        isAdmin() || 
-        userIdInList(request.auth.uid, resource.data.assignedVerifierIds) ||
-        request.auth.uid == resource.data.requestedBy.id
-      );
-      allow write: if request.auth != null;
+      allow read: if isStaff() || (isSignedIn() && resource != null && request.auth.uid == resource.data.requestedBy.id);
+      allow write: if isSignedIn();
     }
 
     match /page_hits/{pageId} {
       allow read: if isStaff();
       allow write: if true;
-    }
-
-    function userIdInList(userId, list) {
-       return userId in list;
     }
   }
 }

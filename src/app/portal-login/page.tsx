@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useAuth, signInWithPhoneNumber, RecaptchaVerifier } from '@/firebase';
+import { useAuth, signInWithPhoneNumber, RecaptchaVerifier, signInWithCustomToken } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { useBranding } from '@/hooks/use-branding';
 
@@ -13,10 +13,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Loader2, AlertTriangle, ArrowLeft, Phone, ShieldCheck } from 'lucide-react';
+import { Loader2, AlertTriangle, ArrowLeft, Phone, ShieldCheck, Lock, Fingerprint } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
 import { BrandedLoader } from '@/components/branded-loader';
+import { authenticateSupporterAction } from './actions';
 
 // Extension for window object to hold recaptcha verifier
 declare global {
@@ -33,9 +34,14 @@ const otpSchema = z.object({
   otp: z.string().length(6, 'OTP must be 6 digits.'),
 });
 
+const passwordSchema = z.object({
+    identifier: z.string().min(3, 'Please enter your Registered Mobile or ID.'),
+    password: z.string().min(4, 'Password must be at least 4 characters.'),
+});
+
 /**
- * Portal Login Page - Optimized for Supporter and Beneficiary OTP access.
- * Securely resolves mobile identities to institutional profiles.
+ * Portal Login Page - Optimized for Supporter and Beneficiary access.
+ * Securely resolves mobile identities to institutional profiles via OTP or Password.
  */
 export default function PortalLoginPage() {
   const router = useRouter();
@@ -46,8 +52,16 @@ export default function PortalLoginPage() {
   const [loginError, setLoginError] = useState<string | null>(null);
   const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
   
-  const [step, setStep] = useState<'phone' | 'otp'>('phone');
+  const [authMethod, setAuthMethod] = useState<'OTP' | 'Password'>('OTP');
+  const [step, setStep] = useState<'phone' | 'otp' | 'password'>('phone');
   const [verificationResult, setVerificationResult] = useState<any>(null);
+
+  useEffect(() => {
+    if (brandingSettings?.portalAuthMethod) {
+        setAuthMethod(brandingSettings.portalAuthMethod);
+        setStep(brandingSettings.portalAuthMethod === 'Password' ? 'password' : 'phone');
+    }
+  }, [brandingSettings]);
 
   const phoneForm = useForm({
     resolver: zodResolver(phoneSchema),
@@ -57,6 +71,11 @@ export default function PortalLoginPage() {
   const otpForm = useForm({
     resolver: zodResolver(otpSchema),
     defaultValues: { otp: '' },
+  });
+
+  const passwordForm = useForm({
+    resolver: zodResolver(passwordSchema),
+    defaultValues: { identifier: '', password: '' },
   });
 
   const isPortalsEnabled = (brandingSettings?.isDonorLoginEnabled ?? true) || (brandingSettings?.isBeneficiaryLoginEnabled ?? true);
@@ -95,9 +114,27 @@ export default function PortalLoginPage() {
       try {
           await verificationResult.confirm(data.otp);
           toast({ title: 'Securely Logged In', description: 'Redirecting To Your Portal...', variant: 'success' });
-          // Redirect handled by AuthProvider's RouteGuard
       } catch (err: any) {
           setLoginError('Invalid OTP Code. Please Try Again.');
+      } finally {
+          setIsLoading(false);
+      }
+  };
+
+  const onPasswordLogin = async (data: z.infer<typeof passwordSchema>) => {
+      setIsLoading(true);
+      setLoginError(null);
+
+      try {
+          const res = await authenticateSupporterAction(data.identifier, data.password);
+          if (res.success && res.token) {
+              await signInWithCustomToken(auth!, res.token);
+              toast({ title: 'Access Granted', description: `Authenticated as ${res.role}. Entering Portal...`, variant: 'success' });
+          } else {
+              setLoginError(res.message || 'Authentication Failed.');
+          }
+      } catch (err: any) {
+          setLoginError(err.message || 'Institutional login service unavailable.');
       } finally {
           setIsLoading(false);
       }
@@ -119,7 +156,7 @@ export default function PortalLoginPage() {
   }
 
   return (
-    <div className="w-full max-w-sm pt-20 mx-auto min-h-screen animate-fade-in-up">
+    <div className="w-full max-w-sm pt-20 mx-auto min-h-screen animate-fade-in-up px-4 sm:px-0">
       <div className="mb-4">
         <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
           <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Home</Link>
@@ -129,14 +166,16 @@ export default function PortalLoginPage() {
       <Card className="border-primary/10 shadow-2xl bg-white overflow-hidden">
         <CardHeader className="text-center bg-primary/5 border-b mb-6">
             <div className="mx-auto bg-white p-3 rounded-2xl w-fit shadow-sm border border-primary/10 mb-2">
-                <Phone className="h-8 w-8 text-primary" />
+                {step === 'password' ? <Lock className="h-8 w-8 text-primary" /> : <Phone className="h-8 w-8 text-primary" />}
             </div>
           <CardTitle className="font-bold text-primary text-2xl tracking-tight">Supporter Portal</CardTitle>
-          <CardDescription className="font-normal px-2">Access Your Impact History Securely Via Mobile.</CardDescription>
+          <CardDescription className="font-normal px-2">
+              {step === 'password' ? 'Login with your registered Mobile or ID.' : 'Access Your Impact History Securely Via Mobile.'}
+          </CardDescription>
         </CardHeader>
         
         <CardContent>
-            {step === 'phone' ? (
+            {step === 'phone' && (
                 <Form {...phoneForm}>
                     <form onSubmit={phoneForm.handleSubmit(onSendOtp)} className="space-y-4">
                         <FormField
@@ -156,9 +195,17 @@ export default function PortalLoginPage() {
                         <Button type="submit" className="w-full h-12 font-bold shadow-lg active:scale-95 transition-all" disabled={isLoading}>
                             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Send Secure Code'}
                         </Button>
+                        
+                        {brandingSettings?.isPortalPasswordEnabled && (
+                             <Button variant="ghost" onClick={() => setStep('password')} type="button" className="w-full mt-2 font-bold opacity-60 text-xs">
+                                <Lock className="mr-2 h-3 w-3" /> Use Password Instead
+                            </Button>
+                        )}
                     </form>
                 </Form>
-            ) : (
+            )}
+
+            {step === 'otp' && (
                 <Form {...otpForm}>
                     <form onSubmit={otpForm.handleSubmit(onVerifyOtp)} className="space-y-4 animate-fade-in-zoom">
                         <FormField
@@ -179,6 +226,46 @@ export default function PortalLoginPage() {
                         </Button>
                         <Button variant="ghost" onClick={() => setStep('phone')} type="button" className="w-full mt-2 font-bold opacity-60 text-xs">
                             Use A Different Number
+                        </Button>
+                    </form>
+                </Form>
+            )}
+
+            {step === 'password' && (
+                <Form {...passwordForm}>
+                    <form onSubmit={passwordForm.handleSubmit(onPasswordLogin)} className="space-y-4 animate-fade-in-up">
+                        <FormField
+                            control={passwordForm.control}
+                            name="identifier"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="font-bold text-primary opacity-60">Registered Mobile / ID</FormLabel>
+                                <FormControl>
+                                    <Input placeholder="9876543210" {...field} className="h-12 font-bold border-primary/20 focus:border-primary" />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={passwordForm.control}
+                            name="password"
+                            render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="font-bold text-primary opacity-60">Portal Password</FormLabel>
+                                <FormControl>
+                                    <Input type="password" placeholder="••••••••" {...field} className="h-12 font-bold border-primary/20 focus:border-primary" />
+                                </FormControl>
+                                <FormMessage />
+                            </FormItem>
+                            )}
+                        />
+                        <Button type="submit" className="w-full h-12 font-bold shadow-lg active:scale-95 transition-all" disabled={isLoading}>
+                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Access Institutional Portal'}
+                        </Button>
+                        
+                        <Button variant="ghost" onClick={() => setStep('phone')} type="button" className="w-full mt-2 font-bold opacity-60 text-xs">
+                            <Phone className="mr-2 h-3 w-3" /> Use Mobile OTP (SMS)
                         </Button>
                     </form>
                 </Form>

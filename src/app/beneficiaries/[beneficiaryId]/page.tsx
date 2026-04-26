@@ -36,7 +36,9 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
+import { AuditHistory } from '@/components/audit-history';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
+import { ResetPasswordDialog } from '@/components/reset-password-dialog';
 
 interface LinkedInitiative {
     id: string;
@@ -292,10 +294,11 @@ export default function BeneficiaryDetailsPage() {
 
       <Tabs defaultValue="profile" className="w-full space-y-6">
         <ScrollArea className="w-full">
-            <TabsList className="grid w-full grid-cols-3 sm:w-[600px] h-12 bg-primary/5 p-1 rounded-xl">
+            <TabsList className="grid w-full grid-cols-4 sm:w-[800px] h-12 bg-primary/5 p-1 rounded-xl">
                 <TabsTrigger value="profile" className="font-bold data-[state=active]:shadow-sm"><User className="mr-2 h-4 w-4"/>Core Profile</TabsTrigger>
-                <TabsTrigger value="history" className="font-bold data-[state=active]:shadow-sm"><History className="mr-2 h-4 w-4"/>History</TabsTrigger>
-                <TabsTrigger value="financials" className="font-bold data-[state=active]:shadow-sm"><Landmark className="mr-2 h-4 w-4"/>Financial Impact</TabsTrigger>
+                <TabsTrigger value="history" className="font-bold data-[state=active]:shadow-sm"><History className="mr-2 h-4 w-4"/>Assistance</TabsTrigger>
+                <TabsTrigger value="financials" className="font-bold data-[state=active]:shadow-sm"><Landmark className="mr-2 h-4 w-4"/>Financials</TabsTrigger>
+                <TabsTrigger value="audit" className="font-bold data-[state=active]:shadow-sm"><ShieldCheck className="mr-2 h-4 w-4"/>Audit Trail</TabsTrigger>
             </TabsList>
             <ScrollBar orientation="horizontal" className="hidden" />
         </ScrollArea>
@@ -307,19 +310,24 @@ export default function BeneficiaryDetailsPage() {
                         <CardTitle className="text-lg font-bold text-primary tracking-tight">Beneficiary Master Record</CardTitle>
                         <CardDescription className="text-xs font-normal">Personal Details and Identification Evidence.</CardDescription>
                     </div>
-                    {canUpdate && !isEditMode && ( 
-                        <Button 
-                            onClick={() => setIsEditMode(true)} 
-                            disabled={!!existingPendingRequest}
-                            className={cn(
-                                "font-bold shadow-md active:scale-95 transition-transform",
-                                existingPendingRequest ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-white"
-                            )}
-                        >
-                            <Edit className="mr-2 h-4 w-4"/>
-                            {existingPendingRequest ? "Approval Pending" : "Edit Profile"}
-                        </Button> 
-                    )}
+                    <div className="flex flex-wrap items-center gap-2">
+                        {canUpdate && (
+                            <ResetPasswordDialog targetId={beneficiaryId} collectionName="beneficiaries" />
+                        )}
+                        {canUpdate && !isEditMode && ( 
+                            <Button 
+                                onClick={() => setIsEditMode(true)} 
+                                disabled={!!existingPendingRequest}
+                                className={cn(
+                                    "font-bold shadow-md active:scale-95 transition-transform",
+                                    existingPendingRequest ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-white"
+                                )}
+                            >
+                                <Edit className="mr-2 h-4 w-4"/>
+                                {existingPendingRequest ? "Approval Pending" : "Edit Profile"}
+                            </Button> 
+                        )}
+                    </div>
                 </CardHeader>
                 <CardContent className="p-6 sm:p-10">
                     <BeneficiaryForm 
@@ -595,6 +603,10 @@ export default function BeneficiaryDetailsPage() {
                     </Card>
                 </div>
             </div>
+        </TabsContent>
+
+        <TabsContent value="audit" className="animate-fade-in-up mt-0">
+            <AuditHistory targetId={beneficiaryId} module="beneficiaries" />
         </TabsContent>
       </Tabs>
     </main>
