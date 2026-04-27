@@ -330,81 +330,110 @@ export default function DonorRegistryPage() {
         </ScrollArea>
       </div>
 
-      <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm">
+      <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
         <ScrollArea className="w-full">
-            <div className="min-w-[1000px]">
-                <Table>
-                    <TableHeader>
-                        <TableRow className="bg-[hsl(var(--table-header-bg))]">
-                            <TableHead className="w-[60px] pl-4 text-[10px] font-bold tracking-tight capitalize">Sr. No.</TableHead>
-                            <TableHead className="text-[10px] font-bold tracking-tight capitalize">Donor Identity</TableHead>
-                            <TableHead className="text-[10px] font-bold tracking-tight capitalize">Primary Contact</TableHead>
-                            <TableHead className="text-[10px] font-bold tracking-tight capitalize">Financial Handles</TableHead>
-                            <TableHead className="text-center text-[10px] font-bold tracking-tight capitalize">Registry Status</TableHead>
-                            <TableHead className="text-right pr-6 text-[10px] font-bold tracking-tight capitalize">Actions</TableHead>
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {paginatedDonors.map((donor, idx) => (
-                            <TableRow key={donor.id} onClick={() => router.push(`/donors/${donor.id}`)} className="cursor-pointer bg-white border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors group">
-                                <TableCell className="pl-4 font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</TableCell>
-                                <TableCell className="py-4">
-                                    <div className="font-bold text-sm text-primary">{donor.name}</div>
-                                    <div className="text-[10px] text-muted-foreground truncate max-w-[200px] font-normal">{donor.email || 'No Email Recorded'}</div>
-                                </TableCell>
-                                <TableCell>
-                                     <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-primary">
-                                        <Smartphone className="h-3 w-3 opacity-40"/> {donor.phone || 'N/A'}
-                                        {donor.phone && (
-                                            <Button 
-                                                variant="ghost" 
-                                                size="icon" 
-                                                className="h-6 w-6 text-green-600 hover:bg-green-50 hover:text-green-700 ml-1" 
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    window.open(`https://wa.me/${donor.phone!.replace(/\D/g, '')}`, '_blank');
-                                                }}
-                                                title="Message on WhatsApp"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                                                    <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.06 3.973L0 16l4.204-1.102a7.923 7.923 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z"/>
-                                                </svg>
-                                            </Button>
-                                        )}
-                                     </div>
-                                </TableCell>
-                                <TableCell>
-                                    <div className="flex flex-wrap gap-1">
-                                        {(donor.upiIds || []).slice(0, 2).map((upi, i) => (
-                                            <Badge key={i} variant="outline" className="text-[8px] font-mono border-primary/10 bg-white">{upi}</Badge>
-                                        ))}
-                                        {donor.upiIds && donor.upiIds.length > 2 && <span className="text-[8px] opacity-40 font-bold">+{donor.upiIds.length - 2} More</span>}
-                                    </div>
-                                </TableCell>
-                                <TableCell className="text-center"><Badge variant={donor.status === 'Active' ? 'active' : 'outline'} className="text-[10px] font-bold">{donor.status}</Badge></TableCell>
-                                <TableCell className="text-right pr-6" onClick={e => e.stopPropagation()}>
+            <div className="max-h-[70vh]">
+                <div className="hidden md:block">
+                    <Table>
+                        <TableHeader>
+                            <TableRow className="bg-[hsl(var(--table-header-bg))]">
+                                <TableHead className="w-[60px] pl-4 text-[10px] font-bold tracking-tight capitalize">Sr. No.</TableHead>
+                                <TableHead className="text-[10px] font-bold tracking-tight capitalize">Donor Identity</TableHead>
+                                <TableHead className="text-[10px] font-bold tracking-tight capitalize">Primary Contact</TableHead>
+                                <TableHead className="text-[10px] font-bold tracking-tight capitalize">Financial Handles</TableHead>
+                                <TableHead className="text-center text-[10px] font-bold tracking-tight capitalize">Registry Status</TableHead>
+                                <TableHead className="text-right pr-6 text-[10px] font-bold tracking-tight capitalize">Actions</TableHead>
+                            </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                            {paginatedDonors.map((donor, idx) => (
+                                <TableRow key={donor.id} onClick={() => router.push(`/donors/${donor.id}`)} className="cursor-pointer bg-white border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors group">
+                                    <TableCell className="pl-4 font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</TableCell>
+                                    <TableCell className="py-4">
+                                        <div className="font-bold text-sm text-primary">{donor.name}</div>
+                                        <div className="text-[10px] text-muted-foreground truncate max-w-[200px] font-normal">{donor.email || 'No Email Recorded'}</div>
+                                    </TableCell>
+                                    <TableCell>
+                                         <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-primary">
+                                            <Smartphone className="h-3 w-3 opacity-40"/> {donor.phone || 'N/A'}
+                                         </div>
+                                    </TableCell>
+                                    <TableCell>
+                                        <div className="flex flex-wrap gap-1">
+                                            {(donor.upiIds || []).slice(0, 2).map((upi, i) => (
+                                                <Badge key={i} variant="outline" className="text-[8px] font-mono border-primary/10 bg-white">{upi}</Badge>
+                                            ))}
+                                            {donor.upiIds && donor.upiIds.length > 2 && <span className="text-[8px] opacity-40 font-bold">+{donor.upiIds.length - 2} More</span>}
+                                        </div>
+                                    </TableCell>
+                                    <TableCell className="text-center"><Badge variant={donor.status === 'Active' ? 'active' : 'outline'} className="text-[10px] font-bold">{donor.status}</Badge></TableCell>
+                                    <TableCell className="text-right pr-6" onClick={e => e.stopPropagation()}>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown border-primary/10">
+                                                <DropdownMenuItem onClick={() => router.push(`/donors/${donor.id}`)} className="text-primary font-normal cursor-pointer"><Eye className="mr-2 h-4 w-4 opacity-60"/> View Details</DropdownMenuItem>
+                                                {canUpdate && <DropdownMenuItem onClick={() => router.push(`/donors/${donor.id}?edit=true`)} className="text-primary font-normal cursor-pointer"><Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Profile</DropdownMenuItem>}
+                                                {canDelete && (
+                                                    <DropdownMenuItem onClick={() => handleDelete(donor)} className="text-destructive font-normal cursor-pointer"><Trash2 className="mr-2 h-4 w-4"/> Delete Profile</DropdownMenuItem>
+                                                )}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
+
+                <div className="md:hidden flex flex-col">
+                    {paginatedDonors.map((donor, idx) => (
+                        <div key={donor.id} className="p-4 border-b border-primary/5 last:border-0 space-y-4" onClick={() => router.push(`/donors/${donor.id}`)}>
+                            <div className="flex justify-between items-start">
+                                <div className="space-y-1">
+                                    <h3 className="font-bold text-base text-primary tracking-tight">{donor.name}</h3>
+                                    <p className="text-[10px] text-muted-foreground font-normal">{donor.email || 'No Email'}</p>
+                                </div>
+                                <Badge variant={donor.status === 'Active' ? 'active' : 'outline'} className="text-[10px] font-bold">{donor.status}</Badge>
+                            </div>
+                            
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-1.5 text-xs font-mono font-bold text-primary">
+                                    <Smartphone className="h-3 w-3 opacity-40"/> {donor.phone || 'N/A'}
+                                </div>
+                                <div className="flex gap-2" onClick={e => e.stopPropagation()}>
                                     <DropdownMenu>
-                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown border-primary/10">
-                                            <DropdownMenuItem onClick={() => router.push(`/donors/${donor.id}`)} className="text-primary font-normal cursor-pointer"><Eye className="mr-2 h-4 w-4 opacity-60"/> View Details</DropdownMenuItem>
-                                            {canUpdate && <DropdownMenuItem onClick={() => router.push(`/donors/${donor.id}?edit=true`)} className="text-primary font-normal cursor-pointer"><Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Profile</DropdownMenuItem>}
-                                            {canDelete && (
-                                                <DropdownMenuItem onClick={() => handleDelete(donor)} className="text-destructive font-normal cursor-pointer"><Trash2 className="mr-2 h-4 w-4"/> Delete Profile</DropdownMenuItem>
-                                            )}
+                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-9 w-9 text-primary border border-primary/5 bg-primary/5 rounded-xl"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="rounded-xl shadow-dropdown">
+                                            <DropdownMenuItem onClick={() => router.push(`/donors/${donor.id}`)}>View Profile</DropdownMenuItem>
+                                            {canUpdate && <DropdownMenuItem onClick={() => router.push(`/donors/${donor.id}?edit=true`)}>Edit Record</DropdownMenuItem>}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                        {paginatedDonors.length === 0 && (
-                            <TableRow><TableCell colSpan={6} className="text-center py-20 text-primary/40 font-bold italic bg-primary/[0.01]">No Donor Profiles Found Matching Criteria.</TableCell></TableRow>
-                        )}
-                    </TableBody>
-                </Table>
+                                </div>
+                            </div>
+                            
+                            <div className="flex flex-wrap gap-1">
+                                {(donor.upiIds || []).map((upi, i) => (
+                                    <Badge key={i} variant="outline" className="text-[9px] font-mono border-primary/10 bg-white">{upi}</Badge>
+                                ))}
+                            </div>
+                            
+                            <div className="flex items-center justify-between pt-2 border-t border-primary/5">
+                                <span className="text-[10px] font-mono opacity-40">#{idx + 1 + (currentPage - 1) * itemsPerPage}</span>
+                                <Button variant="ghost" size="sm" className="h-7 text-[10px] font-bold text-primary p-0">View Full History <ArrowLeft className="ml-1 h-3 w-3 rotate-180"/></Button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {paginatedDonors.length === 0 && (
+                    <div className="text-center py-20 text-primary/40 font-bold italic bg-primary/[0.01]">No Donor Profiles Found Matching Criteria.</div>
+                )}
             </div>
-            <ScrollBar orientation="horizontal" className="h-1.5" />
+            <ScrollBar orientation="horizontal" className="hidden md:block h-1.5" />
+            <ScrollBar orientation="vertical" />
         </ScrollArea>
       </Card>
+
 
       {totalPages > 1 && (
         <div className="flex items-center justify-between border-t pt-4">

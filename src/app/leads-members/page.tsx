@@ -85,9 +85,9 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
     return (
         <Card 
             className={cn(
-                "flex flex-col overflow-hidden h-full group border-primary/10 bg-white shadow-none animate-fade-in-up transition-all duration-500",
-                isUrgent && "animate-urgent-pulse border-red-500/50",
-                isHigh && "animate-high-pulse border-orange-500/50"
+                "flex flex-col overflow-hidden h-full group border-primary/10 bg-white shadow-none animate-fade-in-up transition-all duration-500 hover:shadow-2xl hover:border-primary/30 hover:-translate-y-1 cursor-pointer",
+                isUrgent && "animate-urgent-pulse border-red-500/50 hover:border-red-500",
+                isHigh && "animate-high-pulse border-orange-500/50 hover:border-orange-500"
             )}
             style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
             onClick={() => router.push(`/leads-members/${lead.id}/summary`)}
@@ -475,7 +475,7 @@ export default function LeadPage() {
         </div>
 
         <Card className="animate-fade-in-zoom shadow-none border-primary/5 bg-white/30 overflow-hidden">
-          <CardHeader className="p-4 border-b bg-primary/5">
+          <CardHeader className="p-4 border-b bg-background/80 backdrop-blur-md sticky top-[73px] z-20">
             <ScrollArea className="w-full">
                 <div className="flex flex-nowrap items-center gap-3 pb-2">
                     <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary font-normal text-primary" disabled={isLoading}/>

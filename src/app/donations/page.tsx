@@ -190,7 +190,7 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
         <Card 
             onClick={onClick}
             className={cn(
-                "flex flex-col p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", 
+                "flex flex-col p-3 sm:p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", 
                 onClick && "cursor-pointer hover:-translate-y-1 active:scale-95",
                 colorClass
             )} 
@@ -198,16 +198,16 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
         >
             <div className="flex justify-between items-start mb-2">
                 <div className="space-y-0.5">
-                    <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-tight">{title}</p>
-                    <p className="text-2xl font-black text-primary tracking-tight">
+                    <p className="text-[9px] sm:text-[10px] font-bold text-muted-foreground capitalize tracking-tight">{title}</p>
+                    <p className="text-xl sm:text-2xl font-black text-primary tracking-tight">
                         {isCurrency ? `₹${count}` : count}
                     </p>
                 </div>
-                <div className="p-2 rounded-lg bg-primary/5 text-primary">
-                    <Icon className="h-5 w-5" />
+                <div className="p-1.5 sm:p-2 rounded-lg bg-primary/5 text-primary">
+                    <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
                 </div>
             </div>
-            <p className="text-[9px] font-medium text-muted-foreground mt-auto">{description}</p>
+            <p className="text-[8px] sm:text-[9px] font-medium text-muted-foreground mt-auto truncate">{description}</p>
         </Card>
     );
 }
@@ -247,7 +247,8 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
 
     return (
         <div className="flex flex-col">
-            <div onClick={() => setIsOpen(!isOpen)} className={cn("cursor-pointer bg-white border-b border-primary/10 hover:bg-[hsl(var(--table-row-hover))] group transition-colors", donationGridClass)}>
+            {/* Desktop View */}
+            <div onClick={() => setIsOpen(!isOpen)} className={cn("hidden md:grid cursor-pointer bg-white border-b border-primary/10 hover:bg-[hsl(var(--table-row-hover))] group transition-colors", donationGridClass)}>
                 <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                     <Checkbox 
                         checked={isSelected}
@@ -306,6 +307,46 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                             )}
                         </DropdownMenuContent>
                     </DropdownMenu>
+                </div>
+            </div>
+
+            {/* Mobile View */}
+            <div className="md:hidden p-4 border-b border-primary/10 bg-white space-y-3 tap-highlight" onClick={() => setIsOpen(!isOpen)}>
+                <div className="flex justify-between items-start">
+                    <div className="flex items-center gap-3">
+                        <Checkbox 
+                            checked={isSelected}
+                            onCheckedChange={onToggle}
+                            className="mt-1 border-primary/40"
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                        <div>
+                            <div className="font-bold text-sm text-primary flex items-center gap-2">
+                                {donation.donorName}
+                                {!donation.donorId && <AlertCircle className="h-3 w-3 text-amber-500" />}
+                            </div>
+                            <div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone}</div>
+                        </div>
+                    </div>
+                    <div className="text-right">
+                        <div className="font-black text-primary text-sm">₹{donation.amount.toFixed(2)}</div>
+                        <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="text-[8px] font-bold mt-1">
+                            {donation.status}
+                        </Badge>
+                    </div>
+                </div>
+                <div className="flex items-center justify-between">
+                    <div className="flex gap-1">
+                        <Badge variant="secondary" className="text-[8px] font-bold">{donation.donationType}</Badge>
+                        <span className="text-[10px] text-muted-foreground">{donation.donationDate}</span>
+                    </div>
+                    <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => router.push(`/donations/${donation.id}`)}><Eye className="h-4 w-4" /></Button>
+                        {canUpdate && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={handleEdit}><Edit className="h-4 w-4" /></Button>}
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => setIsOpen(!isOpen)}>
+                            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        </Button>
+                    </div>
                 </div>
             </div>
             {isOpen && (
@@ -635,14 +676,14 @@ function DonationListContent() {
             </ScrollArea>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-            <StatCard title="Total" count={stats.total} description="All Records Logged" icon={Users} delay="100ms" onClick={() => { setStatusFilter([]); setIdentityFilter([]); setMethodFilter([]); setCategoryFilter([]); setSearchTerm(''); }} />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4">
+            <StatCard title="Total" count={stats.total} description="All Records Logged" icon={Users} delay="100ms" onClick={() => { setSearchTerm(''); setStatusFilter([]); setIdentityFilter([]); setMethodFilter([]); setCategoryFilter([]); }} />
             <StatCard title="Verified Sum" count={stats.totalAmount.toLocaleString('en-IN')} description="Confirmed Funds" icon={IndianRupee} delay="150ms" isCurrency onClick={() => setStatusFilter(['Verified'])} />
             <StatCard title="Pending Sum" count={stats.pendingAmount.toLocaleString('en-IN')} description="Awaiting Vetting" icon={Hourglass} delay="200ms" isCurrency onClick={() => setStatusFilter(['Pending'])} />
             <StatCard title="Unlinked" count={stats.unlinked} description="Needs Profile Mapping" icon={AlertCircle} delay="250ms" colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} onClick={() => setIdentityFilter(['Unlinked'])} />
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
             <StatCard title="Verified" count={stats.verified} description="Finalized Records" icon={CheckCircle2} delay="300ms" onClick={() => setStatusFilter(['Verified'])} />
             <StatCard title="Pending" count={stats.pending} description="Awaiting Review" icon={Hourglass} delay="350ms" onClick={() => setStatusFilter(['Pending'])} />
             <StatCard title="Online Pay" count={stats.online} description="Digital Transfers" icon={Smartphone} delay="400ms" onClick={() => setMethodFilter(['Online Payment'])} />
@@ -653,7 +694,7 @@ function DonationListContent() {
             <CardHeader className="bg-primary/5 border-b">
                 <ScrollArea className="w-full">
                     <div className="flex flex-nowrap gap-2 pb-2">
-                        <Input placeholder="Search Donor, Phone, ID..." value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-[250px] h-9 text-xs border-primary/10 rounded-[10px] shrink-0"/>
+                        <Input placeholder="Search Donor, Phone, ID..." value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-[200px] sm:w-[250px] h-9 text-xs border-primary/10 rounded-[10px] shrink-0"/>
                         
                         <MultiSelectFilter 
                             title="Status" 
@@ -698,7 +739,7 @@ function DonationListContent() {
             </CardHeader>
             <CardContent className="p-0">
                 <ScrollArea className="w-full">
-                    <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold text-[hsl(var(--table-header-fg))] tracking-tight", donationGridClass)}>
+                    <div className={cn("hidden md:grid bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold text-[hsl(var(--table-header-fg))] tracking-tight", donationGridClass)}>
                         <div className="flex justify-center"><Checkbox checked={paginatedDonations.length > 0 && selectedIds.length === paginatedDonations.length} onCheckedChange={toggleSelectAll} className="border-primary/40" /></div>
                         <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
                         <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor Name</SortableHeader>

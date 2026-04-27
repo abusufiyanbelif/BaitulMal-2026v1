@@ -396,12 +396,21 @@ function VerificationCard({ request, onView, onWithdraw }: { request: PendingVer
                     <span className="text-muted-foreground font-normal">Requester</span>
                     <span className="font-bold text-primary">{request.requestedBy.name}</span>
                 </div>
-                <div className="flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground font-normal">Verifiers</span>
-                    <div className="flex -space-x-2">
+                <div className="space-y-1.5">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">Approval Status</span>
+                    <div className="flex flex-wrap gap-1.5">
                         {request.assignedVerifiers.map((av, i) => (
-                            <div key={i} title={av.name} className="h-6 w-6 rounded-full border-2 border-white bg-primary/10 flex items-center justify-center text-[8px] font-bold text-primary shadow-sm">
-                                {av.name.charAt(0)}
+                            <div key={i} title={av.name} className={cn(
+                                "flex items-center gap-1 px-1.5 py-0.5 rounded-full border text-[9px] font-bold transition-all",
+                                av.status === 'Approved' ? "bg-green-50 border-green-200 text-green-700" :
+                                av.status === 'Rejected' ? "bg-red-50 border-red-200 text-red-700" :
+                                "bg-gray-50 border-gray-200 text-gray-500"
+                            )}>
+                                <div className={cn("h-1 w-1 rounded-full", 
+                                    av.status === 'Approved' ? "bg-green-500" : 
+                                    av.status === 'Rejected' ? "bg-red-500" : "bg-gray-400"
+                                )} />
+                                {av.name.split(' ')[0]}
                             </div>
                         ))}
                     </div>
@@ -412,7 +421,7 @@ function VerificationCard({ request, onView, onWithdraw }: { request: PendingVer
                         className="flex-1 mt-2 font-bold text-xs h-9 border-primary/10 hover:bg-primary hover:text-white transition-all group-hover:shadow-md"
                         onClick={onView}
                     >
-                        Review <Eye className="ml-2 h-3.5 w-3.5" />
+                        Review Audit <Eye className="ml-2 h-3.5 w-3.5" />
                     </Button>
                     {onWithdraw && (
                         <Button 

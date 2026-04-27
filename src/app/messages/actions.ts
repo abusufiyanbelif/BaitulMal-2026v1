@@ -2,8 +2,9 @@
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
-import type { MessageTemplate, MessageLog, ResourceSettings } from '@/lib/types';
+import { MessageTemplate, MessageLog, ResourceSettings, PendingVerification, NotificationGroup } from '@/lib/types';
 import { cookies } from 'next/headers';
+import { generateChanges } from '@/lib/utils';
 
 /**
  * Helper to check if the caller is authorized (Admin or specific permission)
@@ -108,36 +109,73 @@ export async function sendWhatsAppAction(params: {
         let status: 'Sent' | 'Failed' = 'Sent';
         let error: string | undefined;
 
-        if (!API_URL || !API_KEY) {
-            console.log(`[SIMULATED WHATSAPP] To: ${params.to} | Content: ${finalMessage}`);
-        } else {
-            // Standardize phone number for WhatsApp (remove non-digits)
-            let cleanPhone = params.to.replace(/\D/g, '');
-            
-            // Auto-fix for Indian numbers missing country code
-            if (cleanPhone.length === 10) {
-                cleanPhone = `91${cleanPhone}`;
-            }
-            try {
-                const response = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${API_KEY}`
-                    },
-                    body: JSON.stringify({
-                        to: cleanPhone,
-                        body: finalMessage
-                    })
-                });
+        const PROVIDER = params.configOverride?.activeWhatsAppProvider || resources?.activeWhatsAppProvider || 'whapi';
 
-                if (!response.ok) {
+        if (PROVIDER === 'meta') {
+            const META_TOKEN = params.configOverride?.metaAccessToken || resources?.metaAccessToken;
+            const META_PHONE_ID = params.configOverride?.metaPhoneNumberId || resources?.metaPhoneNumberId;
+
+            if (!META_TOKEN || !META_PHONE_ID) {
+                console.log(`[SIMULATED META WHATSAPP] To: ${params.to} | Content: ${finalMessage}`);
+            } else {
+                let cleanPhone = params.to.replace(/\D/g, '');
+                if (cleanPhone.length === 10) cleanPhone = `91${cleanPhone}`;
+
+                try {
+                    const response = await fetch(`https://graph.facebook.com/v19.0/${META_PHONE_ID}/messages`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${META_TOKEN}`
+                        },
+                        body: JSON.stringify({
+                            messaging_product: "whatsapp",
+                            recipient_type: "individual",
+                            to: cleanPhone,
+                            type: "text",
+                            text: { body: finalMessage }
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const errData = await response.json().catch(() => ({}));
+                        status = 'Failed';
+                        error = `Meta API Error: ${errData.error?.message || response.statusText}`;
+                    }
+                } catch (e: any) {
                     status = 'Failed';
-                    error = `Gateway Error: ${response.statusText}`;
+                    error = e.message;
                 }
-            } catch (e: any) {
-                status = 'Failed';
-                error = e.message;
+            }
+        } else {
+            // WHAPI (Existing Logic)
+            if (!API_URL || !API_KEY) {
+                console.log(`[SIMULATED WHAPI WHATSAPP] To: ${params.to} | Content: ${finalMessage}`);
+            } else {
+                let cleanPhone = params.to.replace(/\D/g, '');
+                if (cleanPhone.length === 10) cleanPhone = `91${cleanPhone}`;
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${API_KEY}`
+                        },
+                        body: JSON.stringify({
+                            to: cleanPhone,
+                            body: finalMessage
+                        })
+                    });
+
+                    if (!response.ok) {
+                        status = 'Failed';
+                        error = `Whapi Error: ${response.statusText}`;
+                    }
+                } catch (e: any) {
+                    status = 'Failed';
+                    error = e.message;
+                }
             }
         }
 
@@ -153,7 +191,7 @@ export async function sendWhatsAppAction(params: {
             content: finalMessage,
             type: 'WhatsApp',
             status,
-            error: error || undefined,
+            error: error || null, // Use null instead of undefined for Firestore
             timestamp: Timestamp.now(),
             metadata: cleanMetadata
         };
@@ -482,6 +520,61 @@ export async function getWhatsAppAccountInfoAction(configOverride?: Partial<Reso
 }
 
 /**
+ * Send a Telegram Message
+ */
+export async function sendTelegramAction(params: {
+    message: string;
+    chatId?: string;
+    configOverride?: Partial<ResourceSettings>;
+}) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: 'DB Unavailable' };
+
+    try {
+        const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+        const resources = resourceSnap.data() as ResourceSettings;
+
+        let TOKEN = (params.configOverride?.telegramBotToken || resources?.telegramBotToken || '').trim();
+        let CHAT_ID = (params.chatId || params.configOverride?.telegramChatId || resources?.telegramChatId || '').toString().trim();
+        const IS_ENABLED = resources?.isTelegramEnabled ?? true;
+
+        if (!IS_ENABLED && !params.configOverride?.isTelegramEnabled) {
+            return { success: false, message: 'Telegram alerts are disabled.' };
+        }
+
+        if (!TOKEN || !CHAT_ID) {
+            console.log(`[SIMULATED TELEGRAM] Chat: ${CHAT_ID} | Content: ${params.message}`);
+            return { success: true, message: 'Telegram simulated (keys missing).' };
+        }
+
+        // Ensure TOKEN doesn't start with 'bot' because we add it in the URL
+        if (TOKEN.toLowerCase().startsWith('bot')) {
+            TOKEN = TOKEN.substring(3);
+        }
+
+        const response = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                chat_id: CHAT_ID,
+                text: params.message,
+                parse_mode: 'Markdown'
+            })
+        });
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(`Telegram API Error: ${errData.description || response.statusText}`);
+        }
+
+        return { success: true };
+    } catch (e: any) {
+        console.error('Telegram Action Error:', e);
+        return { success: false, message: e.message };
+    }
+}
+
+/**
  * Send a Test WhatsApp Message
  */
 export async function sendTestWhatsAppAction(to: string, configOverride?: Partial<ResourceSettings>) {
@@ -569,36 +662,121 @@ export async function notifyNewInitiativeAction(type: 'lead' | 'campaign', id: s
         const resourceSnap = await adminDb.collection('settings').doc('resources').get();
         const baseUrl = resourceSnap.data()?.baseUrl || 'https://baitulamalsolapur.com';
 
+        let message = '';
+        let templateId = '';
+        let variables: any = {};
+
         if (type === 'lead') {
-            return await sendWhatsAppAction({
-                to: '917887646583',
-                templateId: 'lead_alert',
-                variables: {
-                    adminName: 'Institutional Head',
-                    leadName: data.name,
-                    phone: data.shopContact || 'N/A', // Using contact field or similar
-                    need: data.purpose || 'General Assistance',
-                    url: `${baseUrl}/leads-members/${id}/summary`
-                },
-                metadata: { moduleId: 'leads', recordId: id, templateId: 'lead_alert' },
-                bypassAutoCheck: true // Force system alerts
-            });
+            message = `📍 *New Lead Entry (Registry)*\n*Name:* ${data.name}\n*Need:* ${data.purpose || 'General Assistance'}\n*Phone:* ${data.shopContact || 'N/A'}\n\nReview: ${baseUrl}/leads-members/${id}/summary`;
+            templateId = 'lead_alert';
+            variables = {
+                adminName: 'Institutional Head',
+                leadName: data.name,
+                phone: data.shopContact || 'N/A',
+                need: data.purpose || 'General Assistance',
+                url: `${baseUrl}/leads-members/${id}/summary`
+            };
         } else {
-            return await sendWhatsAppAction({
-                to: '917887646583',
-                templateId: 'campaign_milestone', // Re-using milestone for general alert if 0%
-                variables: {
-                    campaignName: data.name,
-                    amount: '₹0 (New Entry)',
-                    percent: '0',
-                    url: `${baseUrl}/campaign-members/${id}/summary`
-                },
-                metadata: { moduleId: 'campaigns', recordId: id, templateId: 'campaign_milestone' },
-                bypassAutoCheck: true
-            });
+            message = `🚀 *New Campaign Launched*\n*Campaign:* ${data.name}\n*Target:* ₹${data.targetAmount}\n\nPortal: ${baseUrl}/campaign-members/${id}/summary`;
+            templateId = 'campaign_milestone';
+            variables = {
+                campaignName: data.name,
+                amount: '₹0 (New Entry)',
+                percent: '0',
+                url: `${baseUrl}/campaign-members/${id}/summary`
+            };
         }
+
+        const res = await dispatchNotificationToGroups({
+            module: type === 'lead' ? 'leads' : 'campaigns',
+            message,
+            whatsappTemplate: {
+                id: templateId,
+                variables
+            },
+            metadata: { moduleId: type === 'lead' ? 'leads' : 'campaigns', recordId: id }
+        });
+
+        return { 
+            success: res.success,
+            message: `Alerts dispatched to ${res.sentCount} recipients/groups.`
+        };
     } catch (e: any) {
         return { success: false, message: e.message };
+    }
+}
+
+/**
+ * Dispatch a notification to all relevant Notification Groups
+ */
+export async function dispatchNotificationToGroups(params: {
+    module: NotificationGroup['enabledModules'][number];
+    message: string;
+    whatsappTemplate?: {
+        id: string;
+        variables: Record<string, string>;
+    };
+    metadata?: any;
+}) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, sentCount: 0 };
+
+    try {
+        // 1. Fetch relevant Active groups
+        const groupsSnap = await adminDb.collection('notification_groups')
+            .where('isActive', '==', true)
+            .get();
+        
+        const groups = groupsSnap.docs
+            .map(doc => doc.data() as NotificationGroup)
+            .filter(g => g.enabledModules.includes(params.module));
+
+        if (groups.length === 0) {
+            console.log(`No active notification groups found for module: ${params.module}`);
+            return { success: true, sentCount: 0 };
+        }
+
+        let sentCount = 0;
+
+        for (const group of groups) {
+            if (group.type === 'Telegram') {
+                if (group.channelType === 'Group' && group.targetId) {
+                    await sendTelegramAction({ message: params.message, chatId: group.targetId });
+                    sentCount++;
+                } else if (group.channelType === 'Individual') {
+                    // Fetch phone numbers or dedicated telegram chat IDs for members (if we had them)
+                    // For now, we'll send to the "Default" telegram group as alerts are easier there
+                    await sendTelegramAction({ message: params.message, chatId: group.targetId });
+                    sentCount++;
+                }
+            } else if (group.type === 'WhatsApp') {
+                // Fetch member phone numbers using document IDs
+                const membersSnap = await adminDb.collection('users')
+                    .where('__name__', 'in', group.memberIds) // Use document ID filter
+                    .get();
+                
+                const memberPhones = membersSnap.docs
+                    .map(doc => (doc.data() as UserProfile).phone)
+                    .filter(p => !!p && p.length >= 10) as string[];
+
+                for (const phone of memberPhones) {
+                    await sendWhatsAppAction({
+                        to: phone,
+                        templateId: params.whatsappTemplate?.id,
+                        variables: params.whatsappTemplate?.variables,
+                        customMessage: params.whatsappTemplate ? undefined : params.message,
+                        metadata: params.metadata,
+                        bypassAutoCheck: true // Staff alerts bypass the "isAutoWhatsAppEnabled" toggle if coming via group
+                    });
+                    sentCount++;
+                }
+            }
+        }
+
+        return { success: true, sentCount };
+    } catch (error) {
+        console.error('Dispatch Notification Error:', error);
+        return { success: false, sentCount: 0 };
     }
 }
 
@@ -679,14 +857,17 @@ export async function notifyLeadAction(leadId: string, templateId: 'lead_created
             summary: extra?.summary || 'Data integrity update'
         };
 
-        return await sendWhatsAppAction({
-            to: '917887646583', // Default Admin
-            templateId,
-            variables,
-            metadata: { moduleId: 'leads', recordId: leadId, templateId },
-            bypassAutoCheck: false,
-            moduleId: 'lead'
+        const res = await dispatchNotificationToGroups({
+            module: 'leads',
+            message: `🔄 *Lead Update: ${variables.name}*\n*Action:* ${variables.actionType}\n*Status:* ${variables.status}\n\nReview: ${variables.url}`,
+            whatsappTemplate: {
+                id: templateId,
+                variables
+            },
+            metadata: { moduleId: 'leads', recordId: leadId, templateId }
         });
+
+        return res;
     } catch (e: any) {
         return { success: false, message: e.message };
     }
@@ -728,14 +909,17 @@ export async function notifyCampaignAction(campaignId: string, templateId: 'camp
             summary: extra?.summary || 'Record synchronization'
         };
 
-        return await sendWhatsAppAction({
-            to: '917887646583',
-            templateId,
-            variables,
-            metadata: { moduleId: 'campaigns', recordId: campaignId, templateId },
-            bypassAutoCheck: false,
-            moduleId: 'campaign'
+        const res = await dispatchNotificationToGroups({
+            module: 'campaigns',
+            message: `📈 *Campaign Update: ${variables.name}*\n*Progress:* ${variables.percent}%\n*Raised:* ₹${variables.amount}\n\nPortal: ${variables.url}`,
+            whatsappTemplate: {
+                id: templateId,
+                variables
+            },
+            metadata: { moduleId: 'campaigns', recordId: campaignId, templateId }
         });
+
+        return res;
     } catch (e: any) {
         return { success: false, message: e.message };
     }
@@ -766,17 +950,7 @@ export async function notifyDonationVerifiedAction(donationId: string) {
             url: `${baseUrl}/donations/receipt/${donationId}`
         };
 
-        // 1. Send Internal Alert to Admin
-        await sendWhatsAppAction({
-            to: '917887646583',
-            templateId: 'donation_verified_internal',
-            variables,
-            metadata: { moduleId: 'donations', recordId: donationId, templateId: 'donation_verified_internal' },
-            bypassAutoCheck: false,
-            moduleId: 'donation'
-        });
-
-        // 2. Send Receipt to Donor (if phone available)
+        // 1. Send Receipt to Donor (if phone available)
         if (data.donorPhone && data.donorPhone.length >= 10) {
             try {
                 await sendWhatsAppAction({
@@ -790,6 +964,17 @@ export async function notifyDonationVerifiedAction(donationId: string) {
                 console.error('Failed to send receipt to donor:', donorErr);
             }
         }
+
+        // 2. Dispatch to internal groups
+        await dispatchNotificationToGroups({
+            module: 'donations',
+            message: `✅ *Donation Verified*\n*Donor:* ${variables.donorName}\n*Amount:* ${variables.amount}\n*Allocated:* ${variables.linkName}\n\nView: ${variables.url}`,
+            whatsappTemplate: {
+                id: 'donation_verified_internal',
+                variables
+            },
+            metadata: { moduleId: 'donations', recordId: donationId, templateId: 'donation_verified_internal' }
+        });
 
         return { success: true };
     } catch (e: any) {
@@ -830,6 +1015,202 @@ export async function notifyBeneficiaryStatusAction(beneficiaryId: string, statu
             moduleId: 'beneficiary'
         });
     } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+/**
+ * Notify internal groups about a finalized Approval with full details
+ */
+export async function notifyApprovalFinalizedAction(params: {
+    module: string;
+    targetId: string;
+    requestedBy: string;
+    approvedBy: string;
+    changes: { field: string; old: any; new: any }[];
+    description: string;
+}) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: 'DB Unavailable' };
+
+    try {
+        const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+        const baseUrl = resourceSnap.data()?.baseUrl || 'https://baitulamalsolapur.com';
+
+        // 1. Format changes into a readable string
+        let changeDetails = '';
+        if (params.changes.length > 0) {
+            changeDetails = params.changes.map(c => {
+                const oldVal = typeof c.old === 'object' ? 'Record Detail' : (c.old || 'None');
+                const newVal = typeof c.new === 'object' ? 'Record Detail' : (c.new || 'None');
+                return `• *${c.field}:* ${oldVal} → ${newVal}`;
+            }).join('\n');
+        } else {
+            changeDetails = '• No specific field changes detected (Data synchronization).';
+        }
+
+        // 2. Fetch Initiative Statistics for high-impact modules
+        let statsInfo = '';
+        if (params.module === 'donations' || params.module === 'beneficiaries' || params.module === 'campaigns' || params.module === 'leads') {
+            try {
+                // Try to find the associated campaign or lead
+                const donSnap = await adminDb.collection('donations').doc(params.targetId).get();
+                const don = donSnap.data();
+                
+                let linkId = params.targetId;
+                let linkType = params.module === 'leads' ? 'leads' : 'campaigns';
+                
+                if (don && don.linkId) {
+                    linkId = don.linkId;
+                    linkType = don.linkType === 'lead' ? 'leads' : 'campaigns';
+                }
+
+                const moduleSnap = await adminDb.collection(linkType).doc(linkId).get();
+                if (moduleSnap.exists) {
+                    const m = moduleSnap.data() as any;
+                    const target = Number(m.targetAmount || 0);
+                    const collected = Number(m.collectedAmount || 0);
+                    const percent = target > 0 ? Math.round((collected / target) * 100) : 0;
+                    statsInfo = `\n📊 *Initiative Snapshot:*\n` +
+                        `• Progress: ${percent}%\n` +
+                        `• Raised: ₹${collected.toLocaleString('en-IN')}\n` +
+                        `• Target: ₹${target.toLocaleString('en-IN')}`;
+                }
+            } catch (e) {}
+        }
+
+        const message = `🏛️ *Institutional Registry Updated*\n\n` +
+            `*Action:* Final Approval Granted\n` +
+            `*Module:* ${params.module.toUpperCase()}\n` +
+            `*Description:* ${params.description}\n\n` +
+            `🔄 *Modifications:*\n${changeDetails}\n` +
+            `${statsInfo}\n\n` +
+            `👤 *Requested By:* ${params.requestedBy}\n` +
+            `⚖️ *Approved By:* ${params.approvedBy}\n` +
+            `⏰ *Finalized:* ${new Date().toLocaleString('en-IN')}\n\n` +
+            `🔗 Manage Record: ${baseUrl}/${params.module}/${params.targetId}`;
+
+        return await dispatchNotificationToGroups({
+            module: params.module as any,
+            message,
+            metadata: { 
+                moduleId: params.module, 
+                recordId: params.targetId,
+                type: 'approval_finalized'
+            }
+        });
+
+    } catch (e: any) {
+        console.error('Failed to notify approval finalized:', e);
+        return { success: false, message: e.message };
+    }
+}
+
+
+/**
+ * Notify internal groups about a Verification Step (Request, Partial Approval, or Rejection)
+ */
+export async function notifyVerificationUpdateAction(params: {
+    request: PendingVerification;
+    action: 'REQUEST' | 'APPROVE' | 'REJECT';
+    performedBy: { id: string; name: string };
+    reason?: string;
+}) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: 'DB Unavailable' };
+
+    try {
+        const { request, action, performedBy } = params;
+        const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+        const baseUrl = resourceSnap.data()?.baseUrl || 'https://baitulamalsolapur.com';
+
+        // 1. Format Approver Board
+        const approverBoard = request.assignedVerifiers.map(v => {
+            let icon = '⏳';
+            if (v.status === 'Approved') icon = '✅';
+            if (v.status === 'Rejected') icon = '❌';
+            
+            // Safe Date Parsing
+            let dateStr = '';
+            if (v.updatedAt) {
+                const dateObj = v.updatedAt.toDate ? v.updatedAt.toDate() : new Date(v.updatedAt);
+                if (!isNaN(dateObj.getTime())) {
+                    dateStr = ` (${dateObj.toLocaleDateString()})`;
+                }
+            }
+            return `• ${v.name}: ${icon}${dateStr}`;
+        }).join('\n');
+
+        // 2. Fetch Module Statistics (if Donation or Beneficiary)
+        let statsInfo = '';
+        if (request.module === 'donations' || request.module === 'beneficiaries') {
+            try {
+                // Determine actual collection from targetCollection path
+                let linkType = 'campaigns';
+                if (request.targetCollection.includes('leads')) linkType = 'leads';
+                else if (request.targetCollection.includes('campaigns')) linkType = 'campaigns';
+                
+                // For sub-collections (like campaigns/ID/beneficiaries), get the parent ID
+                const pathParts = request.targetCollection.split('/');
+                const linkId = pathParts.length > 1 ? pathParts[1] : request.targetId;
+                
+                const moduleSnap = await adminDb.collection(linkType).doc(linkId).get();
+                if (moduleSnap.exists) {
+                    const m = moduleSnap.data() as any;
+                    const target = Number(m.targetAmount || 0);
+                    const collected = Number(m.raisedAmount || 0);
+                    const percent = target > 0 ? Math.round((collected / target) * 100) : 0;
+                    statsInfo = `\n📊 *Initiative Stats:*\n` +
+                        `• Progress: ${percent}%\n` +
+                        `• Raised: ₹${collected.toLocaleString()}\n` +
+                        `• Target: ₹${target.toLocaleString()}`;
+                }
+            } catch (e) {}
+        }
+
+        // 3. Format Changes (for Approvals/Requests)
+        let changeSummary = '';
+        if (action !== 'REJECT') {
+            const changes = generateChanges(request.originalValue, request.newValue);
+            if (changes.length > 0) {
+                changeSummary = `\n🔄 *Changes Detected:*\n` + changes.map(c => {
+                    const oldV = typeof c.old === 'object' ? 'OBJ' : (c.old || 'None');
+                    const newV = typeof c.new === 'object' ? 'OBJ' : (c.new || 'None');
+                    return `• ${c.field}: ${oldV} → ${newV}`;
+                }).join('\n');
+            }
+        }
+
+        // 4. Construct Header
+        let header = '🔔 *New Verification Request*';
+        if (action === 'APPROVE') header = '🟡 *Partial Approval Recorded*';
+        if (action === 'REJECT') header = '🔴 *Modification Rejected*';
+
+        const createdAtDate = request.createdAt?.toDate ? request.createdAt.toDate() : new Date(request.createdAt);
+        const dateString = !isNaN(createdAtDate.getTime()) ? createdAtDate.toLocaleDateString() : 'Unknown';
+
+        const message = `${header}\n\n` +
+            `*Module:* ${request.module.toUpperCase()}\n` +
+            `*Request Date:* ${dateString}\n` +
+            `*Description:* ${request.description || 'Data update'}\n` +
+            (params.reason ? `*Reason:* ${params.reason}\n` : '') +
+            `${changeSummary}\n` +
+            `${statsInfo}\n\n` +
+            `⚖️ *Approval Board:* (Total ${request.assignedVerifiers.length})\n${approverBoard}\n\n` +
+            `👤 *Action By:* ${performedBy.name}\n` +
+            `🔗 Review: ${baseUrl}/verifications?requestId=${request.id}`;
+
+        return await dispatchNotificationToGroups({
+            module: request.module as any,
+            message,
+            metadata: { 
+                moduleId: request.module, 
+                recordId: request.targetId,
+                requestId: request.id,
+                type: `verification_${action.toLowerCase()}`
+            }
+        });
+    } catch (e: any) {
+        console.error('Failed to notify verification update:', e);
         return { success: false, message: e.message };
     }
 }

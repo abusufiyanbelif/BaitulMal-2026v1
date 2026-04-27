@@ -544,25 +544,28 @@ export default function AppSettingsPage() {
 
     return (
         <div className="space-y-6 text-primary font-normal pb-20">
-            <div className="flex items-center justify-between">
-                <div className="space-y-1">
-                    <h2 className="text-2xl font-bold tracking-tight text-primary">App Settings</h2>
-                    <p className="text-sm text-muted-foreground font-normal">Manage Organization Profile, Branding, And Core Standards.</p>
-                </div>
-                {!isEditMode ? (
-                    <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md transition-transform active:scale-95">
-                        <Edit className="mr-2 h-4 w-4"/>Modify Configuration
-                    </Button>
-                ) : (
-                    <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="font-bold border-primary/20 text-primary transition-transform active:scale-95"><X className="mr-2 h-4 w-4" /> Cancel</Button>
-                        <Button onClick={handleSave} disabled={isSubmitting} className="font-bold shadow-md active:scale-95 transition-transform">
-                            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-                            Save All Changes
-                        </Button>
+            <div className="sticky top-[73px] z-30 bg-background/80 backdrop-blur-md pb-4 pt-2 -mx-4 px-4 sm:mx-0 sm:px-0 border-b border-primary/5 sm:border-0 sm:static sm:bg-transparent">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                        <h2 className="text-2xl font-bold tracking-tight text-primary">App Settings</h2>
+                        <p className="text-sm text-muted-foreground font-normal">Manage Organization Profile, Branding, And Core Standards.</p>
                     </div>
-                )}
+                    {!isEditMode ? (
+                        <Button onClick={() => setIsEditMode(true)} className="w-full sm:w-auto font-bold shadow-md transition-transform active:scale-95 rounded-xl h-10 px-6">
+                            <Edit className="mr-2 h-4 w-4"/>Modify Configuration
+                        </Button>
+                    ) : (
+                        <div className="flex w-full sm:w-auto gap-2">
+                            <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="flex-1 sm:flex-initial font-bold border-primary/20 text-primary transition-transform active:scale-95 rounded-xl h-10 px-6 bg-white"><X className="mr-2 h-4 w-4" /> Cancel</Button>
+                            <Button onClick={handleSave} disabled={isSubmitting} className="flex-[2] sm:flex-initial font-bold shadow-md active:scale-95 transition-transform rounded-xl h-10 px-8 bg-primary text-white">
+                                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
+                                Save Changes
+                            </Button>
+                        </div>
+                    )}
+                </div>
             </div>
+
 
             <div className="space-y-6 animate-fade-in-up">
                 

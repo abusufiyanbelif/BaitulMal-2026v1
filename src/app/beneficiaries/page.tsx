@@ -615,7 +615,7 @@ export default function BeneficiariesPage() {
       <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm transition-all hover:shadow-lg">
         <ScrollArea className="w-full">
             <div className="max-h-[70vh]">
-                <div className={cn("bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold tracking-tight text-[hsl(var(--table-header-fg))]", gridClass)}>
+                <div className={cn("hidden md:grid bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold tracking-tight text-[hsl(var(--table-header-fg))]", gridClass)}>
                     <div className="flex justify-center">
                         <Checkbox 
                             checked={paginatedBeneficiaries.length > 0 && selectedIds.length === paginatedBeneficiaries.length}
@@ -634,109 +634,123 @@ export default function BeneficiariesPage() {
                     <div className="text-right pr-4 font-bold tracking-tight text-[10px]">Actions</div>
                 </div>
 
-                <Accordion type="single" collapsible className="w-full">
+                <div className="flex flex-col">
                 {paginatedBeneficiaries.map((b, idx) => (
-                    <AccordionItem key={b.id} value={b.id} className="border-b border-primary/10 last:border-0 hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white">
-                    <div className={cn("py-3 px-4", gridClass)}>
-                        <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
-                            <Checkbox 
-                                checked={selectedIds.includes(b.id)}
-                                onCheckedChange={() => toggleSelect(b.id)}
-                                className="border-primary/40 data-[state=checked]:bg-primary"
-                            />
-                        </div>
-                        <div className="flex justify-center">
-                            <AccordionTrigger className="p-0 hover:no-underline [&>svg]:hidden">
-                                <div className="flex items-center justify-center w-8 h-8 rounded-md hover:bg-primary/10 transition-colors">
-                                    <ChevronDown className="h-4 w-4 text-primary shrink-0 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                    <div key={b.id} className="border-b border-primary/10 last:border-0 hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white">
+                        {/* Desktop View */}
+                        <div className={cn("hidden md:grid py-3 px-4", gridClass)}>
+                            <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
+                                <Checkbox 
+                                    checked={selectedIds.includes(b.id)}
+                                    onCheckedChange={() => toggleSelect(b.id)}
+                                    className="border-primary/40 data-[state=checked]:bg-primary"
+                                />
+                            </div>
+                            <div className="flex justify-center">
+                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-md hover:bg-primary/10 transition-colors" onClick={() => router.push(`/beneficiaries/${b.id}`)}>
+                                    <Eye className="h-4 w-4 text-primary" />
+                                </Button>
+                            </div>
+                            <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
+                            <div className="font-bold text-sm truncate pr-2 text-primary">{b.name}</div>
+                            <div className="font-mono text-xs opacity-60 text-primary">{b.phone || 'N/A'}</div>
+                            <div className="text-center"><Badge variant={b.status === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold">{b.status || 'Pending'}</Badge></div>
+                            <div className="text-center"><p className="text-[9px] font-bold text-muted-foreground opacity-40 tracking-tight">Project Specific</p></div>
+                            <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
+                            <div className="pl-4 text-xs font-normal text-primary/70">{b.referralBy || 'N/A'}</div>
+                            <div className="text-right pr-4">
+                                <div className="flex items-center justify-end gap-1">
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
+                                            <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4 opacity-60" /> View Details</DropdownMenuItem>
+                                            {canUpdate && (
+                                                <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="text-primary font-normal">
+                                                    {b.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4 text-destructive" /> : <Coins className="mr-2 h-4 w-4 text-primary" />}
+                                                    {b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat Eligible'}
+                                                </DropdownMenuItem>
+                                            )}
+                                            {canUpdate && (
+                                                <DropdownMenuSub>
+                                                <DropdownMenuSubTrigger className="text-primary font-normal"><ChevronsUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Verification</DropdownMenuSubTrigger>
+                                                <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] border-primary/10 shadow-dropdown">
+                                                    <DropdownMenuRadioGroup value={b.status || 'Pending'} onValueChange={(s) => handleStatusChange(b, s)}>
+                                                    <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
+                                                    <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</DropdownMenuRadioItem>
+                                                    <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</DropdownMenuRadioItem>
+                                                    <DropdownMenuRadioItem value="Need More Details" className="text-xs font-normal">Need Details</DropdownMenuRadioItem></DropdownMenuRadioGroup>
+                                                </DropdownMenuSubContent></DropdownMenuPortal>
+                                                </DropdownMenuSub>
+                                            )}
+                                            {canDelete && (
+                                                <>
+                                                <DropdownMenuSeparator className="bg-primary/10" />
+                                                <DropdownMenuItem onClick={async () => { if(confirm('Are you certain?')) { const res = await deleteBeneficiaryAction(b.id); toast({ title: res.success ? 'Deleted' : 'Error', variant: res.success ? 'success' : 'destructive'}); } }} className="text-destructive font-normal"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
+                                                </>
+                                            )}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 </div>
-                            </AccordionTrigger>
+                            </div>
                         </div>
-                        <div className="font-mono text-xs opacity-60">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
-                        <div className="font-bold text-sm truncate pr-2 text-primary">{b.name}</div>
-                        <div className="font-mono text-xs opacity-60 text-primary">{b.phone || 'N/A'}</div>
-                        <div className="text-center"><Badge variant={b.status === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold">{b.status || 'Pending'}</Badge></div>
-                        <div className="text-center"><p className="text-[9px] font-bold text-muted-foreground opacity-40 tracking-tight">Project Specific</p></div>
-                        <div className="text-center"><Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold">{b.isEligibleForZakat ? 'Eligible' : 'No'}</Badge></div>
-                        <div className="pl-4 text-xs font-normal text-primary/70">{b.referralBy || 'N/A'}</div>
-                        <div className="text-right pr-4">
-                            <div className="flex items-center justify-end gap-1">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary transition-transform active:scale-90"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
-                                        <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}`)} className="text-primary font-normal"><Eye className="mr-2 h-4 w-4 opacity-60" /> View Details</DropdownMenuItem>
-                                        
-                                        {canUpdate && (
-                                            <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="text-primary font-normal">
-                                                {b.isEligibleForZakat ? <XCircle className="mr-2 h-4 w-4 text-destructive" /> : <Coins className="mr-2 h-4 w-4 text-primary" />}
-                                                {b.isEligibleForZakat ? 'Mark Ineligible' : 'Mark Zakat Eligible'}
-                                            </DropdownMenuItem>
-                                        )}
 
-                                        {canUpdate && (
-                                            <DropdownMenuSub>
-                                            <DropdownMenuSubTrigger className="text-primary font-normal"><ChevronsUpDown className="mr-2 h-4 w-4 opacity-60" /> Change Verification</DropdownMenuSubTrigger>
-                                            <DropdownMenuPortal><DropdownMenuSubContent className="rounded-[12px] border-primary/10 shadow-dropdown border-primary/10">
-                                                <DropdownMenuRadioGroup value={b.status || 'Pending'} onValueChange={(s) => handleStatusChange(b, s)}>
-                                                <DropdownMenuRadioItem value="Pending" className="text-xs font-normal">Pending</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Verified" className="text-xs font-normal">Verified</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Hold" className="text-xs font-normal">Hold</DropdownMenuRadioItem>
-                                                <DropdownMenuRadioItem value="Need More Details" className="text-xs font-normal">Need Details</DropdownMenuRadioItem></DropdownMenuRadioGroup>
-                                            </DropdownMenuSubContent></DropdownMenuPortal>
-                                            </DropdownMenuSub>
-                                        )}
-                                        {canDelete && (
-                                            <>
-                                            <DropdownMenuSeparator className="bg-primary/10" />
-                                            <DropdownMenuItem onClick={async () => { if(confirm('Are you certain?')) { const res = await deleteBeneficiaryAction(b.id); toast({ title: res.success ? 'Deleted' : 'Error', variant: res.success ? 'success' : 'destructive'}); } }} className="text-destructive font-normal"><Trash2 className="mr-2 h-4 w-4" /> Delete</DropdownMenuItem>
-                                            </>
-                                        )}
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                        {/* Mobile Card View */}
+                        <div className="md:hidden p-4 space-y-4" onClick={() => router.push(`/beneficiaries/${b.id}`)}>
+                            <div className="flex justify-between items-start">
+                                <div className="flex items-center gap-3">
+                                    <Checkbox 
+                                        checked={selectedIds.includes(b.id)}
+                                        onCheckedChange={() => toggleSelect(b.id)}
+                                        onClick={(e) => e.stopPropagation()}
+                                        className="border-primary/40 data-[state=checked]:bg-primary h-5 w-5"
+                                    />
+                                    <div className="space-y-0.5">
+                                        <h3 className="font-bold text-base text-primary tracking-tight">{b.name}</h3>
+                                        <p className="font-mono text-[10px] text-muted-foreground">{b.phone || 'No Phone'}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-9 w-9 text-primary border border-primary/5 bg-primary/5 rounded-xl"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
+                                            <DropdownMenuItem onClick={() => router.push(`/beneficiaries/${b.id}`)} className="font-normal">View Record</DropdownMenuItem>
+                                            {canUpdate && <DropdownMenuItem onClick={() => handleZakatToggle(b)} className="font-normal">Toggle Zakat</DropdownMenuItem>}
+                                            {canDelete && <DropdownMenuItem onClick={async () => { if(confirm('Delete?')) await deleteBeneficiaryAction(b.id); }} className="text-destructive font-normal">Delete</DropdownMenuItem>}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+                            </div>
+                            
+                            <div className="grid grid-cols-2 gap-3">
+                                <div className="p-2 rounded-lg bg-primary/5 border border-primary/10">
+                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Status</p>
+                                    <Badge variant={b.status === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold w-full justify-center py-1">{b.status || 'Pending'}</Badge>
+                                </div>
+                                <div className="p-2 rounded-lg bg-primary/5 border border-primary/10">
+                                    <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Zakat</p>
+                                    <Badge variant={b.isEligibleForZakat ? 'eligible' : 'outline'} className="text-[10px] font-bold w-full justify-center py-1">{b.isEligibleForZakat ? 'Eligible' : 'Ineligible'}</Badge>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1">
+                                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">Referral Source</p>
+                                <p className="text-xs font-bold text-primary/70">{b.referralBy || 'N/A'}</p>
+                            </div>
+
+                            <div className="flex items-center justify-between pt-2 border-t border-primary/5">
+                                <span className="text-[10px] font-mono opacity-40">SR-{(currentPage - 1) * itemsPerPage + idx + 1}</span>
+                                <Button variant="ghost" size="sm" className="h-7 text-[10px] font-bold text-primary hover:bg-primary/5 p-0">
+                                    Tap To View Audit <ArrowLeft className="ml-1 h-3 w-3 rotate-180" />
+                                </Button>
                             </div>
                         </div>
                     </div>
-                    <AccordionContent className="bg-primary/[0.02] px-6 py-4 border-t border-primary/10 animate-fade-in-up">
-                        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-x-6 gap-y-3 text-primary font-normal">
-                        <div className="space-y-1 col-span-2">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Address</p>
-                            <p className="text-sm leading-tight font-normal">{b.address || 'N/A'}</p>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Age</p>
-                            <p className="text-sm font-normal">{b.age || 'N/A'}</p>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Occupation</p>
-                            <p className="text-sm font-normal">{b.occupation || 'N/A'}</p>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Family Details</p>
-                            <p className="text-sm font-normal">T: {b.members || 0}, E: {b.earningMembers || 0}, M: {b.male || 0}, F: {b.female || 0}</p>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight">ID Artifact</p>
-                            <p className="text-sm font-normal">{b.idProofType || 'Aadhaar'} - {b.idNumber || 'N/A'}</p>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Date Added</p>
-                            <p className="text-sm font-normal">{b.addedDate || 'N/A'}</p>
-                        </div>
-                        <div className="space-y-1 col-span-2">
-                            <p className="text-[10px] font-bold opacity-60 tracking-tight">Notes</p>
-                            <p className="text-sm italic opacity-80 font-normal line-clamp-2">{b.notes || (b.isEligibleForZakat ? 'Eligible For Zakat Support.' : 'N/A')}</p>
-                        </div>
-                        </div>
-                    </AccordionContent>
-                    </AccordionItem>
                 ))}
-                </Accordion>
+                </div>
                 {paginatedBeneficiaries.length === 0 && (
-                <div className="text-center py-20 bg-primary/[0.02] opacity-40 italic font-bold">No Beneficiaries Found Matching Criteria.</div>
+                    <div className="text-center py-20 bg-primary/[0.02] opacity-40 italic font-bold">No Beneficiaries Found Matching Criteria.</div>
                 )}
             </div>
-            <ScrollBar orientation="horizontal" className="h-1.5" />
-            <ScrollBar orientation="vertical" />
         </ScrollArea>
       </Card>
 
@@ -754,3 +768,5 @@ export default function BeneficiariesPage() {
     </main>
   );
 }
+
+

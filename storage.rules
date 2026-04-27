@@ -2,7 +2,7 @@ rules_version = '2';
 service cloud.storage {
   match /b/{bucket}/o {
     
-    // --- HELPER FUNCTIONS ---
+    // --- HELPER FUNCTIONS (Indestructible Auth) ---
     
     function isSignedIn() {
       return request.auth != null;
@@ -21,25 +21,29 @@ service cloud.storage {
         'admin@example.com'
       ];
       
+      // PRIORITY 1: Constant Check
+      if (isSignedIn() && (request.auth.uid in masterAdmins || (request.auth.token.email != null && request.auth.token.email in masterEmails))) {
+        return true;
+      }
+
+      // PRIORITY 2: Database Check
       return isSignedIn() && (
-        request.auth.uid in masterAdmins || 
-        (request.auth.token.email != null && request.auth.token.email in masterEmails) ||
-        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
-         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin')
+        firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin'
       );
     }
 
     function isStaff() {
-      return isSignedIn() && (
-        isAdmin() || 
-        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
-         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'User')
-      );
+      if (!isSignedIn()) { return false; }
+      if (isAdmin()) { return true; }
+
+      return firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
+             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'User';
     }
 
     // --- RULES ---
 
-    // Public settings files (logo, QR)
+    // Public settings files (logo, QR, Branding Assets)
     match /settings/{allPaths=**} {
       allow read: if true;
       allow write: if isAdmin();
@@ -51,29 +55,20 @@ service cloud.storage {
       allow write: if isSignedIn() && (request.auth.uid == userId || isAdmin());
     }
 
-    // Initiative artifacts (Defensive exists checks to prevent permission crashes)
+    // Initiative artifacts (Campaigns & Leads)
     match /campaigns/{id}/{allPaths=**} {
-      allow read: if isStaff() || (
-        firestore.exists(/databases/(default)/documents/campaigns/$(id)) && (
-          firestore.get(/databases/(default)/documents/campaigns/$(id)).data.isPublic == true || 
-          firestore.get(/databases/(default)/documents/campaigns/$(id)).data.publicVisibility == 'Published'
-        )
-      );
-      allow write: if isAdmin();
+      allow read: if true; // Public initiatives
+      allow write: if isAdmin() || isStaff();
     }
 
     match /leads/{id}/{allPaths=**} {
-      allow read: if isStaff() || (
-        firestore.exists(/databases/(default)/documents/leads/$(id)) && (
-          firestore.get(/databases/(default)/documents/leads/$(id)).data.isPublic == true || 
-          firestore.get(/databases/(default)/documents/leads/$(id)).data.publicVisibility == 'Published'
-        )
-      );
-      allow write: if isAdmin();
+      allow read: if true; // Public leads
+      allow write: if isAdmin() || isStaff();
     }
 
-    // Beneficiary artifacts
+    // Beneficiary artifacts (Sensitive documents)
     match /beneficiaries/{id}/{allPaths=**} {
+      // Staff can read everything; Public only if specifically flagged
       allow read: if isStaff() || (
         firestore.exists(/databases/(default)/documents/beneficiaries/$(id)) && (
           firestore.get(/databases/(default)/documents/beneficiaries/$(id)).data.isPublic == true || 
@@ -85,6 +80,7 @@ service cloud.storage {
 
     // Donation artifacts (Payment Screenshots)
     match /donations/{id}/{allPaths=**} {
+      // Staff can read all; Donors can read their own; Public only if flagged
       allow read: if isStaff() || (
         firestore.exists(/databases/(default)/documents/donations/$(id)) && (
           firestore.get(/databases/(default)/documents/donations/$(id)).data.isPublic == true || 

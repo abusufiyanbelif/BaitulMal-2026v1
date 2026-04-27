@@ -39,7 +39,9 @@ import { Switch } from '@/components/ui/switch';
 import { BrandedLoader } from '@/components/branded-loader';
 import { getNestedValue } from '@/lib/utils';
 import type { ResourceSettings } from '@/lib/types';
-import { getWhatsAppAccountInfoAction, sendTestWhatsAppAction } from '@/app/messages/actions';
+import { getWhatsAppAccountInfoAction, sendTestWhatsAppAction, sendTelegramAction } from '@/app/messages/actions';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Send } from 'lucide-react';
 
 export default function ResourceSettingsPage() {
     const { userProfile, isLoading: isSessionLoading } = useSession();
@@ -50,10 +52,13 @@ export default function ResourceSettingsPage() {
     const [isEditMode, setIsEditMode] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showApiKey, setShowApiKey] = useState(false);
+    const [showMetaToken, setShowMetaToken] = useState(false);
+    const [showTelegramToken, setShowTelegramToken] = useState(false);
     const [showGeminiKey, setShowGeminiKey] = useState(false);
     const [showGoogleKey, setShowGoogleKey] = useState(false);
     const [showFbApiKey, setShowFbApiKey] = useState(false);
     const [isTestingGemini, setIsTestingGemini] = useState(false);
+    const [isTestingTelegram, setIsTestingTelegram] = useState(false);
     
     const [editableData, setEditableData] = useState<ResourceSettings | null>(null);
     const [waStatus, setWaStatus] = useState<any>(null);
@@ -124,22 +129,30 @@ export default function ResourceSettingsPage() {
             const result = await sendTestWhatsAppAction(testPhone, config);
             
             if (result.success) {
-                const cleanTest = testPhone.replace(/\D/g, '');
-                const cleanInstance = waStatus?.phone?.replace(/\D/g, '');
-                const isSelf = cleanTest && cleanInstance && (cleanTest === cleanInstance || cleanInstance.endsWith(cleanTest));
-
-                toast({ 
-                    title: isSelf ? 'Self-Test Sent' : 'Test Message Sent', 
-                    description: isSelf 
-                        ? 'Check your own WhatsApp chat for the diagnostic message.' 
-                        : 'Check the recipient device for the diagnostic message.', 
-                    variant: 'success' 
-                });
+                toast({ title: 'Test Message Sent', description: 'Check the recipient device for the diagnostic message.', variant: 'success' });
             } else {
                 toast({ title: 'Test Failed', description: result.message, variant: 'destructive' });
             }
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleTestTelegram = async () => {
+        setIsTestingTelegram(true);
+        try {
+            const config = editableData || undefined;
+            const result = await sendTelegramAction({
+                message: '🧪 *BaitulMal Telegram Test*\n\nYour bot is now successfully connected to the BaitulMal Registry system.\n\n*Status:* Online ✅',
+                configOverride: config
+            });
+            if (result.success) {
+                toast({ title: 'Telegram Success', description: 'Check your Telegram group for the test message.', variant: 'success' });
+            } else {
+                toast({ title: 'Telegram Failed', description: result.message, variant: 'destructive' });
+            }
+        } finally {
+            setIsTestingTelegram(false);
         }
     };
 
@@ -161,7 +174,10 @@ export default function ResourceSettingsPage() {
                 const [parent, child] = field.split('.');
                 (newData as any)[parent] = { ...(newData as any)[parent], [child]: value };
             } else {
-                (newData as any)[field] = value;
+                // Special handling for booleans passed as strings
+                if (value === 'true') (newData as any)[field] = true;
+                else if (value === 'false') (newData as any)[field] = false;
+                else (newData as any)[field] = value;
             }
             return newData;
         });
@@ -172,7 +188,14 @@ export default function ResourceSettingsPage() {
         
         setIsSubmitting(true);
         try {
-            await setDoc(doc(firestore, 'settings', 'resources'), editableData, { merge: true });
+            const cleanedData = {
+                ...editableData,
+                whatsappApiKey: editableData.whatsappApiKey?.trim() || '',
+                metaAccessToken: editableData.metaAccessToken?.trim() || '',
+                telegramBotToken: editableData.telegramBotToken?.trim() || '',
+                telegramChatId: editableData.telegramChatId?.toString().trim() || ''
+            };
+            await setDoc(doc(firestore, 'settings', 'resources'), cleanedData, { merge: true });
             toast({ title: 'Success', description: 'Resource Configuration secured.', variant: 'success' });
             setIsEditMode(false);
             checkWaStatus();
@@ -214,139 +237,207 @@ export default function ResourceSettingsPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 animate-fade-in-up">
                 <div className="space-y-6">
-                    <Card className="border-primary/10 shadow-sm overflow-hidden bg-white">
+                    <Card className="border-primary/10 shadow-sm overflow-hidden bg-white mb-6">
                         <CardHeader className="bg-primary/5 border-b">
                             <div className="flex items-center gap-3">
                                 <div className="p-2 rounded-lg bg-green-500/10 text-green-600">
                                     <Smartphone className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-lg font-bold text-primary tracking-tight">WhatsApp API (Whapi)</CardTitle>
-                                    <CardDescription className="text-xs font-normal text-primary/60">Gateway credentials and diagnostic status.</CardDescription>
+                                    <CardTitle className="text-lg font-bold text-primary tracking-tight">WhatsApp Provider</CardTitle>
+                                    <CardDescription className="text-xs font-normal text-primary/60">Choose your primary WhatsApp gateway.</CardDescription>
                                 </div>
                             </div>
                         </CardHeader>
-                        <CardContent className="pt-6 space-y-4">
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">API Endpoint URL</Label>
-                                <Input 
-                                    value={editableData?.whatsappApiUrl || ''} 
-                                    onChange={(e) => handleFieldChange('whatsappApiUrl', e.target.value)}
-                                    placeholder="https://gate.whapi.cloud/messages/text"
-                                    className="font-mono text-sm"
-                                    readOnly={!isEditMode}
-                                />
-                            </div>
+                        <CardContent className="pt-6 space-y-6">
+                            <RadioGroup 
+                                value={editableData?.activeWhatsAppProvider || 'whapi'} 
+                                onValueChange={(val: 'whapi' | 'meta') => handleFieldChange('activeWhatsAppProvider', val)}
+                                disabled={!isEditMode}
+                                className="grid grid-cols-2 gap-4"
+                            >
+                                <Label
+                                    htmlFor="whapi"
+                                    className={`flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer ${editableData?.activeWhatsAppProvider === 'whapi' ? 'border-primary bg-primary/5' : ''}`}
+                                >
+                                    <RadioGroupItem value="whapi" id="whapi" className="sr-only" />
+                                    <Zap className="mb-3 h-6 w-6 text-amber-500" />
+                                    <span className="text-sm font-bold">Whapi.cloud</span>
+                                    <span className="text-[10px] text-muted-foreground font-normal text-center mt-1">Paid / Standard Gateway</span>
+                                </Label>
+                                <Label
+                                    htmlFor="meta"
+                                    className={`flex flex-col items-center justify-between rounded-xl border-2 border-muted bg-popover p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer ${editableData?.activeWhatsAppProvider === 'meta' ? 'border-primary bg-primary/5' : ''}`}
+                                >
+                                    <RadioGroupItem value="meta" id="meta" className="sr-only" />
+                                    <CheckCircle2 className="mb-3 h-6 w-6 text-blue-500" />
+                                    <span className="text-sm font-bold">Meta Official</span>
+                                    <span className="text-[10px] text-muted-foreground font-normal text-center mt-1">Free Tier / Secure API</span>
+                                </Label>
+                            </RadioGroup>
 
-                            <div className="space-y-2">
-                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">API Authorization Token</Label>
-                                <div className="relative">
-                                    <Input 
-                                        type={showApiKey || isEditMode ? "text" : "password"}
-                                        value={editableData?.whatsappApiKey || ''} 
-                                        onChange={(e) => handleFieldChange('whatsappApiKey', e.target.value)}
-                                        placeholder="Enter Bearer Token"
-                                        className="font-mono text-sm pr-10"
-                                        readOnly={!isEditMode}
-                                    />
-                                    {!isEditMode && (
-                                        <Button 
-                                            type="button" 
-                                            variant="ghost" 
-                                            size="icon" 
-                                            className="absolute right-0 top-0 h-full w-10 hover:bg-transparent"
-                                            onClick={() => setShowApiKey(!showApiKey)}
-                                        >
-                                            {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                                        </Button>
-                                    )}
+                            {editableData?.activeWhatsAppProvider === 'whapi' ? (
+                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Whapi API URL</Label>
+                                        <Input 
+                                            value={editableData?.whatsappApiUrl || ''} 
+                                            onChange={(e) => handleFieldChange('whatsappApiUrl', e.target.value)}
+                                            placeholder="https://gate.whapi.cloud/messages/text"
+                                            className="font-mono text-sm"
+                                            readOnly={!isEditMode}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Whapi API Token</Label>
+                                        <div className="relative">
+                                            <Input 
+                                                type={showApiKey || isEditMode ? "text" : "password"}
+                                                value={editableData?.whatsappApiKey || ''} 
+                                                onChange={(e) => handleFieldChange('whatsappApiKey', e.target.value)}
+                                                className="font-mono text-sm pr-10"
+                                                readOnly={!isEditMode}
+                                            />
+                                            {!isEditMode && (
+                                                <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full w-10" onClick={() => setShowApiKey(!showApiKey)}>
+                                                    {showApiKey ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+                            ) : (
+                                <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Meta Permanent Access Token</Label>
+                                        <div className="relative">
+                                            <Input 
+                                                type={showMetaToken || isEditMode ? "text" : "password"}
+                                                value={editableData?.metaAccessToken || ''} 
+                                                onChange={(e) => handleFieldChange('metaAccessToken', e.target.value)}
+                                                className="font-mono text-sm pr-10"
+                                                readOnly={!isEditMode}
+                                            />
+                                            {!isEditMode && (
+                                                <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full w-10" onClick={() => setShowMetaToken(!showMetaToken)}>
+                                                    {showMetaToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                                                </Button>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Phone Number ID</Label>
+                                            <Input 
+                                                value={editableData?.metaPhoneNumberId || ''} 
+                                                onChange={(e) => handleFieldChange('metaPhoneNumberId', e.target.value)}
+                                                placeholder="e.g. 123456789"
+                                                className="font-mono text-xs"
+                                                readOnly={!isEditMode}
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">WABA ID</Label>
+                                            <Input 
+                                                value={editableData?.metaWabaId || ''} 
+                                                onChange={(e) => handleFieldChange('metaWabaId', e.target.value)}
+                                                placeholder="Business Account ID"
+                                                className="font-mono text-xs"
+                                                readOnly={!isEditMode}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="flex items-center justify-between p-3 rounded-xl border border-primary/10 bg-primary/5">
                                 <div className="space-y-0.5">
-                                    <div className="flex items-center gap-2">
-                                        <Label className="text-xs font-bold text-primary">Automated Notifications</Label>
-                                        {editableData?.isAutoWhatsAppEnabled ? <Zap className="h-3 w-3 text-amber-500 animate-pulse" /> : <ZapOff className="h-3 w-3 text-muted-foreground" />}
-                                    </div>
-                                    <p className="text-[10px] text-muted-foreground font-normal">Send WhatsApp alerts instantly on approval requests.</p>
+                                    <Label className="text-xs font-bold text-primary">Automated WhatsApp Alerts</Label>
+                                    <p className="text-[10px] text-muted-foreground font-normal">Enable instant notifications via {editableData?.activeWhatsAppProvider === 'meta' ? 'Meta Cloud' : 'Whapi'}.</p>
                                 </div>
                                 <Switch 
                                     checked={editableData?.isAutoWhatsAppEnabled ?? true} 
-                                    onCheckedChange={(checked) => {
-                                        if (isEditMode) {
-                                            setEditableData(prev => prev ? { ...prev, isAutoWhatsAppEnabled: checked } : null);
-                                        }
-                                    }}
+                                    onCheckedChange={(checked) => isEditMode && handleFieldChange('isAutoWhatsAppEnabled', checked.toString())}
                                     disabled={!isEditMode}
                                 />
                             </div>
 
-                            <div className="pt-4 border-t border-primary/5">
-                                <div className="flex items-center justify-between mb-4">
-                                    <h4 className="text-xs font-bold text-primary uppercase tracking-wider flex items-center gap-2">
-                                        <CheckCircle2 className="h-4 w-4 text-green-500" />
-                                        Connection Status
-                                    </h4>
-                                    <Button variant="ghost" size="sm" onClick={checkWaStatus} disabled={isCheckingStatus} className="h-7 text-[10px] font-bold">
-                                        {isCheckingStatus ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCw className="h-3 w-3 mr-1" />}
-                                        Refresh
-                                    </Button>
-                                </div>
-                                
-                                {waStatus ? (
-                                    <div className="rounded-xl bg-muted/20 p-4 space-y-3">
-                                        {waStatus.error ? (
-                                            <div className="flex items-center gap-2 text-red-600">
-                                                <AlertCircle className="h-4 w-4" />
-                                                <p className="text-xs font-bold">{waStatus.error}</p>
-                                            </div>
-                                        ) : (
-                                            <>
-                                                <div className="flex items-center gap-3">
-                                                    {waStatus.profile_pic ? (
-                                                        <img src={waStatus.profile_pic} className="h-10 w-10 rounded-full border border-primary/10" />
-                                                    ) : (
-                                                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary">WA</div>
-                                                    )}
-                                                    <div>
-                                                        <p className="text-sm font-bold">{typeof waStatus.alias === 'string' ? waStatus.alias : 'WhatsApp Account'}</p>
-                                                        <p className="text-[10px] font-mono text-muted-foreground">{typeof waStatus.phone === 'string' ? waStatus.phone : ''}</p>
-                                                    </div>
-                                                    <Badge variant="secondary" className="ml-auto text-[9px]">ONLINE</Badge>
-                                                </div>
-                                                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-primary/5">
-                                                    <div className="text-[10px]">
-                                                        <span className="opacity-60">Status:</span> <span className="font-bold text-green-600">
-                                                            {typeof waStatus.status === 'string' ? waStatus.status : (waStatus.status?.text || 'Active')}
-                                                        </span>
-                                                    </div>
-                                                    <div className="text-[10px]">
-                                                        <span className="opacity-60">Tier:</span> <span className="font-bold">{waStatus.limits?.tier || 'Standard'}</span>
-                                                    </div>
-                                                </div>
-                                            </>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <p className="text-[10px] text-muted-foreground italic text-center py-4">Click Refresh To Verify Connection.</p>
-                                )}
-                            </div>
-
                             <div className="pt-4 space-y-2">
-                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Test Notification</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Test WhatsApp Connection</Label>
                                 <div className="flex gap-2">
-                                    <Input 
-                                        placeholder="+919999999999" 
-                                        value={testPhone} 
-                                        onChange={e => setTestPhone(e.target.value)}
-                                        className="h-9 text-xs"
-                                    />
+                                    <Input placeholder="+919999999999" value={testPhone} onChange={e => setTestPhone(e.target.value)} className="h-9 text-xs" />
                                     <Button onClick={handleSendTest} disabled={isSubmitting} variant="secondary" className="h-9 font-bold shrink-0">
                                         <PlayCircle className="h-4 w-4 mr-1.5" /> Send Test
                                     </Button>
                                 </div>
                             </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-primary/10 shadow-sm overflow-hidden bg-white mb-6">
+                        <CardHeader className="bg-primary/5 border-b">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-sky-500/10 text-sky-600">
+                                    <Send className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-lg font-bold text-primary tracking-tight">Telegram Alerts (Free)</CardTitle>
+                                    <CardDescription className="text-xs font-normal text-primary/60">Institutional group notifications.</CardDescription>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="pt-6 space-y-4">
+                            <div className="flex items-center justify-between p-3 rounded-xl border border-primary/10 bg-primary/5">
+                                <div className="space-y-0.5">
+                                    <Label className="text-xs font-bold text-primary">Enable Telegram Alerts</Label>
+                                    <p className="text-[10px] text-muted-foreground font-normal">Send free alerts to your admin Telegram group.</p>
+                                </div>
+                                <Switch 
+                                    checked={editableData?.isTelegramEnabled ?? true} 
+                                    onCheckedChange={(checked) => isEditMode && handleFieldChange('isTelegramEnabled', checked.toString())}
+                                    disabled={!isEditMode}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Bot API Token</Label>
+                                <div className="relative">
+                                    <Input 
+                                        type={showTelegramToken || isEditMode ? "text" : "password"}
+                                        value={editableData?.telegramBotToken || ''} 
+                                        onChange={(e) => handleFieldChange('telegramBotToken', e.target.value)}
+                                        placeholder="bot123456:ABC-DEF..."
+                                        className="font-mono text-xs pr-10"
+                                        readOnly={!isEditMode}
+                                    />
+                                    {!isEditMode && (
+                                        <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full w-10" onClick={() => setShowTelegramToken(!showTelegramToken)}>
+                                            {showTelegramToken ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Target Chat ID</Label>
+                                <Input 
+                                    value={editableData?.telegramChatId || ''} 
+                                    onChange={(e) => handleFieldChange('telegramChatId', e.target.value)}
+                                    placeholder="e.g. -100123456789"
+                                    className="font-mono text-xs"
+                                    readOnly={!isEditMode}
+                                />
+                            </div>
+
+                            <Button 
+                                onClick={handleTestTelegram} 
+                                disabled={isTestingTelegram || !editableData?.telegramBotToken} 
+                                variant="outline" 
+                                className="w-full font-bold h-9 border-sky-500/20 text-sky-700 hover:bg-sky-50"
+                            >
+                                {isTestingTelegram ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
+                                Verify Telegram Connection
+                            </Button>
                         </CardContent>
                     </Card>
 

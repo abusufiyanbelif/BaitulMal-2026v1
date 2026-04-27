@@ -63,11 +63,24 @@ export interface InfoSettings extends DocumentData {
 }
 
 export interface ResourceSettings extends DocumentData {
-  // WhatsApp Configuration
+  // WhatsApp Provider Selection
+  activeWhatsAppProvider?: 'whapi' | 'meta';
+
+  // WhatsApp (Whapi) Configuration
   whatsappApiUrl?: string;
   whatsappApiKey?: string;
   isAutoWhatsAppEnabled?: boolean;
   
+  // WhatsApp (Meta Cloud API) Configuration
+  metaAccessToken?: string;
+  metaPhoneNumberId?: string;
+  metaWabaId?: string; // WhatsApp Business Account ID
+
+  // Telegram Configuration
+  telegramBotToken?: string;
+  telegramChatId?: string; // Default chat ID for alerts
+  isTelegramEnabled?: boolean;
+
   // Base URLs
   baseUrl?: string;
 
@@ -85,6 +98,18 @@ export interface ResourceSettings extends DocumentData {
     appId?: string;
     measurementId?: string;
   };
+}
+
+export interface NotificationGroup extends DocumentData {
+  id: string;
+  name: string;
+  type: 'Telegram' | 'WhatsApp';
+  channelType: 'Group' | 'Individual';
+  targetId?: string; // Telegram Chat ID
+  memberIds: string[]; // List of User Profile IDs
+  enabledModules: ('leads' | 'campaigns' | 'donations' | 'beneficiaries' | 'users' | 'approvals')[];
+  isActive: boolean;
+  updatedAt?: Timestamp | FieldValue;
 }
 
 export interface MessageTemplate extends DocumentData {

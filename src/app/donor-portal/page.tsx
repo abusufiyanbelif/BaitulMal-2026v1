@@ -150,65 +150,109 @@ export default function DonorPortalPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
-                     <ScrollArea className="w-full">
-                        <div className="min-w-[800px]">
-                            <Table>
-                                <TableHeader className="bg-primary/[0.02]">
-                                    <TableRow className="border-b border-primary/10">
-                                        <TableHead className="font-bold text-[10px] tracking-widest uppercase pl-6 py-4">Entry Date</TableHead>
-                                        <TableHead className="font-bold text-[10px] tracking-widest uppercase">Verified Amount</TableHead>
-                                        <TableHead className="font-bold text-[10px] tracking-widest uppercase">Validation Status</TableHead>
-                                        <TableHead className="font-bold text-[10px] tracking-widest uppercase text-right pr-6">Institutional Receipt</TableHead>
+                    {/* Desktop View: Dense Table */}
+                    <div className="hidden md:block overflow-x-auto">
+                        <Table>
+                            <TableHeader className="bg-primary/[0.02]">
+                                <TableRow className="border-b border-primary/10">
+                                    <TableHead className="font-bold text-[10px] tracking-widest uppercase pl-6 py-4">Entry Date</TableHead>
+                                    <TableHead className="font-bold text-[10px] tracking-widest uppercase">Verified Amount</TableHead>
+                                    <TableHead className="font-bold text-[10px] tracking-widest uppercase">Validation Status</TableHead>
+                                    <TableHead className="font-bold text-[10px] tracking-widest uppercase text-right pr-6">Institutional Receipt</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {sortedDonations.length === 0 ? (
+                                    <TableRow>
+                                        <TableCell colSpan={4} className="text-center h-64 bg-primary/[0.01]">
+                                            <div className="flex flex-col items-center justify-center space-y-4 opacity-20">
+                                                <WalletCards className="h-16 w-16 text-primary" />
+                                                <p className="font-bold text-sm tracking-widest uppercase italic">No Contributions Logged Yet.</p>
+                                            </div>
+                                        </TableCell>
                                     </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {sortedDonations.length === 0 ? (
-                                        <TableRow>
-                                            <TableCell colSpan={4} className="text-center h-64 bg-primary/[0.01]">
-                                                <div className="flex flex-col items-center justify-center space-y-4 opacity-20">
-                                                    <WalletCards className="h-16 w-16 text-primary" />
-                                                    <p className="font-bold text-sm tracking-widest uppercase italic">No Contributions Logged Yet.</p>
-                                                </div>
+                                ) : (
+                                    sortedDonations.map((donation) => (
+                                        <TableRow key={donation.id} className="group hover:bg-primary/[0.02] transition-colors border-b border-primary/5 last:border-0 bg-white">
+                                            <TableCell className="font-bold text-xs whitespace-nowrap pl-6">
+                                                {formatDate(donation.donationDate, { dateStyle: 'medium' })}
+                                            </TableCell>
+                                            <TableCell className="font-black text-sm tracking-tight text-primary font-mono">
+                                                {formatCurrency(donation.amount)}
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant={donation.status === 'Verified' ? 'eligible' : 'outline'} className="font-bold text-[9px] tracking-widest uppercase">
+                                                    {donation.status}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell className="text-right pr-6">
+                                                {donation.status === 'Verified' ? (
+                                                    <Button variant="ghost" size="sm" className="h-8 font-bold text-primary hover:bg-primary/10 transition-all active:scale-95 rounded-lg" asChild>
+                                                        <Link href={`/campaign-public/${donation.linkSplit?.[0]?.linkId?.replace('campaign_', '') || 'general'}/donations/${donation.id}`}>
+                                                            <Download className="h-4 w-4 mr-2 opacity-60" />
+                                                            Secure Receipt
+                                                        </Link>
+                                                    </Button>
+                                                ) : (
+                                                    <span className="text-[10px] font-bold text-muted-foreground opacity-40 italic flex items-center justify-end gap-1">
+                                                        <Activity className="h-3 w-3" /> Awaiting Verification
+                                                    </span>
+                                                )}
                                             </TableCell>
                                         </TableRow>
-                                    ) : (
-                                        sortedDonations.map((donation) => (
-                                            <TableRow key={donation.id} className="group hover:bg-primary/[0.02] transition-colors border-b border-primary/5 last:border-0 bg-white">
-                                                <TableCell className="font-bold text-xs whitespace-nowrap pl-6">
+                                    ))
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+
+                    {/* Mobile View: High-Density Cards */}
+                    <div className="md:hidden divide-y divide-primary/5">
+                        {sortedDonations.length === 0 ? (
+                            <div className="text-center py-24 bg-primary/[0.01]">
+                                <WalletCards className="h-12 w-12 mx-auto text-primary/10 mb-4" />
+                                <p className="font-bold text-xs opacity-40 uppercase tracking-widest italic">No Contributions Logged Yet.</p>
+                            </div>
+                        ) : (
+                            sortedDonations.map((donation) => (
+                                <div key={donation.id} className="p-5 space-y-4 bg-white active:bg-primary/5 transition-colors">
+                                    <div className="flex justify-between items-start">
+                                        <div className="space-y-1">
+                                            <div className="flex items-center gap-2">
+                                                <Calendar className="h-3 w-3 text-muted-foreground" />
+                                                <span className="text-xs font-bold text-muted-foreground">
                                                     {formatDate(donation.donationDate, { dateStyle: 'medium' })}
-                                                </TableCell>
-                                                <TableCell className="font-black text-sm tracking-tight text-primary font-mono">
-                                                    {formatCurrency(donation.amount)}
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Badge variant={donation.status === 'Verified' ? 'eligible' : 'outline'} className="font-bold text-[9px] tracking-widest uppercase">
-                                                        {donation.status}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-right pr-6">
-                                                    {donation.status === 'Verified' ? (
-                                                        <Button variant="ghost" size="sm" className="h-8 font-bold text-primary hover:bg-primary/10 transition-all active:scale-95 rounded-lg" asChild>
-                                                            <Link href={`/campaign-public/${donation.linkSplit?.[0]?.linkId?.replace('campaign_', '') || 'general'}/donations/${donation.id}`}>
-                                                                <Download className="h-4 w-4 mr-2 opacity-60" />
-                                                                Secure Receipt
-                                                            </Link>
-                                                        </Button>
-                                                    ) : (
-                                                        <span className="text-[10px] font-bold text-muted-foreground opacity-40 italic flex items-center justify-end gap-1">
-                                                            <Activity className="h-3 w-3" /> Awaiting Verification
-                                                        </span>
-                                                    )}
-                                                </TableCell>
-                                            </TableRow>
-                                        ))
+                                                </span>
+                                            </div>
+                                            <div className="text-xl font-black text-primary tracking-tight font-mono">
+                                                {formatCurrency(donation.amount)}
+                                            </div>
+                                        </div>
+                                        <Badge variant={donation.status === 'Verified' ? 'eligible' : 'outline'} className="font-bold text-[9px] tracking-widest uppercase px-2 py-0.5">
+                                            {donation.status}
+                                        </Badge>
+                                    </div>
+                                    
+                                    {donation.status === 'Verified' ? (
+                                        <Button variant="outline" className="w-full h-11 font-bold border-primary/20 text-primary hover:bg-primary hover:text-white transition-all shadow-sm rounded-xl" asChild>
+                                            <Link href={`/campaign-public/${donation.linkSplit?.[0]?.linkId?.replace('campaign_', '') || 'general'}/donations/${donation.id}`}>
+                                                <Download className="h-4 w-4 mr-2" />
+                                                Download Official Receipt
+                                            </Link>
+                                        </Button>
+                                    ) : (
+                                        <div className="w-full h-11 border border-dashed border-primary/10 rounded-xl flex items-center justify-center gap-2 bg-primary/[0.02]">
+                                            <Activity className="h-4 w-4 text-orange-500 animate-pulse" />
+                                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Verification In Progress</span>
+                                        </div>
                                     )}
-                                </TableBody>
-                            </Table>
-                        </div>
-                        <ScrollBar orientation="horizontal" className="h-1.5" />
-                    </ScrollArea>
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </CardContent>
             </Card>
         </div>
     );
 }
+

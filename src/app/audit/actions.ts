@@ -16,8 +16,14 @@ export async function recordAuditLogAction(log: Omit<AuditLog, 'id' | 'timestamp
  
     try {
         const logRef = adminDb.collection('audit_logs').doc();
+        
+        // Clean the log object recursively to remove 'undefined' values which Firestore rejects
+        const cleanData = JSON.parse(JSON.stringify(log, (key, value) => 
+            value === undefined ? null : value
+        ));
+
         const fullLog: AuditLog = {
-            ...log,
+            ...cleanData,
             id: logRef.id,
             timestamp: FieldValue.serverTimestamp() as any,
         };

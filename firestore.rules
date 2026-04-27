@@ -2,25 +2,25 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- TEMPORARY DIAGNOSTIC ---
-    match /audit_logs/{logId} {
-      allow read, list: if true; 
-      allow write: if request.auth != null;
-    }
-
-    // --- GLOBAL HELPERS ---
+    // --- GLOBAL HELPERS (Indestructible Auth Logic) ---
     
     function isSignedIn() {
       return request.auth != null;
     }
 
+    // Bulletproof Admin check: Prioritizes hardcoded Master IDs to prevent Rule Execution Limit failures
     function isAdmin() {
-      // Priority 1: Hardcoded Master Admins
       let masterAdmins = [
         'cyMl1lQME0Yur1YS3VCms1AvrOJ2', 
         'S5efNV5jpTPoxYNv6SnAlv3jNPO2', 
         '3gKwUE2JrBT8wngoUxTTN6tLJk03'
       ];
+      
+      // Direct UID check is the most efficient and reliable
+      if (isSignedIn() && request.auth.uid in masterAdmins) {
+        return true;
+      }
+
       let masterEmails = [
         'baitulmalss.solapur@gmail.com', 
         'abusufiyan.belif@gmail.com', 
@@ -28,77 +28,89 @@ service cloud.firestore {
         'admin@example.com'
       ];
       
-      return isSignedIn() && (
-        request.auth.uid in masterAdmins || 
-        (request.auth.token.email != null && request.auth.token.email in masterEmails) ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin')
-      );
+      if (isSignedIn() && request.auth.token.email != null && request.auth.token.email in masterEmails) {
+        return true;
+      }
+
+      let userDoc = /databases/$(database)/documents/users/$(request.auth.uid);
+      return isSignedIn() && exists(userDoc) && get(userDoc).data.role == 'Admin';
     }
 
+    // Staff includes Admins and registered team members (Users)
     function isStaff() {
-      return isSignedIn() && (
-        isAdmin() || 
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'User')
-      );
+      if (!isSignedIn()) { return false; }
+      if (isAdmin()) { return true; }
+      
+      let userDoc = /databases/$(database)/documents/users/$(request.auth.uid);
+      return exists(userDoc) && get(userDoc).data.role == 'User';
     }
 
+    // Granular permission check for staff members
     function hasPermission(module, perm) {
-      return isSignedIn() && (
-        isAdmin() || (
-          exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
-            (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions[module][perm] == true) ||
-            (module == 'leads' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions['leads-members'][perm] == true) ||
-            (module == 'leads-members' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions['leads'][perm] == true)
-          )
-        )
+      if (isAdmin()) { return true; }
+      if (!isSignedIn()) { return false; }
+      
+      let userDoc = /databases/$(database)/documents/users/$(request.auth.uid);
+      return exists(userDoc) && (
+        (get(userDoc).data.permissions[module][perm] == true) ||
+        (module == 'leads' && get(userDoc).data.permissions['leads-members'][perm] == true) ||
+        (module == 'leads-members' && get(userDoc).data.permissions['leads'][perm] == true)
       );
     }
 
-    // --- EMERGENCY PUBLIC ACCESS ---
-    match /settings/branding { allow read: if true; }
-    match /settings/payment { allow read: if true; }
-    match /settings/donation_visibility { allow read: if true; }
-    match /settings/campaign_visibility { allow read: if true; }
-    match /settings/lead_visibility { allow read: if true; }
-    match /settings/beneficiary_visibility { allow read: if true; }
-    match /settings/donationInfo { allow read: if true; }
-    match /settings/guidingPrinciples { allow read: if true; }
-    match /settings/info { allow read: if true; }
-    match /settings/guidance { allow read: if true; }
-    
-    match /settings/campaign_config { allow read: if true; }
-    match /settings/lead_config { allow read: if true; }
-    match /settings/donation_config { allow read: if true; }
-    match /settings/beneficiary_config { allow read: if true; }
-    match /settings/user_config { allow read: if true; }
-    match /settings/donor_config { allow read: if true; }
-
-    match /message_logs/{logId} {
-      allow read: if isStaff() || hasPermission('messages', 'read');
-      allow write: if isAdmin();
+    // --- SYSTEM & LOGGING (Staff Only) ---
+    match /audit_logs/{allPaths=**} {
+      allow read: if isStaff();
+      allow write: if isSignedIn(); // System logging
     }
 
-    match /settings/{docId} {
+    match /message_logs/{allPaths=**} {
       allow read: if isStaff();
       allow write: if isAdmin();
+    }
+
+    match /notification_groups/{allPaths=**} {
+      allow read: if isStaff();
+      allow write: if isAdmin();
+    }
+
+    match /page_hits/{allPaths=**} {
+      allow read: if isStaff();
+      allow write: if true; // Public analytics
+    }
+
+    // --- GLOBAL SETTINGS & BRANDING ---
+    match /settings/{docId} {
+      // Branding and visibility configs are public
+      allow read: if docId in [
+        'branding', 'payment', 'donation_visibility', 'campaign_visibility', 
+        'lead_visibility', 'beneficiary_visibility', 'donationInfo', 
+        'guidingPrinciples', 'info', 'guidance', 'campaign_config', 
+        'lead_config', 'donation_config', 'beneficiary_config', 
+        'user_config', 'donor_config', 'notifications'
+      ] || isStaff();
+      
+      allow write: if isAdmin() || hasPermission('settings', 'update');
+
       match /{allSubCollections=**} {
         allow read: if isStaff();
         allow write: if isAdmin();
       }
     }
 
+    // --- CORE MODULES ---
+
     match /donations/{donationId} {
+      // Donors can read their own receipts; Public sees verified list; Staff sees all.
       allow read: if isStaff() || 
                    (resource != null && resource.data.status == 'Verified') || 
                    (isSignedIn() && resource != null && request.auth.uid == resource.data.donorId);
       allow write: if isAdmin() || hasPermission('donations', 'update');
-      allow create: if true;
+      allow create: if true; // Anonymous donations supported
     }
 
     match /campaigns/{campaignId} {
-      allow read: if true;
+      allow read: if true; // Public initiatives
       allow write: if isAdmin() || hasPermission('campaigns', 'update');
       match /beneficiaries/{benId} {
         allow read: if true;
@@ -107,7 +119,7 @@ service cloud.firestore {
     }
 
     match /leads/{leadId} {
-      allow read: if true;
+      allow read: if true; // Public leads
       allow write: if isAdmin() || hasPermission('leads', 'update') || hasPermission('leads-members', 'update');
       match /beneficiaries/{benId} {
         allow read: if true;
@@ -122,7 +134,7 @@ service cloud.firestore {
 
     match /donors/{donorId} {
       allow read: if isStaff() || (isSignedIn() && request.auth.uid == donorId);
-      allow write: if isAdmin() || hasPermission('donors', 'update');
+      allow write: if isAdmin() || hasPermission('donors', 'update') || (isSignedIn() && request.auth.uid == donorId);
     }
 
     match /users/{userId} {
@@ -138,11 +150,6 @@ service cloud.firestore {
     match /pending_verifications/{reqId} {
       allow read: if isStaff() || (isSignedIn() && resource != null && request.auth.uid == resource.data.requestedBy.id);
       allow write: if isSignedIn();
-    }
-
-    match /page_hits/{pageId} {
-      allow read: if isStaff();
-      allow write: if true;
     }
   }
 }

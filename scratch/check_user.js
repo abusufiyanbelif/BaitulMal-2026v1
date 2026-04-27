@@ -1,29 +1,19 @@
-
-const admin = require('firebase-admin');
-const fs = require('fs');
-const path = require('path');
+const { getAdminServices } = require('./src/lib/firebase-admin-sdk');
 
 async function checkUser() {
-    try {
-        const serviceAccountPath = path.join(process.cwd(), 'serviceAccountKey.json');
-        if (!fs.existsSync(serviceAccountPath)) {
-            console.error('serviceAccountKey.json not found');
-            return;
-        }
-        const serviceAccount = require(serviceAccountPath);
-        admin.initializeApp({
-            credential: admin.credential.cert(serviceAccount)
-        });
-        const db = admin.firestore();
-        const doc = await db.collection('users').doc('S5efNV5jpTPoxYNv6SnAlv3jNPO2').get();
-        if (doc.exists) {
-            console.log('User found:');
-            console.log(JSON.stringify(doc.data(), null, 2));
-        } else {
-            console.log('User NOT found in /users/S5efNV5jpTPoxYNv6SnAlv3jNPO2');
-        }
-    } catch (e) {
-        console.error('Error:', e);
+    const { adminDb } = getAdminServices();
+    if (!adminDb) {
+        console.error("DB Unavailable");
+        return;
+    }
+
+    const uid = "S5efNV5jpTPoxYNv6SnAlv3jNPO2";
+    const userDoc = await adminDb.collection('users').doc(uid).get();
+
+    if (userDoc.exists) {
+        console.log("User Data:", userDoc.data());
+    } else {
+        console.log("User document NOT FOUND for UID:", uid);
     }
 }
 

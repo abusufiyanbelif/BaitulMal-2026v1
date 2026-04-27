@@ -14,7 +14,15 @@ import { generateChanges } from '@/lib/utils';
   * Mock helper for WhatsApp notifications.
   * In a production environment, this would integrate with Twilio or WhatsApp Business API.
   */
- import { sendWhatsAppAction, notifyLeadAction, notifyCampaignAction, notifyDonationVerifiedAction, notifyBeneficiaryStatusAction } from '@/app/messages/actions';
+ import { 
+    sendWhatsAppAction, 
+    notifyLeadAction, 
+    notifyCampaignAction, 
+    notifyDonationVerifiedAction, 
+    notifyBeneficiaryStatusAction,
+    notifyApprovalFinalizedAction,
+    notifyVerificationUpdateAction
+} from '@/app/messages/actions';
  
  /**
   * Deeply serializes Firestore data by converting Timestamps to ISO strings.
@@ -131,14 +139,21 @@ import { generateChanges } from '@/lib/utils';
                     
                     if (notifyResult.success) sentCount++;
                     else failCount++;
-                } else {
-                    failCount++;
                 }
             } catch (notifyError) {
                 failCount++;
                 console.error(`Failed to process notification for verifier ${verifier.id}:`, notifyError);
             }
         }
+
+        // --- NEW: Notify the whole group about the request ---
+        try {
+            await notifyVerificationUpdateAction({
+                request: payload,
+                action: 'REQUEST',
+                performedBy: payload.requestedBy
+            });
+        } catch (e) {}
 
         revalidatePath(payload.revalidatePath);
         
@@ -244,6 +259,7 @@ import { generateChanges } from '@/lib/utils';
              }
  
              // Record Audit Log before deletion
+             const changes = generateChanges(request.originalValue, request.newValue);
              await recordAuditLogAction({
                  targetId: request.targetId,
                  targetCollection: request.targetCollection,
@@ -251,7 +267,7 @@ import { generateChanges } from '@/lib/utils';
                  action: 'APPROVE',
                  description: `Change request finalized: ${request.description}`,
                  performedBy: { id: verifierId, name: updatedVerifiers.find(v => v.id === verifierId)?.name || 'Verifier' },
-                 changes: generateChanges(request.originalValue, request.newValue),
+                 changes: changes,
                  originalValue: request.originalValue,
                  newValue: request.newValue,
                  metadata: {
@@ -260,6 +276,20 @@ import { generateChanges } from '@/lib/utils';
                      approvedBy: updatedVerifiers.filter(v => v.status === 'Approved').map(v => ({ id: v.id, name: v.name }))
                  }
              });
+
+             // Notify internal notification groups with full details
+             try {
+                 await notifyApprovalFinalizedAction({
+                     module: request.module,
+                     targetId: request.targetId,
+                     requestedBy: request.requestedBy.name,
+                     approvedBy: updatedVerifiers.find(v => v.id === verifierId)?.name || 'Verifier',
+                     changes: changes,
+                     description: request.description || 'Data modification approved'
+                 });
+             } catch (notifyError) {
+                 console.error('Failed to notify internal groups of final approval:', notifyError);
+             }
 
              // Cleanup: Delete the pending request
              await docRef.delete();
@@ -302,6 +332,15 @@ import { generateChanges } from '@/lib/utils';
                status,
                updatedAt: Timestamp.now() 
              });
+             
+             // --- NEW: Notify group about the partial approval ---
+             try {
+                 await notifyVerificationUpdateAction({
+                     request: { ...request, assignedVerifiers: updatedVerifiers, status },
+                     action: 'APPROVE',
+                     performedBy: { id: verifierId, name: updatedVerifiers.find(v => v.id === verifierId)?.name || 'Verifier' }
+                 });
+             } catch (e) {}
              
              return { success: true, message: 'Your Approval has been Recorded. Awaiting Remaining Members.' };
          }
@@ -378,6 +417,16 @@ import { generateChanges } from '@/lib/utils';
         } catch (notifyError) {
             console.error('Failed to notify requester of rejection:', notifyError);
         }
+
+        // --- NEW: Notify group about the rejection ---
+        try {
+            await notifyVerificationUpdateAction({
+                request: { ...request, status: 'Rejected' },
+                action: 'REJECT',
+                performedBy: { id: verifierId, name: request.assignedVerifiers.find(v => v.id === verifierId)?.name || 'Verifier' },
+                reason
+            });
+        } catch (e) {}
 
         revalidatePath(request.revalidatePath);
          return { success: true, message: 'Change Request Rejected.' };
