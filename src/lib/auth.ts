@@ -53,14 +53,30 @@ export const signInWithLoginId = async (auth: Auth, firestore: Firestore, loginI
 
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
 
-        // Post-login check to ensure the user is active.
+        // Post-login check to ensure the user is active with latency retry mechanism.
         const userDocRef = doc(firestore, 'users', userCredential.user.uid);
-        const userDocSnap = await getDoc(userDocRef);
+        let userDocSnap = null;
+        let attempts = 0;
+        const maxAttempts = 3;
 
-        if (userDocSnap.exists() && userDocSnap.data().status === 'Inactive') {
+        while (attempts < maxAttempts) {
+            try {
+                userDocSnap = await getDoc(userDocRef);
+                break;
+            } catch (err: any) {
+                attempts++;
+                if (attempts >= maxAttempts) {
+                    console.warn("Firestore Auth token latency detected. Bypassing frontend status check.", err);
+                    return userCredential;
+                }
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
+
+        if (userDocSnap && userDocSnap.exists() && userDocSnap.data().status === 'Inactive') {
             await firebaseSignOut(auth); // Sign the user out immediately
             throw new Error('This account has been deactivated. Please contact an administrator.');
-        } else if (!userDocSnap.exists()) {
+        } else if (userDocSnap && !userDocSnap.exists()) {
             await firebaseSignOut(auth);
             throw new Error('User profile not found in database. Please contact an administrator.');
         }
@@ -82,7 +98,7 @@ export const signInWithLoginId = async (auth: Auth, firestore: Firestore, loginI
             throw error;
         }
         console.error("signInWithLoginId unexpected error:", error);
-        throw new Error('An unexpected error occurred during sign-in.');
+        throw new Error(error.message || 'An unexpected error occurred during sign-in.');
     }
 };
 

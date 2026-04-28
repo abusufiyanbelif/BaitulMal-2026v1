@@ -131,7 +131,8 @@ service cloud.firestore {
     }
 
     match /user_lookups/{lookupId} {
-      allow read, write: if isSignedIn();
+      allow read: if true;
+      allow write: if isSignedIn();
     }
 
     match /pending_verifications/{reqId} {

@@ -889,7 +889,11 @@ export async function sendTelegramAction(params: {
 
         return { success: true };
     } catch (e: any) {
-        console.error('Telegram Action Error:', e);
+        if (e.message?.includes('Forbidden') || e.message?.includes('initiate')) {
+            console.warn(`[Telegram Delivery Warning] Skipped individual chatId ${params.chatId || 'unassigned'}. Reason: Individual must start bot interaction directly.`);
+        } else {
+            console.error('Telegram Action Error:', e);
+        }
         return { success: false, message: e.message };
     }
 }

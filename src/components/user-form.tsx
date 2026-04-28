@@ -30,7 +30,7 @@ import { useAuth, useFirestore, useMemoFirebase, useDoc, doc, sendPasswordResetE
 import { createAdminPermissions, type UserPermissions, GROUPS } from '@/lib/modules';
 import type { UserProfile } from '@/lib/types';
 import { userFormSchema, type UserFormData } from '@/lib/schemas';
-import { Loader2, Send, Replace, Trash2, FileIcon, ScanLine, Save, X, MessageCircle } from 'lucide-react';
+import { Loader2, Send, Replace, Trash2, FileIcon, ScanLine, Save, X, MessageCircle, HelpCircle, Info } from 'lucide-react';
 import { PermissionsTable } from './permissions-table';
 import { set, getInitials } from '@/lib/utils';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
@@ -465,6 +465,22 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                     <FormField control={control as any} name="telegramChatId" render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="font-bold text-primary">Telegram Chat ID</FormLabel>
+                                            <div className="bg-white/80 p-4 rounded-xl border border-blue-100 shadow-sm space-y-3 text-xs mb-3 mt-1">
+                                                 <p className="font-bold text-blue-900 flex items-center gap-1">
+                                                     <HelpCircle className="h-4 w-4 text-blue-600" /> How to find your Telegram Chat ID?
+                                                 </p>
+                                                 <ol className="list-decimal list-inside space-y-2 text-primary/80 font-normal leading-relaxed">
+                                                     <li>Open <span className="font-bold text-blue-600">Telegram</span> on your mobile or PC.</li>
+                                                     <li>Search for the bot <span className="font-bold bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-md font-mono select-all">@userinfobot</span> or <span className="font-bold bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded-md font-mono select-all font-normal">@GetMyChatID_Bot</span>.</li>
+                                                     <li>Click <span className="font-bold text-blue-800">START</span> or send any message.</li>
+                                                     <li>The bot will instantly reply with your <span className="font-bold text-blue-800">Id</span> (a numeric string like <span className="font-mono">87452695</span>).</li>
+                                                     <li><span className="font-bold">Copy</span> that number and paste it below.</li>
+                                                 </ol>
+                                                 <div className="bg-amber-50 border border-amber-200/50 p-2 rounded-lg text-[11px] text-amber-800 font-medium flex items-start gap-2">
+                                                     <Info className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
+                                                     <span><strong>IMPORTANT:</strong> You MUST click <strong>START</strong> on our institutional notification bot before testing or receiving live updates.</span>
+                                                 </div>
+                                             </div>
                                             <FormControl>
                                                 <div className="flex gap-2">
                                                     <Input 

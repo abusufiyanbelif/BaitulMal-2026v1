@@ -78,9 +78,25 @@ export default function LoginPage() {
       const userCredential = await signInWithLoginId(auth, firestore, data.loginId, data.password);
       toast({ title: 'Login successful', description: "Welcome back!", variant: 'success' });
       
-      // Fetch role directly to accelerate explicit routing
+      // Fetch role directly to accelerate explicit routing with latency retry mechanism
       const userDocRef = doc(firestore, 'users', userCredential.user.uid);
-      const userDocSnap = await getDoc(userDocRef);
+      let userDocSnap = null;
+      let attempts = 0;
+      const maxAttempts = 3;
+      while (attempts < maxAttempts) {
+          try {
+              userDocSnap = await getDoc(userDocRef);
+              break;
+          } catch (err) {
+              attempts++;
+              if (attempts >= maxAttempts) {
+                  console.warn("Firestore profile fetch latency bypassed in login route.");
+                  break;
+              }
+              await new Promise(resolve => setTimeout(resolve, 500));
+          }
+      }
+      
       const userProfile = userDocSnap?.exists() ? userDocSnap.data() : null;
       const isStaff = userProfile?.role === 'Admin' || userProfile?.role === 'User';
 
