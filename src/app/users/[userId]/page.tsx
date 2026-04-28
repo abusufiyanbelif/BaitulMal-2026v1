@@ -203,6 +203,8 @@ export default function UserDetailsPage() {
         idNumber: data.idNumber,
         idProofUrl,
         telegramChatId: data.telegramChatId || '',
+        notificationsEnabled: data.notificationsEnabled ?? true,
+        whatsappNotificationsEnabled: data.whatsappNotificationsEnabled ?? true,
         organizationGroup: (data.organizationGroup === 'none' ? null : data.organizationGroup) as any,
         organizationRole: data.organizationRole,
         updatedAt: serverTimestamp(),

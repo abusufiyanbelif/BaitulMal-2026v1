@@ -18,6 +18,8 @@ export const userFormSchema = z.object({
   idProofDeleted: z.boolean().optional(),
   password: z.string().optional(),
   telegramChatId: z.string().optional(),
+  notificationsEnabled: z.boolean().optional(),
+  whatsappNotificationsEnabled: z.boolean().optional(),
   organizationGroup: z.string().optional().or(z.literal('none')),
   organizationRole: z.string().optional(),
   _isEditing: z.boolean(),

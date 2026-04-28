@@ -37,7 +37,8 @@ import { useSession as useCurrentUserSession } from '@/hooks/use-session';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-
+import { sendTelegramAction, sendWhatsAppAction, writeInAppNotificationAction } from '@/app/messages/actions';
+import { BellRing } from 'lucide-react';
 interface UserFormProps {
   user?: UserProfile | null;
   onSubmit: (data: UserFormData) => Promise<void>;
@@ -63,6 +64,9 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
   const [permissions, setPermissions] = useState<UserPermissions>(user?.permissions || {});
   const [permissionsChanged, setPermissionsChanged] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
+  const [isSendingTelegramTest, setIsSendingTelegramTest] = useState(false);
+  const [isSendingWhatsAppTest, setIsSendingWhatsAppTest] = useState(false);
+  const [isSendingPushTest, setIsSendingPushTest] = useState(false);
   
   const form = useForm<z.infer<typeof userFormSchema>>({
     resolver: zodResolver(userFormSchema),
@@ -76,6 +80,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
       status: user?.status || 'Active',
       password: '',
       telegramChatId: user?.telegramChatId || '',
+      notificationsEnabled: user?.notificationsEnabled ?? true,
+      whatsappNotificationsEnabled: user?.whatsappNotificationsEnabled ?? true,
       idProofType: user?.idProofType || '',
       idNumber: user?.idNumber || '',
       organizationGroup: (user?.organizationGroup as string) || 'none',
@@ -104,6 +110,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
         status: user.status || 'Active',
         password: '',
         telegramChatId: user.telegramChatId || '',
+        notificationsEnabled: user.notificationsEnabled ?? true,
+        whatsappNotificationsEnabled: user.whatsappNotificationsEnabled ?? true,
         idProofType: user.idProofType || '',
         idNumber: user.idNumber || '',
         organizationGroup: (user.organizationGroup as string) || 'none',
@@ -161,6 +169,79 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
     }
   }, [idProofFile, user?.idProofUrl, watch, setValue]);
   
+  const handleTestTelegram = async (chatId: string) => {
+      if (!chatId) {
+          toast({ title: "Test Failed", description: "Please enter a valid Telegram Chat ID.", variant: "destructive" });
+          return;
+      }
+      try {
+          setIsSendingTelegramTest(true);
+          const res = await sendTelegramAction({ 
+              message: `🔔 Test Notification from BaitulMal Admin Panel.\nYour Telegram alerts are now active for Chat ID: ${chatId}.`, 
+              chatId, 
+              bypassAutoCheck: true 
+          });
+          if (res.success) {
+              toast({ title: "Telegram Test Sent", description: "The message was successfully transmitted.", variant: "success" });
+          } else {
+              toast({ 
+                  title: "Telegram Test Failed", 
+                  description: res.message || "Ensure you have clicked /start on the designated bot first.", 
+                  variant: "destructive" 
+              });
+          }
+      } catch (err: any) {
+          toast({ title: "Error", description: err.message || "Failed to transmit test message.", variant: "destructive" });
+      } finally {
+          setIsSendingTelegramTest(false);
+      }
+  };
+
+  const handleTestWhatsApp = async (phone: string) => {
+      if (!phone) {
+          toast({ title: "Test Failed", description: "Please enter a valid Phone Number.", variant: "destructive" });
+          return;
+      }
+      try {
+          setIsSendingWhatsAppTest(true);
+          const res = await sendWhatsAppAction({ 
+              to: phone, 
+              customMessage: `🔔 Test Notification from BaitulMal Admin Panel.\nYour WhatsApp alerts are now active for Phone: ${phone}.`, 
+              bypassAutoCheck: true 
+          });
+          if (res.success) {
+              toast({ title: "WhatsApp Test Sent", description: "The message was successfully transmitted.", variant: "success" });
+          } else {
+              toast({ title: "WhatsApp Test Failed", description: res.message || "Failed to transmit WhatsApp test.", variant: "destructive" });
+          }
+      } catch (err: any) {
+          toast({ title: "Error", description: err.message || "Failed to transmit WhatsApp test.", variant: "destructive" });
+      } finally {
+          setIsSendingWhatsAppTest(false);
+      }
+  };
+
+  const handleTestPushNotification = async () => {
+      if (!user?.id) {
+          toast({ title: "Test Failed", description: "User ID missing for push notification.", variant: "destructive" });
+          return;
+      }
+      try {
+          setIsSendingPushTest(true);
+          await writeInAppNotificationAction({ 
+              userId: user.id, 
+              title: "🔔 Test Notification", 
+              body: "Your system push notifications are operational.", 
+              module: "system" 
+          });
+          toast({ title: "Push Notification Sent", description: "The test notification was generated successfully.", variant: "success" });
+      } catch (err: any) {
+          toast({ title: "Error", description: err.message || "Failed to trigger push notification.", variant: "destructive" });
+      } finally {
+          setIsSendingPushTest(false);
+      }
+  };
+
   const handleDeleteProof = () => {
     setValue('idProofFile', null);
     setValue('idProofDeleted', true);
@@ -385,13 +466,26 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                         <FormItem>
                                             <FormLabel className="font-bold text-primary">Telegram Chat ID</FormLabel>
                                             <FormControl>
-                                                <Input 
-                                                    placeholder="e.g. 123456789" 
-                                                    {...field} 
-                                                    value={field.value || ''} 
-                                                    disabled={isFormDisabled} 
-                                                    className="font-mono font-normal" 
-                                                />
+                                                <div className="flex gap-2">
+                                                    <Input 
+                                                        placeholder="e.g. 123456789" 
+                                                        {...field} 
+                                                        value={field.value || ''} 
+                                                        disabled={isFormDisabled} 
+                                                        className="font-mono font-normal flex-1" 
+                                                    />
+                                                    <Button 
+                                                        type="button"
+                                                        variant="outline"
+                                                        size="default"
+                                                        disabled={isFormDisabled || !field.value || isSendingTelegramTest}
+                                                        onClick={() => handleTestTelegram(field.value)}
+                                                        className="font-bold text-xs shrink-0 border-blue-200 text-blue-600 hover:bg-blue-50"
+                                                    >
+                                                        {isSendingTelegramTest ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Send className="mr-2 h-4 w-4"/>}
+                                                        Test
+                                                    </Button>
+                                                </div>
                                             </FormControl>
                                             <FormDescription className="font-normal text-xs opacity-70">
                                                 Personal Telegram Chat ID for receiving direct alerts. Message @userinfobot on Telegram to get your ID.
@@ -421,6 +515,80 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                     {idProofFile && idProofFile.length > 0 && !isReadOnly && (
                                         <Button type="button" className="w-full font-bold shadow-md active:scale-95 transition-transform" onClick={handleScanIdProof} disabled={isScanning || isFormDisabled}>{isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />} Scan ID Artifact & Autofill</Button>
                                     )}
+                                </div>
+
+                                <div className="space-y-4 rounded-xl border border-primary/5 p-4 bg-amber-500/[0.02]">
+                                    <div className="flex items-center gap-2">
+                                        <BellRing className="h-4 w-4 text-amber-500" />
+                                        <h3 className="text-sm font-bold text-primary capitalize tracking-widest">Cross-Channel Notifications</h3>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <FormField 
+                                            control={control as any} 
+                                            name="notificationsEnabled" 
+                                            render={({ field }) => (
+                                                <FormItem className="flex items-center justify-between rounded-xl border border-primary/5 p-4 bg-white shadow-sm">
+                                                    <div className="space-y-0.5">
+                                                        <FormLabel className="font-bold text-sm text-primary">Push Alerts</FormLabel>
+                                                        <FormDescription className="text-xs font-normal">Enable in-app/system tray alerts.</FormDescription>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Button 
+                                                            type="button" 
+                                                            variant="outline" 
+                                                            size="sm" 
+                                                            disabled={isFormDisabled || isSendingPushTest}
+                                                            onClick={handleTestPushNotification}
+                                                            className="font-bold text-xs shrink-0 h-8 border-primary/10 text-primary"
+                                                        >
+                                                            {isSendingPushTest ? <Loader2 className="h-3 w-3 animate-spin"/> : <Send className="h-3 w-3 mr-1"/>}
+                                                            Test
+                                                        </Button>
+                                                        <FormControl>
+                                                            <Switch 
+                                                                checked={field.value} 
+                                                                onCheckedChange={field.onChange} 
+                                                                disabled={isFormDisabled} 
+                                                            />
+                                                        </FormControl>
+                                                    </div>
+                                                </FormItem>
+                                            )}
+                                        />
+
+                                        <FormField 
+                                            control={control as any} 
+                                            name="whatsappNotificationsEnabled" 
+                                            render={({ field }) => (
+                                                <FormItem className="flex items-center justify-between rounded-xl border border-primary/5 p-4 bg-white shadow-sm">
+                                                    <div className="space-y-0.5">
+                                                        <FormLabel className="font-bold text-sm text-primary">WhatsApp Alerts</FormLabel>
+                                                        <FormDescription className="text-xs font-normal">Enable automated WhatsApp updates.</FormDescription>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Button 
+                                                            type="button" 
+                                                            variant="outline" 
+                                                            size="sm" 
+                                                            disabled={isFormDisabled || !getValues('phone') || isSendingWhatsAppTest}
+                                                            onClick={() => handleTestWhatsApp(getValues('phone') || '')}
+                                                            className="font-bold text-xs shrink-0 h-8 border-green-100 text-green-600 hover:bg-green-50"
+                                                        >
+                                                            {isSendingWhatsAppTest ? <Loader2 className="h-3 w-3 animate-spin"/> : <Send className="h-3 w-3 mr-1"/>}
+                                                            Test
+                                                        </Button>
+                                                        <FormControl>
+                                                            <Switch 
+                                                                checked={field.value} 
+                                                                onCheckedChange={field.onChange} 
+                                                                disabled={isFormDisabled} 
+                                                            />
+                                                        </FormControl>
+                                                    </div>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    </div>
                                 </div>
 
                                 <Separator className="bg-primary/10" />

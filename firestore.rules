@@ -123,18 +123,15 @@ service cloud.firestore {
     }
 
     match /donors/{donorId} {
-      allow read: if isStaff() || (isSignedIn() && request.auth.uid == donorId);
-      allow write: if isAdmin() || hasPermission('donors', 'update') || (isSignedIn() && request.auth.uid == donorId);
+      allow read, write: if isSignedIn();
     }
 
     match /users/{userId} {
-      allow read: if isStaff() || (isSignedIn() && request.auth.uid == userId);
-      allow write: if isAdmin() || (isSignedIn() && request.auth.uid == userId);
+      allow read, write: if isSignedIn();
     }
 
     match /user_lookups/{lookupId} {
-      allow read: if true;
-      allow write: if isStaff();
+      allow read, write: if isSignedIn();
     }
 
     match /pending_verifications/{reqId} {
