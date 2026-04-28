@@ -53,11 +53,18 @@ service cloud.storage {
 
     // Beneficiary artifacts (Sensitive documents)
     match /beneficiaries/{id}/{allPaths=**} {
-      // Staff can read everything; Public only if specifically flagged
+      // Staff can read everything; Public only if specifically flagged; Beneficiaries read their own
       allow read: if isStaff() || (
         firestore.exists(/databases/(default)/documents/beneficiaries/$(id)) && (
           firestore.get(/databases/(default)/documents/beneficiaries/$(id)).data.isPublic == true || 
-          firestore.get(/databases/(default)/documents/beneficiaries/$(id)).data.idProofIsPublic == true
+          firestore.get(/databases/(default)/documents/beneficiaries/$(id)).data.idProofIsPublic == true ||
+          (isSignedIn() && (
+            id == request.auth.uid ||
+            (
+              firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) &&
+              id == firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.linkedBeneficiaryId
+            )
+          ))
         )
       );
       allow write: if isStaff();
@@ -69,7 +76,14 @@ service cloud.storage {
       allow read: if isStaff() || (
         firestore.exists(/databases/(default)/documents/donations/$(id)) && (
           firestore.get(/databases/(default)/documents/donations/$(id)).data.isPublic == true || 
-          firestore.get(/databases/(default)/documents/donations/$(id)).data.screenshotIsPublic == true
+          firestore.get(/databases/(default)/documents/donations/$(id)).data.screenshotIsPublic == true ||
+          (isSignedIn() && (
+            firestore.get(/databases/(default)/documents/donations/$(id)).data.donorId == request.auth.uid ||
+            (
+              firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) &&
+              firestore.get(/databases/(default)/documents/donations/$(id)).data.donorId == firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.linkedDonorId
+            )
+          ))
         )
       );
       allow write: if true; // Allow guest donation submissions
