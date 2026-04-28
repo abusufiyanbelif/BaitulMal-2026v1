@@ -29,6 +29,9 @@ import { Label } from '@/components/ui/label';
 import { FileUploader } from '@/components/file-uploader';
 import { BrandedLoader } from '@/components/branded-loader';
 import { notifyLeadAction } from '@/app/messages/actions';
+import { getDefaultImage, defaultInstitutionalAssets } from '@/lib/default-images';
+import { cn } from '@/lib/utils';
+import { Check, Sparkles } from 'lucide-react';
 
 const leadSchema = z.object({
   name: z.string().min(3, 'Lead Name Must Be At Least 3 Characters.'),
@@ -116,6 +119,8 @@ export default function CreateLeadPage() {
       allowedDonationTypes: [...donationCategories],
     },
   });
+  
+  const [selectedDefaultImageUrl, setSelectedDefaultImageUrl] = useState<string | null>(null);
 
   const purpose = form.watch('purpose');
   const availableCategories = useMemo(() => {
@@ -125,7 +130,15 @@ export default function CreateLeadPage() {
   
   useEffect(() => {
     form.setValue('category', '');
+    const suggested = getDefaultImage(purpose);
+    setSelectedDefaultImageUrl(suggested);
   }, [purpose, form]);
+
+  const category = form.watch('category');
+  useEffect(() => {
+    const suggested = getDefaultImage(purpose, category);
+    setSelectedDefaultImageUrl(suggested);
+  }, [purpose, category]);
   
   const handleImageFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -249,6 +262,9 @@ export default function CreateLeadPage() {
     if (imageUrl) {
         newLeadData.imageUrl = imageUrl;
         newLeadData.imageUrlFilename = imageUrlFilename;
+    } else if (selectedDefaultImageUrl) {
+        newLeadData.imageUrl = selectedDefaultImageUrl;
+        newLeadData.imageUrlFilename = 'institutional_default.png';
     }
 
     if (documents && documents.length > 0) {
@@ -283,7 +299,7 @@ export default function CreateLeadPage() {
         setLeadDataToCreate(null);
         setIsDuplicateAlertOpen(false);
       });
-  }
+    };
 
   const onSubmit = (data: LeadFormValues) => {
     if (leads && leads.some(c => c.name.trim().toLowerCase() === data.name.trim().toLowerCase())) {
@@ -307,11 +323,13 @@ export default function CreateLeadPage() {
     )
   }
 
-  const renderLabel = (label: string, fieldName: string) => (
-    <FormLabel className="font-bold text-primary">
-        {label} {mandatoryFields[fieldName] ? '*' : ''}
-    </FormLabel>
-  );
+  const renderLabel = (label: string, fieldName: string) => {
+    return (
+      <FormLabel className="font-bold text-primary">
+        {label} {(mandatoryFields as any)[fieldName] ? '*' : ''}
+      </FormLabel>
+    );
+  };
 
   return (
     <main className="container mx-auto p-4 md:p-8">
@@ -338,18 +356,26 @@ export default function CreateLeadPage() {
               <FormField control={form.control} name="description" render={({ field }) => (
                 <FormItem>{renderLabel('Detailed Description', 'description')}<FormControl><Textarea placeholder="Background And Specific Needs..." {...field} rows={4} className="font-normal" /></FormControl><FormMessage /></FormItem>
               )}/>
+              <FormField control={form.control} name="imageFile" render={({ field }) => (
                 <FormItem>
-                    <FormLabel className="font-bold text-[10px] text-muted-foreground tracking-tight">Header Image</FormLabel>
-                    <FormControl>
-                        <Input id="imageFile" type="file" accept="image/png, image/jpeg, image/webp" onChange={handleImageFileChange} className="hidden" />
-                    </FormControl>
-                    <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-primary/20 rounded-lg cursor-pointer bg-card hover:bg-secondary transition-colors">
-                        {imagePreview ? (
+                    <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-48 border-2 border-dashed border-primary/20 rounded-xl cursor-pointer bg-card hover:bg-secondary transition-all overflow-hidden group">
+                        <input type="file" id="imageFile" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={handleImageFileChange} />
+                        {imagePreview || selectedDefaultImageUrl ? (
                             <>
-                                <Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" />
-                                <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 shadow-lg" onClick={handleRemoveImage}>
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
+                                <Image src={imagePreview || selectedDefaultImageUrl!} alt="Preview" fill sizes="100vw" className="object-cover rounded-xl transition-transform duration-700 group-hover:scale-105" />
+                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                                {imagePreview ? (
+                                    <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 shadow-lg z-10" onClick={handleRemoveImage}>
+                                        <Trash2 className="h-4 w-4" />
+                                    </Button>
+                                ) : (
+                                    <div className="absolute top-2 right-2 px-3 py-1 bg-primary text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg z-10 flex items-center gap-1">
+                                        <Sparkles className="h-3 w-3" /> Institutional Suggestion
+                                    </div>
+                                )}
+                                <div className="absolute bottom-2 left-2 right-2 text-center text-white/80 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
+                                    Click To Upload Custom Background
+                                </div>
                             </>
                         ) : (
                              <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -361,8 +387,39 @@ export default function CreateLeadPage() {
                             </div>
                         )}
                     </label>
+                    
+                    {/* Suggested Assets Selector */}
+                    <div className="pt-4 space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary/40">Suggested Institutional Backgrounds</Label>
+                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                            {defaultInstitutionalAssets
+                                .filter(a => a.purpose === purpose)
+                                .map(asset => (
+                                    <button
+                                        key={asset.id}
+                                        type="button"
+                                        onClick={() => {
+                                            handleRemoveImage();
+                                            setSelectedDefaultImageUrl(asset.url);
+                                        }}
+                                        className={cn(
+                                            "relative flex-shrink-0 w-24 h-16 rounded-lg overflow-hidden border-2 transition-all",
+                                            selectedDefaultImageUrl === asset.url ? "border-primary ring-2 ring-primary/20 scale-95" : "border-transparent opacity-60 hover:opacity-100"
+                                        )}
+                                    >
+                                        <Image src={asset.url} alt={asset.label} fill sizes="96px" className="object-cover" />
+                                        {selectedDefaultImageUrl === asset.url && (
+                                            <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                                                <Check className="h-6 w-6 text-white" />
+                                            </div>
+                                        )}
+                                    </button>
+                                ))}
+                        </div>
+                    </div>
                     <FormMessage />
                 </FormItem>
+              )}/>
                  <FormItem>
                     <FormLabel className="font-bold text-primary">Lead Documents & Proof</FormLabel>
                     <FormControl>

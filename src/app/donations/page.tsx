@@ -50,7 +50,13 @@ import {
     Save,
     Calculator,
     Filter,
-    Check
+    Check,
+    Coins,
+    ChevronRight,
+    TrendingUp,
+    ShieldCheck,
+    Activity,
+    Search
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -119,28 +125,28 @@ function MultiSelectFilter({ title, options, selected, onChange }: { title: stri
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="h-9 text-xs border-primary/10 text-primary rounded-[10px] bg-white font-bold transition-all hover:border-primary/30 min-w-[130px] justify-between shadow-sm">
+                <Button variant="outline" size="sm" className="h-10 text-xs border-primary/10 text-primary rounded-xl bg-white font-bold transition-all hover:border-primary/30 min-w-[140px] justify-between shadow-sm group">
                     <div className="flex items-center gap-2 truncate">
-                        <Filter className={cn("h-3 w-3 shrink-0", selected.length > 0 ? "text-primary opacity-100" : "opacity-40")} />
+                        <Filter className={cn("h-3.5 w-3.5 shrink-0 transition-transform group-hover:rotate-12", selected.length > 0 ? "text-primary opacity-100" : "opacity-40")} />
                         <span className="truncate">{selected.length === 0 ? `All ${title}s` : `${selected.length} ${title}${selected.length > 1 ? 's' : ''}`}</span>
                     </div>
-                    <ChevronDown className="h-3 w-3 opacity-50 shrink-0" />
+                    <ChevronDown className="h-3.5 w-3.5 opacity-50 shrink-0" />
                 </Button>
             </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0 rounded-[12px] shadow-dropdown border-primary/10 overflow-hidden" align="start">
+            <PopoverContent className="w-[220px] p-0 rounded-2xl shadow-dropdown border-primary/10 overflow-hidden" align="start">
                 <Command className="w-full">
-                    <CommandInput placeholder={`Search ${title}...`} className="h-9 text-xs font-normal px-3 outline-none w-full border-b" />
-                    <CommandList className="max-h-[300px] overflow-y-auto p-1">
-                        <CommandEmpty className="py-4 text-center text-xs text-muted-foreground font-normal">No results found.</CommandEmpty>
+                    <CommandInput placeholder={`Search ${title}...`} className="h-10 text-xs font-normal px-4 outline-none w-full border-b" />
+                    <CommandList className="max-h-[300px] overflow-y-auto p-1.5">
+                        <CommandEmpty className="py-4 text-center text-xs text-muted-foreground font-bold opacity-60">No results found.</CommandEmpty>
                         <CommandGroup>
-                            <CommandItem onSelect={() => onChange([])} className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-bold text-xs mb-1">
-                                <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors", selected.length === 0 ? "bg-primary text-white" : "bg-transparent")}>
+                            <CommandItem onSelect={() => onChange([])} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 cursor-pointer font-bold text-xs mb-1">
+                                <div className={cn("flex h-4 w-4 items-center justify-center rounded-md border border-primary transition-colors", selected.length === 0 ? "bg-primary text-white" : "bg-transparent")}>
                                     {selected.length === 0 && <Check className="h-3 w-3 stroke-[3]" />}
                                 </div>
                                 <span className="flex-1 truncate">All {title}s</span>
                             </CommandItem>
                             
-                            <div className="h-px bg-primary/5 my-1" />
+                            <div className="h-px bg-primary/5 my-1.5" />
 
                             {options.map((opt) => (
                                 <CommandItem 
@@ -149,9 +155,9 @@ function MultiSelectFilter({ title, options, selected, onChange }: { title: stri
                                         const next = selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt];
                                         onChange(next);
                                     }} 
-                                    className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-medium text-xs"
+                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 cursor-pointer font-bold text-xs"
                                 >
-                                    <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors", selected.includes(opt) ? "bg-primary text-white" : "bg-transparent")}>
+                                    <div className={cn("flex h-4 w-4 items-center justify-center rounded-md border border-primary transition-colors", selected.includes(opt) ? "bg-primary text-white" : "bg-transparent")}>
                                         {selected.includes(opt) && <Check className="h-3 w-3 stroke-[3]" />}
                                     </div>
                                     <span className="flex-1 truncate">{opt}</span>
@@ -160,9 +166,9 @@ function MultiSelectFilter({ title, options, selected, onChange }: { title: stri
                         </CommandGroup>
                     </CommandList>
                     {selected.length > 0 && (
-                        <div className="p-1 border-t bg-primary/[0.02]">
-                            <Button variant="ghost" size="sm" onClick={() => onChange([])} className="w-full h-8 text-[10px] font-bold text-primary hover:bg-primary/10 rounded-md">
-                                Clear All Selections
+                        <div className="p-1.5 border-t bg-primary/[0.02]">
+                            <Button variant="ghost" size="sm" onClick={() => onChange([])} className="w-full h-9 text-[10px] font-bold text-primary hover:bg-primary/10 rounded-xl">
+                                Clear Selections
                             </Button>
                         </div>
                     )}
@@ -172,7 +178,7 @@ function MultiSelectFilter({ title, options, selected, onChange }: { title: stri
     );
 }
 
-const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_100px_80px] items-center gap-4 px-4 py-3 min-w-[1000px]";
+const donationGridClass = "grid grid-cols-[40px_60px_200px_120px_120px_100px_100px_100px_80px] items-center gap-6 px-6 py-4 min-w-[1100px]";
 
 interface StatCardProps {
     title: string;
@@ -190,24 +196,29 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
         <Card 
             onClick={onClick}
             className={cn(
-                "flex flex-col p-3 sm:p-4 bg-white border-primary/10 shadow-sm animate-fade-in-up transition-all duration-300 hover:shadow-md", 
-                onClick && "cursor-pointer hover:-translate-y-1 active:scale-95",
+                "group relative flex flex-col p-5 bg-white border-primary/5 shadow-sm animate-fade-in-up transition-all duration-500 hover:shadow-xl hover:-translate-y-1 overflow-hidden", 
+                onClick && "cursor-pointer active:scale-95",
                 colorClass
             )} 
             style={{ animationDelay: delay, animationFillMode: 'backwards' }}
         >
-            <div className="flex justify-between items-start mb-2">
-                <div className="space-y-0.5">
-                    <p className="text-[9px] sm:text-[10px] font-bold text-muted-foreground capitalize tracking-tight">{title}</p>
-                    <p className="text-xl sm:text-2xl font-black text-primary tracking-tight">
+            <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-500">
+                <Icon className="h-24 w-24" />
+            </div>
+            <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="p-3 rounded-2xl bg-primary/[0.03] text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm">
+                    <Icon className="h-5 w-5" />
+                </div>
+                <div className="text-right">
+                    <p className="text-[10px] font-black text-muted-foreground tracking-[0.2em] uppercase opacity-40 mb-1">{title}</p>
+                    <p className="text-2xl sm:text-3xl font-black text-primary tracking-tighter">
                         {isCurrency ? `₹${count}` : count}
                     </p>
                 </div>
-                <div className="p-1.5 sm:p-2 rounded-lg bg-primary/5 text-primary">
-                    <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-                </div>
             </div>
-            <p className="text-[8px] sm:text-[9px] font-medium text-muted-foreground mt-auto truncate">{description}</p>
+            <div className="relative z-10 mt-auto">
+                <p className="text-[10px] font-bold text-muted-foreground/60 leading-tight truncate">{description}</p>
+            </div>
         </Card>
     );
 }
@@ -215,11 +226,11 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:opacity-80 transition-opacity flex items-center gap-2 font-bold text-[10px] text-[hsl(var(--table-header-fg))] tracking-tight capitalize", className)} onClick={() => handleSort(sortKey)}>
+        <div className={cn("cursor-pointer hover:text-primary transition-colors flex items-center gap-2 font-black text-[10px] text-muted-foreground tracking-[0.1em] uppercase", className)} onClick={() => handleSort(sortKey)}>
             {children}
-            <div className="flex flex-col opacity-40">
-                <ArrowUp className={cn("h-2.5 w-2.5 -mb-1", isSorted && sortConfig?.direction === 'ascending' && "text-primary opacity-100")} />
-                <ArrowDown className={cn("h-2.5 w-2.5", isSorted && sortConfig?.direction === 'descending' && "text-primary opacity-100")} />
+            <div className="flex flex-col opacity-30">
+                <ArrowUp className={cn("h-2.5 w-2.5 -mb-0.5 transition-all", isSorted && sortConfig?.direction === 'ascending' && "text-primary opacity-100 scale-125")} />
+                <ArrowDown className={cn("h-2.5 w-2.5 transition-all", isSorted && sortConfig?.direction === 'descending' && "text-primary opacity-100 scale-125")} />
             </div>
         </div>
     );
@@ -248,60 +259,66 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
     return (
         <div className="flex flex-col">
             {/* Desktop View */}
-            <div onClick={() => setIsOpen(!isOpen)} className={cn("hidden md:grid cursor-pointer bg-white border-b border-primary/10 hover:bg-[hsl(var(--table-row-hover))] group transition-colors", donationGridClass)}>
+            <div onClick={() => setIsOpen(!isOpen)} className={cn("hidden md:grid cursor-pointer border-b border-primary/5 hover:bg-primary/[0.01] group transition-colors bg-white/40", donationGridClass)}>
                 <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                     <Checkbox 
                         checked={isSelected}
                         onCheckedChange={onToggle}
-                        className="border-primary/40 data-[state=checked]:bg-primary"
+                        className="h-5 w-5 rounded-md border-primary/20 data-[state=checked]:bg-primary"
                     />
                 </div>
                 <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" disabled={!donation.transactions || donation.transactions.length === 0}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8 text-primary hover:bg-primary/5 rounded-xl transition-all" disabled={!donation.transactions || donation.transactions.length === 0}>
                         {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                     </Button>
-                    <span className="font-mono text-xs opacity-60">{index}</span>
+                    <span className="font-mono text-[11px] font-bold opacity-30">{index}</span>
                 </div>
-                <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                        <div className="font-bold text-sm text-primary truncate">{donation.donorName}</div>
+                <div className="min-w-0 pr-4">
+                    <div className="flex items-center gap-2 mb-0.5">
+                        <div className="font-bold text-sm text-primary truncate tracking-tight">{donation.donorName}</div>
                         {!donation.donorId && <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
                     </div>
-                    <div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone || 'N/A'}</div>
+                    <div className="text-[10px] text-muted-foreground font-black opacity-50 tracking-tight">{donation.donorPhone || 'N/A'}</div>
                 </div>
-                <div className="text-right font-bold font-mono text-primary text-sm flex items-center justify-end gap-1">
-                    {donation.status === 'Verified' && <Calculator className="h-3 w-3 text-green-600 opacity-60" />}
-                    ₹{donation.amount.toFixed(2)}
+                <div className="text-right pr-4">
+                    <div className="font-black font-mono text-primary text-sm flex items-center justify-end gap-1.5">
+                        {donation.status === 'Verified' && <ShieldCheck className="h-3.5 w-3.5 text-emerald-500/60" />}
+                        ₹{donation.amount.toFixed(2)}
+                    </div>
                 </div>
-                <div className="whitespace-nowrap text-xs font-normal text-primary/80 text-center">{donation.donationDate}</div>
-                <div className="text-center"><Badge variant="secondary" className="text-[9px] font-bold">{donation.donationType}</Badge></div>
-                <div className="flex flex-wrap justify-center gap-1 overflow-hidden">
+                <div className="whitespace-nowrap text-[11px] font-bold text-primary/60 text-center italic">{donation.donationDate}</div>
+                <div className="text-center">
+                    <Badge variant="secondary" className="text-[9px] font-black uppercase px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm bg-primary/5 text-primary">
+                        {donation.donationType}
+                    </Badge>
+                </div>
+                <div className="flex flex-wrap justify-center gap-1.5 overflow-hidden">
                     {(donation.typeSplit && donation.typeSplit.length > 0) ? (
                         donation.typeSplit.map(s => (
-                            <Badge key={s.category} variant="outline" className="text-[8px] px-1 py-0 border-primary/20 text-primary/70">{s.category}</Badge>
+                            <Badge key={s.category} variant="outline" className="text-[8px] font-bold px-2 py-0.5 border-primary/10 text-primary/60 rounded-lg">{s.category}</Badge>
                         ))
                     ) : (
-                        <Badge variant="outline" className="text-[8px] px-1 py-0 border-primary/20 text-primary/70">{donation.type || 'N/A'}</Badge>
+                        <Badge variant="outline" className="text-[8px] font-bold px-2 py-0.5 border-primary/10 text-primary/60 rounded-lg">{donation.type || 'N/A'}</Badge>
                     )}
                 </div>
                 <div className="text-center">
-                    <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="text-[9px] font-bold">
+                    <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="text-[9px] font-black uppercase px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm">
                         {donation.status}
                     </Badge>
                 </div>
-                <div className="text-right pr-4" onClick={e => e.stopPropagation()}>
+                <div className="text-right pr-6" onClick={e => e.stopPropagation()}>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 text-primary active:scale-90 transition-transform"><MoreHorizontal className="h-4 w-4"/></Button>
+                            <Button variant="ghost" size="icon" className="h-9 w-9 text-primary hover:bg-primary/5 rounded-xl transition-all active:scale-90"><MoreHorizontal className="h-5 w-5"/></Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
-                            <DropdownMenuItem onClick={() => router.push(`/donations/${donation.id}`)} className="text-primary font-normal cursor-pointer"><Eye className="mr-2 h-4 w-4 opacity-60"/> View Details</DropdownMenuItem>
-                            {canUpdate && <DropdownMenuItem onClick={handleEdit} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60"/> Edit Record</DropdownMenuItem>}
+                        <DropdownMenuContent align="end" className="rounded-2xl border-primary/10 shadow-dropdown p-1.5 w-56">
+                            <DropdownMenuItem onClick={() => router.push(`/donations/${donation.id}`)} className="text-primary font-bold text-xs p-3 rounded-xl cursor-pointer"><Eye className="mr-3 h-4 w-4 opacity-40"/> Full Audit View</DropdownMenuItem>
+                            {canUpdate && <DropdownMenuItem onClick={handleEdit} className="text-primary font-bold text-xs p-3 rounded-xl"><Edit className="mr-3 h-4 w-4 opacity-40"/> Modify Record</DropdownMenuItem>}
                             {canDelete && (
                                 <>
-                                    <DropdownMenuSeparator className="bg-primary/5" />
-                                    <DropdownMenuItem onClick={handleDeleteClick} className="text-destructive focus:bg-destructive/20 focus:text-destructive font-normal">
-                                        <Trash2 className="mr-2 h-4 w-4"/> Delete Permanently
+                                    <DropdownMenuSeparator className="my-1.5 opacity-10" />
+                                    <DropdownMenuItem onClick={handleDeleteClick} className="text-destructive font-black text-xs p-3 rounded-xl hover:bg-destructive/10">
+                                        <Trash2 className="mr-3 h-4 w-4 opacity-80"/> Hard Delete
                                     </DropdownMenuItem>
                                 </>
                             )}
@@ -310,65 +327,65 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                 </div>
             </div>
 
-            {/* Mobile View */}
-            <div className="md:hidden p-4 border-b border-primary/10 bg-white space-y-3 tap-highlight" onClick={() => setIsOpen(!isOpen)}>
+            {/* Mobile Registry Card */}
+            <div className="md:hidden p-5 border-b border-primary/5 bg-white/60 space-y-4 group/mobile" onClick={() => setIsOpen(!isOpen)}>
                 <div className="flex justify-between items-start">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-start gap-4">
                         <Checkbox 
                             checked={isSelected}
                             onCheckedChange={onToggle}
-                            className="mt-1 border-primary/40"
+                            className="h-6 w-6 rounded-lg border-primary/20 data-[state=checked]:bg-primary mt-1"
                             onClick={(e) => e.stopPropagation()}
                         />
-                        <div>
-                            <div className="font-bold text-sm text-primary flex items-center gap-2">
+                        <div className="space-y-1">
+                            <div className="font-black text-lg text-primary tracking-tighter leading-tight flex items-center gap-2">
                                 {donation.donorName}
-                                {!donation.donorId && <AlertCircle className="h-3 w-3 text-amber-500" />}
+                                {!donation.donorId && <AlertCircle className="h-4 w-4 text-amber-500 animate-pulse" />}
                             </div>
-                            <div className="text-[10px] text-muted-foreground font-mono">{donation.donorPhone}</div>
+                            <div className="text-[11px] text-muted-foreground font-black opacity-50 tracking-tight">{donation.donorPhone}</div>
                         </div>
                     </div>
                     <div className="text-right">
-                        <div className="font-black text-primary text-sm">₹{donation.amount.toFixed(2)}</div>
-                        <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="text-[8px] font-bold mt-1">
+                        <div className="font-black text-primary text-lg tracking-tighter">₹{donation.amount.toFixed(2)}</div>
+                        <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="text-[9px] font-black uppercase px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm mt-1">
                             {donation.status}
                         </Badge>
                     </div>
                 </div>
                 <div className="flex items-center justify-between">
-                    <div className="flex gap-1">
-                        <Badge variant="secondary" className="text-[8px] font-bold">{donation.donationType}</Badge>
-                        <span className="text-[10px] text-muted-foreground">{donation.donationDate}</span>
+                    <div className="flex items-center gap-2">
+                        <Badge variant="secondary" className="text-[9px] font-black uppercase px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm bg-primary/5 text-primary">{donation.donationType}</Badge>
+                        <span className="text-[10px] font-bold text-muted-foreground italic">{donation.donationDate}</span>
                     </div>
                     <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => router.push(`/donations/${donation.id}`)}><Eye className="h-4 w-4" /></Button>
-                        {canUpdate && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={handleEdit}><Edit className="h-4 w-4" /></Button>}
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => setIsOpen(!isOpen)}>
-                            {isOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                        <Button variant="ghost" size="icon" className="h-10 w-10 text-primary border border-primary/5 bg-primary/5 rounded-2xl" onClick={() => router.push(`/donations/${donation.id}`)}><Eye className="h-5 w-5" /></Button>
+                        <Button variant="ghost" size="icon" className="h-10 w-10 text-primary border border-primary/5 bg-primary/5 rounded-2xl" onClick={() => setIsOpen(!isOpen)}>
+                            <ChevronDown className={cn("h-5 w-5 transition-transform duration-500", isOpen && "rotate-180")} />
                         </Button>
                     </div>
                 </div>
             </div>
+            
             {isOpen && (
-                <div className="bg-primary/[0.02] border-b border-primary/10 p-4 animate-fade-in-up">
-                    <div className="space-y-6 max-w-5xl mx-auto">
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <div className="space-y-3">
-                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight capitalize"><IndianRupee className="h-3 w-3"/> Category Breakdown</h4>
-                                <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
+                <div className="bg-primary/[0.02] border-b border-primary/5 p-6 animate-fade-in-up">
+                    <div className="space-y-8 max-w-6xl mx-auto">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                            <div className="space-y-4">
+                                <h4 className="text-[10px] font-black flex items-center gap-2 text-primary tracking-[0.2em] uppercase opacity-50"><IndianRupee className="h-3.5 w-3.5"/> Classification Matrix</h4>
+                                <div className="border border-primary/10 rounded-[24px] bg-white shadow-xl overflow-hidden">
                                     <ScrollArea className="w-full">
                                         <Table>
-                                            <TableHeader className="bg-primary/5">
-                                                <TableRow>
-                                                    <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight capitalize">Category</TableHead>
-                                                    <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight capitalize">Value</TableHead>
+                                            <TableHeader className="bg-primary/[0.02]">
+                                                <TableRow className="hover:bg-transparent border-primary/5">
+                                                    <TableHead className="h-10 py-0 text-[9px] font-black text-muted-foreground tracking-[0.1em] uppercase px-6">Category</TableHead>
+                                                    <TableHead className="text-right h-10 py-0 text-[9px] font-black text-muted-foreground tracking-[0.1em] uppercase px-6">Allocated Value</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
                                                 {(donation.typeSplit || []).map(split => (
-                                                    <TableRow key={split.category} className="h-8 hover:bg-[hsl(var(--table-row-hover))]">
-                                                        <TableCell className="py-1 text-[11px] font-normal text-primary/80 whitespace-nowrap">{split.category}</TableCell>
-                                                        <TableCell className="text-right font-bold font-mono text-primary py-1 text-[11px]">₹{split.amount.toFixed(2)}</TableCell>
+                                                    <TableRow key={split.category} className="hover:bg-primary/[0.01] border-primary/5">
+                                                        <TableCell className="py-4 px-6 text-sm font-bold text-primary tracking-tight">{split.category}</TableCell>
+                                                        <TableCell className="text-right font-black font-mono text-primary py-4 px-6 text-sm">₹{split.amount.toFixed(2)}</TableCell>
                                                     </TableRow>
                                                 ))}
                                             </TableBody>
@@ -377,30 +394,32 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                     </ScrollArea>
                                 </div>
                             </div>
-                            <div className="space-y-3">
-                                <h4 className="text-[10px] font-bold flex items-center gap-2 text-primary tracking-tight capitalize"><FolderKanban className="h-3 w-3"/> Initiative Allocation</h4>
-                                <div className="border border-primary/10 rounded-xl bg-white shadow-sm overflow-hidden">
+                            <div className="space-y-4">
+                                <h4 className="text-[10px] font-black flex items-center gap-2 text-primary tracking-[0.2em] uppercase opacity-50"><FolderKanban className="h-3.5 w-3.5"/> Registry Linking</h4>
+                                <div className="border border-primary/10 rounded-[24px] bg-white shadow-xl overflow-hidden">
                                     <ScrollArea className="w-full">
                                         <div className="min-w-[300px]">
                                             <Table>
-                                                <TableHeader className="bg-primary/5">
-                                                    <TableRow>
-                                                        <TableHead className="h-8 py-0 text-[9px] font-bold text-primary tracking-tight capitalize">Target Initiative</TableHead>
-                                                        <TableHead className="text-right h-8 py-0 text-[9px] font-bold text-primary tracking-tight capitalize">Allocated Sum</TableHead>
+                                                <TableHeader className="bg-primary/[0.02]">
+                                                    <TableRow className="hover:bg-transparent border-primary/5">
+                                                        <TableHead className="h-10 py-0 text-[9px] font-black text-muted-foreground tracking-[0.1em] uppercase px-6">Target Initiative</TableHead>
+                                                        <TableHead className="text-right h-10 py-0 text-[9px] font-black text-muted-foreground tracking-[0.1em] uppercase px-6">Assigned Sum</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
                                                     {(donation.linkSplit || []).map(link => (
-                                                        <TableRow key={link.linkId} className="h-8 hover:bg-[hsl(var(--table-row-hover))]">
-                                                            <TableCell className="flex items-center gap-2 py-1">
-                                                                {link.linkType === 'campaign' ? <FolderKanban className="h-3.5 w-3.5 text-primary/40" /> : <Lightbulb className="h-3.5 w-3.5 text-primary/40" />}
-                                                                <span className="text-[10px] font-bold text-primary/80 whitespace-nowrap">{link.linkName}</span>
+                                                        <TableRow key={link.linkId} className="hover:bg-primary/[0.01] border-primary/5">
+                                                            <TableCell className="flex items-center gap-3 py-4 px-6">
+                                                                <div className="p-2 rounded-lg bg-primary/[0.03] text-primary">
+                                                                    {link.linkType === 'campaign' ? <FolderKanban className="h-3.5 w-3.5" /> : <Lightbulb className="h-3.5 w-3.5" />}
+                                                                </div>
+                                                                <span className="text-sm font-bold text-primary tracking-tight truncate max-w-[150px]">{link.linkName}</span>
                                                             </TableCell>
-                                                            <TableCell className="text-right font-bold font-mono text-primary py-1 text-[11px]">₹{link.amount.toFixed(2)}</TableCell>
+                                                            <TableCell className="text-right font-black font-mono text-primary py-4 px-6 text-sm">₹{link.amount.toFixed(2)}</TableCell>
                                                         </TableRow>
                                                     ))}
                                                     {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
-                                                        <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated General Fund</TableCell></TableRow>
+                                                        <TableRow className="hover:bg-transparent"><TableCell colSpan={2} className="text-center text-muted-foreground py-10 italic text-sm font-bold opacity-40 uppercase tracking-widest">Unallocated General Pool</TableCell></TableRow>
                                                     )}
                                                 </TableBody>
                                             </Table>
@@ -553,8 +572,8 @@ function DonationListContent() {
     setIsSubmitting(true);
     try {
         const result = await upsertDonationWithDonorAction(editingDonation?.id || null, data as any, { id: userProfile.id, name: userProfile.name });
-        if (result.success) toast({ title: "Success", description: result.message, variant: 'success' });
-        else toast({ title: "Error", description: result.message, variant: 'destructive' });
+        if (result.success) toast({ title: "Record Finalized", description: result.message, variant: 'success' });
+        else toast({ title: "Registry Error", description: result.message, variant: 'destructive' });
     } finally {
         setIsSubmitting(false);
         setEditingDonation(null);
@@ -568,10 +587,10 @@ function DonationListContent() {
     try {
         const res = await bulkUpdateDonationStatusAction(selectedIds, newStatus);
         if (res.success) {
-            toast({ title: "Bulk Update Successful", description: res.message, variant: "success" });
+            toast({ title: "Batch Authentication Complete", description: res.message, variant: "success" });
             setSelectedIds([]);
         } else {
-            toast({ title: "Update Failed", description: res?.message || "Failed To Update Status.", variant: "destructive" });
+            toast({ title: "Batch Update Failed", description: res?.message || "Failed to modify records.", variant: "destructive" });
         }
     } finally {
         setIsBulkUpdating(false);
@@ -585,7 +604,7 @@ function DonationListContent() {
     setIsDeleteDialogOpen(false);
     try {
         const result = await deleteDonationAction(donationToDelete);
-        toast({ title: result.success ? "Success" : "Error", description: result.message, variant: result.success ? "success" : "destructive" });
+        toast({ title: result.success ? "Record Erased" : "Deletion Failed", description: result.message, variant: result.success ? "success" : "destructive" });
     } finally {
         setIsSubmitting(false);
         setDonationToDelete(null);
@@ -597,8 +616,8 @@ function DonationListContent() {
     setIsSubmitting(true);
     try {
         const res = await bulkImportDonationsAction(records, { id: userProfile.id, name: userProfile.name });
-        if (res && res.success) toast({ title: 'Import Complete', description: res.message, variant: 'success' });
-        else toast({ title: 'Import Failed', description: res?.message || "Import Operation Failed.", variant: 'destructive' });
+        if (res && res.success) toast({ title: 'Import Successful', description: res.message, variant: 'success' });
+        else toast({ title: 'Import Denied', description: res?.message || "Check data integrity.", variant: 'destructive' });
     } finally {
         setIsSubmitting(false);
     }
@@ -611,10 +630,10 @@ function DonationListContent() {
       try {
           const res = await bulkMapDonorsAction(selectedIds, { id: userProfile.id, name: userProfile.name });
           if (res.success) {
-              toast({ title: "Auto-Mapping Complete", description: res.message, variant: "success" });
+              toast({ title: "Identity Mapping Success", description: res.message, variant: "success" });
               setSelectedIds([]);
           } else {
-              toast({ title: "Auto-Mapping Failed", description: res.message, variant: "destructive" });
+              toast({ title: "Mapping Failed", description: res.message, variant: "destructive" });
           }
       } finally { setIsBulkUpdating(false); setIsSubmitting(false); }
   };
@@ -637,119 +656,165 @@ function DonationListContent() {
   const [zoom, setZoom] = useState(1);
   const [rotation, setRotation] = useState(0);
 
-  if (areDonationsLoading || isProfileLoading) return <SectionLoader label="Loading Donation Records..." description="Retrieving Organization Database." />;
+  if (areDonationsLoading || isProfileLoading) return <SectionLoader label="Syncing Financial Hub..." description="Retrieving Cloud Donation Logs." />;
 
   return (
-    <main className="container mx-auto p-4 md:p-8 font-normal text-primary relative">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-            <div className="flex flex-col gap-2">
-                <Button variant="outline" asChild className="w-fit font-bold border-primary/20 text-primary transition-transform active:scale-95"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Dashboard</Link></Button>
-                <h1 className="text-3xl font-bold tracking-tight text-primary">Donation Registry</h1>
-            </div>
-            <div className="flex flex-wrap gap-2 w-full sm:w-auto">
-                <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><UploadCloud className="mr-2 h-4 w-4" /> Import Data</Button>
-                <Button onClick={() => setIsFormOpen(true)} className="bg-primary hover:bg-primary/90 text-white font-bold text-xs active:scale-95 transition-transform shadow-md rounded-[12px]"><PlusCircle className="mr-2 h-4 w-4" /> Add Record</Button>
-            </div>
-        </div>
+    <main className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-8 text-primary font-normal relative min-h-screen">
+        <div className="absolute -top-20 -left-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10 animate-pulse" />
+        <div className="absolute top-40 -right-20 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl -z-10 animate-pulse" />
 
-        <div className="border-b mb-6 border-primary/10 pb-1">
-            <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex w-max gap-2 pb-1">
-                    <Link href="/donations" className={cn(
-                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
-                        pathname === '/donations' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                    )}>Donation List</Link>
-                    <Link href="/donations/summary" className={cn(
-                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
-                        pathname === '/donations/summary' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                    )}>Donation Summary</Link>
-                    <Link href="/verifications?module=donations" className={cn(
-                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
-                        pathname === '/verifications' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                    )}>Pending Verifications</Link>
-                    <Link href="/donors" className={cn(
-                        "inline-flex items-center justify-center whitespace-nowrap rounded-md px-4 py-2 text-sm font-bold transition-all duration-300",
-                        pathname === '/donors' ? "bg-primary text-white shadow-md" : "text-muted-foreground hover:bg-primary/10 hover:text-primary"
-                    )}>Donor Registry</Link>
-                </div>
-                <ScrollBar orientation="horizontal" className="h-1" />
-            </ScrollArea>
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-4">
-            <StatCard title="Total" count={stats.total} description="All Records Logged" icon={Users} delay="100ms" onClick={() => { setSearchTerm(''); setStatusFilter([]); setIdentityFilter([]); setMethodFilter([]); setCategoryFilter([]); }} />
-            <StatCard title="Verified Sum" count={stats.totalAmount.toLocaleString('en-IN')} description="Confirmed Funds" icon={IndianRupee} delay="150ms" isCurrency onClick={() => setStatusFilter(['Verified'])} />
-            <StatCard title="Pending Sum" count={stats.pendingAmount.toLocaleString('en-IN')} description="Awaiting Vetting" icon={Hourglass} delay="200ms" isCurrency onClick={() => setStatusFilter(['Pending'])} />
-            <StatCard title="Unlinked" count={stats.unlinked} description="Needs Profile Mapping" icon={AlertCircle} delay="250ms" colorClass={stats.unlinked > 0 ? "bg-amber-50 border-amber-200" : ""} onClick={() => setIdentityFilter(['Unlinked'])} />
-        </div>
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-6">
-            <StatCard title="Verified" count={stats.verified} description="Finalized Records" icon={CheckCircle2} delay="300ms" onClick={() => setStatusFilter(['Verified'])} />
-            <StatCard title="Pending" count={stats.pending} description="Awaiting Review" icon={Hourglass} delay="350ms" onClick={() => setStatusFilter(['Pending'])} />
-            <StatCard title="Online Pay" count={stats.online} description="Digital Transfers" icon={Smartphone} delay="400ms" onClick={() => setMethodFilter(['Online Payment'])} />
-            <StatCard title="Cash" count={stats.cash} description="Physical Collections" icon={Wallet} delay="450ms" onClick={() => setMethodFilter(['Cash'])} />
-        </div>
-
-        <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm">
-            <CardHeader className="bg-primary/5 border-b">
-                <ScrollArea className="w-full">
-                    <div className="flex flex-nowrap gap-2 pb-2">
-                        <Input placeholder="Search Donor, Phone, ID..." value={searchTerm} onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="w-[200px] sm:w-[250px] h-9 text-xs border-primary/10 rounded-[10px] shrink-0"/>
-                        
-                        <MultiSelectFilter 
-                            title="Status" 
-                            options={['Verified', 'Pending', 'Canceled']} 
-                            selected={statusFilter} 
-                            onChange={setStatusFilter} 
-                        />
-
-                        <MultiSelectFilter 
-                            title="Category" 
-                            options={donationCategories} 
-                            selected={categoryFilter} 
-                            onChange={setCategoryFilter} 
-                        />
-
-                        <MultiSelectFilter 
-                            title="Method" 
-                            options={['Online Payment', 'Cash', 'Check', 'Other']} 
-                            selected={methodFilter} 
-                            onChange={setMethodFilter} 
-                        />
-
-                        <MultiSelectFilter 
-                            title="Identity" 
-                            options={['Linked', 'Unlinked']} 
-                            selected={identityFilter} 
-                            onChange={setIdentityFilter} 
-                        />
-                        {selectedIds.length > 0 && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild><Button className="h-9 text-xs font-bold bg-primary text-white">Bulk Actions ({selectedIds.length}) <ChevronDown className="ml-2 h-4 w-4" /></Button></DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-56 rounded-[12px] shadow-dropdown border-primary/10">
-                                    <DropdownMenuItem onClick={handleBulkMapDonors} className="font-bold text-primary"><RefreshCw className="mr-2 h-4 w-4 opacity-60" /> Auto-Map Identities</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-bold text-primary">Mark Verified</DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-bold">Mark Pending</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        )}
+        <div className="flex flex-col gap-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
+                <div className="space-y-1.5">
+                    <div className="flex items-center gap-3 mb-2">
+                        <Button variant="secondary" asChild size="sm" className="font-bold border-primary/20 text-primary transition-transform active:scale-95 rounded-xl px-5 h-9">
+                            <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link>
+                        </Button>
                     </div>
-                    <ScrollBar orientation="horizontal" />
+                    <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-primary">Donation Registry</h1>
+                    <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">Financial oversight of all inbound support, categorical allocation, and identity mapping.</p>
+                </div>
+                
+                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                    <div className="flex bg-white/50 backdrop-blur-md p-1 rounded-2xl border border-primary/5 shadow-sm">
+                        <Button variant="ghost" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold text-primary rounded-xl h-10 px-4 hover:bg-primary/5">
+                            <UploadCloud className="mr-2 h-4 w-4 opacity-40" /> Import
+                        </Button>
+                    </div>
+                    <Button onClick={() => setIsFormOpen(true)} className="bg-primary hover:bg-primary/90 text-white font-black h-11 rounded-2xl px-6 shadow-xl shadow-primary/20 active:scale-95 transition-all">
+                        <PlusCircle className="mr-2 h-4 w-4" /> Log Donation
+                    </Button>
+                </div>
+            </div>
+
+            <div className="bg-white/30 backdrop-blur-md p-1.5 rounded-[24px] border border-primary/5 shadow-sm inline-flex w-fit overflow-hidden">
+                <div className="flex flex-nowrap">
+                    {[
+                        { label: 'Registry List', path: '/donations', icon: Activity },
+                        { label: 'Financial Summary', path: '/donations/summary', icon: TrendingUp },
+                        { label: 'Pending Audit', path: '/verifications?module=donations', icon: ShieldCheck },
+                        { label: 'Donor Hub', path: '/donors', icon: Users },
+                    ].map((tab) => (
+                        <Link 
+                            key={tab.path}
+                            href={tab.path} 
+                            className={cn(
+                                "inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-500",
+                                pathname === tab.path ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-primary/60 hover:bg-primary/5 hover:text-primary"
+                            )}
+                        >
+                            <tab.icon className="h-3.5 w-3.5" />
+                            {tab.label}
+                        </Link>
+                    ))}
+                </div>
+            </div>
+        </div>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 animate-fade-in-up">
+            <StatCard title="Total Volume" count={stats.total} description="Authorized and Pending Logs" icon={Activity} delay="100ms" onClick={() => { setSearchTerm(''); setStatusFilter([]); setIdentityFilter([]); setMethodFilter([]); setCategoryFilter([]); }} />
+            <StatCard title="Verified Liquidity" count={stats.totalAmount.toLocaleString('en-IN')} description="Finalized Fund Reserves" icon={IndianRupee} delay="150ms" isCurrency onClick={() => setStatusFilter(['Verified'])} />
+            <StatCard title="Audit Pipeline" count={stats.pendingAmount.toLocaleString('en-IN')} description="Funds Awaiting Clearance" icon={Hourglass} delay="200ms" isCurrency onClick={() => setStatusFilter(['Pending'])} />
+            <StatCard title="Identity Gap" count={stats.unlinked} description="Awaiting Profile Mapping" icon={AlertCircle} delay="250ms" colorClass={stats.unlinked > 0 ? "bg-amber-500/[0.03] border-amber-500/10" : ""} onClick={() => setIdentityFilter(['Unlinked'])} />
+        </div>
+
+        <Card className="rounded-[32px] border border-primary/5 bg-white/30 backdrop-blur-md overflow-hidden shadow-none animate-fade-in-zoom" style={{ animationDelay: '400ms' }}>
+            <CardHeader className="p-4 sm:p-6 border-b bg-white/80 backdrop-blur-md sticky top-[73px] z-20">
+                <ScrollArea className="w-full">
+                    <div className="flex flex-nowrap gap-4 pb-3">
+                        <div className="relative w-[300px] shrink-0">
+                            <Input 
+                                placeholder="Search Donor, Phone, ID..." 
+                                value={searchTerm} 
+                                onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
+                                className="pl-11 h-11 text-sm border-primary/10 focus-visible:ring-primary font-bold text-primary rounded-2xl bg-white shadow-sm"
+                            />
+                            <div className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary opacity-30">
+                                <Search className="h-4 w-4" />
+                            </div>
+                        </div>
+                        
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button id="date" variant={"outline"} className={cn("w-[240px] shrink-0 justify-start h-11 text-sm border-primary/10 text-primary font-bold rounded-2xl bg-white shadow-sm transition-all hover:border-primary/30", !dateRange && "opacity-60")}>
+                                    <CalendarIcon className="mr-3 h-4 w-4 opacity-40" />
+                                    {dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd, y")) : "Log Range"}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 rounded-3xl shadow-2xl border-none overflow-hidden" align="start">
+                                <Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); setCurrentPage(1); }} numberOfMonths={2} />
+                            </PopoverContent>
+                        </Popover>
+
+                        <MultiSelectFilter title="Status" options={['Verified', 'Pending', 'Canceled']} selected={statusFilter} onChange={setStatusFilter} />
+                        <MultiSelectFilter title="Category" options={donationCategories} selected={categoryFilter} onChange={setCategoryFilter} />
+                        <MultiSelectFilter title="Method" options={['Online Payment', 'Cash', 'Check', 'Other']} selected={methodFilter} onChange={setMethodFilter} />
+                        <MultiSelectFilter title="Identity" options={['Linked', 'Unlinked']} selected={identityFilter} onChange={setIdentityFilter} />
+                    </div>
+                    <ScrollBar orientation="horizontal" className="h-1.5" />
                 </ScrollArea>
+
+                {selectedIds.length > 0 && (
+                    <div className="mt-4 animate-fade-in-up w-full">
+                        <div className="flex items-center justify-between gap-4 px-6 py-3 bg-primary/10 border border-primary/20 backdrop-blur-xl rounded-[20px] shadow-xl">
+                            <div className="flex items-center gap-4 pr-6 border-r border-primary/10">
+                                <div className="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center font-black text-xs shadow-lg">
+                                    {selectedIds.length}
+                                </div>
+                                <span className="text-xs font-black tracking-tight uppercase text-primary">Batch Financial Operations</span>
+                            </div>
+                            
+                            <div className="flex items-center gap-3">
+                                <Button 
+                                    variant="secondary" 
+                                    size="sm" 
+                                    onClick={handleBulkMapDonors} 
+                                    className="bg-white/80 hover:bg-white text-primary font-black h-10 text-[10px] px-5 rounded-xl uppercase tracking-widest shadow-sm"
+                                    disabled={isBulkUpdating}
+                                >
+                                    <RefreshCw className={cn("mr-2 h-3.5 w-3.5", isBulkUpdating && "animate-spin")} /> Auto-Map Profiles
+                                </Button>
+                                
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="secondary" size="sm" className="bg-white/80 hover:bg-white text-primary font-black h-10 text-[10px] px-5 rounded-xl uppercase tracking-widest shadow-sm" disabled={isBulkUpdating}>
+                                            Authentication <ChevronDown className="ml-2 h-3.5 w-3.5" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="start" className="w-56 rounded-2xl shadow-dropdown border-primary/10 p-1.5">
+                                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Verified')} className="font-bold text-xs p-3 rounded-xl">Verify Selection</DropdownMenuItem>
+                                        <DropdownMenuItem onClick={() => handleBulkStatusChange('Pending')} className="font-bold text-xs p-3 rounded-xl">Revert to Pending</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+
+                            <div className="ml-auto">
+                                <Button variant="ghost" size="icon" className="h-9 w-9 text-primary/40 hover:text-primary hover:bg-white/50 rounded-xl transition-all" onClick={() => setSelectedIds([])}>
+                                    <X className="h-5 w-5" />
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </CardHeader>
             <CardContent className="p-0">
                 <ScrollArea className="w-full">
-                    <div className={cn("hidden md:grid bg-[hsl(var(--table-header-bg))] border-b border-primary/10 text-[11px] font-bold text-[hsl(var(--table-header-fg))] tracking-tight", donationGridClass)}>
-                        <div className="flex justify-center"><Checkbox checked={paginatedDonations.length > 0 && selectedIds.length === paginatedDonations.length} onCheckedChange={toggleSelectAll} className="border-primary/40" /></div>
+                    <div className={cn("hidden md:grid bg-primary/[0.02] border-b border-primary/5 text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase", donationGridClass)}>
+                        <div className="flex justify-center">
+                            <Checkbox 
+                                checked={paginatedDonations.length > 0 && selectedIds.length === paginatedDonations.length} 
+                                onCheckedChange={toggleSelectAll} 
+                                className="h-5 w-5 rounded-md border-primary/20 data-[state=checked]:bg-primary" 
+                            />
+                        </div>
                         <SortableHeader sortKey="srNo" sortConfig={sortConfig} handleSort={handleSort}>#</SortableHeader>
-                        <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor Name</SortableHeader>
-                        <SortableHeader sortKey="amount" sortConfig={sortConfig} handleSort={handleSort} className="text-right"><Calculator className="mr-1 h-3 w-3 opacity-40"/> Amount (₹)</SortableHeader>
-                        <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Entry Date</SortableHeader>
-                        <div className="text-center font-bold text-[10px]">Method</div>
-                        <div className="text-center font-bold text-[10px]">Category</div>
-                        <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Status</SortableHeader>
-                        <div className="font-bold text-[10px]">Target</div>
-                        <div className="text-right pr-4 font-bold text-[10px]">Actions</div>
+                        <SortableHeader sortKey="donorName" sortConfig={sortConfig} handleSort={handleSort}>Donor Identity</SortableHeader>
+                        <SortableHeader sortKey="amount" sortConfig={sortConfig} handleSort={handleSort} className="text-right">Net Sum (₹)</SortableHeader>
+                        <SortableHeader sortKey="donationDate" sortConfig={sortConfig} handleSort={handleSort} className="text-center">Log Date</SortableHeader>
+                        <div className="text-center font-black tracking-[0.1em] text-[10px]">Method</div>
+                        <div className="text-center font-black tracking-[0.1em] text-[10px]">Classification</div>
+                        <SortableHeader sortKey="status" sortConfig={sortConfig} handleSort={handleSort} className="text-center">State</SortableHeader>
+                        <div className="text-right pr-6 font-black tracking-[0.1em] text-[10px]">Audit</div>
                     </div>
                     <div className="w-full">
                         {paginatedDonations.map((d, i) => (
@@ -764,73 +829,106 @@ function DonationListContent() {
                                 handleViewImage={(url) => { setImageToView(url); setZoom(1); setRotation(0); setIsImageViewerOpen(true); }}
                             />
                         ))}
-                        <div className={cn("bg-primary/5 border-t border-primary/20 font-bold py-3", donationGridClass)}>
+                        <div className={cn("bg-primary/[0.03] border-t border-primary/5 py-6 px-10", donationGridClass)}>
                             <div />
                             <div />
-                            <div className="text-right">Page Total:</div>
-                            <div className="text-right font-mono text-primary text-sm pr-1">₹{paginatedDonations.reduce((sum, d) => sum + d.amount, 0).toLocaleString('en-IN')}</div>
-                            <div className="col-span-4" />
-                            <div className="text-right pr-4 text-[10px] text-muted-foreground">Filtered Total: ₹{filteredTotalAmount.toLocaleString('en-IN')}</div>
+                            <div className="text-right font-black text-muted-foreground tracking-widest text-[10px] uppercase">Page Liquidity</div>
+                            <div className="text-right font-black font-mono text-primary text-lg tracking-tighter">₹{paginatedDonations.reduce((sum, d) => sum + d.amount, 0).toLocaleString('en-IN')}</div>
+                            <div className="col-span-3" />
+                            <div className="text-right pr-6 flex flex-col items-end">
+                                <span className="text-[9px] font-black text-muted-foreground uppercase opacity-40">Registry Total</span>
+                                <span className="text-sm font-black text-primary tracking-tighter">₹{filteredTotalAmount.toLocaleString('en-IN')}</span>
+                            </div>
                         </div>
                     </div>
                 </ScrollArea>
             </CardContent>
             {totalPages > 1 && (
-                <CardFooter className="flex justify-between items-center py-4 border-t bg-primary/5 px-4">
-                    <p className="text-[10px] font-bold text-muted-foreground">Page {currentPage} Of {totalPages}</p>
-                    <div className="flex gap-2">
-                        <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="font-bold h-8 border-primary/10 transition-transform active:scale-95">Previous</Button>
-                        <Button variant="secondary" size="sm" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="font-bold h-8 transition-transform active:scale-95">Next</Button>
+                <CardFooter className="flex justify-between items-center p-8 border-t bg-primary/[0.01]">
+                    <div className="bg-white/50 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-primary/5 shadow-sm">
+                        <p className="text-xs font-black text-primary tracking-tight">Registry Page <span className="text-primary">{currentPage}</span> <span className="opacity-30">/ {totalPages}</span></p>
+                    </div>
+                    <div className="flex gap-3">
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+                            disabled={currentPage === 1} 
+                            className="font-black text-[10px] uppercase tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm"
+                        >
+                            Prev
+                        </Button>
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
+                            disabled={currentPage === totalPages} 
+                            className="font-black text-[10px] uppercase tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm"
+                        >
+                            Next
+                        </Button>
                     </div>
                 </CardFooter>
             )}
         </Card>
 
         <Dialog open={isFormOpen} onOpenChange={(open) => { setIsFormOpen(open); if(!open) setEditingDonation(null); }}>
-            <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
-                <DialogHeader className="px-6 py-4 bg-primary/5 border-b shrink-0"><DialogTitle className="text-xl font-bold text-primary">Manage Donation</DialogTitle></DialogHeader>
-                <div className="flex-1 overflow-hidden relative"><DonationForm donation={editingDonation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} leads={allLeads || []} campaigns={allCampaigns || []} defaultLinkId={'unlinked'} /></div>
+            <DialogContent className="max-w-4xl h-[92vh] flex flex-col p-0 overflow-hidden rounded-[32px] border-primary/10 shadow-2xl gap-0">
+                <DialogHeader className="px-8 py-6 bg-primary/5 border-b shrink-0 flex flex-row items-center justify-between">
+                    <div>
+                        <DialogTitle className="text-2xl font-black text-primary tracking-tighter">Manage Donation Log</DialogTitle>
+                        <p className="text-xs font-bold opacity-60 text-primary">Authenticate financial records and initiative allocations.</p>
+                    </div>
+                </DialogHeader>
+                <div className="flex-1 overflow-hidden relative">
+                    <DonationForm donation={editingDonation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} leads={allLeads || []} campaigns={allCampaigns || []} defaultLinkId={'unlinked'} />
+                </div>
             </DialogContent>
         </Dialog>
         
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-            <AlertDialogContent className="rounded-[16px] border-border shadow-dropdown">
-                <AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Confirm Deletion?</AlertDialogTitle><AlertDialogDescription className="font-normal text-primary/70">Permanently Erase This Donation Record?</AlertDialogDescription></AlertDialogHeader>
-                <AlertDialogFooter><AlertDialogCancel className="font-bold">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold rounded-[12px] shadow-md">Delete</AlertDialogAction></AlertDialogFooter>
+            <AlertDialogContent className="rounded-[32px] border-primary/10 shadow-2xl p-8">
+                <AlertDialogHeader>
+                    <AlertDialogTitle className="font-black text-destructive text-2xl tracking-tighter">Confirm Erasure?</AlertDialogTitle>
+                    <AlertDialogDescription className="font-bold opacity-70 text-primary mt-2">
+                        You are about to permanently delete this financial record from the institutional cloud registry. This action is irreversible.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter className="mt-6 gap-3">
+                    <AlertDialogCancel className="font-bold rounded-xl h-11 px-6 border-primary/10">Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-black rounded-xl h-11 px-8 shadow-xl shadow-destructive/20 active:scale-95 transition-all">
+                        Erase Record
+                    </AlertDialogAction>
+                </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
-        
-        <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-            <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 rounded-[12px] border-primary/10 overflow-hidden shadow-2xl animate-fade-in-zoom">
-                <DialogHeader className="px-6 py-4 bg-primary/5 border-b">
-                    <DialogTitle className="text-xl font-bold text-primary tracking-tight capitalize tracking-widest">Evidence Viewer</DialogTitle>
-                </DialogHeader>
-                <ScrollArea className="flex-1 bg-secondary/20">
-                    <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
-                        {imageToView && (
-                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Evidence Document" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
-                        )}
-                    </div>
-                    <ScrollBar orientation="horizontal" />
-                    <ScrollBar orientation="vertical" />
-                </ScrollArea>
-                <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white flex">
-                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
-                    <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5)) } className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
-                    <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
-                    <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
 
-        <DonationImportDialog open={isImportOpen} onOpenChange={setIsImportOpen} onImport={handleImport} />
+        {isImageViewerOpen && (
+            <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
+                <DialogContent className="max-w-4xl h-[90vh] p-0 bg-black/95 border-none rounded-none overflow-hidden flex flex-col">
+                    <div className="flex justify-between items-center p-4 bg-white/5 border-b border-white/10 shrink-0">
+                        <div className="flex gap-2">
+                            <Button variant="ghost" size="icon" onClick={() => setZoom(z => Math.min(3, z + 0.2))} className="text-white hover:bg-white/10"><ZoomIn className="h-5 w-5"/></Button>
+                            <Button variant="ghost" size="icon" onClick={() => setZoom(z => Math.max(0.5, z - 0.2))} className="text-white hover:bg-white/10"><ZoomOut className="h-5 w-5"/></Button>
+                            <Button variant="ghost" size="icon" onClick={() => setRotation(r => r + 90)} className="text-white hover:bg-white/10"><RotateCw className="h-5 w-5"/></Button>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => setIsImageViewerOpen(false)} className="text-white hover:bg-white/10"><X className="h-5 w-5"/></Button>
+                    </div>
+                    <div className="flex-1 relative overflow-hidden flex items-center justify-center p-8">
+                        <div className="relative transition-all duration-300 ease-out flex items-center justify-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}>
+                            <img src={imageToView!} alt="Attachment" className="max-w-full max-h-[70vh] shadow-2xl object-contain"/>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        )}
     </main>
   );
 }
 
-export default function DonationsPage() {
+export default function DonationPage() {
     return (
-        <Suspense fallback={<BrandedLoader message="Syncing Global Registry..." />}>
+        <Suspense fallback={<BrandedLoader message="Initializing Financial Hub..." />}>
             <DonationListContent />
         </Suspense>
     );

@@ -59,7 +59,8 @@ import {
     History,
     Clock,
     Calendar,
-    HeartHandshake
+    HeartHandshake,
+    Check
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
@@ -72,7 +73,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
 import { Label } from '@/components/ui/label';
-import { cn, getNestedValue } from '@/lib/utils';
+import { cn, getNestedValue, getImageSrc } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters, priorityLevels } from '@/lib/modules';
@@ -116,6 +117,7 @@ import { recordAuditLogAction } from '@/app/audit/actions';
 import { generateChanges } from '@/lib/utils';
 import { notifyLeadAction } from '@/app/messages/actions';
 import { AuditHistory } from '@/components/audit-history';
+import { getDefaultImage, defaultInstitutionalAssets } from '@/lib/default-images';
 import type { PendingVerification } from '@/lib/types';
 
 const donationCategoryChartConfig = {
@@ -156,6 +158,7 @@ export default function LeadSummaryPage() {
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isImageDeleted, setIsImageDeleted] = useState(false);
     const [isClient, setIsClient] = useState(false);
+    const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isRecalculating, setIsRecalculating] = useState(false);
     
@@ -171,9 +174,9 @@ export default function LeadSummaryPage() {
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0);
 
-    const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
     const [pendingSaveData, setPendingSaveData] = useState<any>(null);
     const [existingPendingRequest, setExistingPendingRequest] = useState<PendingVerification | null>(null);
+    const [selectedDefaultImageUrl, setSelectedDefaultImageUrl] = useState<string | null>(null);
 
     const summaryRef = useRef<HTMLDivElement>(null);
 
@@ -185,10 +188,22 @@ export default function LeadSummaryPage() {
     const leadDocRef = useMemoFirebase(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
     const allDonationsCollectionRef = useMemoFirebase(() => (firestore) ? collection(firestore, 'donations') : null, [firestore]);
+    const allCampaignsRef = useMemoFirebase(() => firestore ? collection(firestore, 'campaigns') : null, [firestore]);
+    const allLeadsRef = useMemoFirebase(() => firestore ? collection(firestore, 'leads') : null, [firestore]);
 
     const { data: lead, isLoading: isLeadLoading, forceRefetch: forceRefetchLead } = useDoc<Lead>(leadDocRef);
     const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
     const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
+    const { data: globalCampaigns } = useCollection<Campaign>(allCampaignsRef);
+    const { data: globalLeads } = useCollection<Lead>(allLeadsRef);
+
+    const galleryImages = useMemo(() => {
+        const urls = new Set<string>();
+        defaultInstitutionalAssets.forEach(a => urls.add(a.url));
+        if (globalCampaigns) globalCampaigns.forEach(c => { if (c.imageUrl && !c.imageUrl.startsWith('data:')) urls.add(c.imageUrl); });
+        if (globalLeads) globalLeads.forEach(l => { if (l.imageUrl && !l.imageUrl.startsWith('data:')) urls.add(l.imageUrl); });
+        return Array.from(urls);
+    }, [globalCampaigns, globalLeads]);
     
     const visibilityRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_visibility') : null, [firestore]);
     const { data: visibilitySettings } = useDoc<any>(visibilityRef);
@@ -379,8 +394,17 @@ export default function LeadSummaryPage() {
             setIsImageDeleted(false);
             setImageFile(null);
             setNewDocuments([]);
+            setSelectedDefaultImageUrl(null);
         }
     }, [lead, editMode]);
+
+    const purpose = editableLead.purpose;
+    useEffect(() => {
+        if (editMode && purpose) {
+            const suggested = getDefaultImage(purpose);
+            setSelectedDefaultImageUrl(suggested);
+        }
+    }, [purpose, editMode]);
 
     const handleFieldChange = (field: keyof Lead, value: any) => {
         setEditableLead(p => (p ? { ...p, [field]: value } : null));
@@ -397,7 +421,12 @@ export default function LeadSummaryPage() {
         }
     };
     
-    const handleRemoveImage = () => { setImageFile(null); setImagePreview(null); setIsImageDeleted(true); };
+    const handleRemoveImage = () => { 
+        setImageFile(null); 
+        setImagePreview(null); 
+        setSelectedDefaultImageUrl(null);
+        setIsImageDeleted(true); 
+    };
 
     const handleRemoveExistingDocument = (urlToRemove: string) => {
         setExistingDocuments(prev => prev.filter(doc => doc.url !== urlToRemove));
@@ -431,9 +460,7 @@ export default function LeadSummaryPage() {
         }
         setIsSubmitting(true);
         let imageUrl = editableLead.imageUrl || '';
-        if (isImageDeleted && imageUrl) {
-            imageUrl = '';
-        } else if (imageFile) {
+        if (imageFile) {
             try {
                 const resizedBlob = await new Promise<Blob>((resolve) => {
                     (Resizer as any).imageFileResizer(imageFile, 1024, 1024, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
@@ -447,6 +474,10 @@ export default function LeadSummaryPage() {
                 setIsSubmitting(false);
                 return;
             }
+        } else if (selectedDefaultImageUrl) {
+            imageUrl = selectedDefaultImageUrl;
+        } else if (isImageDeleted) {
+            imageUrl = '';
         }
         const documentUploadPromises = newDocuments.map(async (file) => {
             const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
@@ -641,12 +672,59 @@ export default function LeadSummaryPage() {
                             {editMode ? (
                                 <div className="space-y-6 font-normal animate-fade-in-zoom">
                                     <div className="space-y-2">
-                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Header Image</Label>
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize opacity-60">Upload Image</Label>
                                         <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
-                                        <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-all duration-300 group border-primary/20">
-                                            {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 transition-all duration-300 hover:scale-110 active:scale-90 shadow-lg" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6 transition-transform group-hover:scale-105"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground group-hover:text-primary" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click To Upload</span></p></div> )}
+                                        <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-all duration-300 group border-primary/20 overflow-hidden">
+                                            {imagePreview || selectedDefaultImageUrl ? ( 
+                                                <>
+                                                    <Image src={getImageSrc(imagePreview || selectedDefaultImageUrl!)} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg transition-transform duration-700 group-hover:scale-105" />
+                                                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                                                    
+                                                    <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 transition-all duration-300 hover:scale-110 active:scale-90 shadow-lg z-20" onClick={(e) => { e.preventDefault(); handleRemoveImage(); }}>
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+
+                                                    <div className="absolute bottom-2 left-2 right-2 text-center text-white/80 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none drop-shadow-md">
+                                                        Click To Upload Custom Background
+                                                    </div>
+                                                </> 
+                                            ) : ( 
+                                                <div className="flex flex-col items-center justify-center pt-5 pb-6 transition-transform group-hover:scale-105">
+                                                    <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground group-hover:text-primary" />
+                                                    <p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click To Upload</span></p>
+                                                </div> 
+                                            )}
                                         </label>
+                                        
+                                        {/* Global Asset Gallery */}
+                                        <div className="pt-2 space-y-2">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-primary/40">Global Image Gallery</Label>
+                                            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                                {galleryImages.map((url, idx) => (
+                                                    <button
+                                                        key={idx}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            handleRemoveImage();
+                                                            setSelectedDefaultImageUrl(url);
+                                                        }}
+                                                        className={cn(
+                                                            "relative flex-shrink-0 w-24 h-16 rounded-lg overflow-hidden border-2 transition-all",
+                                                            selectedDefaultImageUrl === url ? "border-primary ring-2 ring-primary/20 scale-95" : "border-transparent opacity-60 hover:opacity-100"
+                                                        )}
+                                                    >
+                                                        <Image src={getImageSrc(url)} alt={`Gallery Image ${idx}`} fill sizes="96px" className="object-cover" />
+                                                        {selectedDefaultImageUrl === url && (
+                                                            <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                                                                <Check className="h-6 w-6 text-white" />
+                                                            </div>
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
                                     </div>
+
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                         <div className="space-y-1">
                                             <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Purpose Type</Label>
@@ -796,8 +874,8 @@ export default function LeadSummaryPage() {
                                 </div>
                             ) : (
                                 <>
-                                    <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer transition-all duration-500 hover:shadow-lg group" onClick={() => { if (lead?.imageUrl) handleViewImage(lead.imageUrl, lead.name); }}>
-                                        {lead?.imageUrl ? ( <Image src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`} alt={lead.name} fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover transition-transform duration-700 group-hover:scale-110" /> ) : ( <FallbackIcon className="h-20 w-20 text-primary/10 transition-transform duration-500 group-hover:scale-110" /> )}
+                                    <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer transition-all duration-500 hover:shadow-lg group" onClick={() => { if (lead?.imageUrl || getDefaultImage(lead?.purpose)) handleViewImage(getImageSrc(lead?.imageUrl || getDefaultImage(lead?.purpose)), lead?.name || 'Lead Image'); }}>
+                                        <Image src={getImageSrc(lead?.imageUrl || getDefaultImage(lead?.purpose))} alt={lead?.name || 'Lead Image'} fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover transition-transform duration-700 group-hover:scale-110" />
                                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                     </div>
                                     <div className="space-y-2 font-normal text-foreground">

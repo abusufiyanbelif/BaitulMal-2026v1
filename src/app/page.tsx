@@ -1,4 +1,3 @@
-
 'use client';
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
@@ -15,7 +14,23 @@ import { RecentVerificationTicker } from '@/components/recent-verification-ticke
 import { usePublicData } from '@/hooks/use-public-data';
 import { useBranding } from '@/hooks/use-branding';
 import { cn } from '@/lib/utils';
-import { FolderKanban, Lightbulb, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle, HandHelping, HeartHandshake } from 'lucide-react';
+import { 
+    FolderKanban, 
+    Lightbulb, 
+    CheckCircle2, 
+    AlertTriangle, 
+    ArrowUpCircle, 
+    MinusCircle, 
+    ArrowDownCircle, 
+    HandHelping, 
+    HeartHandshake,
+    Sparkles,
+    ShieldCheck,
+    TrendingUp,
+    ChevronRight,
+    Search,
+    Activity
+} from 'lucide-react';
 
 const getPriorityIcon = (priority?: string) => {
   switch (priority) {
@@ -34,9 +49,6 @@ const priorityWeight: Record<string, number> = {
   'Low': 1
 };
 
-/**
- * Public Landing Hub - High-fidelity Title Case typography.
- */
 export default function Home() {
     const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted, isLoading, isTickerActiveVisible, isTickerCompletedVisible, skipIds, maxCompleted } = usePublicData();
     const { brandingSettings } = useBranding();
@@ -112,68 +124,141 @@ export default function Home() {
     const showTickers = isNewsTickerVisible && !isLoading && (activeTickerItems.length > 0 || recentDonationsFormatted.length > 0 || completedTickerItems.length > 0);
 
     return (
-        <div className="container mx-auto p-4 md:p-8 space-y-10 text-primary transition-colors duration-500 pb-20">
+        <main className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-12 text-primary font-normal relative min-h-screen pb-32 overflow-hidden">
+            {/* Premium Background Elements */}
+            <div className="absolute -top-20 -left-20 w-[600px] h-[600px] bg-primary/[0.03] rounded-full blur-[120px] -z-10 animate-pulse" />
+            <div className="absolute top-[40%] -right-40 w-[500px] h-[500px] bg-emerald-500/[0.03] rounded-full blur-[100px] -z-10 animate-pulse" style={{ animationDelay: '2s' }} />
+            <div className="absolute bottom-0 left-0 w-full h-[800px] bg-gradient-to-t from-primary/[0.01] to-transparent -z-10" />
+
             {isHeroVisible && (
-                <section className="text-center py-12 md:py-20 animate-fade-in-zoom">
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-primary max-w-5xl mx-auto drop-shadow-sm leading-tight">
+                <section className="relative text-center py-16 sm:py-24 lg:py-32 space-y-10">
+                    <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary/5 text-primary rounded-full border border-primary/10 mb-2 shadow-sm animate-fade-in-up">
+                        <Sparkles className="h-4 w-4 animate-pulse" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">{brandingSettings?.name || 'Baitulmal'} Official Portal</span>
+                    </div>
+
+                    <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-primary max-w-[1200px] mx-auto leading-[0.95] drop-shadow-sm px-4 animate-fade-in-up animate-hero-text-glow">
                         {heroTitle}
                     </h1>
-                    <p className="mt-6 max-w-3xl mx-auto text-lg text-muted-foreground font-normal leading-relaxed">
+
+                    <p className="mt-8 max-w-2xl mx-auto text-lg sm:text-xl text-muted-foreground font-bold leading-relaxed px-4 opacity-70 animate-stagger-reveal" style={{ animationDelay: '400ms' }}>
                         {heroDescription}
                     </p>
-                    <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center flex-wrap">
+
+                    <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-8">
                         {brandingSettings?.isLandingDonateNowVisible !== false && (
-                            <Button asChild size="lg" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-xl active:scale-95 font-bold shadow-xl px-10 h-14 rounded-2xl bg-primary text-primary-foreground group">
+                            <Button asChild size="lg" className="h-16 px-12 rounded-[24px] bg-primary text-white font-black text-lg shadow-2xl shadow-primary/30 transition-all hover:scale-105 active:scale-95 group">
                                 <Link href="/donate">
-                                    <HeartHandshake className="mr-2 h-6 w-6 text-red-400 group-hover:scale-110 transition-transform" />
+                                    <HeartHandshake className="mr-3 h-6 w-6 text-emerald-400 transition-transform group-hover:scale-125" />
                                     Donate Now
                                 </Link>
                             </Button>
                         )}
-                        <Button asChild size="lg" variant="outline" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md px-8 h-12 rounded-xl border-primary/20 text-primary">
-                            <Link href="/campaign-public">
-                                <FolderKanban className="mr-2 h-5 w-5" />
-                                Our Campaigns
-                            </Link>
-                        </Button>
-                        <Button asChild size="lg" variant="secondary" className="transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg active:scale-95 font-bold shadow-md px-8 h-12 rounded-xl border border-primary/10">
-                            <Link href="/leads-public">
-                                <Lightbulb className="mr-2 h-5 w-5" />
-                                Public Appeals
-                            </Link>
-                        </Button>
+                        <div className="flex gap-4">
+                            <Button asChild variant="outline" size="lg" className="h-14 px-8 rounded-2xl border-primary/10 bg-white/50 backdrop-blur-md font-black text-xs uppercase tracking-widest transition-all hover:bg-white hover:shadow-xl active:scale-95">
+                                <Link href="/campaign-public">
+                                    <FolderKanban className="mr-2 h-4 w-4 opacity-40" />
+                                    Campaigns
+                                </Link>
+                            </Button>
+                            <Button asChild variant="outline" size="lg" className="h-14 px-8 rounded-2xl border-primary/10 bg-white/50 backdrop-blur-md font-black text-xs uppercase tracking-widest transition-all hover:bg-white hover:shadow-xl active:scale-95">
+                                <Link href="/leads-public">
+                                    <Lightbulb className="mr-2 h-4 w-4 opacity-40" />
+                                    Appeals
+                                </Link>
+                            </Button>
+                        </div>
+                    </div>
+                    
+                    <div className="pt-16 animate-bounce">
+                        <div className="w-px h-16 bg-gradient-to-b from-primary/20 to-transparent mx-auto" />
                     </div>
                 </section>
             )}
 
             {showTickers && (
-                <div className="space-y-2 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
-                    {activeTickerItems.length > 0 && <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />}
-                    {recentDonationsFormatted.length > 0 && <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />}
-                    {completedTickerItems.length > 0 && <NewsTicker items={completedTickerItems} label="Recently Completed" variant="completed" />}
+                <div className="space-y-4 animate-fade-in-up relative z-10" style={{ animationDelay: '200ms' }}>
+                    <div className="max-w-6xl mx-auto space-y-3">
+                        {activeTickerItems.length > 0 && <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />}
+                        {recentDonationsFormatted.length > 0 && <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />}
+                        {completedTickerItems.length > 0 && <NewsTicker items={completedTickerItems} label="Impact Archive" variant="completed" />}
+                    </div>
                 </div>
             )}
 
-            {isWisdomVisible && (
-                <div className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
-                    <WisdomAndReflection />
-                </div>
-            )}
-
-            <div className="space-y-10 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
-                {isOverallSummaryVisible && <OverallFundingSummary />}
-                
-                <div className="grid gap-10 lg:grid-cols-2">
-                    {isDonationSummaryVisible && <DonationSummary />}
-                    {isPurposeSummaryVisible && <PurposeFundingSummary />}
-                </div>
-                
-                {isInitiativeSummaryVisible && <LeadAndCampaignSummary />}
-                
-                {isRecentVerificationVisible && recentDonationsFormatted.length > 0 && (
-                    <RecentVerificationTicker items={recentDonationsFormatted} />
+            <div className="max-w-7xl mx-auto space-y-16 relative z-10">
+                {isWisdomVisible && (
+                    <div className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
+                        <WisdomAndReflection />
+                    </div>
                 )}
+
+                <div className="space-y-16 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
+                    {isOverallSummaryVisible && (
+                        <div className="rounded-[48px] bg-white/30 backdrop-blur-2xl border border-primary/5 p-4 sm:p-8 shadow-none transition-all hover:shadow-2xl">
+                            <OverallFundingSummary />
+                        </div>
+                    )}
+                    
+                    <div className="grid gap-12 lg:grid-cols-2">
+                        {isDonationSummaryVisible && (
+                            <div className="rounded-[40px] bg-white/30 backdrop-blur-2xl border border-primary/5 p-4 sm:p-8 shadow-none transition-all hover:shadow-2xl">
+                                <DonationSummary />
+                            </div>
+                        )}
+                        {isPurposeSummaryVisible && (
+                            <div className="rounded-[40px] bg-white/30 backdrop-blur-2xl border border-primary/5 p-4 sm:p-8 shadow-none transition-all hover:shadow-2xl">
+                                <PurposeFundingSummary />
+                            </div>
+                        )}
+                    </div>
+                    
+                    {isInitiativeSummaryVisible && (
+                        <div className="rounded-[48px] bg-white/30 backdrop-blur-2xl border border-primary/5 p-4 sm:p-12 shadow-none transition-all hover:shadow-2xl">
+                            <div className="flex items-center gap-4 mb-10 border-b border-primary/5 pb-8">
+                                <div className="h-14 w-14 rounded-2xl bg-primary/5 text-primary flex items-center justify-center">
+                                    <TrendingUp className="h-8 w-8" />
+                                </div>
+                                <div>
+                                    <h2 className="text-3xl font-black tracking-tighter">Initiative Summaries</h2>
+                                    <p className="text-sm font-bold opacity-40 uppercase tracking-widest">Live Vetting & Progress Analytics</p>
+                                </div>
+                            </div>
+                            <LeadAndCampaignSummary />
+                        </div>
+                    )}
+                    
+                    {isRecentVerificationVisible && recentDonationsFormatted.length > 0 && (
+                        <div className="rounded-[48px] bg-primary/[0.02] border border-primary/5 p-8 sm:p-12 relative overflow-hidden group transition-all hover:bg-primary/[0.04]">
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="flex items-center gap-4">
+                                    <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center animate-pulse">
+                                        <ShieldCheck className="h-6 w-6" />
+                                    </div>
+                                    <h3 className="text-2xl font-black tracking-tighter">Verified Contribution Stream</h3>
+                                </div>
+                                <div className="hidden sm:flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary/40">
+                                    <Activity className="h-4 w-4" /> Real-time Ledger
+                                </div>
+                            </div>
+                            <RecentVerificationTicker items={recentDonationsFormatted} />
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
+            
+            {/* Global Portal Quick Access */}
+            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-fade-in-up" style={{ animationDelay: '1s' }}>
+                <div className="flex items-center gap-2 bg-white/60 backdrop-blur-2xl p-2 rounded-full border border-primary/10 shadow-2xl">
+                    <Button asChild variant="ghost" className="h-12 px-6 rounded-full font-black text-[10px] uppercase tracking-widest text-primary hover:bg-primary/5">
+                        <Link href="/login">Team Access</Link>
+                    </Button>
+                    <div className="w-px h-6 bg-primary/10" />
+                    <Button asChild className="h-12 px-8 rounded-full bg-primary text-white font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all">
+                        <Link href="/portal-login">Donor Portal <ChevronRight className="ml-2 h-4 w-4" /></Link>
+                    </Button>
+                </div>
+            </div>
+        </main>
     );
 }

@@ -9,37 +9,22 @@ service cloud.storage {
     }
 
     function isAdmin() {
-      let masterAdmins = [
-        'S5efNV5jpTPoxYNv6SnAlv3jNPO2', 
-        'cyMl1lQME0Yur1YS3VCms1AvrOJ2', 
-        '3gKwUE2JrBT8wngoUxTTN6tLJk03'
-      ];
-      let masterEmails = [
-        'abusufiyan.belif@gmail.com',
-        'baitulmalss.solapur@gmail.com',
-        'maazshaikh.official@gmail.com',
-        'admin@example.com'
-      ];
-      
-      // PRIORITY 1: Constant Check
-      if (isSignedIn() && (request.auth.uid in masterAdmins || (request.auth.token.email != null && request.auth.token.email in masterEmails))) {
-        return true;
-      }
-
-      // PRIORITY 2: Database Check
       return isSignedIn() && (
-        firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
-        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin'
+        request.auth.uid in ['S5efNV5jpTPoxYNv6SnAlv3jNPO2', 'cyMl1lQME0Yur1YS3VCms1AvrOJ2', '3gKwUE2JrBT8wngoUxTTN6tLJk03'] || 
+        (request.auth.token.email != null && request.auth.token.email in ['abusufiyan.belif@gmail.com', 'baitulmalss.solapur@gmail.com', 'maazshaikh.official@gmail.com', 'admin@example.com']) ||
+        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
+         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'Admin')
       );
     }
 
     function isStaff() {
-      if (!isSignedIn()) { return false; }
-      if (isAdmin()) { return true; }
-
-      return firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
-             firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'User';
+      return isSignedIn() && (
+        isAdmin() || 
+        (firestore.exists(/databases/(default)/documents/users/$(request.auth.uid)) && 
+         firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'User')
+      );
     }
+
 
     // --- RULES ---
 

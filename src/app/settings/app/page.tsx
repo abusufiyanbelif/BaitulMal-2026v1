@@ -49,7 +49,22 @@ import {
     HelpCircle, 
     ListChecks, 
     Calendar,
-    Filter
+    Filter,
+    Settings2,
+    Layout,
+    Globe2,
+    ShieldAlert,
+    Palette,
+    Briefcase,
+    Lightbulb,
+    Lock,
+    Key,
+    UserCheck,
+    SmartphoneNfc,
+    Sparkles,
+    ChevronRight,
+    Activity,
+    CloudCog
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -65,6 +80,7 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 import { donationCategories } from '@/lib/modules';
+import { SectionLoader } from '@/components/section-loader';
 
 interface FormDataType {
     name: string;
@@ -117,40 +133,6 @@ interface FormDataType {
     isPortalPasswordEnabled: boolean;
 }
 
-function VerifiableItem({ icon: Icon, label, value, isEditing, id, onChange, placeholder }: { 
-    icon: any, 
-    label: string, 
-    value: string, 
-    isEditing: boolean, 
-    id: string, 
-    onChange: (val: string) => void,
-    placeholder?: string
-}) {
-    return (
-        <div className="flex items-start gap-4 py-2 group">
-            <div className="mt-1 shrink-0 p-2 rounded-lg bg-primary/10 text-primary">
-                <Icon className="h-5 w-5" />
-            </div>
-            <div className="flex-1 min-w-0 space-y-1">
-                <p className="text-xs font-bold text-primary tracking-tight">{label}</p>
-                {isEditing ? (
-                    <Input 
-                        id={id}
-                        value={value} 
-                        onChange={(e) => onChange(e.target.value)} 
-                        placeholder={placeholder}
-                        className="font-normal h-9"
-                    />
-                ) : (
-                    <p className="text-sm font-normal text-muted-foreground leading-relaxed">
-                        {value || <span className="italic opacity-50">Not Configured</span>}
-                    </p>
-                )}
-            </div>
-        </div>
-    );
-}
-
 interface VisibilityToggleProps {
     id: string;
     label: string;
@@ -163,20 +145,24 @@ interface VisibilityToggleProps {
 
 function VisibilityToggle({ id, label, description, icon: Icon, checked, onChange, disabled }: VisibilityToggleProps) {
     return (
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-muted/5 gap-4 transition-all hover:border-primary/20">
-            <div className="space-y-1 flex-1">
-                <h3 className="font-bold text-primary text-sm tracking-tight flex items-center gap-2">
-                    <Icon className="h-4 w-4" /> {label}
-                </h3>
-                <p className="text-xs text-muted-foreground font-normal">{description}</p>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-[24px] border border-primary/5 p-5 bg-white/40 backdrop-blur-md gap-4 transition-all hover:border-primary/20 hover:shadow-xl hover:-translate-y-0.5 group">
+            <div className="flex items-center gap-4 flex-1">
+                <div className={cn("p-2.5 rounded-xl transition-all duration-500", checked ? "bg-primary text-white shadow-lg shadow-primary/20" : "bg-primary/5 text-primary/40")}>
+                    <Icon className="h-5 w-5" />
+                </div>
+                <div className="space-y-0.5">
+                    <h3 className="font-black text-primary text-sm tracking-tight">{label}</h3>
+                    <p className="text-[10px] text-muted-foreground font-bold opacity-60 leading-tight">{description}</p>
+                </div>
             </div>
-            <div className="flex items-center space-x-2">
-                <Label htmlFor={id} className="font-bold text-xs opacity-60 tracking-tight">Visible</Label>
+            <div className="flex items-center space-x-3 bg-white/50 px-3 py-1.5 rounded-full border border-primary/5">
+                <Label htmlFor={id} className="font-black text-[9px] opacity-40 tracking-widest uppercase">Visible</Label>
                 <Switch 
                     id={id} 
                     checked={checked} 
                     onCheckedChange={onChange} 
                     disabled={disabled} 
+                    className="data-[state=checked]:bg-primary"
                 />
             </div>
         </div>
@@ -195,28 +181,33 @@ function SettingsSection({ title, description, icon: Icon, children, defaultOpen
     const [isOpen, setIsOpen] = useState(defaultOpen);
 
     return (
-        <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full">
-            <Card className="border-primary/10 shadow-sm overflow-hidden bg-white">
+        <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full animate-fade-in-up">
+            <Card className="rounded-[40px] border border-primary/5 shadow-none overflow-hidden bg-white/30 backdrop-blur-md transition-all hover:shadow-2xl">
                 <CollapsibleTrigger asChild>
-                    <CardHeader className="bg-primary/5 cursor-pointer hover:bg-primary/[0.08] transition-colors border-b">
-                        <div className="flex items-center justify-between gap-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-primary/10 text-primary">
-                                    <Icon className="h-5 w-5" />
+                    <CardHeader className="p-8 cursor-pointer hover:bg-primary/[0.02] transition-colors group">
+                        <div className="flex items-center justify-between gap-6">
+                            <div className="flex items-center gap-5">
+                                <div className="p-4 rounded-[20px] bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-inner">
+                                    <Icon className="h-6 w-6" />
                                 </div>
-                                <div className="space-y-0.5">
-                                    <CardTitle className="text-lg font-bold text-primary tracking-tight">{title}</CardTitle>
-                                    <CardDescription className="text-xs font-normal text-primary/60">{description}</CardDescription>
+                                <div className="space-y-1">
+                                    <CardTitle className="text-xl font-black text-primary tracking-tighter">{title}</CardTitle>
+                                    <CardDescription className="text-sm font-bold text-primary/40 leading-none">{description}</CardDescription>
                                 </div>
                             </div>
-                            <ChevronDown className={cn("h-5 w-5 text-primary transition-transform duration-300", isOpen && "rotate-180")} />
+                            <div className="h-10 w-10 rounded-full bg-primary/5 flex items-center justify-center text-primary transition-transform duration-500 group-hover:bg-primary group-hover:text-white">
+                                <ChevronDown className={cn("h-6 w-6 transition-transform duration-500", isOpen && "rotate-180")} />
+                            </div>
                         </div>
                     </CardHeader>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
-                    <CardContent className="pt-6">
-                        {children}
-                    </CardContent>
+                    <div className="px-8 pb-8 animate-fade-in-up">
+                        <Separator className="bg-primary/5 mb-8" />
+                        <div className="space-y-8">
+                            {children}
+                        </div>
+                    </div>
                 </CollapsibleContent>
             </Card>
         </Collapsible>
@@ -384,7 +375,7 @@ export default function AppSettingsPage() {
 
     const handleSave = async () => {
         if (!firestore || !storage || !canUpdateSettings || !editableData) {
-            toast({ title: "Configuration Error", description: "Missing Data Or Permissions To Secure Settings.", variant: "destructive" });
+            toast({ title: "Auth Restriction", description: "Insufficient Privilege to secure institutional settings.", variant: "destructive" });
             return;
         }
 
@@ -474,10 +465,10 @@ export default function AppSettingsPage() {
             batch.set(doc(firestore, 'settings', 'guidingPrinciples'), gpData);
 
             await batch.commit();
-            toast({ title: 'Success', description: 'Institutional Configuration Updated Successfully.', variant: 'success' });
+            toast({ title: 'Configuration Finalized', description: 'Cloud Institutional Configuration Synchronized Successfully.', variant: 'success' });
             setIsEditMode(false);
         } catch (error: any) {
-            toast({ title: 'Save failed', description: error.message || 'An unexpected error occurred while securing settings.', variant: 'destructive' });
+            toast({ title: 'Sync Failure', description: error.message || 'Critical error during institutional sync.', variant: 'destructive' });
         } finally {
             setIsSubmitting(false);
         }
@@ -488,7 +479,7 @@ export default function AppSettingsPage() {
     const isGlobalLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
 
     if (isGlobalLoading) {
-        return <BrandedLoader message="Syncing Institutional Settings..." />;
+        return <SectionLoader label="Syncing Cloud Hub..." description="Retrieving Institutional Parameters." />;
     }
 
     const isFormDisabled = !isEditMode || isSubmitting;
@@ -540,548 +531,251 @@ export default function AppSettingsPage() {
         isDonorLoginEnabled: brandingSettings?.isDonorLoginEnabled ?? true,
         isBeneficiaryLoginEnabled: brandingSettings?.isBeneficiaryLoginEnabled ?? true,
         isDonorSelfRecordPaymentEnabled: brandingSettings?.isDonorSelfRecordPaymentEnabled ?? false,
+        portalAuthMethod: brandingSettings?.portalAuthMethod || 'OTP',
+        isPortalPasswordEnabled: brandingSettings?.isPortalPasswordEnabled ?? true,
     };
 
     return (
-        <div className="space-y-6 text-primary font-normal pb-20">
-            <div className="sticky top-[73px] z-30 bg-background/80 backdrop-blur-md pb-4 pt-2 -mx-4 px-4 sm:mx-0 sm:px-0 border-b border-primary/5 sm:border-0 sm:static sm:bg-transparent">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                        <h2 className="text-2xl font-bold tracking-tight text-primary">App Settings</h2>
-                        <p className="text-sm text-muted-foreground font-normal">Manage Organization Profile, Branding, And Core Standards.</p>
-                    </div>
-                    {!isEditMode ? (
-                        <Button onClick={() => setIsEditMode(true)} className="w-full sm:w-auto font-bold shadow-md transition-transform active:scale-95 rounded-xl h-10 px-6">
-                            <Edit className="mr-2 h-4 w-4"/>Modify Configuration
-                        </Button>
-                    ) : (
-                        <div className="flex w-full sm:w-auto gap-2">
-                            <Button variant="outline" onClick={handleCancel} disabled={isSubmitting} className="flex-1 sm:flex-initial font-bold border-primary/20 text-primary transition-transform active:scale-95 rounded-xl h-10 px-6 bg-white"><X className="mr-2 h-4 w-4" /> Cancel</Button>
-                            <Button onClick={handleSave} disabled={isSubmitting} className="flex-[2] sm:flex-initial font-bold shadow-md active:scale-95 transition-transform rounded-xl h-10 px-8 bg-primary text-white">
-                                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-                                Save Changes
-                            </Button>
+        <main className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-8 text-primary font-normal relative min-h-screen">
+            <div className="absolute -top-20 -left-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10 animate-pulse" />
+            <div className="absolute top-40 -right-20 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl -z-10 animate-pulse" />
+
+            <div className="flex flex-col gap-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
+                    <div className="space-y-1.5">
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
+                                <Settings2 className="h-5 w-5" />
+                            </div>
+                            <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-primary">Institutional Core</h1>
                         </div>
-                    )}
+                        <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">System-wide configuration, branding protocols, and financial gateway orchestration.</p>
+                    </div>
+                    
+                    <div className="flex flex-wrap items-center gap-3">
+                        {!isEditMode ? (
+                            <Button onClick={() => setIsEditMode(true)} className="bg-primary hover:bg-primary/90 text-white font-black h-11 rounded-2xl px-6 shadow-xl shadow-primary/20 active:scale-95 transition-all">
+                                <Edit className="mr-2 h-4 w-4"/>Modify Protocol
+                            </Button>
+                        ) : (
+                            <div className="flex bg-white/50 backdrop-blur-md p-1 rounded-2xl border border-primary/5 shadow-sm">
+                                <Button variant="ghost" onClick={handleCancel} disabled={isSubmitting} className="font-bold text-destructive rounded-xl h-10 px-5 hover:bg-destructive/5">
+                                    <X className="mr-2 h-4 w-4 opacity-40" /> Discard
+                                </Button>
+                                <div className="w-px h-6 bg-primary/10 my-2" />
+                                <Button onClick={handleSave} disabled={isSubmitting} className="font-black text-primary rounded-xl h-10 px-6 hover:bg-primary/5">
+                                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4 opacity-40"/>} 
+                                    Synchronize
+                                </Button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
-
-            <div className="space-y-6 animate-fade-in-up">
+            <div className="grid grid-cols-1 gap-10">
                 
                 <SettingsSection 
-                    title="Landing Page Configuration" 
-                    description="Configure the primary welcome message and component visibility on the homepage."
-                    icon={Monitor}
+                    title="Landing Interface Control" 
+                    description="Orchestrate the public face of the institution. Manage hero messaging and component visibility."
+                    icon={Layout}
                     defaultOpen={true}
                 >
-                    <div className="space-y-6">
-                        <div className="grid gap-6">
-                            <div className="space-y-2">
-                                <Label htmlFor="heroTitle" className="font-bold text-xs text-muted-foreground tracking-tight capitalize opacity-60">Hero Title</Label>
-                                {isEditMode ? (
-                                    <Input 
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        <div className="space-y-6">
+                            <div className="space-y-4">
+                                <Label htmlFor="heroTitle" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40">Neural Hero Headline</Label>
+                                <div className="relative">
+                                    <Textarea 
                                         id="heroTitle"
                                         value={displayData.heroTitle}
                                         onChange={(e) => handleFieldChange('heroTitle', e.target.value)}
-                                        className="font-normal"
-                                    />
-                                ) : (
-                                    <p className="text-lg font-bold text-primary">{displayData.heroTitle}</p>
-                                )}
-                            </div>
-                            <div className="space-y-2">
-                                <Label htmlFor="heroDescription" className="font-bold text-xs text-muted-foreground tracking-tight capitalize opacity-60">Hero Description</Label>
-                                {isEditMode ? (
-                                    <Textarea 
-                                        id="heroDescription"
-                                        rows={3}
-                                        value={displayData.heroDescription}
-                                        onChange={(e) => handleFieldChange('heroDescription', e.target.value)}
-                                        className="font-normal leading-relaxed"
-                                    />
-                                ) : (
-                                    <p className="text-sm font-normal text-muted-foreground leading-relaxed">{displayData.heroDescription}</p>
-                                )}
-                            </div>
-                        </div>
-
-                        <Separator className="bg-primary/10" />
-
-                        <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-primary flex items-center gap-2 tracking-tight">
-                                <Calendar className="h-4 w-4" /> Reporting Period Filter
-                            </h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <Label htmlFor="summaryStartDate" className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Aggregate Start Date</Label>
-                                    <Input 
-                                        id="summaryStartDate"
-                                        type="date"
-                                        value={displayData.summaryStartDate}
-                                        onChange={(e) => handleFieldChange('summaryStartDate', e.target.value)}
                                         disabled={isFormDisabled}
-                                        className="font-bold h-10 border-primary/10"
+                                        className="font-black text-lg tracking-tighter leading-tight min-h-[80px] bg-white/50 border-primary/5 rounded-3xl p-6 shadow-sm focus:ring-primary disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0 disabled:text-2xl"
                                     />
-                                </div>
-                                <div className="space-y-1">
-                                    <Label htmlFor="summaryEndDate" className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Aggregate End Date</Label>
-                                    <Input 
-                                        id="summaryEndDate"
-                                        type="date"
-                                        value={displayData.summaryEndDate}
-                                        onChange={(e) => handleFieldChange('summaryEndDate', e.target.value)}
-                                        disabled={isFormDisabled}
-                                        className="font-bold h-10 border-primary/10"
-                                    />
+                                    {isEditMode && <Sparkles className="absolute top-4 right-4 h-5 w-5 text-primary opacity-20" />}
                                 </div>
                             </div>
+                            <div className="space-y-4">
+                                <Label htmlFor="heroDescription" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40">Subtext Context</Label>
+                                <Textarea 
+                                    id="heroDescription"
+                                    rows={4}
+                                    value={displayData.heroDescription}
+                                    onChange={(e) => handleFieldChange('heroDescription', e.target.value)}
+                                    disabled={isFormDisabled}
+                                    className="font-bold text-sm leading-relaxed min-h-[100px] bg-white/50 border-primary/5 rounded-3xl p-6 shadow-sm focus:ring-primary disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0 disabled:text-primary/60"
+                                />
+                            </div>
                         </div>
-
-                        <Separator className="bg-primary/10" />
 
                         <div className="space-y-6">
-                            <h4 className="text-xs font-bold text-primary flex items-center gap-2 tracking-tight">
-                                <Megaphone className="h-4 w-4" /> News Ticker Configuration
-                            </h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-muted/5">
-                                    <h5 className="text-[10px] font-bold text-primary/60 capitalize tracking-widest border-b pb-2 mb-2">Display Toggles</h5>
-                                    <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
-                                            <Label htmlFor="ticker-active" className="text-xs font-bold">Show Active Initiatives</Label>
-                                            <Switch id="ticker-active" checked={displayData.isTickerActiveVisible} onCheckedChange={(val) => handleFieldChange('isTickerActiveVisible', val)} disabled={isFormDisabled} />
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <Label htmlFor="ticker-donations" className="text-xs font-bold">Show Verified Donations</Label>
-                                            <Switch id="ticker-donations" checked={displayData.isTickerDonationVisible} onCheckedChange={(val) => handleFieldChange('isTickerDonationVisible', val)} disabled={isFormDisabled} />
-                                        </div>
-                                        <div className="flex items-center justify-between">
-                                            <Label htmlFor="ticker-completed" className="text-xs font-bold">Show Recent Archive</Label>
-                                            <Switch id="ticker-completed" checked={displayData.isTickerCompletedVisible} onCheckedChange={(val) => handleFieldChange('isTickerCompletedVisible', val)} disabled={isFormDisabled} />
-                                        </div>
-                                    </div>
+                            <div className="p-8 rounded-[40px] bg-primary/[0.02] border border-primary/5 space-y-6">
+                                <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
+                                    <Activity className="h-5 w-5 text-primary opacity-40" />
+                                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Operational Pulse (Ticker)</h4>
                                 </div>
-                                <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-muted/5">
-                                    <h5 className="text-[10px] font-bold text-primary/60 capitalize tracking-widest border-b pb-2 mb-2">Item Constraints</h5>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <Label className="text-[9px] font-bold">Max Donations</Label>
-                                            <Input type="number" value={displayData.tickerMaxDonations} onChange={e => handleFieldChange('tickerMaxDonations', e.target.value)} disabled={isFormDisabled} className="h-8 text-xs font-bold" />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <Label className="text-[9px] font-bold">Max Archive</Label>
-                                            <Input type="number" value={displayData.tickerMaxCompleted} onChange={e => handleFieldChange('tickerMaxCompleted', e.target.value)} disabled={isFormDisabled} className="h-8 text-xs font-bold" />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div className="space-y-3 p-4 rounded-xl border border-primary/10 bg-white shadow-sm">
-                                <h5 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2">
-                                    <Filter className="h-4 w-4 opacity-40"/> Ticker Exclusion List (Skip IDs)
-                                </h5>
-                                <p className="text-[10px] text-muted-foreground font-normal">Select specific initiatives that should never appear in the rolling ticker.</p>
-                                <div className="border rounded-lg bg-muted/5 p-2">
-                                    <ScrollArea className="max-h-48 w-full">
-                                        <div className="space-y-1">
-                                            {[...(allCampaigns || []), ...(allLeads || [])].map((item) => {
-                                                const isSkipped = displayData.tickerSkipIds.includes(item.id);
-                                                return (
-                                                    <div key={item.id} className="flex items-center space-x-3 p-2 rounded hover:bg-primary/5 transition-colors border-b border-primary/5 last:border-0">
-                                                        <Checkbox 
-                                                            id={`skip-${item.id}`} 
-                                                            checked={isSkipped} 
-                                                            onCheckedChange={(checked) => {
-                                                                const current = [...displayData.tickerSkipIds];
-                                                                const updated = checked ? [...current, item.id] : current.filter(id => id !== item.id);
-                                                                handleFieldChange('tickerSkipIds', updated);
-                                                            }} 
-                                                            disabled={isFormDisabled}
-                                                        />
-                                                        <Label htmlFor={`skip-${item.id}`} className="text-xs font-normal cursor-pointer flex-1 flex justify-between gap-4">
-                                                            <span className="truncate">{item.name}</span>
-                                                            <span className="text-[9px] font-mono opacity-40 shrink-0">ID:{item.id.slice(-4)}</span>
-                                                        </Label>
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                        <ScrollBar orientation="vertical" />
-                                    </ScrollArea>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <VisibilityToggle 
-                                id="hero-visibility"
-                                label="Show Hero Message"
-                                description="Display the primary title and description at the top of the landing page."
-                                icon={Monitor}
-                                checked={displayData.isHeroVisible}
-                                onChange={(val) => handleFieldChange('isHeroVisible', val)}
-                                disabled={isFormDisabled}
-                            />
-                            <VisibilityToggle 
-                                id="news-ticker-visibility"
-                                label="Main News Tickers"
-                                description="Master toggle for all rolling community updates."
-                                icon={Megaphone}
-                                checked={displayData.isNewsTickerVisible}
-                                onChange={(val) => handleFieldChange('isNewsTickerVisible', val)}
-                                disabled={isFormDisabled}
-                            />
-                            <VisibilityToggle 
-                                id="wisdom-visibility"
-                                label="Wisdom & Reflections"
-                                description="Display daily religious guidance and scholar quotes."
-                                icon={Quote}
-                                checked={displayData.isWisdomVisible}
-                                onChange={(val) => handleFieldChange('isWisdomVisible', val)}
-                                disabled={isFormDisabled}
-                            />
-                            <VisibilityToggle 
-                                id="overall-summary-visibility"
-                                label="Overall Funding Progress"
-                                description="Display the combined organizational progress bar."
-                                icon={Target}
-                                checked={displayData.isOverallSummaryVisible}
-                                onChange={(val) => handleFieldChange('isOverallSummaryVisible', val)}
-                                disabled={isFormDisabled}
-                            />
-                            <VisibilityToggle 
-                                id="donation-summary-visibility"
-                                label="Donation Summary Charts"
-                                description="Display category distributions and historical trends."
-                                icon={PieChart}
-                                checked={displayData.isDonationSummaryVisible}
-                                onChange={(val) => handleFieldChange('isDonationSummaryVisible', val)}
-                                disabled={isFormDisabled}
-                            />
-                            <VisibilityToggle 
-                                id="purpose-summary-visibility"
-                                label="Impact By Purpose"
-                                description="Display verified fund utilization across community pillars."
-                                icon={HeartHandshake}
-                                checked={displayData.isPurposeSummaryVisible}
-                                onChange={(val) => handleFieldChange('isPurposeSummaryVisible', val)}
-                                disabled={isFormDisabled}
-                            />
-                            <VisibilityToggle 
-                                id="initiative-summary-visibility"
-                                label="Initiative Summaries"
-                                description="Display counts and tables for active campaigns and appeals."
-                                icon={Building2}
-                                checked={displayData.isInitiativeSummaryVisible}
-                                onChange={(val) => handleFieldChange('isInitiativeSummaryVisible', val)}
-                                disabled={isFormDisabled}
-                            />
-                            <VisibilityToggle 
-                                id="recent-verification-visibility"
-                                label="Real-time Verification Feed"
-                                description="Display the animated feed of confirmed community contributions."
-                                icon={CheckCircle2}
-                                checked={displayData.isRecentVerificationVisible}
-                                onChange={(val) => handleFieldChange('isRecentVerificationVisible', val)}
-                                disabled={isFormDisabled}
-                            />
-                            <VisibilityToggle 
-                                id="landing-donate-now-visibility"
-                                label="Landing Page Donate Button"
-                                description="Show a prominent 'Donate Now' button in the hero section."
-                                icon={HeartHandshake}
-                                checked={displayData.isLandingDonateNowVisible}
-                                onChange={(val) => handleFieldChange('isLandingDonateNowVisible', val)}
-                                disabled={isFormDisabled}
-                            />
-                        </div>
-                    </div>
-                </SettingsSection>
-
-                <SettingsSection 
-                    title="Portals & Access Control" 
-                    description="Globally toggle access to the Donor and Beneficiary authentications and features."
-                    icon={ShieldCheck}
-                    defaultOpen={true}
-                >
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <VisibilityToggle 
-                            id="donor-login-visibility"
-                            label="Donor Portal Login"
-                            description="If disabled, donors cannot securely log in or view their profile histories."
-                            icon={HeartHandshake}
-                            checked={displayData.isDonorLoginEnabled}
-                            onChange={(val) => handleFieldChange('isDonorLoginEnabled', val)}
-                            disabled={isFormDisabled}
-                        />
-                        <VisibilityToggle 
-                            id="beneficiary-login-visibility"
-                            label="Beneficiary Portal Login"
-                            description="If disabled, beneficiaries cannot log in to check their status or submit updates."
-                            icon={User}
-                            checked={displayData.isBeneficiaryLoginEnabled}
-                            onChange={(val) => handleFieldChange('isBeneficiaryLoginEnabled', val)}
-                            disabled={isFormDisabled}
-                        />
-
-                        <div className="md:col-span-2 p-4 rounded-xl border border-primary/10 bg-primary/5 space-y-4">
-                            <h4 className="text-xs font-bold text-primary flex items-center gap-2 tracking-tight uppercase opacity-60">
-                                <Smartphone className="h-4 w-4" /> Portal Authentication Framework
-                            </h4>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-bold uppercase opacity-40">Verification Method</Label>
-                                    <Select 
-                                        value={displayData.portalAuthMethod || 'OTP'} 
-                                        onValueChange={(val) => handleFieldChange('portalAuthMethod', val as any)}
-                                        disabled={isFormDisabled}
-                                    >
-                                        <SelectTrigger className="font-bold border-primary/10 h-10 bg-white">
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="OTP">Mobile OTP (Firebase SMS)</SelectItem>
-                                            <SelectItem value="Password">Mobile/ID + Password (Internal DB)</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                    <p className="text-[9px] text-muted-foreground leading-relaxed italic">Password method allows login without SMS costs, verifying credentials directly against the institution's encrypted database.</p>
-                                </div>
-                                <div className="flex items-center gap-4 pt-4">
-                                     <div className="flex items-center space-x-2">
-                                        <Checkbox 
-                                            id="portal-password-enabled" 
-                                            checked={displayData.isPortalPasswordEnabled ?? true} 
-                                            onCheckedChange={(val) => handleFieldChange('isPortalPasswordEnabled', !!val)}
-                                            disabled={isFormDisabled}
-                                        />
-                                        <Label htmlFor="portal-password-enabled" className="text-xs font-bold">Allow Password Entry</Label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <VisibilityToggle 
-                            id="donor-payment-self-record"
-                            label="Donor Self-Payment Record"
-                            description="If disabled, only staff members can record payments on behalf of the donor."
-                            icon={CreditCard}
-                            checked={displayData.isDonorSelfRecordPaymentEnabled}
-                            onChange={(val) => handleFieldChange('isDonorSelfRecordPaymentEnabled', val)}
-                            disabled={isFormDisabled}
-                        />
-                    </div>
-                </SettingsSection>
-
-                <SettingsSection 
-                    title="Organization Details" 
-                    description="Public profile, visual identity, and contact information."
-                    icon={Building2}
-                    defaultOpen={false}
-                >
-                    <div className="space-y-8">
-                        <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 capitalize opacity-60">Identity & Registration</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-2">
-                                <VerifiableItem 
-                                    icon={Building2} 
-                                    label="Organization Name" 
-                                    value={displayData.name} 
-                                    isEditing={isEditMode}
-                                    id="org-name"
-                                    onChange={(v) => handleFieldChange('name', v)}
-                                    placeholder="Full Legal Name"
-                                />
-                                <VerifiableItem 
-                                    icon={MapPin} 
-                                    label="Address" 
-                                    value={displayData.address} 
-                                    isEditing={isEditMode}
-                                    id="org-address"
-                                    onChange={(v) => handleFieldChange('address', v)}
-                                    placeholder="Official Registered Address"
-                                />
-                                <VerifiableItem 
-                                    icon={Hash} 
-                                    label="Registration No." 
-                                    value={displayData.regNo} 
-                                    isEditing={isEditMode}
-                                    id="org-reg"
-                                    onChange={(v) => handleFieldChange('regNo', v)}
-                                    placeholder="e.g. Solapur/0000373/2025"
-                                />
-                                <VerifiableItem 
-                                    icon={ShieldCheck} 
-                                    label="PAN Number" 
-                                    value={displayData.pan} 
-                                    isEditing={isEditMode}
-                                    id="org-pan"
-                                    onChange={(v) => handleFieldChange('pan', v)}
-                                    placeholder="Institutional PAN"
-                                />
-                                <VerifiableItem 
-                                    icon={Globe} 
-                                    label="Website" 
-                                    value={displayData.website} 
-                                    isEditing={isEditMode}
-                                    id="org-web"
-                                    onChange={(v) => handleFieldChange('website', v)}
-                                    placeholder="https://www.example.org"
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 capitalize opacity-60">Visual Identity</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-                                <div className="flex flex-col items-center gap-4 bg-muted/5 rounded-xl p-4 border border-dashed border-primary/10">
-                                    <div className="relative w-full max-w-[200px] aspect-[2/1] rounded-lg flex items-center justify-center bg-white overflow-hidden shadow-inner border border-primary/5">
-                                        {(isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl) ? (
-                                            <img src={(isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)!.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent((isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)!)}` : (isEditMode ? editableData?.logoUrl : brandingSettings?.logoUrl)} alt="Logo" className="object-contain p-2 h-full w-full" />
-                                        ) : (
-                                            <div className="text-muted-foreground text-center p-2 font-normal opacity-20">
-                                                <ImageIcon className="mx-auto h-8 w-8" />
-                                                <p className="text-[10px] mt-1 font-bold tracking-tighter capitalize">No Logo Uploaded</p>
-                                            </div>
-                                        )}
-                                    </div>
-                                    {isEditMode && (
-                                        <div className="flex gap-2">
-                                            <label htmlFor="logo-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-[10px] font-bold border border-primary/20 bg-background hover:bg-primary/5 h-7 px-3 cursor-pointer capitalize text-primary transition-all active:scale-95 shadow-sm">
-                                                <UploadCloud className="mr-1.5 h-3.5 w-3.5" /> Upload Logo
-                                            </label>
-                                            <Input id="logo-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setLogoFile(e.target.files[0])} />
-                                            {editableData?.logoUrl && (
-                                                <Button type="button" variant="destructive" size="icon" className="h-7 w-7 transition-transform active:scale-90" onClick={handleRemoveLogo} disabled={isSubmitting}>
-                                                    <Trash2 className="h-3.5 w-3.5" />
-                                                </Button>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
+                                
                                 <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-1">
-                                        <Label htmlFor="logoWidth" className="font-bold text-[10px] text-muted-foreground capitalize opacity-60">Width (px)</Label>
-                                        <Input id="logoWidth" type="number" value={displayData.logoWidth || 40} onChange={(e) => handleFieldChange('logoWidth', e.target.value)} disabled={isFormDisabled} className="h-9 font-normal text-primary" />
-                                    </div>
-                                    <div className="space-y-1">
-                                        <Label htmlFor="logoHeight" className="font-bold text-[10px] text-muted-foreground capitalize opacity-60">Height (px)</Label>
-                                        <Input id="logoHeight" type="number" value={displayData.logoHeight || 40} onChange={(e) => handleFieldChange('logoHeight', e.target.value)} disabled={isFormDisabled} className="h-9 font-normal text-primary" />
-                                    </div>
+                                    {[
+                                        { id: 'ticker-active', label: 'Active Initiatives', field: 'isTickerActiveVisible' },
+                                        { id: 'ticker-donations', label: 'Verified Inbound', field: 'isTickerDonationVisible' },
+                                        { id: 'ticker-completed', label: 'Archived Success', field: 'isTickerCompletedVisible' },
+                                    ].map(ticker => (
+                                        <div key={ticker.id} className="flex items-center justify-between p-4 rounded-2xl bg-white border border-primary/5 shadow-sm">
+                                            <Label htmlFor={ticker.id} className="text-[10px] font-black uppercase tracking-widest">{ticker.label}</Label>
+                                            <Switch id={ticker.id} checked={displayData[ticker.field as keyof typeof displayData] as boolean} onCheckedChange={(val) => handleFieldChange(ticker.field as keyof FormDataType, val)} disabled={isFormDisabled} className="data-[state=checked]:bg-primary" />
+                                        </div>
+                                    ))}
                                 </div>
-                            </div>
-                        </div>
 
-                        <div className="space-y-4">
-                            <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 capitalize opacity-60">Public Footer & Support</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
-                                <div className="space-y-1">
-                                    <Label htmlFor="contactEmail" className="font-bold text-sm text-primary">Service Email</Label>
-                                    <Input id="contactEmail" value={displayData.contactEmail} onChange={(e) => handleFieldChange('contactEmail', e.target.value)} disabled={isFormDisabled} placeholder="support@org.com" className="h-9 font-normal text-primary"/>
-                                </div>
-                                <div className="space-y-1">
-                                    <Label htmlFor="contactPhone" className="font-bold text-sm text-primary">Support Hotline</Label>
-                                    <Input id="contactPhone" value={displayData.contactPhone} onChange={(e) => handleFieldChange('contactPhone', e.target.value)} disabled={isFormDisabled} placeholder="+91 00000 00000" className="h-9 font-normal text-primary"/>
-                                </div>
-                                <div className="md:col-span-2 space-y-1">
-                                    <Label htmlFor="copyright" className="font-bold text-sm text-primary">Footer Rights Notice</Label>
-                                    <Input id="copyright" value={displayData.copyright} onChange={(e) => handleFieldChange('copyright', e.target.value)} disabled={isFormDisabled} placeholder="© 2026 Your Organization. All Rights Reserved." className="h-9 font-normal text-primary"/>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Max Feed Items</Label>
+                                        <Input type="number" value={displayData.tickerMaxDonations} onChange={e => handleFieldChange('tickerMaxDonations', e.target.value)} disabled={isFormDisabled} className="h-12 font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Archive Depth</Label>
+                                        <Input type="number" value={displayData.tickerMaxCompleted} onChange={e => handleFieldChange('tickerMaxCompleted', e.target.value)} disabled={isFormDisabled} className="h-12 font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+                        <VisibilityToggle 
+                            id="hero-visibility"
+                            label="Hero Matrix"
+                            description="Primary welcome message."
+                            icon={Monitor}
+                            checked={displayData.isHeroVisible}
+                            onChange={(val) => handleFieldChange('isHeroVisible', val)}
+                            disabled={isFormDisabled}
+                        />
+                        <VisibilityToggle 
+                            id="news-ticker-visibility"
+                            label="Neural Ticker"
+                            description="Real-time rolling updates."
+                            icon={Megaphone}
+                            checked={displayData.isNewsTickerVisible}
+                            onChange={(val) => handleFieldChange('isNewsTickerVisible', val)}
+                            disabled={isFormDisabled}
+                        />
+                        <VisibilityToggle 
+                            id="wisdom-visibility"
+                            label="Wisdom Feed"
+                            description="Religious guidance reflections."
+                            icon={Quote}
+                            checked={displayData.isWisdomVisible}
+                            onChange={(val) => handleFieldChange('isWisdomVisible', val)}
+                            disabled={isFormDisabled}
+                        />
+                        <VisibilityToggle 
+                            id="overall-summary-visibility"
+                            label="Funding Pulse"
+                            description="Aggregate organizational progress."
+                            icon={Target}
+                            checked={displayData.isOverallSummaryVisible}
+                            onChange={(val) => handleFieldChange('isOverallSummaryVisible', val)}
+                            disabled={isFormDisabled}
+                        />
+                        <VisibilityToggle 
+                            id="donation-summary-visibility"
+                            label="Analytics Charts"
+                            description="Distribution & trend visuals."
+                            icon={PieChart}
+                            checked={displayData.isDonationSummaryVisible}
+                            onChange={(val) => handleFieldChange('isDonationSummaryVisible', val)}
+                            disabled={isFormDisabled}
+                        />
+                        <VisibilityToggle 
+                            id="purpose-summary-visibility"
+                            label="Impact Matrix"
+                            description="Fund utilization by category."
+                            icon={HeartHandshake}
+                            checked={displayData.isPurposeSummaryVisible}
+                            onChange={(val) => handleFieldChange('isPurposeSummaryVisible', val)}
+                            disabled={isFormDisabled}
+                        />
+                    </div>
                 </SettingsSection>
 
                 <SettingsSection 
-                    title="Financial Channels" 
-                    description="Configure direct bank transfer and digital payment handle details."
+                    title="Financial Gateway Protocols" 
+                    description="Secure the institutional inbound vectors. Manage payment handles and bank credentials."
                     icon={CreditCard}
                 >
-                    <div className="space-y-8">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            <div className="space-y-4">
-                                <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 capitalize opacity-60">Direct Bank Transfer</h4>
-                                <VerifiableItem 
-                                    icon={User} 
-                                    label="Account Title" 
-                                    value={displayData.bankAccountName} 
-                                    isEditing={isEditMode}
-                                    id="bank-name"
-                                    onChange={(v) => handleFieldChange('bankAccountName', v)}
-                                    placeholder="Full Holder Name"
-                                />
-                                <VerifiableItem 
-                                    icon={CreditCard} 
-                                    label="Account Number" 
-                                    value={displayData.bankAccountNumber} 
-                                    isEditing={isEditMode}
-                                    id="bank-acc"
-                                    onChange={(v) => handleFieldChange('bankAccountNumber', v)}
-                                    placeholder="Account Identifier"
-                                />
-                                <VerifiableItem 
-                                    icon={Landmark} 
-                                    label="IFSC Code" 
-                                    value={displayData.bankIfsc} 
-                                    isEditing={isEditMode}
-                                    id="bank-ifsc"
-                                    onChange={(v) => handleFieldChange('bankIfsc', v)}
-                                    placeholder="11-digit Code"
-                                />
-                            </div>
-                            
-                            <div className="space-y-4">
-                                <h4 className="text-xs font-bold text-muted-foreground tracking-tight border-b pb-2 capitalize opacity-60">Digital Handles & QR</h4>
-                                <VerifiableItem 
-                                    icon={QrCode} 
-                                    label="Primary UPI ID" 
-                                    value={displayData.upiId} 
-                                    isEditing={isEditMode}
-                                    id="upi-id"
-                                    onChange={(v) => handleFieldChange('upiId', v)}
-                                    placeholder="e.g. 1234567890@upi"
-                                />
-                                <VerifiableItem 
-                                    icon={Smartphone} 
-                                    label="Linked Mobile Number" 
-                                    value={displayData.paymentMobileNumber} 
-                                    isEditing={isEditMode}
-                                    id="pay-mob"
-                                    onChange={(v) => handleFieldChange('paymentMobileNumber', v)}
-                                    placeholder="e.g. 9876543210"
-                                />
-                                
-                                <div className="pt-4 flex flex-col items-center gap-4 bg-secondary/30 rounded-xl p-4 border border-primary/10">
-                                    <div className="relative w-32 h-32 border-2 border-dashed border-primary/20 rounded-lg flex items-center justify-center bg-white overflow-hidden shadow-inner">
-                                        {(isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl) ? (
-                                            <img src={(isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)!.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent((isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)!)}` : (isEditMode ? editableData?.qrCodeUrl : paymentSettings?.qrCodeUrl)} alt="QR" className="object-contain p-2 h-full w-full" />
-                                        ) : (
-                                            <div className="text-muted-foreground text-center p-2 font-normal opacity-20">
-                                                <QrCode className="mx-auto h-8 w-8" />
-                                                <p className="text-[10px] mt-1 font-bold tracking-tighter capitalize">No QR Code</p>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        <div className="space-y-10">
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
+                                    <QrCode className="h-5 w-5 text-primary opacity-40" />
+                                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">QR Vector Control</h4>
+                                </div>
+                                <div className="flex items-start gap-8">
+                                    <div className="relative group">
+                                        <div className="h-48 w-48 rounded-[32px] bg-primary/5 border border-primary/5 flex items-center justify-center overflow-hidden shadow-inner group-hover:shadow-2xl transition-all duration-500">
+                                            {displayData.qrCodeUrl ? (
+                                                <img src={displayData.qrCodeUrl} alt="Payment QR" className="h-full w-full object-contain p-4 group-hover:scale-110 transition-transform duration-500" />
+                                            ) : (
+                                                <ImageIcon className="h-12 w-12 text-primary/10" />
+                                            )}
+                                        </div>
+                                        {isEditMode && (
+                                            <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm rounded-[32px]">
+                                                <Label htmlFor="qr-upload" className="cursor-pointer bg-white text-primary font-black text-[10px] uppercase tracking-widest px-6 h-10 rounded-xl flex items-center shadow-xl active:scale-95 transition-all">
+                                                    Update Vector
+                                                </Label>
+                                                <Input id="qr-upload" type="file" className="hidden" accept="image/*" onChange={e => setQrCodeFile(e.target.files?.[0] || null)} />
                                             </div>
                                         )}
                                     </div>
-                                    {isEditMode && (
-                                        <div className="w-full flex justify-center gap-2">
-                                            <label htmlFor="qr-upload" className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-xs font-bold border border-primary/20 bg-background hover:bg-primary/5 h-8 px-3 cursor-pointer capitalize text-primary transition-all active:scale-95 shadow-sm">
-                                                <UploadCloud className="mr-2 h-4 w-4" /> Change QR Image
-                                            </label>
-                                            <Input id="qr-upload" type="file" className="hidden" accept="image/png, image/jpeg, image/webp" onChange={(e) => e.target.files && setQrCodeFile(e.target.files[0])} />
-                                            {editableData?.qrCodeUrl && (
-                                                <Button type="button" variant="destructive" size="sm" className="font-bold h-8 transition-transform active:scale-90" onClick={handleRemoveQrCode} disabled={isSubmitting}>
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            )}
+                                    <div className="space-y-6 flex-1 pt-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Primary UPI Handle</Label>
+                                            <Input 
+                                                value={displayData.upiId} 
+                                                onChange={e => handleFieldChange('upiId', e.target.value)} 
+                                                disabled={isFormDisabled} 
+                                                className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0 disabled:text-xl" 
+                                                placeholder="handle@upi"
+                                            />
                                         </div>
-                                    )}
-                                    <div className="w-full grid grid-cols-2 gap-4 mt-2">
-                                        <div className="space-y-1">
-                                            <Label htmlFor="qrWidth" className="font-bold text-[10px] text-muted-foreground capitalize opacity-60">Width (px)</Label>
-                                            <Input id="qrWidth" type="number" value={displayData.qrWidth || 120} onChange={(e) => handleFieldChange('qrWidth', e.target.value)} disabled={isFormDisabled} className="h-8 font-normal text-primary" placeholder="120"/>
+                                        <div className="space-y-2">
+                                            <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Mobile Vector</Label>
+                                            <Input 
+                                                value={displayData.paymentMobileNumber} 
+                                                onChange={e => handleFieldChange('paymentMobileNumber', e.target.value)} 
+                                                disabled={isFormDisabled} 
+                                                className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" 
+                                                placeholder="+91-XXXXX-XXXXX"
+                                            />
                                         </div>
-                                        <div className="space-y-1">
-                                            <Label htmlFor="qrHeight" className="font-bold text-[10px] text-muted-foreground capitalize opacity-60">Height (px)</Label>
-                                            <Input id="qrHeight" type="number" value={displayData.qrHeight || 120} onChange={(e) => handleFieldChange('qrHeight', e.target.value)} disabled={isFormDisabled} className="h-8 font-normal text-primary" placeholder="120"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="p-8 rounded-[40px] bg-primary/[0.02] border border-primary/5 space-y-8">
+                                <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
+                                    <Landmark className="h-5 w-5 text-primary opacity-40" />
+                                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Institutional Clearing Account</h4>
+                                </div>
+                                <div className="space-y-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Account Holder Name</Label>
+                                        <Input value={displayData.bankAccountName} onChange={e => handleFieldChange('bankAccountName', e.target.value)} disabled={isFormDisabled} className="h-12 font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Account Number</Label>
+                                            <Input value={displayData.bankAccountNumber} onChange={e => handleFieldChange('bankAccountNumber', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">IFSC Vector</Label>
+                                            <Input value={displayData.bankIfsc} onChange={e => handleFieldChange('bankIfsc', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0 uppercase" />
                                         </div>
                                     </div>
                                 </div>
@@ -1091,167 +785,126 @@ export default function AppSettingsPage() {
                 </SettingsSection>
 
                 <SettingsSection 
-                    title="Core Institutional Standards" 
-                    description="Define focus pillars and operational rules for public guidance."
+                    title="Access & Identity Sovereignty" 
+                    description="Configure the authentication protocols for the Donor and Beneficiary portals."
                     icon={Shield}
                 >
-                    <div className="space-y-8">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between rounded-lg border p-4 bg-muted/5 gap-4 transition-all hover:border-primary/20">
-                            <div className="space-y-1 flex-1">
-                                <h3 className="font-bold text-primary text-sm tracking-tight">Public Principles Availability</h3>
-                                <p className="text-xs text-muted-foreground font-normal">Toggle visibility of the standards section on informational pages.</p>
-                            </div>
-                            <div className="flex items-center space-x-2">
-                                <Label htmlFor="gp-visibility" className="font-bold text-xs opacity-60">Visible</Label>
-                                <Switch 
-                                    id="gp-visibility" 
-                                    checked={displayData.isGuidingPrinciplesPublic} 
-                                    onCheckedChange={(val) => handleFieldChange('isGuidingPrinciplesPublic', val)} 
-                                    disabled={isFormDisabled} 
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="space-y-1.5">
-                                <Label className="font-bold text-[10px] text-muted-foreground tracking-tighter capitalize opacity-60">Section Headline</Label>
-                                <Input 
-                                    value={displayData.gpTitle} 
-                                    onChange={(e) => handleFieldChange('gpTitle', e.target.value)} 
-                                    disabled={isFormDisabled}
-                                    className="font-bold text-primary h-10"
-                                />
-                            </div>
-                            <div className="space-y-1.5">
-                                <Label className="font-bold text-[10px] text-muted-foreground tracking-tighter capitalize opacity-60">Preamble Description</Label>
-                                <Textarea 
-                                    rows={3} 
-                                    value={displayData.gpDescription} 
-                                    onChange={(e) => handleFieldChange('gpDescription', e.target.value)} 
-                                    disabled={isFormDisabled} 
-                                    placeholder="Enter introductory text..." 
-                                    className="font-normal text-sm leading-relaxed text-primary"
-                                />
-                            </div>
-                        </div>
-
-                        <Separator className="bg-primary/10" />
-
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 capitalize"><Target className="h-4 w-4 opacity-40"/> Impact Pillars (Focus Areas)</h4>
-                                {isEditMode && (
-                                    <Button type="button" variant="outline" size="sm" onClick={handleAddFocusArea} className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform shadow-sm"><Plus className="h-3 w-3 mr-1"/> Add Pillar</Button>
-                                )}
-                            </div>
-                            <div className="grid gap-4">
-                                {(displayData.focusAreas || []).map((area, index) => (
-                                    <div key={area.id || index} className="relative p-4 border rounded-xl bg-primary/[0.01] space-y-4 border-primary/5 shadow-sm group">
-                                        {isEditMode && (
-                                            <div className="absolute top-2 right-2 flex items-center gap-2">
-                                                <div className="flex items-center space-x-1.5 mr-2">
-                                                    <Checkbox 
-                                                        id={`focus-hide-${index}`}
-                                                        checked={area.isHidden} 
-                                                        onCheckedChange={(checked) => handleFocusAreaChange(index, 'isHidden', !!checked)} 
-                                                    />
-                                                    <Label htmlFor={`focus-hide-${index}`} className="text-[10px] font-bold opacity-60 capitalize cursor-pointer">Hide</Label>
-                                                </div>
-                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7 text-destructive transition-transform active:scale-90" onClick={() => handleRemoveFocusArea(index)}>
-                                                    <Trash2 className="h-4 w-4"/>
-                                                </Button>
-                                            </div>
-                                        )}
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <div className="space-y-1">
-                                                <Label className="text-[9px] font-bold text-muted-foreground capitalize opacity-60">Visual & Label</Label>
-                                                <div className="flex gap-2">
-                                                    <Select value={area.icon} onValueChange={(val) => handleFocusAreaChange(index, 'icon', val as any)} disabled={isFormDisabled}>
-                                                        <SelectTrigger className="w-12 h-9 p-0 justify-center"><FocusAreaIcon type={area.icon}/></SelectTrigger>
-                                                        <SelectContent className="rounded-[12px] shadow-dropdown">
-                                                            <SelectItem value="Education"><GraduationCap className="h-4 w-4 text-primary"/></SelectItem>
-                                                            <SelectItem value="Healthcare"><HeartPulse className="h-4 w-4 text-primary"/></SelectItem>
-                                                            <SelectItem value="Relief"><Utensils className="h-4 w-4 text-primary"/></SelectItem>
-                                                            <SelectItem value="Other"><HelpCircle className="h-4 w-4 text-primary"/></SelectItem>
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <Input 
-                                                        value={area.title} 
-                                                        onChange={(e) => handleFocusAreaChange(index, 'title', e.target.value)} 
-                                                        disabled={isFormDisabled}
-                                                        className="font-bold h-9 text-primary"
-                                                    />
-                                                </div>
-                                            </div>
-                                            <div className="space-y-1">
-                                                <Label className="text-[9px] font-bold text-muted-foreground capitalize opacity-60">Objective Description</Label>
-                                                <Textarea 
-                                                    value={area.description} 
-                                                    onChange={(e) => handleFocusAreaChange(index, 'description', e.target.value)} 
-                                                    disabled={isFormDisabled}
-                                                    rows={2}
-                                                    className="text-xs font-normal min-h-[36px] text-primary"
-                                                />
-                                            </div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <Separator className="bg-primary/10" />
-
-                        <div className="space-y-6">
-                            <div className="flex items-center justify-between">
-                                <h4 className="text-xs font-bold text-primary tracking-tight flex items-center gap-2 capitalize"><ListChecks className="h-4 w-4 opacity-40"/> Procedural Directives</h4>
-                                {isEditMode && (
-                                    <Button type="button" variant="outline" size="sm" onClick={handleAddPrinciple} className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform shadow-sm"><Plus className="h-3 w-3 mr-1"/> Add Rule</Button>
-                                )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="p-8 rounded-[40px] bg-primary/[0.02] border border-primary/5 space-y-6">
+                            <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
+                                <Lock className="h-5 w-5 text-primary opacity-40" />
+                                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Authentication Matrix</h4>
                             </div>
                             <div className="space-y-4">
-                                {(displayData.principles || []).map((principle, index) => (
-                                    <div key={principle.id || index} className="relative group p-4 border rounded-xl bg-white space-y-3 shadow-sm border-primary/5 hover:border-primary/20 transition-all">
-                                        <div className="flex items-center justify-between">
-                                            <p className="font-bold text-primary text-[10px] tracking-widest capitalize opacity-40">Standard Directive #{index + 1}</p>
-                                            {isEditMode && (
-                                                <div className="flex items-center gap-3">
-                                                    <div className="flex items-center space-x-1.5">
-                                                        <Checkbox 
-                                                            id={`gp-hide-${index}`}
-                                                            checked={principle.isHidden} 
-                                                            onCheckedChange={(checked) => handleFieldChange('principles', displayData.principles.map((p, i) => i === index ? {...p, isHidden: !!checked} : p))} 
-                                                        />
-                                                        <Label htmlFor={`gp-hide-${index}`} className="text-[10px] font-bold opacity-60 capitalize cursor-pointer">Hide</Label>
-                                                    </div>
-                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive transition-transform active:scale-90" onClick={() => handleRemovePrinciple(index)}>
-                                                        <Trash2 className="h-4 w-4"/>
-                                                    </Button>
-                                                </div>
-                                            )}
-                                        </div>
-                                        {isEditMode ? (
-                                            <Textarea 
-                                                value={principle.text} 
-                                                onChange={(e) => handleFieldChange('principles', displayData.principles.map((p, i) => i === index ? {...p, text: e.target.value} : p))} 
-                                                placeholder="Enter Standard Procedural Rule..." 
-                                                className="font-normal min-h-[80px] text-sm leading-relaxed text-primary" 
-                                            />
-                                        ) : (
-                                            <div className="flex items-start gap-2">
-                                                <p className="text-sm font-normal text-foreground leading-relaxed flex-1">
-                                                    {principle.text || <span className="italic opacity-30">Unspecified Directive Text</span>}
-                                                </p>
-                                                {principle.isHidden && <Badge variant="outline" className="text-[8px] font-black capitalize border-primary/10">Private</Badge>}
-                                            </div>
-                                        )}
+                                <div className="flex items-center justify-between p-5 rounded-3xl bg-white border border-primary/5 shadow-sm">
+                                    <div className="space-y-1">
+                                        <Label className="text-xs font-black uppercase tracking-widest">Inbound Portal (Donors)</Label>
+                                        <p className="text-[9px] font-bold text-muted-foreground opacity-60">Authorize donors to access their cloud history.</p>
                                     </div>
-                                ))}
+                                    <Switch checked={displayData.isDonorLoginEnabled} onCheckedChange={(val) => handleFieldChange('isDonorLoginEnabled', val)} disabled={isFormDisabled} className="data-[state=checked]:bg-primary" />
+                                </div>
+                                <div className="flex items-center justify-between p-5 rounded-3xl bg-white border border-primary/5 shadow-sm">
+                                    <div className="space-y-1">
+                                        <Label className="text-xs font-black uppercase tracking-widest">Outbound Portal (Recipients)</Label>
+                                        <p className="text-[9px] font-bold text-muted-foreground opacity-60">Authorize beneficiaries to track their aid status.</p>
+                                    </div>
+                                    <Switch checked={displayData.isBeneficiaryLoginEnabled} onCheckedChange={(val) => handleFieldChange('isBeneficiaryLoginEnabled', val)} disabled={isFormDisabled} className="data-[state=checked]:bg-primary" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="p-8 rounded-[40px] bg-primary/[0.02] border border-primary/5 space-y-6">
+                            <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
+                                <Key className="h-5 w-5 text-primary opacity-40" />
+                                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Credential Protocol</h4>
+                            </div>
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Primary Auth Method</Label>
+                                    <Select value={displayData.portalAuthMethod} onValueChange={(val) => handleFieldChange('portalAuthMethod', val)} disabled={isFormDisabled}>
+                                        <SelectTrigger className="h-12 font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5">
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-2xl border-primary/10 shadow-dropdown p-1.5">
+                                            <SelectItem value="OTP" className="font-bold text-xs p-3 rounded-xl">Neural OTP (One-Time Password)</SelectItem>
+                                            <SelectItem value="Password" className="font-bold text-xs p-3 rounded-xl">Classic Secure Password</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="flex items-center justify-between p-5 rounded-3xl bg-white border border-primary/5 shadow-sm">
+                                    <div className="space-y-1">
+                                        <Label className="text-xs font-black uppercase tracking-widest">Donor Self-Reporting</Label>
+                                        <p className="text-[9px] font-bold text-muted-foreground opacity-60">Authorize donors to log their own financial transfers.</p>
+                                    </div>
+                                    <Switch checked={displayData.isDonorSelfRecordPaymentEnabled} onCheckedChange={(val) => handleFieldChange('isDonorSelfRecordPaymentEnabled', val)} disabled={isFormDisabled} className="data-[state=checked]:bg-primary" />
+                                </div>
                             </div>
                         </div>
                     </div>
                 </SettingsSection>
 
+                <SettingsSection 
+                    title="Institutional Branding Matrix" 
+                    description="Orchestrate the visual identity and metadata of the institution."
+                    icon={Palette}
+                >
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
+                                <Activity className="h-5 w-5 text-primary opacity-40" />
+                                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Institutional Profile</h4>
+                            </div>
+                            <div className="space-y-6">
+                                <div className="space-y-4">
+                                    <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40">Organization Name</Label>
+                                    <Input value={displayData.name} onChange={e => handleFieldChange('name', e.target.value)} disabled={isFormDisabled} className="h-14 font-black text-xl rounded-3xl border-primary/5 bg-white shadow-sm px-6 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" />
+                                </div>
+                                <div className="grid grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Registration No.</Label>
+                                        <Input value={displayData.regNo} onChange={e => handleFieldChange('regNo', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">PAN Vector</Label>
+                                        <Input value={displayData.pan} onChange={e => handleFieldChange('pan', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0 uppercase" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
+                                <Globe2 className="h-5 w-5 text-primary opacity-40" />
+                                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Digital Presence Vectors</h4>
+                            </div>
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Official Portal URL</Label>
+                                    <Input value={displayData.website} onChange={e => handleFieldChange('website', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-bold text-xs rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" placeholder="https://institution.org" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Contact Email Vector</Label>
+                                    <Input value={displayData.contactEmail} onChange={e => handleFieldChange('contactEmail', e.target.value)} disabled={isFormDisabled} className="h-12 font-bold text-xs rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" placeholder="admin@institution.org" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </SettingsSection>
             </div>
-        </div>
+            
+            {isEditMode && (
+                <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-fade-in-up">
+                    <div className="flex items-center gap-2 bg-primary/20 backdrop-blur-2xl p-2 rounded-[32px] border border-primary/20 shadow-2xl">
+                        <Button variant="ghost" onClick={handleCancel} disabled={isSubmitting} className="font-black uppercase tracking-widest text-[10px] text-primary h-12 px-8 rounded-3xl hover:bg-white/20 transition-all">
+                            <X className="mr-2 h-4 w-4" /> Discard Updates
+                        </Button>
+                        <Button onClick={handleSave} disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px] h-12 px-12 rounded-3xl shadow-xl shadow-primary/40 transition-all active:scale-95">
+                            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <CloudCog className="mr-2 h-4 w-4"/>} 
+                            Commit Sync
+                        </Button>
+                    </div>
+                </div>
+            )}
+        </main>
     );
 }

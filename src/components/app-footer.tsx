@@ -80,7 +80,7 @@ export function AppFooter() {
   };
 
   return (
-    <footer className="bg-secondary/50 border-t border-border py-12 px-4 font-normal text-primary transition-colors duration-500">
+    <footer className="bg-secondary/50 border-t border-border py-12 px-4 font-normal text-primary transition-colors duration-500 animate-reveal-up">
       <div className="container mx-auto max-w-6xl">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-start">
           

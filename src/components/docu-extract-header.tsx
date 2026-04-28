@@ -45,7 +45,7 @@ export function DocuExtractHeader() {
   const homeHref = user ? (session.isStaff ? '/dashboard' : '/donor-portal') : '/';
   
   return (
-    <header className="bg-background/95 backdrop-blur-md border-b border-border sticky top-0 z-50 w-full py-4 flex items-center transition-all duration-500 shadow-sm">
+    <header className="bg-background/95 backdrop-blur-md border-b border-border sticky top-0 z-50 w-full py-4 flex items-center transition-all duration-500 shadow-sm animate-reveal-down">
       <div className="container mx-auto flex justify-between items-center px-4 gap-4">
         <Link href={homeHref} className="flex items-center gap-4 group transition-all hover:scale-[1.01]">
           <div 

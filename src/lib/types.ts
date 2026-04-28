@@ -456,6 +456,7 @@ export interface UserProfile extends DocumentData {
   linkedDonorId?: string;
   linkedBeneficiaryId?: string;
   password?: string; // Encrypted/Hashed password for manual login
+  telegramChatId?: string; // Telegram Chat ID for individual alerts
 }
  
 export interface PendingVerification extends DocumentData {

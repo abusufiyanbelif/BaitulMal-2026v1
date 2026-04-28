@@ -25,7 +25,7 @@ export function MobileNav() {
   ];
 
   return (
-    <div className="mobile-bottom-nav">
+    <div className="mobile-bottom-nav animate-reveal-up">
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);

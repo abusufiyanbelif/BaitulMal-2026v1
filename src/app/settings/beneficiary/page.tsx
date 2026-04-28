@@ -54,6 +54,7 @@ export default function BeneficiarySettingsPage() {
   const [localMandatory, setLocalMandatory] = useState<Record<string, boolean>>({});
   const [localVerificationMode, setLocalVerificationMode] = useState('Disabled');
   const [localWhatsAppNotify, setLocalWhatsAppNotify] = useState(true);
+  const [localTelegramNotify, setLocalTelegramNotify] = useState(true);
   const [localInAppNotify, setLocalInAppNotify] = useState(true);
  
    useEffect(() => {
@@ -62,6 +63,7 @@ export default function BeneficiarySettingsPage() {
      if (configSettings?.verificationMode) setLocalVerificationMode(configSettings.verificationMode);
      else if (configSettings?.isVerificationRequired) setLocalVerificationMode('Mandatory');
      setLocalWhatsAppNotify(configSettings?.enableWhatsAppNotifications !== false);
+     setLocalTelegramNotify(configSettings?.enableTelegramNotifications !== false);
      setLocalInAppNotify(configSettings?.enableInAppNotifications !== false);
    }, [visibilitySettings, configSettings]);
  
@@ -70,9 +72,10 @@ export default function BeneficiarySettingsPage() {
      const mandatoryChanged = JSON.stringify(localMandatory) !== JSON.stringify(configSettings?.mandatoryFields || {});
      const verificationChanged = localVerificationMode !== (configSettings?.verificationMode || 'Disabled');
      const whatsappChanged = localWhatsAppNotify !== (configSettings?.enableWhatsAppNotifications !== false);
+     const telegramChanged = localTelegramNotify !== (configSettings?.enableTelegramNotifications !== false);
      const inAppChanged = localInAppNotify !== (configSettings?.enableInAppNotifications !== false);
-     return visChanged || mandatoryChanged || verificationChanged || whatsappChanged || inAppChanged;
-   }, [localVis, localMandatory, localVerificationMode, localWhatsAppNotify, localInAppNotify, visibilitySettings, configSettings]);
+     return visChanged || mandatoryChanged || verificationChanged || whatsappChanged || telegramChanged || inAppChanged;
+   }, [localVis, localMandatory, localVerificationMode, localWhatsAppNotify, localTelegramNotify, localInAppNotify, visibilitySettings, configSettings]);
 
   const handleVisToggle = (id: string, group: 'public' | 'member') => {
     const key = `${group}_${id}`;
@@ -94,6 +97,7 @@ export default function BeneficiarySettingsPage() {
                  isVerificationRequired: localVerificationMode !== 'Disabled',
                  verificationMode: localVerificationMode,
                  enableWhatsAppNotifications: localWhatsAppNotify,
+                 enableTelegramNotifications: localTelegramNotify,
                  enableInAppNotifications: localInAppNotify
              }, { merge: true })
          ]);
@@ -112,6 +116,7 @@ export default function BeneficiarySettingsPage() {
      if (configSettings?.verificationMode) setLocalVerificationMode(configSettings.verificationMode);
      else if (configSettings?.isVerificationRequired) setLocalVerificationMode('Mandatory');
      setLocalWhatsAppNotify(configSettings?.enableWhatsAppNotifications !== false);
+     setLocalTelegramNotify(configSettings?.enableTelegramNotifications !== false);
      setLocalInAppNotify(configSettings?.enableInAppNotifications !== false);
      setIsEditMode(false);
    };
@@ -240,6 +245,69 @@ export default function BeneficiarySettingsPage() {
                      <p className="text-[10px] text-muted-foreground font-medium mt-2">
                         Control how modifications to cases are handled by default.
                      </p>
+                 </div>
+             </CardContent>
+         </Card>
+
+         <Card className="animate-fade-in-up border-primary/10 bg-white shadow-sm overflow-hidden mt-6">
+             <CardHeader className="bg-primary/5 border-b">
+                 <CardTitle className="flex items-center gap-2 font-bold text-primary">
+                     <Bell className="h-5 w-5" /> Notification Settings
+                 </CardTitle>
+                 <CardDescription className="font-normal text-primary/70">
+                     Configure how members and admins are notified about beneficiary events.
+                 </CardDescription>
+             </CardHeader>
+             <CardContent className="pt-6 space-y-4">
+                 <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
+                     <Checkbox 
+                         id="beneficiary_whatsapp_notify" 
+                         checked={localWhatsAppNotify} 
+                         onCheckedChange={(checked) => setLocalWhatsAppNotify(!!checked)} 
+                         disabled={!isEditMode}
+                         className="data-[state=checked]:bg-primary"
+                     />
+                     <div className="space-y-0.5">
+                         <div className="flex items-center gap-2">
+                            <Smartphone className="h-3 w-3 text-green-500" />
+                            <Label htmlFor="beneficiary_whatsapp_notify" className="cursor-pointer font-bold text-sm tracking-tight text-primary">WhatsApp Notifications</Label>
+                         </div>
+                         <p className="text-[10px] text-muted-foreground font-medium">Send automated WhatsApp alerts for beneficiary profile creations and approvals.</p>
+                     </div>
+                 </div>
+
+                 <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
+                     <Checkbox 
+                         id="beneficiary_telegram_notify" 
+                         checked={localTelegramNotify} 
+                         onCheckedChange={(checked) => setLocalTelegramNotify(!!checked)} 
+                         disabled={!isEditMode}
+                         className="data-[state=checked]:bg-primary"
+                     />
+                     <div className="space-y-0.5">
+                         <div className="flex items-center gap-2">
+                            <Smartphone className="h-3 w-3 text-sky-500" />
+                            <Label htmlFor="beneficiary_telegram_notify" className="cursor-pointer font-bold text-sm tracking-tight text-primary">Telegram Notifications</Label>
+                         </div>
+                         <p className="text-[10px] text-muted-foreground font-medium">Send automated Telegram alerts to your groups or individuals.</p>
+                     </div>
+                 </div>
+
+                 <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
+                     <Checkbox 
+                         id="beneficiary_inapp_notify" 
+                         checked={localInAppNotify} 
+                         onCheckedChange={(checked) => setLocalInAppNotify(!!checked)} 
+                         disabled={!isEditMode}
+                         className="data-[state=checked]:bg-primary"
+                     />
+                     <div className="space-y-0.5">
+                         <div className="flex items-center gap-2">
+                            <Bell className="h-3 w-3 text-blue-500" />
+                            <Label htmlFor="beneficiary_inapp_notify" className="cursor-pointer font-bold text-sm tracking-tight text-primary">In-App Notifications</Label>
+                         </div>
+                         <p className="text-[10px] text-muted-foreground font-medium">Show alerts on profile dashboard and approval toast messages after login.</p>
+                     </div>
                  </div>
              </CardContent>
          </Card>

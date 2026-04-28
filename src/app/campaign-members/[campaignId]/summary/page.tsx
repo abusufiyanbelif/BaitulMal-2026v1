@@ -24,7 +24,7 @@ import {
 import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
-import type { Campaign, Beneficiary, Donation, CampaignDocument, DonationCategory } from '@/lib/types';
+import type { Campaign, Beneficiary, Donation, CampaignDocument, DonationCategory, Lead } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -56,7 +56,9 @@ import {
     ChevronRight,
     Calendar,
     Clock,
-    History
+    History,
+    Sparkles,
+    Check
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
@@ -110,9 +112,10 @@ import { PendingUpdateWarning } from '@/components/pending-update-warning';
 import { VerificationRequestDialog } from '@/components/verification-request-dialog';
 import { checkPendingVerificationAction } from '@/app/verifications/actions';
 import { recordAuditLogAction } from '@/app/audit/actions';
-import { generateChanges } from '@/lib/utils';
+import { generateChanges, getImageSrc } from '@/lib/utils';
 import { notifyCampaignAction } from '@/app/messages/actions';
 import { AuditHistory } from '@/components/audit-history';
+import { getDefaultImage, defaultInstitutionalAssets } from '@/lib/default-images';
 import type { PendingVerification } from '@/lib/types';
 
 const donationCategoryChartConfig = {
@@ -179,6 +182,7 @@ export default function CampaignSummaryPage() {
     const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
     const [pendingSaveData, setPendingSaveData] = useState<any>(null);
     const [existingPendingRequest, setExistingPendingRequest] = useState<PendingVerification | null>(null);
+    const [selectedDefaultImageUrl, setSelectedDefaultImageUrl] = useState<string | null>(null);
 
     const summaryRef = useRef<HTMLDivElement>(null);
 
@@ -190,10 +194,22 @@ export default function CampaignSummaryPage() {
     const campaignDocRef = useMemoFirebase(() => (firestore && campaignId) ? doc(firestore, 'campaigns', campaignId) as DocumentReference<Campaign> : null, [firestore, campaignId]);
     const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && campaignId) ? collection(firestore, `campaigns/${campaignId}/beneficiaries`) : null, [firestore, campaignId]);
     const allDonationsCollectionRef = useMemoFirebase(() => (firestore) ? collection(firestore, 'donations') : null, [firestore]);
+    const allCampaignsRef = useMemoFirebase(() => firestore ? collection(firestore, 'campaigns') : null, [firestore]);
+    const allLeadsRef = useMemoFirebase(() => firestore ? collection(firestore, 'leads') : null, [firestore]);
 
     const { data: campaign, isLoading: isCampaignLoading, forceRefetch: forceRefetchCampaign } = useDoc<Campaign>(campaignDocRef);
     const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
     const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
+    const { data: globalCampaigns } = useCollection<Campaign>(allCampaignsRef);
+    const { data: globalLeads } = useCollection<Lead>(allLeadsRef);
+
+    const galleryImages = useMemo(() => {
+        const urls = new Set<string>();
+        defaultInstitutionalAssets.forEach(a => urls.add(a.url));
+        if (globalCampaigns) globalCampaigns.forEach(c => { if (c.imageUrl && !c.imageUrl.startsWith('data:')) urls.add(c.imageUrl); });
+        if (globalLeads) globalLeads.forEach(l => { if (l.imageUrl && !l.imageUrl.startsWith('data:')) urls.add(l.imageUrl); });
+        return Array.from(urls);
+    }, [globalCampaigns, globalLeads]);
 
     const isLegacyData = useMemo(() => {
         return !!(campaign && !campaign.itemCategories && (campaign as any).rationLists);
@@ -413,8 +429,21 @@ export default function CampaignSummaryPage() {
             setIsImageDeleted(false);
             setImageFile(null);
             setNewDocuments([]);
+            setSelectedDefaultImageUrl(null);
         }
     }, [campaign, editMode]);
+
+    const purpose = useMemo(() => {
+        if (editableCampaign.category === 'Ration' || editableCampaign.category === 'Relief') return editableCampaign.category;
+        return 'Charity';
+    }, [editableCampaign.category]);
+
+    useEffect(() => {
+        if (editMode && purpose) {
+            const suggested = getDefaultImage(purpose);
+            setSelectedDefaultImageUrl(suggested);
+        }
+    }, [purpose, editMode]);
 
     const isLoadingPage = isCampaignLoading || isProfileLoading || areBeneficiariesLoading || isBrandingLoading || isPaymentLoading;
 
@@ -437,7 +466,12 @@ export default function CampaignSummaryPage() {
         }
     };
     
-    const handleRemoveImage = () => { setImageFile(null); setImagePreview(null); setIsImageDeleted(true); };
+    const handleRemoveImage = () => { 
+        setImageFile(null); 
+        setImagePreview(null); 
+        setSelectedDefaultImageUrl(null);
+        setIsImageDeleted(true); 
+    };
 
     const handleRemoveExistingDocument = (urlToRemove: string) => {
         setExistingDocuments(prev => prev.filter(doc => doc.url !== urlToRemove));
@@ -472,10 +506,7 @@ export default function CampaignSummaryPage() {
         setIsSubmitting(true);
         let imageUrl = editableCampaign.imageUrl || '';
         let imageUrlFilename = editableCampaign.imageUrlFilename || '';
-        if (isImageDeleted && imageUrl) {
-            imageUrl = '';
-            imageUrlFilename = '';
-        } else if (imageFile) {
+        if (imageFile) {
             try {
                 const resizedBlob = await new Promise<Blob>((resolve) => {
                     (Resizer as any).imageFileResizer(imageFile, 1024, 1024, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
@@ -491,6 +522,11 @@ export default function CampaignSummaryPage() {
                 setIsSubmitting(false);
                 return;
             }
+        } else if (selectedDefaultImageUrl) {
+            imageUrl = selectedDefaultImageUrl;
+        } else if (isImageDeleted) {
+            imageUrl = '';
+            imageUrlFilename = '';
         }
         const documentUploadPromises = newDocuments.map(async (file) => {
             const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
@@ -541,7 +577,7 @@ export default function CampaignSummaryPage() {
     };
 
     const handleViewImage = (url: string, name: string) => {
-        setImageToView({ url, name });
+        setImageToView({ url: getImageSrc(url), name });
         setZoom(1);
         setRotation(0);
         setIsImageViewerOpen(true);
@@ -671,11 +707,57 @@ export default function CampaignSummaryPage() {
                         {editMode ? (
                             <div className="space-y-6 font-normal animate-fade-in-zoom">
                                 <div className="space-y-2">
-                                    <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize opacity-60">Header Image</Label>
+                                    <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize opacity-60">Upload Image</Label>
                                     <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
-                                    <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-all duration-300 group border-primary/20">
-                                        {imagePreview ? ( <><Image src={imagePreview} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg" /><Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 transition-all duration-300 hover:scale-110 active:scale-90 shadow-lg" onClick={handleRemoveImage}><Trash2 className="h-4 w-4" /></Button></> ) : ( <div className="flex flex-col items-center justify-center pt-5 pb-6 transition-transform group-hover:scale-105"><UploadCloud className="w-8 h-8 mb-2 text-muted-foreground group-hover:text-primary" /><p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click To Upload</span></p></div> )}
+                                    <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-all duration-300 group border-primary/20 overflow-hidden">
+                                        {imagePreview || selectedDefaultImageUrl ? ( 
+                                            <>
+                                                <Image src={getImageSrc(imagePreview || selectedDefaultImageUrl!)} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg transition-transform duration-700 group-hover:scale-105" />
+                                                <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
+                                                
+                                                <Button type="button" variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7 transition-all duration-300 hover:scale-110 active:scale-90 shadow-lg z-20" onClick={(e) => { e.preventDefault(); handleRemoveImage(); }}>
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+
+                                                <div className="absolute bottom-2 left-2 right-2 text-center text-white/80 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity z-10 pointer-events-none drop-shadow-md">
+                                                    Click To Upload Custom Background
+                                                </div>
+                                            </> 
+                                        ) : ( 
+                                            <div className="flex flex-col items-center justify-center pt-5 pb-6 transition-transform group-hover:scale-105">
+                                                <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground group-hover:text-primary" />
+                                                <p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click To Upload</span></p>
+                                            </div> 
+                                        )}
                                     </label>
+                                    
+                                    {/* Global Asset Gallery */}
+                                    <div className="pt-2 space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary/40">Global Image Gallery</Label>
+                                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                                            {galleryImages.map((url, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    type="button"
+                                                    onClick={() => {
+                                                        handleRemoveImage();
+                                                        setSelectedDefaultImageUrl(url);
+                                                    }}
+                                                    className={cn(
+                                                        "relative flex-shrink-0 w-24 h-16 rounded-lg overflow-hidden border-2 transition-all",
+                                                        selectedDefaultImageUrl === url ? "border-primary ring-2 ring-primary/20 scale-95" : "border-transparent opacity-60 hover:opacity-100"
+                                                    )}
+                                                >
+                                                    <Image src={getImageSrc(url)} alt={`Gallery Image ${idx}`} fill sizes="96px" className="object-cover" />
+                                                    {selectedDefaultImageUrl === url && (
+                                                        <div className="absolute inset-0 bg-primary/20 flex items-center justify-center">
+                                                            <Check className="h-6 w-6 text-white" />
+                                                        </div>
+                                                    )}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                     <div className="space-y-1">
@@ -804,12 +886,8 @@ export default function CampaignSummaryPage() {
                             </div>
                         ) : (
                             <>
-                                <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer transition-all duration-500 hover:shadow-lg group" onClick={() => { if(campaign?.imageUrl) handleViewImage(campaign.imageUrl, campaign.name); }}>
-                                    {campaign?.imageUrl ? (
-                                        <Image src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`} alt={campaign.name} fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover transition-transform duration-700 group-hover:scale-110" />
-                                    ) : (
-                                        <FallbackIcon className="h-20 w-20 text-muted-foreground/30 transition-transform duration-500 group-hover:scale-110" />
-                                    )}
+                                <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer transition-all duration-500 hover:shadow-lg group" onClick={() => { if(campaign?.imageUrl || getDefaultImage(campaign?.category)) handleViewImage(campaign?.imageUrl || getDefaultImage(campaign?.category), campaign?.name || 'Campaign Image'); }}>
+                                    <Image src={getImageSrc(campaign?.imageUrl || getDefaultImage(campaign?.category))} alt={campaign?.name || 'Campaign Image'} fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover transition-transform duration-700 group-hover:scale-110" />
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                 </div>
                                 <div className="space-y-2 font-normal text-foreground">

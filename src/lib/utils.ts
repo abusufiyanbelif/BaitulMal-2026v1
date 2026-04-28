@@ -114,3 +114,24 @@ export function generateChanges(oldVal: any, newVal: any): { field: string, old:
     
     return changes;
 }
+
+/**
+ * Resolves an image source URL, bypassing the proxy for local assets
+ * while routing remote URLs through the institutional proxy for compatibility.
+ */
+export function getImageSrc(url: string | null | undefined): string {
+    if (!url) return '';
+    
+    // If it's a local asset (starts with /), return as is
+    if (url.startsWith('/')) {
+        return url;
+    }
+    
+    // If it's an external URL, route through the proxy
+    if (url.startsWith('http')) {
+        return `/api/image-proxy?url=${encodeURIComponent(url)}`;
+    }
+    
+    return url;
+}
+

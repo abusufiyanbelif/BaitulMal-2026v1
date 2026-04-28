@@ -101,3 +101,54 @@ export async function setInstitutionalPasswordAction(targetId: string, collectio
         return { success: false, message: e.message };
     }
 }
+
+/**
+ * Exchange Firebase Auth Phone Number for a secure custom token using the correct institutional UID.
+ */
+export async function exchangeOtpForCustomTokenAction(phoneE164: string) {
+    const { adminDb, adminAuth } = getAdminServices();
+    if (!adminDb || !adminAuth) return { success: false, message: 'Institutional Authentication Hub Unavailable.' };
+
+    try {
+        const numericOnly = phoneE164.replace(/\D/g, '');
+        const phone10 = numericOnly.length >= 10 ? numericOnly.slice(-10) : numericOnly;
+        const phoneWithPrefix = '+91' + phone10;
+
+        // 1. Search in Users
+        const userByPhone = await adminDb.collection('users')
+            .where('phone', 'in', [phone10, phoneWithPrefix])
+            .limit(1).get();
+
+        if (!userByPhone.empty) {
+            const token = await adminAuth.createCustomToken(userByPhone.docs[0].id);
+            return { success: true, token, role: userByPhone.docs[0].data().role };
+        }
+
+        // 2. Search in Donors
+        const donorByPhone = await adminDb.collection('donors')
+            .where('phone', 'in', [phone10, phoneWithPrefix])
+            .limit(1).get();
+
+        if (!donorByPhone.empty) {
+            const token = await adminAuth.createCustomToken(donorByPhone.docs[0].id);
+            return { success: true, token, role: 'Donor' };
+        }
+
+        // 3. Search in Beneficiaries
+        const benByPhone = await adminDb.collection('beneficiaries')
+            .where('phone', 'in', [phone10, phoneWithPrefix])
+            .limit(1).get();
+
+        if (!benByPhone.empty) {
+            const token = await adminAuth.createCustomToken(benByPhone.docs[0].id);
+            return { success: true, token, role: 'Beneficiary' };
+        }
+
+        return { success: false, message: 'Phone number not registered in our database.' };
+
+    } catch (e: any) {
+        console.error('OTP Exchange Error:', e);
+        return { success: false, message: e.message };
+    }
+}
+

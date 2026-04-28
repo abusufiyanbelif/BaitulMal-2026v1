@@ -66,6 +66,7 @@ export default function DonationSettingsPage() {
   const [minApprovalsRequired, setMinApprovalsRequired] = useState(1);
   const [authorizedVerifiers, setAuthorizedVerifiers] = useState<string[]>([]);
   const [localWhatsAppNotify, setLocalWhatsAppNotify] = useState(true);
+  const [localTelegramNotify, setLocalTelegramNotify] = useState(true);
   const [localInAppNotify, setLocalInAppNotify] = useState(true);
   const [userSearchTerm, setUserSearchTerm] = useState('');
 
@@ -92,6 +93,7 @@ export default function DonationSettingsPage() {
      if (configSettings?.minApprovalsRequired !== undefined) setMinApprovalsRequired(configSettings.minApprovalsRequired);
      if (configSettings?.authorizedVerifiers) setAuthorizedVerifiers(configSettings.authorizedVerifiers);
      setLocalWhatsAppNotify(configSettings?.enableWhatsAppNotifications !== false);
+     setLocalTelegramNotify(configSettings?.enableTelegramNotifications !== false);
      setLocalInAppNotify(configSettings?.enableInAppNotifications !== false);
    }, [visibilitySettings, configSettings]);
 
@@ -102,9 +104,10 @@ export default function DonationSettingsPage() {
         const minApprovalsChanged = Number(minApprovalsRequired) !== (configSettings?.minApprovalsRequired || 1);
         const authorizedChanged = JSON.stringify(authorizedVerifiers) !== JSON.stringify(configSettings?.authorizedVerifiers || []);
         const whatsappChanged = localWhatsAppNotify !== (configSettings?.enableWhatsAppNotifications !== false);
+        const telegramChanged = localTelegramNotify !== (configSettings?.enableTelegramNotifications !== false);
         const inAppChanged = localInAppNotify !== (configSettings?.enableInAppNotifications !== false);
-        return visChanged || mandatoryChanged || verificationModeChanged || minApprovalsChanged || authorizedChanged || whatsappChanged || inAppChanged;
-    }, [localVis, localMandatory, localVerificationMode, minApprovalsRequired, authorizedVerifiers, localWhatsAppNotify, localInAppNotify, visibilitySettings, configSettings]);
+        return visChanged || mandatoryChanged || verificationModeChanged || minApprovalsChanged || authorizedChanged || whatsappChanged || telegramChanged || inAppChanged;
+    }, [localVis, localMandatory, localVerificationMode, minApprovalsRequired, authorizedVerifiers, localWhatsAppNotify, localTelegramNotify, localInAppNotify, visibilitySettings, configSettings]);
 
   const handleVisToggle = (id: string, group: 'public' | 'member') => {
     const key = `${group}_${id}`;
@@ -128,6 +131,7 @@ export default function DonationSettingsPage() {
                  minApprovalsRequired: Number(minApprovalsRequired) || 1,
                  authorizedVerifiers: authorizedVerifiers,
                  enableWhatsAppNotifications: localWhatsAppNotify,
+                 enableTelegramNotifications: localTelegramNotify,
                  enableInAppNotifications: localInAppNotify
              }, { merge: true })
          ]);
@@ -175,6 +179,7 @@ export default function DonationSettingsPage() {
      if (configSettings?.minApprovalsRequired !== undefined) setMinApprovalsRequired(configSettings.minApprovalsRequired);
      if (configSettings?.authorizedVerifiers) setAuthorizedVerifiers(configSettings.authorizedVerifiers);
      setLocalWhatsAppNotify(configSettings?.enableWhatsAppNotifications !== false);
+     setLocalTelegramNotify(configSettings?.enableTelegramNotifications !== false);
      setLocalInAppNotify(configSettings?.enableInAppNotifications !== false);
      setIsEditMode(false);
    };
@@ -430,6 +435,23 @@ export default function DonationSettingsPage() {
                             <Label htmlFor="donation_whatsapp_notify" className="cursor-pointer font-bold text-sm tracking-tight text-primary">WhatsApp Notifications</Label>
                          </div>
                          <p className="text-[10px] text-muted-foreground font-medium">Send automated WhatsApp alerts for donation submissions and verifications.</p>
+                     </div>
+                 </div>
+
+                 <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
+                     <Checkbox 
+                         id="donation_telegram_notify" 
+                         checked={localTelegramNotify} 
+                         onCheckedChange={(checked) => setLocalTelegramNotify(!!checked)} 
+                         disabled={!isEditMode}
+                         className="data-[state=checked]:bg-primary"
+                     />
+                     <div className="space-y-0.5">
+                         <div className="flex items-center gap-2">
+                            <Smartphone className="h-3 w-3 text-sky-500" />
+                            <Label htmlFor="donation_telegram_notify" className="cursor-pointer font-bold text-sm tracking-tight text-primary">Telegram Notifications</Label>
+                         </div>
+                         <p className="text-[10px] text-muted-foreground font-medium">Send automated Telegram alerts to your groups or individuals.</p>
                      </div>
                  </div>
 

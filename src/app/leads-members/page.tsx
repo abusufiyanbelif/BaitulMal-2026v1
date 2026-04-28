@@ -21,7 +21,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { CopyLeadDialog } from '@/components/copy-lead-dialog';
 import { copyLeadAction, deleteLeadAction } from './actions';
-import { cn, getNestedValue } from '@/lib/utils';
+import { cn, getNestedValue, getImageSrc } from '@/lib/utils';
 import { priorityLevels } from '@/lib/modules';
 import Image from 'next/image';
 import { DateRange } from "react-day-picker";
@@ -33,6 +33,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
 import { BrandedLoader } from '@/components/branded-loader';
+import { getDefaultImage } from '@/lib/default-images';
 import {
   Carousel,
   CarouselContent,
@@ -93,21 +94,17 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
             onClick={() => router.push(`/leads-members/${lead.id}/summary`)}
         >
           <div className="relative h-32 w-full bg-secondary flex items-center justify-center border-b border-primary/5">
-            {lead.imageUrl ? (
-                <Image
-                  src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`}
-                  alt={lead.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-            ) : (
-                <FallbackIcon className="h-16 w-16 text-primary/10" />
-            )}
+            <Image
+                src={getImageSrc(lead.imageUrl || getDefaultImage(lead.purpose))}
+                alt={lead.name}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-110"
+            />
           </div>
           <CardHeader className="p-4 space-y-3">
             <div className="flex justify-between items-start gap-2">
-                <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight text-primary">{lead.name}</CardTitle>
+                <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight text-primary leading-tight">{lead.name}</CardTitle>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
@@ -195,7 +192,7 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
             </div>
             <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                    <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary tracking-tight">{lead.purpose}</Badge>
+                    <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary tracking-tight px-2">{lead.purpose}</Badge>
                     <Badge 
                         variant={lead.status === 'Active' ? 'success' : lead.status === 'Completed' ? 'secondary' : 'outline'}
                         className={cn("text-[10px] font-bold", lead.status === 'Active' && "animate-status-pulse")}
@@ -204,11 +201,11 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
                     </Badge>
                 </div>
                 <div className="flex justify-between items-center">
-                    <Badge variant="outline" className="text-[10px] font-bold border-primary/20 text-primary flex items-center gap-1">
+                    <Badge variant="outline" className="text-[10px] font-bold border-primary/20 text-primary flex items-center gap-1 px-2">
                         <ShieldCheck className="h-3 w-3" />
                         {lead.authenticityStatus?.replace('Verification', '')}
                     </Badge>
-                    <Badge variant={lead.publicVisibility === 'Published' ? 'eligible' : 'outline'} className="text-[10px] font-bold flex items-center gap-1">
+                    <Badge variant={lead.publicVisibility === 'Published' ? 'eligible' : 'outline'} className="text-[10px] font-bold flex items-center gap-1 px-2">
                         <Globe className="h-3 w-3" />
                         {lead.publicVisibility || 'Hold'}
                     </Badge>
@@ -229,17 +226,33 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
                     <span className="opacity-60">Raised: ₹{lead.collected.toLocaleString('en-IN')}</span>
                     <span className="text-sm">Goal: ₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</span>
                 </div>
-                <Progress value={lead.progress} className="h-2 bg-primary/10 shadow-inner" />
+                <div className="relative">
+                    <Progress 
+                        value={lead.progress} 
+                        className={cn(
+                            "h-2 bg-primary/10 shadow-inner overflow-hidden",
+                            lead.progress >= 100 && "bg-emerald-100"
+                        )} 
+                    />
+                    {lead.progress >= 100 && (
+                        <div className="absolute inset-0 bg-emerald-400/20 animate-pulse pointer-events-none" />
+                    )}
+                </div>
                 <div className="flex justify-between items-center">
                     <span className="text-[9px] font-bold text-muted-foreground tracking-tight">Progress</span>
-                    <span className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary/5 border border-primary/10">
-                        {Math.round(lead.progress)}% Funded
+                    <span className={cn(
+                        "text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all duration-300",
+                        lead.progress >= 100 
+                            ? "bg-emerald-500 text-white border-emerald-600 shadow-sm" 
+                            : "bg-primary/5 text-primary border-primary/10"
+                    )}>
+                        {Math.round(lead.progress)}% {lead.progress >= 100 ? 'Goal Reached' : 'Funded'}
                     </span>
                 </div>
             </div>
         </CardContent>
          <CardFooter className="p-2 border-t bg-primary/5">
-            <Button asChild className="w-full text-xs font-bold tracking-tight text-primary shadow-none" size="sm" variant="ghost">
+            <Button asChild className="w-full text-xs font-bold tracking-tight text-primary shadow-none transition-all duration-300 hover:bg-primary/10" size="sm" variant="ghost">
                 <Link href={`/leads-members/${lead.id}/summary`}>
                     View Summary
                 </Link>
@@ -463,22 +476,25 @@ export default function LeadPage() {
   return (
     <>
       {(isSubmitting || isLoading) && <BrandedLoader message={isSubmitting ? "Updating Appeal Hub..." : "Syncing Registry Data..."} />}
-      <main className="container mx-auto p-4 sm:p-6 space-y-6 text-primary font-normal">
+      <main className="container mx-auto p-4 sm:p-6 space-y-6 text-primary font-normal relative">
+        <div className="absolute -top-20 -left-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10 animate-pulse" />
+        <div className="absolute top-40 -right-20 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl -z-10 animate-pulse" />
+
         <div className="flex items-center justify-between flex-wrap gap-4">
-          <Button variant="secondary" asChild size="sm" className="font-bold border-primary/20 transition-transform active:scale-95"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
-          {canCreate && !isLoading && <Button asChild size="sm" className="font-bold tracking-tight shadow-none active:scale-95 transition-transform"><Link href="/leads-members/create"><Plus className="mr-2 h-4 w-4" /> New Appeal</Link></Button>}
+          <Button variant="secondary" asChild size="sm" className="font-bold border-primary/20 transition-transform active:scale-95 text-primary rounded-xl px-5 h-9"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link></Button>
+          {canCreate && !isLoading && <Button asChild size="sm" className="font-bold tracking-tight shadow-none active:scale-95 transition-transform rounded-xl px-5 h-9"><Link href="/leads-members/create"><Plus className="mr-2 h-4 w-4" /> New Appeal</Link></Button>}
         </div>
 
-        <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Lead Management</h1>
-          <p className="text-sm max-w-2xl font-bold leading-relaxed opacity-70">Review individual support appeals, authenticate evidence, and manage archives.</p>
+        <div className="space-y-1.5">
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter text-primary">Lead Management</h1>
+          <p className="text-sm font-bold opacity-70 leading-relaxed max-w-2xl">Review individual support appeals, authenticate evidence, and manage archives.</p>
         </div>
 
-        <Card className="animate-fade-in-zoom shadow-none border-primary/5 bg-white/30 overflow-hidden">
+        <Card className="animate-fade-in-zoom shadow-none border-primary/5 bg-white/30 overflow-hidden rounded-[24px]">
           <CardHeader className="p-4 border-b bg-background/80 backdrop-blur-md sticky top-[73px] z-20">
             <ScrollArea className="w-full">
                 <div className="flex flex-nowrap items-center gap-3 pb-2">
-                    <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary font-normal text-primary" disabled={isLoading}/>
+                    <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary font-normal text-primary bg-white/50 rounded-xl" disabled={isLoading}/>
                     
                     <MultiSelectFilter 
                         title="Status" 
@@ -507,10 +523,27 @@ export default function LeadPage() {
                         selected={visibilityFilter} 
                         onChange={setVisibilityFilter} 
                     />
-                    <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
-                        <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-normal">{y}</SelectItem>)}</SelectContent></Select>
-                        <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-normal border-primary/20 text-primary", !dateRange ? "opacity-60" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
-                        {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
+                    <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1 group">
+                        <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs text-primary font-bold bg-white/50 border-primary/10 hover:border-primary/30 transition-all rounded-xl"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent className="rounded-xl shadow-dropdown"><SelectItem value="All" className="font-normal text-xs">All Years</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-normal text-xs">{y}</SelectItem>)}</SelectContent></Select>
+                        <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-4 text-xs font-bold border-primary/10 text-primary bg-white/50 hover:bg-white transition-all rounded-xl", !dateRange ? "opacity-60" : "border-primary/40")} disabled={isLoading}><CalendarIcon className="mr-2 h-3.5 w-3.5 opacity-40" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0 rounded-2xl shadow-2xl border-none" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                        {(selectedYear !== 'All' || dateRange || statusFilter.length > 0 || purposeFilter.length > 0 || authenticityFilter.length > 0 || visibilityFilter.length > 0 || searchTerm) && (
+                            <Button 
+                                variant="ghost" 
+                                size="sm" 
+                                className="h-9 px-3 text-[10px] font-bold text-destructive hover:bg-destructive/10 rounded-xl animate-fade-in-up" 
+                                onClick={() => { 
+                                    setSelectedYear('All'); 
+                                    setDateRange(undefined); 
+                                    setStatusFilter([]);
+                                    setPurposeFilter([]);
+                                    setAuthenticityFilter([]);
+                                    setVisibilityFilter([]);
+                                    setSearchTerm('');
+                                }}
+                            >
+                                <X className="h-3.5 w-3.5 mr-1" /> Reset
+                            </Button>
+                        )}
                     </div>
                 </div>
                 <ScrollBar orientation="horizontal" className="h-1.5" />
@@ -520,15 +553,15 @@ export default function LeadPage() {
             {(sections && sections.length > 0) ? (
               <Accordion type="multiple" defaultValue={['published', 'internal']} className="space-y-6">
                 {sections.map(section => (
-                  <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-xl px-4 bg-white shadow-none overflow-hidden">
-                    <AccordionTrigger className="hover:no-underline py-5 group font-bold">
+                  <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-[20px] px-4 bg-white shadow-none overflow-hidden transition-all duration-300">
+                    <AccordionTrigger className="hover:no-underline py-6 group font-bold">
                       <div className="flex items-center gap-4">
-                        <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50", section.id === 'published' ? 'bg-primary' : section.id === 'internal' ? 'bg-amber-600' : 'bg-muted-foreground')} />
+                        <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50 transition-all", section.id === 'published' ? 'bg-primary' : section.id === 'internal' ? 'bg-amber-600' : 'bg-muted-foreground')} />
                         <div className="flex items-center gap-2">
-                            <section.icon className={cn("h-5 w-5", section.color || "text-primary")} />
+                            <section.icon className={cn("h-5 w-5 group-hover:rotate-6 transition-transform", section.color || "text-primary")} />
                             <span className={cn("text-lg font-bold tracking-tight", section.color || "text-primary")}>{section.title}</span>
                         </div>
-                        <Badge variant="secondary" className="rounded-full h-5 text-xs font-bold text-primary">{section.items.length}</Badge>
+                        <Badge variant="secondary" className="rounded-full h-5 text-[10px] font-bold bg-primary/10 text-primary">{section.items.length}</Badge>
                       </div>
                     </AccordionTrigger>
                     <AccordionContent className="pt-2 pb-8 px-2 sm:px-10">
@@ -545,8 +578,8 @@ export default function LeadPage() {
                           ))}
                         </CarouselContent>
                         <div className="flex items-center justify-center gap-4 mt-8">
-                            <CarouselPrevious className="static translate-y-0 h-10 w-10 border-primary/20 text-primary hover:bg-primary hover:text-white transition-all duration-300" />
-                            <CarouselNext className="static translate-y-0 h-10 w-10 border-primary/20 text-primary hover:bg-primary hover:text-white transition-all duration-300" />
+                            <CarouselPrevious className="static translate-y-0 h-10 w-10 border-primary/10 text-primary hover:bg-primary hover:text-white transition-all duration-500 shadow-sm" />
+                            <CarouselNext className="static translate-y-0 h-10 w-10 border-primary/10 text-primary hover:bg-primary hover:text-white transition-all duration-500 shadow-sm" />
                         </div>
                       </Carousel>
                     </AccordionContent>
@@ -554,9 +587,10 @@ export default function LeadPage() {
                 ))}
               </Accordion>
             ) : (
-              <div className="text-center py-24 bg-primary/5 rounded-2xl border-2 border-dashed border-primary/20">
-                  <Lightbulb className="h-12 w-12 mx-auto text-primary/20 mb-4" />
-                  <p className="font-bold text-sm opacity-60 text-primary tracking-widest text-center capitalize">No Appeals Found Matching Criteria.</p>
+              <div className="text-center py-24 bg-primary/5 rounded-[24px] border-2 border-dashed border-primary/20 animate-fade-in-up">
+                  <Lightbulb className="h-16 w-16 mx-auto text-primary/20 mb-4 animate-pulse" />
+                  <p className="font-bold text-sm opacity-60 text-primary tracking-tight">No Appeals Found Matching Criteria.</p>
+                  <Button variant="ghost" size="sm" className="mt-4 text-xs font-bold text-primary hover:bg-primary/10" onClick={() => { setSelectedYear('All'); setDateRange(undefined); setStatusFilter([]); setPurposeFilter([]); setAuthenticityFilter([]); setVisibilityFilter([]); setSearchTerm(''); }}>Clear All Filters</Button>
               </div>
             )}
           </CardContent>
@@ -564,7 +598,7 @@ export default function LeadPage() {
       </main>
       
       <AlertDialog open={!!leadToDelete} onOpenChange={(open) => !open && setLeadToDelete(null)}>
-        <AlertDialogContent><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive">Delete Appeal?</AlertDialogTitle><AlertDialogDescription className="font-bold opacity-80 text-primary/70">Permanently Erase All Data For '{leadToDelete?.name}'? This Action Cannot Be Undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary transition-transform active:scale-95">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 transition-transform active:scale-95">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
+        <AlertDialogContent className="rounded-[24px] border-primary/10 shadow-dropdown"><AlertDialogHeader><AlertDialogTitle className="font-bold text-destructive tracking-tight">Delete Appeal?</AlertDialogTitle><AlertDialogDescription className="font-bold opacity-80 text-primary/70">Permanently Erase All Data For '{leadToDelete?.name}'? This Action Cannot Be Undone.</AlertDialogDescription></AlertDialogHeader><AlertDialogFooter><AlertDialogCancel className="font-bold border-primary/20 text-primary transition-transform active:scale-95 rounded-xl">Cancel</AlertDialogCancel><AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive text-white font-bold hover:bg-destructive/90 transition-transform active:scale-95 rounded-xl">Confirm Deletion</AlertDialogAction></AlertDialogFooter></AlertDialogContent>
       </AlertDialog>
         
       <CopyLeadDialog open={!!leadToCopy} onOpenChange={() => setLeadToCopy(null)} lead={leadToCopy} onCopyConfirm={async (opt) => { setIsSubmitting(true); try { const res = await copyLeadAction({ sourceLeadId: leadToCopy!.id, ...opt }); toast({ title: res.success ? 'Success' : 'Error', description: res.message, variant: res.success ? 'success' : 'destructive' }); } finally { setIsSubmitting(false); setLeadToCopy(null); } }}/>

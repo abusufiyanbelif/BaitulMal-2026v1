@@ -41,7 +41,20 @@ import {
     AlertCircle,
     CheckCircle2,
     DatabaseZap,
-    ArrowRight
+    ArrowRight,
+    UserPlus,
+    Activity,
+    Shield,
+    Lock,
+    Key,
+    IdCard,
+    Smartphone,
+    Mail,
+    ChevronRight,
+    Zap,
+    Scale,
+    Merge,
+    X
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -79,6 +92,36 @@ import { Label } from '@/components/ui/label';
 import { SectionLoader } from '@/components/section-loader';
 
 type SortKey = keyof UserProfile | 'srNo';
+
+function StatCard({ title, count, description, icon: Icon, delay, onClick, colorClass }: { title: string, count: number | string, description: string, icon: any, delay: string, onClick?: () => void, colorClass?: string }) {
+    return (
+        <Card 
+            onClick={onClick}
+            className={cn(
+                "group relative flex flex-col p-5 bg-white border-primary/5 shadow-sm animate-fade-in-up transition-all duration-500 hover:shadow-xl hover:-translate-y-1 overflow-hidden", 
+                onClick && "cursor-pointer active:scale-95",
+                colorClass
+            )} 
+            style={{ animationDelay: delay, animationFillMode: 'backwards' }}
+        >
+            <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.08] transition-opacity duration-500">
+                <Icon className="h-24 w-24" />
+            </div>
+            <div className="flex justify-between items-start mb-4 relative z-10">
+                <div className="p-3 rounded-2xl bg-primary/[0.03] text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-sm">
+                    <Icon className="h-5 w-5" />
+                </div>
+                <div className="text-right">
+                    <p className="text-[10px] font-black text-muted-foreground tracking-[0.2em] uppercase opacity-40 mb-1">{title}</p>
+                    <p className="text-3xl font-black text-primary tracking-tighter">{count}</p>
+                </div>
+            </div>
+            <div className="relative z-10 mt-auto">
+                <p className="text-[10px] font-bold text-muted-foreground/60 leading-tight">{description}</p>
+            </div>
+        </Card>
+    );
+}
 
 export default function UsersPage() {
   const router = useRouter();
@@ -176,6 +219,16 @@ export default function UsersPage() {
     return items;
   }, [users, searchTerm, statusFilter, roleFilter, sortConfig]);
 
+  const stats = useMemo(() => {
+      const allData = users || [];
+      return {
+          total: allData.length,
+          active: allData.filter(u => u.status === 'Active').length,
+          admins: allData.filter(u => u.role === 'Admin').length,
+          unlinked: duplicatesGroups.length,
+      };
+  }, [users, duplicatesGroups]);
+
   const totalPages = Math.ceil(filteredAndSortedUsers.length / itemsPerPage);
   const paginatedUsers = filteredAndSortedUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -225,229 +278,422 @@ export default function UsersPage() {
 
   const isLoading = areUsersLoading || isProfileLoading;
   
-  if (isLoading) return <SectionLoader label="Retrieving Member Registry..." description="Synchronizing Identity Records." />;
+  if (isLoading) return <SectionLoader label="Syncing Team Neural Network..." description="Retrieving Institutional Member Records." />;
+
+  if (!canRead) return (
+    <main className="container mx-auto p-8 text-primary font-normal">
+        <Alert variant="destructive" className="rounded-3xl border-primary/10 shadow-2xl">
+            <ShieldAlert className="h-4 w-4"/>
+            <AlertTitle className="font-black tracking-tight">Access Restricted</AlertTitle>
+            <AlertDescription className="font-bold opacity-70">Insufficient credentials to access the institutional member center.</AlertDescription>
+        </Alert>
+    </main>
+  );
 
   return (
-    <main className="container mx-auto p-4 md:p-8 space-y-6 text-primary font-normal">
-      <div className="flex flex-col gap-2">
-          <Button variant="outline" asChild className="w-fit font-bold border-primary/10 text-primary transition-transform active:scale-95"><Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Dashboard</Link></Button>
-          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-            <h1 className="text-3xl font-bold tracking-tight text-primary">Member & Identity Center</h1>
-            <div className="flex gap-2">
-                <Button variant="outline" asChild className="font-bold border-primary/20 text-primary"><Link href="/seed"><Database className="mr-2 h-4 w-4"/> Database Hub</Link></Button>
-                {canCreate && <Button onClick={() => router.push('/users/create')} className="font-bold shadow-md rounded-[12px]"><PlusCircle className="mr-2 h-4 w-4" /> Register Member</Button>}
+    <main className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-8 text-primary font-normal relative min-h-screen">
+      <div className="absolute -top-20 -left-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10 animate-pulse" />
+      <div className="absolute top-40 -right-20 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl -z-10 animate-pulse" />
+
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
+            <div className="space-y-1.5">
+                <Button variant="secondary" asChild size="sm" className="font-bold border-primary/20 text-primary transition-transform active:scale-95 rounded-xl px-5 h-9 mb-2">
+                    <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link>
+                </Button>
+                <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
+                        <Users className="h-5 w-5" />
+                    </div>
+                    <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-primary">Identity & Team Center</h1>
+                </div>
+                <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">Centralized institutional member registry, role authorization, and cross-module identity reconciliation hub.</p>
             </div>
-          </div>
+            
+            <div className="flex flex-wrap items-center gap-3">
+                <Button variant="outline" asChild size="sm" className="font-bold border-primary/10 text-primary h-11 rounded-2xl px-6 bg-white shadow-sm hover:bg-primary/5 transition-all">
+                    <Link href="/seed"><Database className="mr-2 h-4 w-4 opacity-40"/> Database Console</Link>
+                </Button>
+                {canCreate && (
+                    <Button onClick={() => router.push('/users/create')} size="sm" className="bg-primary hover:bg-primary/90 text-white font-black h-11 rounded-2xl px-6 shadow-xl shadow-primary/20 active:scale-95 transition-all">
+                        <UserPlus className="mr-2 h-4 w-4" /> Enroll New Member
+                    </Button>
+                )}
+            </div>
+        </div>
       </div>
 
-      <Tabs defaultValue="management" className="w-full space-y-6">
-        <TabsList className="bg-primary/5 p-1 border border-primary/10 rounded-xl">
-            <TabsTrigger value="management" className="font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Member Registry</TabsTrigger>
-            <TabsTrigger value="audit" className="font-bold data-[state=active]:bg-primary data-[state=active]:text-white">Multi-Role Audit</TabsTrigger>
-            <TabsTrigger value="duplicates" className="font-bold text-amber-700 data-[state=active]:bg-amber-100"><DatabaseZap className="mr-2 h-4 w-4"/> Resolution Center</TabsTrigger>
-        </TabsList>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 animate-fade-in-up">
+          <StatCard 
+            title="Registry Total" 
+            count={stats.total} 
+            description="Verified Institutional Members" 
+            icon={Users} 
+            delay="100ms" 
+          />
+          <StatCard 
+            title="Active Operational" 
+            count={stats.active} 
+            description="Members With Active Access" 
+            icon={UserCheck} 
+            delay="150ms" 
+            colorClass="bg-emerald-500/[0.02] border-emerald-500/10"
+          />
+          <StatCard 
+            title="Root Authorities" 
+            count={stats.admins} 
+            description="Members with Admin Privilege" 
+            icon={Shield} 
+            delay="200ms" 
+            colorClass="bg-primary/[0.02] border-primary/10"
+          />
+          <StatCard 
+            title="Identity Gaps" 
+            count={stats.unlinked} 
+            description="Competing Identity Clusters" 
+            icon={Merge} 
+            delay="250ms" 
+            colorClass={stats.unlinked > 0 ? "bg-amber-500/[0.03] border-amber-500/10" : ""}
+          />
+      </div>
 
-        <TabsContent value="management" className="animate-fade-in-up mt-0 space-y-4">
-            <div className="flex flex-wrap items-center gap-3 bg-primary/5 p-4 rounded-xl border border-primary/10">
-                <Input placeholder="Search Name, Email, Phone..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-xs h-10 text-sm border-primary/10 focus-visible:ring-primary rounded-[12px] bg-white font-normal" />
-                <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}><SelectTrigger className="w-[160px] h-10 font-bold border-primary/10 bg-white rounded-[12px]"><SelectValue placeholder="All Statuses"/></SelectTrigger><SelectContent className="rounded-[12px]"><SelectItem value="All">All Statuses</SelectItem><SelectItem value="Active" className="text-primary font-bold">Active Only</SelectItem><SelectItem value="Inactive" className="text-destructive">Inactive Only</SelectItem></SelectContent></Select>
-                <Select value={roleFilter} onValueChange={(v) => { setRoleFilter(v); setCurrentPage(1); }}><SelectTrigger className="w-[160px] h-10 font-bold border-primary/10 bg-white rounded-[12px]"><SelectValue placeholder="Role Filter"/></SelectTrigger><SelectContent className="rounded-[12px]"><SelectItem value="All">All Roles</SelectItem><SelectItem value="Admin">Admin</SelectItem><SelectItem value="User">User</SelectItem><SelectItem value="Donor">Donor</SelectItem><SelectItem value="Beneficiary">Beneficiary</SelectItem></SelectContent></Select>
-            </div>
+      <Tabs defaultValue="management" className="w-full space-y-10 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+        <div className="bg-white/30 backdrop-blur-md p-1.5 rounded-[24px] border border-primary/5 shadow-sm inline-flex w-fit overflow-hidden">
+            <TabsList className="flex flex-nowrap bg-transparent p-0 gap-1 h-auto">
+                <TabsTrigger value="management" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
+                    <Users className="h-3.5 w-3.5" /> Registry List
+                </TabsTrigger>
+                <TabsTrigger value="audit" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
+                    <ShieldCheck className="h-3.5 w-3.5" /> Identity Audit
+                </TabsTrigger>
+                <TabsTrigger value="duplicates" className={cn("inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 data-[state=active]:shadow-lg", stats.unlinked > 0 ? "text-amber-600 data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-amber-500/20" : "data-[state=active]:bg-primary data-[state=active]:text-white")}>
+                    <DatabaseZap className={cn("h-3.5 w-3.5", stats.unlinked > 0 && "animate-pulse")} /> Resolution Center
+                </TabsTrigger>
+            </TabsList>
+        </div>
 
-            <Card className="rounded-[16px] border border-primary/10 bg-white overflow-hidden shadow-sm">
+        <TabsContent value="management" className="animate-fade-in-up mt-0 space-y-8">
+            <Card className="rounded-[32px] border border-primary/5 bg-white/30 backdrop-blur-md overflow-hidden shadow-none">
+                <CardHeader className="p-4 sm:p-6 border-b bg-white/80 backdrop-blur-md sticky top-[73px] z-20">
+                    <ScrollArea className="w-full">
+                        <div className="flex flex-nowrap items-center gap-4 pb-3">
+                            <div className="relative w-[350px] shrink-0">
+                                <Input 
+                                    placeholder="Search name, email, key..." 
+                                    value={searchTerm} 
+                                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
+                                    className="pl-11 h-11 text-sm border-primary/10 focus-visible:ring-primary font-bold text-primary rounded-2xl bg-white shadow-sm" 
+                                />
+                                <div className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary opacity-30">
+                                    <Search className="h-4 w-4" />
+                                </div>
+                            </div>
+
+                            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}>
+                                <SelectTrigger className="w-[200px] shrink-0 h-11 text-sm border-primary/10 rounded-2xl bg-white font-bold shadow-sm">
+                                    <SelectValue placeholder="System State" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-2xl shadow-dropdown border-primary/10 p-1.5">
+                                    <SelectItem value="All" className="font-bold text-xs p-3 rounded-xl">All System States</SelectItem>
+                                    <SelectItem value="Active" className="font-bold text-xs p-3 rounded-xl text-emerald-600">Operational Active</SelectItem>
+                                    <SelectItem value="Inactive" className="font-bold text-xs p-3 rounded-xl text-destructive">Account Disabled</SelectItem>
+                                </SelectContent>
+                            </Select>
+
+                            <Select value={roleFilter} onValueChange={(v) => { setRoleFilter(v); setCurrentPage(1); }}>
+                                <SelectTrigger className="w-[200px] shrink-0 h-11 text-sm border-primary/10 rounded-2xl bg-white font-bold shadow-sm">
+                                    <SelectValue placeholder="Authorization Level" />
+                                </SelectTrigger>
+                                <SelectContent className="rounded-2xl shadow-dropdown border-primary/10 p-1.5">
+                                    <SelectItem value="All" className="font-bold text-xs p-3 rounded-xl">All Privilege Levels</SelectItem>
+                                    <SelectItem value="Admin" className="font-bold text-xs p-3 rounded-xl">Root Admin</SelectItem>
+                                    <SelectItem value="User" className="font-bold text-xs p-3 rounded-xl">Standard Team</SelectItem>
+                                    <SelectItem value="Donor" className="font-bold text-xs p-3 rounded-xl">Benefactor Only</SelectItem>
+                                    <SelectItem value="Beneficiary" className="font-bold text-xs p-3 rounded-xl">Recipient Only</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <ScrollBar orientation="horizontal" className="h-1.5" />
+                    </ScrollArea>
+                </CardHeader>
+
                 <CardContent className="p-0">
                     <ScrollArea className="w-full">
-                        <div className="min-w-[1000px]">
-                            <Table>
-                                <TableHeader className="bg-primary/5">
-                                    <TableRow>
-                                        <TableHead className="w-[60px] pl-6 font-bold text-[10px] tracking-widest uppercase">#</TableHead>
-                                        <TableHead className="font-bold text-[10px] tracking-widest uppercase">Member Identity</TableHead>
-                                        <TableHead className="font-bold text-[10px] tracking-widest uppercase">Contact</TableHead>
-                                        <TableHead className="font-bold text-[10px] tracking-widest uppercase">Role</TableHead>
-                                        <TableHead className="font-bold text-[10px] tracking-widest uppercase">Registry Status</TableHead>
-                                        <TableHead className="text-right pr-6 font-bold text-[10px] tracking-widest uppercase">Actions</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {paginatedUsers.map((u, i) => (
-                                        <TableRow key={u.id} className="hover:bg-primary/[0.02] cursor-pointer border-b border-primary/5 last:border-0" onClick={() => router.push(`/users/${u.id}`)}>
-                                            <TableCell className="pl-6 font-mono text-xs opacity-60">{(currentPage-1)*itemsPerPage + i + 1}</TableCell>
-                                            <TableCell className="py-4">
-                                                <div className="font-bold text-sm text-primary">{u.name}</div>
-                                                <div className="text-[10px] text-muted-foreground font-mono opacity-60">{u.userKey}</div>
-                                            </TableCell>
-                                            <TableCell>
-                                                <div className="text-xs font-medium text-primary/80">{u.email}</div>
-                                                <div className="text-[10px] font-mono opacity-60">{u.phone || 'No Phone Recorded'}</div>
-                                            </TableCell>
-                                            <TableCell><Badge variant={u.role === 'Admin' ? 'destructive' : 'secondary'} className="text-[9px] font-black uppercase tracking-tighter">{u.role}</Badge></TableCell>
-                                            <TableCell><Badge variant={u.status === 'Active' ? 'eligible' : 'outline'} className="text-[9px] font-bold">{u.status}</Badge></TableCell>
-                                            <TableCell className="text-right pr-6" onClick={e=>e.stopPropagation()}>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8 text-primary active:scale-90 transition-transform"><MoreHorizontal className="h-4 w-4"/></Button></DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end" className="rounded-[12px] border-primary/10 shadow-dropdown">
-                                                        <DropdownMenuItem onClick={()=>router.push(`/users/${u.id}`)} className="text-primary font-normal"><Edit className="mr-2 h-4 w-4 opacity-60"/> Modify Profile</DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={()=>handleMirrorToDonor(u.id)} disabled={!!isMirroring} className="text-primary font-normal"><ShieldCheck className="mr-2 h-4 w-4 opacity-60"/> Mirror to Donor Registry</DropdownMenuItem>
-                                                        <DropdownMenuSeparator className="bg-primary/5"/>
-                                                        <DropdownMenuSub>
-                                                            <DropdownMenuSubTrigger className="text-primary font-normal"><UserCheck className="mr-2 h-4 w-4 opacity-60"/> Set Status</DropdownMenuSubTrigger>
-                                                            <DropdownMenuPortal>
-                                                                <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown border-primary/10">
-                                                                    <DropdownMenuRadioGroup value={u.status} onValueChange={v => handleStatusUpdate(u, v)}>
-                                                                        <DropdownMenuRadioItem value="Active" className="text-primary font-bold">Active</DropdownMenuRadioItem>
-                                                                        <DropdownMenuRadioItem value="Inactive" className="text-destructive">Inactive</DropdownMenuRadioItem>
-                                                                    </DropdownMenuRadioGroup>
-                                                                </DropdownMenuSubContent>
-                                                            </DropdownMenuPortal>
-                                                        </DropdownMenuSub>
-                                                        {canDelete && (
-                                                            <DropdownMenuItem onClick={()=>{ setUserToDelete(u.id); setIsDeleteDialogOpen(true); }} className="text-destructive font-normal"><Trash2 className="mr-2 h-4 w-4"/> Purge Account</DropdownMenuItem>
-                                                        )}
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
+                        <div className="max-h-[60vh]">
+                            <div className="hidden md:block">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-primary/[0.02] border-b border-primary/5">
+                                            <TableHead className="w-[80px] pl-8 text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14"># ID</TableHead>
+                                            <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Member Identity</TableHead>
+                                            <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Contact & Auth</TableHead>
+                                            <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">System Privilege</TableHead>
+                                            <TableHead className="text-center text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Account State</TableHead>
+                                            <TableHead className="text-right pr-8 text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Modify</TableHead>
                                         </TableRow>
-                                    ))}
-                                    {paginatedUsers.length === 0 && (
-                                        <TableRow><TableCell colSpan={6} className="text-center py-20 text-primary/40 font-bold italic bg-primary/[0.01]">No Profiles Found Matching Criteria.</TableCell></TableRow>
-                                    )}
-                                </TableBody>
-                            </Table>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {paginatedUsers.map((u, i) => (
+                                            <TableRow key={u.id} className="cursor-pointer bg-white/40 border-b border-primary/5 last:border-0 hover:bg-primary/[0.01] transition-colors group" onClick={() => router.push(`/users/${u.id}`)}>
+                                                <TableCell className="pl-8 font-mono text-[11px] font-bold opacity-30">{(currentPage-1)*itemsPerPage + i + 1}</TableCell>
+                                                <TableCell className="py-5">
+                                                    <div className="font-bold text-sm text-primary tracking-tight group-hover:text-primary transition-colors">{u.name}</div>
+                                                    <div className="text-[10px] text-muted-foreground font-mono font-bold opacity-50 flex items-center gap-1.5 mt-0.5">
+                                                        <Fingerprint className="h-3 w-3" /> {u.userKey}
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="space-y-1">
+                                                        <div className="text-xs font-bold text-primary/80 flex items-center gap-1.5"><Mail className="h-3 w-3 opacity-40"/> {u.email}</div>
+                                                        <div className="text-[10px] font-mono font-bold opacity-40 flex items-center gap-1.5"><Smartphone className="h-3 w-3"/> {u.phone || 'NO PHONE LOGGED'}</div>
+                                                    </div>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Badge variant={u.role === 'Admin' ? 'destructive' : 'secondary'} className={cn("text-[9px] font-black uppercase tracking-widest px-2.5 h-6 rounded-full border-0 shadow-sm", u.role === 'Admin' ? "bg-primary text-white" : "bg-primary/5 text-primary")}>
+                                                        {u.role}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-center">
+                                                    <Badge variant={u.status === 'Active' ? 'eligible' : 'outline'} className={cn("text-[9px] font-black uppercase px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm", u.status === 'Active' ? "bg-emerald-500 text-white" : "opacity-40")}>
+                                                        {u.status}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-right pr-8" onClick={e=>e.stopPropagation()}>
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-9 w-9 text-primary hover:bg-primary/5 rounded-xl transition-all active:scale-90"><MoreHorizontal className="h-5 w-5"/></Button></DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end" className="rounded-2xl border-primary/10 shadow-dropdown p-1.5 w-64">
+                                                            <DropdownMenuItem onClick={()=>router.push(`/users/${u.id}`)} className="text-primary font-bold text-xs p-3 rounded-xl cursor-pointer"><Edit className="mr-3 h-4 w-4 opacity-40"/> Modify Full Profile</DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={()=>handleMirrorToDonor(u.id)} disabled={!!isMirroring} className="text-primary font-bold text-xs p-3 rounded-xl cursor-pointer">
+                                                                {isMirroring === u.id ? <Loader2 className="mr-3 h-4 w-4 animate-spin"/> : <ShieldCheck className="mr-3 h-4 w-4 opacity-40"/>} Mirror to Donor Registry
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuSeparator className="my-1.5 opacity-10" />
+                                                            <DropdownMenuSub>
+                                                                <DropdownMenuSubTrigger className="text-primary font-bold text-xs p-3 rounded-xl cursor-pointer"><UserCheck className="mr-3 h-4 w-4 opacity-40"/> Authentication State</DropdownMenuSubTrigger>
+                                                                <DropdownMenuPortal>
+                                                                    <DropdownMenuSubContent className="rounded-2xl shadow-dropdown border-primary/10 p-1.5 min-w-[180px]">
+                                                                        <DropdownMenuRadioGroup value={u.status} onValueChange={v => handleStatusUpdate(u, v)}>
+                                                                            <DropdownMenuRadioItem value="Active" className="font-bold text-xs p-3 rounded-xl text-emerald-600">Operational Active</DropdownMenuRadioItem>
+                                                                            <DropdownMenuRadioItem value="Inactive" className="font-bold text-xs p-3 rounded-xl text-destructive">Account Disabled</DropdownMenuRadioItem>
+                                                                        </DropdownMenuRadioGroup>
+                                                                    </DropdownMenuSubContent>
+                                                                </DropdownMenuPortal>
+                                                            </DropdownMenuSub>
+                                                            {canDelete && (
+                                                                <>
+                                                                    <DropdownMenuSeparator className="my-1.5 opacity-10" />
+                                                                    <DropdownMenuItem onClick={()=>{ setUserToDelete(u.id); setIsDeleteDialogOpen(true); }} className="text-destructive font-black text-xs p-3 rounded-xl hover:bg-destructive/10"><Trash2 className="mr-3 h-4 w-4 opacity-80"/> Hard Purge Account</DropdownMenuItem>
+                                                                </>
+                                                            )}
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </div>
+
+                            <div className="md:hidden flex flex-col">
+                                {paginatedUsers.map((u, idx) => (
+                                    <div key={u.id} className="p-5 border-b border-primary/5 bg-white/40 space-y-5 group/mobile" onClick={() => router.push(`/users/${u.id}`)}>
+                                        <div className="flex justify-between items-start">
+                                            <div className="space-y-1.5">
+                                                <h3 className="font-black text-lg text-primary tracking-tighter group-hover/mobile:text-primary transition-colors leading-tight">{u.name}</h3>
+                                                <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-bold opacity-60">
+                                                    <Fingerprint className="h-3 w-3" /> {u.userKey}
+                                                </div>
+                                            </div>
+                                            <Badge variant={u.role === 'Admin' ? 'destructive' : 'secondary'} className={cn("text-[9px] font-black uppercase px-2.5 h-6 rounded-full border-0 shadow-sm", u.role === 'Admin' ? "bg-primary text-white" : "bg-primary/5 text-primary")}>
+                                                {u.role}
+                                            </Badge>
+                                        </div>
+                                        
+                                        <div className="space-y-3">
+                                            <div className="flex items-center gap-3 text-xs font-black text-primary/80 bg-primary/[0.03] w-full px-4 py-2.5 rounded-2xl border border-primary/5">
+                                                <Mail className="h-4 w-4 opacity-40"/> {u.email}
+                                            </div>
+                                            <div className="flex items-center gap-3 text-[10px] font-mono font-black text-primary/60 bg-white/50 w-full px-4 py-2.5 rounded-2xl border border-primary/5">
+                                                <Smartphone className="h-4 w-4 opacity-40"/> {u.phone || 'NO PHONE LOGGED'}
+                                            </div>
+                                        </div>
+                                        
+                                        <div className="flex items-center justify-between pt-4 border-t border-primary/5">
+                                            <Badge variant={u.status === 'Active' ? 'eligible' : 'outline'} className={cn("text-[9px] font-black uppercase px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm", u.status === 'Active' ? "bg-emerald-500 text-white" : "opacity-40")}>
+                                                {u.status}
+                                            </Badge>
+                                            <Button variant="ghost" size="sm" className="h-9 text-[10px] font-black text-primary hover:bg-primary/5 px-4 rounded-xl transition-all group-hover/mobile:translate-x-1">
+                                                Audit Control <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                        <ScrollBar orientation="horizontal" />
                     </ScrollArea>
                 </CardContent>
+                
                 {totalPages > 1 && (
-                    <CardFooter className="flex justify-between items-center py-4 border-t bg-primary/5 px-6">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Registry Page {currentPage} Of {totalPages}</p>
-                        <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={()=>setCurrentPage(p=>Math.max(1,p-1))} disabled={currentPage===1} className="font-bold h-8 border-primary/10 active:scale-95 transition-transform">Previous</Button>
-                            <Button variant="outline" size="sm" onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))} disabled={currentPage===totalPages} className="font-bold h-8 border-primary/10 active:scale-95 transition-transform">Next</Button>
+                    <CardFooter className="flex justify-between items-center p-8 border-t bg-primary/[0.01]">
+                        <div className="bg-white/50 backdrop-blur-md px-5 py-2.5 rounded-2xl border border-primary/5 shadow-sm">
+                            <p className="text-xs font-black text-primary tracking-tight">Registry Page <span className="text-primary">{currentPage}</span> <span className="opacity-30">/ {totalPages}</span></p>
+                        </div>
+                        <div className="flex gap-3">
+                            <Button variant="outline" size="sm" onClick={()=>setCurrentPage(p=>Math.max(1,p-1))} disabled={currentPage===1} className="font-black text-[10px] uppercase tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm">Previous</Button>
+                            <Button variant="outline" size="sm" onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))} disabled={currentPage===totalPages} className="font-black text-[10px] uppercase tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm">Next</Button>
                         </div>
                     </CardFooter>
                 )}
             </Card>
         </TabsContent>
 
-        <TabsContent value="audit" className="animate-fade-in-up mt-0 space-y-6">
-            <Card className="border-primary/10 bg-white shadow-sm overflow-hidden">
-                <CardHeader className="bg-primary/5 border-b px-6 py-4">
-                    <CardTitle className="flex items-center gap-2 font-bold text-primary"><ShieldCheck className="h-5 w-5"/> Multi-Profile Identity Audit</CardTitle>
-                    <CardDescription className="font-normal text-primary/70">Cross-collection reconciliation of members serving multiple organizational roles.</CardDescription>
-                </CardHeader>
-                <CardContent className="p-0">
-                    <ScrollArea className="w-full">
-                        <div className="min-w-[1000px]">
-                            <Table>
-                                <TableHeader className="bg-primary/5">
-                                    <TableRow>
-                                        <TableHead className="pl-6 font-bold text-[10px] tracking-widest uppercase">Institutional Member</TableHead>
-                                        <TableHead className="font-bold text-[10px] tracking-widest uppercase">System Access</TableHead>
-                                        <TableHead className="text-center font-bold text-[10px] tracking-widest uppercase">Donor Footprint</TableHead>
-                                        <TableHead className="text-center font-bold text-[10px] tracking-widest uppercase">Beneficiary Map</TableHead>
-                                        <TableHead className="text-right pr-6 font-bold text-[10px] tracking-widest uppercase">Identity Status</TableHead>
-                                    </TableRow>
-                                </TableHeader>
-                                <TableBody>
-                                    {auditData.map(u => (
-                                        <TableRow key={u.id} className="hover:bg-primary/[0.02] border-b border-primary/5 bg-white">
-                                            <TableCell className="pl-6 py-4">
-                                                <p className="font-bold text-sm text-primary">{u.name}</p>
-                                                <p className="text-[10px] text-muted-foreground font-mono opacity-60">{u.email}</p>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant={u.role === 'Admin' ? 'destructive' : 'secondary'} className="text-[9px] font-black uppercase">{u.role}</Badge>
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                {u.isDonor ? <Badge variant="eligible" className="text-[8px] font-bold"><CheckCircle2 className="h-2.5 w-2.5 mr-1"/> Mirrored</Badge> : <Badge variant="outline" className="text-[8px] opacity-30">None</Badge>}
-                                            </TableCell>
-                                            <TableCell className="text-center">
-                                                {u.isBeneficiary ? <Badge variant="eligible" className="text-[8px] font-bold"><CheckCircle2 className="h-2.5 w-2.5 mr-1"/> Mirrored</Badge> : <Badge variant="outline" className="text-[8px] opacity-30">None</Badge>}
-                                            </TableCell>
-                                            <TableCell className="text-right pr-6">
-                                                {u.multiRole ? <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-[9px] font-bold">Unified Identity</Badge> : <Badge variant="secondary" className="text-[9px] font-bold">Single Account</Badge>}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+        <TabsContent value="audit" className="animate-fade-in-up mt-0 space-y-8">
+            <Card className="rounded-[40px] border border-primary/5 bg-white/40 backdrop-blur-md overflow-hidden shadow-none p-10">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 mb-12">
+                    <div className="space-y-2">
+                        <h3 className="text-2xl font-black text-primary tracking-tighter flex items-center gap-4">
+                            <div className="p-3 rounded-2xl bg-primary/10 text-primary">
+                                <Scale className="h-6 w-6" />
+                            </div>
+                            Multi-Role Identity Audit
+                        </h3>
+                        <p className="text-sm font-bold opacity-60 text-primary max-w-xl">Comprehensive cross-module reconciliation of members holding concurrent organizational identities as Donors or Beneficiaries.</p>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-6">
+                    {auditData.map((u, uIdx) => (
+                        <div key={u.id} className="group relative flex flex-col md:flex-row items-center justify-between gap-6 p-6 rounded-[32px] bg-white border border-primary/5 shadow-none hover:shadow-xl hover:-translate-y-1 transition-all duration-500 animate-fade-in-up" style={{ animationDelay: `${uIdx * 50}ms` }}>
+                            <div className="flex items-center gap-6 flex-1 min-w-0">
+                                <div className="h-14 w-14 rounded-full bg-primary/5 text-primary flex items-center justify-center font-black text-xl shadow-inner group-hover:scale-110 transition-transform">
+                                    {u.name.charAt(0)}
+                                </div>
+                                <div className="min-w-0">
+                                    <div className="flex items-center gap-3">
+                                        <h4 className="font-black text-lg text-primary tracking-tighter truncate">{u.name}</h4>
+                                        <Badge variant={u.role === 'Admin' ? 'destructive' : 'secondary'} className="text-[8px] font-black uppercase tracking-widest px-2 h-5 rounded-full border-0">{u.role}</Badge>
+                                    </div>
+                                    <p className="text-xs font-bold text-primary/40 truncate mt-0.5">{u.email}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-wrap items-center justify-center gap-3 flex-1">
+                                <div className={cn("flex items-center gap-2.5 px-5 py-2.5 rounded-2xl border transition-all", u.isDonor ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-600" : "bg-primary/[0.02] border-primary/5 text-primary/30")}>
+                                    <HeartHandshake className={cn("h-4 w-4", u.isDonor && "animate-pulse")} />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Benefactor Registry</span>
+                                    {u.isDonor ? <CheckCircle2 className="h-3.5 w-3.5" /> : <X className="h-3 w-3 opacity-30" />}
+                                </div>
+                                <div className={cn("flex items-center gap-2.5 px-5 py-2.5 rounded-2xl border transition-all", u.isBeneficiary ? "bg-blue-500/5 border-blue-500/20 text-blue-600" : "bg-primary/[0.02] border-primary/5 text-primary/30")}>
+                                    <IdCard className={cn("h-4 w-4", u.isBeneficiary && "animate-pulse")} />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Recipient Registry</span>
+                                    {u.isBeneficiary ? <CheckCircle2 className="h-3.5 w-3.5" /> : <X className="h-3 w-3 opacity-30" />}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-4 pl-6 border-l border-primary/5">
+                                {u.multiRole ? (
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/5 text-amber-600 border border-amber-500/10 rounded-xl">
+                                        <Zap className="h-3.5 w-3.5" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest">Unified Profile</span>
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 text-primary/40 rounded-xl">
+                                        <UserCheck className="h-3.5 w-3.5" />
+                                        <span className="text-[10px] font-black uppercase tracking-widest">Single Entity</span>
+                                    </div>
+                                )}
+                                <Button variant="ghost" size="icon" className="h-10 w-10 text-primary/20 hover:text-primary hover:bg-primary/5 rounded-2xl" onClick={() => router.push(`/users/${u.id}`)}>
+                                    <ChevronRight className="h-5 w-5" />
+                                </Button>
+                            </div>
                         </div>
-                        <ScrollBar orientation="horizontal" />
-                    </ScrollArea>
-                </CardContent>
+                    ))}
+                </div>
             </Card>
         </TabsContent>
 
-        <TabsContent value="duplicates" className="animate-fade-in-up mt-0 space-y-6">
-            <div className="grid gap-6">
+        <TabsContent value="duplicates" className="animate-fade-in-up mt-0 space-y-8">
+            <div className="grid gap-8">
                 {duplicatesGroups.length === 0 ? (
-                    <Card className="border-dashed border-primary/20 bg-primary/[0.01] rounded-2xl">
-                        <CardContent className="flex flex-col items-center justify-center py-20 opacity-40">
-                            <CheckCircle2 className="h-12 w-12 mb-4 text-primary" />
-                            <p className="text-lg font-bold tracking-tight">Registry Integrity Confirmed</p>
-                            <p className="text-sm font-normal">No fragmented identities detected by Phone or Email matching.</p>
-                        </CardContent>
-                    </Card>
+                    <div className="flex flex-col items-center justify-center py-32 bg-primary/[0.01] rounded-[48px] border-2 border-dashed border-primary/5 animate-pulse">
+                        <ShieldCheck className="h-16 w-16 text-primary/10 mb-6" />
+                        <h4 className="font-black text-lg text-primary/30 tracking-widest uppercase">Registry Integrity High</h4>
+                        <p className="text-sm font-bold text-primary/20 mt-2">No fragmented identities detected by neural Phone/Email matching.</p>
+                    </div>
                 ) : (
                     duplicatesGroups.map((group, gIdx) => (
-                        <Card key={gIdx} className="border-amber-200 bg-amber-50/30 overflow-hidden shadow-md rounded-2xl">
-                            <CardHeader className="bg-amber-100/50 border-b border-amber-200 flex flex-row items-center justify-between p-6">
-                                <div className="space-y-1">
-                                    <div className="flex items-center gap-2">
-                                        <AlertCircle className="h-5 w-5 text-amber-600" />
-                                        <CardTitle className="text-lg font-bold text-amber-900 tracking-tight">Identity Conflict: {group.key}</CardTitle>
+                        <Card key={gIdx} className="group relative rounded-[40px] border border-amber-500/10 bg-amber-500/[0.02] overflow-hidden shadow-none p-10 animate-fade-in-up" style={{ animationDelay: `${gIdx * 100}ms` }}>
+                            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-10 pb-8 border-b border-amber-500/10">
+                                <div className="space-y-2">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 rounded-2xl bg-amber-500 text-white shadow-xl shadow-amber-500/20">
+                                            <AlertCircle className="h-6 w-6" />
+                                        </div>
+                                        <h3 className="text-2xl font-black text-amber-900 tracking-tighter">Identity Collision Detected: {group.key}</h3>
                                     </div>
-                                    <CardDescription className="text-amber-800/60 font-medium">Found {group.redundants.length + 1} competing profiles for this identifier.</CardDescription>
+                                    <p className="text-sm font-bold text-amber-800/60 pl-16 max-w-xl">The system identified {group.redundants.length + 1} competing profiles mapped to this identifier. Immediate reconciliation required.</p>
                                 </div>
                                 <Button 
                                     onClick={() => handleConsolidate(group.primary.id, group.redundants.map(r => r.id))}
                                     disabled={isConsolidating === group.primary.id}
-                                    className="bg-amber-600 hover:bg-amber-700 text-white font-bold h-10 px-6 rounded-xl shadow-lg active:scale-95 transition-all"
+                                    className="bg-amber-500 hover:bg-amber-600 text-white font-black h-14 rounded-2xl px-10 shadow-2xl shadow-amber-500/30 active:scale-95 transition-all w-full lg:w-auto"
                                 >
-                                    {isConsolidating === group.primary.id ? <Loader2 className="h-4 w-4 animate-spin mr-2"/> : <DatabaseZap className="h-4 w-4 mr-2" />}
-                                    Resolve & Merge All
+                                    {isConsolidating === group.primary.id ? <Loader2 className="h-5 w-5 animate-spin mr-3"/> : <Merge className="h-5 w-5 mr-3" />}
+                                    Neural Resolution & Merge
                                 </Button>
-                            </CardHeader>
-                            <CardContent className="p-0">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
-                                    <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-amber-800/40">Primary Target (Golden Record)</Label>
-                                        <div className="p-4 rounded-2xl bg-white border-2 border-primary shadow-sm relative transition-all hover:shadow-md">
-                                            <Badge className="absolute -top-2 -right-2 bg-primary text-white font-black text-[8px] uppercase px-2 shadow-sm">Preserved</Badge>
-                                            <div className="flex items-center gap-4">
-                                                <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center font-black text-primary text-lg shadow-inner">
-                                                    {group.primary.name.charAt(0)}
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="font-bold text-primary truncate text-base">{group.primary.name}</p>
-                                                    <p className="text-[10px] font-mono text-muted-foreground opacity-60">UID: {group.primary.id.slice(0, 12)}...</p>
-                                                    <Badge variant="outline" className="mt-1 text-[9px] font-bold border-primary/20 text-primary uppercase">{group.primary.role}</Badge>
-                                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3 pl-2">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600">Primary Preservation Target</Label>
+                                    </div>
+                                    <div className="relative p-8 rounded-[32px] bg-white border-2 border-emerald-500 shadow-2xl shadow-emerald-500/5 group-hover:scale-[1.02] transition-all duration-500">
+                                        <Badge className="absolute -top-3 -right-3 bg-emerald-500 text-white font-black text-[10px] uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg border-4 border-white">Master Record</Badge>
+                                        <div className="flex items-center gap-6">
+                                            <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center font-black text-emerald-600 text-2xl shadow-inner">
+                                                {group.primary.name.charAt(0)}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <h4 className="font-black text-xl text-primary tracking-tighter truncate leading-tight">{group.primary.name}</h4>
+                                                <p className="text-xs font-mono font-bold text-muted-foreground opacity-60 mt-1">UID: {group.primary.id.slice(0, 12)}...</p>
+                                                <Badge variant="outline" className="mt-3 text-[10px] font-black uppercase tracking-widest border-primary/10 text-primary py-1 px-3 rounded-xl">{group.primary.role}</Badge>
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="space-y-3">
-                                        <Label className="text-[10px] font-black uppercase tracking-widest text-amber-800/40">Redundant Fragments (To Be Purged)</Label>
-                                        <div className="space-y-2">
-                                            {group.redundants.map(r => (
-                                                <div key={r.id} className="p-3 rounded-xl bg-white/50 border border-amber-200 flex items-center justify-between group/row">
-                                                    <div className="flex items-center gap-3">
-                                                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center font-bold text-[10px] text-muted-foreground">
-                                                            {r.name.charAt(0)}
-                                                        </div>
-                                                        <div className="min-w-0">
-                                                            <p className="text-xs font-bold text-primary/70">{r.name}</p>
-                                                            <Badge variant="secondary" className="text-[8px] h-4 font-black uppercase px-1.5">{r.role}</Badge>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="flex items-center gap-3 pl-2">
+                                        <div className="h-1.5 w-1.5 rounded-full bg-destructive" />
+                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-destructive">Redundant Account Fragments</Label>
+                                    </div>
+                                    <div className="grid gap-4">
+                                        {group.redundants.map(r => (
+                                            <div key={r.id} className="p-5 rounded-[24px] bg-white/60 border border-amber-500/10 flex items-center justify-between group/row hover:bg-white hover:shadow-xl hover:border-amber-500/20 transition-all duration-500">
+                                                <div className="flex items-center gap-4">
+                                                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center font-black text-xs text-muted-foreground">
+                                                        {r.name.charAt(0)}
+                                                    </div>
+                                                    <div className="min-w-0">
+                                                        <p className="text-sm font-black text-primary/70 tracking-tight truncate">{r.name}</p>
+                                                        <div className="flex items-center gap-2 mt-0.5">
+                                                            <Badge variant="secondary" className="text-[8px] font-black uppercase px-2 h-4 border-0">{r.role}</Badge>
+                                                            <span className="text-[9px] font-mono text-muted-foreground opacity-40 italic"># {r.id.slice(0, 6)}</span>
                                                         </div>
                                                     </div>
-                                                    <ArrowRight className="h-4 w-4 text-amber-400 opacity-0 group-hover/row:opacity-100 transition-opacity" />
                                                 </div>
-                                            ))}
-                                        </div>
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-8 w-8 rounded-full bg-red-500/5 text-red-500 flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </div>
+                                                    <ArrowRight className="h-5 w-5 text-amber-500 animate-pulse" />
+                                                </div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
-                            </CardContent>
+                            </div>
                         </Card>
                     ))
                 )}
@@ -456,27 +702,29 @@ export default function UsersPage() {
       </Tabs>
 
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-        <AlertDialogContent className="rounded-[24px] border-primary/10 shadow-2xl overflow-hidden p-0 animate-fade-in-zoom font-normal">
-            <div className="bg-red-500 h-1.5 w-full" />
-            <div className="p-8 space-y-6">
-                <AlertDialogHeader className="space-y-3">
-                    <div className="mx-auto w-12 h-12 rounded-full bg-red-100 flex items-center justify-center text-red-600">
-                        <Trash2 className="h-6 w-6"/>
+        <AlertDialogContent className="rounded-[40px] border-primary/10 shadow-2xl overflow-hidden p-0 animate-fade-in-zoom font-normal max-w-lg">
+            <div className="bg-red-500 h-2 w-full" />
+            <div className="p-10 space-y-8">
+                <AlertDialogHeader className="space-y-4">
+                    <div className="mx-auto w-16 h-16 rounded-[24px] bg-red-100 flex items-center justify-center text-red-600 shadow-inner">
+                        <Trash2 className="h-8 w-8"/>
                     </div>
-                    <AlertDialogTitle className="text-2xl font-bold text-primary tracking-tight text-center">Confirm Permanent Deletion?</AlertDialogTitle>
-                    <AlertDialogDescription className="text-sm font-normal text-primary/70 text-center leading-relaxed">
-                        This Action Will Permanently Erase The Member's Account, Institutional Profile, And All Verification Artifacts. Financial Records Will Be Preserved As Unlinked Logs.
-                    </AlertDialogDescription>
+                    <div className="space-y-2 text-center">
+                        <AlertDialogTitle className="text-3xl font-black text-primary tracking-tighter">Authorize Hard Purge?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-sm font-bold text-primary opacity-60 leading-relaxed px-4">
+                            You are about to permanently erase this member's neural footprint. This Action Will Irreversibly Expunge The Account, Profiles, And All Verification Context.
+                        </AlertDialogDescription>
+                    </div>
                 </AlertDialogHeader>
-                <AlertDialogFooter className="flex flex-col sm:flex-row gap-2 w-full pt-2">
-                    <AlertDialogCancel className="font-bold border-primary/10 text-primary flex-1 h-11 rounded-xl">Discard</AlertDialogCancel>
+                <AlertDialogFooter className="flex flex-col sm:flex-row gap-4 w-full pt-4">
+                    <AlertDialogCancel className="font-black uppercase tracking-widest text-[10px] border-primary/10 text-primary flex-1 h-14 rounded-2xl bg-white shadow-sm hover:bg-primary/5 transition-all">Discard</AlertDialogCancel>
                     <AlertDialogAction 
                         onClick={handleDeleteConfirm} 
                         disabled={isSubmitting}
-                        className="bg-red-600 hover:bg-red-700 text-white font-bold flex-1 h-11 rounded-xl shadow-lg active:scale-95 transition-all"
+                        className="bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-widest text-[10px] flex-1 h-14 rounded-2xl shadow-xl shadow-red-500/20 active:scale-95 transition-all"
                     >
-                        {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
-                        Purge Account
+                        {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin mr-3" /> : <ShieldAlert className="h-5 w-5 mr-3" />}
+                        Expunge Identity
                     </AlertDialogAction>
                 </AlertDialogFooter>
             </div>

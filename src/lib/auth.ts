@@ -16,14 +16,27 @@ export const signInWithLoginId = async (auth: Auth, firestore: Firestore, loginI
     // Sanitize loginId: if it's a 10-digit number, prefix with +91 for standardized lookup
     let sanitizedLoginId = loginId.trim();
     const numericOnly = sanitizedLoginId.replace(/\D/g, '');
-    if (numericOnly.length === 10 && !sanitizedLoginId.startsWith('+')) {
-        sanitizedLoginId = '+91' + numericOnly;
+    let alternativeLoginId: string | null = null;
+    
+    if (numericOnly.length === 10) {
+        if (!sanitizedLoginId.startsWith('+')) {
+            alternativeLoginId = sanitizedLoginId;
+            sanitizedLoginId = '+91' + numericOnly;
+        } else {
+            alternativeLoginId = numericOnly;
+        }
     }
 
-    const lookupDocRef = doc(firestore, 'user_lookups', sanitizedLoginId);
+    let lookupDocRef = doc(firestore, 'user_lookups', sanitizedLoginId);
     
     try {
-        const lookupDoc = await getDoc(lookupDocRef);
+        let lookupDoc = await getDoc(lookupDocRef);
+
+        if (!lookupDoc.exists() && alternativeLoginId) {
+            lookupDocRef = doc(firestore, 'user_lookups', alternativeLoginId);
+            lookupDoc = await getDoc(lookupDocRef);
+        }
+
 
         if (!lookupDoc.exists()) {
             throw new Error('User not found. Please check your Login ID or Phone Number.');

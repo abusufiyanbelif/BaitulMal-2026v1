@@ -5,7 +5,31 @@ import { useCollection } from '@/firebase/firestore/use-collection';
 import { collection, Timestamp, DocumentData, QueryDocumentSnapshot } from '@/firebase';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-import { ArrowLeft, Users, FolderKanban, Lightbulb, HandHelping, IndianRupee, BarChart, CalendarIcon, Database, ExternalLink, Eye } from 'lucide-react';
+import { 
+    ArrowLeft, 
+    Users, 
+    FolderKanban, 
+    Lightbulb, 
+    HandHelping, 
+    IndianRupee, 
+    BarChart, 
+    CalendarIcon, 
+    Database, 
+    ExternalLink, 
+    Eye,
+    TrendingUp,
+    Activity,
+    PieChart as PieChartIcon,
+    Zap,
+    Sparkles,
+    ChevronRight,
+    Search,
+    Calendar,
+    Filter,
+    LayoutGrid,
+    Target,
+    CheckCircle2
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { useMemo, useState, useEffect } from 'react';
@@ -20,7 +44,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select as UiSelect, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 import { format, startOfMonth, endOfMonth, startOfQuarter, endOfYear, subMonths, startOfYear, endOfQuarter, parseISO, isValid, startOfDay, endOfDay, startOfWeek, formatISO, getYear, getQuarter } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -30,22 +54,26 @@ import { getPageHits } from './actions';
 import { SectionLoader } from '@/components/section-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
-function StatCard({ title, value, icon: Icon, isLoading }: { title: string, value: number, icon: React.ComponentType<{className?: string}>, isLoading: boolean }) {
+function StatCard({ title, value, description, icon: Icon, delay, colorClass }: { title: string, value: number | string, description: string, icon: any, delay: string, colorClass?: string }) {
     return (
-        <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-bold">{title}</CardTitle>
-                <Icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-                {isLoading ? (
-                    <Skeleton className="h-8 w-1/2" />
-                ) : (
-                    <div className="text-2xl font-bold">{value.toLocaleString('en-IN')}</div>
-                )}
-            </CardContent>
+        <Card className={cn("group relative flex flex-col p-6 bg-white border-primary/5 shadow-none animate-fade-in-up transition-all duration-500 hover:shadow-2xl hover:-translate-y-1 overflow-hidden", colorClass)} style={{ animationDelay: delay }}>
+            <div className="absolute -right-4 -bottom-4 opacity-[0.03] group-hover:opacity-[0.1] transition-opacity duration-500">
+                <Icon className="h-24 w-24" />
+            </div>
+            <div className="flex justify-between items-start mb-6 relative z-10">
+                <div className="p-3.5 rounded-2xl bg-primary/5 text-primary group-hover:bg-primary group-hover:text-white transition-all duration-500 shadow-inner">
+                    <Icon className="h-6 w-6" />
+                </div>
+                <div className="text-right">
+                    <p className="text-[10px] font-black text-muted-foreground tracking-[0.2em] uppercase opacity-40 mb-1">{title}</p>
+                    <p className="text-3xl font-black text-primary tracking-tighter">{value}</p>
+                </div>
+            </div>
+            <div className="relative z-10 mt-auto">
+                <p className="text-[10px] font-bold text-muted-foreground opacity-60 leading-tight">{description}</p>
+            </div>
         </Card>
-    )
+    );
 }
 
 const donationCategoryChartConfig = donationCategories.reduce((acc, category, index) => {
@@ -243,21 +271,21 @@ export default function AnalyticsPage() {
     
     const activityChartConfig = {
       count: {
-        label: "Count",
+        label: "Record Frequency",
         color: "hsl(var(--chart-1))",
       },
       amount: {
-        label: "Amount (₹)",
+        label: "Liquidity Volume (₹)",
         color: "hsl(var(--chart-2))",
       },
     } satisfies ChartConfig;
     
     const documentDistributionChartConfig = {
-        Users: { label: "Users", color: "hsl(var(--chart-5))" },
-        Campaigns: { label: "Campaigns", color: "hsl(var(--chart-2))" },
-        Leads: { label: "Leads", color: "hsl(var(--chart-3))" },
-        Beneficiaries: { label: "Beneficiaries", color: "hsl(var(--chart-4))" },
-        Donations: { label: "Donations", color: "hsl(var(--chart-1))" },
+        Users: { label: "Member Base", color: "hsl(var(--chart-5))" },
+        Campaigns: { label: "Institutional Initiatives", color: "hsl(var(--chart-2))" },
+        Leads: { label: "Pending Appeals", color: "hsl(var(--chart-3))" },
+        Beneficiaries: { label: "Aid Recipients", color: "hsl(var(--chart-4))" },
+        Donations: { label: "Verified Contributions", color: "hsl(var(--chart-1))" },
     } satisfies ChartConfig;
 
     const documentDistributionData = useMemo(() => {
@@ -271,302 +299,319 @@ export default function AnalyticsPage() {
         ].filter(item => item.value > 0);
     }, [isLoading, users, campaigns, leads, beneficiaries, donations]);
 
+    if (isLoading) return <SectionLoader label="Aggregating Institutional Intelligence..." description="Syncing multi-collection data points for analytics." />;
 
     return (
-        <div className="container mx-auto p-4 md:p-8">
-            <div className="mb-4">
-                <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
-                    <Link href="/dashboard">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back To Dashboard
-                    </Link>
-                </Button>
+        <main className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-8 text-primary font-normal relative min-h-screen">
+            <div className="absolute -top-20 -left-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10 animate-pulse" />
+            <div className="absolute top-40 -right-20 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl -z-10 animate-pulse" />
+
+            <div className="flex flex-col gap-6">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
+                    <div className="space-y-1.5">
+                        <Button variant="secondary" asChild size="sm" className="font-bold border-primary/20 text-primary transition-transform active:scale-95 rounded-xl px-5 h-9 mb-2">
+                            <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link>
+                        </Button>
+                        <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
+                                <BarChart className="h-5 w-5" />
+                            </div>
+                            <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-primary">Intelligence Hub</h1>
+                        </div>
+                        <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">Comprehensive institutional analytics suite for data-driven community impact and financial transparency.</p>
+                    </div>
+                </div>
             </div>
-            
-            <Tabs defaultValue="general" className="w-full">
-                <TabsList className="grid w-full grid-cols-3 mb-6 bg-primary/5 p-1 rounded-xl h-auto">
-                    <TabsTrigger value="general" className="font-bold py-2.5"><BarChart className="mr-2 h-4 w-4" />General Analytics</TabsTrigger>
-                    <TabsTrigger value="storage" className="font-bold py-2.5"><Database className="mr-2 h-4 w-4" />Storage Analytics</TabsTrigger>
-                    <TabsTrigger value="database" className="font-bold py-2.5"><Database className="mr-2 h-4 w-4" />Database Analytics</TabsTrigger>
-                </TabsList>
-                <TabsContent value="general" className="animate-fade-in-up">
-                    <div className="space-y-6">
-                        {isLoading ? (
-                            <SectionLoader label="Calculating General Analytics..." description="Aggregating counts for users, campaigns, and beneficiaries." />
-                        ) : (
-                            <>
-                                <Card className="animate-fade-in-zoom">
-                                    <CardHeader>
-                                        <CardTitle className="flex items-center gap-2 text-3xl text-primary font-bold"> General Analytics Overview</CardTitle>
-                                        <CardDescription className="font-normal text-primary/70">A Summary Of Key Metrics From Across The Application.</CardDescription>
-                                    </CardHeader>
-                                    <CardContent className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                                        <StatCard title="Total Users" value={users?.length || 0} icon={Users} isLoading={isLoading} />
-                                        <StatCard title="Total Campaigns" value={campaigns?.length || 0} icon={FolderKanban} isLoading={isLoading} />
-                                        <StatCard title="Total Leads" value={leads?.length || 0} icon={Lightbulb} isLoading={isLoading} />
-                                        <StatCard title="Total Beneficiaries (Master)" value={beneficiaries?.length || 0} icon={HandHelping} isLoading={isLoading} />
-                                        <StatCard title="Total Donations" value={donations?.length || 0} icon={IndianRupee} isLoading={isLoading} />
-                                        <StatCard title="Total Donation Amount" value={totalDonationAmount} icon={IndianRupee} isLoading={isLoading} />
-                                    </CardContent>
-                                </Card>
-                                <div className="grid gap-6 lg:grid-cols-3">
-                                    <Card className="lg:col-span-1 animate-fade-in-up" style={{animationDelay: '200ms'}}>
-                                        <CardHeader>
-                                            <CardTitle className="text-primary font-bold">Donations By Category</CardTitle>
-                                            <CardDescription className="font-normal text-primary/70">Total Amount Received For Each Donation Category.</CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                        {isClient ? (
-                                            <ChartContainer config={donationCategoryChartConfig} className="h-[300px] w-full">
-                                                <PieChart>
-                                                    <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                                                    <Pie data={chartDataWithColors} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5} paddingAngle={2}>
-                                                        {chartDataWithColors.map((entry) => (
-                                                            <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                                                        ))}
-                                                    </Pie>
-                                                    <ChartLegend content={<ChartLegendContent />} />
-                                                </PieChart>
-                                            </ChartContainer>
-                                        ) : <Skeleton className="h-[300px] w-full" />}
-                                        </CardContent>
-                                    </Card>
-                                    <Card className="lg:col-span-1 animate-fade-in-up" style={{animationDelay: '300ms'}}>
-                                        <CardHeader>
-                                            <CardTitle className="text-primary font-bold">Top 5 Funded Campaigns</CardTitle>
-                                            <CardDescription className="font-normal text-primary/70">The Campaigns That Have Received The Most Funding.</CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            {isClient ? (
-                                            <ScrollArea className="w-full">
-                                                <div className="min-w-[300px]">
-                                                    <Table>
-                                                        <TableHeader>
-                                                            <TableRow>
-                                                                <TableHead className="font-bold text-primary">Campaign Name</TableHead>
-                                                                <TableHead className="text-right font-bold text-primary">Amount Collected</TableHead>
-                                                            </TableRow>
-                                                        </TableHeader>
-                                                        <TableBody>
-                                                            {topCampaigns.map(campaign => (
-                                                                <TableRow key={campaign.name}>
-                                                                    <TableCell className="font-medium text-foreground">{campaign.name}</TableCell>
-                                                                    <TableCell className="text-right font-mono text-primary font-bold">₹{campaign.collected.toLocaleString('en-IN')}</TableCell>
-                                                                </TableRow>
-                                                            ))}
-                                                        </TableBody>
-                                                    </Table>
-                                                </div>
-                                                <ScrollBar orientation="horizontal" className="h-1.5" />
-                                            </ScrollArea>
-                                            ) : <Skeleton className="h-[300px] w-full" />}
-                                        </CardContent>
-                                    </Card>
-                                    <Card className="lg:col-span-1 animate-fade-in-up" style={{animationDelay: '400ms'}}>
-                                        <CardHeader>
-                                            <CardTitle className="flex items-center gap-2 text-primary font-bold"><Eye className="h-5 w-5"/> Page Visits</CardTitle>
-                                            <CardDescription className="font-normal text-primary/70">Total Visits For Primary Organizational Pages.</CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            {hitsLoading ? <Skeleton className="h-40 w-full"/> : (
-                                                <ScrollArea className="w-full">
-                                                    <div className="min-w-[250px]">
-                                                        <Table>
-                                                            <TableHeader>
-                                                                <TableRow>
-                                                                    <TableHead className="font-bold text-primary">Page Name</TableHead>
-                                                                    <TableHead className="text-right font-bold text-primary">Hit Count</TableHead>
-                                                                </TableRow>
-                                                            </TableHeader>
-                                                            <TableBody>
-                                                                {pageHits?.sort((a, b) => b.hits - a.hits).map(hit => (
-                                                                    <TableRow key={hit.id}>
-                                                                        <TableCell className="font-medium capitalize text-foreground">{hit.id.replace(/_/g, ' ')}</TableCell>
-                                                                        <TableCell className="text-right font-mono text-primary font-bold">{hit.hits.toLocaleString()}</TableCell>
-                                                                    </TableRow>
-                                                                ))}
-                                                            </TableBody>
-                                                        </Table>
-                                                    </div>
-                                                    <ScrollBar orientation="horizontal" className="h-1.5" />
-                                                </ScrollArea>
-                                            )}
-                                        </CardContent>
-                                    </Card>
-                                </div>
-                            </>
-                        )}
+
+            <Tabs defaultValue="general" className="w-full space-y-10 animate-fade-in-up">
+                <div className="bg-white/30 backdrop-blur-md p-1.5 rounded-[24px] border border-primary/5 shadow-sm inline-flex w-fit overflow-hidden">
+                    <TabsList className="flex flex-nowrap bg-transparent p-0 gap-1 h-auto">
+                        <TabsTrigger value="general" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
+                            <Activity className="h-3.5 w-3.5" /> General Stats
+                        </TabsTrigger>
+                        <TabsTrigger value="database" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
+                            <Database className="h-3.5 w-3.5" /> Database Trends
+                        </TabsTrigger>
+                        <TabsTrigger value="storage" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
+                            <LayoutGrid className="h-3.5 w-3.5" /> Storage Matrix
+                        </TabsTrigger>
+                    </TabsList>
+                </div>
+
+                <TabsContent value="general" className="animate-fade-in-up mt-0 space-y-10">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <StatCard title="Member Base" value={users?.length || 0} description="Verified Institutional Members" icon={Users} delay="100ms" />
+                        <StatCard title="Aid Network" value={beneficiaries?.length || 0} description="Master Recipient Registry" icon={HandHelping} delay="150ms" />
+                        <StatCard title="Financial Flow" value={`₹${totalDonationAmount.toLocaleString('en-IN')}`} description="Verified Inbound Volume" icon={IndianRupee} delay="200ms" colorClass="bg-emerald-500/[0.02] border-emerald-500/10" />
+                        <StatCard title="Initiative Count" value={campaigns?.length || 0} description="Active Public Campaigns" icon={FolderKanban} delay="250ms" />
+                        <StatCard title="Pending Appeals" value={leads?.length || 0} description="Active Humanitarian Leads" icon={Lightbulb} delay="300ms" />
+                        <StatCard title="Impact Records" value={donations?.length || 0} description="Total Contribution Logs" icon={CheckCircle2} delay="350ms" />
+                    </div>
+
+                    <div className="grid gap-8 lg:grid-cols-3">
+                        <Card className="lg:col-span-1 rounded-[40px] border border-primary/5 bg-white/40 backdrop-blur-md p-10 space-y-8 animate-fade-in-up shadow-none hover:shadow-2xl transition-all duration-500">
+                            <div className="space-y-1">
+                                <h3 className="text-xl font-black text-primary tracking-tighter flex items-center gap-3">
+                                    <PieChartIcon className="h-5 w-5 text-primary opacity-40" /> Donation Vector Split
+                                </h3>
+                                <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Categorical Inbound Distribution</p>
+                            </div>
+                            {isClient ? (
+                                <ChartContainer config={donationCategoryChartConfig} className="h-[350px] w-full">
+                                    <PieChart>
+                                        <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                        <Pie data={chartDataWithColors} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={8} paddingAngle={4} stroke="rgba(255,255,255,0.5)">
+                                            {chartDataWithColors.map((entry) => (
+                                                <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                                            ))}
+                                        </Pie>
+                                        <ChartLegend content={<ChartLegendContent />} />
+                                    </PieChart>
+                                </ChartContainer>
+                            ) : <Skeleton className="h-[350px] w-full rounded-3xl" />}
+                        </Card>
+
+                        <Card className="lg:col-span-1 rounded-[40px] border border-primary/5 bg-white/40 backdrop-blur-md p-0 space-y-8 animate-fade-in-up shadow-none hover:shadow-2xl transition-all duration-500 overflow-hidden">
+                            <div className="p-10 pb-2 space-y-1">
+                                <h3 className="text-xl font-black text-primary tracking-tighter flex items-center gap-3">
+                                    <Target className="h-5 w-5 text-primary opacity-40" /> Top Funding Vectors
+                                </h3>
+                                <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">High-Impact Initiatives</p>
+                            </div>
+                            <ScrollArea className="h-[400px]">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-primary/5 border-b border-primary/5 h-12">
+                                            <TableHead className="pl-10 text-[10px] font-black uppercase tracking-widest">Identity</TableHead>
+                                            <TableHead className="text-right pr-10 text-[10px] font-black uppercase tracking-widest">Liquidity</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {topCampaigns.map((campaign, idx) => (
+                                            <TableRow key={campaign.name} className="border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors h-16">
+                                                <TableCell className="pl-10">
+                                                    <div className="font-bold text-sm text-primary tracking-tight">{campaign.name}</div>
+                                                    <div className="text-[9px] font-black uppercase opacity-30 mt-1">Initiative Tier {idx + 1}</div>
+                                                </TableCell>
+                                                <TableCell className="text-right pr-10 font-mono font-bold text-emerald-600">₹{campaign.collected.toLocaleString('en-IN')}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </ScrollArea>
+                        </Card>
+
+                        <Card className="lg:col-span-1 rounded-[40px] border border-primary/5 bg-white/40 backdrop-blur-md p-0 space-y-8 animate-fade-in-up shadow-none hover:shadow-2xl transition-all duration-500 overflow-hidden">
+                            <div className="p-10 pb-2 space-y-1">
+                                <h3 className="text-xl font-black text-primary tracking-tighter flex items-center gap-3">
+                                    <Eye className="h-5 w-5 text-primary opacity-40" /> Public Portal Traffic
+                                </h3>
+                                <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Neurometric Page Engagement</p>
+                            </div>
+                            <ScrollArea className="h-[400px]">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="bg-primary/5 border-b border-primary/5 h-12">
+                                            <TableHead className="pl-10 text-[10px] font-black uppercase tracking-widest">Vector</TableHead>
+                                            <TableHead className="text-right pr-10 text-[10px] font-black uppercase tracking-widest">Engagement</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {pageHits?.sort((a, b) => b.hits - a.hits).map(hit => (
+                                            <TableRow key={hit.id} className="border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors h-16">
+                                                <TableCell className="pl-10">
+                                                    <div className="font-bold text-sm text-primary tracking-tight capitalize">{hit.id.replace(/_/g, ' ')}</div>
+                                                    <div className="text-[9px] font-black uppercase opacity-30 mt-1">System Module</div>
+                                                </TableCell>
+                                                <TableCell className="text-right pr-10 font-mono font-bold text-primary">{hit.hits.toLocaleString()}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </ScrollArea>
+                        </Card>
                     </div>
                 </TabsContent>
-                <TabsContent value="storage" className="animate-fade-in-up">
+
+                <TabsContent value="database" className="animate-fade-in-up mt-0 space-y-10">
+                    <Card className="rounded-[48px] border border-primary/5 bg-white/40 backdrop-blur-md p-10 space-y-10 animate-fade-in-up shadow-none">
+                        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-8 border-b border-primary/5 pb-8">
+                            <div className="space-y-2">
+                                <h3 className="text-2xl font-black text-primary tracking-tighter flex items-center gap-4">
+                                    <div className="p-3 rounded-2xl bg-primary/10 text-primary shadow-inner">
+                                        <Activity className="h-6 w-6" />
+                                    </div>
+                                    Temporal Activity Matrix
+                                </h3>
+                                <p className="text-sm font-bold opacity-40 text-primary max-w-xl">Deep chronological analysis of institutional data velocity and record frequency.</p>
+                            </div>
+                            
+                            <div className="flex flex-wrap items-center gap-4 bg-white/50 backdrop-blur-md p-2 rounded-[28px] border border-primary/5 shadow-sm">
+                                <Popover>
+                                    <PopoverTrigger asChild>
+                                        <Button id="date" variant="outline" className={cn("h-11 px-6 justify-start text-left font-bold border-primary/10 text-primary rounded-2xl bg-white shadow-sm", !date && "text-muted-foreground")}>
+                                            <CalendarIcon className="mr-3 h-4 w-4 opacity-40" />
+                                            {date?.from ? (date.to ? (<>{format(date.from, "LLL dd")} - {format(date.to, "LLL dd, y")}</>) : (format(date.from, "LLL dd, y"))) : (<span>Neural Range</span>)}
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-auto p-0 rounded-[32px] border-primary/10 shadow-dropdown overflow-hidden" align="end">
+                                        <CalendarComponent initialFocus mode="range" defaultMonth={date?.from} selected={date} onSelect={setDate} numberOfMonths={2} className="p-4" />
+                                    </PopoverContent>
+                                </Popover>
+                                
+                                <UiSelect onValueChange={(value) => {
+                                    const now = new Date();
+                                    if (value === 'all_time') setDate({ from: undefined, to: undefined });
+                                    else if (value === 'this_month') setDate({ from: startOfMonth(now), to: endOfMonth(now) });
+                                    else if (value === 'this_quarter') setDate({ from: startOfQuarter(now), to: endOfQuarter(now) });
+                                    else if (value === 'this_year') setDate({ from: startOfYear(now), to: endOfYear(now) });
+                                    else if (value === 'last_3_months') setDate({ from: subMonths(now, 3), to: now });
+                                }}>
+                                    <SelectTrigger className="w-[180px] h-11 font-black text-xs border-primary/10 text-primary rounded-2xl bg-white shadow-sm px-5">
+                                        <SelectValue placeholder="Preset Range" />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-primary/10 shadow-dropdown p-1.5">
+                                        <SelectItem value="all_time" className="font-bold text-xs p-3 rounded-xl">Neural Archive</SelectItem>
+                                        <SelectItem value="this_month" className="font-bold text-xs p-3 rounded-xl">Current Cycle</SelectItem>
+                                        <SelectItem value="this_year" className="font-bold text-xs p-3 rounded-xl">Full Fiscal</SelectItem>
+                                        <SelectItem value="last_3_months" className="font-bold text-xs p-3 rounded-xl">Recent Quarter</SelectItem>
+                                    </SelectContent>
+                                </UiSelect>
+
+                                <div className="h-8 w-px bg-primary/10 mx-2 hidden xl:block" />
+
+                                <UiSelect value={selectedMetric} onValueChange={(value) => setSelectedMetric(value as any)}>
+                                    <SelectTrigger className="w-[180px] h-11 font-black text-xs border-primary/10 text-primary rounded-2xl bg-white shadow-sm px-5">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-primary/10 shadow-dropdown p-1.5">
+                                        <SelectItem value="donations" className="font-bold text-xs p-3 rounded-xl">Contribution Volume</SelectItem>
+                                        <SelectItem value="users" className="font-bold text-xs p-3 rounded-xl">Enrollment Rate</SelectItem>
+                                        <SelectItem value="beneficiaries" className="font-bold text-xs p-3 rounded-xl">Recipient Growth</SelectItem>
+                                    </SelectContent>
+                                </UiSelect>
+
+                                <UiSelect value={granularity} onValueChange={(value) => setGranularity(value as any)}>
+                                    <SelectTrigger className="w-[180px] h-11 font-black text-xs border-primary/10 text-primary rounded-2xl bg-white shadow-sm px-5">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent className="rounded-2xl border-primary/10 shadow-dropdown p-1.5">
+                                        <SelectItem value="daily" className="font-bold text-xs p-3 rounded-xl">Daily Pulse</SelectItem>
+                                        <SelectItem value="weekly" className="font-bold text-xs p-3 rounded-xl">Weekly Trend</SelectItem>
+                                        <SelectItem value="monthly" className="font-bold text-xs p-3 rounded-xl">Monthly Drift</SelectItem>
+                                    </SelectContent>
+                                </UiSelect>
+                            </div>
+                        </div>
+
+                        {isClient ? (
+                            <ChartContainer config={activityChartConfig} className="h-[450px] w-full">
+                                <AreaChart data={timeSeriesData} margin={{ left: 12, right: 12 }}>
+                                    <defs>
+                                        <linearGradient id="colorCount" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="var(--color-count)" stopOpacity={0.3}/>
+                                            <stop offset="95%" stopColor="var(--color-count)" stopOpacity={0}/>
+                                        </linearGradient>
+                                        <linearGradient id="colorAmount" x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor="var(--color-amount)" stopOpacity={0.3}/>
+                                            <stop offset="95%" stopColor="var(--color-amount)" stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.1} />
+                                    <XAxis
+                                        dataKey="date"
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tickMargin={20}
+                                        className="text-[10px] font-black opacity-40 uppercase"
+                                        tickFormatter={(value) => {
+                                            try {
+                                                if (granularity === 'monthly') return format(parseISO(`${value}-01`), 'MMM yy');
+                                                return format(parseISO(value), 'd MMM');
+                                            } catch (e) { return value; }
+                                        }}
+                                    />
+                                    <YAxis tickFormatter={(value) => value.toLocaleString()} tickLine={false} axisLine={false} className="text-[10px] font-black opacity-40" />
+                                    <ChartTooltip cursor={{stroke: 'var(--primary)', strokeWidth: 1, strokeDasharray: '4 4'}} content={<ChartTooltipContent indicator="line" className="rounded-2xl shadow-dropdown border-primary/10 p-4" />} />
+                                    <Area
+                                        dataKey="count"
+                                        type="monotone"
+                                        fill="url(#colorCount)"
+                                        stroke="var(--color-count)"
+                                        strokeWidth={4}
+                                        stackId="a"
+                                    />
+                                    {selectedMetric === 'donations' && (
+                                        <Area
+                                            dataKey="amount"
+                                            type="monotone"
+                                            fill="url(#colorAmount)"
+                                            stroke="var(--color-amount)"
+                                            strokeWidth={4}
+                                            stackId="b"
+                                        />
+                                    )}
+                                    <ChartLegend content={<ChartLegendContent className="mt-8" />} />
+                                </AreaChart>
+                            </ChartContainer>
+                        ) : <Skeleton className="h-[450px] w-full rounded-[40px]" />}
+                    </Card>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <Card className="rounded-[40px] border border-primary/5 bg-white/40 backdrop-blur-md p-10 space-y-8 animate-fade-in-up shadow-none">
+                            <div className="space-y-1">
+                                <h3 className="text-xl font-black text-primary tracking-tighter flex items-center gap-3">
+                                    <PieChartIcon className="h-5 w-5 text-primary opacity-40" /> Collection Balance
+                                </h3>
+                                <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Document Density Map</p>
+                            </div>
+                            {isClient ? (
+                                <ChartContainer config={documentDistributionChartConfig} className="h-[300px] w-full">
+                                    <PieChart>
+                                        <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                        <Pie data={documentDistributionData} dataKey="value" nameKey="name" innerRadius={80} strokeWidth={8} paddingAngle={4} stroke="rgba(255,255,255,0.5)">
+                                            {documentDistributionData.map((entry) => (
+                                                <Cell key={`cell-${entry.name}`} fill={entry.fill} />
+                                            ))}
+                                        </Pie>
+                                        <ChartLegend content={<ChartLegendContent />} />
+                                    </PieChart>
+                                </ChartContainer>
+                            ) : <Skeleton className="h-[300px] w-full rounded-3xl" />}
+                        </Card>
+
+                        <Card className="rounded-[40px] border border-primary/5 bg-white/40 backdrop-blur-md p-10 space-y-8 animate-fade-in-up shadow-none">
+                            <div className="space-y-1">
+                                <h3 className="text-xl font-black text-primary tracking-tighter flex items-center gap-4">
+                                    <div className="p-2 rounded-xl bg-primary/10">
+                                        <Zap className="h-5 w-5 text-primary" />
+                                    </div>
+                                    Neural Metrics Console
+                                </h3>
+                                <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Advanced Operational Insights</p>
+                            </div>
+                            <div className="grid gap-4">
+                                <Alert className="rounded-[28px] border-primary/10 bg-white/60 p-6 shadow-sm group hover:shadow-xl transition-all duration-500">
+                                    <Database className="h-5 w-5 text-primary opacity-40" />
+                                    <AlertTitle className="text-sm font-black text-primary tracking-tight">Root Cloud Access Required</AlertTitle>
+                                    <AlertDescription className="text-xs font-bold text-primary/60 leading-relaxed mt-2">
+                                        For granular neural metrics on IO operations, network latency, and physical storage clusters, please interface directly with the root cloud console.
+                                        <Button asChild variant="link" className="p-0 h-auto block mt-4 text-primary font-black uppercase tracking-widest text-[9px] group-hover:translate-x-1 transition-transform">
+                                            <a href={`https://console.firebase.google.com/project/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/firestore/usage`} target="_blank" rel="noopener noreferrer">
+                                                Open Cloud Console <ExternalLink className="ml-2 h-3.5 w-3.5 opacity-40" />
+                                            </a>
+                                        </Button>
+                                    </AlertDescription>
+                                </Alert>
+                            </div>
+                        </Card>
+                    </div>
+                </TabsContent>
+
+                <TabsContent value="storage" className="animate-fade-in-up mt-0">
                     <StorageAnalytics />
                 </TabsContent>
-                <TabsContent value="database" className="animate-fade-in-up">
-                    <div className="space-y-6">
-                        {isLoading ? (
-                            <SectionLoader label="Processing Database Trends..." description="Analyzing document creation history and distribution." />
-                        ) : (
-                            <>
-                                <Card className="animate-fade-in-zoom">
-                                    <CardHeader>
-                                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-                                            <div>
-                                                <CardTitle className="text-primary font-bold">Activity Over Time</CardTitle>
-                                                <CardDescription className="font-normal text-primary/70">Track New Donations, Users, And Beneficiaries Over A Selected Period.</CardDescription>
-                                            </div>
-                                            <div className="flex flex-wrap items-center gap-2">
-                                                <Popover>
-                                                    <PopoverTrigger asChild>
-                                                        <Button id="date" variant={"outline"} className={cn("w-full sm:w-[260px] justify-start text-left font-bold border-primary/20 text-primary", !date && "text-muted-foreground")}>
-                                                            <CalendarIcon className="mr-2 h-4 w-4" />
-                                                            {date?.from ? (date.to ? (<>{format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}</>) : (format(date.from, "LLL dd, y"))) : (<span>Pick A Date Range</span>)}
-                                                        </Button>
-                                                    </PopoverTrigger>
-                                                    <PopoverContent className="w-auto p-0" align="end">
-                                                        <Calendar initialFocus mode="range" defaultMonth={date?.from} selected={date} onSelect={setDate} numberOfMonths={2} />
-                                                    </PopoverContent>
-                                                </Popover>
-                                                <UiSelect onValueChange={(value) => {
-                                                    const now = new Date();
-                                                    if (value === 'all_time') setDate({ from: undefined, to: undefined });
-                                                    else if (value === 'this_month') setDate({ from: startOfMonth(now), to: endOfMonth(now) });
-                                                    else if (value === 'this_quarter') setDate({ from: startOfQuarter(now), to: endOfQuarter(now) });
-                                                    else if (value === 'this_year') setDate({ from: startOfYear(now), to: endOfYear(now) });
-                                                    else if (value === 'last_3_months') setDate({ from: subMonths(now, 3), to: now });
-                                                }}>
-                                                    <SelectTrigger className="w-full sm:w-auto font-bold border-primary/20 text-primary"><SelectValue placeholder="Quick Selection" /></SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="all_time" className="font-bold">All Time</SelectItem>
-                                                        <SelectItem value="this_month" className="font-bold">This Month</SelectItem>
-                                                        <SelectItem value="this_quarter" className="font-bold">This Quarter</SelectItem>
-                                                        <SelectItem value="this_year" className="font-bold">This Year</SelectItem>
-                                                        <SelectItem value="last_3_months" className="font-bold">Last 3 Months</SelectItem>
-                                                    </SelectContent>
-                                                </UiSelect>
-                                            </div>
-                                        </div>
-                                        <div className="pt-4 flex flex-wrap gap-4 items-center">
-                                            <UiSelect value={selectedMetric} onValueChange={(value) => setSelectedMetric(value as any)}>
-                                            <SelectTrigger className="w-full sm:w-auto font-bold border-primary/20 text-primary">
-                                                <SelectValue placeholder="Select Metric" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="donations" className="font-bold">Donations Collected</SelectItem>
-                                                <SelectItem value="users" className="font-bold">New Members</SelectItem>
-                                                <SelectItem value="beneficiaries" className="font-bold">New Beneficiaries</SelectItem>
-                                            </SelectContent>
-                                            </UiSelect>
-                                            <UiSelect value={granularity} onValueChange={(value) => setGranularity(value as any)}>
-                                            <SelectTrigger className="w-full sm:w-auto font-bold border-primary/20 text-primary">
-                                                <SelectValue placeholder="Select Interval" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="daily" className="font-bold">Daily View</SelectItem>
-                                                <SelectItem value="weekly" className="font-bold">Weekly View</SelectItem>
-                                                <SelectItem value="monthly" className="font-bold">Monthly View</SelectItem>
-                                                <SelectItem value="quarterly" className="font-bold">Quarterly View</SelectItem>
-                                                <SelectItem value="yearly" className="font-bold">Yearly View</SelectItem>
-                                            </SelectContent>
-                                            </UiSelect>
-                                        </div>
-                                    </CardHeader>
-                                    <CardContent>
-                                        {isClient ? (
-                                        <ChartContainer config={activityChartConfig} className="h-[350px] w-full">
-                                            <AreaChart data={timeSeriesData} margin={{ left: 12, right: 12 }}>
-                                            <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.3} />
-                                            <XAxis
-                                                dataKey="date"
-                                                tickLine={false}
-                                                axisLine={false}
-                                                tickMargin={8}
-                                                tickFormatter={(value) => {
-                                                try {
-                                                    if (granularity === 'yearly') return value;
-                                                    if (granularity === 'quarterly') return value;
-                                                    if (granularity === 'monthly') return format(parseISO(`${value}-01`), 'MMM yy');
-                                                    return format(parseISO(value), 'd MMM');
-                                                } catch (e) { return value; }
-                                                }}
-                                            />
-                                            <YAxis tickFormatter={(value) => value.toLocaleString()} tickLine={false} axisLine={false} />
-                                            <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="dot" />} />
-                                            <Area
-                                                dataKey="count"
-                                                type="natural"
-                                                fill="var(--color-count)"
-                                                fillOpacity={0.4}
-                                                stroke="var(--color-count)"
-                                                stackId="a"
-                                            />
-                                            {selectedMetric === 'donations' && (
-                                                <Area
-                                                    dataKey="amount"
-                                                    type="natural"
-                                                    fill="var(--color-amount)"
-                                                    fillOpacity={0.4}
-                                                    stroke="var(--color-amount)"
-                                                    stackId="b"
-                                                />
-                                            )}
-                                            <ChartLegend content={<ChartLegendContent />} />
-                                            </AreaChart>
-                                        </ChartContainer>
-                                        ) : (
-                                        <Skeleton className="h-[350px] w-full" />
-                                        )}
-                                    </CardContent>
-                                </Card>
-                                <div className="grid gap-6 lg:grid-cols-2 animate-fade-in-up" style={{ animationDelay: '200ms'}}>
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle className="text-primary font-bold">Document Distribution</CardTitle>
-                                            <CardDescription className="font-normal text-primary/70">The Proportion Of Documents In Each Main Collection.</CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                        {isClient ? (
-                                            <ChartContainer config={documentDistributionChartConfig} className="h-[300px] w-full">
-                                                <PieChart>
-                                                    <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                                                    <Pie data={documentDistributionData} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5} paddingAngle={2}>
-                                                        {documentDistributionData.map((entry) => (
-                                                            <Cell key={`cell-${entry.name}`} fill={entry.fill} />
-                                                        ))}
-                                                    </Pie>
-                                                    <ChartLegend content={<ChartLegendContent />} />
-                                                </PieChart>
-                                            </ChartContainer>
-                                        ) : <Skeleton className="h-[300px] w-full" />}
-                                        </CardContent>
-                                    </Card>
-
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle className="text-primary font-bold">Detailed Usage Metrics</CardTitle>
-                                            <CardDescription className="font-normal text-primary/70">Information About Database Reads, Writes, And Deletes.</CardDescription>
-                                        </CardHeader>
-                                        <CardContent>
-                                            <Alert className="border-primary/20">
-                                                <Database className="h-4 w-4 text-primary" />
-                                                <AlertTitle className="text-primary font-bold">View Usage In Firebase Console</AlertTitle>
-                                                <AlertDescription className="font-normal text-primary/80">
-                                                    <p>For detailed, real-time metrics on database operations, network usage, and storage, please visit your Firebase Console.</p>
-                                                    <p className="mt-2">The Activity Over Time chart can provide insight into document creation trends.</p>
-                                                    <Button asChild variant="link" className="p-0 h-auto mt-2 text-primary font-bold">
-                                                        <a href={`https://console.firebase.google.com/project/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/firestore/usage`} target="_blank" rel="noopener noreferrer">
-                                                            Go To Firebase Console Usage <ExternalLink className="ml-1 h-3 w-3" />
-                                                        </a>
-                                                    </Button>
-                                                </AlertDescription>
-                                            </Alert>
-                                        </CardContent>
-                                    </Card>
-                                </div>
-                            </>
-                        )}
-                    </div>
-                </TabsContent>
             </Tabs>
-        </div>
+        </main>
     );
 }

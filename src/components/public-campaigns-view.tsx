@@ -1,4 +1,5 @@
 'use client';
+import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -11,10 +12,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import Image from 'next/image';
 import { usePublicData } from '@/hooks/use-public-data';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
+import { cn, getImageSrc } from '@/lib/utils';
+import { getDefaultImage } from '@/lib/default-images';
 import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -76,17 +77,13 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                                 onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}
                             >
                                 <div className="relative h-32 w-full bg-secondary flex items-center justify-center border-b border-primary/5">
-                                    {campaign.imageUrl ? (
-                                        <Image
-                                          src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`}
-                                          alt={campaign.name}
-                                          fill
-                                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                          className="object-cover"
-                                        />
-                                    ) : (
-                                        <FallbackIcon className="h-16 w-16 text-primary/10" />
-                                    )}
+                                    <Image
+                                        src={getImageSrc(campaign.imageUrl || getDefaultImage(campaign.category))}
+                                        alt={campaign.name}
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                                        className="object-cover"
+                                    />
                                 </div>
                                 <CardHeader className="p-4">
                                     <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 text-primary">

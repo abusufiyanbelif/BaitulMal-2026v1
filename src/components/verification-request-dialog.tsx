@@ -68,7 +68,6 @@ export function VerificationRequestDialog({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [showManualShare, setShowManualShare] = useState(false);
 
   const usersRef = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -151,8 +150,7 @@ export function VerificationRequestDialog({
 
       if (result.success) {
         toast({ title: "Verification Request Sent", description: result.message, variant: "success" });
-        setShowManualShare(true); // Keep dialog open to allow manual sharing if needed
-        // onOpenChange(false); // Don't close immediately
+        onOpenChange(false);
         onSuccess?.();
       } else {
         toast({ title: "Request Failed", description: result.message, variant: "destructive" });
@@ -287,11 +285,11 @@ export function VerificationRequestDialog({
             onClick={() => onOpenChange(false)} 
             className="font-bold border-primary/10 text-primary h-9 px-4 hidden sm:flex"
           >
-            {showManualShare ? 'Close' : 'Cancel'}
+            Cancel
           </Button>
           
           <div className="flex items-center justify-end gap-2 w-full sm:w-auto">
-              {!showManualShare && isOptional && (
+              {isOptional && (
                   <Button 
                     variant="outline" 
                     size="sm"
@@ -301,33 +299,22 @@ export function VerificationRequestDialog({
                       Bypass & Apply
                   </Button>
               )}
-              {showManualShare ? (
-                <Button 
-                  size="sm"
-                  onClick={() => onOpenChange(false)} 
-                  className="font-bold shadow-lg h-9 px-5 text-xs bg-green-600 hover:bg-green-700"
-                >
+              <Button 
+                size="sm"
+                onClick={handleSubmit} 
+                disabled={isSubmitting || selectedUserIds.length === 0} 
+                className={cn(
+                  "font-bold shadow-lg h-9 px-5 text-xs",
+                  selectedUserIds.length < minApprovals && "opacity-50 cursor-not-allowed"
+                )}
+              >
+                {isSubmitting ? (
+                  <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                ) : (
                   <ShieldCheck className="mr-2 h-3.5 w-3.5" />
-                  Request Dispatched
-                </Button>
-              ) : (
-                <Button 
-                  size="sm"
-                  onClick={handleSubmit} 
-                  disabled={isSubmitting || selectedUserIds.length === 0} 
-                  className={cn(
-                    "font-bold shadow-lg h-9 px-5 text-xs",
-                    selectedUserIds.length < minApprovals && "opacity-50 cursor-not-allowed"
-                  )}
-                >
-                  {isSubmitting ? (
-                    <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
-                  ) : (
-                    <ShieldCheck className="mr-2 h-3.5 w-3.5" />
-                  )}
-                  Dispatch Request ({selectedUserIds.length})
-                </Button>
-              )}
+                )}
+                Dispatch Request ({selectedUserIds.length})
+              </Button>
           </div>
         </DialogFooter>
       </DialogContent>

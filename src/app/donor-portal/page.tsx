@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from '@/hooks/use-session';
-import { useFirestore, useMemoFirebase, useCollection, collection, query, where } from '@/firebase';
+import { useFirestore, useMemoFirebase, useCollection, useDoc, doc, collection, query, where } from '@/firebase';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -34,6 +34,13 @@ export default function DonorPortalPage() {
 
     const targetDonorId = userProfile?.linkedDonorId || userProfile?.id || user?.uid;
 
+    const donorDocRef = useMemoFirebase(() => {
+        if (!firestore || !targetDonorId) return null;
+        return doc(firestore, 'donors', targetDonorId) as any;
+    }, [firestore, targetDonorId]);
+
+    const { data: donorProfile, isLoading: isDonorLoading } = useDoc<any>(donorDocRef);
+
     const donationsRef = useMemoFirebase(() => {
         if (!firestore || !targetDonorId) return null;
         return query(
@@ -44,7 +51,7 @@ export default function DonorPortalPage() {
 
     const { data: donations, isLoading } = useCollection<Donation>(donationsRef);
 
-    if (isLoading || !user) {
+    if (isLoading || isDonorLoading || !user) {
          return <BrandedLoader message="Loading Your Impact Records..." />;
     }
 
@@ -66,7 +73,7 @@ export default function DonorPortalPage() {
                         My Donor Portal
                     </h1>
                     <p className="text-sm font-normal text-muted-foreground tracking-tight">
-                        Welcome back, {userProfile?.name || 'Supporter'}. Below is your cumulative impact via {brandingSettings?.name || 'Our Organization'}.
+                        Welcome back, {donorProfile?.name || userProfile?.name || 'Supporter'}. Below is your cumulative impact via {brandingSettings?.name || 'Our Organization'}.
                     </p>
                 </div>
                 {brandingSettings?.isDonorSelfRecordPaymentEnabled && (

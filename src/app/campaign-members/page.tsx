@@ -41,7 +41,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { CopyCampaignDialog } from '@/components/copy-campaign-dialog';
 import { copyCampaignAction, deleteCampaignAction } from './actions';
-import { cn, getNestedValue } from '@/lib/utils';
+import { cn, getNestedValue, getImageSrc } from '@/lib/utils';
+import { getDefaultImage } from '@/lib/default-images';
 import { priorityLevels } from '@/lib/modules';
 import Image from 'next/image';
 import { DateRange } from "react-day-picker";
@@ -53,6 +54,7 @@ import { errorEmitter } from '@/firebase/error-emitter';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
 import { BrandedLoader } from '@/components/branded-loader';
+
 import {
   Carousel,
   CarouselContent,
@@ -111,17 +113,13 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
             onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}
         >
           <div className="relative h-32 w-full bg-secondary flex items-center justify-center border-b border-primary/5">
-            {campaign.imageUrl ? (
-                <Image
-                  src={`/api/image-proxy?url=${encodeURIComponent(campaign.imageUrl)}`}
-                  alt={campaign.name}
-                  fill
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-110"
-                />
-            ) : (
-                <FallbackIcon className="h-16 w-16 text-primary/10" />
-            )}
+            <Image
+                src={getImageSrc(campaign.imageUrl || getDefaultImage(campaign.category))}
+                alt={campaign.name}
+                fill
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-110"
+            />
           </div>
           <CardHeader className="p-4 space-y-3">
             <div className="flex justify-between items-start gap-2">
@@ -249,11 +247,27 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                     <span className="opacity-60">Raised: ₹{campaign.collected.toLocaleString('en-IN')}</span>
                     <span className="text-sm">Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</span>
                 </div>
-                <Progress value={campaign.progress} className="h-2 bg-primary/10 shadow-inner" />
+                <div className="relative">
+                    <Progress 
+                        value={campaign.progress} 
+                        className={cn(
+                            "h-2 bg-primary/10 shadow-inner overflow-hidden",
+                            campaign.progress >= 100 && "bg-emerald-100"
+                        )} 
+                    />
+                    {campaign.progress >= 100 && (
+                        <div className="absolute inset-0 bg-emerald-400/20 animate-pulse pointer-events-none" />
+                    )}
+                </div>
                 <div className="flex justify-between items-center">
                     <span className="text-[9px] font-bold text-muted-foreground tracking-tight">Progress</span>
-                    <span className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary/5 border border-primary/10">
-                        {Math.round(campaign.progress)}% Funded
+                    <span className={cn(
+                        "text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all duration-300",
+                        campaign.progress >= 100 
+                            ? "bg-emerald-500 text-white border-emerald-600 shadow-sm" 
+                            : "bg-primary/5 text-primary border-primary/10"
+                    )}>
+                        {Math.round(campaign.progress)}% {campaign.progress >= 100 ? 'Goal Reached' : 'Funded'}
                     </span>
                 </div>
             </div>
@@ -534,7 +548,7 @@ export default function CampaignPage() {
                     />
 
                     <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1">
-                        <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs text-primary font-normal"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent><SelectItem value="All" className="font-normal">Year</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-normal">{y}</SelectItem>)}</SelectContent></Select>
+                        <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs text-primary font-bold bg-white/50 border-primary/10 hover:border-primary/30 transition-all"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent className="rounded-[12px] shadow-dropdown"><SelectItem value="All" className="font-normal text-xs">All Years</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-normal text-xs">{y}</SelectItem>)}</SelectContent></Select>
                         <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-3 text-xs font-normal border-primary/20 text-primary", !dateRange ? "opacity-60" : "")} disabled={isLoading}><CalendarIcon className="mr-2 h-3 w-3" /> Date Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
                         {(selectedYear !== 'All' || dateRange) && <Button variant="ghost" size="icon" className="h-8 w-8 text-primary" onClick={() => { setSelectedYear('All'); setDateRange(undefined); }}><X className="h-4 w-4" /></Button>}
                     </div>

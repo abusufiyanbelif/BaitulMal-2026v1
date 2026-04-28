@@ -17,7 +17,7 @@ import { Loader2, AlertTriangle, ArrowLeft, Phone, ShieldCheck, Lock, Fingerprin
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
 import { BrandedLoader } from '@/components/branded-loader';
-import { authenticateSupporterAction } from './actions';
+import { authenticateSupporterAction, exchangeOtpForCustomTokenAction } from './actions';
 
 // Extension for window object to hold recaptcha verifier
 declare global {
@@ -112,8 +112,20 @@ export default function PortalLoginPage() {
       setLoginError(null);
 
       try {
-          await verificationResult.confirm(data.otp);
-          toast({ title: 'Securely Logged In', description: 'Redirecting To Your Portal...', variant: 'success' });
+          const result = await verificationResult.confirm(data.otp);
+          
+          if (result.user && result.user.phoneNumber) {
+              const res = await exchangeOtpForCustomTokenAction(result.user.phoneNumber);
+              if (res.success && res.token) {
+                  await signInWithCustomToken(auth!, res.token);
+                  toast({ title: 'Access Granted', description: `Authenticated as ${res.role}. Entering Portal...`, variant: 'success' });
+              } else {
+                  await auth!.signOut();
+                  setLoginError(res.message || 'Authentication Failed.');
+              }
+          } else {
+              setLoginError('Could not verify phone number.');
+          }
       } catch (err: any) {
           setLoginError('Invalid OTP Code. Please Try Again.');
       } finally {

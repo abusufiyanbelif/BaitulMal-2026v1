@@ -10,52 +10,28 @@ service cloud.firestore {
 
     // Bulletproof Admin check: Prioritizes hardcoded Master IDs to prevent Rule Execution Limit failures
     function isAdmin() {
-      let masterAdmins = [
-        'cyMl1lQME0Yur1YS3VCms1AvrOJ2', 
-        'S5efNV5jpTPoxYNv6SnAlv3jNPO2', 
-        '3gKwUE2JrBT8wngoUxTTN6tLJk03'
-      ];
-      
-      // Direct UID check is the most efficient and reliable
-      if (isSignedIn() && request.auth.uid in masterAdmins) {
-        return true;
-      }
-
-      let masterEmails = [
-        'baitulmalss.solapur@gmail.com', 
-        'abusufiyan.belif@gmail.com', 
-        'maazshaikh.official@gmail.com',
-        'admin@example.com'
-      ];
-      
-      if (isSignedIn() && request.auth.token.email != null && request.auth.token.email in masterEmails) {
-        return true;
-      }
-
-      let userDoc = /databases/$(database)/documents/users/$(request.auth.uid);
-      return isSignedIn() && exists(userDoc) && get(userDoc).data.role == 'Admin';
+      return isSignedIn() && (
+        request.auth.uid in ['cyMl1lQME0Yur1YS3VCms1AvrOJ2', 'S5efNV5jpTPoxYNv6SnAlv3jNPO2', '3gKwUE2JrBT8wngoUxTTN6tLJk03'] ||
+        (request.auth.token.email != null && request.auth.token.email in ['baitulmalss.solapur@gmail.com', 'abusufiyan.belif@gmail.com', 'maazshaikh.official@gmail.com', 'admin@example.com']) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin')
+      );
     }
 
     // Staff includes Admins and registered team members (Users)
     function isStaff() {
-      if (!isSignedIn()) { return false; }
-      if (isAdmin()) { return true; }
-      
-      let userDoc = /databases/$(database)/documents/users/$(request.auth.uid);
-      return exists(userDoc) && get(userDoc).data.role == 'User';
+      return isSignedIn() && (
+        isAdmin() || 
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'User')
+      );
     }
 
     // Granular permission check for staff members
     function hasPermission(module, perm) {
-      if (isAdmin()) { return true; }
-      if (!isSignedIn()) { return false; }
-      
-      let userDoc = /databases/$(database)/documents/users/$(request.auth.uid);
-      return exists(userDoc) && (
-        (get(userDoc).data.permissions[module][perm] == true) ||
-        (module == 'leads' && get(userDoc).data.permissions['leads-members'][perm] == true) ||
-        (module == 'leads-members' && get(userDoc).data.permissions['leads'][perm] == true)
-      );
+      return isAdmin() || (isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions[module][perm] == true) ||
+        (module == 'leads' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions['leads-members'][perm] == true) ||
+        (module == 'leads-members' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions['leads'][perm] == true)
+      ));
     }
 
     // --- SYSTEM & LOGGING (Staff Only) ---

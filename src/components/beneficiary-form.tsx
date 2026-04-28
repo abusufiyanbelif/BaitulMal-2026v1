@@ -329,7 +329,6 @@ export function BeneficiaryForm({
                                                         className="font-normal flex-1" 
                                                     />
                                                 </FormControl>
-                                            </div>
                                                 {field.value && (
                                                     <Button 
                                                         type="button" 

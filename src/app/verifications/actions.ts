@@ -21,7 +21,8 @@ import { generateChanges } from '@/lib/utils';
     notifyDonationVerifiedAction, 
     notifyBeneficiaryStatusAction,
     notifyApprovalFinalizedAction,
-    notifyVerificationUpdateAction
+    notifyVerificationUpdateAction,
+    sendTelegramAction
 } from '@/app/messages/actions';
  
  /**
@@ -140,6 +141,24 @@ import { generateChanges } from '@/lib/utils';
                     if (notifyResult.success) sentCount++;
                     else failCount++;
                 }
+                
+                const verifierTelegramId = verifierSnap.data()?.telegramChatId;
+                if (verifierTelegramId) {
+                    let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
+                    try {
+                        const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+                        if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
+                            baseUrl = resourceSnap.data()?.baseUrl;
+                        }
+                    } catch (e) {}
+
+                    await sendTelegramAction({
+                        message: `🔔 *New Verification Request*\n\n*Module:* ${payload.module.toUpperCase()}\n*Requested By:* ${payload.requestedBy.name}\n*Purpose:* ${payload.description || 'Data Update'}\n\n🔗 Review: ${baseUrl}/verifications?requestId=${payload.id}`,
+                        chatId: verifierTelegramId,
+                        moduleId: payload.module.replace(/s$/, '') as any
+                    });
+                }
+
             } catch (notifyError) {
                 failCount++;
                 console.error(`Failed to process notification for verifier ${verifier.id}:`, notifyError);
@@ -193,7 +212,33 @@ import { generateChanges } from '@/lib/utils';
              v.id === verifierId ? { ...v, status: 'Approved' as const, updatedAt: Timestamp.now() } : v
          );
  
-         const allApproved = updatedVerifiers.every(v => v.status === 'Approved');
+         let minApprovalsRequired = 1;
+         const configMap: Record<string, string> = {
+             'leads': 'lead_config',
+             'campaigns': 'campaign_config',
+             'donations': 'donation_config',
+             'beneficiaries': 'beneficiary_config',
+             'users': 'user_config',
+             'donors': 'donor_config'
+         };
+
+         const configDocId = configMap[request.module];
+         if (configDocId) {
+             try {
+                 const configSnap = await adminDb.doc(`settings/${configDocId}`).get();
+                 if (configSnap.exists) {
+                     const configData = configSnap.data();
+                     if (configData?.minApprovalsRequired !== undefined) {
+                         minApprovalsRequired = Number(configData.minApprovalsRequired) || 1;
+                     }
+                 }
+             } catch (e) {
+                 console.error(`Failed to fetch minApprovalsRequired for ${request.module}:`, e);
+             }
+         }
+
+         const approvedCount = updatedVerifiers.filter(v => v.status === 'Approved').length;
+         const allApproved = approvedCount >= minApprovalsRequired || approvedCount >= request.assignedVerifiers.length;
          const status = allApproved ? 'Approved' : 'Partially Approved';
  
          if (allApproved) {
@@ -317,6 +362,16 @@ import { generateChanges } from '@/lib/utils';
                         moduleId: request.module.replace(/s$/, '') as any
                     });
                 }
+                
+                const requesterTelegramId = requesterSnap.data()?.telegramChatId;
+                if (requesterTelegramId) {
+                    await sendTelegramAction({
+                        message: `✅ *Verification Approved*\n\n*Module:* ${request.module.toUpperCase()}\n*Requested By:* ${request.requestedBy.name}\n*Purpose:* ${request.description || 'Data Update'}`,
+                        chatId: requesterTelegramId,
+                        moduleId: request.module.replace(/s$/, '') as any
+                    });
+                }
+
             } catch (notifyError) {
                 console.error('Failed to notify requester of approval:', notifyError);
             }
@@ -413,6 +468,15 @@ import { generateChanges } from '@/lib/utils';
                     },
                     moduleId: request.module.replace(/s$/, '') as any
                 });
+                
+                const requesterTelegramId = requesterSnap.data()?.telegramChatId;
+                if (requesterTelegramId) {
+                    await sendTelegramAction({
+                        message: `❌ *Verification Rejected*\n\n*Module:* ${request.module.toUpperCase()}\n*Requested By:* ${request.requestedBy.name}\n*Reason:* ${reason || 'Criteria not met or data discrepancy found.'}`,
+                        chatId: requesterTelegramId,
+                        moduleId: request.module.replace(/s$/, '') as any
+                    });
+                }
             }
         } catch (notifyError) {
             console.error('Failed to notify requester of rejection:', notifyError);
@@ -513,6 +577,15 @@ import { generateChanges } from '@/lib/utils';
                         },
                         moduleId: 'user'
                     });
+                    
+                    const verifierTelegramId = verifierSnap.data()?.telegramChatId;
+                    if (verifierTelegramId) {
+                        await sendTelegramAction({
+                            message: `🔔 *New Portal Profile Update Request*\n\n*Requested By:* ${userName}\n\n🔗 Review: ${baseUrl}/verifications?requestId=${payload.id}`,
+                            chatId: verifierTelegramId,
+                            moduleId: 'user'
+                        });
+                    }
                     
                     if (notifyResult.success) sentCount++;
                     else failCount++;

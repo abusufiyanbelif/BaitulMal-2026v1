@@ -43,7 +43,7 @@ export function NotificationManager() {
             const permission = await Notification.requestPermission();
             if (permission === 'granted') {
                 const token = await getToken(messaging, {
-                    vapidKey: 'BMLSS_VAPID_KEY_PLACEHOLDER' // User needs to generate this in Firebase Console
+                    vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY
                 });
 
                 if (token) {

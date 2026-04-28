@@ -38,6 +38,7 @@ export default function UserSettingsPage() {
 
   const [localMandatory, setLocalMandatory] = useState<Record<string, boolean>>({});
   const [localWhatsAppNotify, setLocalWhatsAppNotify] = useState(true);
+  const [localTelegramNotify, setLocalTelegramNotify] = useState(true);
   const [localInAppNotify, setLocalInAppNotify] = useState(true);
 
   useEffect(() => {
@@ -45,15 +46,17 @@ export default function UserSettingsPage() {
         setLocalMandatory(configSettings.mandatoryFields);
     }
     setLocalWhatsAppNotify(configSettings?.enableWhatsAppNotifications !== false);
+    setLocalTelegramNotify(configSettings?.enableTelegramNotifications !== false);
     setLocalInAppNotify(configSettings?.enableInAppNotifications !== false);
   }, [configSettings]);
 
   const isDirty = useMemo(() => {
     const mandatoryChanged = JSON.stringify(localMandatory) !== JSON.stringify(configSettings?.mandatoryFields || {});
     const whatsappChanged = localWhatsAppNotify !== (configSettings?.enableWhatsAppNotifications !== false);
+    const telegramChanged = localTelegramNotify !== (configSettings?.enableTelegramNotifications !== false);
     const inAppChanged = localInAppNotify !== (configSettings?.enableInAppNotifications !== false);
-    return mandatoryChanged || whatsappChanged || inAppChanged;
-  }, [localMandatory, localWhatsAppNotify, localInAppNotify, configSettings]);
+    return mandatoryChanged || whatsappChanged || telegramChanged || inAppChanged;
+  }, [localMandatory, localWhatsAppNotify, localTelegramNotify, localInAppNotify, configSettings]);
 
   const handleMandatoryToggle = (id: string) => {
     setLocalMandatory(prev => ({ ...prev, [id]: !prev[id] }));
@@ -66,6 +69,7 @@ export default function UserSettingsPage() {
         await setDoc(configRef, { 
             mandatoryFields: localMandatory,
             enableWhatsAppNotifications: localWhatsAppNotify,
+            enableTelegramNotifications: localTelegramNotify,
             enableInAppNotifications: localInAppNotify
         }, { merge: true });
         toast({ title: "Settings saved", variant: "success" });
@@ -94,6 +98,7 @@ export default function UserSettingsPage() {
         setLocalMandatory(configSettings.mandatoryFields);
     }
     setLocalWhatsAppNotify(configSettings?.enableWhatsAppNotifications !== false);
+    setLocalTelegramNotify(configSettings?.enableTelegramNotifications !== false);
     setLocalInAppNotify(configSettings?.enableInAppNotifications !== false);
     setIsEditMode(false);
   };
@@ -196,6 +201,23 @@ export default function UserSettingsPage() {
                             <Label htmlFor="user_whatsapp_notify" className="cursor-pointer font-bold text-sm tracking-tight text-primary">WhatsApp Notifications</Label>
                          </div>
                          <p className="text-[10px] text-muted-foreground font-medium">Send automated WhatsApp alerts for profile updates and account verifications.</p>
+                     </div>
+                 </div>
+
+                 <div className="flex items-center space-x-3 p-4 rounded-xl bg-primary/[0.02] border border-primary/10">
+                     <Checkbox 
+                         id="user_telegram_notify" 
+                         checked={localTelegramNotify} 
+                         onCheckedChange={(checked) => setLocalTelegramNotify(!!checked)} 
+                         disabled={!isEditMode}
+                         className="data-[state=checked]:bg-primary"
+                     />
+                     <div className="space-y-0.5">
+                         <div className="flex items-center gap-2">
+                            <Smartphone className="h-3 w-3 text-sky-500" />
+                            <Label htmlFor="user_telegram_notify" className="cursor-pointer font-bold text-sm tracking-tight text-primary">Telegram Notifications</Label>
+                         </div>
+                         <p className="text-[10px] text-muted-foreground font-medium">Send automated Telegram alerts to your groups or individuals.</p>
                      </div>
                  </div>
 

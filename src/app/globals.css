@@ -125,6 +125,31 @@
   background: linear-gradient(135deg, hsl(var(--background)), hsl(var(--secondary)));
 }
 
-.bg-gradient-primary {
-  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--primary) / 0.8));
+
+
+/* Premium Motion Suite */
+.animate-reveal-down { animation: reveal-down 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-reveal-up { animation: reveal-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+.animate-hero-text-glow { animation: hero-text-glow 2s ease-in-out infinite alternate; }
+.animate-stagger-reveal { opacity: 0; animation: stagger-reveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+
+@keyframes reveal-down {
+  from { opacity: 0; transform: translateY(-100%); }
+  to { opacity: 1; transform: translateY(0); }
 }
+
+@keyframes reveal-up {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes hero-text-glow {
+  from { text-shadow: 0 0 10px rgba(var(--primary), 0); }
+  to { text-shadow: 0 0 30px hsl(var(--primary) / 0.2); }
+}
+
+@keyframes stagger-reveal {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+

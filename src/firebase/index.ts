@@ -85,5 +85,6 @@ export {
   getAuth,
   signOut,
   signInWithEmailAndPassword,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  signInWithCustomToken
 } from 'firebase/auth';

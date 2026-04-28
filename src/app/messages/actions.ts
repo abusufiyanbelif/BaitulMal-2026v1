@@ -2,7 +2,7 @@
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { Timestamp, FieldValue } from 'firebase-admin/firestore';
-import { MessageTemplate, MessageLog, ResourceSettings, PendingVerification, NotificationGroup } from '@/lib/types';
+import { MessageTemplate, MessageLog, ResourceSettings, PendingVerification, NotificationGroup, UserProfile } from '@/lib/types';
 import { cookies } from 'next/headers';
 import { generateChanges } from '@/lib/utils';
 
@@ -191,7 +191,7 @@ export async function sendWhatsAppAction(params: {
             content: finalMessage,
             type: 'WhatsApp',
             status,
-            error: error || null, // Use null instead of undefined for Firestore
+            error: error || undefined,
             timestamp: Timestamp.now(),
             metadata: cleanMetadata
         };
@@ -526,6 +526,8 @@ export async function sendTelegramAction(params: {
     message: string;
     chatId?: string;
     configOverride?: Partial<ResourceSettings>;
+    bypassAutoCheck?: boolean;
+    moduleId?: 'campaign' | 'lead' | 'donation' | 'beneficiary' | 'donor' | 'user';
 }) {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: 'DB Unavailable' };
@@ -538,8 +540,17 @@ export async function sendTelegramAction(params: {
         let CHAT_ID = (params.chatId || params.configOverride?.telegramChatId || resources?.telegramChatId || '').toString().trim();
         const IS_ENABLED = resources?.isTelegramEnabled ?? true;
 
-        if (!IS_ENABLED && !params.configOverride?.isTelegramEnabled) {
+        if (!IS_ENABLED && !params.configOverride?.isTelegramEnabled && !params.bypassAutoCheck) {
             return { success: false, message: 'Telegram alerts are disabled.' };
+        }
+
+        // Check Module-Specific Toggle
+        if (params.moduleId && !params.bypassAutoCheck) {
+            const moduleConfigSnap = await adminDb.collection('settings').doc(`${params.moduleId}_config`).get();
+            const moduleConfig = moduleConfigSnap.data();
+            if (moduleConfig && moduleConfig.enableTelegramNotifications === false) {
+                return { success: false, message: `Telegram notifications are disabled for the ${params.moduleId} module.` };
+            }
         }
 
         if (!TOKEN || !CHAT_ID) {
@@ -722,14 +733,18 @@ export async function dispatchNotificationToGroups(params: {
     if (!adminDb) return { success: false, sentCount: 0 };
 
     try {
-        // 1. Fetch relevant Active groups
-        const groupsSnap = await adminDb.collection('notification_groups')
-            .where('isActive', '==', true)
-            .get();
+        // 1. Fetch ALL groups and filter in memory to avoid missing index/field issues
+        const allGroupsSnap = await adminDb.collection('notification_groups').get();
         
-        const groups = groupsSnap.docs
+        const groups = allGroupsSnap.docs
             .map(doc => doc.data() as NotificationGroup)
-            .filter(g => g.enabledModules.includes(params.module));
+            .filter(g => {
+                // Check if group is active (default to true if missing for backward compatibility)
+                const isActive = g.isActive !== false;
+                // Check if module is enabled
+                const hasModule = Array.isArray(g.enabledModules) && g.enabledModules.includes(params.module);
+                return isActive && hasModule;
+            });
 
         if (groups.length === 0) {
             console.log(`No active notification groups found for module: ${params.module}`);
@@ -741,23 +756,51 @@ export async function dispatchNotificationToGroups(params: {
         for (const group of groups) {
             if (group.type === 'Telegram') {
                 if (group.channelType === 'Group' && group.targetId) {
-                    await sendTelegramAction({ message: params.message, chatId: group.targetId });
+                    await sendTelegramAction({ message: params.message, chatId: group.targetId, bypassAutoCheck: true });
                     sentCount++;
                 } else if (group.channelType === 'Individual') {
-                    // Fetch phone numbers or dedicated telegram chat IDs for members (if we had them)
-                    // For now, we'll send to the "Default" telegram group as alerts are easier there
-                    await sendTelegramAction({ message: params.message, chatId: group.targetId });
-                    sentCount++;
+                    if (!group.memberIds || group.memberIds.length === 0) continue;
+                    const { FieldPath } = require('firebase-admin/firestore');
+                    
+                    const memberTelegramIds: string[] = [];
+                    const chunkSize = 10;
+                    for (let i = 0; i < group.memberIds.length; i += chunkSize) {
+                        const chunk = group.memberIds.slice(i, i + chunkSize);
+                        const membersSnap = await adminDb.collection('users')
+                            .where(FieldPath.documentId(), 'in', chunk)
+                            .get();
+                        
+                        membersSnap.docs.forEach(doc => {
+                            const tid = (doc.data() as UserProfile).telegramChatId;
+                            if (tid) memberTelegramIds.push(tid);
+                        });
+                    }
+
+                    for (const tId of memberTelegramIds) {
+                        await sendTelegramAction({ message: params.message, chatId: tId, bypassAutoCheck: true });
+                        sentCount++;
+                    }
                 }
             } else if (group.type === 'WhatsApp') {
-                // Fetch member phone numbers using document IDs
-                const membersSnap = await adminDb.collection('users')
-                    .where('__name__', 'in', group.memberIds) // Use document ID filter
-                    .get();
+                if (!group.memberIds || group.memberIds.length === 0) continue;
                 
-                const memberPhones = membersSnap.docs
-                    .map(doc => (doc.data() as UserProfile).phone)
-                    .filter(p => !!p && p.length >= 10) as string[];
+                const { FieldPath } = require('firebase-admin/firestore');
+                
+                // Fetch member phone numbers using document IDs safely
+                // Batch query if more than 10 members (in operator limit)
+                const memberPhones: string[] = [];
+                const chunkSize = 10;
+                for (let i = 0; i < group.memberIds.length; i += chunkSize) {
+                    const chunk = group.memberIds.slice(i, i + chunkSize);
+                    const membersSnap = await adminDb.collection('users')
+                        .where(FieldPath.documentId(), 'in', chunk)
+                        .get();
+                    
+                    membersSnap.docs.forEach(doc => {
+                        const p = (doc.data() as UserProfile).phone;
+                        if (p && p.length >= 10) memberPhones.push(p);
+                    });
+                }
 
                 for (const phone of memberPhones) {
                     await sendWhatsAppAction({
@@ -1185,7 +1228,7 @@ export async function notifyVerificationUpdateAction(params: {
         if (action === 'APPROVE') header = '🟡 *Partial Approval Recorded*';
         if (action === 'REJECT') header = '🔴 *Modification Rejected*';
 
-        const createdAtDate = request.createdAt?.toDate ? request.createdAt.toDate() : new Date(request.createdAt);
+        const createdAtDate = (request.createdAt as any)?.toDate ? (request.createdAt as any).toDate() : new Date(request.createdAt as any);
         const dateString = !isNaN(createdAtDate.getTime()) ? createdAtDate.toLocaleDateString() : 'Unknown';
 
         const message = `${header}\n\n` +
