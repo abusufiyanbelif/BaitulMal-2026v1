@@ -53,9 +53,11 @@ service cloud.firestore {
     // In-App Notifications (Bell icon)
     match /notifications/{notifId} {
       // Users can read their own notifications; Admins can read all
-      allow read: if isAdmin() || (isSignedIn() && resource != null && request.auth.uid == resource.data.userId);
+      // NOTE: No `resource != null` guard on read — list queries need the rule to evaluate
+      // against query constraints (where userId == auth.uid) to pass.
+      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == resource.data.userId);
       // Users can only update isRead on their own notifications
-      allow update: if isSignedIn() && resource != null && request.auth.uid == resource.data.userId 
+      allow update: if isSignedIn() && request.auth.uid == resource.data.userId 
                       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
       // Only Admin SDK (server actions) creates notifications
       allow create: if isAdmin();
