@@ -35,7 +35,7 @@ export function BrandedLoader({ message = "Updating Your Organization Records...
           {validLogoUrl ? (
             <div className="relative w-full h-full animate-zoom-in-out">
               <Image
-                src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
+                src={validLogoUrl.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}` : validLogoUrl}
                 alt="Logo"
                 fill
                 sizes="144px"

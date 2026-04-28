@@ -117,7 +117,7 @@ export default function AboutOrganizationPage() {
                     {validLogoUrl && (
                         <div className="relative w-24 h-24">
                             <Image 
-                                src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`} 
+                                src={validLogoUrl.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}` : validLogoUrl} 
                                 alt="Logo" 
                                 fill 
                                 sizes="96px"
