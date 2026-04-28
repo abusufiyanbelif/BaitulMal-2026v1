@@ -1,0 +1,235 @@
+starting build "bb9166cf-8171-48f0-b919-bc71ce785ace"
+FETCHSOURCE
+From https://github.com/abusufiyanbelif/BaitulMal-2026v1
+ * branch            66a041b769b0e72b00cf5e6fc4e87fc6b18e87e3 -> FETCH_HEAD
+HEAD is now at 66a041b doc
+GitCommit:
+66a041b769b0e72b00cf5e6fc4e87fc6b18e87e3
+BUILD
+Starting Step #0 - "ubuntu"
+Already have image (with digest): gcr.io/cloud-builders/gcloud
+Finished Step #0 - "ubuntu"
+Starting Step #1 - "preparer"
+Pulling image: us-central1-docker.pkg.dev/serverless-runtimes/utilities/preparer:base_20260226_18_04_RC00
+base_20260226_18_04_RC00: Pulling from serverless-runtimes/utilities/preparer
+ec754079ef19: Pulling fs layer
+ec754079ef19: Verifying Checksum
+ec754079ef19: Download complete
+ec754079ef19: Pull complete
+Digest: sha256:cc6a7fbe7cf88f3e56b9c3a94ea83714507a4f6ffcc0c27d1824fe1133f33aa0
+Status: Downloaded newer image for us-central1-docker.pkg.dev/serverless-runtimes/utilities/preparer:base_20260226_18_04_RC00
+us-central1-docker.pkg.dev/serverless-runtimes/utilities/preparer:base_20260226_18_04_RC00
+2026/04/28 20:17:47 FIREBASE_CONFIG has no availability specified, applying the default of 'BUILD' and 'RUNTIME'
+2026/04/28 20:17:47 Final app hosting schema:
+env:
+- variable: FIREBASE_CONFIG
+  value: '{"databaseURL":"","projectId":"docuextract-q8vaa","storageBucket":"docuextract-q8vaa.firebasestorage.app"}'
+  availability:
+  - BUILD
+  - RUNTIME
+  source: Firebase System
+- variable: FIREBASE_WEBAPP_CONFIG
+  value: '{"apiKey":"AIzaSyB2FWOrMbTn7cE3-avI6t5WRcEbpiOE9sY","appId":"1:789346423389:web:8762e6e7c19fdf9b4b73b4","authDomain":"docuextract-q8vaa.firebaseapp.com","databaseURL":"","messagingSenderId":"789346423389","projectId":"docuextract-q8vaa","storageBucket":"docuextract-q8vaa.firebasestorage.app"}'
+  availability:
+  - BUILD
+  source: Firebase System
+2026/04/28 20:17:47 Final app hosting schema:
+env:
+- variable: FIREBASE_CONFIG
+  value: '{"databaseURL":"","projectId":"docuextract-q8vaa","storageBucket":"docuextract-q8vaa.firebasestorage.app"}'
+  availability:
+  - BUILD
+  - RUNTIME
+  source: Firebase System
+- variable: FIREBASE_WEBAPP_CONFIG
+  value: '{"apiKey":"AIzaSyB2FWOrMbTn7cE3-avI6t5WRcEbpiOE9sY","appId":"1:789346423389:web:8762e6e7c19fdf9b4b73b4","authDomain":"docuextract-q8vaa.firebaseapp.com","databaseURL":"","messagingSenderId":"789346423389","projectId":"docuextract-q8vaa","storageBucket":"docuextract-q8vaa.firebasestorage.app"}'
+  availability:
+  - BUILD
+  source: Firebase System
+Finished Step #1 - "preparer"
+Starting Step #2 - "pre-buildpack"
+Pulling image: us-central1-docker.pkg.dev/serverless-runtimes/google-22-full/builder/nodejs:nodejs_20260414_RC00_lightweight
+nodejs_20260414_RC00_lightweight: Pulling from serverless-runtimes/google-22-full/builder/nodejs
+70792468e643: Already exists
+9174e796c391: Already exists
+ee64996bf436: Already exists
+a2e36cfc8715: Pulling fs layer
+7b73ea3bc7a0: Pulling fs layer
+fcc9024d1365: Pulling fs layer
+83a616838a6a: Pulling fs layer
+21b7eaf3838c: Pulling fs layer
+efcb0284b17c: Pulling fs layer
+a3ff78f24474: Pulling fs layer
+fe0a88c014e5: Pulling fs layer
+bf9f17fe63e1: Pulling fs layer
+141edec40997: Pulling fs layer
+78613c92ea9e: Pulling fs layer
+34ce8ba30961: Pulling fs layer
+e6178d2c0976: Pulling fs layer
+4f4fb700ef54: Pulling fs layer
+a3ff78f24474: Waiting
+fe0a88c014e5: Waiting
+bf9f17fe63e1: Waiting
+141edec40997: Waiting
+78613c92ea9e: Waiting
+34ce8ba30961: Waiting
+e6178d2c0976: Waiting
+4f4fb700ef54: Waiting
+fcc9024d1365: Verifying Checksum
+fcc9024d1365: Download complete
+7b73ea3bc7a0: Verifying Checksum
+7b73ea3bc7a0: Download complete
+a2e36cfc8715: Verifying Checksum
+a2e36cfc8715: Download complete
+83a616838a6a: Verifying Checksum
+83a616838a6a: Download complete
+efcb0284b17c: Verifying Checksum
+efcb0284b17c: Download complete
+21b7eaf3838c: Verifying Checksum
+21b7eaf3838c: Download complete
+fe0a88c014e5: Verifying Checksum
+fe0a88c014e5: Download complete
+a2e36cfc8715: Pull complete
+141edec40997: Verifying Checksum
+141edec40997: Download complete
+78613c92ea9e: Verifying Checksum
+78613c92ea9e: Download complete
+34ce8ba30961: Verifying Checksum
+34ce8ba30961: Download complete
+e6178d2c0976: Verifying Checksum
+e6178d2c0976: Download complete
+4f4fb700ef54: Verifying Checksum
+4f4fb700ef54: Download complete
+a3ff78f24474: Verifying Checksum
+a3ff78f24474: Download complete
+7b73ea3bc7a0: Pull complete
+bf9f17fe63e1: Verifying Checksum
+bf9f17fe63e1: Download complete
+fcc9024d1365: Pull complete
+83a616838a6a: Pull complete
+21b7eaf3838c: Pull complete
+efcb0284b17c: Pull complete
+a3ff78f24474: Pull complete
+fe0a88c014e5: Pull complete
+bf9f17fe63e1: Pull complete
+141edec40997: Pull complete
+78613c92ea9e: Pull complete
+34ce8ba30961: Pull complete
+e6178d2c0976: Pull complete
+4f4fb700ef54: Pull complete
+Digest: sha256:739052836b95d0b416c32f2af0197ac3d4529841d19377da1c7d2350e89de317
+Status: Downloaded newer image for us-central1-docker.pkg.dev/serverless-runtimes/google-22-full/builder/nodejs:nodejs_20260414_RC00_lightweight
+us-central1-docker.pkg.dev/serverless-runtimes/google-22-full/builder/nodejs:nodejs_20260414_RC00_lightweight
+Preparing directory /layers
+Preparing directory /workspace
+Preparing directory /builder/home
+Preparing directory /builder/outputs
+Preparing directory /platform/env
+Passing build environment variable X_GOOGLE_TARGET_PLATFORM to buildpacks
+Passing build environment variable APPHOSTINGYAML_FILEPATH to buildpacks
+Passing build environment variable FIREBASE_OUTPUT_BUNDLE_DIR to buildpacks
+Passing build environment variable FIREBASE_APP_HOSTING to buildpacks
+Passing build environment variable ENVIRONMENT_NAME to buildpacks
+Passing build environment variable NEXTJS_ADAPTER_VERSION to buildpacks
+Passing build environment variable ANGULAR_ADAPTER_VERSION to buildpacks
+Passing build environment variable GOOGLE_BUILDABLE to buildpacks
+Passing build environment variable BUILDER_OUTPUT to buildpacks
+Finished Step #2 - "pre-buildpack"
+Starting Step #3 - "build"
+Already have image (with digest): us-central1-docker.pkg.dev/serverless-runtimes/google-22-full/builder/nodejs:nodejs_20260414_RC00_lightweight
+Warning: No cached data will be used, no cache specified.
+===> ANALYZING
+Image with name "us-central1-docker.pkg.dev/docuextract-q8vaa/firebaseapphosting-images/studio:build-2026-04-28-000" not found
+===> DETECTING
+target distro name/version labels not found, reading /etc/os-release file
+4 of 6 buildpacks participating
+google.nodejs.runtime        1.0.0
+google.nodejs.firebasenextjs 0.0.1
+google.nodejs.npm            1.1.1
+google.nodejs.firebasebundle 0.0.1
+===> RESTORING
+===> BUILDING
+target distro name/version labels not found, reading /etc/os-release file
+=== Node.js - Runtime Using Runner (google.nodejs.runtime@1.0.0) ===
+Nodejs version not specified, using the latest available Nodejs runtime for the stack "ubuntu2204"
+2026/04/28 20:17:54 [DEBUG] GET https://dl.google.com/runtimes/ubuntu2204/nodejs/version.json
+Adding image label google.runtime-version: nodejs22
+2026/04/28 20:17:55 [DEBUG] GET https://dl.google.com/runtimes/ubuntu2204/nodejs/version.json
+***** CACHE MISS: "nodejs"
+Installing Node.js v22.22.2.
+2026/04/28 20:17:55 [DEBUG] GET https://dl.google.com/runtimes/ubuntu2204/nodejs/nodejs-22.22.2.tar.gz
+Installing the heapsize.sh exec.d script.
+=== Node.js - Firebasenextjs Using Runner (google.nodejs.firebasenextjs@0.0.1) ===
+Using NEXTJS_ADAPTER_VERSION: "14.0.21"
+***** CACHE MISS: "npm_modules"
+Installing nextjs adaptor 14.0.21
+=== Node.js - Npm Using Runner (google.nodejs.npm@1.1.1) ===
+***** CACHE MISS: "npm_modules"
+Installing application dependencies.
+--------------------------------------------------------------------------------
+Running "npm ci --quiet --no-fund --no-audit (NODE_ENV=development)"
+npm error code EUSAGE
+npm error
+npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
+npm error
+npm error Missing: winston@3.19.0 from lock file
+npm error Missing: firebase@12.12.1 from lock file
+npm error Missing: @firebase/app@0.14.11 from lock file
+npm error Missing: @firebase/app-compat@0.5.11 from lock file
+npm error Missing: @firebase/app-types@0.9.4 from lock file
+npm error Missing: @firebase/util@1.15.0 from lock file
+npm error
+npm error Clean install a project
+npm error
+npm error Usage:
+npm error npm ci
+npm error
+npm error Options:
+npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+npm error [--no-bin-links] [--no-fund] [--dry-run]
+npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
+npm error
+npm error aliases: clean-install, ic, install-clean, isntall-clean
+npm error
+npm error Run "npm help ci" for more info
+npm error A complete log of this run can be found in: /www-data-home/.npm/_logs/2026-04-28T20_18_03_050Z-debug-0.log
+Done "npm ci --quiet --no-fund --no-audit (NODE_ENV=development)" (3.528911955s)
+--------------------------------------------------------------------------------
+failed to build: (error ID: 7fa33aaa):
+npm error code EUSAGE
+npm error
+npm error `npm ci` can only install packages when your package.json and package-lock.json or npm-shrinkwrap.json are in sync. Please update your lock file with `npm install` before continuing.
+npm error
+npm error Missing: winston@3.19.0 from lock file
+npm error Missing: firebase@12.12.1 from lock file
+npm error Missing: @firebase/app@0.14.11 from lock file
+npm error Missing: @firebase/app-compat@0.5.11 from lock file
+npm error Missing: @firebase/app-types@0.9.4 from lock file
+npm error Missing: @firebase/util@1.15.0 from lock file
+npm error
+npm error Clean install a project
+npm error
+npm error Usage:
+npm error npm ci
+npm error
+npm error Options:
+npm error [--install-strategy <hoisted|nested|shallow|linked>] [--legacy-bundling]
+npm error [--global-style] [--omit <dev|optional|peer> [--omit <dev|optional|peer> ...]]
+npm error [--include <prod|dev|optional|peer> [--include <prod|dev|optional|peer> ...]]
+npm error [--strict-peer-deps] [--foreground-scripts] [--ignore-scripts] [--no-audit]
+npm error [--no-bin-links] [--no-fund] [--dry-run]
+npm error [-w|--workspace <workspace-name> [-w|--workspace <workspace-name> ...]]
+npm error [-ws|--workspaces] [--include-workspace-root] [--install-links]
+npm error
+npm error aliases: clean-install, ic, install-clean, isntall-clean
+npm error
+npm error Run "npm help ci" for more info
+npm error A complete log of this run can be found in: /www-data-home/.npm/_logs/2026-04-28T20_18_03_050Z-debug-0.log
+ERROR: failed to build: exit status 1
+Finished Step #3 - "build"
+ERROR
+ERROR: build step 3 "us-central1-docker.pkg.dev/serverless-runtimes/google-22-full/builder/nodejs:nodejs_20260414_RC00_lightweight" failed: step exited with non-zero status: 51
