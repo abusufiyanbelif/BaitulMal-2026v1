@@ -297,6 +297,7 @@ export default function UserDetailsPage() {
         forceRefetch();
         setIsEditMode(false);
     } catch (serverError: any) {
+        console.error("CRITICAL BATCH COMMIT ERROR:", serverError);
         errorEmitter.emit('permission-error', new FirestorePermissionError({
             path: `users/${userId} and donors/${userId}`,
             operation: 'update',
