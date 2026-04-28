@@ -152,3 +152,45 @@ export async function exchangeOtpForCustomTokenAction(phoneE164: string) {
     }
 }
 
+export async function supporterUpdatePasswordAction(userId: string, role: string, password: string) {
+    const { adminDb, adminAuth } = getAdminServices();
+    if (!adminDb) return { success: false, message: 'Database Unavailable' };
+
+    try {
+        let collectionName = 'users';
+        if (role === 'Donor') collectionName = 'donors';
+        else if (role === 'Beneficiary') collectionName = 'beneficiaries';
+
+        // Check if doc exists in the chosen collection, fallback to 'users' if not found
+        const docRef = adminDb.collection(collectionName).doc(userId);
+        const docSnap = await docRef.get();
+        
+        if (docSnap.exists) {
+            await docRef.update({
+                password,
+                updatedAt: FieldValue.serverTimestamp()
+            });
+        } else {
+            // Fallback to updating the users collection
+            await adminDb.collection('users').doc(userId).update({
+                password,
+                updatedAt: FieldValue.serverTimestamp()
+            });
+        }
+
+        // Also update Firebase Auth password if the service is available
+        if (adminAuth) {
+            try {
+                await adminAuth.updateUser(userId, { password });
+            } catch (authError: any) {
+                console.warn("Firebase Auth password update skipped or failed:", authError.message);
+                // Don't fail the whole operation if the user isn't in Firebase Auth
+            }
+        }
+
+        return { success: true, message: 'Password Updated Successfully.' };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+

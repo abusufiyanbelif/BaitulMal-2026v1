@@ -427,6 +427,7 @@ export function BeneficiaryForm({
                             </div>
                         </div>
                         <ScrollBar orientation="vertical" />
+                        <ScrollBar orientation="horizontal" />
                     </ScrollArea>
                 </div>
                 {!isReadOnly && (

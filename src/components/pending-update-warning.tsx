@@ -5,7 +5,8 @@ import { AlertCircle, Clock, CheckCircle2, XCircle, ChevronRight, Ban } from 'lu
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { checkPendingVerificationAction, cancelVerificationAction } from '@/app/verifications/actions';
+import { checkPendingVerificationAction, cancelVerificationAction, remindVerifiersAction } from '@/app/verifications/actions';
+import { useSession } from '@/hooks/use-session';
 import { useToast } from '@/hooks/use-toast';
 import type { PendingVerification } from '@/lib/types';
 import { cn } from '@/lib/utils';
@@ -20,7 +21,11 @@ export function PendingUpdateWarning({ targetId, onUpdate }: PendingUpdateWarnin
   const [pending, setPending] = useState<PendingVerification | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isReminding, setIsReminding] = useState(false);
+  const { userProfile } = useSession();
   const { toast } = useToast();
+
+  const isSelfService = userProfile?.role === 'Donor' || userProfile?.role === 'Beneficiary';
 
   useEffect(() => {
     async function fetchPending() {
@@ -49,6 +54,21 @@ export function PendingUpdateWarning({ targetId, onUpdate }: PendingUpdateWarnin
     }
   };
 
+  const handleRemind = async () => {
+    if (!pending) return;
+    setIsReminding(true);
+    try {
+      const result = await remindVerifiersAction(pending.id);
+      if (result.success) {
+        toast({ title: 'Reminder Sent', description: result.message, variant: 'success' });
+      } else {
+        toast({ title: 'Action Failed', description: result.message, variant: 'destructive' });
+      }
+    } finally {
+      setIsReminding(false);
+    }
+  };
+
   if (isLoading || !pending) return null;
 
   return (
@@ -73,7 +93,19 @@ export function PendingUpdateWarning({ targetId, onUpdate }: PendingUpdateWarnin
             </div>
             </div>
 
-            <div className="flex items-center gap-2 sm:ml-auto shrink-0">
+            <div className="flex items-center gap-2 sm:ml-auto shrink-0 flex-wrap">
+            {isSelfService && (
+                <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleRemind}
+                    disabled={isReminding}
+                    className="h-8 text-[10px] font-bold border-amber-200 hover:bg-amber-100 text-amber-900 bg-white"
+                >
+                    {isReminding ? <Clock className="h-3 w-3 animate-spin mr-1" /> : <Clock className="h-3 w-3 mr-1" />}
+                    Send Reminder
+                </Button>
+            )}
             <Button 
                 variant="outline" 
                 size="sm" 
@@ -84,38 +116,52 @@ export function PendingUpdateWarning({ targetId, onUpdate }: PendingUpdateWarnin
                 {isCancelling ? <Clock className="h-3 w-3 animate-spin mr-1" /> : <Ban className="h-3 w-3 mr-1" />}
                 Withdraw Request
             </Button>
-            <Button 
-                variant="secondary" 
-                size="sm" 
-                asChild
-                className="h-8 text-[10px] font-bold bg-amber-600 hover:bg-amber-700 text-white border-none shadow-sm"
-            >
-                <a href="/verifications">
-                Review Request <ChevronRight className="h-3 w-3 ml-1" />
-                </a>
-            </Button>
+            {!isSelfService && (
+                <Button 
+                    variant="secondary" 
+                    size="sm" 
+                    asChild
+                    className="h-8 text-[10px] font-bold bg-amber-600 hover:bg-amber-700 text-white border-none shadow-sm"
+                >
+                    <a href="/verifications">
+                    Review Request <ChevronRight className="h-3 w-3 ml-1" />
+                    </a>
+                </Button>
+            )}
             </div>
         </div>
         
         {/* Verifier Progress Bar */}
-        <div className="mt-3 pt-3 border-t border-amber-200/50 flex items-center gap-2 flex-wrap">
-            <span className="text-[9px] font-bold text-amber-700/60 uppercase tracking-widest">Awaiting:</span>
-            {pending.assignedVerifiers.map((v) => (
-            <div key={v.id} className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border border-amber-100 text-[10px]">
-                {v.status === 'Approved' ? (
-                <CheckCircle2 className="h-3 w-3 text-green-500" />
-                ) : v.status === 'Rejected' ? (
-                <XCircle className="h-3 w-3 text-red-500" />
-                ) : (
-                <Clock className="h-3 w-3 text-amber-400" />
-                )}
-                <span className={cn(
-                "font-medium",
-                v.status === 'Approved' ? "text-green-700" : "text-muted-foreground"
-                )}>{v.name}</span>
+        {!isSelfService && (
+            <div className="mt-3 pt-3 border-t border-amber-200/50 flex items-center gap-2 flex-wrap">
+                <span className="text-[9px] font-bold text-amber-700/60 uppercase tracking-widest">Awaiting:</span>
+                {pending.assignedVerifiers.map((v) => (
+                <div key={v.id} className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border border-amber-100 text-[10px]">
+                    {v.status === 'Approved' ? (
+                    <CheckCircle2 className="h-3 w-3 text-green-500" />
+                    ) : v.status === 'Rejected' ? (
+                    <XCircle className="h-3 w-3 text-red-500" />
+                    ) : (
+                    <Clock className="h-3 w-3 text-amber-400" />
+                    )}
+                    <span className={cn(
+                    "font-medium",
+                    v.status === 'Approved' ? "text-green-700" : "text-muted-foreground"
+                    )}>{v.name}</span>
+                </div>
+                ))}
             </div>
-            ))}
-        </div>
+        )}
+
+        {isSelfService && (
+             <div className="mt-3 pt-3 border-t border-amber-200/50 flex items-center gap-2 flex-wrap">
+                 <span className="text-[9px] font-bold text-amber-700/60 uppercase tracking-widest">Status:</span>
+                 <div className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border border-amber-100 text-[10px]">
+                     <Clock className="h-3 w-3 text-amber-400 animate-pulse" />
+                     <span className="font-medium text-amber-700">Awaiting Team Review</span>
+                 </div>
+             </div>
+        )}
         </Alert>
     </div>
   );

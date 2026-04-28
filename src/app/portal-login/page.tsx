@@ -290,6 +290,9 @@ export default function PortalLoginPage() {
                     <AlertDescription className="text-xs font-normal">{loginError}</AlertDescription>
                 </Alert>
             )}
+            <div className="mt-4 text-center text-xs font-bold text-primary/70">
+                Not registered yet? <Link href="/portal-register" className="underline text-primary hover:text-primary/80 transition-colors">Create an account here.</Link>
+            </div>
         </CardContent>
       </Card>
       

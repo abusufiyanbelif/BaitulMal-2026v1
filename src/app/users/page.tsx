@@ -187,17 +187,19 @@ export default function UsersPage() {
 
   const auditData = useMemo(() => {
       if (!users) return [];
-      return users.map(u => {
+      return users
+        .filter(u => u.role === 'Admin' || u.role === 'User')
+        .map(u => {
           const isDonor = donors?.some(d => d.id === u.id || (d.phone === u.phone && !!u.phone));
           const isBeneficiary = beneficiaries?.some(b => b.id === u.id || (b.phone === u.phone && !!u.phone));
           const multiRole = (isDonor ? 1 : 0) + (isBeneficiary ? 1 : 0) > 0;
           return { ...u, isDonor, isBeneficiary, multiRole };
-      });
+        });
   }, [users, donors, beneficiaries]);
 
   const filteredAndSortedUsers = useMemo(() => {
     if (!users) return [];
-    let items = [...users];
+    let items = users.filter(u => u.role === 'Admin' || u.role === 'User');
     if (statusFilter !== 'All') items = items.filter(u => u.status === statusFilter);
     if (roleFilter !== 'All') items = items.filter(u => u.role === roleFilter);
     if (searchTerm) {
@@ -408,8 +410,6 @@ export default function UsersPage() {
                                     <SelectItem value="All" className="font-bold text-xs p-3 rounded-xl">All Privilege Levels</SelectItem>
                                     <SelectItem value="Admin" className="font-bold text-xs p-3 rounded-xl">Root Admin</SelectItem>
                                     <SelectItem value="User" className="font-bold text-xs p-3 rounded-xl">Standard Team</SelectItem>
-                                    <SelectItem value="Donor" className="font-bold text-xs p-3 rounded-xl">Benefactor Only</SelectItem>
-                                    <SelectItem value="Beneficiary" className="font-bold text-xs p-3 rounded-xl">Recipient Only</SelectItem>
                                 </SelectContent>
                             </Select>
                         </div>
@@ -421,7 +421,7 @@ export default function UsersPage() {
                     <ScrollArea className="w-full">
                         <div className="max-h-[60vh]">
                             <div className="hidden md:block">
-                                <Table>
+                                <Table className="min-w-[1000px]">
                                     <TableHeader>
                                         <TableRow className="bg-primary/[0.02] border-b border-primary/5">
                                             <TableHead className="w-[80px] pl-8 text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14"># ID</TableHead>
@@ -529,6 +529,7 @@ export default function UsersPage() {
                                 ))}
                             </div>
                         </div>
+                        <ScrollBar orientation="horizontal" />
                     </ScrollArea>
                 </CardContent>
                 

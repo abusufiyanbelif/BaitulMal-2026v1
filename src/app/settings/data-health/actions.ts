@@ -52,7 +52,7 @@ export async function scanDataHealthAction(): Promise<ScanResult> {
         const donationsSnap = await adminDb.collection('donations').get();
         scannedCounts['donations'] = donationsSnap.size;
 
-        donationsSnap.docs.forEach(doc => {
+        donationsSnap.docs.forEach((doc: any) => {
             const d = doc.data();
 
             // typeSplit missing or empty — required for category calculations
@@ -137,7 +137,7 @@ export async function scanDataHealthAction(): Promise<ScanResult> {
         const campaignsSnap = await adminDb.collection('campaigns').get();
         scannedCounts['campaigns'] = campaignsSnap.size;
 
-        campaignsSnap.docs.forEach(doc => {
+        campaignsSnap.docs.forEach((doc: any) => {
             const d = doc.data();
 
             // collectedAmount missing
@@ -223,7 +223,7 @@ export async function scanDataHealthAction(): Promise<ScanResult> {
         const leadsSnap = await adminDb.collection('leads').get();
         scannedCounts['leads'] = leadsSnap.size;
 
-        leadsSnap.docs.forEach(doc => {
+        leadsSnap.docs.forEach((doc: any) => {
             const d = doc.data();
 
             // collectedAmount missing
@@ -308,7 +308,7 @@ export async function scanDataHealthAction(): Promise<ScanResult> {
         const beneficiariesSnap = await adminDb.collection('beneficiaries').get();
         scannedCounts['beneficiaries'] = beneficiariesSnap.size;
 
-        beneficiariesSnap.docs.forEach(doc => {
+        beneficiariesSnap.docs.forEach((doc: any) => {
             const d = doc.data();
 
             // status missing — must have a default
@@ -379,7 +379,7 @@ export async function scanDataHealthAction(): Promise<ScanResult> {
         const donorsSnap = await adminDb.collection('donors').get();
         scannedCounts['donors'] = donorsSnap.size;
 
-        donorsSnap.docs.forEach(doc => {
+        donorsSnap.docs.forEach((doc: any) => {
             const d = doc.data();
 
             // status missing
@@ -567,4 +567,60 @@ export async function fixDataIssuesAction(
  */
 export async function recalculateAllCollectedAmountsAction(): Promise<{ success: boolean; message: string }> {
     return await bulkRecalculateInitiativeTotalsAction();
+}
+
+export async function initializePortalCredentialsAction(): Promise<{ success: boolean; message: string; updatedDonors: number; updatedBeneficiaries: number }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, updatedDonors: 0, updatedBeneficiaries: 0 };
+
+    try {
+        let updatedDonors = 0;
+        let updatedBeneficiaries = 0;
+
+        const donorsSnap = await adminDb.collection('donors').get();
+        const benSnap = await adminDb.collection('beneficiaries').get();
+
+        const batch = adminDb.batch();
+        let batchCount = 0;
+
+        for (const doc of donorsSnap.docs) {
+            const data = doc.data();
+            if (!data.password) {
+                batch.set(doc.ref, { password: 'password', updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+                updatedDonors++;
+                batchCount++;
+                if (batchCount >= 450) {
+                    await batch.commit();
+                    batchCount = 0;
+                }
+            }
+        }
+
+        for (const doc of benSnap.docs) {
+            const data = doc.data();
+            if (!data.password) {
+                batch.set(doc.ref, { password: 'password', updatedAt: FieldValue.serverTimestamp() }, { merge: true });
+                updatedBeneficiaries++;
+                batchCount++;
+                if (batchCount >= 450) {
+                    await batch.commit();
+                    batchCount = 0;
+                }
+            }
+        }
+
+        if (batchCount > 0) {
+            await batch.commit();
+        }
+
+        return { 
+            success: true, 
+            message: `Successfully initialized passwords for ${updatedDonors} Donors and ${updatedBeneficiaries} Beneficiaries.`, 
+            updatedDonors, 
+            updatedBeneficiaries 
+        };
+    } catch (e: any) {
+        console.error('Portal Credentials Initialization Error:', e);
+        return { success: false, message: `Initialization Failed: ${e.message}`, updatedDonors: 0, updatedBeneficiaries: 0 };
+    }
 }

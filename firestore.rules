@@ -50,6 +50,18 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // In-App Notifications (Bell icon)
+    match /notifications/{notifId} {
+      // Users can read their own notifications; Admins can read all
+      allow read: if isAdmin() || (isSignedIn() && resource != null && request.auth.uid == resource.data.userId);
+      // Users can only update isRead on their own notifications
+      allow update: if isSignedIn() && resource != null && request.auth.uid == resource.data.userId 
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
+      // Only Admin SDK (server actions) creates notifications
+      allow create: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
     match /page_hits/{allPaths=**} {
       allow read: if isStaff();
       allow write: if true; // Public analytics
@@ -126,6 +138,11 @@ service cloud.firestore {
     match /pending_verifications/{reqId} {
       allow read: if isStaff() || (isSignedIn() && resource != null && request.auth.uid == resource.data.requestedBy.id);
       allow write: if isSignedIn();
+    }
+
+    // Donor profile storage for donors themselves
+    match /donors/{donorId}/{allSubCollections=**} {
+      allow read: if isStaff() || (isSignedIn() && request.auth.uid == donorId);
     }
   }
 }

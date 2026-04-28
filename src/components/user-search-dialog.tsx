@@ -86,15 +86,15 @@ export function UserSearchDialog({ open, onOpenChange, onSelectUser }: UserSearc
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg text-primary">
-        <DialogHeader>
+      <DialogContent className="w-[95vw] sm:max-w-lg max-h-[90vh] flex flex-col text-primary font-normal p-0 overflow-hidden rounded-[16px] border-primary/10 shadow-2xl animate-fade-in-zoom">
+        <DialogHeader className="px-6 py-4 bg-primary/5 border-b border-primary/10 shrink-0">
           <DialogTitle className="font-bold text-primary">Find & add organization member</DialogTitle>
           <DialogDescription className="font-normal text-primary/70">
             Search for an existing user to assign them an organizational role.
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4 space-y-4">
-            <div className="flex gap-2">
+        <div className="flex-1 overflow-hidden flex flex-col p-4 sm:p-6 space-y-4">
+            <div className="flex gap-2 shrink-0">
                 <Input
                     placeholder="Search by name, email, or phone..."
                     value={searchTerm}
@@ -103,31 +103,33 @@ export function UserSearchDialog({ open, onOpenChange, onSelectUser }: UserSearc
                 />
                  {isSearching && <Loader2 className="h-10 w-10 animate-spin" />}
             </div>
-            <ScrollArea className="h-64 border rounded-md">
-                <div className="p-2 space-y-1">
-                    {!isSearching && searchResults.length === 0 && (
-                        <p className="text-center text-muted-foreground pt-10 font-normal italic">Enter a search term to begin.</p>
-                    )}
-                    {!isSearching && searchResults.map(user => (
-                        <div key={user.id} className="flex justify-between items-center p-2 rounded-md hover:bg-accent transition-colors">
-                            <div className="flex items-center gap-3">
-                                <Avatar className="h-9 w-9">
-                                    <AvatarImage src={user.idProofUrl} alt={user.name} />
-                                    <AvatarFallback className="font-bold">{getInitials(user.name)}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="font-bold text-sm">{user.name}</p>
-                                    <p className="text-xs text-muted-foreground font-normal">{user.email}</p>
-                                    {user.organizationGroup && <Badge variant="secondary" className="mt-1 text-[10px] font-bold">{user.organizationGroup}</Badge>}
+            <div className="flex-1 rounded-[12px] border border-primary/10 bg-primary/[0.02] overflow-hidden shadow-inner relative">
+                <ScrollArea className="h-full w-full">
+                    <div className="p-2 space-y-1">
+                        {!isSearching && searchResults.length === 0 && (
+                            <p className="text-center text-muted-foreground pt-10 font-normal italic">Enter a search term to begin.</p>
+                        )}
+                        {!isSearching && searchResults.map(user => (
+                            <div key={user.id} className="flex justify-between items-center p-2 rounded-md hover:bg-accent transition-colors">
+                                <div className="flex items-center gap-3">
+                                    <Avatar className="h-9 w-9">
+                                        <AvatarImage src={user.idProofUrl} alt={user.name} />
+                                        <AvatarFallback className="font-bold">{getInitials(user.name)}</AvatarFallback>
+                                    </Avatar>
+                                    <div>
+                                        <p className="font-bold text-sm">{user.name}</p>
+                                        <p className="text-xs text-muted-foreground font-normal">{user.email}</p>
+                                        {user.organizationGroup && <Badge variant="secondary" className="mt-1 text-[10px] font-bold">{user.organizationGroup}</Badge>}
+                                    </div>
                                 </div>
+                                <Button size="sm" onClick={() => handleSelect(user)} className="font-bold">Assign role</Button>
                             </div>
-                            <Button size="sm" onClick={() => handleSelect(user)} className="font-bold">Assign role</Button>
-                        </div>
-                    ))}
-                </div>
-            </ScrollArea>
+                        ))}
+                    </div>
+                </ScrollArea>
+            </div>
         </div>
-        <DialogFooter>
+        <DialogFooter className="px-6 py-4 bg-primary/[0.02] border-t border-primary/10 shrink-0">
           <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold">Cancel</Button>
         </DialogFooter>
       </DialogContent>

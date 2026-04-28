@@ -30,7 +30,7 @@ import { useAuth, useFirestore, useMemoFirebase, useDoc, doc, sendPasswordResetE
 import { createAdminPermissions, type UserPermissions, GROUPS } from '@/lib/modules';
 import type { UserProfile } from '@/lib/types';
 import { userFormSchema, type UserFormData } from '@/lib/schemas';
-import { Loader2, Send, Replace, Trash2, FileIcon, ScanLine, Save, X } from 'lucide-react';
+import { Loader2, Send, Replace, Trash2, FileIcon, ScanLine, Save, X, MessageCircle } from 'lucide-react';
 import { PermissionsTable } from './permissions-table';
 import { set, getInitials } from '@/lib/utils';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
@@ -75,6 +75,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
       role: (user?.role || 'User') as any,
       status: user?.status || 'Active',
       password: '',
+      telegramChatId: user?.telegramChatId || '',
       idProofType: user?.idProofType || '',
       idNumber: user?.idNumber || '',
       organizationGroup: (user?.organizationGroup as string) || 'none',
@@ -102,6 +103,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
         role: (user.role || 'User') as any,
         status: user.status || 'Active',
         password: '',
+        telegramChatId: user.telegramChatId || '',
         idProofType: user.idProofType || '',
         idNumber: user.idNumber || '',
         organizationGroup: (user.organizationGroup as string) || 'none',
@@ -331,19 +333,73 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                         </FormItem>
                                     )}/>
                                 </div>
-                                {isEditing ? (
-                                    <div className="space-y-2 rounded-xl border p-4 bg-muted/5">
-                                        <FormLabel className="font-bold text-primary">Password Management</FormLabel>
-                                        <div className="flex items-center gap-2">
-                                            <Input type="password" value="••••••••••" readOnly disabled className="flex-1 opacity-50 font-normal"/>
-                                            <Button type="button" variant="secondary" onClick={handleSendPasswordReset} disabled={isSubmitting} className="font-bold text-xs"><Send className="mr-2 h-4 w-4"/> Dispatch Reset Link</Button>
-                                        </div>
-                                        <FormDescription className="font-normal text-xs opacity-70 italic">Administrators Cannot Set Passwords Directly. Dispatch A Secure Reset Link To The Member's Email.</FormDescription>
-                                    </div>
-                                ) : (
-                                    <FormField control={control as any} name="password" render={({ field }) => (<FormItem><FormLabel className="font-bold text-primary">Initial Password *</FormLabel><FormControl><Input type="password" placeholder="Minimum 6 Characters" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
-                                )}
+                                <FormField 
+                                    control={control as any} 
+                                    name="password" 
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-bold text-primary">
+                                                {isEditing ? 'Reset Password' : 'Initial Password *'}
+                                            </FormLabel>
+                                            <div className="flex gap-2">
+                                                <FormControl>
+                                                    <Input 
+                                                        type="password" 
+                                                        placeholder={isEditing ? "Enter new password to reset" : "Minimum 6 Characters"} 
+                                                        {...field} 
+                                                        value={field.value || ''} 
+                                                        disabled={isFormDisabled} 
+                                                        className="font-normal flex-1" 
+                                                    />
+                                                </FormControl>
+                                                {isEditing && (
+                                                    <Button 
+                                                        type="button" 
+                                                        variant="secondary" 
+                                                        onClick={handleSendPasswordReset} 
+                                                        disabled={isSubmitting} 
+                                                        className="font-bold text-xs shrink-0"
+                                                    >
+                                                        <Send className="mr-2 h-4 w-4"/> Dispatch Reset Link
+                                                    </Button>
+                                                )}
+                                            </div>
+                                            <FormDescription className="font-normal text-xs opacity-70">
+                                                {isEditing 
+                                                    ? "Leave blank to keep current password. Typing a value will directly reset it." 
+                                                    : "Primary credential for first-time authentication."}
+                                            </FormDescription>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
                                 
+                                <Separator className="bg-primary/10" />
+
+                                <div className="space-y-4 rounded-xl border border-primary/5 p-4 bg-blue-500/[0.02]">
+                                    <div className="flex items-center gap-2">
+                                        <MessageCircle className="h-4 w-4 text-blue-500" />
+                                        <h3 className="text-sm font-bold text-primary capitalize tracking-widest">Telegram Notifications</h3>
+                                    </div>
+                                    <FormField control={control as any} name="telegramChatId" render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-bold text-primary">Telegram Chat ID</FormLabel>
+                                            <FormControl>
+                                                <Input 
+                                                    placeholder="e.g. 123456789" 
+                                                    {...field} 
+                                                    value={field.value || ''} 
+                                                    disabled={isFormDisabled} 
+                                                    className="font-mono font-normal" 
+                                                />
+                                            </FormControl>
+                                            <FormDescription className="font-normal text-xs opacity-70">
+                                                Personal Telegram Chat ID for receiving direct alerts. Message @userinfobot on Telegram to get your ID.
+                                            </FormDescription>
+                                        </FormItem>
+                                    )}/>
+                                </div>
+
                                 <Separator className="bg-primary/10" />
 
                                 <div className="space-y-4 rounded-xl border border-primary/5 p-4 bg-primary/[0.02]">

@@ -208,6 +208,7 @@ export default function DonorProfilePage() {
                 phone: formData.get('phone') as string,
                 email: formData.get('email') as string,
                 address: formData.get('address') as string,
+                telegramChatId: formData.get('telegramChatId') as string || '',
                 bankDetails: validBanks,
                 accountNumbers: validBanks.map(b => b.accountNumber).filter(Boolean),
                 upiIds: validUpis,
@@ -415,6 +416,13 @@ export default function DonorProfilePage() {
                                                 <div className="space-y-2"><Label className="text-xs font-bold capitalize text-muted-foreground tracking-widest">Email Address</Label><Input name="email" type="email" defaultValue={donor.email} className="font-normal"/></div>
                                             </div>
                                             <div className="space-y-2"><Label className="text-xs font-bold capitalize text-muted-foreground tracking-widest">Residential Address</Label><Input name="address" defaultValue={donor.address} className="font-normal"/></div>
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs font-bold capitalize text-muted-foreground tracking-widest">Telegram Chat ID</Label>
+                                                    <Input name="telegramChatId" defaultValue={donor.telegramChatId || ''} placeholder="e.g. 123456789" className="font-mono"/>
+                                                    <p className="text-[10px] text-muted-foreground font-normal">For direct Telegram alerts. Message @userinfobot on Telegram.</p>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <div className="space-y-6">
@@ -484,6 +492,7 @@ export default function DonorProfilePage() {
                                             </div>
                                             <DetailItem icon={Mail} label="Email Address" value={donor.email} />
                                             <DetailItem icon={MapPin} label="Residential Address" value={donor.address} />
+                                            <DetailItem icon={Phone} label="Telegram Chat ID" value={donor.telegramChatId} isMono />
                                         </div>
 
                                         <div className="space-y-6">

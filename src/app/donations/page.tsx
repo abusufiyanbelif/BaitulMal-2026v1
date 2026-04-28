@@ -841,6 +841,7 @@ function DonationListContent() {
                             </div>
                         </div>
                     </div>
+                    <ScrollBar orientation="horizontal" />
                 </ScrollArea>
             </CardContent>
             {totalPages > 1 && (

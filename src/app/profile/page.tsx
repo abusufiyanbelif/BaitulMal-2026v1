@@ -17,6 +17,7 @@ import { doc, writeBatch, collection } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { processPortalProfileUpdateAction, checkPendingVerificationAction } from '@/app/verifications/actions';
+import { supporterUpdatePasswordAction } from '@/app/portal-login/actions';
 import type { PendingVerification } from '@/lib/types';
 import { PendingUpdateWarning } from '@/components/pending-update-warning';
 import { cn } from '@/lib/utils';
@@ -49,6 +50,11 @@ export default function ProfilePage() {
     const [imageToView, setImageToView] = useState<string | null>(null);
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0);
+    
+    const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [isSavingPassword, setIsSavingPassword] = useState(false);
     
     useEffect(() => {
         if (userProfile) {
@@ -85,6 +91,33 @@ export default function ProfilePage() {
             setPhone(userProfile.phone || '');
         }
         setIsEditMode(false);
+    };
+
+    const handlePasswordSave = async () => {
+        if (!newPassword || newPassword.length < 6) {
+            toast({ title: 'Invalid Password', description: 'Password must be at least 6 characters long.', variant: 'destructive'});
+            return;
+        }
+        if (newPassword !== confirmPassword) {
+            toast({ title: 'Mismatch', description: 'Passwords do not match.', variant: 'destructive'});
+            return;
+        }
+        if (!userProfile) return;
+
+        setIsSavingPassword(true);
+        try {
+            const res = await supporterUpdatePasswordAction(userProfile.id, userProfile.role, newPassword);
+            if (res.success) {
+                toast({ title: 'Success', description: res.message, variant: 'success' });
+                setIsPasswordDialogOpen(false);
+                setNewPassword('');
+                setConfirmPassword('');
+            } else {
+                toast({ title: 'Error', description: res.message, variant: 'destructive' });
+            }
+        } finally {
+            setIsSavingPassword(false);
+        }
     };
 
     const handleSave = () => {
@@ -244,6 +277,12 @@ export default function ProfilePage() {
                             )}
                             {userProfile.idProofType && <ProfileDetail icon={<BadgeInfo />} label="ID Type" value={userProfile.idProofType} />}
                             {userProfile.idNumber && <ProfileDetail icon={<Hash />} label="ID Number" value={userProfile.idNumber} />}
+
+                            <div className="pt-4 border-t border-primary/5">
+                                <Button variant="outline" className="font-bold border-primary/20 text-primary" onClick={() => setIsPasswordDialogOpen(true)}>
+                                    <KeyRound className="mr-2 h-4 w-4" /> Change Password
+                                </Button>
+                            </div>
                         </>
                     ) : (
                          <p className="text-center text-muted-foreground">Could not load user profile.</p>
@@ -274,6 +313,51 @@ export default function ProfilePage() {
                         <Button variant="outline" onClick={() => setZoom(z => z / 1.2)}><ZoomOut className="mr-2"/> Zoom Out</Button>
                         <Button variant="outline" onClick={() => setRotation(r => r + 90)}><RotateCw className="mr-2"/> Rotate</Button>
                         <Button variant="outline" onClick={() => { setZoom(1); setRotation(0); }}><RefreshCw className="mr-2"/> Reset</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="font-bold text-primary flex items-center gap-2">
+                            <KeyRound className="h-5 w-5 text-primary/60" />
+                            Update Portal Password
+                        </DialogTitle>
+                        <CardDescription>Keep your credential private. Ensure it is easily remembered.</CardDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                        <div className="space-y-1.5">
+                            <Label className="font-bold text-xs">New Password</Label>
+                            <Input 
+                                type="password" 
+                                placeholder="••••••••" 
+                                value={newPassword} 
+                                onChange={(e) => setNewPassword(e.target.value)} 
+                                disabled={isSavingPassword}
+                                className="font-normal"
+                            />
+                        </div>
+                        <div className="space-y-1.5">
+                            <Label className="font-bold text-xs">Confirm Password</Label>
+                            <Input 
+                                type="password" 
+                                placeholder="••••••••" 
+                                value={confirmPassword} 
+                                onChange={(e) => setConfirmPassword(e.target.value)} 
+                                disabled={isSavingPassword}
+                                className="font-normal"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter className="flex sm:justify-end gap-2">
+                        <Button variant="ghost" onClick={() => setIsPasswordDialogOpen(false)} disabled={isSavingPassword}>
+                            Cancel
+                        </Button>
+                        <Button onClick={handlePasswordSave} disabled={isSavingPassword} className="font-bold active:scale-95 transition-transform">
+                            {isSavingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            Update Password
+                        </Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

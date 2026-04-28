@@ -229,8 +229,8 @@ export default function VerificationsPage() {
             </Tabs>
 
             <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-                <DialogContent className="max-w-3xl rounded-[32px] border-primary/10 shadow-2xl overflow-hidden p-0 gap-0">
-                    <DialogHeader className="bg-primary/5 p-8 border-b relative">
+                <DialogContent className="w-[95vw] sm:max-w-3xl max-h-[90vh] flex flex-col rounded-[32px] border-primary/10 shadow-2xl overflow-hidden p-0 gap-0">
+                    <DialogHeader className="bg-primary/5 p-8 border-b relative shrink-0">
                         <div className="absolute top-0 right-0 p-8 opacity-5">
                             <ShieldCheck className="h-32 w-32" />
                         </div>
@@ -248,7 +248,7 @@ export default function VerificationsPage() {
                         </DialogDescription>
                     </DialogHeader>
 
-                    <ScrollArea className="max-h-[60vh]">
+                    <ScrollArea className="flex-1">
                         <div className="p-8 space-y-8">
                             {selectedRequest?.description && (
                                 <div className="p-5 bg-primary/[0.03] rounded-2xl border border-primary/5 relative overflow-hidden group">

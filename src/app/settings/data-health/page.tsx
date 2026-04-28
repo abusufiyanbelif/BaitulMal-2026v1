@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { scanDataHealthAction, fixDataIssuesAction, recalculateAllCollectedAmountsAction } from './actions';
+import { scanDataHealthAction, fixDataIssuesAction, recalculateAllCollectedAmountsAction, initializePortalCredentialsAction } from './actions';
 import type { DataIssue, ScanResult } from './actions';
 import { cn } from '@/lib/utils';
 import {
@@ -138,6 +138,7 @@ export default function DataHealthPage() {
     const [isScanning, setIsScanning] = useState(false);
     const [isFixing, setIsFixing] = useState(false);
     const [isRecalculating, setIsRecalculating] = useState(false);
+    const [isInitializingCredentials, setIsInitializingCredentials] = useState(false);
     const [scanResult, setScanResult] = useState<ScanResult | null>(null);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [filterSeverity, setFilterSeverity] = useState<string>('all');
@@ -190,6 +191,20 @@ export default function DataHealthPage() {
             toast({ title: result.success ? 'Recalculation Complete' : 'Failed', description: result.message, variant: result.success ? 'success' : 'destructive' });
         } finally {
             setIsRecalculating(false);
+        }
+    };
+
+    const handleInitCredentials = async () => {
+        setIsInitializingCredentials(true);
+        try {
+            const result = await initializePortalCredentialsAction();
+            toast({
+                title: result.success ? 'Credentials Initialized' : 'Initialization Failed',
+                description: result.message,
+                variant: result.success ? 'success' : 'destructive'
+            });
+        } finally {
+            setIsInitializingCredentials(false);
         }
     };
 
@@ -250,6 +265,15 @@ export default function DataHealthPage() {
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={handleInitCredentials}
+                        disabled={isInitializingCredentials || isScanning}
+                        className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"
+                    >
+                        {isInitializingCredentials ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Database className="mr-2 h-4 w-4" />}
+                        Init Default Passwords
+                    </Button>
                     <Button
                         variant="outline"
                         onClick={handleRecalculate}

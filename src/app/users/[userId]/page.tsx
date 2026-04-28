@@ -17,20 +17,22 @@ import {
     serverTimestamp,
 } from '@/firebase';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
-import type { UserProfile } from '@/lib/types';
+import type { UserProfile, Donor, Beneficiary } from '@/lib/types';
 import { createAdminPermissions } from '@/lib/modules';
 import Resizer from 'react-image-file-resizer';
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, Save, Edit, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, Loader2, Save, Edit, ShieldAlert, ExternalLink } from 'lucide-react';
 import { UserForm } from '@/components/user-form';
 import type { UserFormData } from '@/lib/schemas';
 import { useToast } from '@/hooks/use-toast';
 import { Skeleton } from '@/components/ui/skeleton';
-import { updateUserAuthAction } from '../actions';
+import { updateUserAuthAction, mirrorIndividualUserToDonorAction, mirrorIndividualUserToBeneficiaryAction } from '../actions';
 import { sendWhatsAppAction } from '@/app/messages/actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { recordAuditLogAction } from '@/app/audit/actions';
@@ -58,7 +60,41 @@ export default function UserDetailsPage() {
 
   const { data: user, isLoading: isUserLoading, forceRefetch } = useDoc<UserProfile>(userDocRef);
 
-  const canUpdate = currentUserProfile?.role === 'Admin' || !!currentUserProfile?.permissions?.users?.update;
+  const donorDocRef = useMemoFirebase(() => firestore && userId ? doc(firestore, 'donors', userId) as DocumentReference<Donor> : null, [firestore, userId]);
+  const { data: donor } = useDoc<Donor>(donorDocRef);
+
+  const beneficiaryDocRef = useMemoFirebase(() => firestore && userId ? doc(firestore, 'beneficiaries', userId) as DocumentReference<Beneficiary> : null, [firestore, userId]);
+  const { data: beneficiary } = useDoc<Beneficiary>(beneficiaryDocRef);
+
+  const handleMirrorToDonor = async () => {
+      if (!currentUserProfile) return;
+      try {
+          setIsSubmitting(true);
+          const res = await mirrorIndividualUserToDonorAction(userId, { id: currentUserProfile.id, name: currentUserProfile.name });
+          if (res.success) toast({ title: "Mirroring Successful", description: res.message, variant: "success" });
+          else toast({ title: "Mirroring Failed", description: res.message, variant: "destructive" });
+      } finally {
+          setIsSubmitting(false);
+      }
+  };
+
+  const handleMirrorToBeneficiary = async () => {
+      if (!currentUserProfile) return;
+      try {
+          setIsSubmitting(true);
+          const res = await mirrorIndividualUserToBeneficiaryAction(userId, { id: currentUserProfile.id, name: currentUserProfile.name });
+          if (res.success) toast({ title: "Mirroring Successful", description: res.message, variant: "success" });
+          else toast({ title: "Mirroring Failed", description: res.message, variant: "destructive" });
+      } finally {
+          setIsSubmitting(false);
+      }
+  };
+
+  const canUpdate = currentUserProfile?.role === 'Admin' || 
+                    currentUserProfile?.id === userId ||
+                    !!currentUserProfile?.permissions?.users?.update || 
+                    !!currentUserProfile?.permissions?.users?.create || 
+                    !!currentUserProfile?.permissions?.users?.delete;
 
   const handleSave = async (data: UserFormData) => {
     if (!firestore || !storage || !user || !canUpdate || !auth) {
@@ -71,9 +107,12 @@ export default function UserDetailsPage() {
     const isCurrentUserAdmin = currentUserProfile?.role === 'Admin';
     
     // Step 1: Update Firebase Auth if necessary
-    let authUpdates: { email?: string } = {};
+    let authUpdates: { email?: string; password?: string } = {};
     if (isCurrentUserAdmin && data.email && data.email !== user.email) {
         authUpdates.email = data.email;
+    }
+    if (data.password && data.password.length >= 6) {
+        authUpdates.password = data.password;
     }
 
     if (Object.keys(authUpdates).length > 0) {
@@ -163,10 +202,15 @@ export default function UserDetailsPage() {
         idProofType: data.idProofType,
         idNumber: data.idNumber,
         idProofUrl,
+        telegramChatId: data.telegramChatId || '',
         organizationGroup: (data.organizationGroup === 'none' ? null : data.organizationGroup) as any,
         organizationRole: data.organizationRole,
         updatedAt: serverTimestamp(),
     };
+
+    if (data.password) {
+        updateData.password = data.password;
+    }
 
     // Mirror updates to Linked Donor Profile
     const donorUpdateData = {
@@ -328,17 +372,113 @@ export default function UserDetailsPage() {
           </div>
         </CardHeader>
         <CardContent className="pt-6">
-          {!canUpdate && (
-              <Alert variant="destructive" className="mb-6"><ShieldAlert className="h-4 w-4" /><AlertTitle className="font-bold">Read-Only Mode</AlertTitle><AlertDescription className="font-normal opacity-80">Insufficient Permissions To Update This Account.</AlertDescription></Alert>
-          )}
-          <UserForm
-              user={user}
-              onSubmit={handleSave}
-              onCancel={handleCancel}
-              isSubmitting={isSubmitting}
-              isLoading={isUserLoading}
-              isReadOnly={!isEditMode || !canUpdate}
-          />
+          <Tabs defaultValue="user-profile" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 h-12 bg-primary/5 p-1 rounded-xl mb-6">
+                  <TabsTrigger value="user-profile" className="font-bold">Organization User</TabsTrigger>
+                  <TabsTrigger value="donor-profile" className="font-bold">Donor Profile</TabsTrigger>
+                  <TabsTrigger value="beneficiary-profile" className="font-bold">Beneficiary Profile</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="user-profile" className="mt-0">
+                  {!canUpdate && (
+                      <Alert variant="destructive" className="mb-6">
+                          <ShieldAlert className="h-4 w-4" />
+                          <AlertTitle className="font-bold">Read-Only Mode</AlertTitle>
+                          <AlertDescription className="font-normal opacity-80">Insufficient Permissions To Update This Account.</AlertDescription>
+                      </Alert>
+                  )}
+                  <UserForm
+                      user={user}
+                      onSubmit={handleSave}
+                      onCancel={handleCancel}
+                      isSubmitting={isSubmitting}
+                      isLoading={isUserLoading}
+                      isReadOnly={!isEditMode || !canUpdate}
+                  />
+              </TabsContent>
+
+              <TabsContent value="donor-profile" className="mt-0">
+                  {donor ? (
+                      <div className="space-y-6 bg-primary/[0.01] p-6 rounded-2xl border border-primary/5">
+                          <div className="flex items-center justify-between">
+                              <h3 className="text-lg font-bold text-primary">Linked Donor Profile</h3>
+                              <Button variant="outline" size="sm" asChild className="font-bold text-xs h-8 border-primary/10 text-primary">
+                                  <Link href={`/donors/${userId}`} target="_blank">
+                                      Full Donor Workspace <ExternalLink className="ml-2 h-4 w-4"/>
+                                  </Link>
+                              </Button>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div className="p-4 bg-white rounded-xl border border-primary/5 shadow-sm">
+                                  <span className="text-[10px] font-bold text-muted-foreground tracking-widest block mb-1">Donor Name</span>
+                                  <span className="text-base font-bold text-primary">{donor.name}</span>
+                              </div>
+                              <div className="p-4 bg-white rounded-xl border border-primary/5 shadow-sm">
+                                  <span className="text-[10px] font-bold text-muted-foreground tracking-widest block mb-1">Status</span>
+                                  <Badge variant={donor.status === 'Active' ? 'active' : 'outline'} className="font-bold text-[10px]">{donor.status}</Badge>
+                              </div>
+                              <div className="p-4 bg-white rounded-xl border border-primary/5 shadow-sm">
+                                  <span className="text-[10px] font-bold text-muted-foreground tracking-widest block mb-1">Phone Number</span>
+                                  <span className="text-base font-bold text-primary">{donor.phone || 'N/A'}</span>
+                              </div>
+                              <div className="p-4 bg-white rounded-xl border border-primary/5 shadow-sm">
+                                  <span className="text-[10px] font-bold text-muted-foreground tracking-widest block mb-1">Email Address</span>
+                                  <span className="text-base font-bold text-primary">{donor.email || 'N/A'}</span>
+                              </div>
+                          </div>
+                      </div>
+                  ) : (
+                      <div className="text-center py-12 bg-primary/[0.01] rounded-2xl border border-dashed border-primary/10">
+                          <p className="text-sm font-bold opacity-40 mb-4">No Linked Donor Profile Found.</p>
+                          <Button variant="outline" onClick={handleMirrorToDonor} className="font-bold text-xs h-10 border-primary/20 text-primary">
+                              Initialize Donor Profile
+                          </Button>
+                      </div>
+                  )}
+              </TabsContent>
+
+              <TabsContent value="beneficiary-profile" className="mt-0">
+                  {beneficiary ? (
+                      <div className="space-y-6 bg-primary/[0.01] p-6 rounded-2xl border border-primary/5">
+                          <div className="flex items-center justify-between">
+                              <h3 className="text-lg font-bold text-primary">Linked Beneficiary Profile</h3>
+                              <Button variant="outline" size="sm" asChild className="font-bold text-xs h-8 border-primary/10 text-primary">
+                                  <Link href={`/beneficiaries/${userId}`} target="_blank">
+                                      Full Beneficiary Workspace <ExternalLink className="ml-2 h-4 w-4"/>
+                                  </Link>
+                              </Button>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                              <div className="p-4 bg-white rounded-xl border border-primary/5 shadow-sm">
+                                  <span className="text-[10px] font-bold text-muted-foreground tracking-widest block mb-1">Beneficiary Name</span>
+                                  <span className="text-base font-bold text-primary">{beneficiary.name}</span>
+                              </div>
+                              <div className="p-4 bg-white rounded-xl border border-primary/5 shadow-sm">
+                                  <span className="text-[10px] font-bold text-muted-foreground tracking-widest block mb-1">Account State</span>
+                                  <Badge variant={(beneficiary.status === 'Verified' || beneficiary.status === 'Given') ? 'active' : 'outline'} className="font-bold text-[10px]">{beneficiary.status}</Badge>
+                              </div>
+                              <div className="p-4 bg-white rounded-xl border border-primary/5 shadow-sm">
+                                  <span className="text-[10px] font-bold text-muted-foreground tracking-widest block mb-1">Phone Number</span>
+                                  <span className="text-base font-bold text-primary">{beneficiary.phone || 'N/A'}</span>
+                              </div>
+                              <div className="p-4 bg-white rounded-xl border border-primary/5 shadow-sm">
+                                  <span className="text-[10px] font-bold text-muted-foreground tracking-widest block mb-1">Assistance Code</span>
+                                  <span className="text-base font-bold text-primary font-mono">{beneficiary.beneficiaryKey || 'N/A'}</span>
+                              </div>
+                          </div>
+                      </div>
+                  ) : (
+                      <div className="text-center py-12 bg-primary/[0.01] rounded-2xl border border-dashed border-primary/10">
+                          <p className="text-sm font-bold opacity-40 mb-4">No Linked Beneficiary Profile Found.</p>
+                          <Button variant="outline" onClick={handleMirrorToBeneficiary} className="font-bold text-xs h-10 border-primary/20 text-primary">
+                              Initialize Beneficiary Profile
+                          </Button>
+                      </div>
+                  )}
+              </TabsContent>
+          </Tabs>
         </CardContent>
        </Card>
  

@@ -195,7 +195,7 @@ export default function DonorPortalPage() {
                                             <TableCell className="text-right pr-6">
                                                 {donation.status === 'Verified' ? (
                                                     <Button variant="ghost" size="sm" className="h-8 font-bold text-primary hover:bg-primary/10 transition-all active:scale-95 rounded-lg" asChild>
-                                                        <Link href={`/campaign-public/${donation.linkSplit?.[0]?.linkId?.replace('campaign_', '') || 'general'}/donations/${donation.id}`}>
+                                                        <Link href={`/donor-portal/receipt/${donation.id}`}>
                                                             <Download className="h-4 w-4 mr-2 opacity-60" />
                                                             Secure Receipt
                                                         </Link>
@@ -242,7 +242,7 @@ export default function DonorPortalPage() {
                                     
                                     {donation.status === 'Verified' ? (
                                         <Button variant="outline" className="w-full h-11 font-bold border-primary/20 text-primary hover:bg-primary hover:text-white transition-all shadow-sm rounded-xl" asChild>
-                                            <Link href={`/campaign-public/${donation.linkSplit?.[0]?.linkId?.replace('campaign_', '') || 'general'}/donations/${donation.id}`}>
+                                            <Link href={`/donor-portal/receipt/${donation.id}`}>
                                                 <Download className="h-4 w-4 mr-2" />
                                                 Download Official Receipt
                                             </Link>

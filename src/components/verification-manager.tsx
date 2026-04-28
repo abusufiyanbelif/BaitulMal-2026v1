@@ -224,8 +224,8 @@
        </div>
  
        <Dialog open={isReviewOpen} onOpenChange={setIsReviewOpen}>
-         <DialogContent className="max-w-2xl rounded-[24px] border-primary/10 shadow-2xl p-0 overflow-hidden font-normal">
-           <DialogHeader className="bg-primary/5 p-8 border-b space-y-2">
+         <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col rounded-[24px] border-primary/10 shadow-2xl p-0 overflow-hidden font-normal">
+           <DialogHeader className="bg-primary/5 p-8 border-b space-y-2 shrink-0">
              <div className="flex items-center justify-between">
                <div className="flex items-center gap-3">
                  <div className="p-3 bg-primary/10 rounded-2xl text-primary shadow-sm border border-primary/10">
@@ -244,7 +244,7 @@
              </div>
            </DialogHeader>
  
-           <ScrollArea className="max-h-[60vh] p-8">
+           <ScrollArea className="flex-1 p-8">
              <div className="space-y-6">
                <div className="flex items-center gap-4 bg-primary/[0.03] p-4 rounded-2xl border border-primary/5">
                   <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center font-bold text-primary text-xl shadow-sm border border-primary/10">

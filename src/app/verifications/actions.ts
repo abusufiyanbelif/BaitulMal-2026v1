@@ -509,15 +509,19 @@ import { generateChanges } from '@/lib/utils';
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        const adminsSnap = await adminDb.collection('users').where('role', '==', 'Admin').where('status', '==', 'Active').get();
-        const assignedVerifiers = adminsSnap.docs.map(doc => ({
+        const membersSnap = await adminDb.collection('users')
+            .where('status', '==', 'Active')
+            .where('role', 'in', ['Admin', 'User'])
+            .get();
+
+        const assignedVerifiers = membersSnap.docs.map((doc: any) => ({
             id: doc.id,
             name: doc.data().name,
             status: 'Pending' as const
         }));
 
         if (assignedVerifiers.length === 0) {
-           return { success: false, message: 'No Active Administrator Found to verify your request.' };
+           return { success: false, message: 'No Active Team Members Found to verify your request.' };
         }
 
         const originalSnap = await adminDb.collection('users').doc(userId).get();
@@ -655,3 +659,36 @@ export async function cancelVerificationAction(requestId: string) {
         return { success: false, message: e.message };
     }
 }
+
+export async function remindVerifiersAction(requestId: string) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: 'Operational Failure: Administrative Services Unavailable.' };
+    
+    try {
+        const docRef = adminDb.doc(`pending_verifications/${requestId}`);
+        const snap = await docRef.get();
+        if (!snap.exists) return { success: false, message: 'Request Not Found.' };
+        const request = snap.data() as PendingVerification;
+        
+        let sentCount = 0;
+        for (const verifier of request.assignedVerifiers) {
+            if (verifier.status === 'Pending') {
+                const vSnap = await adminDb.collection('users').doc(verifier.id).get();
+                const vTelegram = vSnap.data()?.telegramChatId;
+                
+                if (vTelegram) {
+                    await sendTelegramAction({
+                        message: `⏳ *Reminder: Pending Approval Required*\n\n*Requested By:* ${request.requestedBy.name}\n*Purpose:* ${request.description || 'Data Update'}`,
+                        chatId: vTelegram,
+                        moduleId: request.module.replace(/s$/, '') as any
+                    });
+                    sentCount++;
+                }
+            }
+        }
+        return { success: true, message: `Reminder alerts dispatched to ${sentCount} pending verifier(s).` };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+

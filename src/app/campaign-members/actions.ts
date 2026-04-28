@@ -25,7 +25,7 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
     const { sourceCampaignId, newName, copyBeneficiaries, copyRationLists } = options;
 
     try {
-        await adminDb.runTransaction(async (transaction) => {
+        await adminDb.runTransaction(async (transaction: any) => {
             const sourceCampaignRef = adminDb.collection('campaigns').doc(sourceCampaignId);
             const sourceCampaignSnap = await transaction.get(sourceCampaignRef);
             if (!sourceCampaignSnap.exists) {
@@ -60,7 +60,7 @@ export async function copyCampaignAction(options: CopyCampaignOptions): Promise<
 
             if (copyBeneficiaries) {
                 const beneficiariesSnap = await adminDb.collection(`campaigns/${sourceCampaignId}/beneficiaries`).get();
-                beneficiariesSnap.forEach(benDoc => {
+                beneficiariesSnap.forEach((benDoc: any) => {
                     const newBeneficiaryRef = adminDb.collection(`campaigns/${newCampaignRef.id}/beneficiaries`).doc(benDoc.id);
                     transaction.set(newBeneficiaryRef, benDoc.data());
                 });
@@ -93,7 +93,7 @@ export async function deleteCampaignAction(campaignId: string): Promise<{ succes
 
         // Delete all documents in the beneficiaries subcollection
         const beneficiariesSnap = await adminDb.collection(`campaigns/${campaignId}/beneficiaries`).get();
-        beneficiariesSnap.forEach(doc => batch.delete(doc.ref));
+        beneficiariesSnap.forEach((doc: any) => batch.delete(doc.ref));
 
         batch.delete(campaignRef);
         
@@ -114,7 +114,7 @@ export async function recalculateCampaignGoalAction(campaignId: string): Promise
     try {
         const beneficiariesSnap = await adminDb.collection(`campaigns/${campaignId}/beneficiaries`).get();
         let total = 0;
-        beneficiariesSnap.forEach(doc => {
+        beneficiariesSnap.forEach((doc: any) => {
             const data = doc.data();
             total += (Number(data.kitAmount) || 0);
         });

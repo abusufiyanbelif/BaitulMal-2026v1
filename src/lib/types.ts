@@ -331,6 +331,7 @@ export interface Beneficiary extends DocumentData {
     name: string;
     address?: string;
     phone?: string;
+    telegramChatId?: string;
     occupation?: string;
     age?: number;
     members?: number;
@@ -380,6 +381,7 @@ export interface Donor extends DocumentData {
   phones?: string[]; // Flattened array of all associated phone numbers
   email?: string;
   address?: string;
+  telegramChatId?: string;
   bankDetails?: BankDetail[];
   accountNumbers?: string[]; // Flattened for querying
   upiIds?: string[]; // Flattened for querying
@@ -476,6 +478,18 @@ export interface PendingVerification extends DocumentData {
   description?: string;
 }
  
+export interface InAppNotification extends DocumentData {
+  id: string;
+  userId: string; // Recipient user ID
+  title: string;
+  body: string;
+  module: 'donations' | 'beneficiaries' | 'campaigns' | 'leads' | 'donors' | 'users' | 'approvals' | 'system';
+  linkUrl?: string;
+  isRead: boolean;
+  createdAt: Timestamp | FieldValue;
+  metadata?: Record<string, any>;
+}
+
 export interface AuditLog extends DocumentData {
   id: string;
   targetId: string;

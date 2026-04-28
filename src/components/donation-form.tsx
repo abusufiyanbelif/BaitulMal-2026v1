@@ -661,6 +661,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                     </div>
                 </div>
                 <ScrollBar orientation="vertical" />
+                <ScrollBar orientation="horizontal" />
             </ScrollArea>
         </div>
 

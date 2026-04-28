@@ -18,13 +18,41 @@ export async function createDonorAction(data: Partial<Donor>, createdBy: {id: st
 
     try {
         if (data.phone && data.phone.trim().length >= 10) {
-            const existingQuery = await adminDb.collection('donors').where('phone', '==', data.phone.trim()).limit(1).get();
+            const phoneStr = data.phone.trim();
+            // Check in donors
+            const existingQuery = await adminDb.collection('donors').where('phone', '==', phoneStr).limit(1).get();
             if (!existingQuery.empty) {
                 const existingDonor = existingQuery.docs[0];
                 return { 
                     success: false, 
-                    message: `A verified profile for '${existingDonor.data().name}' already exists with this phone number.`,
+                    message: `A verified profile for '${existingDonor.data().name}' already exists with this phone number in the Donor Registry.`,
                     id: existingDonor.id
+                };
+            }
+
+            // Check in users
+            const existingUserQuery = await adminDb.collection('users').where('phone', '==', phoneStr).limit(1).get();
+            if (!existingUserQuery.empty) {
+                const existingUser = existingUserQuery.docs[0];
+                const existingUserData = existingUser.data();
+                
+                const docRef = adminDb.collection('donors').doc(existingUser.id);
+                await docRef.set({
+                    ...data,
+                    id: existingUser.id,
+                    name: existingUserData.name || data.name,
+                    email: existingUserData.email || data.email || '',
+                    status: data.status || 'Active',
+                    createdAt: FieldValue.serverTimestamp(),
+                    createdById: createdBy.id,
+                    createdByName: createdBy.name,
+                }, { merge: true });
+
+                revalidatePath('/donors');
+                return { 
+                    success: true, 
+                    message: `Linked to existing User Profile for '${existingUserData.name}'.`, 
+                    id: existingUser.id 
                 };
             }
         }
@@ -106,7 +134,7 @@ export async function deleteDonorAction(donorId: string): Promise<{ success: boo
 
         const batch = adminDb.batch();
         const donationsSnap = await adminDb.collection('donations').where('donorId', '==', donorId).get();
-        donationsSnap.forEach(docSnap => {
+        donationsSnap.forEach((docSnap: any) => {
             batch.update(docSnap.ref, { 
                 donorId: null, 
                 updatedAt: FieldValue.serverTimestamp() 

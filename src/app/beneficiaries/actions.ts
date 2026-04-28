@@ -17,6 +17,48 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
         return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     }
     try {
+        if (data.phone && data.phone.trim().length >= 10) {
+            const phoneStr = data.phone.trim();
+            // Check in beneficiaries
+            const existingQuery = await adminDb.collection('beneficiaries').where('phone', '==', phoneStr).limit(1).get();
+            if (!existingQuery.empty) {
+                const existingBen = existingQuery.docs[0];
+                return { 
+                    success: false, 
+                    message: `A beneficiary profile for '${existingBen.data().name}' already exists with this phone number.`,
+                    id: existingBen.id
+                };
+            }
+
+            // Check in users
+            const existingUserQuery = await adminDb.collection('users').where('phone', '==', phoneStr).limit(1).get();
+            if (!existingUserQuery.empty) {
+                const existingUser = existingUserQuery.docs[0];
+                const existingUserData = existingUser.data();
+                
+                const docRef = adminDb.collection('beneficiaries').doc(existingUser.id);
+                await docRef.set({
+                    ...data,
+                    id: existingUser.id,
+                    name: existingUserData.name || data.name,
+                    email: existingUserData.email || data.email || '',
+                    status: data.status || 'Pending',
+                    addedDate: data.addedDate || new Date().toISOString().split('T')[0],
+                    createdAt: FieldValue.serverTimestamp(),
+                    createdById: createdBy.id,
+                    createdByName: createdBy.name,
+                    beneficiaryKey: existingUserData.userKey || `BEN-${existingUser.id.slice(0, 5).toUpperCase()}`,
+                }, { merge: true });
+
+                revalidatePath('/beneficiaries');
+                return { 
+                    success: true, 
+                    message: `Linked to existing User Profile for '${existingUserData.name}'.`, 
+                    id: existingUser.id 
+                };
+            }
+        }
+
         const docRef = adminDb.collection('beneficiaries').doc();
         await docRef.set({
             ...data,
@@ -110,7 +152,7 @@ export async function upsertInitiativeBeneficiaryAction(
         const subRef = adminDb.doc(`${collectionName}/${initiativeId}/beneficiaries/${beneficiaryData.id}`);
         const initiativeRef = adminDb.collection(collectionName).doc(initiativeId);
 
-        await adminDb.runTransaction(async (transaction) => {
+        await adminDb.runTransaction(async (transaction: any) => {
             const masterSnap = await transaction.get(masterRef);
             const initiativeSnap = await transaction.get(initiativeRef);
             const subSnap = await transaction.get(subRef);
@@ -531,7 +573,7 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
         let addedCount = 0;
         
         const masterBeneficiariesSnap = await adminDb.collection('beneficiaries').get();
-        const masterIds = new Set(masterBeneficiariesSnap.docs.map(d => d.id));
+        const masterIds = new Set(masterBeneficiariesSnap.docs.map((d: any) => d.id));
 
         const campaignsSnap = await adminDb.collection('campaigns').get();
         for (const campaignDoc of campaignsSnap.docs) {

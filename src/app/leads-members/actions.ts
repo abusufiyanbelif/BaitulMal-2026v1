@@ -23,7 +23,7 @@ export async function copyLeadAction(options: CopyLeadOptions): Promise<{ succes
     const { sourceLeadId, newName, copyBeneficiaries, copyRationLists } = options;
 
     try {
-        await adminDb.runTransaction(async (transaction) => {
+        await adminDb.runTransaction(async (transaction: any) => {
             const sourceLeadRef = adminDb.collection('leads').doc(sourceLeadId);
             const sourceLeadSnap = await transaction.get(sourceLeadRef);
             if (!sourceLeadSnap.exists) {
@@ -63,7 +63,7 @@ export async function copyLeadAction(options: CopyLeadOptions): Promise<{ succes
 
             if (copyBeneficiaries) {
                 const beneficiariesSnap = await adminDb.collection(`leads/${sourceLeadId}/beneficiaries`).get();
-                beneficiariesSnap.forEach(benDoc => {
+                beneficiariesSnap.forEach((benDoc: any) => {
                     const newBeneficiaryRef = adminDb.collection(`leads/${newLeadRef.id}/beneficiaries`).doc(benDoc.id);
                     transaction.set(newBeneficiaryRef, benDoc.data());
                 });
@@ -95,7 +95,7 @@ export async function deleteLeadAction(leadId: string): Promise<{ success: boole
         await bucket.deleteFiles({ prefix });
         
         const beneficiariesSnap = await adminDb.collection(`leads/${leadId}/beneficiaries`).get();
-        beneficiariesSnap.forEach(doc => batch.delete(doc.ref));
+        beneficiariesSnap.forEach((doc: any) => batch.delete(doc.ref));
 
         batch.delete(leadRef);
         
@@ -116,7 +116,7 @@ export async function recalculateLeadGoalAction(leadId: string): Promise<{ succe
     try {
         const beneficiariesSnap = await adminDb.collection(`leads/${leadId}/beneficiaries`).get();
         let total = 0;
-        beneficiariesSnap.forEach(doc => {
+        beneficiariesSnap.forEach((doc: any) => {
             const data = doc.data();
             total += (Number(data.kitAmount) || 0);
         });

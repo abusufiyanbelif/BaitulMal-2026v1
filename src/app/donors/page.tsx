@@ -364,7 +364,7 @@ export default function DonorRegistryPage() {
             <ScrollArea className="w-full">
                 <div className="max-h-[65vh]">
                     <div className="hidden md:block">
-                        <Table>
+                        <Table className="min-w-[1000px]">
                             <TableHeader>
                                 <TableRow className="bg-primary/[0.02] border-b border-primary/5">
                                     <TableHead className="w-[80px] pl-8 text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14"># Index</TableHead>

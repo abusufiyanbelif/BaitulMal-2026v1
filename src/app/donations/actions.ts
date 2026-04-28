@@ -26,7 +26,7 @@ function sanitizePayload(data: Record<string, any>) {
  * Recalculates initiative totals for specific IDs.
  * Correctly accounts for Zakat surpluses by subtracting reservations (allocations).
  */
-export async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firestore, links: DonationLink[]) {
+export async function syncInitiativeCollectedTotals(db: any, links: DonationLink[]) {
     const targets = Array.from(new Set(links.map(l => {
         const rawId = String(l.linkId);
         const cleanId = (rawId.startsWith('campaign_') || rawId.startsWith('lead_')) ? rawId.split('_')[1] : rawId;
@@ -34,7 +34,7 @@ export async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firest
     })));
 
     const donationsSnap = await db.collection('donations').where('status', '==', 'Verified').get();
-    const allVerifiedDonations = donationsSnap.docs.map(doc => doc.data() as Donation);
+    const allVerifiedDonations = donationsSnap.docs.map((doc: any) => doc.data() as Donation);
 
     for (const targetKey of targets) {
         const [type, id] = targetKey.split('_');
@@ -49,7 +49,7 @@ export async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firest
             : [...donationCategories];
 
         const beneficiariesSnap = await db.collection(collectionName).doc(id).collection('beneficiaries').get();
-        const zakatAllocatedSum = beneficiariesSnap.docs.reduce((sum, bDoc) => {
+        const zakatAllocatedSum = beneficiariesSnap.docs.reduce((sum: any, bDoc: any) => {
             const bData = bDoc.data();
             return sum + (bData.isEligibleForZakat ? (Number(bData.zakatAllocation) || 0) : 0);
         }, 0);
@@ -57,14 +57,14 @@ export async function syncInitiativeCollectedTotals(db: FirebaseFirestore.Firest
         let zakatSumForGoal = 0;
         let otherEligibleSum = 0;
 
-        allVerifiedDonations.forEach(d => {
-            const split = d.linkSplit?.find(l => l.linkId === id || l.linkId === `${type}_${id}`);
+        allVerifiedDonations.forEach((d: any) => {
+            const split = d.linkSplit?.find((l: any) => l.linkId === id || l.linkId === `${type}_${id}`);
             if (split) {
                 const totalDonation = d.amount || 1;
                 const prop = split.amount / totalDonation;
                 const typeSplits = d.typeSplit || [];
                 
-                typeSplits.forEach(s => {
+                typeSplits.forEach((s: any) => {
                     const cat = (s.category as any) === 'General' || (s.category as any) === 'Sadqa' ? 'Sadaqah' : s.category;
                     const isAllowed = allowedTypes.includes(cat as any);
                     const isForGoal = cat !== 'Zakat' || s.forFundraising !== false;
@@ -199,13 +199,64 @@ export async function upsertDonationWithDonorAction(
             await syncInitiativeCollectedTotals(adminDb, donationData.linkSplit);
         }
 
-        if (payload.status === 'Verified') {
-            try {
-                const { notifyDonationVerifiedAction } = await import('@/app/messages/actions');
-                await notifyDonationVerifiedAction(id);
-            } catch (e) {
-                console.error('Donation notification failed:', e);
+        // --- COMPREHENSIVE NOTIFICATION DISPATCH ---
+        try {
+            const { 
+                notifyDonationVerifiedAction, 
+                notifyDonorDirectAction, 
+                notifyAdminUsersInAppAction,
+                dispatchNotificationToGroups,
+                sendTelegramAction
+            } = await import('@/app/messages/actions');
+            
+            const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+            const baseUrl = resourceSnap.data()?.baseUrl || 'https://baitulamalsolapur.com';
+
+            // 1. Notify Donor directly (WhatsApp + Telegram + In-App)
+            if (finalDonorId && donorPhone) {
+                const linkName = donationData.linkSplit?.[0]?.linkName || 'General Fund';
+                await notifyDonorDirectAction(finalDonorId, {
+                    templateId: 'donor_donation_recorded',
+                    variables: {
+                        donorName: donorName,
+                        amount: (Number(donationData.amount) || 0).toLocaleString('en-IN'),
+                        donationId: id,
+                        donationType: donationData.donationType || 'Sadaqah',
+                        date: donationData.donationDate || new Date().toISOString().split('T')[0],
+                        url: `${baseUrl}/donor-portal/receipt/${id}`
+                    },
+                    metadata: { moduleId: 'donations', recordId: id, url: `/donations/${id}` }
+                });
             }
+
+            // 2. Notify admin group (Telegram) about new donation
+            const adminMessage = `💰 *New Donation Entry*\n` +
+                `*Donor:* ${donorName}\n` +
+                `*Amount:* ₹${(Number(donationData.amount) || 0).toLocaleString('en-IN')}\n` +
+                `*Type:* ${donationData.donationType || 'N/A'}\n` +
+                `*Recorded By:* ${uploadedBy.name}\n` +
+                `\nManage: ${baseUrl}/donations`;
+
+            await dispatchNotificationToGroups({
+                module: 'donations',
+                message: adminMessage,
+                metadata: { moduleId: 'donations', recordId: id }
+            });
+
+            // 3. Admin in-app notification
+            await notifyAdminUsersInAppAction({
+                title: 'New Donation Recorded',
+                body: `₹${(Number(donationData.amount) || 0).toLocaleString('en-IN')} from ${donorName}`,
+                module: 'donations',
+                linkUrl: `/donations`
+            });
+
+            // 4. If verified, also send receipt
+            if (payload.status === 'Verified') {
+                await notifyDonationVerifiedAction(id);
+            }
+        } catch (e) {
+            console.error('Donation notification dispatch failed:', e);
         }
 
         revalidatePath('/donations');
@@ -516,6 +567,47 @@ export async function bulkLinkInitiativeAction(
             });
         await syncInitiativeCollectedTotals(adminDb, uniqueLinks as any);
 
+        // --- NOTIFY DONORS ABOUT ALLOCATION ---
+        if (action === 'link' && initiativeContext) {
+            try {
+                const { notifyDonorDirectAction } = await import('@/app/messages/actions');
+                const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+                const baseUrl = resourceSnap.data()?.baseUrl || 'https://baitulamalsolapur.com';
+
+                // Get updated initiative stats
+                const collName = initiativeContext.type === 'campaign' ? 'campaigns' : 'leads';
+                const initSnap = await adminDb.collection(collName).doc(initiativeContext.id).get();
+                const initData = initSnap.data() as any;
+                const target = initData?.targetAmount || 0;
+                const raised = initData?.collectedAmount || 0;
+                const percent = target > 0 ? Math.round((raised / target) * 100) : 0;
+
+                for (const snap of snaps) {
+                    if (!snap.exists) continue;
+                    const d = snap.data() as Donation;
+                    if (!d.donorId) continue;
+
+                    await notifyDonorDirectAction(d.donorId, {
+                        templateId: 'donor_donation_mapped',
+                        variables: {
+                            donorName: d.donorName,
+                            amount: d.amount.toLocaleString('en-IN'),
+                            donationId: snap.id,
+                            causeName: initiativeContext.name,
+                            causeType: initiativeContext.type === 'campaign' ? 'Campaign' : 'Lead',
+                            raisedAmount: raised.toLocaleString('en-IN'),
+                            targetAmount: target.toLocaleString('en-IN'),
+                            percent: percent.toString(),
+                            remainingAmount: Math.max(0, target - raised).toLocaleString('en-IN')
+                        },
+                        metadata: { moduleId: 'donations', recordId: snap.id }
+                    });
+                }
+            } catch (e) {
+                console.error('Donor allocation notification failed:', e);
+            }
+        }
+
         revalidatePath('/donations');
         return { success: true, message: `Successfully updated ${donationIds.length} allocations.` };
     } catch (error: any) {
@@ -536,8 +628,8 @@ export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success
 
         const batch = adminDb.batch();
         const allInitiatives = [
-            ...campaignsSnap.docs.map(d => ({ ref: d.ref, id: d.id, type: 'campaign', data: d.data() as Campaign })),
-            ...leadsSnap.docs.map(d => ({ ref: d.ref, id: d.id, type: 'lead', data: d.data() as Lead }))
+            ...campaignsSnap.docs.map((d: any) => ({ ref: d.ref, id: d.id, type: 'campaign', data: d.data() as Campaign })),
+            ...leadsSnap.docs.map((d: any) => ({ ref: d.ref, id: d.id, type: 'lead', data: d.data() as Lead }))
         ];
 
         for (const init of allInitiatives) {
@@ -547,7 +639,7 @@ export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success
 
             const collectionName = init.type === 'campaign' ? 'campaigns' : 'leads';
             const beneficiariesSnap = await adminDb.collection(collectionName).doc(init.id).collection('beneficiaries').get();
-            const zakatAllocatedSum = beneficiariesSnap.docs.reduce((sum, bDoc) => {
+            const zakatAllocatedSum = beneficiariesSnap.docs.reduce((sum: any, bDoc: any) => {
                 const bData = bDoc.data();
                 return sum + (bData.isEligibleForZakat ? (Number(bData.zakatAllocation) || 0) : 0);
             }, 0);
@@ -555,7 +647,7 @@ export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success
             let zakatSumForGoal = 0;
             let otherEligibleSum = 0;
 
-            donationsSnap.docs.forEach(doc => {
+            donationsSnap.docs.forEach((doc: any) => {
                 const d = doc.data() as Donation;
                 
                 const split = d.linkSplit?.find(l => 
@@ -631,10 +723,10 @@ export async function syncAllDonationsToDonorsAction(): Promise<{ success: boole
             adminDb.collection('donors').get(),
             adminDb.collection('donations').where('donorId', '==', null).get()
         ]);
-        const donorPhoneMap = new Map(donorsSnap.docs.map(doc => [doc.data().phone, doc.id]));
+        const donorPhoneMap = new Map(donorsSnap.docs.map((doc: any) => [doc.data().phone, doc.id]));
         const batch = adminDb.batch();
         let count = 0;
-        donationsSnap.docs.forEach(doc => {
+        donationsSnap.docs.forEach((doc: any) => {
             const data = doc.data();
             const matchedId = donorPhoneMap.get(data.donorPhone);
             if (matchedId) {

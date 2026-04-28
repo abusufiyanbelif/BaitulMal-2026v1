@@ -134,6 +134,7 @@ export default function CreateUserPage() {
         idProofType: data.idProofType,
         idNumber: data.idNumber,
         idProofUrl,
+        password: data.password,
         organizationGroup: data.organizationGroup === 'none' ? null : data.organizationGroup,
         organizationRole: data.organizationRole,
         createdAt: serverTimestamp(),

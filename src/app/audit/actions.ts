@@ -60,7 +60,7 @@ export async function cleanupAuditLogsAction(daysOld: number) {
         let currentBatch = adminDb.batch();
         let count = 0;
 
-        snapshot.docs.forEach((doc, index) => {
+        snapshot.docs.forEach((doc: any, index: number) => {
             currentBatch.delete(doc.ref);
             count++;
             if (count === 500) {

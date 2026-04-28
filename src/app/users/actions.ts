@@ -77,7 +77,7 @@ export async function getPublicMembersAction(): Promise<Partial<UserProfile>[]> 
     try {
         const membersQuery = adminDb.collection('users').where('organizationGroup', 'in', GROUP_IDS).where('status', '==', 'Active');
         const snapshot = await membersQuery.get();
-        return snapshot.docs.map(doc => ({
+        return snapshot.docs.map((doc: any) => ({
             id: doc.id,
             name: doc.data().name,
             organizationGroup: doc.data().organizationGroup,
@@ -129,7 +129,7 @@ export async function consolidateIdentitiesAction(
 
             // 2. Re-assign all DONATIONS pointing to redundant UID
             const donationsSnap = await adminDb.collection('donations').where('donorId', '==', redundantUid).get();
-            donationsSnap.forEach(d => {
+            donationsSnap.forEach((d: any) => {
                 batch.update(d.ref, { 
                     donorId: primaryUid,
                     donorName: primaryData.name,
@@ -142,7 +142,7 @@ export async function consolidateIdentitiesAction(
             const collectionsToUpdate = ['campaigns', 'leads', 'beneficiaries', 'donations'];
             for (const col of collectionsToUpdate) {
                 const createdSnap = await adminDb.collection(col).where('createdById', '==', redundantUid).get();
-                createdSnap.forEach(doc => {
+                createdSnap.forEach((doc: any) => {
                     batch.update(doc.ref, { 
                         createdById: primaryUid,
                         createdByName: primaryData.name 
@@ -150,7 +150,7 @@ export async function consolidateIdentitiesAction(
                 });
 
                 const updatedSnap = await adminDb.collection(col).where('updatedById', '==', redundantUid).get();
-                updatedSnap.forEach(doc => {
+                updatedSnap.forEach((doc: any) => {
                     batch.update(doc.ref, { 
                         updatedById: primaryUid, 
                         updatedByName: primaryData.name 
@@ -286,6 +286,45 @@ export async function mirrorIndividualUserToDonorAction(uid: string, admin: { id
         revalidatePath('/donors');
         revalidatePath('/users');
         return { success: true, message: 'Identity Mirrored To Donor Registry.' };
+    } catch (error: any) {
+        return { success: false, message: error.message };
+    }
+}
+
+export async function mirrorIndividualUserToBeneficiaryAction(uid: string, admin: { id: string, name: string }): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    try {
+        const userRef = adminDb.collection('users').doc(uid);
+        const userSnap = await userRef.get();
+        if (!userSnap.exists) return { success: false, message: 'Source user not found.' };
+        const user = userSnap.data() as UserProfile;
+        
+        const benRef = adminDb.collection('beneficiaries').doc(uid);
+        await benRef.set({
+            id: uid,
+            name: user.name,
+            phone: user.phone || '',
+            email: user.email || '',
+            status: user.status === 'Active' ? 'Active' : 'Inactive',
+            updatedAt: FieldValue.serverTimestamp(),
+            createdById: admin.id,
+            createdByName: admin.name,
+            beneficiaryKey: user.userKey || `BEN-${uid.slice(0, 5).toUpperCase()}`,
+        }, { merge: true });
+
+        await recordAuditLogAction({
+            module: 'users',
+            targetId: uid,
+            action: 'MIRROR_BENEFICIARY',
+            description: `Profile mirrored to Beneficiary Registry by administrative sync.`,
+            performedBy: admin,
+            metadata: { uid }
+        });
+
+        revalidatePath('/beneficiaries');
+        revalidatePath('/users');
+        return { success: true, message: 'Identity Mirrored To Beneficiary Registry.' };
     } catch (error: any) {
         return { success: false, message: error.message };
     }

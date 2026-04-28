@@ -86,7 +86,7 @@ export async function getPageHits() {
         if (snapshot.empty) {
             return [];
         }
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        return snapshot.docs.map((doc: any) => ({ id: doc.id, ...doc.data() }));
     } catch (error: any) {
         console.error("Error getting page hits:", error);
         return { error: error.message };

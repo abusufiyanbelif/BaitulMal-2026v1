@@ -114,16 +114,16 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl text-primary font-normal p-0 overflow-hidden rounded-[16px] border-primary/10">
-        <DialogHeader className="px-6 py-4 bg-primary/5 border-b border-primary/10">
+      <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] flex flex-col text-primary font-normal p-0 overflow-hidden rounded-[16px] border-primary/10 shadow-2xl animate-fade-in-zoom">
+        <DialogHeader className="px-6 py-4 bg-primary/5 border-b border-primary/10 shrink-0">
           <DialogTitle className="text-xl font-bold tracking-tight text-primary">Link Master Donation</DialogTitle>
           <DialogDescription className="text-sm font-normal text-primary/70">
             Allocate unassigned funds from verified global donations to this initiative.
           </DialogDescription>
         </DialogHeader>
         
-        <div className="p-6 space-y-4">
-            <div className="relative">
+        <div className="flex-1 overflow-hidden flex flex-col p-4 sm:p-6 space-y-4">
+            <div className="relative shrink-0">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-primary/50" />
                 <Input
                     placeholder="Search Donor Name, Phone, Or Reference ID..."
@@ -133,8 +133,8 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
                 />
             </div>
 
-            <div className="rounded-[12px] border border-primary/10 bg-primary/[0.02] overflow-hidden shadow-inner">
-                <ScrollArea className="h-[400px] w-full">
+            <div className="flex-1 rounded-[12px] border border-primary/10 bg-primary/[0.02] overflow-hidden shadow-inner relative">
+                <ScrollArea className="h-full w-full">
                     <div className="p-2 space-y-2">
                         {isInitialLoading ? (
                             <div className="space-y-2 p-2">

@@ -444,6 +444,108 @@ export async function seedDefaultTemplatesAction() {
             category: 'Security',
             variables: ['identifier', 'password', 'url'],
             isActive: true
+        },
+        // --- DONOR-FACING NOTIFICATIONS ---
+        {
+            id: 'donor_donation_recorded',
+            name: 'Donor: Donation Recorded',
+            subject: 'Your Contribution Has Been Received',
+            body: '🎉 *Donation Received — Thank You!*\n\nAssalamualaikum {{donorName}},\n\nYour generous contribution of *₹{{amount}}* has been recorded successfully.\n\n*Receipt ID:* {{donationId}}\n*Type:* {{donationType}}\n*Date:* {{date}}\n\nJazakallah Khair for your continued support!\n\nView Receipt: {{url}}',
+            type: 'WhatsApp',
+            category: 'Donation',
+            variables: ['donorName', 'amount', 'donationId', 'donationType', 'date', 'url'],
+            isActive: true
+        },
+        {
+            id: 'donor_donation_mapped',
+            name: 'Donor: Donation Linked to Cause',
+            subject: 'Your Donation Has Been Allocated',
+            body: '📌 *Donation Allocation Update*\n\nHello {{donorName}},\n\nYour donation of *₹{{amount}}* (ID: {{donationId}}) has been allocated to:\n\n*Cause:* {{causeName}}\n*Cause Type:* {{causeType}}\n*Progress:* {{raisedAmount}} / {{targetAmount}} ({{percent}}%)\n*Remaining:* ₹{{remainingAmount}}\n\nYour support is making a real difference! 🤲',
+            type: 'WhatsApp',
+            category: 'Donation',
+            variables: ['donorName', 'amount', 'donationId', 'causeName', 'causeType', 'raisedAmount', 'targetAmount', 'percent', 'remainingAmount'],
+            isActive: true
+        },
+        {
+            id: 'donor_cause_update',
+            name: 'Donor: Cause Progress Update',
+            subject: 'Initiative Progress Report',
+            body: '📊 *Initiative Progress Update*\n\nHello {{donorName}},\n\nHere is a progress update on a cause you contributed to:\n\n*{{causeName}}*\n*Progress:* {{percent}}% of ₹{{targetAmount}}\n*Raised:* ₹{{raisedAmount}}\n*Remaining:* ₹{{remainingAmount}}\n*Beneficiaries Served:* {{beneficiaryCount}}\n\nThank you for being part of this mission! 🌟',
+            type: 'WhatsApp',
+            category: 'Donation',
+            variables: ['donorName', 'causeName', 'percent', 'targetAmount', 'raisedAmount', 'remainingAmount', 'beneficiaryCount'],
+            isActive: true
+        },
+        {
+            id: 'donor_initiative_created',
+            name: 'Donor: New Initiative Launched',
+            subject: 'New Community Initiative Available',
+            body: '🆕 *New Initiative Launched!*\n\nHello {{donorName}},\n\nA new {{initiativeType}} has been launched by BaitulMal:\n\n*{{initiativeName}}*\n*Goal:* ₹{{targetAmount}}\n*Duration:* {{startDate}} to {{endDate}}\n*Description:* {{description}}\n\nContribute here: {{url}}\n\nEvery contribution counts! 🤲',
+            type: 'WhatsApp',
+            category: 'Campaign',
+            variables: ['donorName', 'initiativeType', 'initiativeName', 'targetAmount', 'startDate', 'endDate', 'description', 'url'],
+            isActive: true
+        },
+        // --- ADMIN/INTERNAL NOTIFICATIONS ---
+        {
+            id: 'admin_donation_received',
+            name: 'Admin: New Donation Entry',
+            subject: 'New Donation Recorded',
+            body: '💰 *New Donation Entry*\n\n*Donor:* {{donorName}}\n*Amount:* ₹{{amount}}\n*Type:* {{donationType}}\n*Date:* {{date}}\n*Recorded By:* {{uploadedBy}}\n\n*Linked To:* {{linkName}}\n\nManage: {{url}}',
+            type: 'WhatsApp',
+            category: 'Donation',
+            variables: ['donorName', 'amount', 'donationType', 'date', 'uploadedBy', 'linkName', 'url'],
+            isActive: true
+        },
+        {
+            id: 'admin_user_created',
+            name: 'Admin: New User Account',
+            subject: 'New Team Member Registered',
+            body: '👤 *New Team Member Registered*\n\n*Name:* {{userName}}\n*Role:* {{role}}\n*Phone:* {{phone}}\n*Created By:* {{createdBy}}\n\n*Login ID:* {{loginId}}\n\nManage: {{url}}',
+            type: 'WhatsApp',
+            category: 'Security',
+            variables: ['userName', 'role', 'phone', 'createdBy', 'loginId', 'url'],
+            isActive: true
+        },
+        {
+            id: 'admin_beneficiary_added',
+            name: 'Admin: Beneficiary Registered',
+            subject: 'New Beneficiary Entry',
+            body: '👤 *New Beneficiary Registered*\n\n*Name:* {{beneficiaryName}}\n*Phone:* {{phone}}\n*Status:* {{status}}\n*Created By:* {{createdBy}}\n\nManage: {{url}}',
+            type: 'WhatsApp',
+            category: 'Beneficiary',
+            variables: ['beneficiaryName', 'phone', 'status', 'createdBy', 'url'],
+            isActive: true
+        },
+        {
+            id: 'admin_high_value_donation',
+            name: 'Admin: High-Value Donation Alert',
+            subject: 'Significant Contribution Alert',
+            body: '🌟 *HIGH-VALUE DONATION ALERT*\n\n*Donor:* {{donorName}}\n*Amount:* ₹{{amount}}\n*Type:* {{donationType}}\n\nThis contribution exceeds the notification threshold.\n\n*Linked To:* {{linkName}}\n*Recorded By:* {{uploadedBy}}\n\nImmediate Review: {{url}}',
+            type: 'WhatsApp',
+            category: 'Donation',
+            variables: ['donorName', 'amount', 'donationType', 'linkName', 'uploadedBy', 'url'],
+            isActive: true
+        },
+        {
+            id: 'admin_password_reset',
+            name: 'Admin: Password Reset Alert',
+            subject: 'Security: Password Reset Performed',
+            body: '🔐 *Password Reset Performed*\n\n*User:* {{userName}} ({{userId}})\n*Reset By:* {{resetBy}}\n*Timestamp:* {{timestamp}}\n\nIf unauthorized, investigate immediately.',
+            type: 'WhatsApp',
+            category: 'Security',
+            variables: ['userName', 'userId', 'resetBy', 'timestamp'],
+            isActive: true
+        },
+        {
+            id: 'donor_onboarding',
+            name: 'Donor: Welcome Onboarding',
+            subject: 'Welcome To BaitulMal',
+            body: '🤝 *Welcome to BaitulMal Family!*\n\nAssalamualaikum {{donorName}},\n\nYou have been registered as a donor in our system. Your contributions will be tracked, receipts generated, and you will receive regular updates about the causes you support.\n\nJazakallah Khair for choosing to make a difference! 🌟',
+            type: 'WhatsApp',
+            category: 'Donation',
+            variables: ['donorName'],
+            isActive: true
         }
     ];
 
@@ -453,6 +555,213 @@ export async function seedDefaultTemplatesAction() {
         batch.set(ref, { ...t, updatedAt: Timestamp.now() }, { merge: true });
     }
     await batch.commit();
+}
+
+/**
+ * Send a direct notification to a specific donor (by donor doc ID).
+ * Looks up phone + telegramChatId from donors collection (and users collection as fallback).
+ */
+export async function notifyDonorDirectAction(donorId: string, params: {
+    templateId?: string;
+    variables?: Record<string, string>;
+    customMessage?: string;
+    metadata?: any;
+}) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: 'DB Unavailable' };
+
+    try {
+        // Try donors collection first, then users
+        let phone = '';
+        let telegramChatId = '';
+        let donorName = '';
+
+        const donorSnap = await adminDb.collection('donors').doc(donorId).get();
+        if (donorSnap.exists) {
+            const d = donorSnap.data() as any;
+            phone = d.phone || '';
+            telegramChatId = d.telegramChatId || '';
+            donorName = d.name || '';
+        }
+
+        // Fallback: check users collection (same doc ID may exist there)
+        if (!phone || !telegramChatId) {
+            const userSnap = await adminDb.collection('users').doc(donorId).get();
+            if (userSnap.exists) {
+                const u = userSnap.data() as UserProfile;
+                if (!phone) phone = u.phone || '';
+                if (!telegramChatId) telegramChatId = u.telegramChatId || '';
+                if (!donorName) donorName = u.name || '';
+            }
+        }
+
+        let whatsAppResult = null;
+        let telegramResult = null;
+
+        // Send WhatsApp
+        if (phone && phone.length >= 10) {
+            whatsAppResult = await sendWhatsAppAction({
+                to: phone,
+                templateId: params.templateId,
+                variables: params.variables,
+                customMessage: params.customMessage,
+                metadata: params.metadata,
+                bypassAutoCheck: true
+            });
+        }
+
+        // Send Telegram
+        if (telegramChatId) {
+            let message = params.customMessage || '';
+            if (params.templateId) {
+                const templateSnap = await adminDb.collection('settings').doc('message_templates').collection('templates').doc(params.templateId).get();
+                if (templateSnap.exists) {
+                    message = (templateSnap.data() as any).body;
+                    if (params.variables) {
+                        Object.entries(params.variables).forEach(([key, value]) => {
+                            message = message.split(`{{${key}}}`).join(value || '');
+                        });
+                    }
+                }
+            }
+            if (message) {
+                telegramResult = await sendTelegramAction({ message, chatId: telegramChatId, bypassAutoCheck: true });
+            }
+        }
+
+        // Write in-app notification
+        const notifTitle = params.variables?.donorName ? `Update for ${params.variables.donorName}` : 'Notification';
+        const notifBody = params.customMessage 
+            || (params.variables?.amount ? `Donation of ₹${params.variables.amount} recorded` : '')
+            || 'You have a new update';
+
+        await writeInAppNotificationAction({
+            userId: donorId,
+            title: notifTitle,
+            body: notifBody,
+            module: (params.metadata?.moduleId as any) || 'donations',
+            linkUrl: params.metadata?.url || '',
+        });
+
+        return {
+            success: !!(whatsAppResult?.success || telegramResult?.success),
+            message: `WhatsApp: ${whatsAppResult?.success ? 'Sent' : 'Skipped'} | Telegram: ${telegramResult?.success ? 'Sent' : 'Skipped'}`
+        };
+    } catch (e: any) {
+        console.error('Direct donor notification failed:', e);
+        return { success: false, message: e.message };
+    }
+}
+
+/**
+ * Write an in-app notification to Firestore for the notification bell.
+ */
+export async function writeInAppNotificationAction(params: {
+    userId: string;
+    title: string;
+    body: string;
+    module: 'donations' | 'beneficiaries' | 'campaigns' | 'leads' | 'donors' | 'users' | 'approvals' | 'system';
+    linkUrl?: string;
+    metadata?: Record<string, any>;
+}) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return;
+
+    try {
+        const ref = adminDb.collection('notifications').doc();
+        await ref.set({
+            id: ref.id,
+            userId: params.userId,
+            title: params.title,
+            body: params.body,
+            module: params.module,
+            linkUrl: params.linkUrl || '',
+            isRead: false,
+            createdAt: Timestamp.now(),
+            metadata: params.metadata || {},
+        });
+    } catch (e) {
+        console.error('In-app notification write failed:', e);
+    }
+}
+
+/**
+ * Write in-app notifications to multiple admin users.
+ */
+export async function notifyAdminUsersInAppAction(params: {
+    title: string;
+    body: string;
+    module: 'donations' | 'beneficiaries' | 'campaigns' | 'leads' | 'donors' | 'users' | 'approvals' | 'system';
+    linkUrl?: string;
+}) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return;
+
+    try {
+        const adminsSnap = await adminDb.collection('users').where('role', '==', 'Admin').where('status', '==', 'Active').get();
+        const batch = adminDb.batch();
+        
+        for (const adminDoc of adminsSnap.docs) {
+            const ref = adminDb.collection('notifications').doc();
+            batch.set(ref, {
+                id: ref.id,
+                userId: adminDoc.id,
+                title: params.title,
+                body: params.body,
+                module: params.module,
+                linkUrl: params.linkUrl || '',
+                isRead: false,
+                createdAt: Timestamp.now(),
+            });
+        }
+        
+        await batch.commit();
+    } catch (e) {
+        console.error('Admin notification write failed:', e);
+    }
+}
+
+/**
+ * Notify all donors about a new initiative (campaign/lead) via Telegram.
+ */
+export async function notifyAllDonorsNewInitiativeAction(initiativeType: 'campaign' | 'lead', id: string) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: 'DB Unavailable' };
+
+    try {
+        const collectionName = initiativeType === 'campaign' ? 'campaigns' : 'leads';
+        const snap = await adminDb.collection(collectionName).doc(id).get();
+        if (!snap.exists) return { success: false, message: 'Initiative not found' };
+        const data = snap.data() as any;
+
+        const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+        const baseUrl = resourceSnap.data()?.baseUrl || 'https://baitulamalsolapur.com';
+        const publicPath = initiativeType === 'campaign' ? 'campaign-public' : 'leads-public';
+
+        // Fetch all active donors with telegramChatId
+        const donorsSnap = await adminDb.collection('donors').where('status', '==', 'Active').get();
+        let sentCount = 0;
+
+        for (const donorDoc of donorsSnap.docs) {
+            const donor = donorDoc.data();
+            const telegramId = donor.telegramChatId;
+            if (!telegramId) continue;
+
+            const message = `🆕 *New ${initiativeType === 'campaign' ? 'Campaign' : 'Appeal'} Launched!*\n\n` +
+                `*${data.name}*\n` +
+                `*Goal:* ₹${(data.targetAmount || 0).toLocaleString('en-IN')}\n` +
+                `*Duration:* ${data.startDate || 'TBD'} to ${data.endDate || 'TBD'}\n` +
+                `${data.description ? `*Details:* ${data.description.slice(0, 150)}...\n` : ''}` +
+                `\nContribute: ${baseUrl}/${publicPath}/${id}/summary`;
+
+            await sendTelegramAction({ message, chatId: telegramId, bypassAutoCheck: true });
+            sentCount++;
+        }
+
+        return { success: true, message: `Notified ${sentCount} donors via Telegram.` };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
 }
 
 /**
@@ -737,8 +1046,8 @@ export async function dispatchNotificationToGroups(params: {
         const allGroupsSnap = await adminDb.collection('notification_groups').get();
         
         const groups = allGroupsSnap.docs
-            .map(doc => doc.data() as NotificationGroup)
-            .filter(g => {
+            .map((doc: any) => doc.data() as NotificationGroup)
+            .filter((g: any) => {
                 // Check if group is active (default to true if missing for backward compatibility)
                 const isActive = g.isActive !== false;
                 // Check if module is enabled
@@ -770,7 +1079,7 @@ export async function dispatchNotificationToGroups(params: {
                             .where(FieldPath.documentId(), 'in', chunk)
                             .get();
                         
-                        membersSnap.docs.forEach(doc => {
+                        membersSnap.docs.forEach((doc: any) => {
                             const tid = (doc.data() as UserProfile).telegramChatId;
                             if (tid) memberTelegramIds.push(tid);
                         });
@@ -796,7 +1105,7 @@ export async function dispatchNotificationToGroups(params: {
                         .where(FieldPath.documentId(), 'in', chunk)
                         .get();
                     
-                    membersSnap.docs.forEach(doc => {
+                    membersSnap.docs.forEach((doc: any) => {
                         const p = (doc.data() as UserProfile).phone;
                         if (p && p.length >= 10) memberPhones.push(p);
                     });
@@ -861,7 +1170,7 @@ export async function clearAllMessageLogsAction() {
         if (logs.empty) return { success: true, message: 'Log database is already clean.' };
 
         const batch = adminDb.batch();
-        logs.docs.forEach(doc => batch.delete(doc.ref));
+        logs.docs.forEach((doc: any) => batch.delete(doc.ref));
         await batch.commit();
         return { success: true, message: 'Initial batch of 100 logs cleared. Repeat if necessary for large datasets.' };
     } catch (e: any) {

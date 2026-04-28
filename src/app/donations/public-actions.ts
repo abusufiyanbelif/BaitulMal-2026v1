@@ -37,7 +37,7 @@ export async function processPublicDonationAction(
         if (!transactionId) throw new Error("Transaction Reference ID is required for verification.");
 
         // --- 1. Identity Resolution (Find or Create Donor) ---
-        let donorId: string | null = null;
+        let donorId: string | undefined = undefined;
         const donorsCol = adminDb.collection('donors');
         const foundDonorSnap = await donorsCol.where('phone', '==', donorPhone).limit(1).get();
 
