@@ -19,6 +19,7 @@ Welcome to the central knowledge hub for the DocuExtract Organization platform.
 13. [**Technical Standards & Patterns**](./13-technical-standards-and-patterns.md)
 14. [**Identity Mirroring Logic**](./14-identity-mirroring-logic.md)
 15. [**Data Migration & Seeding Guide**](./15-data-migration-guide.md)
+16. [**Architecture, Flow & Use Cases**](./16-architecture-and-use-cases.md)
 
 ## Core Technology Stack
 

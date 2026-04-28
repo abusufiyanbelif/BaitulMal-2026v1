@@ -83,7 +83,81 @@ Now you can start the Next.js development server.
 npm run dev
 ```
 
-The application will be available at `http://localhost:9002`.
+The application will be available at `http://localhost:3000` (or `9002` if configured).
+
+## Deployment to Firebase
+
+Deploying the BaitulMal system to Firebase can be done via Firebase Hosting (Static Export) or Firebase App Hosting (SSR). Since this application relies on Next.js Server Actions and SSR, **Firebase App Hosting** is the recommended route, but we will cover standard Firebase Hosting for static exports as well.
+
+### 1. Preparing for Deployment
+
+Before deploying, ensure your code compiles without TypeScript or Linting errors:
+```bash
+# Run a strict type check
+npx tsc --noEmit
+
+# Build the project to verify there are no missing dependencies or syntax errors
+npm run build
+```
+
+**Debugging Build Errors:**
+- If `npm run build` fails with `ESLint` errors, you can bypass them (not recommended) by setting `ignoreDuringBuilds: true` in `next.config.js`.
+- If you face `FirebaseError: Missing or insufficient permissions`, ensure your `firestore.rules` and `storage.rules` are correctly deployed before launching the app.
+
+### 2. Deploying Security Rules & Indexes
+
+Always deploy your database rules, storage rules, and indexes before the application code so that the app functions correctly upon launch.
+
+```bash
+# Login to Firebase CLI
+firebase login
+
+# Set the active project
+firebase use baitulmal-production
+
+# Deploy only Firestore rules and indexes
+firebase deploy --only firestore
+
+# Deploy Cloud Storage rules
+firebase deploy --only storage
+```
+
+**Debugging Deployment Errors:**
+- *Error: Unable to parse firestore.rules*: Check for trailing commas or syntax errors in your rules file. You can test rules locally using the Firebase Emulator Suite (`firebase emulators:start`).
+- *Error: Index creation failed*: If deploying indexes via `firebase deploy --only firestore:indexes` fails, follow the direct link provided in the Firebase CLI error output to build the index manually in the Firebase Console.
+
+### 3. Deploying the Application Code (Firebase App Hosting)
+
+Firebase App Hosting automatically manages the build and deployment pipeline for Next.js applications directly from your GitHub repository.
+
+1. Navigate to your [Firebase Console](https://console.firebase.google.com).
+2. Go to **Build > App Hosting**.
+3. Click **Get Started** and connect your GitHub repository.
+4. Select the branch (e.g., `main`).
+5. Configure your Environment Variables. You MUST add the following secrets via the App Hosting dashboard:
+   - `GEMINI_API_KEY`
+   - `NEXT_PUBLIC_FIREBASE_API_KEY`
+   - (And all other `NEXT_PUBLIC_` variables from your `.env`)
+6. Click **Deploy**. Firebase will automatically run `npm run build` and provision Cloud Run instances.
+
+**Debugging App Hosting:**
+- If the rollout fails, check the Cloud Build logs provided in the App Hosting dashboard. Most failures are due to missing environment variables or TypeScript errors.
+
+### 4. Alternative: Deploying via Firebase Hosting (Static Export)
+
+If you are not using Server Actions and want to deploy as a static site (SPA):
+1. Update `next.config.js` to include `output: 'export'`.
+2. Run `npm run build`. This generates an `out/` directory.
+3. Initialize Firebase Hosting:
+   ```bash
+   firebase init hosting
+   # When asked for the public directory, type: out
+   # Configure as a single-page app: Yes
+   ```
+4. Deploy the static assets:
+   ```bash
+   firebase deploy --only hosting
+   ```
 
 ---
 
