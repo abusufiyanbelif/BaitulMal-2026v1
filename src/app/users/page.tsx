@@ -197,6 +197,28 @@ export default function UsersPage() {
         });
   }, [users, donors, beneficiaries]);
 
+  // Cross-module identity gaps for Resolution Center
+  const crossModuleGaps = useMemo(() => {
+      const staffUsers = (users || []).filter(u => u.role === 'Admin' || u.role === 'User');
+      const allDonors = donors || [];
+      const allBens = beneficiaries || [];
+
+      // Users without a linked Donor profile
+      const usersWithoutDonor = staffUsers.filter(u => !allDonors.some(d => d.id === u.id));
+
+      // Donors not linked to any User (orphaned donor profiles)
+      const orphanedDonors = allDonors.filter(d => !staffUsers.some(u => u.id === d.id) && !staffUsers.some(u => u.phone === d.phone && !!d.phone));
+
+      // Beneficiaries matching a User by phone but not by ID
+      const unmatchedBeneficiaries = allBens.filter(b => {
+          const matchByPhone = staffUsers.find(u => u.phone === b.phone && !!b.phone);
+          const matchById = staffUsers.find(u => u.id === b.id);
+          return matchByPhone && !matchById;
+      });
+
+      return { usersWithoutDonor, orphanedDonors, unmatchedBeneficiaries };
+  }, [users, donors, beneficiaries]);
+
   const filteredAndSortedUsers = useMemo(() => {
     if (!users) return [];
     let items = users.filter(u => u.role === 'Admin' || u.role === 'User');
@@ -223,13 +245,14 @@ export default function UsersPage() {
 
   const stats = useMemo(() => {
       const allData = users || [];
+      const totalGaps = duplicatesGroups.length + crossModuleGaps.usersWithoutDonor.length + crossModuleGaps.orphanedDonors.length + crossModuleGaps.unmatchedBeneficiaries.length;
       return {
           total: allData.length,
           active: allData.filter(u => u.status === 'Active').length,
           admins: allData.filter(u => u.role === 'Admin').length,
-          unlinked: duplicatesGroups.length,
+          unlinked: totalGaps,
       };
-  }, [users, duplicatesGroups]);
+  }, [users, duplicatesGroups, crossModuleGaps]);
 
   const totalPages = Math.ceil(filteredAndSortedUsers.length / itemsPerPage);
   const paginatedUsers = filteredAndSortedUsers.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -613,15 +636,141 @@ export default function UsersPage() {
         </TabsContent>
 
         <TabsContent value="duplicates" className="animate-fade-in-up mt-0 space-y-8">
+            {/* --- Cross-Module: Users Without Donor Profile --- */}
+            {crossModuleGaps.usersWithoutDonor.length > 0 && (
+                <Card className="rounded-[32px] border border-emerald-500/10 bg-emerald-500/[0.02] overflow-hidden shadow-none p-8 animate-fade-in-up">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 pb-6 border-b border-emerald-500/10">
+                        <div className="space-y-1.5">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 rounded-2xl bg-emerald-500 text-white shadow-lg shadow-emerald-500/20">
+                                    <HeartHandshake className="h-5 w-5" />
+                                </div>
+                                <h3 className="text-xl font-black text-emerald-900 tracking-tighter">Missing Donor Profiles</h3>
+                            </div>
+                            <p className="text-sm font-bold text-emerald-800/50 pl-12">
+                                {crossModuleGaps.usersWithoutDonor.length} team member(s) have no linked Donor record. Mirror to create their Donor identity.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="grid gap-3">
+                        {crossModuleGaps.usersWithoutDonor.map(u => (
+                            <div key={u.id} className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-emerald-500/5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                                <div className="flex items-center gap-4 min-w-0">
+                                    <div className="h-10 w-10 rounded-full bg-emerald-500/10 text-emerald-600 flex items-center justify-center font-black text-sm shrink-0">{u.name.charAt(0)}</div>
+                                    <div className="min-w-0">
+                                        <p className="font-black text-sm text-primary tracking-tight truncate">{u.name}</p>
+                                        <p className="text-[10px] font-bold text-primary/40 truncate">{u.email} · {u.phone || 'No phone'}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest border-emerald-500/20 text-emerald-600 px-2 h-5 rounded-full">{u.role}</Badge>
+                                    <Button
+                                        size="sm"
+                                        onClick={() => handleMirrorToDonor(u.id)}
+                                        disabled={isMirroring === u.id}
+                                        className="h-8 px-4 text-[10px] font-black uppercase tracking-widest bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl active:scale-95 transition-all"
+                                    >
+                                        {isMirroring === u.id ? <Loader2 className="h-3 w-3 animate-spin mr-1.5" /> : <HeartHandshake className="h-3 w-3 mr-1.5" />}
+                                        Mirror
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </Card>
+            )}
+
+            {/* --- Cross-Module: Orphaned Donors (no User link) --- */}
+            {crossModuleGaps.orphanedDonors.length > 0 && (
+                <Card className="rounded-[32px] border border-blue-500/10 bg-blue-500/[0.02] overflow-hidden shadow-none p-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 pb-6 border-b border-blue-500/10">
+                        <div className="space-y-1.5">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 rounded-2xl bg-blue-500 text-white shadow-lg shadow-blue-500/20">
+                                    <Users className="h-5 w-5" />
+                                </div>
+                                <h3 className="text-xl font-black text-blue-900 tracking-tighter">Orphaned Donor Records</h3>
+                            </div>
+                            <p className="text-sm font-bold text-blue-800/50 pl-12">
+                                {crossModuleGaps.orphanedDonors.length} donor(s) exist without a matching team member profile.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="grid gap-3">
+                        {crossModuleGaps.orphanedDonors.slice(0, 20).map((d: any) => (
+                            <div key={d.id} className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-blue-500/5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                                <div className="flex items-center gap-4 min-w-0">
+                                    <div className="h-10 w-10 rounded-full bg-blue-500/10 text-blue-600 flex items-center justify-center font-black text-sm shrink-0">{(d.name || '?').charAt(0)}</div>
+                                    <div className="min-w-0">
+                                        <p className="font-black text-sm text-primary tracking-tight truncate">{d.name || 'Unnamed Donor'}</p>
+                                        <p className="text-[10px] font-bold text-primary/40 truncate">{d.email || 'No email'} · {d.phone || 'No phone'}</p>
+                                    </div>
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => router.push(`/donors/${d.id}`)}
+                                    className="h-8 px-4 text-[10px] font-black uppercase tracking-widest border-blue-500/20 text-blue-600 rounded-xl hover:bg-blue-500 hover:text-white active:scale-95 transition-all shrink-0"
+                                >
+                                    <Eye className="h-3 w-3 mr-1.5" /> View Profile
+                                </Button>
+                            </div>
+                        ))}
+                        {crossModuleGaps.orphanedDonors.length > 20 && (
+                            <p className="text-center text-xs font-bold text-blue-600/50 pt-2">+ {crossModuleGaps.orphanedDonors.length - 20} more orphaned donors</p>
+                        )}
+                    </div>
+                </Card>
+            )}
+
+            {/* --- Cross-Module: Beneficiaries matched by phone but not ID --- */}
+            {crossModuleGaps.unmatchedBeneficiaries.length > 0 && (
+                <Card className="rounded-[32px] border border-violet-500/10 bg-violet-500/[0.02] overflow-hidden shadow-none p-8 animate-fade-in-up" style={{ animationDelay: '200ms' }}>
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8 pb-6 border-b border-violet-500/10">
+                        <div className="space-y-1.5">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2.5 rounded-2xl bg-violet-500 text-white shadow-lg shadow-violet-500/20">
+                                    <IdCard className="h-5 w-5" />
+                                </div>
+                                <h3 className="text-xl font-black text-violet-900 tracking-tighter">Unlinked Beneficiary Matches</h3>
+                            </div>
+                            <p className="text-sm font-bold text-violet-800/50 pl-12">
+                                {crossModuleGaps.unmatchedBeneficiaries.length} beneficiary record(s) share a phone number with a team member but aren't ID-linked.
+                            </p>
+                        </div>
+                    </div>
+                    <div className="grid gap-3">
+                        {crossModuleGaps.unmatchedBeneficiaries.map((b: any) => (
+                            <div key={b.id} className="flex items-center justify-between gap-4 p-4 rounded-2xl bg-white border border-violet-500/5 hover:shadow-lg hover:-translate-y-0.5 transition-all">
+                                <div className="flex items-center gap-4 min-w-0">
+                                    <div className="h-10 w-10 rounded-full bg-violet-500/10 text-violet-600 flex items-center justify-center font-black text-sm shrink-0">{(b.name || '?').charAt(0)}</div>
+                                    <div className="min-w-0">
+                                        <p className="font-black text-sm text-primary tracking-tight truncate">{b.name || 'Unnamed'}</p>
+                                        <p className="text-[10px] font-bold text-primary/40 truncate">{b.phone || 'No phone'} · Status: {b.status || 'Unknown'}</p>
+                                    </div>
+                                </div>
+                                <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest border-violet-500/20 text-violet-600 px-3 h-5 rounded-full shrink-0">Phone Match</Badge>
+                            </div>
+                        ))}
+                    </div>
+                </Card>
+            )}
+
+            {/* --- Existing: User-to-User Duplicate Collisions --- */}
             <div className="grid gap-8">
-                {duplicatesGroups.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-32 bg-primary/[0.01] rounded-[48px] border-2 border-dashed border-primary/5 animate-pulse">
+                {duplicatesGroups.length === 0 && crossModuleGaps.usersWithoutDonor.length === 0 && crossModuleGaps.orphanedDonors.length === 0 && crossModuleGaps.unmatchedBeneficiaries.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-32 bg-primary/[0.01] rounded-[48px] border-2 border-dashed border-primary/5">
                         <ShieldCheck className="h-16 w-16 text-primary/10 mb-6" />
                         <h4 className="font-black text-lg text-primary/30 tracking-widest uppercase">Registry Integrity High</h4>
-                        <p className="text-sm font-bold text-primary/20 mt-2">No fragmented identities detected by neural Phone/Email matching.</p>
+                        <p className="text-sm font-bold text-primary/20 mt-2">No identity gaps or collisions detected across User, Donor, and Beneficiary modules.</p>
                     </div>
-                ) : (
-                    duplicatesGroups.map((group, gIdx) => (
+                ) : duplicatesGroups.length > 0 && (
+                    <>
+                        <div className="flex items-center gap-3 pl-2 pt-4">
+                            <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                            <h3 className="text-sm font-black uppercase tracking-[0.15em] text-amber-600">User-to-User Duplicate Collisions</h3>
+                        </div>
+                        {duplicatesGroups.map((group, gIdx) => (
                         <Card key={gIdx} className="group relative rounded-[40px] border border-amber-500/10 bg-amber-500/[0.02] overflow-hidden shadow-none p-10 animate-fade-in-up" style={{ animationDelay: `${gIdx * 100}ms` }}>
                             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-8 mb-10 pb-8 border-b border-amber-500/10">
                                 <div className="space-y-2">
@@ -629,11 +778,11 @@ export default function UsersPage() {
                                         <div className="p-3 rounded-2xl bg-amber-500 text-white shadow-xl shadow-amber-500/20">
                                             <AlertCircle className="h-6 w-6" />
                                         </div>
-                                        <h3 className="text-2xl font-black text-amber-900 tracking-tighter">Identity Collision Detected: {group.key}</h3>
+                                        <h3 className="text-2xl font-black text-amber-900 tracking-tighter">Identity Collision: {group.key}</h3>
                                     </div>
-                                    <p className="text-sm font-bold text-amber-800/60 pl-16 max-w-xl">The system identified {group.redundants.length + 1} competing profiles mapped to this identifier. Immediate reconciliation required.</p>
+                                    <p className="text-sm font-bold text-amber-800/60 pl-16 max-w-xl">{group.redundants.length + 1} competing profiles mapped to this identifier.</p>
                                 </div>
-                                <Button 
+                                <Button
                                     onClick={() => handleConsolidate(group.primary.id, group.redundants.map(r => r.id))}
                                     disabled={isConsolidating === group.primary.id}
                                     className="bg-amber-500 hover:bg-amber-600 text-white font-black h-14 rounded-2xl px-10 shadow-2xl shadow-amber-500/30 active:scale-95 transition-all w-full lg:w-auto"
@@ -642,19 +791,16 @@ export default function UsersPage() {
                                     Neural Resolution & Merge
                                 </Button>
                             </div>
-
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-3 pl-2">
                                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
                                         <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600">Primary Preservation Target</Label>
                                     </div>
-                                    <div className="relative p-8 rounded-[32px] bg-white border-2 border-emerald-500 shadow-2xl shadow-emerald-500/5 group-hover:scale-[1.02] transition-all duration-500">
+                                    <div className="relative p-8 rounded-[32px] bg-white border-2 border-emerald-500 shadow-2xl shadow-emerald-500/5">
                                         <Badge className="absolute -top-3 -right-3 bg-emerald-500 text-white font-black text-[10px] uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg border-4 border-white">Master Record</Badge>
                                         <div className="flex items-center gap-6">
-                                            <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center font-black text-emerald-600 text-2xl shadow-inner">
-                                                {group.primary.name.charAt(0)}
-                                            </div>
+                                            <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center font-black text-emerald-600 text-2xl shadow-inner">{group.primary.name.charAt(0)}</div>
                                             <div className="min-w-0">
                                                 <h4 className="font-black text-xl text-primary tracking-tighter truncate leading-tight">{group.primary.name}</h4>
                                                 <p className="text-xs font-mono font-bold text-muted-foreground opacity-60 mt-1">UID: {group.primary.id.slice(0, 12)}...</p>
@@ -663,7 +809,6 @@ export default function UsersPage() {
                                         </div>
                                     </div>
                                 </div>
-
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-3 pl-2">
                                         <div className="h-1.5 w-1.5 rounded-full bg-destructive" />
@@ -671,11 +816,9 @@ export default function UsersPage() {
                                     </div>
                                     <div className="grid gap-4">
                                         {group.redundants.map(r => (
-                                            <div key={r.id} className="p-5 rounded-[24px] bg-white/60 border border-amber-500/10 flex items-center justify-between group/row hover:bg-white hover:shadow-xl hover:border-amber-500/20 transition-all duration-500">
+                                            <div key={r.id} className="p-5 rounded-[24px] bg-white/60 border border-amber-500/10 flex items-center justify-between group/row hover:bg-white hover:shadow-xl transition-all duration-500">
                                                 <div className="flex items-center gap-4">
-                                                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center font-black text-xs text-muted-foreground">
-                                                        {r.name.charAt(0)}
-                                                    </div>
+                                                    <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center font-black text-xs text-muted-foreground">{r.name.charAt(0)}</div>
                                                     <div className="min-w-0">
                                                         <p className="text-sm font-black text-primary/70 tracking-tight truncate">{r.name}</p>
                                                         <div className="flex items-center gap-2 mt-0.5">
@@ -685,9 +828,7 @@ export default function UsersPage() {
                                                     </div>
                                                 </div>
                                                 <div className="flex items-center gap-3">
-                                                    <div className="h-8 w-8 rounded-full bg-red-500/5 text-red-500 flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all">
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </div>
+                                                    <div className="h-8 w-8 rounded-full bg-red-500/5 text-red-500 flex items-center justify-center opacity-0 group-hover/row:opacity-100 transition-all"><Trash2 className="h-4 w-4" /></div>
                                                     <ArrowRight className="h-5 w-5 text-amber-500 animate-pulse" />
                                                 </div>
                                             </div>
@@ -696,7 +837,8 @@ export default function UsersPage() {
                                 </div>
                             </div>
                         </Card>
-                    ))
+                    ))}
+                    </>
                 )}
             </div>
         </TabsContent>

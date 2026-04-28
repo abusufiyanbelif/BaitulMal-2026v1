@@ -49,7 +49,7 @@ export function useDownloadAs() {
         const canvas = await html2canvas(element, {
             scale: 2,
             useCORS: true,
-            backgroundColor: 'hsl(var(--background))', // Use the background color for capture
+            backgroundColor: '#ffffff', // Use static color to prevent html2canvas parsing errors (Unsupported angle type)
         });
 
         const [logoDataUrl, qrDataUrl] = await Promise.all([
@@ -75,7 +75,7 @@ export function useDownloadAs() {
             finalCanvas.height = contentHeight + HEADER_HEIGHT + FOOTER_HEIGHT + PADDING * 2 + COPYRIGHT_HEIGHT;
             const ctx = finalCanvas.getContext('2d')!;
             
-            ctx.fillStyle = 'hsl(var(--background))';
+            ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
 
             // Header
@@ -86,7 +86,7 @@ export function useDownloadAs() {
                 ctx.drawImage(logoImg, PADDING, PADDING / 2, logoWidth, logoHeight);
                 headerTextX = PADDING + logoWidth + 30;
             }
-            ctx.fillStyle = 'hsl(var(--foreground))';
+            ctx.fillStyle = '#0f172a';
             ctx.font = 'bold 36px sans-serif';
             ctx.textBaseline = 'middle';
             ctx.fillText(brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur', headerTextX, HEADER_HEIGHT / 2);
@@ -115,7 +115,7 @@ export function useDownloadAs() {
                 const qrSize = 180;
                 ctx.drawImage(qrImg, finalCanvas.width - PADDING - qrSize, footerY, qrSize, qrSize);
             }
-            ctx.fillStyle = 'hsl(var(--foreground))';
+            ctx.fillStyle = '#0f172a';
             ctx.font = 'bold 24px sans-serif';
             ctx.fillText('For Donations & Contact', PADDING, footerY + 20);
             ctx.font = '20px sans-serif';
@@ -129,7 +129,7 @@ export function useDownloadAs() {
             // Copyright
             ctx.textAlign = 'center';
             ctx.font = '16px sans-serif';
-            ctx.fillStyle = 'hsl(var(--muted-foreground))';
+            ctx.fillStyle = '#64748b';
             ctx.fillText(paymentSettings?.copyright || '© 2026 Baitulmal Samajik Sanstha Solapur. All Rights Reserved.', finalCanvas.width / 2, finalCanvas.height - 25);
 
             const link = document.createElement('a');

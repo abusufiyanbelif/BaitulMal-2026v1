@@ -21,7 +21,7 @@ function RouteGuard({ children }: { children: ReactNode }) {
     const pathname = usePathname();
     const [isRedirecting, setIsRedirecting] = useState(false);
 
-    const isPublicRoute = ['/login', '/seed', '/', '/portal-login'].includes(pathname) || 
+    const isPublicRoute = ['/login', '/seed', '/', '/portal-login', '/portal-register'].includes(pathname) || 
                           pathname.startsWith('/campaign-public') || 
                           pathname.startsWith('/leads-public') || 
                           pathname.startsWith('/info');
