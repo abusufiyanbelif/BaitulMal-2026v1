@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { useAuth, useFirestore, sendPasswordResetEmail } from '@/firebase';
+import { useAuth, useFirestore, sendPasswordResetEmail, doc, getDoc } from '@/firebase';
 import { signInWithLoginId } from '@/lib/auth';
 import { useToast } from '@/hooks/use-toast';
 import { useBranding } from '@/hooks/use-branding';
@@ -75,17 +75,20 @@ export default function LoginPage() {
       return;
     }
     try {
-      await signInWithLoginId(auth, firestore, data.loginId, data.password);
+      const userCredential = await signInWithLoginId(auth, firestore, data.loginId, data.password);
       toast({ title: 'Login successful', description: "Welcome back!", variant: 'success' });
       
+      // Fetch role directly to accelerate explicit routing
+      const userDocRef = doc(firestore, 'users', userCredential.user.uid);
+      const userDocSnap = await getDoc(userDocRef);
+      const userProfile = userDocSnap?.exists() ? userDocSnap.data() : null;
+      const isStaff = userProfile?.role === 'Admin' || userProfile?.role === 'User';
+
       // Redirect to callbackUrl if it exists, otherwise default to role-based dashboard
       if (callbackUrl) {
           router.push(callbackUrl);
       } else {
-          // Note: The RouteGuard in auth-provider will also handle this, 
-          // but we do it here for immediate feedback.
-          // router.push(isStaff ? '/dashboard' : '/donor-portal');
-          // Actually, we don't have isStaff here easily, so we just let RouteGuard handle it if no callback
+          router.push(isStaff ? '/dashboard' : '/donor-portal');
       }
     } catch (error: any) {
       if (error.code === 'auth/configuration-not-found') {

@@ -95,7 +95,7 @@ export function AppFooter() {
                     }}
                 >
                   <Image
-                    src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
+                    src={validLogoUrl.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}` : validLogoUrl}
                     alt="Logo"
                     fill
                     sizes="512px"

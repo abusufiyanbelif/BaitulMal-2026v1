@@ -24,7 +24,7 @@ export function Watermark() {
         <div className="fixed inset-0 -z-10 flex items-center justify-center pointer-events-none mix-blend-multiply overflow-hidden select-none">
             {validLogoUrl && (
                 <img
-                    src={`/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}`}
+                    src={validLogoUrl.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}` : validLogoUrl}
                     alt="BMS3 Watermark"
                     className={cn(
                         "w-auto h-auto max-w-[85vw] max-h-[85vh] object-contain transition-all duration-1000 ease-in-out pointer-events-none",
