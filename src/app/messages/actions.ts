@@ -7,7 +7,25 @@ import { cookies } from 'next/headers';
 import { generateChanges } from '@/lib/utils';
 
 /**
- * Helper to check if the caller is authorized (Admin or specific permission)
+ * Sovereign Admin UIDs — mirrors Firestore isAdmin() rules.
+ * These bypass all permission checks regardless of DB state.
+ */
+const SOVEREIGN_ADMIN_UIDS = [
+    'cyMl1lQME0Yur1YS3VCms1AvrOJ2',
+    'S5efNV5jpTPoxYNv6SnAlv3jNPO2',
+    '3gKwUE2JrBT8wngoUxTTN6tLJk03',
+];
+
+const SOVEREIGN_ADMIN_EMAILS = [
+    'baitulmalss.solapur@gmail.com',
+    'abusufiyan.belif@gmail.com',
+    'maazshaikh.official@gmail.com',
+    'admin@example.com',
+];
+
+/**
+ * Helper to check if the caller is authorized (Admin or specific permission).
+ * Mirrors the Firestore isAdmin() sovereign bypass logic for consistency.
  */
 async function checkAuth(requiredModule?: string, requiredPerm?: string) {
     const { adminAuth, adminDb } = getAdminServices();
@@ -21,6 +39,15 @@ async function checkAuth(requiredModule?: string, requiredPerm?: string) {
 
     try {
         const decodedToken = await adminAuth.verifySessionCookie(sessionCookie);
+
+        // --- SOVEREIGN BYPASS (Layer 1 & 2: UID + Email — no DB read) ---
+        if (SOVEREIGN_ADMIN_UIDS.includes(decodedToken.uid) ||
+            (decodedToken.email && SOVEREIGN_ADMIN_EMAILS.includes(decodedToken.email))) {
+            console.log(`checkAuth: Sovereign admin bypass for UID: ${decodedToken.uid}`);
+            return { isAuthorized: true, user: { role: 'Admin', id: decodedToken.uid } };
+        }
+
+        // --- DB ROLE CHECK (Layer 3: Firestore profile) ---
         const userSnap = await adminDb.collection('users').doc(decodedToken.uid).get();
         const userData = userSnap.data();
 

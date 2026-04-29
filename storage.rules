@@ -1,7 +1,182 @@
 rules_version = '2';
-service cloud.storage {
+service firebase.storage {
   match /b/{bucket}/o {
-    allow read: if true;
-    allow write: if request.auth != null;
+
+    // =========================================================================
+    // HELPER FUNCTIONS
+    // =========================================================================
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /** Fetch user document from Firestore (incurs 1 read). */
+    function getUserData() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data;
+    }
+
+    /** Check if the user document exists in Firestore. */
+    function userDocExists() {
+      return firestore.exists(/databases/(default)/documents/users/$(request.auth.uid));
+    }
+
+    /**
+     * SOVEREIGN ADMIN CHECK — Multi-layer, mirrors Firestore rules.
+     * Layer 1: Hardcoded UID allowlist (no Firestore read)
+     * Layer 2: Email token claim (no Firestore read)
+     * Layer 3: Firestore role field (fallback, 1 read)
+     */
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.uid in [
+          'cyMl1lQME0Yur1YS3VCms1AvrOJ2',
+          'S5efNV5jpTPoxYNv6SnAlv3jNPO2',
+          '3gKwUE2JrBT8wngoUxTTN6tLJk03'
+        ] ||
+        (request.auth.token.email != null && request.auth.token.email in [
+          'baitulmalss.solapur@gmail.com',
+          'abusufiyan.belif@gmail.com',
+          'maazshaikh.official@gmail.com',
+          'admin@example.com'
+        ]) ||
+        (userDocExists() && getUserData().get('role', 'User') == 'Admin')
+      );
+    }
+
+    /**
+     * Staff check — Admin or active User-role member.
+     */
+    function isStaff() {
+      return isAdmin() || (
+        isSignedIn() &&
+        userDocExists() &&
+        getUserData().get('role', '') == 'User' &&
+        getUserData().get('status', '') == 'Active'
+      );
+    }
+
+    /** Path-based ownership check. */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    /**
+     * Granular module permission check.
+     * Always passes for Admin. Staff must have explicit permission.
+     */
+    function hasPermission(module, permission) {
+      return isAdmin() || (
+        isSignedIn() &&
+        userDocExists() &&
+        getUserData().get('status', '') == 'Active' &&
+        getUserData().get('permissions', {})[module].get(permission, false) == true
+      );
+    }
+
+
+    // Covers: settings/branding/logo.png, settings/payment/qr_code.png,
+    //         settings/info/donation_types/*.png, etc.
+    // =========================================================================
+
+    match /settings/{allPaths=**} {
+      allow read: if true; // Public branding assets
+      allow write: if isAdmin() || hasPermission('settings', 'update');
+    }
+
+    // =========================================================================
+    // CAMPAIGNS MODULE
+    // Campaign images, document uploads, beneficiary ID proofs.
+    // Covers: campaigns/{campaignId}/background.png
+    //         campaigns/{campaignId}/documents/{filename}
+    // =========================================================================
+
+    match /campaigns/{campaignId}/{allPaths=**} {
+      allow read: if true; // Public campaign assets
+      allow write: if isAdmin() ||
+                    hasPermission('campaigns', 'update') ||
+                    hasPermission('campaigns', 'create') ||
+                    isStaff();
+    }
+
+    // =========================================================================
+    // LEADS MODULE
+    // Lead images, document uploads.
+    // Covers: leads/{leadId}/background.png
+    //         leads/{leadId}/documents/{filename}
+    // =========================================================================
+
+    match /leads/{leadId}/{allPaths=**} {
+      allow read: if true; // Public lead assets
+      allow write: if isAdmin() ||
+                    hasPermission('leads-members', 'update') ||
+                    hasPermission('leads-members', 'create') ||
+                    hasPermission('leads', 'update') ||
+                    hasPermission('leads', 'create') ||
+                    isStaff();
+    }
+
+    // =========================================================================
+    // DONATIONS MODULE
+    // Payment screenshots, transaction receipts.
+    // Covers: donations/{donationId}/{timestamp}_{transactionId}.png
+    // =========================================================================
+
+    match /donations/{donationId}/{allPaths=**} {
+      allow read: if true; // Public donation receipt images
+      allow write: if isSignedIn(); // Any signed-in user can upload donation proof
+    }
+
+    // =========================================================================
+    // BENEFICIARIES MODULE
+    // Beneficiary ID proof images.
+    // Covers: beneficiaries/{beneficiaryId}/id_proof.png
+    // =========================================================================
+
+    match /beneficiaries/{beneficiaryId}/{allPaths=**} {
+      allow read: if isStaff(); // Sensitive — staff only
+      allow write: if isAdmin() ||
+                    hasPermission('beneficiaries', 'update') ||
+                    hasPermission('beneficiaries', 'create') ||
+                    isStaff();
+    }
+
+    // =========================================================================
+    // USER PROFILES
+    // ID proof uploads for staff/admin users.
+    // Covers: users/{userId}/id_proof.png
+    //         users/{userId}/id_proof.jpg (extension variants)
+    // =========================================================================
+
+    match /users/{userId}/{allPaths=**} {
+      // User can read their own files; Admin and Staff can read all
+      allow read: if isOwner(userId) || isStaff();
+      // User can write their own profile files; Admin/Staff can write any
+      allow write: if isOwner(userId) || isAdmin() || hasPermission('users', 'update');
+    }
+
+    // =========================================================================
+    // DIAGNOSTICS & TEST UPLOADS
+    // Used by the diagnostics module for storage health checks.
+    // =========================================================================
+
+    match /test/{allPaths=**} {
+      allow read: if isAdmin() || hasPermission('diagnostics', 'read');
+      allow write: if isAdmin() || hasPermission('diagnostics', 'read');
+    }
+
+    match /diagnostics/{allPaths=**} {
+      allow read: if isAdmin() || hasPermission('diagnostics', 'read');
+      allow write: if isAdmin();
+    }
+
+    // =========================================================================
+    // PUBLIC ASSETS (catch-all for any other public files)
+    // =========================================================================
+
+    match /public/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
   }
 }

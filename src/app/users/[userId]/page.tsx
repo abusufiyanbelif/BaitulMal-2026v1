@@ -300,11 +300,11 @@ export default function UserDetailsPage() {
         setIsEditMode(false);
     } catch (serverError: any) {
         console.error("CRITICAL BATCH COMMIT ERROR:", serverError);
-        errorEmitter.emit('permission-error', new FirestorePermissionError({
-            path: `users/${userId} and donors/${userId}`,
-            operation: 'update',
-            requestResourceData: updateData,
-        }));
+        toast({
+            title: 'Update Failed',
+            description: serverError.message || 'An unexpected server error occurred during update.',
+            variant: 'destructive',
+        });
     } finally {
         setIsSubmitting(false);
     }

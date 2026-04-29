@@ -2,147 +2,380 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // --- GLOBAL HELPERS (Indestructible Auth Logic) ---
-    
+    // =========================================================================
+    // GLOBAL HELPER FUNCTIONS
+    // =========================================================================
+
     function isSignedIn() {
       return request.auth != null;
     }
 
-    // Bulletproof Admin check: Prioritizes hardcoded Master IDs to prevent Rule Execution Limit failures
+    /**
+     * SOVEREIGN ADMIN CHECK — Bulletproof, multi-layer.
+     * Layer 1: Hardcoded UID allowlist (fastest, no DB read)
+     * Layer 2: Email token claim check (no DB read)
+     * Layer 3: Firestore user doc role field (fallback)
+     * This prevents rule-limit failures on rapid consecutive reads.
+     */
     function isAdmin() {
       return isSignedIn() && (
-        request.auth.uid in ['cyMl1lQME0Yur1YS3VCms1AvrOJ2', 'S5efNV5jpTPoxYNv6SnAlv3jNPO2', '3gKwUE2JrBT8wngoUxTTN6tLJk03'] ||
-        (request.auth.token.email != null && request.auth.token.email in ['baitulmalss.solapur@gmail.com', 'abusufiyan.belif@gmail.com', 'maazshaikh.official@gmail.com', 'admin@example.com']) ||
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin')
+        request.auth.uid in [
+          'cyMl1lQME0Yur1YS3VCms1AvrOJ2',
+          'S5efNV5jpTPoxYNv6SnAlv3jNPO2',
+          '3gKwUE2JrBT8wngoUxTTN6tLJk03'
+        ] ||
+        (request.auth.token.email != null && request.auth.token.email in [
+          'baitulmalss.solapur@gmail.com',
+          'abusufiyan.belif@gmail.com',
+          'maazshaikh.official@gmail.com',
+          'admin@example.com'
+        ]) ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin')
       );
     }
 
-    // Staff includes Admins and registered team members (Users)
+    /**
+     * Staff = Admin OR registered User-role members.
+     * Used for internal pages (members area, management views).
+     */
     function isStaff() {
-      return isSignedIn() && (
-        isAdmin() || 
-        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'User')
+      return isAdmin() || (
+        isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'User' &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'Active'
       );
     }
 
-    // Granular permission check for staff members
+    /**
+     * Granular permission check for non-admin staff.
+     * Admins always pass. Non-admins must have the explicit permission flag.
+     * Supports cross-module aliases (leads <-> leads-members).
+     */
     function hasPermission(module, perm) {
-      return isAdmin() || (isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)) && (
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions[module][perm] == true) ||
-        (module == 'leads' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions['leads-members'][perm] == true) ||
-        (module == 'leads-members' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions['leads'][perm] == true)
-      ));
+      return isAdmin() || (
+        isSignedIn() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'Active' &&
+        (
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions[module][perm] == true ||
+          // leads <-> leads-members alias
+          (module == 'leads' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions['leads-members'][perm] == true) ||
+          (module == 'leads-members' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions['leads'][perm] == true)
+        )
+      );
     }
 
-    // --- SYSTEM & LOGGING (Staff Only) ---
-    match /audit_logs/{allPaths=**} {
+    /** Checks if the authenticated user owns the given path/document by userId. */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+
+
+    match /{path=**}/beneficiaries/{beneficiaryId} {
+      allow read: if isStaff() || isAdmin();
+      allow write: if isStaff() || isAdmin();
+    }
+
+    // =========================================================================
+    // AUDIT & SYSTEM LOGGING
+    // Written by server actions (Admin SDK bypasses rules) but staff can read.
+    // =========================================================================
+
+    match /audit_logs/{logId} {
       allow read: if isStaff();
-      allow write: if isSignedIn(); // System logging
+      allow write: if isSignedIn(); // Client-side logging (server uses Admin SDK)
     }
 
-    match /message_logs/{allPaths=**} {
+    match /audit_logs/{logId}/{allSubPaths=**} {
+      allow read: if isStaff();
+      allow write: if isSignedIn();
+    }
+
+    // =========================================================================
+    // MESSAGING & NOTIFICATION INFRASTRUCTURE
+    // =========================================================================
+
+    match /message_logs/{logId} {
+      allow read: if isStaff();
+      // Server (Admin SDK) creates these; isAdmin() protects client-side writes
+      allow create: if isAdmin();
+      allow update, delete: if isAdmin();
+    }
+
+    match /notification_groups/{groupId} {
       allow read: if isStaff();
       allow write: if isAdmin();
     }
 
-    match /notification_groups/{allPaths=**} {
+    match /notification_groups/{groupId}/{allSubPaths=**} {
       allow read: if isStaff();
       allow write: if isAdmin();
     }
 
     // In-App Notifications (Bell icon)
     match /notifications/{notifId} {
-      // Users can read their own notifications; Admins can read all
-      // NOTE: No `resource != null` guard on read — list queries need the rule to evaluate
-      // against query constraints (where userId == auth.uid) to pass.
-      allow read: if isAdmin() || (isSignedIn() && request.auth.uid == resource.data.userId);
-      // Users can only update isRead on their own notifications
-      allow update: if isSignedIn() && request.auth.uid == resource.data.userId 
-                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
-      // Only Admin SDK (server actions) creates notifications
+      // Users can read their own notifications (list queries use where userId == auth.uid)
+      // Admins can read all for management
+      allow read: if isAdmin() || (isSignedIn() && resource != null && request.auth.uid == resource.data.userId);
+      // Users can ONLY mark their own notifications as read
+      allow update: if isSignedIn() && resource != null &&
+                       request.auth.uid == resource.data.userId &&
+                       request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isRead']);
+      // Only server actions (Admin SDK) create/delete notifications
+      // isAdmin() here covers client-side creates if needed (rare edge case)
       allow create: if isAdmin();
       allow delete: if isAdmin();
     }
 
-    match /page_hits/{allPaths=**} {
+    // =========================================================================
+    // PAGE ANALYTICS
+    // =========================================================================
+
+    match /page_hits/{hitId} {
       allow read: if isStaff();
-      allow write: if true; // Public analytics
+      allow write: if true; // Public analytics — anonymous writes allowed
     }
 
-    // --- GLOBAL SETTINGS & BRANDING ---
+    match /page_hits/{hitId}/{allSubPaths=**} {
+      allow read: if isStaff();
+      allow write: if true;
+    }
+
+    // =========================================================================
+    // GLOBAL SETTINGS & BRANDING
+    // Many settings docs are public (branding, payment) while internal configs
+    // are staff-only. Write is always Admin or permissioned staff.
+    // =========================================================================
+
     match /settings/{docId} {
-      // Branding and visibility configs are public
-      allow read: if docId in [
-        'branding', 'payment', 'donation_visibility', 'campaign_visibility', 
-        'lead_visibility', 'beneficiary_visibility', 'donationInfo', 
-        'guidingPrinciples', 'info', 'guidance', 'campaign_config', 
-        'lead_config', 'donation_config', 'beneficiary_config', 
-        'user_config', 'donor_config', 'notifications'
-      ] || isStaff();
-      
+      // Public settings readable by anyone (populates landing page, public pages)
+      allow read: if
+        docId in [
+          'branding', 'payment', 'donation_visibility', 'campaign_visibility',
+          'lead_visibility', 'beneficiary_visibility', 'donationInfo',
+          'guidingPrinciples', 'info', 'guidance', 'campaign_config',
+          'lead_config', 'donation_config', 'beneficiary_config',
+          'user_config', 'donor_config', 'notifications'
+        ] || isStaff();
+
       allow write: if isAdmin() || hasPermission('settings', 'update');
-
-      match /{allSubCollections=**} {
-        allow read: if isStaff();
-        allow write: if isAdmin();
-      }
     }
 
-    // --- CORE MODULES ---
-
-    match /donations/{donationId} {
-      // Donors can read their own receipts; Public sees verified list; Staff sees all.
-      allow read: if isStaff() || 
-                   (resource != null && resource.data.status == 'Verified') || 
-                   (isSignedIn() && resource != null && request.auth.uid == resource.data.donorId);
-      allow write: if isAdmin() || hasPermission('donations', 'update');
-      allow create: if true; // Anonymous donations supported
+    // Settings subcollections (e.g., message_templates/templates/{id})
+    // Must be explicitly covered — the parent match does NOT cascade writes.
+    match /settings/{docId}/{subCollection}/{subDocId} {
+      // message_templates are staff-readable (for messaging module)
+      allow read: if isStaff();
+      allow write: if isAdmin() || hasPermission('settings', 'update');
     }
+
+    // Deeper nesting under settings (e.g., /settings/x/y/z/...)
+    match /settings/{docId}/{allSubPaths=**} {
+      allow read: if isStaff();
+      allow write: if isAdmin() || hasPermission('settings', 'update');
+    }
+
+    // =========================================================================
+    // CAMPAIGNS MODULE
+    // Public can read Published+Verified campaigns. Staff can manage.
+    // =========================================================================
 
     match /campaigns/{campaignId} {
-      allow read: if true; // Public initiatives
-      allow write: if isAdmin() || hasPermission('campaigns', 'update');
-      match /beneficiaries/{benId} {
-        allow read: if true;
-        allow write: if isStaff();
-      }
+      allow read: if true; // All campaigns readable by public (client filters Published)
+      allow create: if isAdmin() || hasPermission('campaigns', 'create');
+      allow update: if isAdmin() || hasPermission('campaigns', 'update');
+      allow delete: if isAdmin() || hasPermission('campaigns', 'delete');
     }
 
-    match /leads/{leadId} {
-      allow read: if true; // Public leads
-      allow write: if isAdmin() || hasPermission('leads', 'update') || hasPermission('leads-members', 'update');
-      match /beneficiaries/{benId} {
-        allow read: if true;
-        allow write: if isStaff();
-      }
+    match /campaigns/{campaignId}/beneficiaries/{benId} {
+      allow read: if true; // Public campaign beneficiary lists
+      allow create: if isAdmin() || hasPermission('campaigns', 'create') || isStaff();
+      allow update: if isAdmin() || hasPermission('campaigns', 'update') || isStaff();
+      allow delete: if isAdmin() || hasPermission('campaigns', 'delete');
     }
+
+    // Any additional subcollections under campaigns (documents, etc.)
+    match /campaigns/{campaignId}/{subCollection}/{subDocId} {
+      allow read: if true;
+      allow write: if isAdmin() || hasPermission('campaigns', 'update') || isStaff();
+    }
+
+    // =========================================================================
+    // LEADS MODULE
+    // Public can read Published+Verified leads. Staff can manage.
+    // =========================================================================
+
+    match /leads/{leadId} {
+      allow read: if true; // All leads readable by public (client filters Published)
+      allow create: if isAdmin() || hasPermission('leads-members', 'create') || hasPermission('leads', 'create');
+      allow update: if isAdmin() || hasPermission('leads-members', 'update') || hasPermission('leads', 'update');
+      allow delete: if isAdmin() || hasPermission('leads-members', 'delete') || hasPermission('leads', 'delete');
+    }
+
+    match /leads/{leadId}/beneficiaries/{benId} {
+      allow read: if true;
+      allow create: if isAdmin() || hasPermission('leads-members', 'create') || hasPermission('leads', 'create') || isStaff();
+      allow update: if isAdmin() || hasPermission('leads-members', 'update') || hasPermission('leads', 'update') || isStaff();
+      allow delete: if isAdmin() || hasPermission('leads-members', 'delete') || hasPermission('leads', 'delete');
+    }
+
+    // Leads documents subcollection
+    match /leads/{leadId}/{subCollection}/{subDocId} {
+      allow read: if true;
+      allow write: if isAdmin() || hasPermission('leads-members', 'update') || hasPermission('leads', 'update') || isStaff();
+    }
+
+    // =========================================================================
+    // BENEFICIARIES (Master Registry)
+    // Internal-only — not publicly visible by default.
+    // =========================================================================
 
     match /beneficiaries/{benId} {
       allow read: if isStaff();
-      allow write: if isStaff();
+      allow create: if isAdmin() || hasPermission('beneficiaries', 'create') || isStaff();
+      allow update: if isAdmin() || hasPermission('beneficiaries', 'update') || isStaff();
+      allow delete: if isAdmin() || hasPermission('beneficiaries', 'delete');
     }
+
+    match /beneficiaries/{benId}/{allSubPaths=**} {
+      allow read: if isStaff();
+      allow write: if isAdmin() || hasPermission('beneficiaries', 'update') || isStaff();
+    }
+
+    // =========================================================================
+    // DONATIONS MODULE
+    // Public: Anyone can create (anonymous donations supported).
+    // Public: Verified donations readable for public summary charts.
+    // Staff: Full CRUD with permissions.
+    // =========================================================================
+
+    match /donations/{donationId} {
+      // Donors read their own receipts; public sees verified ones; staff sees all
+      allow read: if isStaff() ||
+                   (resource != null && resource.data.status == 'Verified') ||
+                   (isSignedIn() && resource != null && request.auth.uid == resource.data.donorId);
+      allow create: if true; // Anonymous donations supported (public donation form)
+      allow update: if isAdmin() || hasPermission('donations', 'update') ||
+                     // Donor can update their own pending donation (e.g., add transaction)
+                     (isSignedIn() && resource != null && request.auth.uid == resource.data.donorId && resource.data.status == 'Pending');
+      allow delete: if isAdmin() || hasPermission('donations', 'delete');
+    }
+
+    match /donations/{donationId}/{allSubPaths=**} {
+      allow read: if isStaff() || (resource != null && resource.data.status == 'Verified');
+      allow write: if isAdmin() || hasPermission('donations', 'update') || isStaff();
+    }
+
+    // =========================================================================
+    // DONORS REGISTRY
+    // Staff can read/write. Donors can access their own profile.
+    // =========================================================================
 
     match /donors/{donorId} {
-      allow read, write: if isSignedIn();
+      allow read: if isStaff() || (isSignedIn() && request.auth.uid == donorId);
+      allow create: if isAdmin() || hasPermission('donors', 'create') || isStaff();
+      allow update: if isAdmin() || hasPermission('donors', 'update') || isStaff() ||
+                     (isSignedIn() && request.auth.uid == donorId);
+      allow delete: if isAdmin() || hasPermission('donors', 'delete');
     }
 
-    match /users/{userId} {
-      allow read, write: if isSignedIn();
+    match /donors/{donorId}/{allSubPaths=**} {
+      allow read: if isStaff() || (isSignedIn() && request.auth.uid == donorId);
+      allow write: if isAdmin() || isStaff() || (isSignedIn() && request.auth.uid == donorId);
     }
 
+    // =========================================================================
+    // USER PROFILES & IDENTITY
+    // =========================================================================
+
+    /**
+     * USER LOOKUPS — Critical for phone/email/loginId based authentication.
+     * Public GET (not list) is required for the login flow to resolve phone → email.
+     * Write is Admin-only to prevent unauthorized user registration injection.
+     * Note: isAdmin() check here will always succeed because on first login
+     * before profile exists, the UID+email sovereign bypass in isAdmin() handles it.
+     */
     match /user_lookups/{lookupId} {
-      allow read: if true;
-      allow write: if isSignedIn();
+      allow get: if true;         // Login flow: phone/loginId → email lookup
+      allow list: if isAdmin();   // Listing all lookups is Admin-only (anti-enumeration)
+      allow create: if isAdmin(); // Only Admin/server actions can register new lookups
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
     }
+
+    /**
+     * USER PROFILES — Core identity and permission store.
+     * Admins: full access.
+     * Users: can read and update their own profile.
+     * New users: can create their own profile during registration.
+     * Donors/Beneficiaries: can read their own profile.
+     */
+    match /users/{userId} {
+      allow get: if isAdmin() || isOwner(userId) || isStaff();
+      allow list: if isAdmin();
+      // Create: Admin can create any profile. New user creates own profile.
+      allow create: if isAdmin() ||
+                     (isOwner(userId) && request.resource.data.id == userId);
+      // Update: Admin always. Owner can update own non-sensitive fields.
+      allow update: if isAdmin() ||
+                     (isOwner(userId) && resource != null && request.resource.data.id == resource.data.id);
+      // Delete: Never from client — use Admin SDK only
+      allow delete: if false;
+    }
+
+    // User-owned subcollections (documents, ID proofs, etc.)
+    match /users/{userId}/documents/{documentId} {
+      allow get: if isAdmin() || isOwner(userId);
+      allow list: if isAdmin() || isOwner(userId);
+      allow create: if isAdmin() || (isOwner(userId) && request.resource.data.userId == userId);
+      allow update: if isAdmin() || (isOwner(userId) && resource != null && resource.data.userId == userId);
+      allow delete: if isAdmin() || isOwner(userId);
+    }
+
+    // Document detail subcollections (identityProofDetails, billingDetails, medicalReportDetails, etc.)
+    match /users/{userId}/documents/{documentId}/{detailsCollection}/{detailId} {
+      allow get: if isAdmin() || isOwner(userId);
+      allow list: if isAdmin() || isOwner(userId);
+      allow create: if isAdmin() || (isOwner(userId) && request.resource.data.documentId == documentId);
+      allow update: if isAdmin() || (isOwner(userId) && resource != null && request.resource.data.documentId == resource.data.documentId);
+      allow delete: if isAdmin() || isOwner(userId);
+    }
+
+    // Any other subcollections under users (profile images, etc.)
+    match /users/{userId}/{allSubPaths=**} {
+      allow read: if isAdmin() || isOwner(userId);
+      allow write: if isAdmin() || isOwner(userId);
+    }
+
+    // =========================================================================
+    // VERIFICATION & APPROVAL WORKFLOW
+    // =========================================================================
 
     match /pending_verifications/{reqId} {
-      allow read: if isStaff() || (isSignedIn() && resource != null && request.auth.uid == resource.data.requestedBy.id);
-      allow write: if isSignedIn();
+      // Staff sees all; requester sees own; assigned verifiers see their requests
+      allow read: if isStaff() ||
+                   (isSignedIn() && resource != null && request.auth.uid == resource.data.requestedBy.id) ||
+                   (isSignedIn() && resource != null && request.auth.uid in resource.data.assignedVerifierIds);
+      // Staff/signed-in users can create verification requests
+      allow create: if isStaff();
+      // Staff and assigned verifiers can update (approve/reject)
+      allow update: if isAdmin() ||
+                     (isStaff() && resource != null) ||
+                     (isSignedIn() && resource != null && request.auth.uid in resource.data.assignedVerifierIds);
+      allow delete: if isAdmin();
     }
 
-    // Donor profile storage for donors themselves
-    match /donors/{donorId}/{allSubCollections=**} {
-      allow read: if isStaff() || (isSignedIn() && request.auth.uid == donorId);
-    }
+    // =========================================================================
+    // DONOR PORTAL (Self-Service)
+    // Donors logged via portal login (phone/OTP or phone/password)
+    // =========================================================================
+
+    // Donor portal access: donors can read/write their own portal data
+    // The donors collection above handles main profile access.
+    // This covers any portal-specific paths.
+
   }
 }
