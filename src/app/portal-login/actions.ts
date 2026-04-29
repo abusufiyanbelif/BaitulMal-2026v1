@@ -18,7 +18,10 @@ export async function authenticateSupporterAction(identifier: string, password: 
         let targetRole: string = 'Donor';
 
         // 1. Search in Users collection (Centralized Accounts)
-        const userByPhone = await adminDb.collection('users').where('phone', '==', identifier).limit(1).get();
+        let userByPhone = await adminDb.collection('users').where('phone', '==', identifier).limit(1).get();
+        if (userByPhone.empty) {
+            userByPhone = await adminDb.collection('users').where('phones', 'array-contains', identifier).limit(1).get();
+        }
         const userById = await adminDb.collection('users').doc(identifier).get();
         const userByLoginId = await adminDb.collection('users').where('loginId', '==', identifier).limit(1).get();
 
@@ -41,7 +44,10 @@ export async function authenticateSupporterAction(identifier: string, password: 
         }
 
         // 2. Search in Donors collection (Profile-based Auth)
-        const donorByPhone = await adminDb.collection('donors').where('phone', '==', identifier).limit(1).get();
+        let donorByPhone = await adminDb.collection('donors').where('phone', '==', identifier).limit(1).get();
+        if (donorByPhone.empty) {
+            donorByPhone = await adminDb.collection('donors').where('phones', 'array-contains', identifier).limit(1).get();
+        }
         const donorById = await adminDb.collection('donors').doc(identifier).get();
 
         if (!donorByPhone.empty) {
@@ -59,7 +65,10 @@ export async function authenticateSupporterAction(identifier: string, password: 
         }
 
         // 3. Search in Beneficiaries collection
-        const benByPhone = await adminDb.collection('beneficiaries').where('phone', '==', identifier).limit(1).get();
+        let benByPhone = await adminDb.collection('beneficiaries').where('phone', '==', identifier).limit(1).get();
+        if (benByPhone.empty) {
+            benByPhone = await adminDb.collection('beneficiaries').where('phones', 'array-contains', identifier).limit(1).get();
+        }
         const benById = await adminDb.collection('beneficiaries').doc(identifier).get();
 
         if (!benByPhone.empty) {

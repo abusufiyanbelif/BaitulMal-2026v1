@@ -56,7 +56,7 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/use-session';
-import { useAuth, useFirestore, useMemoFirebase, useDoc, doc, collection, getDocs, query, where, limit } from '@/firebase';
+import { useAuth, useFirestore, useMemoFirebase, useDoc, doc, collection, getDocs, query, where, limit, getDoc, updateDoc, arrayUnion } from '@/firebase';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { cn } from '@/lib/utils';
@@ -115,7 +115,7 @@ interface DonationFormProps {
   isReadOnly?: boolean;
 }
 
-const TransactionItem = ({ control, index, remove, register, setValue, getValues, canRemove, isReadOnly, mandatoryFields }: { control: Control<DonationFormData>, index: number, remove: (index: number) => void, register: UseFormRegister<DonationFormData>, setValue: UseFormSetValue<DonationFormData>, getValues: UseFormGetValues<DonationFormData>, canRemove: boolean, isReadOnly: boolean, mandatoryFields: any }) => {
+const TransactionItem = ({ control, index, remove, register, setValue, getValues, canRemove, isReadOnly, mandatoryFields, onScanMatch }: { control: Control<DonationFormData>, index: number, remove: (index: number) => void, register: UseFormRegister<DonationFormData>, setValue: UseFormSetValue<DonationFormData>, getValues: UseFormGetValues<DonationFormData>, canRemove: boolean, isReadOnly: boolean, mandatoryFields: any, onScanMatch?: (scannedData: { senderName?: string; upiId?: string }) => void }) => {
     const { toast } = useToast();
     const [preview, setPreview] = useState<string | null>(null);
     const [isViewerOpen, setIsViewerOpen] = useState(false);
@@ -167,6 +167,13 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                 if (response.date) setValue(`transactions.${index}.date`, response.date, { shouldDirty: true });
                 if (response.upiId) setValue(`transactions.${index}.upiId`, response.upiId, { shouldDirty: true });
                 if (response.receiverName && !getValues('receiverName')) setValue('receiverName', response.receiverName, { shouldDirty: true });
+                
+                if (onScanMatch) {
+                    onScanMatch({
+                        senderName: response.senderName,
+                        upiId: response.upiId
+                    });
+                }
                 toast({ title: 'Scan Successful', description: 'Transaction Details Extracted.', variant: "success"});
             } catch (error: any) {
                 toast({ title: 'Scan Failed', variant: 'destructive'});
@@ -382,6 +389,17 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
 
     setIsSubmitting(true);
     try {
+        if (data.donorId) {
+            // Sync multiple UPIs & Phone
+            if (data.donorPhone) {
+                await syncDonorIdentities(data.donorId, { phone: data.donorPhone });
+            }
+            for (const tx of data.transactions) {
+                if (tx.upiId) {
+                    await syncDonorIdentities(data.donorId, { upiId: tx.upiId });
+                }
+            }
+        }
         await onSubmit(data);
     } finally {
         setIsSubmitting(false);
@@ -393,6 +411,92 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     setValue('donorPhone', donor.phone, { shouldDirty: true, shouldValidate: true });
     setValue('donorId', donor.id, { shouldDirty: true });
     toast({ title: 'Identity Verified', variant: 'success' });
+  };
+
+  const syncDonorIdentities = async (id: string, details: { phone?: string; upiId?: string }) => {
+    if (!firestore || !id) return;
+    try {
+        const donorRef = doc(firestore, 'donors', id);
+        const donorSnap = await getDoc(donorRef);
+        if (donorSnap.exists()) {
+            const donorData = donorSnap.data() as Donor;
+            const updates: any = {};
+            
+            if (details.upiId) {
+                const lowerUpi = details.upiId.toLowerCase().trim();
+                const existingUpis = donorData.upiIds || [];
+                if (!existingUpis.map(u => u.toLowerCase().trim()).includes(lowerUpi)) {
+                    updates.upiIds = arrayUnion(details.upiId);
+                }
+            }
+            
+            if (details.phone) {
+                const cleanPhone = details.phone.replace(/\D/g, '');
+                if (cleanPhone.length >= 10) {
+                    const existingPhones = donorData.phones || (donorData.phone ? [donorData.phone] : []);
+                    if (!existingPhones.map(p => p.replace(/\D/g, '')).includes(cleanPhone)) {
+                        updates.phones = arrayUnion(details.phone);
+                    }
+                }
+            }
+
+            if (Object.keys(updates).length > 0) {
+                await updateDoc(donorRef, updates);
+                toast({ title: 'Profile Extended', description: 'Updated multiple profile records with new verified handles.', variant: 'info' });
+            }
+        }
+    } catch (e) {
+        console.error("Failed to sync donor identities:", e);
+    }
+  };
+
+  const handleScanMatch = async (scannedData: { senderName?: string; upiId?: string }) => {
+    if (!firestore) return;
+    setIsVerifying(true);
+    try {
+        const querySnapshot = await getDocs(query(collection(firestore, 'donors')));
+        const donors: Donor[] = [];
+        querySnapshot.forEach((doc) => {
+            donors.push({ id: doc.id, ...doc.data() } as Donor);
+        });
+
+        const matches: Donor[] = [];
+        const lowerSenderName = scannedData.senderName?.toLowerCase().trim() || '';
+        const lowerUpiId = scannedData.upiId?.toLowerCase().trim() || '';
+        
+        donors.forEach(d => {
+            let isMatch = false;
+            if (lowerUpiId && d.upiIds?.some(u => u.toLowerCase().trim() === lowerUpiId)) {
+                isMatch = true;
+            } else if (lowerSenderName && (d.name || '').toLowerCase().includes(lowerSenderName)) {
+                isMatch = true;
+            }
+            if (isMatch) matches.push(d);
+        });
+
+        if (matches.length === 1) {
+            const matchedDonor = matches[0];
+            setValue('donorId', matchedDonor.id, { shouldDirty: true });
+            setValue('donorName', matchedDonor.name, { shouldDirty: true, shouldValidate: true });
+            setValue('donorPhone', matchedDonor.phone, { shouldDirty: true, shouldValidate: true });
+            toast({ title: 'Donor Auto-Linked', description: `Matched to profile: ${matchedDonor.name}`, variant: 'success' });
+            
+            await syncDonorIdentities(matchedDonor.id, { upiId: scannedData.upiId });
+            
+        } else if (matches.length > 1) {
+            toast({ title: 'Multiple Profiles Found', description: 'Showing matches for selection.', variant: 'info' });
+            if (scannedData.senderName) {
+                setValue('donorName', scannedData.senderName, { shouldDirty: true });
+            }
+            setIsDonorSearchOpen(true);
+        } else {
+            toast({ title: 'No Automatic Match', description: 'No exact donor profile matching the scan details found.', variant: 'info' });
+        }
+    } catch (err) {
+        console.error("Auto matching error:", err);
+    } finally {
+        setIsVerifying(false);
+    }
   };
 
   const verifyDonorByPhone = useCallback(async () => {
@@ -467,7 +571,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                         )}/>
                         <div className="space-y-4">
                             {transactionFields.map((field, index) => (
-                                <TransactionItem key={field.id} control={control} index={index} register={register} setValue={setValue} getValues={getValues} remove={removeTransaction} canRemove={transactionFields.length > 1} isReadOnly={isReadOnly} mandatoryFields={mandatoryFields} />
+                                <TransactionItem key={field.id} control={control} index={index} register={register} setValue={setValue} getValues={getValues} remove={removeTransaction} canRemove={transactionFields.length > 1} isReadOnly={isReadOnly} mandatoryFields={mandatoryFields} onScanMatch={handleScanMatch} />
                             ))}
                         </div>
                         {!isReadOnly && (
