@@ -53,7 +53,7 @@ export async function extractDynamicFormFromImage(
 
 const prompt = ai.definePrompt({
   name: 'extractDynamicFormPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-2.5-flash',
   input: { schema: ExtractDynamicFormInputSchema },
   output: { schema: ExtractDynamicFormOutputSchema },
   prompt: `You are an expert in document analysis and data extraction.

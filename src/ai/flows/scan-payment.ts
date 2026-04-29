@@ -37,7 +37,7 @@ export async function scanPaymentScreenshot(
 
 const prompt = ai.definePrompt({
   name: 'scanPaymentScreenshotPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-2.5-flash',
   input: { schema: ScanPaymentScreenshotInputSchema },
   output: { schema: ScanPaymentScreenshotOutputSchema },
   prompt: `You are an expert OCR agent specializing in parsing financial transaction screenshots from Indian payment apps like Google Pay and Paytm. Your task is to analyze the provided image and extract the following details precisely.

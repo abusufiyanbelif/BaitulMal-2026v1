@@ -247,7 +247,7 @@ export default function PublicLeadSummaryPage() {
         return (
             <main className="container mx-auto p-4 md:p-8 text-center text-primary font-normal">
                 <p className="text-lg text-primary/70 font-normal">This Lead Is Not Available For Public View.</p>
-                <Button asChild className="mt-4 active:scale-95 transition-transform font-bold border-primary/20 text-primary" variant="outline"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button>
+                <Button asChild className="mt-4 active:scale-95 transition-transform font-bold border-primary/20 text-primary" variant="outline"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button>
             </main>
         );
     }
@@ -275,7 +275,7 @@ export default function PublicLeadSummaryPage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
-             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform font-bold border-primary/20 text-primary"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Campaigns</Link></Button></div>
+             <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform font-bold border-primary/20 text-primary"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
             
             <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center cursor-pointer shadow-sm border border-primary/5" onClick={() => lead.imageUrl && handleViewImage(lead.imageUrl, lead.name)}>
                 {lead.imageUrl ? (

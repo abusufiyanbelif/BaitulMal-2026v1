@@ -40,7 +40,7 @@ export async function extractKeyInfoFromAadhaar(
 
 const prompt = ai.definePrompt({
   name: 'extractKeyInfoFromAadhaarPrompt',
-  model: 'googleai/gemini-1.5-flash-latest',
+  model: 'googleai/gemini-2.5-flash',
   input: { schema: ExtractKeyInfoFromAadhaarInputSchema },
   output: { schema: ExtractKeyInfoFromAadhaarOutputSchema },
   prompt: `You are an expert in extracting information from Indian identity documents. Analyze the provided image of an identity card (like an Aadhaar card) and extract the name, date of birth, gender, ID number, and address.
