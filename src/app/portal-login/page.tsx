@@ -117,8 +117,20 @@ export default function PortalLoginPage() {
           if (result.user && result.user.phoneNumber) {
               const res = await exchangeOtpForCustomTokenAction(result.user.phoneNumber);
               if (res.success && res.token) {
-                  await signInWithCustomToken(auth!, res.token);
-                  toast({ title: 'Access Granted', description: `Authenticated as ${res.role}. Entering Portal...`, variant: 'success' });
+                   await signInWithCustomToken(auth!, res.token);
+                   if (typeof window !== 'undefined') {
+                       localStorage.setItem('portal_role', res.role || '');
+                   }
+                   toast({ title: 'Access Granted', description: `Authenticated as ${res.role}. Entering Portal...`, variant: 'success' });
+                   
+                   const isStaff = res.role === 'Admin' || res.role === 'User';
+                   if (isStaff) {
+                       router.push('/dashboard');
+                   } else if (res.role === 'Beneficiary') {
+                       router.push('/beneficiary-portal');
+                   } else {
+                       router.push('/donor-portal');
+                   }
               } else {
                   await auth!.signOut();
                   setLoginError(res.message || 'Authentication Failed.');
@@ -141,7 +153,19 @@ export default function PortalLoginPage() {
           const res = await authenticateSupporterAction(data.identifier, data.password);
           if (res.success && res.token) {
               await signInWithCustomToken(auth!, res.token);
+              if (typeof window !== 'undefined') {
+                  localStorage.setItem('portal_role', res.role || '');
+              }
               toast({ title: 'Access Granted', description: `Authenticated as ${res.role}. Entering Portal...`, variant: 'success' });
+              
+              const isStaff = res.role === 'Admin' || res.role === 'User';
+              if (isStaff) {
+                  router.push('/dashboard');
+              } else if (res.role === 'Beneficiary') {
+                  router.push('/beneficiary-portal');
+              } else {
+                  router.push('/donor-portal');
+              }
           } else {
               setLoginError(res.message || 'Authentication Failed.');
           }

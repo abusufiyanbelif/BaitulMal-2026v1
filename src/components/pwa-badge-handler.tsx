@@ -18,28 +18,28 @@ import type { Donation, Beneficiary, Lead, Campaign } from '@/lib/types';
  * Synchronizes the Home Screen App Icon Badge with institutional data.
  */
 export function PWABadgeHandler() {
-    const { user, userProfile } = useSession();
+    const { user, isStaff } = useSession();
     const { campaignsWithProgress, leadsWithProgress, isLoading: isPublicLoading } = usePublicData();
     const firestore = useFirestore();
 
-    // --- Member Level Queries (Only if logged in) ---
+    // --- Member Level Queries (Only if logged in and Staff) ---
     
     // 1. Unverified Beneficiaries
     const unverifiedBenQuery = useMemoFirebase(() => 
-        (firestore && user) ? query(collection(firestore, 'beneficiaries'), where('status', '!=', 'Verified')) : null, 
-    [firestore, user]);
+        (firestore && user && isStaff) ? query(collection(firestore, 'beneficiaries'), where('status', '!=', 'Verified')) : null, 
+    [firestore, user, isStaff]);
     const { data: unverifiedBen } = useCollection<Beneficiary>(unverifiedBenQuery);
 
     // 2. Pending Donations
     const pendingDonQuery = useMemoFirebase(() => 
-        (firestore && user) ? query(collection(firestore, 'donations'), where('status', '==', 'Pending')) : null, 
-    [firestore, user]);
+        (firestore && user && isStaff) ? query(collection(firestore, 'donations'), where('status', '==', 'Pending')) : null, 
+    [firestore, user, isStaff]);
     const { data: pendingDon } = useCollection<Donation>(pendingDonQuery);
 
     // 3. Unallocated Verified Donations
     const verifiedDonQuery = useMemoFirebase(() => 
-        (firestore && user) ? query(collection(firestore, 'donations'), where('status', '==', 'Verified')) : null, 
-    [firestore, user]);
+        (firestore && user && isStaff) ? query(collection(firestore, 'donations'), where('status', '==', 'Verified')) : null, 
+    [firestore, user, isStaff]);
     const { data: verifiedDon } = useCollection<Donation>(verifiedDonQuery);
 
     const unallocatedCount = useMemo(() => {
@@ -52,20 +52,20 @@ export function PWABadgeHandler() {
 
     // 4. Unverified Initiatives
     const unverifiedLeadsQuery = useMemoFirebase(() => 
-        (firestore && user) ? query(collection(firestore, 'leads'), where('authenticityStatus', '!=', 'Verified')) : null, 
-    [firestore, user]);
+        (firestore && user && isStaff) ? query(collection(firestore, 'leads'), where('authenticityStatus', '!=', 'Verified')) : null, 
+    [firestore, user, isStaff]);
     const { data: unverifiedLeads } = useCollection<Lead>(unverifiedLeadsQuery);
 
     const unverifiedCampsQuery = useMemoFirebase(() => 
-        (firestore && user) ? query(collection(firestore, 'campaigns'), where('authenticityStatus', '!=', 'Verified')) : null, 
-    [firestore, user]);
+        (firestore && user && isStaff) ? query(collection(firestore, 'campaigns'), where('authenticityStatus', '!=', 'Verified')) : null, 
+    [firestore, user, isStaff]);
     const { data: unverifiedCamps } = useCollection<Campaign>(unverifiedCampsQuery);
 
     // --- Calculation Engine ---
 
     const badgeCount = useMemo(() => {
-        if (!user) {
-            // Public View: Ongoing Initiatives
+        if (!user || !isStaff) {
+            // Public/Supporter View: Ongoing Initiatives
             const activeCamps = campaignsWithProgress.filter(c => c.status === 'Active' || c.status === 'Upcoming').length;
             const activeLeads = leadsWithProgress.filter(l => l.status === 'Active' || l.status === 'Upcoming').length;
             return activeCamps + activeLeads;
@@ -77,7 +77,7 @@ export function PWABadgeHandler() {
                    (unverifiedLeads?.length || 0) + 
                    (unverifiedCamps?.length || 0);
         }
-    }, [user, campaignsWithProgress, leadsWithProgress, unverifiedBen, pendingDon, unallocatedCount, unverifiedLeads, unverifiedCamps]);
+    }, [user, isStaff, campaignsWithProgress, leadsWithProgress, unverifiedBen, pendingDon, unallocatedCount, unverifiedLeads, unverifiedCamps]);
 
     // --- API Sync ---
 

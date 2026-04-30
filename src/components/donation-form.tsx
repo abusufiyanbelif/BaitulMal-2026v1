@@ -74,6 +74,8 @@ const formSchema = z.object({
   donorPhone: z.string().optional().or(z.literal('')),
   donorId: z.string().optional(),
   receiverName: z.string().optional(),
+  receiverUpiId: z.string().optional(),
+  receiverBankDetails: z.string().optional(),
   referral: z.string().optional(),
   amount: z.coerce.number(),
   typeSplit: z.array(z.object({
@@ -82,6 +84,7 @@ const formSchema = z.object({
     forFundraising: z.boolean().default(false),
   })).min(1, { message: 'At Least One Category Is Required.'}),
   donationType: z.enum(['Cash', 'Online Payment', 'Check', 'Other']),
+  onlineProvider: z.enum(['Google Pay', 'PhonePe', 'Paytm', 'Amazon Pay', 'WhatsApp Pay', 'Bank Transfer', 'Other']).optional(),
   donationDate: z.string().min(1, { message: "Date Is Required."}),
   contributionFromDate: z.string().optional(),
   contributionToDate: z.string().optional(),
@@ -148,38 +151,70 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
     
     const handleScanScreenshot = async () => {
         const fileList = getValues(`transactions.${index}.screenshotFile`);
-        if (!fileList || fileList.length === 0) {
-            toast({ title: 'No Screenshot', description: 'Please Upload A Screenshot To Scan.', variant: 'destructive' });
-            return;
-        }
+        const existingUrl = getValues(`transactions.${index}.screenshotUrl`);
+        
         setIsScanning(true);
-        const file = fileList[0];
-        const reader = new FileReader();
-        reader.onload = async (e) => {
-            const dataUri = e.target?.result as string;
-            if (!dataUri) { setIsScanning(false); return; }
-            try {
-                const apiResponse = await fetch('/api/scan-payment', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ photoDataUri: dataUri }) });
-                if (!apiResponse.ok) throw new Error('API Request Failed');
-                const response = await apiResponse.json();
-                if (response.amount) setValue(`transactions.${index}.amount`, response.amount, { shouldDirty: true });
-                if (response.transactionId) setValue(`transactions.${index}.transactionId`, response.transactionId, { shouldDirty: true });
-                if (response.date) setValue(`transactions.${index}.date`, response.date, { shouldDirty: true });
-                if (response.upiId) setValue(`transactions.${index}.upiId`, response.upiId, { shouldDirty: true });
-                if (response.receiverName && !getValues('receiverName')) setValue('receiverName', response.receiverName, { shouldDirty: true });
-                
-                if (onScanMatch) {
-                    onScanMatch({
-                        senderName: response.senderName,
-                        upiId: response.upiId
-                    });
-                }
-                toast({ title: 'Scan Successful', description: 'Transaction Details Extracted.', variant: "success"});
-            } catch (error: any) {
-                toast({ title: 'Scan Failed', variant: 'destructive'});
-            } finally { setIsScanning(false); }
-        };
-        reader.readAsDataURL(file);
+        try {
+            let dataUri = '';
+            
+            if (fileList && fileList.length > 0) {
+                const file = fileList[0];
+                dataUri = await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target?.result as string);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            } else if (existingUrl) {
+                const proxyUrl = `/api/image-proxy?url=${encodeURIComponent(existingUrl)}`;
+                const proxyRes = await fetch(proxyUrl);
+                if (!proxyRes.ok) throw new Error('Failed to retrieve existing receipt image');
+                const blob = await proxyRes.blob();
+                dataUri = await new Promise<string>((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target?.result as string);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            } else {
+                toast({ title: 'No Evidence', description: 'Please upload or verify an existing screenshot.', variant: 'destructive' });
+                setIsScanning(false);
+                return;
+            }
+
+            const apiResponse = await fetch('/api/scan-payment', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ photoDataUri: dataUri }) 
+            });
+            
+            if (!apiResponse.ok) throw new Error('API Request Failed');
+            const response = await apiResponse.json();
+            
+            if (response.amount) setValue(`transactions.${index}.amount`, response.amount, { shouldDirty: true });
+            if (response.transactionId) setValue(`transactions.${index}.transactionId`, response.transactionId, { shouldDirty: true });
+            if (response.date) setValue(`transactions.${index}.date`, response.date, { shouldDirty: true });
+            if (response.upiId) setValue(`transactions.${index}.upiId`, response.upiId, { shouldDirty: true });
+            if (response.receiverName && !getValues('receiverName')) setValue('receiverName', response.receiverName, { shouldDirty: true });
+            if (response.receiverUpiId && !getValues('receiverUpiId')) setValue('receiverUpiId', response.receiverUpiId, { shouldDirty: true });
+            if (response.receiverBankDetails && !getValues('receiverBankDetails')) setValue('receiverBankDetails', response.receiverBankDetails, { shouldDirty: true });
+            if (response.onlineProvider) {
+                setValue('donationType', 'Online Payment', { shouldDirty: true });
+                setValue('onlineProvider', response.onlineProvider, { shouldDirty: true });
+            }
+            
+            if (onScanMatch) {
+                onScanMatch({
+                    senderName: response.senderName,
+                    upiId: response.upiId
+                });
+            }
+            toast({ title: 'Scan Successful', description: 'Transaction Details Extracted.', variant: "success"});
+        } catch (error: any) {
+            toast({ title: 'Scan Failed', description: error.message || 'Error occurred while scanning.', variant: 'destructive'});
+        } finally { 
+            setIsScanning(false); 
+        }
     };
 
     return (
@@ -248,7 +283,7 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
                         </div>
                     </div>
                 )}
-                 {!isReadOnly && fileList && fileList.length > 0 && (
+                 {!isReadOnly && ((fileList && fileList.length > 0) || existingUrl) && (
                     <Button type="button" onClick={handleScanScreenshot} disabled={isScanning} className="w-full mt-2 font-bold bg-primary/10 text-primary hover:bg-primary/20 transition-all active:scale-95 shadow-sm">
                         {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />}
                         Scan Screenshot With AI
@@ -290,9 +325,12 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
       donorPhone: donation?.donorPhone || '',
       donorId: donation?.donorId || '',
       receiverName: donation?.receiverName || '',
+      receiverUpiId: (donation as any)?.receiverUpiId || '',
+      receiverBankDetails: (donation as any)?.receiverBankDetails || '',
       referral: donation?.referral || '',
       amount: donation?.amount || 0,
       donationType: donation?.donationType || 'Online Payment',
+      onlineProvider: (donation as any)?.onlineProvider || 'Google Pay',
       donationDate: donation?.donationDate || new Date().toISOString().split('T')[0],
       contributionFromDate: donation?.contributionFromDate || '',
       contributionToDate: donation?.contributionToDate || '',
@@ -318,6 +356,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   const donorId = watch('donorId');
   const donorPhone = watch('donorPhone');
   const donorName = watch('donorName');
+  const watchedDonationType = watch('donationType');
 
   useEffect(() => {
     const total = watchedTransactions.reduce((sum, tx) => sum + (Number(tx.amount) || 0), 0);
@@ -569,6 +608,11 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                         <FormField control={control} name="donationType" render={({ field }) => (
                             <FormItem>{renderLabel('Payment Method', 'donationType')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Method" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="Online Payment" className="font-normal">Online (Digital)</SelectItem><SelectItem value="Cash" className="font-normal">Cash (Physical)</SelectItem><SelectItem value="Check" className="font-normal">Check</SelectItem><SelectItem value="Other" className="font-normal">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
                         )}/>
+                        {watchedDonationType === 'Online Payment' && (
+                            <FormField control={control} name="onlineProvider" render={({ field }) => (
+                                <FormItem>{renderLabel('Online Gateway/App', 'onlineProvider')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Gateway/App" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="Google Pay" className="font-normal">Google Pay (GPay)</SelectItem><SelectItem value="PhonePe" className="font-normal">PhonePe</SelectItem><SelectItem value="Paytm" className="font-normal">Paytm</SelectItem><SelectItem value="Amazon Pay" className="font-normal">Amazon Pay</SelectItem><SelectItem value="WhatsApp Pay" className="font-normal">WhatsApp Pay</SelectItem><SelectItem value="Bank Transfer" className="font-normal">Direct Bank Transfer</SelectItem><SelectItem value="Other" className="font-normal">Other UPI / Digital Wallet</SelectItem></SelectContent></Select><FormMessage /></FormItem>
+                            )}/>
+                        )}
                         <div className="space-y-4">
                             {transactionFields.map((field, index) => (
                                 <TransactionItem key={field.id} control={control} index={index} register={register} setValue={setValue} getValues={getValues} remove={removeTransaction} canRemove={transactionFields.length > 1} isReadOnly={isReadOnly} mandatoryFields={mandatoryFields} onScanMatch={handleScanMatch} />
@@ -649,6 +693,14 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                         <FormField control={control} name="receiverName" render={({ field }) => (
                             <FormItem>{renderLabel('Receiver (Member Name)', 'receiverName')}<FormControl><Input placeholder="Organization Member" {...field} disabled={isReadOnly} className="font-normal text-primary"/></FormControl><FormMessage /></FormItem>
+                        )}/>
+                        <FormField control={control} name="receiverUpiId" render={({ field }) => (
+                            <FormItem>{renderLabel('Receiver UPI ID', 'receiverUpiId')}<FormControl><Input placeholder="receiver@upi" {...field} disabled={isReadOnly} className="font-mono text-primary"/></FormControl><FormMessage /></FormItem>
+                        )}/>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <FormField control={control} name="receiverBankDetails" render={({ field }) => (
+                            <FormItem>{renderLabel('Receiver Bank Details', 'receiverBankDetails')}<FormControl><Input placeholder="Account #, IFSC Code" {...field} disabled={isReadOnly} className="font-normal text-primary"/></FormControl><FormMessage /></FormItem>
                         )}/>
                         <FormField control={control} name="referral" render={({ field }) => (
                             <FormItem>{renderLabel('Referral Source', 'referral')}<FormControl><Input placeholder="Who Referred The Donor" {...field} disabled={isReadOnly} className="font-normal text-primary"/></FormControl><FormMessage /></FormItem>

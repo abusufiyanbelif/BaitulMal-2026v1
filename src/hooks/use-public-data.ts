@@ -13,7 +13,7 @@ import { donationCategories } from '@/lib/modules';
  */
 export function usePublicData() {
   const firestore = useFirestore();
-  const { user, isLoading: isSessionLoading } = useSession();
+  const { user, isStaff, isLoading: isSessionLoading } = useSession();
 
   const brandingRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'branding') : null, [firestore]);
   const visRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donation_visibility') : null, [firestore]);
@@ -40,9 +40,9 @@ export function usePublicData() {
   }, [firestore]);
   
   const beneficiariesCollectionRef = useMemoFirebase(() => {
-    if (!firestore || !user) return null;
+    if (!firestore || !user || !isStaff) return null;
     return collection(firestore, 'beneficiaries');
-  }, [firestore, user]);
+  }, [firestore, user, isStaff]);
 
   const donationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;

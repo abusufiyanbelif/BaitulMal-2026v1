@@ -27,6 +27,9 @@ const ScanPaymentScreenshotOutputSchema = z.object({
   transactionId: z.string().optional().describe('The Transaction ID, UPI Transaction ID, or any other unique reference number.'),
   date: z.string().optional().describe('The date of the transaction in YYYY-MM-DD format.'),
   upiId: z.string().optional().describe("The sender's UPI ID, if visible (e.g., something@okhdfcbank)."),
+  receiverUpiId: z.string().optional().describe("The receiver's UPI ID, if visible (e.g., receiver@okhdfcbank)."),
+  receiverBankDetails: z.string().optional().describe("The receiver's bank details (account #, bank name, IFSC) if visible."),
+  onlineProvider: z.enum(['Google Pay', 'PhonePe', 'Paytm', 'Amazon Pay', 'WhatsApp Pay', 'Bank Transfer', 'Other']).optional().describe('The payment provider used (e.g., Google Pay, PhonePe, Paytm).'),
 });
 export type ScanPaymentScreenshotOutput = z.infer<typeof ScanPaymentScreenshotOutputSchema>;
 
@@ -49,6 +52,9 @@ const prompt = ai.definePrompt({
 4.  **transactionId**: Find the unique transaction identifier. Look for labels like "UPI Transaction ID", "Transaction ID", "UTR", or "Ref No.". Extract the alphanumeric code associated with it.
 5.  **date**: Find the date of the transaction. If you find a date (e.g., "Jan 31, 2026", "31-01-2026"), you MUST format it as YYYY-MM-DD.
 6.  **upiId**: Extract the sender's UPI ID. Look for labels like "From", "Debited from", or a UPI ID format (e.g., something@okhdfcbank) associated with the sender.
+7.  **receiverUpiId**: Extract the receiver's UPI ID. Look for a UPI ID associated with the recipient (e.g., recipient@okicici).
+8.  **receiverBankDetails**: Extract the receiver's bank details if visible (e.g., bank name, account number ending, IFSC).
+9.  **onlineProvider**: Identify the app/service used based on logos and text ('Google Pay', 'PhonePe', 'Paytm', 'Amazon Pay', 'WhatsApp Pay', 'Bank Transfer', 'Other').
 
 If any of these fields are not clearly visible, omit them from the output.
 

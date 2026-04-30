@@ -75,8 +75,11 @@ export default function LoginPage() {
       return;
     }
     try {
-      const userCredential = await signInWithLoginId(auth, firestore, data.loginId, data.password);
-      toast({ title: 'Login successful', description: "Welcome back!", variant: 'success' });
+       const userCredential = await signInWithLoginId(auth, firestore, data.loginId, data.password);
+       if (typeof window !== 'undefined') {
+           localStorage.setItem('portal_role', 'Staff');
+       }
+       toast({ title: 'Login successful', description: "Welcome back!", variant: 'success' });
       
       // Fetch role directly to accelerate explicit routing with latency retry mechanism
       const userDocRef = doc(firestore, 'users', userCredential.user.uid);

@@ -32,7 +32,13 @@ function RouteGuard({ children }: { children: ReactNode }) {
         // If logged in and at login page, redirect to primary dashboard
         if (user && (pathname === '/login' || pathname === '/portal-login')) {
             setIsRedirecting(true);
-            router.push(isStaff ? '/dashboard' : '/donor-portal');
+            if (isStaff) {
+                router.push('/dashboard');
+            } else if (userProfile?.role === 'Beneficiary') {
+                router.push('/beneficiary-portal');
+            } else {
+                router.push('/donor-portal');
+            }
             return;
         }
 
@@ -47,7 +53,13 @@ function RouteGuard({ children }: { children: ReactNode }) {
         // Handle landing page redirection for logged-in users
         if (user && pathname === '/') {
             setIsRedirecting(true);
-            router.push(isStaff ? '/dashboard' : '/donor-portal');
+            if (isStaff) {
+                router.push('/dashboard');
+            } else if (userProfile?.role === 'Beneficiary') {
+                router.push('/beneficiary-portal');
+            } else {
+                router.push('/donor-portal');
+            }
             return;
         }
 

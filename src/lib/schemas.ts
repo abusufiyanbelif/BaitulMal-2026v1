@@ -22,6 +22,12 @@ export const userFormSchema = z.object({
   whatsappNotificationsEnabled: z.boolean().optional(),
   organizationGroup: z.string().optional().or(z.literal('none')),
   organizationRole: z.string().optional(),
+  aadhaarNumber: z.string().optional(),
+  aadhaarName: z.string().optional(),
+  aadhaarDob: z.string().optional(),
+  aadhaarGender: z.string().optional(),
+  aadhaarAddress: z.string().optional(),
+  aadhaarProofFile: z.any().optional(),
   _isEditing: z.boolean(),
 })
 .refine((data) => data.email || data.phone, {

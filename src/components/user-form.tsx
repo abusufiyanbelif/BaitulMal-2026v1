@@ -86,6 +86,11 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
       idNumber: user?.idNumber || '',
       organizationGroup: (user?.organizationGroup as string) || 'none',
       organizationRole: user?.organizationRole || '',
+      aadhaarNumber: user?.aadhaarNumber || '',
+      aadhaarName: user?.aadhaarName || '',
+      aadhaarDob: user?.aadhaarDob || '',
+      aadhaarGender: user?.aadhaarGender || '',
+      aadhaarAddress: user?.aadhaarAddress || '',
       _isEditing: isEditing,
       idProofDeleted: false,
     },
@@ -116,6 +121,11 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
         idNumber: user.idNumber || '',
         organizationGroup: (user.organizationGroup as string) || 'none',
         organizationRole: user.organizationRole || '',
+        aadhaarNumber: user.aadhaarNumber || '',
+        aadhaarName: user.aadhaarName || '',
+        aadhaarDob: user.aadhaarDob || '',
+        aadhaarGender: user.aadhaarGender || '',
+        aadhaarAddress: user.aadhaarAddress || '',
         _isEditing: isEditing,
         idProofDeleted: false,
       });
@@ -169,6 +179,21 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
     }
   }, [idProofFile, user?.idProofUrl, watch, setValue]);
   
+  const aadhaarProofFile = watch('aadhaarProofFile');
+
+  useEffect(() => {
+    const fileList = aadhaarProofFile as FileList | undefined;
+    if (fileList && fileList.length > 0) {
+      const file = fileList[0];
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAadhaarPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setAadhaarPreview(user?.aadhaarProofUrl || null);
+    }
+  }, [aadhaarProofFile, user?.aadhaarProofUrl]);
   const handleTestTelegram = async (chatId: string) => {
       if (!chatId) {
           toast({ title: "Test Failed", description: "Please enter a valid Telegram Chat ID.", variant: "destructive" });
@@ -271,6 +296,71 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
       });
   };
   
+  const [isScanningAadhaar, setIsScanningAadhaar] = useState(false);
+  const [aadhaarPreview, setAadhaarPreview] = useState<string | null>(user?.aadhaarProofUrl || null);
+
+  const handleScanAadhaarCard = async () => {
+    const fileList = getValues('aadhaarProofFile') as FileList | undefined;
+    
+    // Scan existing uploaded URL if no new file is selected
+    if ((!fileList || fileList.length === 0) && aadhaarPreview) {
+        setIsScanningAadhaar(true);
+        toast({ title: "Analyzing Existing Aadhaar..." });
+        try {
+            const apiResponse = await fetch('/api/scan-aadhaar', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ photoDataUri: aadhaarPreview }) 
+            });
+            if (!apiResponse.ok) throw new Error('API Request Failed');
+            const response = await apiResponse.json();
+            if (response) {
+                if (response.aadhaarNumber) setValue('aadhaarNumber', response.aadhaarNumber, { shouldValidate: true });
+                if (response.aadhaarName) setValue('aadhaarName', response.aadhaarName, { shouldValidate: true });
+                if (response.aadhaarDob) setValue('aadhaarDob', response.aadhaarDob, { shouldValidate: true });
+                if (response.aadhaarGender) setValue('aadhaarGender', response.aadhaarGender, { shouldValidate: true });
+                if (response.aadhaarAddress) setValue('aadhaarAddress', response.aadhaarAddress, { shouldValidate: true });
+                toast({ title: "Aadhaar Extracted Successfully", variant: "success" });
+            }
+        } catch (error: any) {
+            toast({ title: "Extraction Failed", description: error.message || "Could Not Analyze Aadhaar.", variant: "destructive" });
+        } finally { 
+            setIsScanningAadhaar(false); 
+        }
+        return;
+    }
+
+    if (!fileList || fileList.length === 0) {
+        toast({ title: "No File Selected", description: "Please Upload An Aadhaar Card Image To Proceed.", variant: "destructive" });
+        return;
+    }
+
+    setIsScanningAadhaar(true);
+    toast({ title: "Analyzing Aadhaar..." });
+    const file = fileList[0];
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        const dataUri = e.target?.result as string;
+        if (!dataUri) { setIsScanningAadhaar(false); return; }
+        try {
+            const apiResponse = await fetch('/api/scan-aadhaar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ photoDataUri: dataUri }) });
+            if (!apiResponse.ok) throw new Error('API Request Failed');
+            const response = await apiResponse.json();
+            if (response) {
+                if (response.aadhaarNumber) setValue('aadhaarNumber', response.aadhaarNumber, { shouldValidate: true });
+                if (response.aadhaarName) setValue('aadhaarName', response.aadhaarName, { shouldValidate: true });
+                if (response.aadhaarDob) setValue('aadhaarDob', response.aadhaarDob, { shouldValidate: true });
+                if (response.aadhaarGender) setValue('aadhaarGender', response.aadhaarGender, { shouldValidate: true });
+                if (response.aadhaarAddress) setValue('aadhaarAddress', response.aadhaarAddress, { shouldValidate: true });
+                toast({ title: "Aadhaar Extracted Successfully", variant: "success" });
+            }
+        } catch (error: any) {
+            toast({ title: "Extraction Failed", description: error.message || "Could Not Analyze Aadhaar.", variant: "destructive" });
+        } finally { setIsScanningAadhaar(false); }
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleScanIdProof = async () => {
     const fileList = getValues('idProofFile') as FileList | undefined;
     if (!fileList || fileList.length === 0) {
@@ -530,6 +620,42 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                     )}
                                     {idProofFile && idProofFile.length > 0 && !isReadOnly && (
                                         <Button type="button" className="w-full font-bold shadow-md active:scale-95 transition-transform" onClick={handleScanIdProof} disabled={isScanning || isFormDisabled}>{isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />} Scan ID Artifact & Autofill</Button>
+                                    )}
+                                </div>
+
+                                <div className="space-y-4 rounded-xl border border-primary/5 p-4 bg-primary/[0.02]">
+                                    <h3 className="text-sm font-bold text-primary capitalize tracking-widest flex items-center gap-2">
+                                        <ScanLine className="h-4 w-4" /> Aadhaar Card Verification
+                                    </h3>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <FormField control={control as any} name="aadhaarNumber" render={({ field }) => (<FormItem>{renderLabel('Aadhaar Number', 'aadhaarNumber')}<FormControl><Input placeholder="12 Digit Number" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-mono" /></FormControl></FormItem>)}/>
+                                        <FormField control={control as any} name="aadhaarName" render={({ field }) => (<FormItem>{renderLabel('Name on Aadhaar', 'aadhaarName')}<FormControl><Input placeholder="Full Name" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                    </div>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <FormField control={control as any} name="aadhaarDob" render={({ field }) => (<FormItem>{renderLabel('Date of Birth', 'aadhaarDob')}<FormControl><Input placeholder="YYYY-MM-DD" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                        <FormField control={control as any} name="aadhaarGender" render={({ field }) => (<FormItem>{renderLabel('Gender', 'aadhaarGender')}<FormControl><Input placeholder="Male / Female" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                    </div>
+                                    <FormField control={control as any} name="aadhaarAddress" render={({ field }) => (<FormItem>{renderLabel('Address on Aadhaar', 'aadhaarAddress')}<FormControl><Input placeholder="Full Residential Address" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                    
+                                    <FormItem>
+                                        {renderLabel('Aadhaar Card Document', 'aadhaarProofFile')}
+                                        <FormControl><Input id="user-aadhaar-proof-file-input" type="file" accept="image/png, image/jpeg, image/webp" {...register('aadhaarProofFile')} disabled={isFormDisabled} className="font-normal" /></FormControl>
+                                    </FormItem>
+
+                                    {aadhaarPreview && (
+                                        <div className="relative group w-full h-48 mt-2 rounded-xl overflow-hidden border bg-white shadow-inner">
+                                            <Image src={aadhaarPreview} alt="Aadhaar Preview" fill sizes="100vw" className="object-contain" />
+                                            {!isReadOnly && (
+                                                <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Button type="button" size="icon" variant="outline" className="text-white border-white hover:bg-white/20" onClick={() => document.getElementById('user-aadhaar-proof-file-input')?.click()}><Replace className="h-5 w-5"/></Button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                    {(aadhaarPreview || (aadhaarProofFile && aadhaarProofFile.length > 0)) && !isReadOnly && (
+                                        <Button type="button" className="w-full font-bold shadow-md active:scale-95 transition-transform" onClick={handleScanAadhaarCard} disabled={isScanningAadhaar || isFormDisabled}>
+                                            {isScanningAadhaar ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />} Scan Aadhaar & Autofill
+                                        </Button>
                                     )}
                                 </div>
 

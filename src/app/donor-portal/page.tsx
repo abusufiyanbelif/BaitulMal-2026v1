@@ -1,7 +1,7 @@
 'use client';
 
 import { useSession } from '@/hooks/use-session';
-import { useFirestore, useMemoFirebase, useCollection, useDoc, doc, collection, query, where } from '@/firebase';
+import { useFirestore, useMemoFirebase, useCollection, useDoc, doc, collection, query, where, useAuth } from '@/firebase';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +15,8 @@ import {
     Activity, 
     WalletCards, 
     User,
-    ArrowRight
+    ArrowRight,
+    LogOut
 } from 'lucide-react';
 import { formatCurrency, formatDate } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -23,6 +24,7 @@ import Link from 'next/link';
 import type { Donation } from '@/lib/types';
 import { useBranding } from '@/hooks/use-branding';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { useRouter } from 'next/navigation';
 
 /**
  * Donor Portal Page - Self-service dashboard for community supporters.
@@ -30,6 +32,8 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 export default function DonorPortalPage() {
     const { user, userProfile } = useSession();
     const firestore = useFirestore();
+    const auth = useAuth();
+    const router = useRouter();
     const { brandingSettings } = useBranding();
 
     const targetDonorId = userProfile?.linkedDonorId || userProfile?.id || user?.uid;
@@ -76,14 +80,32 @@ export default function DonorPortalPage() {
                         Welcome back, {donorProfile?.name || userProfile?.name || 'Supporter'}. Below is your cumulative impact via {brandingSettings?.name || 'Our Organization'}.
                     </p>
                 </div>
-                {brandingSettings?.isDonorSelfRecordPaymentEnabled && (
-                    <Button asChild className="font-bold shadow-xl active:scale-95 transition-transform h-12 px-6 rounded-xl">
-                        <Link href="/donate">
-                            <CreditCard className="mr-2 h-4 w-4" />
-                            Record A New Donation
-                        </Link>
+                <div className="flex items-center gap-4">
+                    {brandingSettings?.isDonorSelfRecordPaymentEnabled && (
+                        <Button asChild className="font-bold shadow-xl active:scale-95 transition-transform h-12 px-6 rounded-xl">
+                            <Link href="/donate">
+                                <CreditCard className="mr-2 h-4 w-4" />
+                                Record A New Donation
+                            </Link>
+                        </Button>
+                    )}
+                    <Button 
+                        variant="outline" 
+                        className="font-bold shadow-sm border-primary/20 hover:bg-red-50 hover:text-red-600 transition-colors h-12 px-6 rounded-xl flex items-center gap-2"
+                        onClick={async () => {
+                            if (auth) {
+                                await auth.signOut();
+                                if (typeof window !== 'undefined') {
+                                    localStorage.removeItem('portal_role');
+                                }
+                                router.push('/portal-login');
+                            }
+                        }}
+                    >
+                        <LogOut className="h-4 w-4" />
+                        Sign Out
                     </Button>
-                )}
+                </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

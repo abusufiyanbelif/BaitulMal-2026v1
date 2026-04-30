@@ -23,6 +23,7 @@ const MANDATORY_FIELDS = [
     { id: 'idNumber', name: 'ID number' },
     { id: 'organizationGroup', name: 'Org group' },
     { id: 'organizationRole', name: 'Org role' },
+    { id: 'aadhaarNumber', name: 'Aadhaar Card' },
 ];
 
 export default function UserSettingsPage() {

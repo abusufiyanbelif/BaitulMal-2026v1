@@ -17,11 +17,25 @@ export async function authenticateSupporterAction(identifier: string, password: 
         let targetId: string | null = null;
         let targetRole: string = 'Donor';
 
+        const numericOnly = identifier.replace(/\D/g, '');
+        const isPhoneIdentifier = numericOnly.length >= 10;
+        const phone10 = isPhoneIdentifier ? numericOnly.slice(-10) : identifier;
+        const phoneWithPrefix = '+91' + phone10;
+
         // 1. Search in Users collection (Centralized Accounts)
-        let userByPhone = await adminDb.collection('users').where('phone', '==', identifier).limit(1).get();
-        if (userByPhone.empty) {
+        let userByPhone;
+        if (isPhoneIdentifier) {
+            userByPhone = await adminDb.collection('users').where('phone', 'in', [phone10, phoneWithPrefix]).limit(1).get();
+        } else {
+            userByPhone = await adminDb.collection('users').where('phone', '==', identifier).limit(1).get();
+        }
+        
+        if (userByPhone.empty && isPhoneIdentifier) {
+            userByPhone = await adminDb.collection('users').where('phones', 'array-contains-any', [phone10, phoneWithPrefix]).limit(1).get();
+        } else if (userByPhone.empty) {
             userByPhone = await adminDb.collection('users').where('phones', 'array-contains', identifier).limit(1).get();
         }
+
         const userById = await adminDb.collection('users').doc(identifier).get();
         const userByLoginId = await adminDb.collection('users').where('loginId', '==', identifier).limit(1).get();
 
@@ -39,48 +53,66 @@ export async function authenticateSupporterAction(identifier: string, password: 
         }
 
         if (userData && userData.password === password) {
-            const customToken = await adminAuth.createCustomToken(targetId!);
+            const customToken = await adminAuth.createCustomToken(targetId!, { role: userData.role });
             return { success: true, token: customToken, role: userData.role };
         }
 
         // 2. Search in Donors collection (Profile-based Auth)
-        let donorByPhone = await adminDb.collection('donors').where('phone', '==', identifier).limit(1).get();
-        if (donorByPhone.empty) {
+        let donorByPhone;
+        if (isPhoneIdentifier) {
+            donorByPhone = await adminDb.collection('donors').where('phone', 'in', [phone10, phoneWithPrefix]).limit(1).get();
+        } else {
+            donorByPhone = await adminDb.collection('donors').where('phone', '==', identifier).limit(1).get();
+        }
+
+        if (donorByPhone.empty && isPhoneIdentifier) {
+            donorByPhone = await adminDb.collection('donors').where('phones', 'array-contains-any', [phone10, phoneWithPrefix]).limit(1).get();
+        } else if (donorByPhone.empty) {
             donorByPhone = await adminDb.collection('donors').where('phones', 'array-contains', identifier).limit(1).get();
         }
+
         const donorById = await adminDb.collection('donors').doc(identifier).get();
 
         if (!donorByPhone.empty) {
             const dData = donorByPhone.docs[0].data();
             if (dData.password === password) {
-                const token = await adminAuth.createCustomToken(donorByPhone.docs[0].id);
+                const token = await adminAuth.createCustomToken(donorByPhone.docs[0].id, { role: 'Donor' });
                 return { success: true, token, role: 'Donor' };
             }
         } else if (donorById.exists) {
             const dData = donorById.data();
             if (dData?.password === password) {
-                const token = await adminAuth.createCustomToken(identifier);
+                const token = await adminAuth.createCustomToken(identifier, { role: 'Donor' });
                 return { success: true, token, role: 'Donor' };
             }
         }
 
         // 3. Search in Beneficiaries collection
-        let benByPhone = await adminDb.collection('beneficiaries').where('phone', '==', identifier).limit(1).get();
-        if (benByPhone.empty) {
+        let benByPhone;
+        if (isPhoneIdentifier) {
+            benByPhone = await adminDb.collection('beneficiaries').where('phone', 'in', [phone10, phoneWithPrefix]).limit(1).get();
+        } else {
+            benByPhone = await adminDb.collection('beneficiaries').where('phone', '==', identifier).limit(1).get();
+        }
+
+        if (benByPhone.empty && isPhoneIdentifier) {
+            benByPhone = await adminDb.collection('beneficiaries').where('phones', 'array-contains-any', [phone10, phoneWithPrefix]).limit(1).get();
+        } else if (benByPhone.empty) {
             benByPhone = await adminDb.collection('beneficiaries').where('phones', 'array-contains', identifier).limit(1).get();
         }
+
         const benById = await adminDb.collection('beneficiaries').doc(identifier).get();
 
         if (!benByPhone.empty) {
             const bData = benByPhone.docs[0].data();
             if (bData.password === password) {
-                const token = await adminAuth.createCustomToken(benByPhone.docs[0].id);
+                const token = await adminAuth.createCustomToken(benByPhone.docs[0].id, { role: 'Beneficiary' });
                 return { success: true, token, role: 'Beneficiary' };
             }
         } else if (benById.exists) {
             const bData = benById.data();
             if (bData?.password === password) {
-                const token = await adminAuth.createCustomToken(identifier);
+                const token = await adminAuth.createCustomToken(identifier, { role: 'Beneficiary' });
                 return { success: true, token, role: 'Beneficiary' };
             }
         }
@@ -129,8 +161,9 @@ export async function exchangeOtpForCustomTokenAction(phoneE164: string) {
             .limit(1).get();
 
         if (!userByPhone.empty) {
-            const token = await adminAuth.createCustomToken(userByPhone.docs[0].id);
-            return { success: true, token, role: userByPhone.docs[0].data().role };
+            const userData = userByPhone.docs[0].data();
+            const token = await adminAuth.createCustomToken(userByPhone.docs[0].id, { role: userData.role });
+            return { success: true, token, role: userData.role };
         }
 
         // 2. Search in Donors
@@ -139,7 +172,7 @@ export async function exchangeOtpForCustomTokenAction(phoneE164: string) {
             .limit(1).get();
 
         if (!donorByPhone.empty) {
-            const token = await adminAuth.createCustomToken(donorByPhone.docs[0].id);
+            const token = await adminAuth.createCustomToken(donorByPhone.docs[0].id, { role: 'Donor' });
             return { success: true, token, role: 'Donor' };
         }
 
@@ -149,7 +182,7 @@ export async function exchangeOtpForCustomTokenAction(phoneE164: string) {
             .limit(1).get();
 
         if (!benByPhone.empty) {
-            const token = await adminAuth.createCustomToken(benByPhone.docs[0].id);
+            const token = await adminAuth.createCustomToken(benByPhone.docs[0].id, { role: 'Beneficiary' });
             return { success: true, token, role: 'Beneficiary' };
         }
 

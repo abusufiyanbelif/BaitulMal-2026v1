@@ -278,6 +278,23 @@ export default function ProfilePage() {
                             {userProfile.idProofType && <ProfileDetail icon={<BadgeInfo />} label="ID Type" value={userProfile.idProofType} />}
                             {userProfile.idNumber && <ProfileDetail icon={<Hash />} label="ID Number" value={userProfile.idNumber} />}
 
+                            {userProfile.aadhaarProofUrl && (
+                                <ProfileDetail 
+                                    icon={<FileText />} 
+                                    label="Aadhaar Card" 
+                                    value={
+                                        <Button variant="outline" size="sm" onClick={() => handleViewImage(userProfile.aadhaarProofUrl!)}>
+                                            <Eye className="mr-2 h-4 w-4" /> View Aadhaar
+                                        </Button>
+                                    } 
+                                />
+                            )}
+                            {userProfile.aadhaarNumber && <ProfileDetail icon={<Hash />} label="Aadhaar Number" value={userProfile.aadhaarNumber} />}
+                            {userProfile.aadhaarName && <ProfileDetail icon={<BadgeInfo />} label="Name on Aadhaar" value={userProfile.aadhaarName} />}
+                            {userProfile.aadhaarDob && <ProfileDetail icon={<BadgeInfo />} label="DOB" value={userProfile.aadhaarDob} />}
+                            {userProfile.aadhaarGender && <ProfileDetail icon={<BadgeInfo />} label="Gender" value={userProfile.aadhaarGender} />}
+                            {userProfile.aadhaarAddress && <ProfileDetail icon={<BadgeInfo />} label="Aadhaar Address" value={userProfile.aadhaarAddress} />}
+
                             <div className="pt-4 border-t border-primary/5">
                                 <Button variant="outline" className="font-bold border-primary/20 text-primary" onClick={() => setIsPasswordDialogOpen(true)}>
                                     <KeyRound className="mr-2 h-4 w-4" /> Change Password

@@ -133,11 +133,12 @@ service firebase.storage {
     // =========================================================================
 
     match /beneficiaries/{beneficiaryId}/{allPaths=**} {
-      allow read: if isStaff(); // Sensitive — staff only
+      allow read: if isStaff() || (isSignedIn() && request.auth.uid == beneficiaryId);
       allow write: if isAdmin() ||
                     hasPermission('beneficiaries', 'update') ||
                     hasPermission('beneficiaries', 'create') ||
-                    isStaff();
+                    isStaff() ||
+                    (isSignedIn() && request.auth.uid == beneficiaryId);
     }
 
     // =========================================================================

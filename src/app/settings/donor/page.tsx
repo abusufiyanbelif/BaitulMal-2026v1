@@ -26,6 +26,7 @@
      { id: 'address', name: 'Residential address' },
      { id: 'status', name: 'Active status' },
      { id: 'notes', name: 'Institutional notes' },
+     { id: 'aadhaarNumber', name: 'Aadhaar Card' },
  ];
  
  export default function DonorSettingsPage() {

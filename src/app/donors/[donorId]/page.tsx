@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useFirestore, useMemoFirebase, useDoc, useCollection, collection, doc, type DocumentReference } from '@/firebase';
+import { useFirestore, useMemoFirebase, useDoc, useCollection, collection, doc, type DocumentReference, useStorage } from '@/firebase';
 import type { Donor, Donation, BankDetail, DonationCategory } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 import { Button } from '@/components/ui/button';
@@ -31,6 +31,9 @@ import {
     Plus,
     Trash2,
     ShieldCheck,
+    ShieldAlert,
+    ScanLine,
+    FileIcon,
     PieChart as PieChartIcon,
     TrendingUp
 } from 'lucide-react';
@@ -52,6 +55,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import { ResetPasswordDialog } from '@/components/reset-password-dialog';
 import Link from 'next/link';
+import Image from 'next/image';
+import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { cn, getNestedValue } from '@/lib/utils';
 import { 
     Bar, 
@@ -95,6 +100,12 @@ const donationCategoryChartConfig = {
     'Monthly Contribution': { label: "Monthly Contribution", color: "hsl(var(--chart-8))" },
 } satisfies ChartConfig;
 
+const paymentMethodChartConfig = {
+    Cash: { label: "Cash", color: "hsl(var(--chart-2))" },
+    'Online Payment': { label: "Online", color: "hsl(var(--chart-1))" },
+    Other: { label: "Other", color: "hsl(var(--chart-4))" },
+} satisfies ChartConfig;
+
 const monthlyTrendChartConfig = {
   total: {
     label: "Amount (₹)",
@@ -118,6 +129,24 @@ export default function DonorProfilePage() {
 
     const [bankDetails, setBankDetails] = useState<BankDetail[]>([]);
     const [upiIds, setUpiIds] = useState<string[]>([]);
+    const [isScanningAadhaar, setIsScanningAadhaar] = useState(false);
+    const [aadhaarPreview, setAadhaarPreview] = useState<string | null>(null);
+    const [aadhaarData, setAadhaarData] = useState({
+        aadhaarNumber: '',
+        aadhaarName: '',
+        aadhaarDob: '',
+        aadhaarGender: '',
+        aadhaarAddress: ''
+    });
+
+    const [idProofType, setIdProofType] = useState('');
+    const [idNumber, setIdNumber] = useState('');
+    const [idProofUrl, setIdProofUrl] = useState('');
+    const [idProofPreview, setIdProofPreview] = useState<string | null>(null);
+    const [isScanningId, setIsScanningId] = useState(false);
+
+ 
+    const storage = useStorage();
  
     const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
     const [pendingUpdates, setPendingUpdates] = useState<Partial<Donor> | null>(null);
@@ -141,6 +170,18 @@ export default function DonorProfilePage() {
         if (donor) {
             setBankDetails(donor.bankDetails || [{ bankName: '', accountNumber: '', ifscCode: '' }]);
             setUpiIds(donor.upiIds || ['']);
+            setAadhaarData({
+                aadhaarNumber: donor.aadhaarNumber || '',
+                aadhaarName: donor.aadhaarName || '',
+                aadhaarDob: donor.aadhaarDob || '',
+                aadhaarGender: donor.aadhaarGender || '',
+                aadhaarAddress: donor.aadhaarAddress || ''
+            });
+            setAadhaarPreview(donor.aadhaarProofUrl || null);
+            setIdProofType((donor as any).idProofType || '');
+            setIdNumber((donor as any).idNumber || '');
+            setIdProofUrl((donor as any).idProofUrl || '');
+            setIdProofPreview((donor as any).idProofUrl || null);
         }
     }, [donor]);
 
@@ -157,20 +198,24 @@ export default function DonorProfilePage() {
         
         const catTotals: Record<string, number> = {};
         const monthlyTotals: Record<string, number> = {};
+        const payTotals: Record<string, number> = {};
 
         verified.forEach(d => {
             const splits = d.typeSplit || (d.type ? [{ category: d.type as DonationCategory, amount: d.amount }] : []);
             splits.forEach(s => {
                 const cat = (s.category as any) === 'General' || (s.category as any) === 'Sadqa' ? 'Sadaqah' : s.category;
                 catTotals[cat] = (catTotals[cat] || 0) + s.amount;
-
-                if (cat === 'Monthly Contribution' && d.donationDate) {
-                    try {
-                        const month = format(parseISO(d.donationDate), 'yyyy-MM');
-                        monthlyTotals[month] = (monthlyTotals[month] || 0) + s.amount;
-                    } catch(e) {}
-                }
             });
+            
+            if (d.donationDate) {
+                try {
+                    const month = format(parseISO(d.donationDate), 'yyyy-MM');
+                    monthlyTotals[month] = (monthlyTotals[month] || 0) + d.amount;
+                } catch(e) {}
+            }
+
+            const method = d.donationType || 'Other';
+            payTotals[method] = (payTotals[method] || 0) + d.amount;
         });
 
         const categoryData = Object.entries(catTotals).map(([name, value]) => ({
@@ -179,9 +224,24 @@ export default function DonorProfilePage() {
             fill: `var(--color-${name.replace(/\s+/g, '')})`
         }));
 
+        const paymentMethodData = Object.entries(payTotals).map(([name, value]) => ({
+            name,
+            value,
+            fill: name === 'Online Payment' ? 'hsl(var(--chart-1))' : name === 'Cash' ? 'hsl(var(--chart-2))' : 'hsl(var(--chart-4))'
+        }));
+
         const monthlyTrends = Object.entries(monthlyTotals)
             .map(([month, total]) => ({ month, total }))
             .sort((a, b) => a.month.localeCompare(b.month));
+
+        let topCause = 'N/A';
+        let maxVal = 0;
+        Object.entries(catTotals).forEach(([cat, val]) => {
+            if (val > maxVal) {
+                maxVal = val;
+                topCause = cat;
+            }
+        });
 
         return {
             totalCount: donorDonations.length,
@@ -189,9 +249,129 @@ export default function DonorProfilePage() {
             pendingSum: donorDonations.filter(d => d.status === 'Pending').reduce((sum, d) => sum + d.amount, 0),
             latestDate: verified[0]?.donationDate || 'No Recorded Donation',
             categoryData,
-            monthlyTrends
+            paymentMethodData,
+            monthlyTrends,
+            topCause
         };
     }, [donorDonations]);
+
+    const handleScanIdProof = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+        setIsScanningId(true);
+        toast({ title: "Analyzing Identification Evidence..." });
+        const file = files[0];
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            const dataUri = event.target?.result as string;
+            if (!dataUri) { setIsScanningId(false); return; }
+            try {
+                const apiResponse = await fetch('/api/scan-id', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ photoDataUri: dataUri }) });
+                if (!apiResponse.ok) throw new Error('API Request Failed');
+                const response = await apiResponse.json();
+                if (response) {
+                    if (response.aadhaarNumber) setIdNumber(response.aadhaarNumber);
+                    setIdProofType('Aadhaar');
+                    setIdProofPreview(dataUri);
+                    toast({ title: "ID Extracted Successfully", variant: "success" });
+                }
+            } catch (error: any) {
+                toast({ title: "Extraction Failed", description: error.message || "Could Not Analyze Document.", variant: "destructive" });
+            } finally { setIsScanningId(false); }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleScanExistingIdProof = async () => {
+        if (!idProofPreview) {
+            toast({ title: "No Document Found", description: "Please provide an identification document first.", variant: "destructive" });
+            return;
+        }
+        setIsScanningId(true);
+        toast({ title: "Analyzing Existing ID Artifact..." });
+        try {
+            const apiResponse = await fetch('/api/scan-id', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ photoDataUri: idProofPreview }) 
+            });
+            if (!apiResponse.ok) throw new Error('API Request Failed');
+            const response = await apiResponse.json();
+            if (response) {
+                if (response.aadhaarNumber) setIdNumber(response.aadhaarNumber);
+                setIdProofType('Aadhaar');
+                toast({ title: "ID Extracted Successfully", variant: "success" });
+            }
+        } catch (error: any) {
+            toast({ title: "Extraction Failed", description: error.message || "Could Not Analyze ID Proof.", variant: "destructive" });
+        } finally { 
+            setIsScanningId(false); 
+        }
+    };
+
+    const handleScanAadhaarCard = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+        setIsScanningAadhaar(true);
+        toast({ title: "Analyzing Aadhaar Document..." });
+        const file = files[0];
+        const reader = new FileReader();
+        reader.onload = async (event) => {
+            const dataUri = event.target?.result as string;
+            if (!dataUri) { setIsScanningAadhaar(false); return; }
+            try {
+                const apiResponse = await fetch('/api/scan-aadhaar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ photoDataUri: dataUri }) });
+                if (!apiResponse.ok) throw new Error('API Request Failed');
+                const response = await apiResponse.json();
+                if (response) {
+                    setAadhaarData({
+                        aadhaarNumber: response.aadhaarNumber || '',
+                        aadhaarName: response.aadhaarName || '',
+                        aadhaarDob: response.aadhaarDob || '',
+                        aadhaarGender: response.aadhaarGender || '',
+                        aadhaarAddress: response.aadhaarAddress || ''
+                    });
+                    setAadhaarPreview(dataUri);
+                    toast({ title: "Aadhaar Extracted Successfully", variant: "success" });
+                }
+            } catch (error: any) {
+                toast({ title: "Extraction Failed", description: error.message || "Could Not Analyze Aadhaar.", variant: "destructive" });
+            } finally { setIsScanningAadhaar(false); }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleScanExistingAadhaar = async () => {
+        if (!aadhaarPreview) {
+            toast({ title: "No Aadhaar File", description: "Please provide an Aadhaar document first.", variant: "destructive" });
+            return;
+        }
+        setIsScanningAadhaar(true);
+        toast({ title: "Analyzing Existing Aadhaar..." });
+        try {
+            const apiResponse = await fetch('/api/scan-aadhaar', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ photoDataUri: aadhaarPreview }) 
+            });
+            if (!apiResponse.ok) throw new Error('API Request Failed');
+            const response = await apiResponse.json();
+            if (response) {
+                setAadhaarData({
+                    aadhaarNumber: response.aadhaarNumber || '',
+                    aadhaarName: response.aadhaarName || '',
+                    aadhaarDob: response.aadhaarDob || '',
+                    aadhaarGender: response.aadhaarGender || '',
+                    aadhaarAddress: response.aadhaarAddress || ''
+                });
+                toast({ title: "Aadhaar Extracted Successfully", variant: "success" });
+            }
+        } catch (error: any) {
+            toast({ title: "Extraction Failed", description: error.message || "Could Not Analyze Aadhaar.", variant: "destructive" });
+        } finally { 
+            setIsScanningAadhaar(false); 
+        }
+    };
 
     const handleUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -202,6 +382,27 @@ export default function DonorProfilePage() {
         try {
             const validBanks = bankDetails.filter(b => b.bankName || b.accountNumber);
             const validUpis = upiIds.filter(u => u.trim() !== '');
+
+            let aadhaarProofUrl = donor?.aadhaarProofUrl || '';
+            if (aadhaarPreview && aadhaarPreview.startsWith('data:') && storage) {
+                const blobResponse = await fetch(aadhaarPreview);
+                const blob = await blobResponse.blob();
+                const filePath = `donors/${donorId}/aadhaar_proof.png`;
+                const fileRef = storageRef(storage, filePath);
+                await uploadBytes(fileRef, blob);
+                aadhaarProofUrl = await getDownloadURL(fileRef);
+            }
+
+            let finalIdProofUrl = (donor as any)?.idProofUrl || '';
+            if (idProofPreview && idProofPreview.startsWith('data:') && storage) {
+                const blobResponse = await fetch(idProofPreview);
+                const blob = await blobResponse.blob();
+                const fileExt = idProofPreview.startsWith('data:application/pdf') ? 'pdf' : 'png';
+                const filePath = `donors/${donorId}/id_proof.${fileExt}`;
+                const fileRef = storageRef(storage, filePath);
+                await uploadBytes(fileRef, blob);
+                finalIdProofUrl = await getDownloadURL(fileRef);
+            }
 
             const updates: Partial<Donor> = {
                 name: formData.get('name') as string,
@@ -214,8 +415,16 @@ export default function DonorProfilePage() {
                 upiIds: validUpis,
                 status: formData.get('status') as any,
                 notes: formData.get('notes') as string,
+                aadhaarNumber: formData.get('aadhaarNumber') as string || '',
+                aadhaarName: formData.get('aadhaarName') as string || '',
+                aadhaarDob: formData.get('aadhaarDob') as string || '',
+                aadhaarGender: formData.get('aadhaarGender') as string || '',
+                aadhaarAddress: formData.get('aadhaarAddress') as string || '',
+                aadhaarProofUrl: aadhaarProofUrl,
+                idProofType: formData.get('idProofType') as string || '',
+                idNumber: formData.get('idNumber') as string || '',
+                idProofUrl: finalIdProofUrl,
             };
-
             const isApprovalRequired = configSettings?.verificationMode 
                 ? (configSettings.verificationMode !== 'Disabled' && configSettings.verificationMode !== 'disabled')
                 : !!configSettings?.isVerificationRequired;
@@ -310,22 +519,30 @@ export default function DonorProfilePage() {
                 <p className="text-sm text-muted-foreground font-normal">Registry Profile Entry ID: <span className="font-mono text-primary/60">{donor.id}</span></p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 <Card className="p-4 bg-white border-primary/5 shadow-sm">
                     <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Lifetime Impact</p>
-                    <p className="text-2xl font-black text-primary font-mono mt-1">₹{analytics.verifiedSum.toLocaleString('en-IN')}</p>
+                    <p className="text-xl font-black text-primary font-mono mt-1">₹{analytics.verifiedSum.toLocaleString('en-IN')}</p>
                 </Card>
                 <Card className="p-4 bg-white border-primary/5 shadow-sm">
-                    <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Total Contributions</p>
-                    <p className="text-2xl font-black text-primary font-mono mt-1">{analytics.totalCount}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Contributions</p>
+                    <p className="text-xl font-black text-primary font-mono mt-1">{analytics.totalCount}</p>
                 </Card>
                 <Card className="p-4 bg-white border-primary/5 shadow-sm">
                     <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Recent Activity</p>
-                    <p className="text-sm font-bold text-primary mt-2 flex items-center gap-2"><Clock className="h-3 w-3 opacity-40"/> {analytics.latestDate}</p>
+                    <p className="text-xs font-bold text-primary mt-2 flex items-center gap-2"><Clock className="h-3 w-3 opacity-40"/> {analytics.latestDate}</p>
                 </Card>
                 <Card className="p-4 bg-white border-primary/5 shadow-sm">
-                    <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Pending Verification</p>
+                    <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Pending Clear</p>
                     <p className="text-lg font-bold text-amber-600 font-mono mt-1">₹{analytics.pendingSum.toLocaleString('en-IN')}</p>
+                </Card>
+                <Card className="p-4 bg-white border-primary/5 shadow-sm">
+                    <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Avg. Giving</p>
+                    <p className="text-lg font-bold text-emerald-600 font-mono mt-1">₹{Math.round(analytics.verifiedSum / (analytics.totalCount || 1)).toLocaleString('en-IN')}</p>
+                </Card>
+                <Card className="p-4 bg-white border-primary/5 shadow-sm">
+                    <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Primary Cause</p>
+                    <p className="text-xs font-black text-primary mt-2 truncate" title={analytics.topCause}>{analytics.topCause}</p>
                 </Card>
             </div>
 
@@ -400,13 +617,44 @@ export default function DonorProfilePage() {
 
                         <Card className="lg:col-span-8 border-primary/10 shadow-sm bg-white overflow-hidden">
                             <CardHeader className="bg-primary/5 border-b px-6 py-4">
-                                <CardTitle className="text-lg font-bold">Profile Identity & Details</CardTitle>
+                                <CardTitle className="text-lg font-bold">Profile Identity Details</CardTitle>
                             </CardHeader>
                             <CardContent className="p-6">
                                 {isEditMode ? (
                                     <form onSubmit={handleUpdate} className="space-y-8 font-normal">
                                         <div className="space-y-4">
                                             <h4 className="text-xs font-bold text-muted-foreground capitalize tracking-widest border-b pb-2">Core Identity</h4>
+
+                                            <div className="space-y-4 rounded-xl border border-primary/5 p-4 bg-muted/10 animate-fade-in-up">
+                                                <h4 className="text-xs font-bold text-primary capitalize tracking-widest flex items-center gap-2 border-b pb-2">
+                                                    <ScanLine className="h-4 w-4" /> Identification Evidence
+                                                </h4>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <div className="space-y-1"><Label className="text-[10px] font-bold capitalize">ID Proof Type</Label><Input name="idProofType" value={idProofType} onChange={(e) => setIdProofType(e.target.value)} className="h-9 font-normal" placeholder="Aadhaar, PAN, etc." /></div>
+                                                    <div className="space-y-1"><Label className="text-[10px] font-bold capitalize">ID Number</Label><Input name="idNumber" value={idNumber} onChange={(e) => setIdNumber(e.target.value)} className="h-9 font-mono" placeholder="ID Number" /></div>
+                                                </div>
+                                                
+                                                <div className="space-y-2">
+                                                    <Label className="text-[10px] font-bold capitalize">Upload ID Proof Document</Label>
+                                                    <Input type="file" id="donor-id-proof-file-input" accept="image/png, image/jpeg, image/webp, application/pdf" onChange={handleScanIdProof} disabled={isScanningId} className="h-10 text-xs" />
+                                                    {isScanningId && <div className="flex items-center gap-2 text-xs font-bold text-primary mt-1 animate-pulse"><Loader2 className="h-4 w-4 animate-spin" /> Extracting details...</div>}
+                                                </div>
+
+                                                {idProofPreview && (
+                                                    <>
+                                                        <div className="relative w-full h-48 mt-2 rounded-xl border bg-white shadow-inner overflow-hidden">
+                                                            {idProofPreview.startsWith('data:application/pdf') || idProofPreview.endsWith('.pdf') ? (
+                                                                <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4"><FileIcon className="w-12 h-12 mb-2" /><p className="text-sm text-center font-bold">PDF Artifact Uploaded</p></div>
+                                                            ) : (
+                                                                <Image src={idProofPreview} alt="ID Preview" fill sizes="100vw" className="object-contain" />
+                                                            )}
+                                                        </div>
+                                                        <Button type="button" className="w-full mt-2 font-bold shadow-md active:scale-95 transition-transform" onClick={handleScanExistingIdProof} disabled={isScanningId}>
+                                                            {isScanningId ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />} Scan Existing ID & Autofill
+                                                        </Button>
+                                                    </>
+                                                )}
+                                            </div>
                                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                                 <div className="space-y-2"><Label className="text-xs font-bold capitalize text-muted-foreground tracking-widest">Full Name</Label><Input name="name" defaultValue={donor.name} required className="font-bold"/></div>
                                                 <div className="space-y-2"><Label className="text-xs font-bold capitalize text-muted-foreground tracking-widest">Account Status</Label><Select name="status" defaultValue={donor.status}><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger><SelectContent className="rounded-[12px]"><SelectItem value="Active">Active</SelectItem><SelectItem value="Inactive">Inactive</SelectItem></SelectContent></Select></div>
@@ -422,6 +670,38 @@ export default function DonorProfilePage() {
                                                     <Input name="telegramChatId" defaultValue={donor.telegramChatId || ''} placeholder="e.g. 123456789" className="font-mono"/>
                                                     <p className="text-[10px] text-muted-foreground font-normal">For direct Telegram alerts. Message @userinfobot on Telegram.</p>
                                                 </div>
+                                            </div>
+
+                                            <div className="space-y-4 rounded-xl border border-primary/5 p-4 bg-muted/10">
+                                                <h4 className="text-xs font-bold text-primary capitalize tracking-widest flex items-center gap-2 border-b pb-2">
+                                                    <ScanLine className="h-4 w-4" /> Aadhaar Verification
+                                                </h4>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <div className="space-y-1"><Label className="text-[10px] font-bold capitalize">Aadhaar Number</Label><Input name="aadhaarNumber" value={aadhaarData.aadhaarNumber} onChange={(e) => setAadhaarData({...aadhaarData, aadhaarNumber: e.target.value})} className="h-9 font-mono" placeholder="12 Digit No." /></div>
+                                                    <div className="space-y-1"><Label className="text-[10px] font-bold capitalize">Name on Card</Label><Input name="aadhaarName" value={aadhaarData.aadhaarName} onChange={(e) => setAadhaarData({...aadhaarData, aadhaarName: e.target.value})} className="h-9" /></div>
+                                                </div>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <div className="space-y-1"><Label className="text-[10px] font-bold capitalize">Date of Birth</Label><Input name="aadhaarDob" value={aadhaarData.aadhaarDob} onChange={(e) => setAadhaarData({...aadhaarData, aadhaarDob: e.target.value})} className="h-9" /></div>
+                                                    <div className="space-y-1"><Label className="text-[10px] font-bold capitalize">Gender</Label><Input name="aadhaarGender" value={aadhaarData.aadhaarGender} onChange={(e) => setAadhaarData({...aadhaarData, aadhaarGender: e.target.value})} className="h-9" /></div>
+                                                </div>
+                                                <div className="space-y-1"><Label className="text-[10px] font-bold capitalize">Address on Card</Label><Input name="aadhaarAddress" value={aadhaarData.aadhaarAddress} onChange={(e) => setAadhaarData({...aadhaarData, aadhaarAddress: e.target.value})} className="h-9" /></div>
+                                                
+                                                <div className="space-y-2">
+                                                    <Label className="text-[10px] font-bold capitalize">Upload Aadhaar Document</Label>
+                                                    <Input type="file" accept="image/png, image/jpeg, image/webp" onChange={handleScanAadhaarCard} disabled={isScanningAadhaar} className="h-10 text-xs" />
+                                                    {isScanningAadhaar && <div className="flex items-center gap-2 text-xs font-bold text-primary mt-1 animate-pulse"><Loader2 className="h-4 w-4 animate-spin" /> Extracting details...</div>}
+                                                </div>
+
+                                                {aadhaarPreview && (
+                                                    <>
+                                                        <div className="relative w-full h-48 mt-2 rounded-xl border bg-white shadow-inner overflow-hidden">
+                                                            <Image src={aadhaarPreview} alt="Aadhaar Preview" fill sizes="100vw" className="object-contain" />
+                                                        </div>
+                                                        <Button type="button" className="w-full mt-2 font-bold shadow-md active:scale-95 transition-transform" onClick={handleScanExistingAadhaar} disabled={isScanningAadhaar}>
+                                                            {isScanningAadhaar ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />} Scan Existing Aadhaar & Autofill
+                                                        </Button>
+                                                    </>
+                                                )}
                                             </div>
                                         </div>
 
@@ -525,6 +805,54 @@ export default function DonorProfilePage() {
                                             </div>
                                         </div>
 
+                                                                                 {(donor as any).idProofType && (
+                                             <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-muted/5 animate-fade-in-up">
+                                                 <h4 className="text-xs font-bold text-primary capitalize tracking-widest flex items-center gap-2 border-b pb-2">
+                                                     <ScanLine className="h-4 w-4" /> Identification Evidence
+                                                 </h4>
+                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                     <DetailItem icon={ShieldAlert} label="ID Proof Type" value={(donor as any).idProofType} />
+                                                     <DetailItem icon={User} label="ID Number" value={(donor as any).idNumber} isMono />
+                                                 </div>
+
+                                                 {(donor as any).idProofUrl && (
+                                                     <div className="relative w-full h-48 mt-4 rounded-xl border bg-white shadow-inner overflow-hidden">
+                                                         {((donor as any).idProofUrl.startsWith('data:application/pdf') || (donor as any).idProofUrl.endsWith('.pdf')) ? (
+                                                             <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4"><FileIcon className="w-12 h-12 mb-2" /><p className="text-sm text-center font-bold">PDF Artifact</p></div>
+                                                         ) : (
+                                                             <Image src={(donor as any).idProofUrl} alt="ID Proof Document" fill sizes="100vw" className="object-contain" />
+                                                         )}
+                                                     </div>
+                                                 )}
+                                             </div>
+                                         )}
+
+                                         {donor.aadhaarNumber && (
+                                            <div className="space-y-4 rounded-xl border border-primary/10 p-4 bg-muted/5 animate-fade-in-up">
+                                                <h4 className="text-xs font-bold text-primary capitalize tracking-widest flex items-center gap-2 border-b pb-2">
+                                                    <ScanLine className="h-4 w-4" /> Aadhaar Verification
+                                                </h4>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                    <DetailItem icon={ShieldAlert} label="Aadhaar Number" value={donor.aadhaarNumber} isMono />
+                                                    <DetailItem icon={User} label="Name on Card" value={donor.aadhaarName} />
+                                                </div>
+                                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-2">
+                                                    <DetailItem icon={Calendar} label="Date of Birth" value={donor.aadhaarDob} />
+                                                    <DetailItem icon={User} label="Gender" value={donor.aadhaarGender} />
+                                                </div>
+                                                <div className="mt-2">
+                                                    <DetailItem icon={MapPin} label="Address on Card" value={donor.aadhaarAddress} />
+                                                </div>
+
+                                                {donor.aadhaarProofUrl && (
+                                                    <div className="relative w-full h-48 mt-4 rounded-xl border bg-white shadow-inner overflow-hidden">
+                                                        <Image src={donor.aadhaarProofUrl} alt="Aadhaar Proof Document" fill sizes="100vw" className="object-contain" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+
                                         <div className="p-6 rounded-2xl border border-dashed border-primary/20 bg-muted/5">
                                             <div className="flex items-center gap-2 text-primary font-bold mb-3"><History className="h-4 w-4 opacity-40"/> Team Observations</div>
                                             <p className="text-sm italic font-normal text-primary/80 whitespace-pre-wrap leading-relaxed">
@@ -538,7 +866,64 @@ export default function DonorProfilePage() {
                     </div>
                 </TabsContent>
 
-                <TabsContent value="donations" className="animate-fade-in-up mt-0">
+                <TabsContent value="donations" className="animate-fade-in-up mt-0 space-y-6">
+                    <div className="grid gap-6 grid-cols-1 md:grid-cols-2">
+                        <Card className="border-primary/10 bg-white overflow-hidden shadow-sm">
+                            <CardHeader className="bg-primary/5 border-b pb-3">
+                                <CardTitle className="text-sm font-bold text-primary flex items-center gap-2">
+                                    <PieChartIcon className="h-4 w-4 opacity-40"/> Impact By Category
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6">
+                                {isClient ? (
+                                    <ChartContainer config={donationCategoryChartConfig} className="h-[200px] w-full">
+                                        <PieChart>
+                                            <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
+                                            <Pie data={analytics.categoryData} dataKey="value" nameKey="name" innerRadius={40} outerRadius={60} strokeWidth={2} paddingAngle={5}>
+                                                {analytics.categoryData.map((entry) => (
+                                                    <Cell key={`cell-donations-${entry.name}`} fill={entry.fill} />
+                                                ))}
+                                            </Pie>
+                                            <ChartLegend content={<ChartLegendContent />} />
+                                        </PieChart>
+                                    </ChartContainer>
+                                ) : (
+                                    <Skeleton className="h-[200px] w-full" />
+                                )}
+                            </CardContent>
+                        </Card>
+
+                        <Card className="border-primary/10 bg-white overflow-hidden shadow-sm">
+                            <CardHeader className="bg-primary/5 border-b pb-3">
+                                <CardTitle className="text-sm font-bold text-primary flex items-center gap-2">
+                                    <TrendingUp className="h-4 w-4 opacity-40"/> Monthly Giving Trends
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="pt-6">
+                                {isClient ? (
+                                    <ChartContainer config={monthlyTrendChartConfig} className="h-[200px] w-full">
+                                        <BarChart data={analytics.monthlyTrends}>
+                                            <CartesianGrid vertical={false} strokeDasharray="3 3" opacity={0.1} />
+                                            <XAxis 
+                                                dataKey="month" 
+                                                tickLine={false} 
+                                                axisLine={false} 
+                                                tickMargin={8} 
+                                                tickFormatter={(v) => format(parseISO(v + '-01'), 'MMM yy')}
+                                                tick={{ fontSize: 10, fontWeight: 'bold' }}
+                                            />
+                                            <YAxis hide />
+                                            <ChartTooltip content={<ChartTooltipContent />} />
+                                            <Bar dataKey="total" fill="var(--color-total)" radius={[4, 4, 0, 0]} />
+                                        </BarChart>
+                                    </ChartContainer>
+                                ) : (
+                                    <Skeleton className="h-[200px] w-full" />
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+
                     <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                         <CardHeader className="bg-primary/5 border-b px-6 py-4">
                             <CardTitle className="text-lg font-bold">Contribution History</CardTitle>
@@ -560,18 +945,45 @@ export default function DonorProfilePage() {
                                         </TableHeader>
                                         <TableBody>
                                             {donorDonations.map((donation) => {
-                                                const primaryLink = donation.linkSplit?.[0] || ( (donation as any).campaignId ? { linkName: (donation as any).campaignName || 'Campaign', linkId: (donation as any).campaignId, linkType: 'campaign', amount: donation.amount } : null );
-                                                const initiativeName = primaryLink?.linkName || 'General Organization Fund';
+                                                const links = donation.linkSplit && donation.linkSplit.length > 0 
+                                                    ? donation.linkSplit 
+                                                    : ( (donation as any).campaignId 
+                                                        ? [{ linkName: (donation as any).campaignName || 'Campaign', linkId: (donation as any).campaignId, linkType: 'campaign', amount: donation.amount }] 
+                                                        : [] 
+                                                    );
                                                 
                                                 return (
                                                     <TableRow key={donation.id} className="hover:bg-primary/[0.02] transition-colors border-b border-primary/5 last:border-0 bg-white group">
                                                         <TableCell className="pl-6 py-4">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="p-2 rounded-lg bg-primary/5 text-primary">
-                                                                    {primaryLink?.linkType === 'campaign' ? <FolderKanban className="h-4 w-4"/> : <Lightbulb className="h-4 w-4"/>}
+                                                            {links.length > 0 ? (
+                                                                <div className="space-y-1.5">
+                                                                    {links.map((ln, lIdx) => (
+                                                                        <div key={lIdx} className="flex items-center gap-2">
+                                                                            <div className="p-1 rounded-md bg-primary/5 text-primary shrink-0">
+                                                                                {ln.linkType === 'campaign' ? <FolderKanban className="h-3 w-3"/> : <Lightbulb className="h-3 w-3"/>}
+                                                                            </div>
+                                                                            {ln.linkId ? (
+                                                                                <Link 
+                                                                                    href={ln.linkType === 'campaign' ? `/campaign-members/${ln.linkId}/donations/${donation.id}` : `/leads-members/${ln.linkId}/donations/${donation.id}`}
+                                                                                    className="font-bold text-xs text-primary hover:underline hover:text-primary/80 truncate max-w-[200px]"
+                                                                                >
+                                                                                    {ln.linkName}
+                                                                                </Link>
+                                                                            ) : (
+                                                                                <span className="font-bold text-xs text-primary truncate max-w-[200px]">{ln.linkName}</span>
+                                                                            )}
+                                                                            {links.length > 1 && <span className="text-[10px] font-mono text-muted-foreground font-bold">(₹{ln.amount.toLocaleString('en-IN')})</span>}
+                                                                        </div>
+                                                                    ))}
                                                                 </div>
-                                                                <p className="font-bold text-sm text-primary truncate max-w-[200px]">{initiativeName}</p>
-                                                            </div>
+                                                            ) : (
+                                                                <div className="flex items-center gap-2">
+                                                                    <div className="p-1 rounded-md bg-primary/5 text-primary">
+                                                                        <ShieldAlert className="h-3 w-3" />
+                                                                    </div>
+                                                                    <p className="font-bold text-xs text-primary/60 italic">General Support Fund</p>
+                                                                </div>
+                                                            )}
                                                         </TableCell>
                                                         <TableCell className="font-mono font-bold text-sm text-primary">₹{donation.amount.toLocaleString('en-IN')}</TableCell>
                                                         <TableCell>
@@ -579,6 +991,9 @@ export default function DonorProfilePage() {
                                                                 {(donation.typeSplit || []).map((ts, idx) => (
                                                                     <Badge key={idx} variant="secondary" className="text-[8px] font-bold h-4">{ts.category}</Badge>
                                                                 ))}
+                                                                {(!donation.typeSplit || donation.typeSplit.length === 0) && donation.type && (
+                                                                    <Badge variant="secondary" className="text-[8px] font-bold h-4">{donation.type}</Badge>
+                                                                )}
                                                             </div>
                                                         </TableCell>
                                                         <TableCell className="font-mono text-xs opacity-60">{donation.donationDate}</TableCell>
@@ -588,14 +1003,14 @@ export default function DonorProfilePage() {
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell className="text-right pr-6">
-                                                            {primaryLink?.linkId ? (
+                                                            {links[0]?.linkId ? (
                                                                 <Button variant="ghost" size="sm" asChild className="h-8 font-bold text-[10px] active:scale-95 transition-transform text-primary hover:bg-primary/10">
-                                                                    <Link href={primaryLink.linkType === 'campaign' ? `/campaign-members/${primaryLink.linkId}/donations/${donation.id}` : `/leads-members/${primaryLink.linkId}/donations/${donation.id}`}>
-                                                                        <ExternalLink className="mr-1.5 h-3 w-3"/> View Details
+                                                                    <Link href={links[0].linkType === 'campaign' ? `/campaign-members/${links[0].linkId}/donations/${donation.id}` : `/leads-members/${links[0].linkId}/donations/${donation.id}`}>
+                                                                        <ExternalLink className="mr-1.5 h-3 w-3"/> View Receipt
                                                                     </Link>
                                                                 </Button>
                                                             ) : (
-                                                                <span className="text-[10px] text-muted-foreground italic">Unlinked</span>
+                                                                <span className="text-[10px] text-muted-foreground italic">Offline/General</span>
                                                             )}
                                                         </TableCell>
                                                     </TableRow>

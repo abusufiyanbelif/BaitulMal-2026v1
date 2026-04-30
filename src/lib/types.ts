@@ -355,6 +355,12 @@ export interface Beneficiary extends DocumentData {
     idProofUrl?: string;
     idProofFilename?: string;
     idProofIsPublic?: boolean;
+    aadhaarNumber?: string;
+    aadhaarName?: string;
+    aadhaarDob?: string;
+    aadhaarGender?: string;
+    aadhaarAddress?: string;
+    aadhaarProofUrl?: string;
     notes?: string;
     isEligibleForZakat?: boolean;
     zakatAllocation?: number;
@@ -382,7 +388,16 @@ export interface Donor extends DocumentData {
   email?: string;
   address?: string;
   telegramChatId?: string;
+  aadhaarNumber?: string;
+  aadhaarName?: string;
+  aadhaarDob?: string;
+  aadhaarGender?: string;
+  aadhaarAddress?: string;
+  aadhaarProofUrl?: string;
   bankDetails?: BankDetail[];
+  idProofType?: string;
+  idNumber?: string;
+  idProofUrl?: string;
   accountNumbers?: string[]; // Flattened for querying
   upiIds?: string[]; // Flattened for querying
   status: 'Active' | 'Inactive';
@@ -417,11 +432,14 @@ export interface Donation extends DocumentData {
   donorPhone: string;
   donorId?: string; // Linked Donor Profile ID
   receiverName: string;
+  receiverUpiId?: string;
+  receiverBankDetails?: string;
   amount: number;
   type?: DonationCategory;
   typeSplit: { category: DonationCategory; amount: number, forFundraising?: boolean }[];
   linkSplit?: DonationLink[];
   donationType: 'Cash' | 'Online Payment' | 'Check' | 'Other';
+  onlineProvider?: 'Google Pay' | 'PhonePe' | 'Paytm' | 'Amazon Pay' | 'WhatsApp Pay' | 'Bank Transfer' | 'Other';
   referral: string;
   donationDate: string;
   status: 'Verified' | 'Pending' | 'Canceled' | 'Rejected';
@@ -453,6 +471,12 @@ export interface UserProfile extends DocumentData {
   idProofType?: string;
   idNumber?: string;
   idProofUrl?: string;
+  aadhaarNumber?: string;
+  aadhaarName?: string;
+  aadhaarDob?: string;
+  aadhaarGender?: string;
+  aadhaarAddress?: string;
+  aadhaarProofUrl?: string;
   organizationGroup?: GroupId | null;
   organizationRole?: string;
   linkedDonorId?: string;

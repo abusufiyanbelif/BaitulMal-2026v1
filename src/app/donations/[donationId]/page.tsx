@@ -314,7 +314,14 @@ export default function UnlinkedDonationDetailsPage() {
                                     <DetailItem label="Total Amount" value={`₹${donation.amount.toFixed(2)}`} isMono />
                                     <DetailItem label="Donation Date" value={donation.donationDate} />
                                     <DetailItem label="Status" value={<Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="font-bold">{donation.status}</Badge>} />
-                                    <DetailItem label="Payment Method" value={<Badge variant="outline" className="font-bold border-primary/20 text-primary">{donation.donationType}</Badge>} />
+                                    <DetailItem label="Payment Method" value={
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant="outline" className="font-bold border-primary/20 text-primary">{donation.donationType}</Badge>
+                                            {(donation as any).onlineProvider && (
+                                                <Badge variant="secondary" className="font-bold">{(donation as any).onlineProvider}</Badge>
+                                            )}
+                                        </div>
+                                    } />
                                     <DetailItem label="Fund Categories" value={
                                         <div className="flex flex-wrap gap-1">
                                             {typeSplit.map((s: any) => (
@@ -397,6 +404,12 @@ export default function UnlinkedDonationDetailsPage() {
                                     />
                                     <DetailItem label="Contact Details" value={donation.donorPhone} isMono />
                                     <DetailItem label="Received By" value={donation.receiverName} />
+                                    {(donation as any).receiverUpiId && (
+                                        <DetailItem label="Receiver UPI ID" value={(donation as any).receiverUpiId} isMono />
+                                    )}
+                                    {(donation as any).receiverBankDetails && (
+                                        <DetailItem label="Receiver Bank Details" value={(donation as any).receiverBankDetails} />
+                                    )}
                                     <DetailItem label="Referral Notes" value={donation.referral} />
                                 </CardContent>
                             </Card>

@@ -1,10 +1,11 @@
 'use client';
 
-import { createContext, useMemo as useReactMemo, ReactNode } from 'react';
+import { createContext, useMemo as useReactMemo, ReactNode, useState, useEffect } from 'react';
 import { useFirestore, useMemoFirebase, useDoc, doc, type DocumentReference } from '@/firebase';
 import type { User } from 'firebase/auth';
 import type { UserProfile } from '@/lib/types';
 import { createAdminPermissions } from '@/lib/modules';
+import { usePathname } from 'next/navigation';
 
 interface SessionContextType {
     user: User | null;
@@ -18,15 +19,52 @@ export const SessionContext = createContext<SessionContextType | undefined>(unde
 
 export function SessionProvider({ authUser, children, isAuthenticating }: { authUser?: User | null; children: ReactNode; isAuthenticating: boolean; }) {
   const firestore = useFirestore();
+  const pathname = usePathname();
+  
+  const [tokenRole, setTokenRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!authUser) {
+      setTokenRole(null);
+      return;
+    }
+    authUser.getIdTokenResult().then(result => {
+      if (result.claims && result.claims.role) {
+        setTokenRole(result.claims.role as string);
+      }
+    }).catch(err => {
+      console.warn('Failed to parse user role claims securely:', err);
+    });
+  }, [authUser]);
+
+  const storedRole = typeof window !== 'undefined' ? localStorage.getItem('portal_role') : null;
+  const isViewingDonorPortal = pathname?.startsWith('/donor-portal') || storedRole === 'Donor' || tokenRole === 'Donor';
+  const isViewingBeneficiaryPortal = pathname?.startsWith('/beneficiary-portal') || storedRole === 'Beneficiary' || tokenRole === 'Beneficiary';
+  const isViewingStaffPortal = pathname?.startsWith('/dashboard') || pathname?.startsWith('/settings') || storedRole === 'Staff' || tokenRole === 'Admin' || tokenRole === 'User';
 
   const userDocRef = useMemoFirebase(() => {
     if (!firestore || !authUser?.uid) return null;
+    if (isViewingDonorPortal || isViewingBeneficiaryPortal) return null;
     return doc(firestore, 'users', authUser.uid) as DocumentReference<UserProfile>;
-  }, [firestore, authUser?.uid]);
+  }, [firestore, authUser?.uid, isViewingDonorPortal, isViewingBeneficiaryPortal, tokenRole]);
+
+  const donorDocRef = useMemoFirebase(() => {
+    if (!firestore || !authUser?.uid) return null;
+    if (isViewingStaffPortal || isViewingBeneficiaryPortal) return null;
+    return doc(firestore, 'donors', authUser.uid) as DocumentReference<any>;
+  }, [firestore, authUser?.uid, isViewingStaffPortal, isViewingBeneficiaryPortal, tokenRole]);
+
+  const beneficiaryDocRef = useMemoFirebase(() => {
+    if (!firestore || !authUser?.uid) return null;
+    if (isViewingStaffPortal || isViewingDonorPortal) return null;
+    return doc(firestore, 'beneficiaries', authUser.uid) as DocumentReference<any>;
+  }, [firestore, authUser?.uid, isViewingStaffPortal, isViewingDonorPortal, tokenRole]);
 
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userDocRef);
+  const { data: donorProfile, isLoading: isDonorLoading } = useDoc<any>(donorDocRef);
+  const { data: beneficiaryProfile, isLoading: isBenLoading } = useDoc<any>(beneficiaryDocRef);
   
-  const isLoading = isAuthenticating || (!!authUser && isProfileLoading);
+  const isLoading = isAuthenticating || (!!authUser && (isProfileLoading || isDonorLoading || isBenLoading));
   
   const profileWithDefaults = useReactMemo(() => {
     if (!authUser) return null;
@@ -63,6 +101,33 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
                 permissions: createAdminPermissions(),
             } as UserProfile;
         }
+
+        if (donorProfile) {
+            return {
+                id: authUser.uid,
+                name: donorProfile.name || 'Supporter',
+                email: donorProfile.email || '',
+                loginId: donorProfile.phone || '',
+                role: 'Donor',
+                status: 'Active',
+                linkedDonorId: authUser.uid,
+                permissions: {}
+            } as any;
+        }
+
+        if (beneficiaryProfile) {
+            return {
+                id: authUser.uid,
+                name: beneficiaryProfile.name || 'Beneficiary',
+                email: beneficiaryProfile.email || '',
+                loginId: beneficiaryProfile.phone || '',
+                role: 'Beneficiary',
+                status: 'Active',
+                linkedBeneficiaryId: authUser.uid,
+                permissions: {}
+            } as any;
+        }
+
         return null;
     }
     

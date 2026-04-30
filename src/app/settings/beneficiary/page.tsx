@@ -36,6 +36,7 @@ const MANDATORY_FIELDS = [
     { id: 'status', name: 'Status' },
     { id: 'notes', name: 'Internal notes' },
     { id: 'zakatAllocation', name: 'Zakat allocation' },
+    { id: 'aadhaarNumber', name: 'Aadhaar Card' },
 ];
 
 export default function BeneficiarySettingsPage() {

@@ -234,15 +234,16 @@ service cloud.firestore {
     // =========================================================================
 
     match /beneficiaries/{benId} {
-      allow read: if isStaff();
+      allow read: if isStaff() || (isSignedIn() && request.auth.uid == benId);
       allow create: if isAdmin() || hasPermission('beneficiaries', 'create') || isStaff();
-      allow update: if isAdmin() || hasPermission('beneficiaries', 'update') || isStaff();
+      allow update: if isAdmin() || hasPermission('beneficiaries', 'update') || isStaff() ||
+                     (isSignedIn() && request.auth.uid == benId);
       allow delete: if isAdmin() || hasPermission('beneficiaries', 'delete');
     }
 
     match /beneficiaries/{benId}/{allSubPaths=**} {
-      allow read: if isStaff();
-      allow write: if isAdmin() || hasPermission('beneficiaries', 'update') || isStaff();
+      allow read: if isStaff() || (isSignedIn() && request.auth.uid == benId);
+      allow write: if isAdmin() || isStaff() || (isSignedIn() && request.auth.uid == benId);
     }
 
     // =========================================================================
@@ -314,7 +315,7 @@ service cloud.firestore {
      * Donors/Beneficiaries: can read their own profile.
      */
     match /users/{userId} {
-      allow get: if isAdmin() || isOwner(userId) || isStaff();
+      allow get: if request.auth != null;
       allow list: if isAdmin();
       // Create: Admin can create any profile. New user creates own profile.
       allow create: if isAdmin() ||
