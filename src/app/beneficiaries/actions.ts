@@ -217,7 +217,12 @@ export async function upsertInitiativeBeneficiaryAction(
         revalidatePath(`/${pathPrefix}/${initiativeId}/summary`);
         revalidatePath(`/${publicPrefix}/${initiativeId}/summary`);
         
-        await syncInitiativeCollectedTotals(adminDb, [{ linkId: initiativeId, linkType: initiativeType, linkName: '', amount: 0 }]);
+        if (initiativeType === 'lead') {
+            const { recalculateLeadGoalAction } = await import('@/app/leads-members/actions');
+            await recalculateLeadGoalAction(initiativeId);
+        } else {
+            await syncInitiativeCollectedTotals(adminDb, [{ linkId: initiativeId, linkType: initiativeType, linkName: '', amount: 0 }]);
+        }
         
         // Notify about beneficiary status change
         try {
@@ -306,6 +311,10 @@ export async function bulkUpdateBeneficiaryVettingAction(
         revalidatePath('/beneficiaries');
         if (initiativeContext) {
             revalidatePath(`/${initiativeContext.type === 'campaign' ? 'campaign-members' : 'leads-members'}/${initiativeContext.id}/beneficiaries`);
+            if (initiativeContext.type === 'lead') {
+                const { recalculateLeadGoalAction } = await import('@/app/leads-members/actions');
+                await recalculateLeadGoalAction(initiativeContext.id);
+            }
         }
         
         return { success: true, message: `Successfully Updated ${ids.length} Profiles.` };
@@ -376,6 +385,10 @@ export async function bulkUpdateInitiativeBeneficiaryStatusAction(
         }
 
         revalidatePath(`/${collectionName}-members/${initiativeId}/beneficiaries`);
+        if (initiativeType === 'lead') {
+            const { recalculateLeadGoalAction } = await import('@/app/leads-members/actions');
+            await recalculateLeadGoalAction(initiativeId);
+        }
         return { success: true, message: `Successfully Updated ${ids.length} Recipients.` };
     } catch (error: any) {
         console.error("Bulk Disbursement Update Failed:", error);
@@ -551,6 +564,13 @@ export async function deleteBeneficiaryAction(beneficiaryId: string): Promise<{ 
 
         if (affectedLinks.length > 0) {
             await syncInitiativeCollectedTotals(adminDb, affectedLinks);
+            const leadLinks = affectedLinks.filter(l => l.linkType === 'lead');
+            if (leadLinks.length > 0) {
+                const { recalculateLeadGoalAction } = await import('@/app/leads-members/actions');
+                for (const link of leadLinks) {
+                    await recalculateLeadGoalAction(link.linkId);
+                }
+            }
         }
 
         revalidatePath('/beneficiaries');

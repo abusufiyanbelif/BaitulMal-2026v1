@@ -33,6 +33,9 @@ export function DocuExtractHeader() {
   const handleLogout = async () => {
     if (auth) {
       await signOut(auth);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('portal_role');
+      }
       router.push('/login');
     }
   };

@@ -25,6 +25,9 @@ export function InactivityMonitor() {
     if (auth.currentUser) {
       try {
         await signOut(auth);
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('portal_role');
+        }
         toast({
           title: "Session Expired",
           description: "You have been signed out due to inactivity to protect institutional data.",

@@ -42,29 +42,31 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
   const isViewingBeneficiaryPortal = pathname?.startsWith('/beneficiary-portal') || storedRole === 'Beneficiary' || tokenRole === 'Beneficiary';
   const isViewingStaffPortal = pathname?.startsWith('/dashboard') || pathname?.startsWith('/settings') || storedRole === 'Staff' || tokenRole === 'Admin' || tokenRole === 'User';
 
+  // Load profiles based on availability, with Staff/Admin taking precedence for lookup
   const userDocRef = useMemoFirebase(() => {
     if (!firestore || !authUser?.uid) return null;
-    if (isViewingDonorPortal || isViewingBeneficiaryPortal) return null;
     return doc(firestore, 'users', authUser.uid) as DocumentReference<UserProfile>;
-  }, [firestore, authUser?.uid, isViewingDonorPortal, isViewingBeneficiaryPortal, tokenRole]);
+  }, [firestore, authUser?.uid]);
 
   const donorDocRef = useMemoFirebase(() => {
     if (!firestore || !authUser?.uid) return null;
-    if (isViewingStaffPortal || isViewingBeneficiaryPortal) return null;
+    // Only load donor profile if specifically on donor portal or identified as a donor
+    if (!isViewingDonorPortal) return null;
     return doc(firestore, 'donors', authUser.uid) as DocumentReference<any>;
-  }, [firestore, authUser?.uid, isViewingStaffPortal, isViewingBeneficiaryPortal, tokenRole]);
+  }, [firestore, authUser?.uid, isViewingDonorPortal]);
 
   const beneficiaryDocRef = useMemoFirebase(() => {
     if (!firestore || !authUser?.uid) return null;
-    if (isViewingStaffPortal || isViewingDonorPortal) return null;
+    // Only load beneficiary profile if specifically on beneficiary portal or identified as a beneficiary
+    if (!isViewingBeneficiaryPortal) return null;
     return doc(firestore, 'beneficiaries', authUser.uid) as DocumentReference<any>;
-  }, [firestore, authUser?.uid, isViewingStaffPortal, isViewingDonorPortal, tokenRole]);
+  }, [firestore, authUser?.uid, isViewingBeneficiaryPortal]);
 
   const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userDocRef);
   const { data: donorProfile, isLoading: isDonorLoading } = useDoc<any>(donorDocRef);
   const { data: beneficiaryProfile, isLoading: isBenLoading } = useDoc<any>(beneficiaryDocRef);
   
-  const isLoading = isAuthenticating || (!!authUser && (isProfileLoading || isDonorLoading || isBenLoading));
+  const isLoading = isAuthenticating || (!!authUser && (isProfileLoading || (isViewingDonorPortal && isDonorLoading) || (isViewingBeneficiaryPortal && isBenLoading)));
   
   const profileWithDefaults = useReactMemo(() => {
     if (!authUser) return null;
@@ -130,7 +132,6 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
 
         return null;
     }
-    
     return {
         ...userProfile,
         role: isAdminIdentity ? 'Admin' : (userProfile.role || 'User'),

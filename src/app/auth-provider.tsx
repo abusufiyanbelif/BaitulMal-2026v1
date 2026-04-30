@@ -44,6 +44,13 @@ function RouteGuard({ children }: { children: ReactNode }) {
 
         // Redirect guests away from private routes
         if (!user && !isPublicRoute) {
+            // SAFETY: Check if we just logged in but state hasn't synced yet
+            const storedRole = typeof window !== 'undefined' ? localStorage.getItem('portal_role') : null;
+            if (storedRole && pathname !== '/login' && pathname !== '/portal-login') {
+                console.log('RouteGuard: Detected transitional auth state, awaiting synchronization...');
+                return;
+            }
+
             setIsRedirecting(true);
             const callbackParam = pathname !== '/' ? `?callbackUrl=${encodeURIComponent(pathname)}` : '';
             router.push(`/login${callbackParam}`);

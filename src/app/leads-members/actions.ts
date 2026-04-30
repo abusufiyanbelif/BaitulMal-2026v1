@@ -114,16 +114,42 @@ export async function recalculateLeadGoalAction(leadId: string): Promise<{ succe
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     try {
+        const leadRef = adminDb.collection('leads').doc(leadId);
+        const leadSnap = await leadRef.get();
+        if (!leadSnap.exists) throw new Error("Lead Not Found.");
+        
+        const leadData = leadSnap.data() as Lead;
         const beneficiariesSnap = await adminDb.collection(`leads/${leadId}/beneficiaries`).get();
+        
         let total = 0;
+        const stats = { total: 0, given: 0, pending: 0, zakatEligible: 0 };
+        const categoryCounts: Record<string, number> = {};
+
         beneficiariesSnap.forEach((doc: any) => {
             const data = doc.data();
-            total += (Number(data.kitAmount) || 0);
+            const kitAmount = Number(data.kitAmount) || 0;
+            total += kitAmount;
+            
+            stats.total += 1;
+            if (data.status === 'Given') stats.given += 1;
+            else stats.pending += 1;
+            if (data.isEligibleForZakat) stats.zakatEligible += 1;
+            
+            const catId = data.itemCategoryId || 'general';
+            categoryCounts[catId] = (categoryCounts[catId] || 0) + 1;
         });
 
-        await adminDb.collection('leads').doc(leadId).update({
+        // Update counts in itemCategories
+        const updatedItemCategories = (leadData.itemCategories || []).map(cat => ({
+            ...cat,
+            beneficiaryCount: categoryCounts[cat.id] || 0
+        }));
+
+        await leadRef.update({
             targetAmount: total,
             requiredAmount: total,
+            beneficiaryStats: stats,
+            itemCategories: updatedItemCategories,
             updatedAt: FieldValue.serverTimestamp()
         });
 

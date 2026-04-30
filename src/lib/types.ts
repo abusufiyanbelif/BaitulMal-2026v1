@@ -255,6 +255,7 @@ export interface ItemCategory {
   minMembers?: number;
   maxMembers?: number;
   items: RationItem[];
+  beneficiaryCount?: number;
 }
 
 export interface Campaign extends DocumentData {
@@ -311,6 +312,12 @@ export interface Lead extends DocumentData {
   shopAddress: string;
   documents?: CampaignDocument[];
   itemCategories: ItemCategory[];
+  beneficiaryStats?: {
+    total: number;
+    given: number;
+    pending: number;
+    zakatEligible: number;
+  };
   allowedDonationTypes?: DonationCategory[];
   createdAt?: Timestamp | FieldValue;
   updatedAt?: Timestamp | FieldValue;

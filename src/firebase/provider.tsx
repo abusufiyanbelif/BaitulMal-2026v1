@@ -82,10 +82,17 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
     const unsubscribe = onIdTokenChanged(
       auth,
       async (firebaseUser) => {
+        // Immediately set loading to true to prevent race conditions during session sync
+        setUserAuthState(prev => ({ ...prev, isUserLoading: true }));
+        
         if (firebaseUser) {
           // Sync token to server session cookie
-          const idToken = await firebaseUser.getIdToken();
-          await createSessionAction(idToken);
+          try {
+            const idToken = await firebaseUser.getIdToken();
+            await createSessionAction(idToken);
+          } catch (err) {
+            console.error("FirebaseProvider: Session sync failed:", err);
+          }
         } else {
           // Clear server session cookie
           await clearSessionAction();

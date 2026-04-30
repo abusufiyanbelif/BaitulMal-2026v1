@@ -78,27 +78,31 @@ export default function LeadDetailsPage() {
   const [editMode, setEditMode] = useState(false);
   const [editableLead, setEditableLead] = useState<Lead | null>(null);
   const [isSyncing, setIsSyncing] = useState(false);
-  
   const [itemToDelete, setItemToDelete] = useState<{ itemId: string; itemName: string } | null>(null);
-   const [isDeleteItemDialogOpen, setIsDeleteItemDialogOpen] = useState(false);
- 
-   const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
-   const [pendingUpdates, setPendingUpdates] = useState<any>(null);
-  
+  const [isDeleteItemDialogOpen, setIsDeleteItemDialogOpen] = useState(false);
+  const [isVerificationDialogOpen, setIsVerificationDialogOpen] = useState(false);
+  const [pendingUpdates, setPendingUpdates] = useState<any>(null);
+
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('general');
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+
+  const currentCategory = useMemo(() => {
+    return editableLead?.itemCategories?.find(c => c.id === selectedCategoryId) || editableLead?.itemCategories?.[0];
+  }, [editableLead, selectedCategoryId]);
+
+  const itemList = useMemo(() => {
+    return currentCategory?.items || [];
+  }, [currentCategory]);
+
   useEffect(() => {
     if (lead && !editMode) {
       setEditableLead(JSON.parse(JSON.stringify(lead)));
+      if (lead.itemCategories?.[0]) {
+        setSelectedCategoryId(lead.itemCategories[0].id);
+      }
     }
   }, [editMode, lead]);
-
-  const itemList = useMemo(() => {
-    if (!editableLead) return [];
-    if (Array.isArray(editableLead.itemCategories) && editableLead.itemCategories.length > 0) {
-        return editableLead.itemCategories[0]?.items || [];
-    }
-    return [];
-  }, [editableLead]);
-
 
   const canReadSummary = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.summary.read', false);
   const canReadBeneficiaries = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.beneficiaries.read', false);
@@ -114,26 +118,69 @@ export default function LeadDetailsPage() {
   
   const handleItemChange = (itemId: string, field: keyof RationItem, value: string | number) => {
     if (!editableLead || !editableLead.itemCategories) return;
-    const updatedItems = itemList.map((item: RationItem) => 
-        item.id === itemId ? { ...item, [field]: value } : item
-    );
-    const newItemCategories = [{ ...editableLead.itemCategories[0], items: updatedItems }];
-    handleFieldChange('itemCategories', newItemCategories);
+    
+    const updatedCategories = editableLead.itemCategories.map(cat => {
+      if (cat.id === selectedCategoryId) {
+        const updatedItems = cat.items.map(item => 
+          item.id === itemId ? { ...item, [field]: value } : item
+        );
+        return { ...cat, items: updatedItems };
+      }
+      return cat;
+    });
+
+    handleFieldChange('itemCategories', updatedCategories);
   };
 
   const handleAddItem = () => {
-    if (!editableLead) return;
+    if (!editableLead || !selectedCategoryId) return;
     const newItem: RationItem = { id: `item-${Date.now()}`, name: '', quantity: 1, quantityType: 'unit', price: 0, notes: '' };
-    const updatedItems = [...itemList, newItem];
-    const newItemCategories = [{ ...(editableLead.itemCategories?.[0] || {id: 'general', name: 'General', items:[]}), items: updatedItems }];
-    handleFieldChange('itemCategories', newItemCategories);
+    
+    const updatedCategories = editableLead.itemCategories.map(cat => {
+      if (cat.id === selectedCategoryId) {
+        return { ...cat, items: [...cat.items, newItem] };
+      }
+      return cat;
+    });
+
+    handleFieldChange('itemCategories', updatedCategories);
+  };
+
+  const handleAddCategory = () => {
+    if (!editableLead || !newCategoryName.trim()) return;
+    const newCat: ItemCategory = {
+        id: `cat-${Date.now()}`,
+        name: newCategoryName.trim(),
+        items: [],
+        beneficiaryCount: 0
+    };
+    const updatedCategories = [...(editableLead.itemCategories || []), newCat];
+    handleFieldChange('itemCategories', updatedCategories);
+    setNewCategoryName('');
+    setIsAddingCategory(false);
+    setSelectedCategoryId(newCat.id);
+  };
+
+  const handleDeleteCategory = (catId: string) => {
+    if (!editableLead || (editableLead.itemCategories?.length || 0) <= 1) return;
+    const updatedCategories = editableLead.itemCategories.filter(c => c.id !== catId);
+    handleFieldChange('itemCategories', updatedCategories);
+    if (selectedCategoryId === catId) {
+        setSelectedCategoryId(updatedCategories[0].id);
+    }
   };
 
   const handleDeleteItem = (itemId: string) => {
-    if (!editableLead || !editableLead.itemCategories) return;
-    const updatedItems = itemList.filter((item: RationItem) => item.id !== itemId);
-    const newItemCategories = [{ ...editableLead.itemCategories[0], items: updatedItems }];
-    handleFieldChange('itemCategories', newItemCategories);
+    if (!editableLead || !selectedCategoryId) return;
+    
+    const updatedCategories = editableLead.itemCategories.map(cat => {
+      if (cat.id === selectedCategoryId) {
+        return { ...cat, items: cat.items.filter(item => item.id !== itemId) };
+      }
+      return cat;
+    });
+
+    handleFieldChange('itemCategories', updatedCategories);
   };
 
   const handleDeleteItemClick = (itemId: string, itemName: string) => {
@@ -210,16 +257,49 @@ export default function LeadDetailsPage() {
 
     const batch = writeBatch(firestore);
     let newTotalRequiredAmount = 0;
-    const newKitAmount = totalKitCost;
+    
+    // Create a map of category ID to its total cost
+    const categoryCostMap: Record<string, number> = {};
+    const updatedItemCategories = (editableLead.itemCategories || []).map(cat => {
+        const cost = cat.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+        categoryCostMap[cat.id] = cost;
+        return { ...cat, beneficiaryCount: 0 }; // Reset for recounting
+    });
+
+    const stats = { total: 0, given: 0, pending: 0, zakatEligible: 0 };
+    const categoryCounts: Record<string, number> = {};
 
     for (const beneficiary of beneficiaries) {
+      const catId = beneficiary.itemCategoryId || 'general';
+      const newKitAmount = categoryCostMap[catId] || categoryCostMap['general'] || (updatedItemCategories[0] ? categoryCostMap[updatedItemCategories[0].id] : 0);
+      
       const beneficiaryRef = doc(firestore, `leads/${leadId}/beneficiaries`, beneficiary.id);
       batch.update(beneficiaryRef, { kitAmount: newKitAmount });
+      
       newTotalRequiredAmount += newKitAmount;
+      
+      // Update stats for lead doc
+      stats.total += 1;
+      if (beneficiary.status === 'Given') stats.given += 1;
+      else stats.pending += 1;
+      if (beneficiary.isEligibleForZakat) stats.zakatEligible += 1;
+      
+      categoryCounts[catId] = (categoryCounts[catId] || 0) + 1;
     }
 
+    // Finalize counts in updatedItemCategories
+    updatedItemCategories.forEach(cat => {
+        cat.beneficiaryCount = categoryCounts[cat.id] || 0;
+    });
+
     if (leadDocRef) {
-        batch.update(leadDocRef, { targetAmount: newTotalRequiredAmount });
+        batch.update(leadDocRef, { 
+            targetAmount: newTotalRequiredAmount,
+            requiredAmount: newTotalRequiredAmount,
+            beneficiaryStats: stats,
+            itemCategories: updatedItemCategories,
+            updatedAt: new Date().toISOString() as any
+        });
     }
 
     try {
@@ -255,6 +335,8 @@ export default function LeadDetailsPage() {
         </main>
     );
   }
+
+  const totalKitCost = useMemo(() => calculateTotal(itemList), [itemList]);
 
   return (
     <>
@@ -315,15 +397,74 @@ export default function LeadDetailsPage() {
           </div>
         </CardHeader>
         <CardContent className="pt-6 font-normal">
-          <div className="flex justify-between items-center mb-6 flex-wrap gap-4">
-            <h4 className="text-lg font-bold text-primary">Combined Cost Per Recipient: <span className="font-mono text-xl">₹{totalKitCost.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span></h4>
-            {canUpdate && (
-                <Button onClick={handleSyncKitAmounts} disabled={isSyncing || editMode} variant="secondary" className="font-bold border-primary/10 text-primary transition-transform active:scale-95">
-                    {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
-                    Sync All Allotments
-                </Button>
-            )}
+          {/* Category Selection Tabs */}
+          <div className="flex flex-col space-y-4 mb-6">
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2 flex-wrap">
+                    {editableLead.itemCategories?.map((cat) => (
+                        <div key={cat.id} className="relative group">
+                            <Button 
+                                variant={selectedCategoryId === cat.id ? 'default' : 'outline'} 
+                                size="sm" 
+                                onClick={() => setSelectedCategoryId(cat.id)}
+                                className={cn(
+                                    "font-bold transition-all duration-200 active:scale-95",
+                                    selectedCategoryId === cat.id ? "shadow-md" : "text-muted-foreground border-primary/10"
+                                )}
+                            >
+                                {cat.name}
+                                {cat.beneficiaryCount !== undefined && (
+                                    <span className="ml-2 px-1.5 py-0.5 rounded-full bg-black/10 text-[10px]">
+                                        {cat.beneficiaryCount}
+                                    </span>
+                                )}
+                            </Button>
+                            {editMode && (editableLead.itemCategories?.length || 0) > 1 && (
+                                <button 
+                                    onClick={() => handleDeleteCategory(cat.id)}
+                                    className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                    <X className="h-2 w-2" />
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                    {editMode && !isAddingCategory && (
+                        <Button variant="ghost" size="sm" onClick={() => setIsAddingCategory(true)} className="text-primary font-bold">
+                            <Plus className="h-4 w-4 mr-1" /> Add Category
+                        </Button>
+                    )}
+                    {editMode && isAddingCategory && (
+                        <div className="flex items-center gap-2 animate-fade-in-zoom">
+                            <Input 
+                                placeholder="Category Name..." 
+                                value={newCategoryName} 
+                                onChange={(e) => setNewCategoryName(e.target.value)}
+                                className="h-8 text-xs font-normal w-32"
+                                autoFocus
+                                onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+                            />
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-emerald-600" onClick={handleAddCategory}><CheckCircle2 className="h-4 w-4" /></Button>
+                            <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => setIsAddingCategory(false)}><X className="h-4 w-4" /></Button>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <div className="flex justify-between items-center flex-wrap gap-4 pt-2 border-t border-primary/5">
+                <h4 className="text-lg font-bold text-primary">
+                    Cost for <span className="text-primary/70">{currentCategory?.name}</span>: 
+                    <span className="font-mono text-xl ml-2 text-primary">₹{totalKitCost.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                </h4>
+                {canUpdate && (
+                    <Button onClick={handleSyncKitAmounts} disabled={isSyncing || editMode} variant="secondary" className="font-bold border-primary/10 text-primary transition-transform active:scale-95 shadow-sm">
+                        {isSyncing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                        Sync All Allotments
+                    </Button>
+                )}
+            </div>
           </div>
+>
           <ScrollArea className="w-full">
             <div className="min-w-[800px] border rounded-xl overflow-hidden shadow-inner">
                 <Table>

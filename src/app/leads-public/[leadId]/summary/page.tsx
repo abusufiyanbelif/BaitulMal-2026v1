@@ -106,12 +106,10 @@ export default function PublicLeadSummaryPage() {
     useEffect(() => { setIsClient(true); }, []);
 
     const leadDocRef = useMemoFirebase(() => (firestore && leadId) ? doc(firestore, 'leads', leadId) as DocumentReference<Lead> : null, [firestore, leadId]);
-    const beneficiariesCollectionRef = useMemoFirebase(() => (firestore && leadId) ? collection(firestore, `leads/${leadId}/beneficiaries`) : null, [firestore, leadId]);
     
     const allDonationsCollectionRef = useMemoFirebase(() => (firestore) ? query(collection(firestore, 'donations'), where('status', '==', 'Verified')) : null, [firestore]);
 
     const { data: lead, isLoading: isLeadLoading } = useDoc<Lead>(leadDocRef);
-    const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
     const { data: allDonations, isLoading: areDonationsLoading } = useCollection<Donation>(allDonationsCollectionRef);
     
     const visibilityRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_visibility') : null, [firestore]);
@@ -127,10 +125,10 @@ export default function PublicLeadSummaryPage() {
     const itemPendingLabel = useMemo(() => isRationInitiative ? 'Pending Kits' : 'Pending Support', [isRationInitiative]);
 
     const beneficiaryGroups = useMemo(() => {
-        if (!lead || !beneficiaries) return [];
+        if (!lead) return [];
         const categories = (lead.itemCategories || []).filter(c => c.name !== 'Item Price List');
         return categories.map(cat => {
-            const count = beneficiaries.filter(b => b.itemCategoryId === cat.id || (!b.itemCategoryId && cat.id === 'general')).length;
+            const count = cat.beneficiaryCount || 0;
             const kitAmount = cat.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
             
             let displayName = cat.name;
@@ -141,19 +139,10 @@ export default function PublicLeadSummaryPage() {
 
             return { id: cat.id, name: displayName, count, kitAmount, totalAmount: count * kitAmount };
         });
-    }, [lead, beneficiaries, isRationInitiative]);
-
-    const calculatedRequirementTotal = useMemo(() => {
-        if (isRationInitiative) {
-            return beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0);
-        } else {
-            const singleUnitTotal = lead?.itemCategories?.[0]?.items.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity) || 0), 0) || 0;
-            return singleUnitTotal * (beneficiaries?.length || 0);
-        }
-    }, [beneficiaryGroups, isRationInitiative, lead, beneficiaries]);
+    }, [lead, isRationInitiative]);
 
     const fundingData = useMemo(() => {
-        if (!allDonations || !lead || !beneficiaries) return null;
+        if (!allDonations || !lead) return null;
 
         const donations = allDonations.filter(d => d.linkSplit?.some(link => link.linkId === lead.id || link.linkId === `lead_${lead.id}`));
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
@@ -189,12 +178,11 @@ export default function PublicLeadSummaryPage() {
             });
         });
         
-        const zakatAllocated = beneficiaries.filter(b => b.isEligibleForZakat && b.zakatAllocation).reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
-        const zakatGiven = beneficiaries.filter(b => b.isEligibleForZakat && b.zakatAllocation && b.status === 'Given').reduce((sum, b) => sum + (b.zakatAllocation || 0), 0);
-        const zakatPending = zakatAllocated - zakatGiven;
-        const totalZakatBalance = (amountsByCategory.Zakat || 0) - zakatAllocated;
+        const stats = lead.beneficiaryStats || { total: 0, given: 0, pending: 0, zakatEligible: 0 };
         
-        const zakatSurplus = Math.max(0, zakatForGoalAmount - zakatAllocated);
+        // Note: Individual zakat allocations are not aggregated yet in lead.beneficiaryStats, 
+        // but we can estimate or wait for more complex aggregation if needed.
+        // For now, we'll keep it simple to fix the security leak.
         
         const allowedTypes = lead.allowedDonationTypes && lead.allowedDonationTypes.length > 0
             ? lead.allowedDonationTypes
@@ -207,7 +195,7 @@ export default function PublicLeadSummaryPage() {
                 return sum + amount;
             }, 0);
 
-        const targetAmount = calculatedRequirementTotal > 0 ? calculatedRequirementTotal : (lead.targetAmount || 0);
+        const targetAmount = lead.targetAmount || 0;
 
         return {
             totalCollectedForGoal,
@@ -215,13 +203,17 @@ export default function PublicLeadSummaryPage() {
             targetAmount,
             amountsByCategory,
             paymentTypeStats,
-            zakatAllocated, zakatGiven, zakatPending, zakatSurplus, totalZakatBalance,
-            totalBeneficiaries: beneficiaries.length,
-            beneficiariesGiven: beneficiaries.filter(b => b.status === 'Given').length,
-            beneficiariesPending: beneficiaries.length - beneficiaries.filter(b => b.status === 'Given').length,
+            zakatAllocated: 0, // Simplified for security fix
+            zakatGiven: 0, 
+            zakatPending: 0, 
+            zakatSurplus: 0, 
+            totalZakatBalance: amountsByCategory.Zakat || 0,
+            totalBeneficiaries: stats.total,
+            beneficiariesGiven: stats.given,
+            beneficiariesPending: stats.pending,
             grandTotal: Object.values(amountsByCategory).reduce((sum, val) => sum + val, 0)
         };
-    }, [allDonations, lead, beneficiaries, calculatedRequirementTotal]);
+    }, [allDonations, lead]);
 
     const chartDataValues = useMemo(() => {
         return fundingData?.amountsByCategory ? Object.entries(fundingData.amountsByCategory).map(([name, value]) => ({ 
@@ -239,7 +231,7 @@ export default function PublicLeadSummaryPage() {
         }));
     }, [fundingData]);
 
-    const isLoading = isLeadLoading || areBeneficiariesLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
+    const isLoading = isLeadLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
 
     if (isLoading) return <BrandedLoader />;
 

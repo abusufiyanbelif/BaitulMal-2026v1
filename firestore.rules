@@ -74,10 +74,7 @@ service cloud.firestore {
 
 
 
-    match /{path=**}/beneficiaries/{beneficiaryId} {
-      allow read: if isStaff() || isAdmin();
-      allow write: if isStaff() || isAdmin();
-    }
+    // Master registry access is controlled in the specific sections below.
 
     // =========================================================================
     // AUDIT & SYSTEM LOGGING
@@ -216,7 +213,7 @@ service cloud.firestore {
     }
 
     match /leads/{leadId}/beneficiaries/{benId} {
-      allow read: if true;
+      allow read: if isStaff();
       allow create: if isAdmin() || hasPermission('leads-members', 'create') || hasPermission('leads', 'create') || isStaff();
       allow update: if isAdmin() || hasPermission('leads-members', 'update') || hasPermission('leads', 'update') || isStaff();
       allow delete: if isAdmin() || hasPermission('leads-members', 'delete') || hasPermission('leads', 'delete');
@@ -224,7 +221,7 @@ service cloud.firestore {
 
     // Leads documents subcollection
     match /leads/{leadId}/{subCollection}/{subDocId} {
-      allow read: if true;
+      allow read: if isStaff();
       allow write: if isAdmin() || hasPermission('leads-members', 'update') || hasPermission('leads', 'update') || isStaff();
     }
 
@@ -239,11 +236,11 @@ service cloud.firestore {
       allow update: if isAdmin() || hasPermission('beneficiaries', 'update') || isStaff() ||
                      (isSignedIn() && request.auth.uid == benId);
       allow delete: if isAdmin() || hasPermission('beneficiaries', 'delete');
-    }
 
-    match /beneficiaries/{benId}/{allSubPaths=**} {
-      allow read: if isStaff() || (isSignedIn() && request.auth.uid == benId);
-      allow write: if isAdmin() || isStaff() || (isSignedIn() && request.auth.uid == benId);
+      match /{allSubPaths=**} {
+        allow read: if isStaff() || (isSignedIn() && request.auth.uid == benId);
+        allow write: if isAdmin() || isStaff() || (isSignedIn() && request.auth.uid == benId);
+      }
     }
 
     // =========================================================================
