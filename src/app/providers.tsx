@@ -16,6 +16,7 @@ import { THEME_SUGGESTIONS } from '@/lib/themes';
 import { VerificationManager } from '@/components/verification-manager';
 import { InactivityMonitor } from '@/components/inactivity-monitor';
 import { MobileNav } from '@/components/mobile-nav';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
 
 function ThemeSync() {
   const { theme, resolvedTheme } = useTheme();
@@ -41,6 +42,7 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <FirebaseClientProvider>
+      <FirebaseErrorListener />
       <ThemeProvider 
         attribute="data-theme" 
         defaultTheme="bms3-a" 

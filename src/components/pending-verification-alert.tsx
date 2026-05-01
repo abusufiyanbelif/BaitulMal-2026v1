@@ -88,7 +88,7 @@ export function PendingVerificationAlert({ targetId, onUpdate }: PendingVerifica
             asChild
             className="h-8 text-[10px] font-bold bg-amber-600 hover:bg-amber-700 text-white border-none shadow-sm"
           >
-            <a href="/verifications">
+            <a href={`/verifications?requestId=${pending.id}`}>
               View Details <ChevronRight className="h-3 w-3 ml-1" />
             </a>
           </Button>

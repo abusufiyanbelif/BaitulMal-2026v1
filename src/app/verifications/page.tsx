@@ -45,7 +45,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { approveVerificationAction, rejectVerificationAction, cancelVerificationAction } from './actions';
 import type { PendingVerification } from '@/lib/types';
-import { cn } from '@/lib/utils';
+import { cn, generateChanges, formatCurrency, formatDate } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 
@@ -249,6 +249,29 @@ export default function VerificationsPage() {
                     </DialogHeader>
 
                     <ScrollArea className="flex-1">
+                        <div className="p-8 pb-0 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div className="bg-primary/5 p-4 rounded-2xl border border-primary/5">
+                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">Module</span>
+                                <span className="text-xs font-bold text-primary capitalize flex items-center gap-2">
+                                    <FolderKanban className="h-3 w-3" />
+                                    {selectedRequest?.module}
+                                </span>
+                            </div>
+                            <div className="bg-primary/5 p-4 rounded-2xl border border-primary/5">
+                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">Target Record ID</span>
+                                <span className="text-xs font-bold text-primary font-mono truncate block">
+                                    {selectedRequest?.targetId}
+                                </span>
+                            </div>
+                            <div className="bg-primary/5 p-4 rounded-2xl border border-primary/5">
+                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">Requester</span>
+                                <span className="text-xs font-bold text-primary flex items-center gap-2">
+                                    <User className="h-3 w-3" />
+                                    {selectedRequest?.requestedBy.name}
+                                </span>
+                            </div>
+                        </div>
+
                         <div className="p-8 space-y-8">
                             {selectedRequest?.description && (
                                 <div className="p-5 bg-primary/[0.03] rounded-2xl border border-primary/5 relative overflow-hidden group">
@@ -264,7 +287,36 @@ export default function VerificationsPage() {
                             <div className="space-y-5">
                                 <h3 className="font-bold text-xs text-primary uppercase tracking-[0.3em] opacity-40 flex items-center gap-2">
                                     <History className="h-4 w-4" />
-                                    Data State Comparison
+                                    Detailed State Changes
+                                </h3>
+                                <div className="space-y-3">
+                                    {generateChanges(selectedRequest?.originalValue, selectedRequest?.newValue).length > 0 ? (
+                                        <div className="grid grid-cols-1 gap-3">
+                                            {generateChanges(selectedRequest?.originalValue, selectedRequest?.newValue).map((change, i) => (
+                                                <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white rounded-2xl border border-primary/5 shadow-sm group hover:border-primary/20 transition-all">
+                                                    <div className="space-y-1">
+                                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">{change.field}</span>
+                                                        <div className="flex items-center gap-3">
+                                                            <span className="text-xs text-muted-foreground line-through opacity-50">{typeof change.old === 'object' ? 'Object' : String(change.old || 'N/A')}</span>
+                                                            <ArrowRight className="h-3 w-3 text-primary/40" />
+                                                            <span className="text-xs font-bold text-primary">{typeof change.new === 'object' ? 'Object' : String(change.new || 'N/A')}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div className="p-8 bg-primary/[0.02] rounded-2xl border border-dashed border-primary/10 text-center">
+                                            <p className="text-xs font-bold text-primary/40">No atomic field changes detected (Possible deep object update)</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="space-y-5">
+                                <h3 className="font-bold text-xs text-primary uppercase tracking-[0.3em] opacity-40 flex items-center gap-2">
+                                    <Lock className="h-4 w-4" />
+                                    Raw Protocol Buffers (Audit Reference)
                                 </h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-3">
@@ -319,6 +371,7 @@ export default function VerificationsPage() {
                         <Button variant="ghost" onClick={() => setIsDetailOpen(false)} className="font-bold border-primary/10 text-primary h-12 rounded-2xl px-6 hover:bg-white/50">Dismiss Auditor</Button>
                         
                         {selectedRequest?.status !== 'Approved' && selectedRequest?.status !== 'Rejected' && 
+                         selectedRequest?.requestedBy.id !== userProfile?.id &&
                          selectedRequest?.assignedVerifiers.some(av => av.id === userProfile?.id && av.status === 'Pending') && (
                             <div className="flex gap-3">
                                 <Button 

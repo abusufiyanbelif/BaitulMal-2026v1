@@ -47,9 +47,17 @@ export function useDoc<T = any>(
     setIsLoading(true);
     setError(null);
 
+    const timeoutId = setTimeout(() => {
+      if (isLoading) {
+        console.warn(`[useDoc] Timeout reaching ${memoizedDocRef.path}. Stopping loading state.`);
+        setIsLoading(false);
+      }
+    }, 10000);
+
     const unsubscribe = onSnapshot(
       memoizedDocRef,
       (snapshot: DocumentSnapshot<DocumentData>) => {
+        clearTimeout(timeoutId);
         if (snapshot.exists()) {
           setData({ ...(snapshot.data() as T), id: snapshot.id });
         } else {
@@ -59,6 +67,7 @@ export function useDoc<T = any>(
         setIsLoading(false);
       },
       (err: FirestoreError) => {
+        clearTimeout(timeoutId);
         if (err.code === 'permission-denied') {
           const contextualError = new FirestorePermissionError({
             operation: 'get',
@@ -76,7 +85,10 @@ export function useDoc<T = any>(
       }
     );
 
-    return () => unsubscribe();
+    return () => {
+      clearTimeout(timeoutId);
+      unsubscribe();
+    };
   }, [memoizedDocRef, nonce]);
 
   return { 

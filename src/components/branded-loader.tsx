@@ -19,9 +19,20 @@ export function BrandedLoader({ message = "Updating Your Organization Records...
   useEffect(() => {
     if (firebase?.firestore) {
       const docRef = doc(firebase.firestore, 'settings', 'branding');
+      
+      const timeoutId = setTimeout(() => {
+        console.warn('[BrandedLoader] Branding fetch timed out.');
+      }, 5000);
+
       getDoc(docRef).then(snap => {
+        clearTimeout(timeoutId);
         if (snap.exists()) setBranding(snap.data() as BrandingSettings);
+      }).catch(err => {
+        clearTimeout(timeoutId);
+        console.error('[BrandedLoader] Branding fetch error:', err);
       });
+
+      return () => clearTimeout(timeoutId);
     }
   }, [firebase?.firestore]);
 

@@ -79,7 +79,7 @@ export function VerificationRequestDialog({
   useEffect(() => {
     if (isOpen) {
       if (authorizedVerifiers && authorizedVerifiers.length > 0) {
-        setSelectedUserIds(authorizedVerifiers);
+        setSelectedUserIds(authorizedVerifiers.filter(id => id !== user.id));
       }
     } else {
       setSelectedUserIds([]);

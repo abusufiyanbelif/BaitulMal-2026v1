@@ -57,9 +57,17 @@ export function useCollection<T = any>(
     setIsLoading(true);
     setError(null);
 
+    const timeoutId = setTimeout(() => {
+      if (isLoading) {
+        console.warn(`[useCollection] Timeout reaching ${memoizedTargetRefOrQuery.type}. Stopping loading state.`);
+        setIsLoading(false);
+      }
+    }, 10000);
+
     const unsubscribe = onSnapshot(
       memoizedTargetRefOrQuery,
       (snapshot: QuerySnapshot<DocumentData>) => {
+        clearTimeout(timeoutId);
         const results: WithId<T>[] = [];
         snapshot.forEach(doc => {
           results.push({ ...(doc.data() as T), id: doc.id });
@@ -69,6 +77,7 @@ export function useCollection<T = any>(
         setIsLoading(false);
       },
       (err: FirestoreError) => {
+        clearTimeout(timeoutId);
         if (err.code === 'permission-denied') {
           const path: string =
             memoizedTargetRefOrQuery.type === 'collection'
@@ -91,7 +100,10 @@ export function useCollection<T = any>(
       }
     );
 
-    return () => unsubscribe();
+    return () => {
+      clearTimeout(timeoutId);
+      unsubscribe();
+    };
   }, [memoizedTargetRefOrQuery, nonce]);
 
   return { 

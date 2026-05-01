@@ -207,10 +207,24 @@ import { generateChanges } from '@/lib/utils';
  
          const request = docSnap.data() as PendingVerification;
          
+         // --- SAFETY CHECK: Prevent Self-Approval ---
+         if (request.requestedBy.id === verifierId) {
+             return { success: false, message: 'Institutional Safety: Self-approval of modifications is strictly prohibited.' };
+         }
+         
          // Update this specific verifier's status
-         const updatedVerifiers = request.assignedVerifiers.map(v => 
-             v.id === verifierId ? { ...v, status: 'Approved' as const, updatedAt: Timestamp.now() } : v
-         );
+         let verifierFound = false;
+         const updatedVerifiers = request.assignedVerifiers.map(v => {
+             if (v.id === verifierId) {
+                 verifierFound = true;
+                 return { ...v, status: 'Approved' as const, updatedAt: Timestamp.now() };
+             }
+             return v;
+         });
+ 
+         if (!verifierFound) {
+             return { success: false, message: 'Unauthorized: You are not assigned to verify this specific request.' };
+         }
  
          let minApprovalsRequired = 1;
          const configMap: Record<string, string> = {
@@ -548,11 +562,13 @@ import { generateChanges } from '@/lib/utils';
             .where('role', 'in', ['Admin', 'User'])
             .get();
 
-        const assignedVerifiers = membersSnap.docs.map((doc: any) => ({
-            id: doc.id,
-            name: doc.data().name,
-            status: 'Pending' as const
-        }));
+        const assignedVerifiers = membersSnap.docs
+            .map((doc: any) => ({
+                id: doc.id,
+                name: doc.data().name,
+                status: 'Pending' as const
+            }))
+            .filter(v => v.id !== userId);
 
         if (assignedVerifiers.length === 0) {
            return { success: false, message: 'No Active Team Members Found to verify your request.' };
@@ -740,11 +756,13 @@ export async function processPortalDonorUpdateAction(
             .where('role', 'in', ['Admin', 'User'])
             .get();
 
-        const assignedVerifiers = membersSnap.docs.map((doc: any) => ({
-            id: doc.id,
-            name: doc.data().name,
-            status: 'Pending' as const
-        }));
+        const assignedVerifiers = membersSnap.docs
+            .map((doc: any) => ({
+                id: doc.id,
+                name: doc.data().name,
+                status: 'Pending' as const
+            }))
+            .filter(v => v.id !== donorId);
 
         if (assignedVerifiers.length === 0) {
            return { success: false, message: 'No Active Team Members Found to verify your request.' };
@@ -847,11 +865,13 @@ export async function processPortalDonorUpdateAction(
             .where('role', 'in', ['Admin', 'User'])
             .get();
 
-        const assignedVerifiers = membersSnap.docs.map((doc: any) => ({
-            id: doc.id,
-            name: doc.data().name,
-            status: 'Pending' as const
-        }));
+        const assignedVerifiers = membersSnap.docs
+            .map((doc: any) => ({
+                id: doc.id,
+                name: doc.data().name,
+                status: 'Pending' as const
+            }))
+            .filter(v => v.id !== beneficiaryId);
 
         if (assignedVerifiers.length === 0) {
            return { success: false, message: 'No Active Team Members Found to verify your request.' };
