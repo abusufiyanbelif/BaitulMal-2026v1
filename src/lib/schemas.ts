@@ -28,6 +28,12 @@ export const userFormSchema = z.object({
   aadhaarGender: z.string().optional(),
   aadhaarAddress: z.string().optional(),
   aadhaarProofFile: z.any().optional(),
+  bankDetails: z.array(z.object({
+    bankName: z.string(),
+    accountNo: z.string(),
+    ifscCode: z.string(),
+  })).optional(),
+  upiIds: z.array(z.string()).optional(),
   _isEditing: z.boolean(),
 })
 .refine((data) => data.email || data.phone, {

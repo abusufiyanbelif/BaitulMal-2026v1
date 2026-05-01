@@ -77,8 +77,18 @@ export function formatCurrency(amount: number | null | undefined): string {
  */
 export function formatDate(dateInput: Date | string | null | undefined, options?: Intl.DateTimeFormatOptions): string {
     if (!dateInput) return 'N/A';
-    const date = typeof dateInput === 'string' ? new Date(dateInput) : dateInput;
-    if (isNaN(date.getTime())) return 'Invalid Date';
+    
+    let date: Date;
+    if (typeof dateInput === 'string') {
+        date = new Date(dateInput);
+    } else if (dateInput && typeof (dateInput as any).toDate === 'function') {
+        // Handle Firestore Timestamp
+        date = (dateInput as any).toDate();
+    } else {
+        date = dateInput as Date;
+    }
+
+    if (!(date instanceof Date) || isNaN(date.getTime())) return 'Invalid Date';
     
     const defaultOptions: Intl.DateTimeFormatOptions = {
         year: 'numeric',

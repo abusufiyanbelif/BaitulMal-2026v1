@@ -141,6 +141,17 @@ export default function PublicLeadSummaryPage() {
         });
     }, [lead, isRationInitiative]);
 
+    const calculatedRequirementTotal = useMemo(() => {
+        if (!lead) return 0;
+        if (isRationInitiative) {
+            return beneficiaryGroups.reduce((sum, group) => sum + group.totalAmount, 0);
+        } else {
+            const firstCategory = lead.itemCategories?.[0];
+            if (!firstCategory) return 0;
+            return firstCategory.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+        }
+    }, [lead, isRationInitiative, beneficiaryGroups]);
+
     const fundingData = useMemo(() => {
         if (!allDonations || !lead) return null;
 

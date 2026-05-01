@@ -5,7 +5,6 @@ import { useFirestore, useMemoFirebase, useDoc, doc, type DocumentReference } fr
 import type { User } from 'firebase/auth';
 import type { UserProfile } from '@/lib/types';
 import { createAdminPermissions } from '@/lib/modules';
-import { usePathname } from 'next/navigation';
 
 interface SessionContextType {
     user: User | null;
@@ -17,140 +16,113 @@ interface SessionContextType {
 
 export const SessionContext = createContext<SessionContextType | undefined>(undefined);
 
+/**
+ * Unified Session Provider.
+ * Handles identity resolution for Staff, Donors, and Beneficiaries.
+ */
 export function SessionProvider({ authUser, children, isAuthenticating }: { authUser?: User | null; children: ReactNode; isAuthenticating: boolean; }) {
   const firestore = useFirestore();
-  const pathname = usePathname();
-  
   const [tokenRole, setTokenRole] = useState<string | null>(null);
 
+  // 1. Resolve Role from Token Claims (Most Secure)
   useEffect(() => {
     if (!authUser) {
       setTokenRole(null);
       return;
     }
-    authUser.getIdTokenResult().then(result => {
-      if (result.claims && result.claims.role) {
-        setTokenRole(result.claims.role as string);
+    const timeout = setTimeout(() => {
+      if (tokenRole === null) {
+        console.warn('SessionProvider: Claims resolution timed out. Falling back to Guest.');
+        setTokenRole('None');
       }
+    }, 5000);
+
+    authUser.getIdTokenResult(true).then(result => {
+      clearTimeout(timeout);
+      setTokenRole((result.claims?.role as string) || 'None');
     }).catch(err => {
-      console.warn('Failed to parse user role claims securely:', err);
+      clearTimeout(timeout);
+      console.warn('SessionProvider: Claims resolution failed:', err);
+      setTokenRole('Error');
     });
+    return () => clearTimeout(timeout);
   }, [authUser]);
 
-  const storedRole = typeof window !== 'undefined' ? localStorage.getItem('portal_role') : null;
-  const isViewingDonorPortal = pathname?.startsWith('/donor-portal') || storedRole === 'Donor' || tokenRole === 'Donor';
-  const isViewingBeneficiaryPortal = pathname?.startsWith('/beneficiary-portal') || storedRole === 'Beneficiary' || tokenRole === 'Beneficiary';
-  const isViewingStaffPortal = pathname?.startsWith('/dashboard') || pathname?.startsWith('/settings') || storedRole === 'Staff' || tokenRole === 'Admin' || tokenRole === 'User';
+  // 2. Resolve Profile Document Reference
+  // We wait for tokenRole to ensure the auth state is fully established before fetching from Firestore.
+  const profileRef = useMemoFirebase(() => {
+      if (!firestore || !authUser?.uid || !tokenRole) return null;
+      
+      // If token says Donor/Beneficiary, we fetch from those collections directly
+      if (tokenRole === 'Donor') return doc(firestore, 'donors', authUser.uid) as any;
+      if (tokenRole === 'Beneficiary') return doc(firestore, 'beneficiaries', authUser.uid) as any;
+      
+      // Fallback to central users collection for Staff/Admin
+      return doc(firestore, 'users', authUser.uid) as DocumentReference<UserProfile>;
+  }, [firestore, authUser?.uid, tokenRole]);
 
-  // Load profiles based on availability, with Staff/Admin taking precedence for lookup
-  const userDocRef = useMemoFirebase(() => {
-    if (!firestore || !authUser?.uid) return null;
-    return doc(firestore, 'users', authUser.uid) as DocumentReference<UserProfile>;
-  }, [firestore, authUser?.uid]);
+  const { data: profileData, isLoading: isProfileLoading } = useDoc<any>(profileRef);
 
-  const donorDocRef = useMemoFirebase(() => {
-    if (!firestore || !authUser?.uid) return null;
-    // Only load donor profile if specifically on donor portal or identified as a donor
-    if (!isViewingDonorPortal) return null;
-    return doc(firestore, 'donors', authUser.uid) as DocumentReference<any>;
-  }, [firestore, authUser?.uid, isViewingDonorPortal]);
-
-  const beneficiaryDocRef = useMemoFirebase(() => {
-    if (!firestore || !authUser?.uid) return null;
-    // Only load beneficiary profile if specifically on beneficiary portal or identified as a beneficiary
-    if (!isViewingBeneficiaryPortal) return null;
-    return doc(firestore, 'beneficiaries', authUser.uid) as DocumentReference<any>;
-  }, [firestore, authUser?.uid, isViewingBeneficiaryPortal]);
-
-  const { data: userProfile, isLoading: isProfileLoading } = useDoc<UserProfile>(userDocRef);
-  const { data: donorProfile, isLoading: isDonorLoading } = useDoc<any>(donorDocRef);
-  const { data: beneficiaryProfile, isLoading: isBenLoading } = useDoc<any>(beneficiaryDocRef);
-  
-  const isLoading = isAuthenticating || (!!authUser && (isProfileLoading || (isViewingDonorPortal && isDonorLoading) || (isViewingBeneficiaryPortal && isBenLoading)));
-  
-  const profileWithDefaults = useReactMemo(() => {
+  // 3. Assemble Final Profile with Administrative Bypasses
+  const resolvedProfile = useReactMemo(() => {
     if (!authUser) return null;
 
-    // --- PRIMARY ADMINISTRATIVE BYPASS (SOVEREIGN IDENTITIES) ---
-    const adminEmails = [
-        'abusufiyan.belif@gmail.com', 
-        'baitulmalss.solapur@gmail.com', 
-        'maazshaikh.official@gmail.com',
-        'admin@example.com'
-    ];
-    
+    // Sovereign Admin Identities (Hardcoded recovery access)
     const adminUids = [
-        'cyMl1lQME0Yur1YS3VCms1AvrOJ2', // BaitulMal System Admin
-        'S5efNV5jpTPoxYNv6SnAlv3jNPO2', // Abusufiyan Belif (Primary)
-        '3gKwUE2JrBT8wngoUxTTN6tLJk03'  // Maaz A. Rauf Shaikh
+        'cyMl1lQME0Yur1YS3VCms1AvrOJ2', // System Admin
+        'S5efNV5jpTPoxYNv6SnAlv3jNPO2', // Abusufiyan Belif
+        '3gKwUE2JrBT8wngoUxTTN6tLJk03'  // Maaz Shaikh
     ];
 
-    const isAdminIdentity = 
-        adminEmails.includes(authUser.email || '') || 
-        adminUids.includes(authUser.uid) ||
-        userProfile?.role === 'Admin';
+    const isAdmin = adminUids.includes(authUser.uid) || profileData?.role === 'Admin' || tokenRole === 'Admin';
 
-    if (!userProfile) {
-        if (isAdminIdentity) {
+    if (!profileData) {
+        // If profile document hasn't loaded yet but we are a known admin
+        if (isAdmin) {
             return {
                 id: authUser.uid,
-                name: authUser.displayName || (authUser.email === 'abusufiyan.belif@gmail.com' ? 'Abusufiyan Belif' : 'System Administrator'),
-                email: authUser.email || '',
-                loginId: 'admin',
-                userKey: 'super_admin_bypass',
+                name: authUser.displayName || 'Administrator',
                 role: 'Admin',
                 status: 'Active',
                 permissions: createAdminPermissions(),
             } as UserProfile;
         }
-
-        if (donorProfile) {
-            return {
-                id: authUser.uid,
-                name: donorProfile.name || 'Supporter',
-                email: donorProfile.email || '',
-                loginId: donorProfile.phone || '',
-                role: 'Donor',
-                status: 'Active',
-                linkedDonorId: authUser.uid,
-                permissions: {}
-            } as any;
-        }
-
-        if (beneficiaryProfile) {
-            return {
-                id: authUser.uid,
-                name: beneficiaryProfile.name || 'Beneficiary',
-                email: beneficiaryProfile.email || '',
-                loginId: beneficiaryProfile.phone || '',
-                role: 'Beneficiary',
-                status: 'Active',
-                linkedBeneficiaryId: authUser.uid,
-                permissions: {}
-            } as any;
-        }
-
         return null;
     }
-    return {
-        ...userProfile,
-        role: isAdminIdentity ? 'Admin' : (userProfile.role || 'User'),
-        permissions: isAdminIdentity ? createAdminPermissions() : (userProfile.permissions || {}),
-    } as UserProfile;
-  }, [userProfile, authUser]);
+
+    // Assemble profile based on role
+    // We spread profileData first, then ensure role is set correctly from token if missing
+    const profile = { 
+        ...profileData,
+        role: (tokenRole === 'None' || tokenRole === 'Error') ? (profileData?.role || 'Guest') : tokenRole,
+    };
+
+    if (isAdmin) {
+        profile.role = 'Admin';
+        profile.permissions = createAdminPermissions();
+    }
+
+    // Ensure ID is present
+    if (!profile.id) profile.id = authUser.uid;
+
+    return profile as UserProfile;
+}, [profileData, authUser, tokenRole]);
+
+  const isLoading = isAuthenticating || (!!authUser && (isProfileLoading || tokenRole === null));
 
   const contextValue = useReactMemo(() => {
-      const isStaff = profileWithDefaults?.role === 'Admin' || profileWithDefaults?.role === 'User';
-      const isContributor = !!profileWithDefaults?.linkedDonorId || !!profileWithDefaults?.linkedBeneficiaryId || profileWithDefaults?.role === 'Donor' || profileWithDefaults?.role === 'Beneficiary';
+      const role = resolvedProfile?.role;
+      const isStaff = role === 'Admin' || role === 'User';
+      const isContributor = role === 'Donor' || role === 'Beneficiary';
 
       return {
           user: authUser || null,
-          userProfile: profileWithDefaults,
+          userProfile: resolvedProfile,
           isLoading,
           isStaff,
           isContributor
       };
-  }, [authUser, profileWithDefaults, isLoading]);
+  }, [authUser, resolvedProfile, isLoading]);
 
   return (
     <SessionContext.Provider value={contextValue}>

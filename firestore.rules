@@ -213,7 +213,7 @@ service cloud.firestore {
     }
 
     match /leads/{leadId}/beneficiaries/{benId} {
-      allow read: if isStaff();
+      allow read: if isStaff() || (isSignedIn() && request.auth.uid == benId);
       allow create: if isAdmin() || hasPermission('leads-members', 'create') || hasPermission('leads', 'create') || isStaff();
       allow update: if isAdmin() || hasPermission('leads-members', 'update') || hasPermission('leads', 'update') || isStaff();
       allow delete: if isAdmin() || hasPermission('leads-members', 'delete') || hasPermission('leads', 'delete');

@@ -1,96 +1,171 @@
-
-
 'use client';
-import { useState, useEffect, useMemo } from 'react';
-import Image from 'next/image';
+
 import { useSession } from '@/hooks/use-session';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
-import { ArrowLeft, Loader2, User, Shield, Phone, KeyRound, CheckCircle, XCircle, LogIn, FileText, BadgeInfo, Hash, Eye, Edit, Save, Mail, ZoomIn, ZoomOut, RotateCw, RefreshCw, Building } from 'lucide-react';
+import { useFirestore, useMemoFirebase, useDoc, doc, storageRef, uploadBytes, getDownloadURL, useStorage } from '@/firebase';
+import { BrandedLoader } from '@/components/branded-loader';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { 
+    UserCircle2, 
+    Smartphone, 
+    Mail, 
+    MapPin, 
+    ShieldCheck, 
+    FileText, 
+    IdCard,
+    Landmark,
+    Building2,
+    CalendarDays,
+    Activity,
+    Edit3,
+    Loader2,
+    CheckCircle2,
+    Clock,
+    X,
+    Plus,
+    Building,
+    KeyRound,
+    ZoomIn,
+    ZoomOut,
+    RotateCw,
+    RefreshCw,
+    BadgeInfo,
+    Hash,
+    Eye
+} from 'lucide-react';
+import { formatDate } from '@/lib/utils';
+import type { User, BankDetail, PendingVerification } from '@/lib/types';
+import { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useFirestore, errorEmitter, FirestorePermissionError } from '@/firebase';
-import { doc, writeBatch, collection } from 'firebase/firestore';
-import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { FileUploader } from '@/components/file-uploader';
+import { useToast } from '@/hooks/use-toast';
 import { processPortalProfileUpdateAction, checkPendingVerificationAction } from '@/app/verifications/actions';
 import { supporterUpdatePasswordAction } from '@/app/portal-login/actions';
-import type { PendingVerification } from '@/lib/types';
-import { PendingUpdateWarning } from '@/components/pending-update-warning';
-import { cn } from '@/lib/utils';
-
-function ProfileDetail({ icon, label, value, children, isEditing }: { icon: React.ReactNode, label: string, value?: React.ReactNode, children?: React.ReactNode, isEditing?: boolean }) {
-    return (
-        <div className="flex items-start space-x-4">
-            <div className="text-muted-foreground mt-1">{icon}</div>
-            <div className="w-full">
-                <p className="text-sm text-muted-foreground">{label}</p>
-                {isEditing ? children : <div className="font-medium">{value}</div>}
-            </div>
-        </div>
-    );
-}
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Separator } from '@/components/ui/separator';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import Image from 'next/image';
 
 export default function ProfilePage() {
-    const { userProfile, isLoading, forceRefetch: forceRefetchUser } = useSession();
+    const { userProfile, isLoading: isSessionLoading, forceRefetch: forceRefetchUser } = useSession();
     const firestore = useFirestore();
+    const storage = useStorage();
     const { toast } = useToast();
 
-    const [isEditMode, setIsEditMode] = useState(false);
-    const [name, setName] = useState('');
-    const [phone, setPhone] = useState('');
-    
+    const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [existingPendingRequest, setExistingPendingRequest] = useState<PendingVerification | null>(null);
+    const [pendingRequest, setPendingRequest] = useState<PendingVerification | null>(null);
     
-    const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
-    const [imageToView, setImageToView] = useState<string | null>(null);
-    const [zoom, setZoom] = useState(1);
-    const [rotation, setRotation] = useState(0);
-    
+    // Password States
     const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isSavingPassword, setIsSavingPassword] = useState(false);
-    
+
+    // Form States
+    const [bankDetails, setBankDetails] = useState<BankDetail[]>([]);
+    const [upiIds, setUpiIds] = useState<string[]>([]);
+    const [aadhaarFile, setAadhaarFile] = useState<File | null>(null);
+    const [idProofFile, setIdProofFile] = useState<File | null>(null);
+
+    // Viewer States
+    const [isImageViewerOpen, setIsImageViewerOpen] = useState(false);
+    const [imageToView, setImageToView] = useState<string | null>(null);
+    const [zoom, setZoom] = useState(1);
+    const [rotation, setRotation] = useState(0);
+
     useEffect(() => {
         if (userProfile) {
-            setName(userProfile.name);
-            setPhone(userProfile.phone || '');
-            checkPendingVerificationAction(userProfile.id).then(setExistingPendingRequest);
+            setBankDetails(userProfile.bankDetails || [{ bankName: '', accountNumber: '', ifscCode: '' }]);
+            setUpiIds(userProfile.upiIds || ['']);
+            
+            checkPendingVerificationAction(userProfile.id).then(req => {
+                if (req) setPendingRequest(req as any);
+            });
         }
-    }, [userProfile, isEditMode]);
+    }, [userProfile, isEditDialogOpen]);
 
-    const isDirty = useMemo(() => {
-        if (!isEditMode || !userProfile) return false;
-        return name !== userProfile.name || phone !== (userProfile.phone || '');
-    }, [name, phone, userProfile, isEditMode]);
+    if (isSessionLoading) {
+         return <BrandedLoader message="Synchronizing Identity Records..." />;
+    }
 
+    if (!userProfile) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[40vh] space-y-4">
+                <UserCircle2 className="h-12 w-12 text-slate-300" />
+                <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Profile Data Unavailable</p>
+                <Button asChild variant="outline">
+                    <Link href="/login">Return to Login</Link>
+                </Button>
+            </div>
+        );
+    }
 
-    const handleViewImage = (url: string) => {
-        setImageToView(url);
-        setZoom(1);
-        setRotation(0);
-        setIsImageViewerOpen(true);
-    };
+    const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        if (isSubmitting) return;
+        setIsSubmitting(true);
 
-    const handleEdit = () => {
-        if (userProfile) {
-            setName(userProfile.name);
-            setPhone(userProfile.phone || '');
-            setIsEditMode(true);
+        try {
+            const formData = new FormData(e.currentTarget);
+            let aadhaarUrl = userProfile.aadhaarProofUrl;
+            let idProofUrl = userProfile.idProofUrl;
+
+            if (aadhaarFile && storage) {
+                const fileRef = storageRef(storage, `kyc/users/${userProfile.id}/aadhaar_${Date.now()}`);
+                const uploadRes = await uploadBytes(fileRef, aadhaarFile);
+                aadhaarUrl = await getDownloadURL(uploadRes.ref);
+            }
+
+            if (idProofFile && storage) {
+                const fileRef = storageRef(storage, `kyc/users/${userProfile.id}/idproof_${Date.now()}`);
+                const uploadRes = await uploadBytes(fileRef, idProofFile);
+                idProofUrl = await getDownloadURL(uploadRes.ref);
+            }
+
+            const validBanks = bankDetails.filter(b => b.bankName || b.accountNumber);
+            const validUpis = upiIds.filter(u => u.trim() !== '');
+
+            const updatePayload: Partial<User> = {
+                name: formData.get('name') as string,
+                phone: formData.get('phone') as string,
+                email: formData.get('email') as string,
+                address: formData.get('address') as string,
+                aadhaarNumber: formData.get('aadhaarNumber') as string,
+                aadhaarName: formData.get('aadhaarName') as string,
+                aadhaarDob: formData.get('aadhaarDob') as string,
+                aadhaarGender: formData.get('aadhaarGender') as string,
+                aadhaarAddress: formData.get('aadhaarAddress') as string,
+                aadhaarProofUrl: aadhaarUrl,
+                idProofUrl: idProofUrl,
+                idProofType: formData.get('idProofType') as string,
+                idNumber: formData.get('idNumber') as string,
+                bankDetails: validBanks,
+                upiIds: validUpis,
+                telegramChatId: formData.get('telegramChatId') as string,
+                panNumber: formData.get('panNumber') as string,
+            };
+
+            const res = await processPortalProfileUpdateAction(userProfile.id, userProfile.name, updatePayload);
+            
+            if (res.success) {
+                toast({ title: 'Request Dispatched', description: 'Your changes are awaiting administrative approval.', variant: 'success' });
+                setIsEditDialogOpen(false);
+                const req = await checkPendingVerificationAction(userProfile.id);
+                if (req) setPendingRequest(req as any);
+            } else {
+                toast({ title: 'Update Failed', description: res.message, variant: 'destructive' });
+            }
+        } catch (error: any) {
+            toast({ title: 'Error', description: error.message, variant: 'destructive' });
+        } finally {
+            setIsSubmitting(false);
         }
-    };
-
-    const handleCancel = () => {
-        if (userProfile) {
-            setName(userProfile.name);
-            setPhone(userProfile.phone || '');
-        }
-        setIsEditMode(false);
     };
 
     const handlePasswordSave = async () => {
@@ -102,7 +177,6 @@ export default function ProfilePage() {
             toast({ title: 'Mismatch', description: 'Passwords do not match.', variant: 'destructive'});
             return;
         }
-        if (!userProfile) return;
 
         setIsSavingPassword(true);
         try {
@@ -120,260 +194,377 @@ export default function ProfilePage() {
         }
     };
 
-    const handleSave = () => {
-        if (!firestore || !userProfile || !isDirty) {
-            toast({ title: 'No Changes', description: 'There are no changes to save.', variant: 'default'});
-            return;
-        }
-        setIsSubmitting(true);
-
-        const updateData: {name?: string, phone?: string } = {};
-        if (name !== userProfile.name) updateData.name = name;
-        if (phone !== (userProfile.phone || '')) updateData.phone = phone;
-
-        const isSelfServicePortalUser = userProfile.role === 'Donor' || userProfile.role === 'Beneficiary';
-
-        if (isSelfServicePortalUser) {
-             processPortalProfileUpdateAction(userProfile.id, userProfile.name, updateData).then((result) => {
-                 setIsSubmitting(false);
-                 if (result.success) {
-                     toast({ title: 'Approval Required', description: result.message, variant: 'success' });
-                     setIsEditMode(false);
-                 } else {
-                     toast({ title: 'Failed to Submit', description: result.message, variant: 'destructive' });
-                 }
-             });
-             return;
-        }
-
-        const batch = writeBatch(firestore);
-        const userDocRef = doc(firestore, 'users', userProfile.id);
-
-        batch.update(userDocRef, updateData);
-
-        if ((userProfile.phone || '') !== phone) {
-            if (userProfile.phone) {
-                const oldLookupRef = doc(firestore, 'user_lookups', userProfile.phone);
-                batch.delete(oldLookupRef);
-            }
-            if (phone) {
-                const newLookupRef = doc(firestore, 'user_lookups', phone);
-                batch.set(newLookupRef, { email: userProfile.email, userKey: userProfile.userKey });
-            }
-        }
-        
-        batch.commit()
-            .then(() => {
-                toast({ title: 'Success', description: 'Profile updated successfully.', variant: 'success' });
-                forceRefetchUser();
-                setIsEditMode(false);
-            })
-            .catch((serverError: any) => {
-                errorEmitter.emit('permission-error', new FirestorePermissionError({
-                    path: userDocRef.path,
-                    operation: 'update',
-                    requestResourceData: updateData,
-                }));
-            })
-            .finally(() => {
-                setIsSubmitting(false);
-            });
+    const handleViewImage = (url: string) => {
+        setImageToView(url);
+        setZoom(1);
+        setRotation(0);
+        setIsImageViewerOpen(true);
     };
 
-
-    if (isLoading) {
-        return (
-             <div className="container mx-auto p-4 md:p-8">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-        )
-    }
-
     return (
-        <div className="container mx-auto p-4 md:p-8">
-            <div className="mb-4">
-                <Button variant="outline" asChild>
-                    <Link href="/dashboard">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Back to Dashboard
-                    </Link>
+        <div className="container mx-auto p-4 md:p-8 space-y-8 animate-fade-in-up pb-12">
+            <div className="flex items-center justify-between">
+                <Button variant="outline" asChild className="rounded-xl border-slate-200">
+                    <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link>
                 </Button>
             </div>
 
-            <PendingUpdateWarning targetId={userProfile?.id || ''} module="users" />
+            {pendingRequest && (
+                <Alert className="bg-amber-50 border-amber-200 rounded-3xl animate-pulse">
+                    <Clock className="h-4 w-4 text-amber-600" />
+                    <AlertTitle className="text-amber-800 font-black text-xs uppercase tracking-widest">Update Pending Approval</AlertTitle>
+                    <AlertDescription className="text-amber-700 text-[11px] font-bold">
+                        A change request is awaiting administrative review. Edits are restricted.
+                    </AlertDescription>
+                </Alert>
+            )}
 
-            <Card className="max-w-2xl mx-auto animate-fade-in-zoom mt-6">
-                <CardHeader>
-                    <div className="flex justify-between items-center">
-                        <div>
-                            <CardTitle>My Profile</CardTitle>
-                            <CardDescription>This is your personal information as it appears in the system.</CardDescription>
-                        </div>
-                         {!isEditMode ? (
-                            <Button 
-                                onClick={handleEdit} 
-                                disabled={!!existingPendingRequest}
-                                className={cn(
-                                    "font-bold shadow-md active:scale-95 transition-transform",
-                                    existingPendingRequest ? "bg-muted text-muted-foreground" : ""
-                                )}
-                            >
-                                <Edit className="mr-2 h-4 w-4" /> 
-                                {existingPendingRequest ? "Approval Pending" : "Edit"}
-                            </Button>
-                         ) : (
-                            <div className="flex gap-2">
-                                <Button variant="ghost" onClick={handleCancel} disabled={isSubmitting}>Cancel</Button>
-                                <Button onClick={handleSave} disabled={isSubmitting || !isDirty}>
-                                    {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                                    Save
-                                </Button>
-                            </div>
-                         )}
+            <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col md:flex-row items-center gap-8 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl" />
+                <div className="h-28 w-28 rounded-3xl bg-primary/10 flex items-center justify-center text-primary relative shadow-inner">
+                    <UserCircle2 className="h-14 w-14" />
+                    <div className="absolute -bottom-2 -right-2 bg-green-500 text-white p-1.5 rounded-xl shadow-lg border-4 border-white">
+                        <ShieldCheck className="h-4 w-4" />
                     </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    {userProfile ? (
-                        <>
-                            <ProfileDetail icon={<User />} label="Full Name" value={userProfile.name} isEditing={isEditMode}>
-                                <Input value={name} onChange={(e) => setName(e.target.value)} disabled={isSubmitting}/>
-                            </ProfileDetail>
-                            <ProfileDetail icon={<Mail />} label="Email Address" value={userProfile.email} />
-                            <ProfileDetail icon={<LogIn />} label="Login ID" value={userProfile.loginId} />
-                            <ProfileDetail icon={<Phone />} label="Phone Number" value={userProfile.phone} isEditing={isEditMode}>
-                                 <Input value={phone} onChange={(e) => setPhone(e.target.value)} disabled={isSubmitting}/>
-                            </ProfileDetail>
-                            <ProfileDetail icon={<KeyRound />} label="User Key (System ID)" value={userProfile.userKey} />
-                            
-                            <ProfileDetail 
-                                icon={<Shield />} 
-                                label="Role" 
-                                value={<Badge variant={userProfile.role === 'Admin' ? 'destructive' : 'secondary'}>{userProfile.role}</Badge>} 
-                            />
-
-                            {userProfile.organizationGroup && (
-                               <ProfileDetail icon={<Building />} label="Organization Group" value={<Badge variant="outline">{userProfile.organizationGroup}</Badge>} />
-                            )}
-                            {userProfile.organizationRole && (
-                                <ProfileDetail icon={<BadgeInfo />} label="Organization Role" value={userProfile.organizationRole} />
-                            )}
-                            
-                            <ProfileDetail 
-                                icon={userProfile.status === 'Active' ? <CheckCircle className="text-success-foreground" /> : <XCircle className="text-destructive" />} 
-                                label="Status" 
-                                value={<Badge variant={userProfile.status === 'Active' ? 'default' : 'outline'}>{userProfile.status}</Badge>} 
-                            />
-
-                            {userProfile.idProofUrl && (
-                                <ProfileDetail 
-                                    icon={<FileText />} 
-                                    label="ID Proof" 
-                                    value={
-                                        <Button variant="outline" size="sm" onClick={() => handleViewImage(userProfile.idProofUrl!)}>
-                                            <Eye className="mr-2 h-4 w-4" /> View Document
-                                        </Button>
-                                    } 
-                                />
-                            )}
-                            {userProfile.idProofType && <ProfileDetail icon={<BadgeInfo />} label="ID Type" value={userProfile.idProofType} />}
-                            {userProfile.idNumber && <ProfileDetail icon={<Hash />} label="ID Number" value={userProfile.idNumber} />}
-
-                            {userProfile.aadhaarProofUrl && (
-                                <ProfileDetail 
-                                    icon={<FileText />} 
-                                    label="Aadhaar Card" 
-                                    value={
-                                        <Button variant="outline" size="sm" onClick={() => handleViewImage(userProfile.aadhaarProofUrl!)}>
-                                            <Eye className="mr-2 h-4 w-4" /> View Aadhaar
-                                        </Button>
-                                    } 
-                                />
-                            )}
-                            {userProfile.aadhaarNumber && <ProfileDetail icon={<Hash />} label="Aadhaar Number" value={userProfile.aadhaarNumber} />}
-                            {userProfile.aadhaarName && <ProfileDetail icon={<BadgeInfo />} label="Name on Aadhaar" value={userProfile.aadhaarName} />}
-                            {userProfile.aadhaarDob && <ProfileDetail icon={<BadgeInfo />} label="DOB" value={userProfile.aadhaarDob} />}
-                            {userProfile.aadhaarGender && <ProfileDetail icon={<BadgeInfo />} label="Gender" value={userProfile.aadhaarGender} />}
-                            {userProfile.aadhaarAddress && <ProfileDetail icon={<BadgeInfo />} label="Aadhaar Address" value={userProfile.aadhaarAddress} />}
-
-                            <div className="pt-4 border-t border-primary/5">
-                                <Button variant="outline" className="font-bold border-primary/20 text-primary" onClick={() => setIsPasswordDialogOpen(true)}>
-                                    <KeyRound className="mr-2 h-4 w-4" /> Change Password
-                                </Button>
+                </div>
+                <div className="flex-1 text-center md:text-left z-10">
+                    <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">{userProfile.name}</h1>
+                    <div className="flex flex-wrap justify-center md:justify-start gap-4">
+                        <Badge variant="secondary" className="font-black text-[10px] uppercase tracking-widest px-3 py-1">{userProfile.role}</Badge>
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                            <Smartphone className="h-3 w-3 text-primary/60" /> {userProfile.phone || 'No phone'}
+                        </div>
+                        {userProfile.telegramChatId && (
+                            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                                <Activity className="h-3 w-3 text-primary/60" /> {userProfile.telegramChatId}
                             </div>
-                        </>
-                    ) : (
-                         <p className="text-center text-muted-foreground">Could not load user profile.</p>
-                    )}
-                </CardContent>
-            </Card>
+                        )}
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                            <Mail className="h-3 w-3 text-primary/60" /> {userProfile.email}
+                        </div>
+                        {userProfile.panNumber && (
+                            <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                                <Hash className="h-3 w-3 text-primary/60" /> {userProfile.panNumber}
+                            </div>
+                        )}
+                    </div>
+                </div>
+                <div className="flex flex-col items-center md:items-end gap-3">
+                    <Button 
+                        onClick={() => setIsEditDialogOpen(true)} 
+                        disabled={!!pendingRequest}
+                        className="font-black text-[10px] uppercase tracking-widest rounded-xl px-6 h-11 shadow-xl active:scale-95 transition-all"
+                    >
+                        <Edit3 className="mr-2 h-4 w-4" /> Modify Profile
+                    </Button>
+                    <Button variant="outline" onClick={() => setIsPasswordDialogOpen(true)} className="font-black text-[10px] uppercase tracking-widest rounded-xl px-6 h-11 border-slate-200">
+                        <KeyRound className="mr-2 h-4 w-4" /> Change Password
+                    </Button>
+                </div>
+            </div>
 
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-8">
+                    {/* Identity & KYC */}
+                    <Card className="border-none shadow-xl shadow-slate-200/40 bg-white rounded-3xl overflow-hidden">
+                        <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-6">
+                            <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900">
+                                <IdCard className="h-5 w-5 text-primary/60" /> Identification Records (KYC)
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-8 grid grid-cols-1 sm:grid-cols-2 gap-8">
+                            <div className="space-y-1.5">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Full Name (As per ID)</p>
+                                <p className="text-sm font-bold text-slate-800">{userProfile.aadhaarName || userProfile.name}</p>
+                            </div>
+                            <div className="space-y-1.5">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aadhaar Number</p>
+                                <p className="text-sm font-bold text-slate-800 font-mono">{userProfile.aadhaarNumber ? `XXXX XXXX ${userProfile.aadhaarNumber.slice(-4)}` : 'Not Linked'}</p>
+                            </div>
+                            <div className="space-y-1.5">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">PAN Number</p>
+                                <p className="text-sm font-bold text-slate-800 font-mono uppercase">{userProfile.panNumber || 'Not Linked'}</p>
+                            </div>
+                            <div className="space-y-1.5">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Secondary ID Type</p>
+                                <p className="text-sm font-bold text-slate-800">{userProfile.idProofType || 'None'}</p>
+                            </div>
+                            <div className="sm:col-span-2 space-y-1.5">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Residential Address</p>
+                                <div className="flex items-start gap-2 pt-1 text-sm font-medium text-slate-700 leading-relaxed">
+                                    <MapPin className="h-4 w-4 text-primary/40 shrink-0 mt-0.5" />
+                                    {userProfile.address || userProfile.aadhaarAddress || 'No address recorded'}
+                                </div>
+                            </div>
+                            <div className="flex gap-4 sm:col-span-2 pt-4">
+                                {userProfile.aadhaarProofUrl && (
+                                    <Button variant="outline" size="sm" onClick={() => handleViewImage(userProfile.aadhaarProofUrl!)} className="font-bold text-[10px] uppercase tracking-widest rounded-xl border-slate-200">
+                                        <FileText className="mr-2 h-4 w-4 opacity-40" /> View Aadhaar
+                                    </Button>
+                                )}
+                                {userProfile.idProofUrl && (
+                                    <Button variant="outline" size="sm" onClick={() => handleViewImage(userProfile.idProofUrl!)} className="font-bold text-[10px] uppercase tracking-widest rounded-xl border-slate-200">
+                                        <FileText className="mr-2 h-4 w-4 opacity-40" /> View ID Proof
+                                    </Button>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-xl shadow-slate-200/40 bg-white rounded-3xl overflow-hidden">
+                        <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-6">
+                            <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900">
+                                <Building className="h-5 w-5 text-primary/60" /> Organization Context
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-8 grid grid-cols-1 sm:grid-cols-2 gap-8">
+                            <div className="space-y-1.5">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Group / Department</p>
+                                <p className="text-sm font-bold text-slate-800">{userProfile.organizationGroup || 'General'}</p>
+                            </div>
+                            <div className="space-y-1.5">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Designation</p>
+                                <p className="text-sm font-bold text-slate-800">{userProfile.organizationRole || 'Member'}</p>
+                            </div>
+                            <div className="space-y-1.5">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Member Since</p>
+                                <div className="flex items-center gap-2 text-sm font-bold text-slate-800">
+                                    <CalendarDays className="h-4 w-4 text-slate-300" />
+                                    {userProfile.createdAt ? formatDate(userProfile.createdAt as any) : 'N/A'}
+                                </div>
+                            </div>
+                            <div className="space-y-1.5">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Status</p>
+                                <Badge variant={userProfile.status === 'Active' ? 'default' : 'outline'}>{userProfile.status}</Badge>
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+
+                <div className="space-y-8">
+                    <Card className="border-none shadow-xl shadow-slate-200/40 bg-white rounded-3xl overflow-hidden">
+                        <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-6">
+                            <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900">
+                                <Landmark className="h-5 w-5 text-primary/60" /> Settlement Methods
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-8 space-y-6">
+                            <div className="space-y-4">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">UPI Identities</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {userProfile.upiIds && userProfile.upiIds.length > 0 ? (
+                                        userProfile.upiIds.map((upi, i) => (
+                                            <Badge key={i} variant="outline" className="font-mono text-[10px] font-bold border-slate-200 bg-slate-50 text-slate-600 px-3 py-1 rounded-xl">{upi}</Badge>
+                                        ))
+                                    ) : (
+                                        <p className="text-[10px] font-bold text-slate-300 italic">No handles linked</p>
+                                    )}
+                                </div>
+                            </div>
+                            <Separator className="bg-slate-100" />
+                            <div className="space-y-4">
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Bank Accounts</p>
+                                {userProfile.bankDetails && userProfile.bankDetails.length > 0 ? (
+                                    userProfile.bankDetails.map((bank, idx) => (
+                                        <div key={idx} className="space-y-3 p-5 rounded-2xl bg-slate-50 border border-slate-100">
+                                            <div className="flex items-center gap-3">
+                                                <Building2 className="h-4 w-4 text-primary/40" />
+                                                <span className="text-sm font-black text-slate-800">{bank.bankName}</span>
+                                            </div>
+                                            <div className="space-y-1">
+                                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Account Number</p>
+                                                <p className="text-xs font-mono text-slate-900 font-bold">{bank.accountNumber}</p>
+                                            </div>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-[10px] font-bold text-slate-300 italic">No accounts linked</p>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+
+            {/* Edit Dialog */}
+            <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+                <DialogContent className="max-w-3xl rounded-[32px] border-slate-100 p-0 flex flex-col max-h-[90vh] overflow-hidden">
+                    <DialogHeader className="px-8 py-6 bg-slate-50/50 border-b shrink-0">
+                        <DialogTitle className="text-xl font-black text-slate-900 tracking-tight">Modify Identity Records</DialogTitle>
+                        <DialogDescription className="text-xs font-medium text-slate-500">Proposed changes will be reviewed by administrators.</DialogDescription>
+                    </DialogHeader>
+                    <form onSubmit={handleUpdateProfile} className="flex flex-col h-[75vh] bg-white rounded-b-[32px]">
+                        <ScrollArea className="flex-1">
+                            <div className="p-8 space-y-10 pb-32">
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-2 border-b border-slate-50 pb-2">
+                                    <Activity className="h-3.5 w-3.5 text-primary" />
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Core Information</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Full Name</Label>
+                                        <Input name="name" defaultValue={userProfile.name} required className="h-11 rounded-xl" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Phone</Label>
+                                        <Input name="phone" defaultValue={userProfile.phone} required className="h-11 rounded-xl" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Email</Label>
+                                        <Input name="email" defaultValue={userProfile.email} className="h-11 rounded-xl" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Telegram ID</Label>
+                                        <Input name="telegramChatId" defaultValue={userProfile.telegramChatId} className="h-11 rounded-xl font-mono" />
+                                    </div>
+                                    <div className="md:col-span-2 space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Address</Label>
+                                        <Input name="address" defaultValue={userProfile.address} className="h-11 rounded-xl" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="flex items-center gap-2 border-b border-slate-50 pb-2">
+                                    <ShieldCheck className="h-3.5 w-3.5 text-primary" />
+                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Identification (Aadhaar/PAN)</h4>
+                                </div>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Aadhaar Number</Label>
+                                        <Input name="aadhaarNumber" defaultValue={userProfile.aadhaarNumber} maxLength={12} className="h-11 rounded-xl font-mono" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">PAN Number</Label>
+                                        <Input name="panNumber" defaultValue={userProfile.panNumber} className="h-11 rounded-xl font-mono uppercase" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Secondary ID Type</Label>
+                                        <Input name="idProofType" defaultValue={userProfile.idProofType} className="h-11 rounded-xl" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">ID Number</Label>
+                                        <Input name="idNumber" defaultValue={userProfile.idNumber} className="h-11 rounded-xl" />
+                                    </div>
+                                    <div className="md:col-span-2 space-y-4">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">ID Proof Documents</Label>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="p-4 rounded-2xl border-2 border-dashed border-slate-100 bg-slate-50/50">
+                                                <p className="text-[9px] font-black uppercase tracking-widest mb-2 opacity-50 text-center">Aadhaar Card</p>
+                                                <FileUploader onFilesChange={(files) => setAadhaarFile(files[0] || null)} acceptedFileTypes="image/*,application/pdf" />
+                                            </div>
+                                            <div className="p-4 rounded-2xl border-2 border-dashed border-slate-100 bg-slate-50/50">
+                                                <p className="text-[9px] font-black uppercase tracking-widest mb-2 opacity-50 text-center">Secondary ID Proof</p>
+                                                <FileUploader onFilesChange={(files) => setIdProofFile(files[0] || null)} acceptedFileTypes="image/*,application/pdf" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="flex items-center justify-between border-b border-slate-50 pb-2">
+                                    <div className="flex items-center gap-2">
+                                        <Landmark className="h-3.5 w-3.5 text-primary" />
+                                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Settlement Details</h4>
+                                    </div>
+                                    <Button type="button" variant="outline" size="sm" onClick={() => setBankDetails([...bankDetails, { bankName: '', accountNumber: '', ifscCode: '' }])} className="h-8 text-[9px] font-black uppercase tracking-widest rounded-xl">
+                                        <Plus className="h-3 w-3 mr-1" /> Add Account
+                                    </Button>
+                                </div>
+                                <div className="space-y-4">
+                                    {bankDetails.map((bank, idx) => (
+                                        <div key={idx} className="relative p-6 rounded-2xl border border-slate-100 bg-slate-50/30 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            {bankDetails.length > 1 && (
+                                                <Button type="button" variant="ghost" size="icon" onClick={() => setBankDetails(bankDetails.filter((_, i) => i !== idx))} className="absolute top-2 right-2 h-7 w-7 text-slate-300 hover:text-red-500 rounded-full"><X className="h-4 w-4" /></Button>
+                                            )}
+                                            <div className="space-y-2">
+                                                <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Bank Name</Label>
+                                                <Input value={bank.bankName} onChange={(e) => { const newB = [...bankDetails]; newB[idx].bankName = e.target.value; setBankDetails(newB); }} className="h-10 text-xs font-bold rounded-xl" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400">Account No.</Label>
+                                                <Input value={bank.accountNumber} onChange={(e) => { const newB = [...bankDetails]; newB[idx].accountNumber = e.target.value; setBankDetails(newB); }} className="h-10 text-xs font-mono font-bold rounded-xl" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-[9px] font-black uppercase tracking-widest text-slate-400">IFSC Code</Label>
+                                                <Input value={bank.ifscCode} onChange={(e) => { const newB = [...bankDetails]; newB[idx].ifscCode = e.target.value; setBankDetails(newB); }} className="h-10 text-xs font-mono font-bold rounded-xl" />
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="space-y-4 pt-4">
+                                    <div className="flex items-center justify-between">
+                                        <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">UPI Handles</Label>
+                                        <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ''])} className="h-7 text-[9px] font-black uppercase tracking-widest rounded-xl"><Plus className="h-3 w-3 mr-1" /> Add UPI</Button>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {upiIds.map((upi, idx) => (
+                                            <div key={idx} className="flex gap-2 items-center group">
+                                                <Input value={upi} onChange={(e) => { const newU = [...upiIds]; newU[idx] = e.target.value; setUpiIds(newU); }} placeholder="handle@upi" className="flex-1 h-11 text-xs font-mono font-bold rounded-xl" />
+                                                {upiIds.length > 1 && (
+                                                    <Button type="button" variant="ghost" size="icon" onClick={() => setUpiIds(upiIds.filter((_, i) => i !== idx))} className="h-9 w-9 text-slate-300 hover:text-red-500 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity"><X className="h-4 w-4" /></Button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        </ScrollArea>
+                        <DialogFooter className="p-8 bg-slate-50 border-t shrink-0 flex flex-col md:flex-row gap-3 rounded-b-[32px]">
+                            <Button type="button" variant="outline" onClick={() => setIsEditDialogOpen(false)} className="w-full md:w-auto font-black uppercase tracking-widest text-[10px] h-12 px-8 rounded-2xl bg-white">Discard changes</Button>
+                            <Button type="submit" disabled={isSubmitting} className="w-full md:w-auto font-black uppercase tracking-widest text-[10px] h-12 px-10 rounded-2xl shadow-xl">
+                                {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />} Submit for Approval
+                            </Button>
+                        </DialogFooter>
+                    </form>
+                </DialogContent>
+            </Dialog>
+
+            {/* Image Viewer */}
             <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
-                <DialogContent className="max-w-4xl">
+                <DialogContent className="max-w-4xl rounded-[32px]">
                     <DialogHeader>
-                        <DialogTitle>ID Proof</DialogTitle>
+                        <DialogTitle className="text-lg font-black text-slate-900 tracking-tight">Identity Proof Document</DialogTitle>
                     </DialogHeader>
                     {imageToView && (
-                        <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-secondary/20 border rounded-md">
-                            <Image
-                                src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`}
-                                alt="ID Proof"
-                                fill
-                                sizes="100vw"
-                                className="object-contain transition-transform duration-200 ease-out origin-center"
-                                style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }}
-                                unoptimized
-                            />
+                        <div className="relative h-[70vh] w-full mt-4 overflow-auto bg-slate-50 border border-slate-100 rounded-2xl p-4 flex items-center justify-center">
+                            <div className="relative w-full h-full" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)`, transition: 'transform 0.2s ease-out' }}>
+                                <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Document" fill className="object-contain" unoptimized />
+                            </div>
                         </div>
                     )}
-                    <DialogFooter className="sm:justify-center pt-4">
-                        <Button variant="outline" onClick={() => setZoom(z => z * 1.2)}><ZoomIn className="mr-2"/> Zoom In</Button>
-                        <Button variant="outline" onClick={() => setZoom(z => z / 1.2)}><ZoomOut className="mr-2"/> Zoom Out</Button>
-                        <Button variant="outline" onClick={() => setRotation(r => r + 90)}><RotateCw className="mr-2"/> Rotate</Button>
-                        <Button variant="outline" onClick={() => { setZoom(1); setRotation(0); }}><RefreshCw className="mr-2"/> Reset</Button>
+                    <DialogFooter className="sm:justify-center pt-4 flex gap-2">
+                        <Button variant="outline" size="icon" onClick={() => setZoom(z => z * 1.2)} className="rounded-xl"><ZoomIn className="h-4 w-4"/></Button>
+                        <Button variant="outline" size="icon" onClick={() => setZoom(z => z / 1.2)} className="rounded-xl"><ZoomOut className="h-4 w-4"/></Button>
+                        <Button variant="outline" size="icon" onClick={() => setRotation(r => r + 90)} className="rounded-xl"><RotateCw className="h-4 w-4"/></Button>
+                        <Button variant="outline" onClick={() => { setZoom(1); setRotation(0); }} className="rounded-xl font-bold text-[10px] uppercase tracking-widest px-4">Reset</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
 
+            {/* Password Dialog */}
             <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
-                <DialogContent className="sm:max-w-md">
+                <DialogContent className="sm:max-w-md rounded-[32px]">
                     <DialogHeader>
-                        <DialogTitle className="font-bold text-primary flex items-center gap-2">
-                            <KeyRound className="h-5 w-5 text-primary/60" />
-                            Update Portal Password
-                        </DialogTitle>
-                        <CardDescription>Keep your credential private. Ensure it is easily remembered.</CardDescription>
+                        <DialogTitle className="font-bold text-primary flex items-center gap-2"><KeyRound className="h-5 w-5" /> Update Portal Password</DialogTitle>
+                        <DialogDescription className="text-xs">Ensure your credentials remain secure and confidential.</DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4 py-4">
                         <div className="space-y-1.5">
-                            <Label className="font-bold text-xs">New Password</Label>
-                            <Input 
-                                type="password" 
-                                placeholder="••••••••" 
-                                value={newPassword} 
-                                onChange={(e) => setNewPassword(e.target.value)} 
-                                disabled={isSavingPassword}
-                                className="font-normal"
-                            />
+                            <Label className="font-bold text-xs uppercase tracking-widest opacity-60">New Password</Label>
+                            <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} disabled={isSavingPassword} className="h-11 rounded-xl" />
                         </div>
                         <div className="space-y-1.5">
-                            <Label className="font-bold text-xs">Confirm Password</Label>
-                            <Input 
-                                type="password" 
-                                placeholder="••••••••" 
-                                value={confirmPassword} 
-                                onChange={(e) => setConfirmPassword(e.target.value)} 
-                                disabled={isSavingPassword}
-                                className="font-normal"
-                            />
+                            <Label className="font-bold text-xs uppercase tracking-widest opacity-60">Confirm Password</Label>
+                            <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} disabled={isSavingPassword} className="h-11 rounded-xl" />
                         </div>
                     </div>
-                    <DialogFooter className="flex sm:justify-end gap-2">
-                        <Button variant="ghost" onClick={() => setIsPasswordDialogOpen(false)} disabled={isSavingPassword}>
-                            Cancel
-                        </Button>
-                        <Button onClick={handlePasswordSave} disabled={isSavingPassword} className="font-bold active:scale-95 transition-transform">
-                            {isSavingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
-                            Update Password
+                    <DialogFooter className="flex gap-2">
+                        <Button variant="ghost" onClick={() => setIsPasswordDialogOpen(false)} className="rounded-xl">Cancel</Button>
+                        <Button onClick={handlePasswordSave} disabled={isSavingPassword} className="rounded-xl font-bold">
+                            {isSavingPassword && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>} Update Password
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -413,6 +413,7 @@ export interface Donor extends DocumentData {
   updatedAt?: Timestamp | FieldValue;
   createdById?: string;
   createdByName?: string;
+  panNumber?: string;
 }
 
 export interface DonationLink {

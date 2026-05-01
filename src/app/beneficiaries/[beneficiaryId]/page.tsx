@@ -95,9 +95,9 @@ export default function BeneficiaryDetailsPage() {
   const { data: lead } = useDoc<Lead>(leadDocRef);
 
   const beneficiaryDocRef = useMemoFirebase(() => {
-    if (!firestore || !beneficiaryId) return null;
+    if (!firestore || !beneficiaryId || !currentUserProfile) return null;
     return doc(firestore, 'beneficiaries', beneficiaryId) as DocumentReference<Beneficiary>;
-  }, [firestore, beneficiaryId]);
+  }, [firestore, beneficiaryId, !!currentUserProfile]);
 
   useEffect(() => {
     if (initiativeContext && firestore && beneficiaryId) {

@@ -142,6 +142,21 @@ service firebase.storage {
     }
 
     // =========================================================================
+    // DONORS REGISTRY
+    // Donor profile assets and document uploads.
+    // Covers: donors/{donorId}/id_proof.png
+    // =========================================================================
+
+    match /donors/{donorId}/{allPaths=**} {
+      allow read: if isStaff() || (isSignedIn() && request.auth.uid == donorId);
+      allow write: if isAdmin() ||
+                    hasPermission('donors', 'update') ||
+                    hasPermission('donors', 'create') ||
+                    isStaff() ||
+                    (isSignedIn() && request.auth.uid == donorId);
+    }
+
+    // =========================================================================
     // USER PROFILES
     // ID proof uploads for staff/admin users.
     // Covers: users/{userId}/id_proof.png

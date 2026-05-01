@@ -147,7 +147,7 @@ export function DocuExtractHeader() {
                      )}
 
                     <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
-                      <Link href="/profile" className="flex items-center w-full">
+                      <Link href={userProfile.role === 'Donor' ? "/donor-portal/profile" : "/profile"} className="flex items-center w-full">
                         <User className="mr-3 h-4 w-4 opacity-60" />
                         <span>Profile Settings</span>
                       </Link>

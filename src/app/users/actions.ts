@@ -31,9 +31,16 @@ function sanitizePayload(data: Record<string, any>) {
 export async function createUserAuthAction(data: UserFormData): Promise<{ success: boolean; message: string; uid?: string; }> {
     const { adminAuth } = getAdminServices();
     if (!adminAuth) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    
+    // Skip Firebase Auth account creation for Donors and Beneficiaries
+    // They will be authenticated via Custom Tokens based on Firestore credentials.
+    if (data.role === 'Donor' || data.role === 'Beneficiary') {
+        return { success: true, message: 'Institutional Registry Only. Auth Managed Via Portal.', uid: data.userKey };
+    }
+
     try {
         const userRecord = await adminAuth.createUser({
-            email: data.email,
+            email: data.email || undefined,
             emailVerified: true,
             password: data.password,
             displayName: data.name,
@@ -54,7 +61,11 @@ export async function deleteUserAction(uidToDelete: string): Promise<{ success: 
         const userSnap = await userRef.get();
         const userData = userSnap.data() as UserProfile | undefined;
 
-        await adminAuth.deleteUser(uidToDelete);
+        try {
+            await adminAuth.deleteUser(uidToDelete);
+        } catch (authError: any) {
+            console.warn(`Auth deletion skipped or failed for ${uidToDelete}:`, authError.message);
+        }
         
         const batch = adminDb.batch();
         batch.delete(userRef);
@@ -217,6 +228,10 @@ export async function updateUserAuthAction(uid: string, updates: { email?: strin
         revalidatePath(`/users/${uid}`);
         return { success: true, message: 'Authentication Details Updated.' };
     } catch (error: any) {
+        if (error.code === 'auth/user-not-found') {
+             // For Donors/Beneficiaries who haven't logged in yet, this is expected if we didn't pre-create them
+             return { success: true, message: 'Institutional Credentials Updated (Auth Sync Skipped).' };
+        }
         return { success: false, message: `Operation Failed: ${error.message}` };
     }
 }

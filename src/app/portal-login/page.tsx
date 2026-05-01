@@ -1,328 +1,342 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { useAuth, signInWithPhoneNumber, RecaptchaVerifier, signInWithCustomToken } from '@/firebase';
+import { useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useAuth } from '@/firebase';
+import { signInWithCustomToken } from 'firebase/auth';
+import { authenticatePortalUserAction, sendPortalOTPAction, verifyPortalOTPAction } from './actions';
 import { useToast } from '@/hooks/use-toast';
-import { useBranding } from '@/hooks/use-branding';
-
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Loader2, AlertTriangle, ArrowLeft, Phone, ShieldCheck, Lock, Fingerprint } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Label } from '@/components/ui/label';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { 
+    Loader2, 
+    ShieldCheck, 
+    Phone, 
+    KeyRound, 
+    ArrowRight, 
+    UserCircle2, 
+    SendHorizontal,
+    ShieldQuestion,
+    MessageSquare,
+    Unlock
+} from 'lucide-react';
+import { useBranding } from '@/hooks/use-branding';
 import Link from 'next/link';
-import { BrandedLoader } from '@/components/branded-loader';
-import { authenticateSupporterAction, exchangeOtpForCustomTokenAction } from './actions';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { updatePortalPasswordAction } from './actions';
 
-// Extension for window object to hold recaptcha verifier
-declare global {
-    interface Window {
-        recaptchaVerifier?: any;
-    }
-}
-
-const phoneSchema = z.object({
-  phone: z.string().min(10, 'Phone must be exactly 10 digits.').max(10),
-});
-
-const otpSchema = z.object({
-  otp: z.string().length(6, 'OTP must be 6 digits.'),
-});
-
-const passwordSchema = z.object({
-    identifier: z.string().min(3, 'Please enter your Registered Mobile or ID.'),
-    password: z.string().min(4, 'Password must be at least 4 characters.'),
-});
-
-/**
- * Portal Login Page - Optimized for Supporter and Beneficiary access.
- * Securely resolves mobile identities to institutional profiles via OTP or Password.
- */
 export default function PortalLoginPage() {
-  const router = useRouter();
-  const auth = useAuth();
-  const { toast } = useToast();
-  
-  const [isLoading, setIsLoading] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
-  const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
-  
-  const [authMethod, setAuthMethod] = useState<'OTP' | 'Password'>('OTP');
-  const [step, setStep] = useState<'phone' | 'otp' | 'password'>('phone');
-  const [verificationResult, setVerificationResult] = useState<any>(null);
+    const [identifier, setIdentifier] = useState('');
+    const [password, setPassword] = useState('');
+    const [otp, setOtp] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const [otpSent, setOtpSent] = useState(false);
+    const [authMethod, setAuthMethod] = useState<'Password' | 'OTP'>('Password');
+    
+    const auth = useAuth();
+    const router = useRouter();
+    const { toast } = useToast();
+    const { brandingSettings } = useBranding();
+    const searchParams = useSearchParams();
+    const isRevoked = searchParams.get('revoked') === 'true';
 
-  useEffect(() => {
-    if (brandingSettings?.portalAuthMethod) {
-        setAuthMethod(brandingSettings.portalAuthMethod);
-        setStep(brandingSettings.portalAuthMethod === 'Password' ? 'password' : 'phone');
-    }
-  }, [brandingSettings]);
+    // Set initial auth method based on branding once loaded
+    useState(() => {
+        if (brandingSettings?.portalAuthMethod) {
+            setAuthMethod(brandingSettings.portalAuthMethod as any);
+        }
+    });
+    
+    // Forgot Password Flow
+    const [showForgotDialog, setShowForgotDialog] = useState(false);
+    const [forgotIdentifier, setForgotIdentifier] = useState('');
+    const [forgotOtp, setForgotOtp] = useState('');
+    const [forgotStep, setForgotStep] = useState<'ID' | 'OTP' | 'RESET'>('ID');
+    const [newPassword, setNewPassword] = useState('');
+    const [isForgotLoading, setIsForgotLoading] = useState(false);
 
-  const phoneForm = useForm({
-    resolver: zodResolver(phoneSchema),
-    defaultValues: { phone: '' },
-  });
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!identifier) {
+            toast({ title: "Identification Required", description: "Please enter your mobile or ID number.", variant: "destructive" });
+            return;
+        }
 
-  const otpForm = useForm({
-    resolver: zodResolver(otpSchema),
-    defaultValues: { otp: '' },
-  });
+        setIsLoading(true);
+        try {
+            if (authMethod === 'Password') {
+                if (!password) {
+                    toast({ title: "Missing Password", description: "Security password is required.", variant: "destructive" });
+                    setIsLoading(false);
+                    return;
+                }
+                const res = await authenticatePortalUserAction(identifier, password);
+                handleAuthResult(res);
+            } else {
+                // OTP Verification
+                if (!otpSent) {
+                    const res = await sendPortalOTPAction(identifier);
+                    if (res.success) {
+                        setOtpSent(true);
+                        toast({ title: "OTP Dispatched", description: res.message, variant: "success" });
+                    } else {
+                        toast({ title: "Dispatch Failed", description: res.message, variant: "destructive" });
+                    }
+                } else {
+                    if (!otp) {
+                        toast({ title: "Code Required", description: "Please enter the 6-digit OTP.", variant: "destructive" });
+                        setIsLoading(false);
+                        return;
+                    }
+                    const res = await verifyPortalOTPAction(identifier, otp);
+                    handleAuthResult(res);
+                }
+            }
+        } catch (error: any) {
+            toast({ title: "System Error", description: error.message, variant: "destructive" });
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
-  const passwordForm = useForm({
-    resolver: zodResolver(passwordSchema),
-    defaultValues: { identifier: '', password: '' },
-  });
+    const handleAuthResult = async (res: any) => {
+        if (res.success && res.token && auth) {
+            await signInWithCustomToken(auth, res.token);
+            if (typeof window !== 'undefined') {
+                localStorage.setItem('portal_role', res.role || '');
+                localStorage.setItem('portal_session_start', res.sessionStart?.toString() || Date.now().toString());
+            }
+            toast({ title: "Welcome", description: res.message, variant: "success" });
+            router.push(res.redirect || '/dashboard');
+        } else {
+            toast({ title: "Access Denied", description: res.message, variant: "destructive" });
+        }
+    };
 
-  const isPortalsEnabled = (brandingSettings?.isDonorLoginEnabled ?? true) || (brandingSettings?.isBeneficiaryLoginEnabled ?? true);
+    const handleForgotFlow = async () => {
+        if (forgotStep === 'ID') {
+            if (!forgotIdentifier) { toast({ title: "Identification Needed", variant: "destructive" }); return; }
+            setIsForgotLoading(true);
+            const res = await sendPortalOTPAction(forgotIdentifier);
+            if (res.success) { setForgotStep('OTP'); toast({ title: "OTP Sent", description: res.message, variant: "success" }); }
+            else { toast({ title: "Failed", description: res.message, variant: "destructive" }); }
+            setIsForgotLoading(false);
+        } else if (forgotStep === 'OTP') {
+            if (!forgotOtp) { toast({ title: "OTP Needed", variant: "destructive" }); return; }
+            setIsForgotLoading(true);
+            const res = await verifyPortalOTPAction(forgotIdentifier, forgotOtp);
+            if (res.success) { setForgotStep('RESET'); }
+            else { toast({ title: "Invalid OTP", description: res.message, variant: "destructive" }); }
+            setIsForgotLoading(false);
+        } else if (forgotStep === 'RESET') {
+            if (newPassword.length < 6) { toast({ title: "Too Short", description: "Min 6 characters", variant: "destructive" }); return; }
+            setIsForgotLoading(true);
+            const res = await updatePortalPasswordAction(forgotIdentifier, 'Donor', newPassword);
+            if (res.success) {
+                toast({ title: "Password Reset", description: "You can now log in with your new password.", variant: "success" });
+                setShowForgotDialog(false);
+                setForgotStep('ID');
+            } else {
+                toast({ title: "Update Failed", description: res.message, variant: "destructive" });
+            }
+            setIsForgotLoading(false);
+        }
+    };
 
-  const setupRecaptcha = () => {
-      if (!window.recaptchaVerifier && auth) {
-          window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-              size: 'invisible'
-          });
-      }
-  };
+    return (
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
+            <div className="w-full max-w-md space-y-8 animate-fade-in-up">
+                <div className="text-center space-y-2">
+                    <div className="inline-flex p-4 rounded-3xl bg-primary text-white shadow-xl shadow-primary/20 mb-2">
+                        <ShieldCheck className="h-8 w-8" />
+                    </div>
+                    <h1 className="text-3xl font-black tracking-tight text-slate-900">Portal Access</h1>
+                    <p className="text-slate-500 font-medium">Secure entry for {brandingSettings?.name || 'Institutional'} supporters.</p>
+                </div>
 
-  const onSendOtp = async (data: any) => {
-    setIsLoading(true);
-    setLoginError(null);
-    setupRecaptcha();
+                {isRevoked && (
+                    <div className="p-4 bg-red-50 border border-red-100 rounded-2xl animate-fade-in text-center space-y-1">
+                        <p className="text-sm font-bold text-red-700">Access Revoked</p>
+                        <p className="text-[10px] text-red-600/70 font-medium uppercase tracking-widest">Previous session terminated by administrator.</p>
+                    </div>
+                )}
 
-    try {
-        const phoneE164 = `+91${data.phone}`;
-        const confirmationResult = await signInWithPhoneNumber(auth!, phoneE164, window.recaptchaVerifier!);
-        setVerificationResult(confirmationResult);
-        setStep('otp');
-        toast({ title: 'OTP Sent!', description: 'Please Check Your Mobile Messages.', variant: 'success' });
-    } catch (err: any) {
-        console.error("OTP send error:", err);
-        setLoginError(err.message || 'Failed To Send OTP. Try Again Later.');
-    } finally {
-        setIsLoading(false);
-    }
-  };
-
-  const onVerifyOtp = async (data: any) => {
-      setIsLoading(true);
-      setLoginError(null);
-
-      try {
-          const result = await verificationResult.confirm(data.otp);
-          
-          if (result.user && result.user.phoneNumber) {
-              const res = await exchangeOtpForCustomTokenAction(result.user.phoneNumber);
-              if (res.success && res.token) {
-                   await signInWithCustomToken(auth!, res.token);
-                   if (typeof window !== 'undefined') {
-                       localStorage.setItem('portal_role', res.role || '');
-                   }
-                   toast({ title: 'Access Granted', description: `Authenticated as ${res.role}. Entering Portal...`, variant: 'success' });
-                   
-                   const isStaff = res.role === 'Admin' || res.role === 'User';
-                   if (isStaff) {
-                       router.push('/dashboard');
-                   } else if (res.role === 'Beneficiary') {
-                       router.push('/beneficiary-portal');
-                   } else {
-                       router.push('/donor-portal');
-                   }
-              } else {
-                  await auth!.signOut();
-                  setLoginError(res.message || 'Authentication Failed.');
-              }
-          } else {
-              setLoginError('Could not verify phone number.');
-          }
-      } catch (err: any) {
-          setLoginError('Invalid OTP Code. Please Try Again.');
-      } finally {
-          setIsLoading(false);
-      }
-  };
-
-  const onPasswordLogin = async (data: z.infer<typeof passwordSchema>) => {
-      setIsLoading(true);
-      setLoginError(null);
-
-      try {
-          const res = await authenticateSupporterAction(data.identifier, data.password);
-          if (res.success && res.token) {
-              await signInWithCustomToken(auth!, res.token);
-              if (typeof window !== 'undefined') {
-                  localStorage.setItem('portal_role', res.role || '');
-              }
-              toast({ title: 'Access Granted', description: `Authenticated as ${res.role}. Entering Portal...`, variant: 'success' });
-              
-              const isStaff = res.role === 'Admin' || res.role === 'User';
-              if (isStaff) {
-                  router.push('/dashboard');
-              } else if (res.role === 'Beneficiary') {
-                  router.push('/beneficiary-portal');
-              } else {
-                  router.push('/donor-portal');
-              }
-          } else {
-              setLoginError(res.message || 'Authentication Failed.');
-          }
-      } catch (err: any) {
-          setLoginError(err.message || 'Institutional login service unavailable.');
-      } finally {
-          setIsLoading(false);
-      }
-  };
-
-  if (isBrandingLoading) {
-      return <BrandedLoader message="Syncing Portal Identity Hub..." />;
-  }
-
-  if (!isPortalsEnabled) {
-      return (
-          <div className="h-screen w-full flex flex-col items-center justify-center p-4 bg-muted/20">
-              <ShieldCheck className="h-20 w-20 text-destructive mb-6" />
-              <h1 className="text-3xl font-bold tracking-tight text-primary">Portal Access Suspended</h1>
-              <p className="mt-2 text-muted-foreground text-center font-normal">Organization Administrators Have Currently Disabled Self-Service Portal Access.</p>
-              <Button asChild className="mt-8 font-bold border-primary/20 text-primary transition-transform active:scale-95" variant="outline"><Link href="/">Return To Home</Link></Button>
-          </div>
-      );
-  }
-
-  return (
-    <div className="w-full max-w-sm pt-20 mx-auto min-h-screen animate-fade-in-up px-4 sm:px-0">
-      <div className="mb-4">
-        <Button variant="outline" asChild className="font-bold border-primary/20 text-primary transition-transform active:scale-95">
-          <Link href="/"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Home</Link>
-        </Button>
-      </div>
-
-      <Card className="border-primary/10 shadow-2xl bg-white overflow-hidden">
-        <CardHeader className="text-center bg-primary/5 border-b mb-6">
-            <div className="mx-auto bg-white p-3 rounded-2xl w-fit shadow-sm border border-primary/10 mb-2">
-                {step === 'password' ? <Lock className="h-8 w-8 text-primary" /> : <Phone className="h-8 w-8 text-primary" />}
-            </div>
-          <CardTitle className="font-bold text-primary text-2xl tracking-tight">Supporter Portal</CardTitle>
-          <CardDescription className="font-normal px-2">
-              {step === 'password' ? 'Login with your registered Mobile or ID.' : 'Access Your Impact History Securely Via Mobile.'}
-          </CardDescription>
-        </CardHeader>
-        
-        <CardContent>
-            {step === 'phone' && (
-                <Form {...phoneForm}>
-                    <form onSubmit={phoneForm.handleSubmit(onSendOtp)} className="space-y-4">
-                        <FormField
-                            control={phoneForm.control}
-                            name="phone"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="font-bold text-primary opacity-60">10-Digit Mobile Number</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="9876543210" {...field} className="h-12 text-lg text-center tracking-widest font-bold border-primary/20 focus:border-primary" />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                        <div id="recaptcha-container"></div>
-                        <Button type="submit" className="w-full h-12 font-bold shadow-lg active:scale-95 transition-all" disabled={isLoading}>
-                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Send Secure Code'}
-                        </Button>
+                <Card className="border-none shadow-2xl shadow-slate-200/50 bg-white rounded-3xl overflow-hidden">
+                    <Tabs defaultValue={authMethod} onValueChange={(v) => { setAuthMethod(v as any); setOtpSent(false); }} className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 rounded-none h-14 bg-slate-50/50 border-b border-slate-100">
+                            <TabsTrigger value="Password" disabled={isLoading} className="font-bold data-[state=active]:bg-white data-[state=active]:text-primary rounded-none border-r border-slate-100">
+                                <KeyRound className="h-4 w-4 mr-2" /> Password
+                            </TabsTrigger>
+                            <TabsTrigger value="OTP" disabled={isLoading} className="font-bold data-[state=active]:bg-white data-[state=active]:text-primary rounded-none">
+                                <MessageSquare className="h-4 w-4 mr-2" /> Telegram OTP
+                            </TabsTrigger>
+                        </TabsList>
                         
-                        {brandingSettings?.isPortalPasswordEnabled && (
-                             <Button variant="ghost" onClick={() => setStep('password')} type="button" className="w-full mt-2 font-bold opacity-60 text-xs">
-                                <Lock className="mr-2 h-3 w-3" /> Use Password Instead
-                            </Button>
+                        <CardContent className="pt-8">
+                            <form onSubmit={handleLogin} className="space-y-6">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-1">Identification</Label>
+                                    <div className="relative group">
+                                        <UserCircle2 className="absolute left-4 top-3.5 h-5 w-5 text-slate-300 group-focus-within:text-primary transition-colors" />
+                                        <Input 
+                                            placeholder="Mobile or ID Number"
+                                            className="pl-12 h-12 border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-primary/20 transition-all rounded-2xl font-medium"
+                                            value={identifier}
+                                            onChange={(e) => { setIdentifier(e.target.value); setOtpSent(false); }}
+                                            disabled={isLoading || (authMethod === 'OTP' && otpSent)}
+                                        />
+                                    </div>
+                                </div>
+
+                                <TabsContent value="Password" title="Password Login" className="mt-0 space-y-6">
+                                    <div className="space-y-2">
+                                        <div className="flex justify-between items-center pl-1">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Security Password</Label>
+                                            <button 
+                                                type="button" 
+                                                onClick={() => setShowForgotDialog(true)}
+                                                className="text-[10px] font-black text-primary hover:underline uppercase tracking-widest"
+                                            >
+                                                Forgot?
+                                            </button>
+                                        </div>
+                                        <div className="relative group">
+                                            <KeyRound className="absolute left-4 top-3.5 h-5 w-5 text-slate-300 group-focus-within:text-primary transition-colors" />
+                                            <Input 
+                                                type="password"
+                                                placeholder="••••••••"
+                                                className="pl-12 h-12 border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-primary/20 transition-all rounded-2xl font-medium"
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                disabled={isLoading}
+                                            />
+                                        </div>
+                                    </div>
+                                </TabsContent>
+
+                                <TabsContent value="OTP" title="OTP Login" className="mt-0 space-y-6">
+                                    {otpSent && (
+                                        <div className="space-y-2 animate-fade-in-up">
+                                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-1">Verification Code</Label>
+                                            <div className="relative group">
+                                                <ShieldCheck className="absolute left-4 top-3.5 h-5 w-5 text-slate-300 group-focus-within:text-primary transition-colors" />
+                                                <Input 
+                                                    placeholder="6-Digit OTP"
+                                                    className="pl-12 h-12 border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-primary/20 transition-all rounded-2xl font-mono tracking-[0.5em] text-center text-lg"
+                                                    value={otp}
+                                                    maxLength={6}
+                                                    onChange={(e) => setOtp(e.target.value)}
+                                                    disabled={isLoading}
+                                                />
+                                            </div>
+                                            <p className="text-[10px] text-center text-slate-400 font-bold uppercase tracking-widest">
+                                                Code sent to Telegram. <button type="button" onClick={() => setOtpSent(false)} className="text-primary hover:underline">Change Number</button>
+                                            </p>
+                                        </div>
+                                    )}
+                                    {!otpSent && (
+                                        <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-3">
+                                            <ShieldQuestion className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                                            <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+                                                We will send a secure verification code to your linked **Telegram** account. Ensure you have started a chat with our institutional bot.
+                                            </p>
+                                        </div>
+                                    )}
+                                </TabsContent>
+
+                                <Button 
+                                    type="submit" 
+                                    className="w-full h-14 font-black text-sm uppercase tracking-widest shadow-2xl shadow-primary/20 hover:shadow-primary/40 transition-all rounded-2xl group"
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? (
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                    ) : (
+                                        <>
+                                            {authMethod === 'OTP' && !otpSent ? 'Send OTP Code' : 'Verify Identity'}
+                                            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                        </>
+                                    )}
+                                </Button>
+                            </form>
+                        </CardContent>
+                    </Tabs>
+                </Card>
+
+                <div className="flex justify-center gap-6 text-[10px] font-black text-slate-400 uppercase tracking-widest pt-4">
+                    <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+                    <span className="opacity-20">|</span>
+                    <Link href="/portal-register" className="hover:text-primary transition-colors">Register</Link>
+                    <span className="opacity-20">|</span>
+                    <Link href="/campaigns-public" className="hover:text-primary transition-colors">Campaigns</Link>
+                </div>
+            </div>
+
+            <Dialog open={showForgotDialog} onOpenChange={setShowForgotDialog}>
+                <DialogContent className="sm:max-w-md bg-white rounded-3xl border-none shadow-2xl">
+                    <DialogHeader>
+                        <DialogTitle className="text-xl font-black text-slate-900 tracking-tight">Security Recovery</DialogTitle>
+                        <DialogDescription className="text-xs font-medium">
+                            {forgotStep === 'ID' && "Enter your identification to receive a recovery code via Telegram."}
+                            {forgotStep === 'OTP' && "A secure code has been sent to your Telegram account."}
+                            {forgotStep === 'RESET' && "Identity verified. Please set your new portal password."}
+                        </DialogDescription>
+                    </DialogHeader>
+                    
+                    <div className="py-6 space-y-4">
+                        {forgotStep === 'ID' && (
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mobile or ID Number</Label>
+                                <Input 
+                                    placeholder="Enter identifier" 
+                                    className="h-12 rounded-2xl border-slate-100 bg-slate-50 font-medium"
+                                    value={forgotIdentifier}
+                                    onChange={(e) => setForgotIdentifier(e.target.value)}
+                                />
+                            </div>
                         )}
-                    </form>
-                </Form>
-            )}
+                        {forgotStep === 'OTP' && (
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Recovery Code</Label>
+                                <Input 
+                                    placeholder="6-Digit OTP" 
+                                    className="h-12 rounded-2xl border-slate-100 bg-slate-50 font-mono text-center text-lg tracking-[0.5em]"
+                                    value={forgotOtp}
+                                    maxLength={6}
+                                    onChange={(e) => setForgotOtp(e.target.value)}
+                                />
+                            </div>
+                        )}
+                        {forgotStep === 'RESET' && (
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">New Password</Label>
+                                <Input 
+                                    type="password"
+                                    placeholder="••••••••" 
+                                    className="h-12 rounded-2xl border-slate-100 bg-slate-50 font-medium"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                />
+                            </div>
+                        )}
+                    </div>
 
-            {step === 'otp' && (
-                <Form {...otpForm}>
-                    <form onSubmit={otpForm.handleSubmit(onVerifyOtp)} className="space-y-4 animate-fade-in-zoom">
-                        <FormField
-                            control={otpForm.control}
-                            name="otp"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="font-bold text-primary opacity-60">Enter 6-Digit Code</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="XXXXXX" {...field} className="h-12 text-2xl text-center tracking-[0.5rem] font-bold border-primary/20 focus:border-primary" maxLength={6} />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
+                    <DialogFooter>
+                        <Button 
+                            className="w-full h-12 font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20"
+                            onClick={handleForgotFlow}
+                            disabled={isForgotLoading}
+                        >
+                            {isForgotLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : (
+                                forgotStep === 'ID' ? "Send Recovery Code" : (forgotStep === 'OTP' ? "Verify Code" : "Update Password")
                             )}
-                        />
-                        <Button type="submit" className="w-full h-12 font-bold shadow-lg active:scale-95 transition-all" disabled={isLoading}>
-                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Verify & Enter Portal'}
                         </Button>
-                        <Button variant="ghost" onClick={() => setStep('phone')} type="button" className="w-full mt-2 font-bold opacity-60 text-xs">
-                            Use A Different Number
-                        </Button>
-                    </form>
-                </Form>
-            )}
-
-            {step === 'password' && (
-                <Form {...passwordForm}>
-                    <form onSubmit={passwordForm.handleSubmit(onPasswordLogin)} className="space-y-4 animate-fade-in-up">
-                        <FormField
-                            control={passwordForm.control}
-                            name="identifier"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="font-bold text-primary opacity-60">Registered Mobile / ID</FormLabel>
-                                <FormControl>
-                                    <Input placeholder="9876543210" {...field} className="h-12 font-bold border-primary/20 focus:border-primary" />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                        <FormField
-                            control={passwordForm.control}
-                            name="password"
-                            render={({ field }) => (
-                            <FormItem>
-                                <FormLabel className="font-bold text-primary opacity-60">Portal Password</FormLabel>
-                                <FormControl>
-                                    <Input type="password" placeholder="••••••••" {...field} className="h-12 font-bold border-primary/20 focus:border-primary" />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                            )}
-                        />
-                        <Button type="submit" className="w-full h-12 font-bold shadow-lg active:scale-95 transition-all" disabled={isLoading}>
-                            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Access Institutional Portal'}
-                        </Button>
-                        
-                        <Button variant="ghost" onClick={() => setStep('phone')} type="button" className="w-full mt-2 font-bold opacity-60 text-xs">
-                            <Phone className="mr-2 h-3 w-3" /> Use Mobile OTP (SMS)
-                        </Button>
-                    </form>
-                </Form>
-            )}
-
-            {loginError && (
-                <Alert variant="destructive" className="mt-4 animate-fade-in-down">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle className="font-bold">Authentication Failed</AlertTitle>
-                    <AlertDescription className="text-xs font-normal">{loginError}</AlertDescription>
-                </Alert>
-            )}
-            <div className="mt-4 text-center text-xs font-bold text-primary/70">
-                Not registered yet? <Link href="/portal-register" className="underline text-primary hover:text-primary/80 transition-colors">Create an account here.</Link>
-            </div>
-        </CardContent>
-      </Card>
-      
-      <p className="text-center w-full mt-12 text-sm opacity-60 font-bold block">
-         Staff Members: <Link href="/login" className="underline text-primary hover:text-primary/80 transition-colors">Use The Member Login Area.</Link>
-      </p>
-    </div>
-  );
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
 }

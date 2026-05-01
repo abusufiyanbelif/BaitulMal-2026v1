@@ -77,13 +77,13 @@ export default function UnlinkedDonationDetailsPage() {
         checkPendingVerificationAction(donationId).then(setExistingPendingRequest);
     }, [donationId, isFormOpen]);
 
-    const donationDocRef = useMemoFirebase(() => (firestore && donationId) ? doc(firestore, 'donations', donationId) as DocumentReference<Donation> : null, [firestore, donationId]);
+    const donationDocRef = useMemoFirebase(() => (firestore && donationId && userProfile) ? doc(firestore, 'donations', donationId) as DocumentReference<Donation> : null, [firestore, donationId, !!userProfile]);
     const { data: donation, isLoading: isDonationLoading } = useDoc<Donation>(donationDocRef);
 
-    const allCampaignsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'campaigns') : null), [firestore]);
+    const allCampaignsCollectionRef = useMemoFirebase(() => (firestore && userProfile ? collection(firestore, 'campaigns') : null), [firestore, !!userProfile]);
     const { data: allCampaigns, isLoading: areAllCampaignsLoading } = useCollection<Campaign>(allCampaignsCollectionRef);
 
-    const allLeadsCollectionRef = useMemoFirebase(() => (firestore ? collection(firestore, 'leads') : null), [firestore]);
+    const allLeadsCollectionRef = useMemoFirebase(() => (firestore && userProfile ? collection(firestore, 'leads') : null), [firestore, !!userProfile]);
     const { data: allLeads, isLoading: areAllLeadsLoading } = useCollection<Lead>(allLeadsCollectionRef);
 
     const canUpdate = userProfile?.role === 'Admin' || !!userProfile?.permissions?.donations?.update;

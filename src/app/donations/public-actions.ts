@@ -12,11 +12,14 @@ export interface PublicDonationSubmission {
     donorEmail?: string;
     amount: number;
     paymentMethod: 'UPI' | 'Bank Transfer';
-    paymentProvider: string; // E.g., 'Google Pay' or 'HDFC Bank'
+    paymentProvider: string;
     transactionId: string;
-    campaignId?: string;
-    leadId?: string;
     notes?: string;
+    isTypeSplit?: boolean;
+    typeSplit?: { category: string; amount: number; forFundraising?: boolean }[];
+    isSplit?: boolean;
+    linkSplit?: { linkId: string; amount: number }[];
+    screenshotUrl?: string;
 }
 
 /**
@@ -30,7 +33,21 @@ export async function processPublicDonationAction(
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        const { donorName, donorPhone, donorEmail, amount, paymentMethod, paymentProvider, transactionId, campaignId, leadId, notes } = submission;
+        const { 
+            donorName, 
+            donorPhone, 
+            donorEmail, 
+            amount, 
+            paymentMethod, 
+            paymentProvider, 
+            transactionId, 
+            notes,
+            isTypeSplit,
+            typeSplit,
+            isSplit,
+            linkSplit,
+            screenshotUrl
+        } = submission;
 
         if (!donorPhone || donorPhone.length < 10) throw new Error("A valid phone number is mandatory for secure donation tracking.");
         if (amount <= 0) throw new Error("Donation amount must be greater than zero.");
@@ -67,34 +84,63 @@ export async function processPublicDonationAction(
             transactionId: transactionId,
             date: new Date().toISOString().split('T')[0],
             upiId: paymentMethod === 'UPI' ? paymentProvider : undefined,
+            screenshotUrl: screenshotUrl || '',
         };
 
         // --- 3. Handle Initiative Linking ---
-        const linkSplit: DonationLink[] = [];
-        if (campaignId) {
-            const campaignSnap = await adminDb.collection('campaigns').doc(campaignId).get();
-            if (campaignSnap.exists) {
-                linkSplit.push({
-                    linkId: campaignId,
-                    linkName: campaignSnap.data()?.name || 'Linked Campaign',
-                    linkType: 'campaign',
+        const finalLinkSplit: DonationLink[] = [];
+        if (isSplit && linkSplit && linkSplit.length > 0) {
+            for (const link of linkSplit) {
+                const parts = link.linkId.split('_');
+                const linkType = parts[0] as 'campaign' | 'lead';
+                const linkId = parts.slice(1).join('_');
+                
+                if (linkType === 'campaign' || linkType === 'lead') {
+                    const snap = await adminDb.collection(linkType === 'campaign' ? 'campaigns' : 'leads').doc(linkId).get();
+                    if (snap.exists) {
+                        finalLinkSplit.push({
+                            linkId,
+                            linkName: snap.data()?.name || 'Linked Initiative',
+                            linkType,
+                            amount: link.amount
+                        });
+                    }
+                } else {
+                    finalLinkSplit.push({
+                        linkId: link.linkId,
+                        linkName: 'Unallocated',
+                        linkType: 'general',
+                        amount: link.amount
+                    });
+                }
+            }
+        } else if (linkSplit && linkSplit.length > 0) {
+            // Single link if not split but linkSplit exists
+            const link = linkSplit[0];
+            const parts = link.linkId.split('_');
+            const linkType = parts[0] as 'campaign' | 'lead';
+            const linkId = parts.slice(1).join('_');
+
+            if (linkType === 'campaign' || linkType === 'lead') {
+                const snap = await adminDb.collection(linkType === 'campaign' ? 'campaigns' : 'leads').doc(linkId).get();
+                finalLinkSplit.push({
+                    linkId,
+                    linkName: snap.data()?.name || 'Linked Initiative',
+                    linkType,
                     amount: amount
                 });
-            }
-        } else if (leadId) {
-            const leadSnap = await adminDb.collection('leads').doc(leadId).get();
-            if (leadSnap.exists) {
-                linkSplit.push({
-                    linkId: leadId,
-                    linkName: leadSnap.data()?.name || 'Linked Appeal',
-                    linkType: 'lead',
+            } else {
+                finalLinkSplit.push({
+                    linkId: 'unallocated',
+                    linkName: 'Unallocated Fund',
+                    linkType: 'general',
                     amount: amount
                 });
             }
         } else {
-            linkSplit.push({
+            finalLinkSplit.push({
                 linkId: 'unallocated',
-                linkName: 'Unallocated',
+                linkName: 'General Fund',
                 linkType: 'general',
                 amount: amount
             });
@@ -110,14 +156,14 @@ export async function processPublicDonationAction(
             amount,
             donationDate: new Date().toISOString().split('T')[0],
             donationType: 'Online Payment',
-            status: 'Pending', // All public donations start as Pending
+            status: 'Pending',
             transactions: [transaction],
-            linkSplit,
+            linkSplit: finalLinkSplit,
+            typeSplit: (isTypeSplit && typeSplit) ? typeSplit : (typeSplit?.[0] ? [{ category: typeSplit[0].category as any, amount: amount, forFundraising: typeSplit[0].forFundraising }] : []),
             comments: notes,
             uploadedBy: 'Public Gateway',
             uploadedById: 'public_gateway',
             createdAt: FieldValue.serverTimestamp(),
-            typeSplit: [], // Initially empty, staff will categorize (Zakat, Sadaqah, etc.) during verification
             referral: 'Public Website'
         };
 

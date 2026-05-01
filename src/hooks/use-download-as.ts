@@ -12,6 +12,7 @@ interface DownloadOptions {
   documentName: string;
   brandingSettings: BrandingSettings | null;
   paymentSettings: PaymentSettings | null;
+  skipLayout?: boolean;
 }
 
 const fetchAsDataURL = async (url: string | null | undefined): Promise<string | null> => {
@@ -61,117 +62,128 @@ export function useDownloadAs() {
         const qrImg = qrDataUrl ? await new Promise<HTMLImageElement>(res => { const i = new Image(); i.onload = () => res(i); i.src = qrDataUrl; }) : null;
 
         if (format === 'png') {
-            const finalWidth = 1200;
-            const PADDING = 60;
-            const HEADER_HEIGHT = 120;
-            const FOOTER_HEIGHT = 200;
-            const COPYRIGHT_HEIGHT = 40;
-
-            const contentWidth = finalWidth - PADDING * 2;
-            const contentHeight = (canvas.height * contentWidth) / canvas.width;
+            const PADDING = options.skipLayout ? 0 : 60;
+            const HEADER_HEIGHT = options.skipLayout ? 0 : 120;
+            const FOOTER_HEIGHT = options.skipLayout ? 0 : 200;
+            const COPYRIGHT_HEIGHT = options.skipLayout ? 0 : 40;
 
             const finalCanvas = document.createElement('canvas');
-            finalCanvas.width = finalWidth;
-            finalCanvas.height = contentHeight + HEADER_HEIGHT + FOOTER_HEIGHT + PADDING * 2 + COPYRIGHT_HEIGHT;
-            const ctx = finalCanvas.getContext('2d')!;
+            if (options.skipLayout) {
+                finalCanvas.width = canvas.width;
+                finalCanvas.height = canvas.height;
+            } else {
+                finalCanvas.width = 1200;
+                finalCanvas.height = ((canvas.height * (finalCanvas.width - PADDING * 2)) / canvas.width) + HEADER_HEIGHT + FOOTER_HEIGHT + PADDING * 2 + COPYRIGHT_HEIGHT;
+            }
             
+            const ctx = finalCanvas.getContext('2d')!;
             ctx.fillStyle = '#ffffff';
             ctx.fillRect(0, 0, finalCanvas.width, finalCanvas.height);
 
-            // Header
-            let headerTextX = PADDING;
-            if (logoImg) {
-                const logoHeight = 80;
-                const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
-                ctx.drawImage(logoImg, PADDING, PADDING / 2, logoWidth, logoHeight);
-                headerTextX = PADDING + logoWidth + 30;
-            }
-            ctx.fillStyle = '#0f172a';
-            ctx.font = 'bold 36px sans-serif';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur', headerTextX, HEADER_HEIGHT / 2);
+            if (options.skipLayout) {
+                ctx.drawImage(canvas, 0, 0);
+            } else {
+                const contentWidth = finalCanvas.width - PADDING * 2;
+                const contentHeight = (canvas.height * contentWidth) / canvas.width;
 
-            // Title
-            ctx.font = 'bold 30px sans-serif';
-            ctx.textBaseline = 'alphabetic';
-            ctx.fillText(documentTitle, PADDING, HEADER_HEIGHT + PADDING - 10);
-            
-            // Content
-            ctx.drawImage(canvas, PADDING, HEADER_HEIGHT + PADDING, contentWidth, contentHeight);
-            
-            // Watermark
-            if (logoImg) {
-                const wmScale = 0.5;
-                const wmWidth = finalCanvas.width * wmScale;
-                const wmHeight = (logoImg.height / logoImg.width) * wmWidth;
-                ctx.globalAlpha = 0.05;
-                ctx.drawImage(logoImg, (finalCanvas.width - wmWidth) / 2, (finalCanvas.height - wmHeight) / 2, wmWidth, wmHeight);
-                ctx.globalAlpha = 1.0;
-            }
-            
-            // Footer
-            const footerY = finalCanvas.height - FOOTER_HEIGHT - COPYRIGHT_HEIGHT;
-            if (qrImg) {
-                const qrSize = 180;
-                ctx.drawImage(qrImg, finalCanvas.width - PADDING - qrSize, footerY, qrSize, qrSize);
-            }
-            ctx.fillStyle = '#0f172a';
-            ctx.font = 'bold 24px sans-serif';
-            ctx.fillText('For Donations & Contact', PADDING, footerY + 20);
-            ctx.font = '20px sans-serif';
-            let textY = footerY + 60;
-            const lineSpacing = 32;
-            if (paymentSettings?.upiId) { ctx.fillText(`UPI: ${paymentSettings.upiId}`, PADDING, textY); textY += lineSpacing; }
-            if (paymentSettings?.contactPhone) { ctx.fillText(`Phone: ${paymentSettings.contactPhone}`, PADDING, textY); textY += lineSpacing; }
-            if (paymentSettings?.website) { ctx.fillText(`Website: ${paymentSettings.website}`, PADDING, textY); textY += lineSpacing; }
-            if (paymentSettings?.address) { ctx.fillText(paymentSettings.address, PADDING, textY); }
+                // Header
+                let headerTextX = PADDING;
+                if (logoImg) {
+                    const logoHeight = 80;
+                    const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
+                    ctx.drawImage(logoImg, PADDING, PADDING / 2, logoWidth, logoHeight);
+                    headerTextX = PADDING + logoWidth + 30;
+                }
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 36px sans-serif';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(brandingSettings?.name || 'Institutional Registry', headerTextX, HEADER_HEIGHT / 2);
 
-            // Copyright
-            ctx.textAlign = 'center';
-            ctx.font = '16px sans-serif';
-            ctx.fillStyle = '#64748b';
-            ctx.fillText(paymentSettings?.copyright || '© 2026 Baitulmal Samajik Sanstha Solapur. All Rights Reserved.', finalCanvas.width / 2, finalCanvas.height - 25);
+                // Title
+                ctx.font = 'bold 30px sans-serif';
+                ctx.textBaseline = 'alphabetic';
+                ctx.fillText(documentTitle, PADDING, HEADER_HEIGHT + PADDING - 10);
+                
+                // Content
+                ctx.drawImage(canvas, PADDING, HEADER_HEIGHT + PADDING, contentWidth, contentHeight);
+                
+                // Watermark
+                if (logoImg) {
+                    const wmScale = 0.5;
+                    const wmWidth = finalCanvas.width * wmScale;
+                    const wmHeight = (logoImg.height / logoImg.width) * wmWidth;
+                    ctx.globalAlpha = 0.05;
+                    ctx.drawImage(logoImg, (finalCanvas.width - wmWidth) / 2, (finalCanvas.height - wmHeight) / 2, wmWidth, wmHeight);
+                    ctx.globalAlpha = 1.0;
+                }
+                
+                // Footer
+                const footerY = finalCanvas.height - FOOTER_HEIGHT - COPYRIGHT_HEIGHT;
+                if (qrImg) {
+                    const qrSize = 180;
+                    ctx.drawImage(qrImg, finalCanvas.width - PADDING - qrSize, footerY, qrSize, qrSize);
+                }
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 24px sans-serif';
+                ctx.fillText('For Donations & Contact', PADDING, footerY + 20);
+                ctx.font = '20px sans-serif';
+                let textY = footerY + 60;
+                const lineSpacing = 32;
+                if (paymentSettings?.upiId) { ctx.fillText(`UPI: ${paymentSettings.upiId}`, PADDING, textY); textY += lineSpacing; }
+                if (paymentSettings?.contactPhone) { ctx.fillText(`Phone: ${paymentSettings.contactPhone}`, PADDING, textY); textY += lineSpacing; }
+                if (paymentSettings?.website) { ctx.fillText(`Website: ${paymentSettings.website}`, PADDING, textY); textY += lineSpacing; }
+                if (paymentSettings?.address) { ctx.fillText(paymentSettings.address, PADDING, textY); }
+
+                // Copyright
+                ctx.textAlign = 'center';
+                ctx.font = '16px sans-serif';
+                ctx.fillStyle = '#64748b';
+                ctx.fillText(paymentSettings?.copyright || '© 2026 Institutional Registry. All Rights Reserved.', finalCanvas.width / 2, finalCanvas.height - 25);
+            }
 
             const link = document.createElement('a');
             link.download = `${documentName}.png`;
             link.href = finalCanvas.toDataURL('image/png');
             link.click();
+
         } else { // pdf
             const { default: jsPDF } = await import('jspdf');
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
-            const margin = 15;
-            let position = margin;
+            const margin = options.skipLayout ? 0 : 15;
+            let position = options.skipLayout ? 0 : margin;
 
-            // Header
-            pdf.setTextColor(19, 106, 51); // Dark green color
-            if (logoImg && logoDataUrl) {
-                const logoHeight = 20;
-                const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
-                pdf.addImage(logoDataUrl, 'PNG', margin, position, logoWidth, logoHeight);
-                pdf.setFontSize(16);
-                const textY = position + (logoHeight / 2) + 3; // Vertically center text with logo
-                pdf.text(brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur', margin + logoWidth + 5, textY);
-                position += logoHeight + 10;
-            } else {
-                pdf.setFontSize(16);
-                pdf.text(brandingSettings?.name || 'Baitulmal Samajik Sanstha Solapur', pdfWidth / 2, position, { align: 'center' });
+            if (!options.skipLayout) {
+                // Header
+                pdf.setTextColor(19, 106, 51); // Dark green color
+                if (logoImg && logoDataUrl) {
+                    const logoHeight = 20;
+                    const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
+                    pdf.addImage(logoDataUrl, 'PNG', margin, position, logoWidth, logoHeight);
+                    pdf.setFontSize(16);
+                    const textY = position + (logoHeight / 2) + 3; // Vertically center text with logo
+                    pdf.text(brandingSettings?.name || 'Institutional Registry', margin + logoWidth + 5, textY);
+                    position += logoHeight + 10;
+                } else {
+                    pdf.setFontSize(16);
+                    pdf.text(brandingSettings?.name || 'Institutional Registry', pdfWidth / 2, position, { align: 'center' });
+                    position += 15;
+                }
+
+                // Title
+                pdf.setFontSize(18).text(documentTitle, pdfWidth / 2, position, { align: 'center' });
                 position += 15;
-            }
 
-            // Title
-            pdf.setFontSize(18).text(documentTitle, pdfWidth / 2, position, { align: 'center' });
-            position += 15;
-
-            // Watermark
-            if (logoImg && logoDataUrl) {
-                pdf.saveGraphicsState();
-                pdf.setGState(new (pdf as any).GState({ opacity: 0.08 }));
-                const wmWidth = pdfWidth * 0.75;
-                const wmHeight = (logoImg.height / logoImg.width) * wmWidth;
-                pdf.addImage(logoDataUrl, 'PNG', (pdfWidth - wmWidth) / 2, (pdfHeight - wmHeight) / 2, wmWidth, wmHeight);
-                pdf.restoreGraphicsState();
+                // Watermark
+                if (logoImg && logoDataUrl) {
+                    pdf.saveGraphicsState();
+                    pdf.setGState(new (pdf as any).GState({ opacity: 0.08 }));
+                    const wmWidth = pdfWidth * 0.75;
+                    const wmHeight = (logoImg.height / logoImg.width) * wmWidth;
+                    pdf.addImage(logoDataUrl, 'PNG', (pdfWidth - wmWidth) / 2, (pdfHeight - wmHeight) / 2, wmWidth, wmHeight);
+                    pdf.restoreGraphicsState();
+                }
             }
 
             // Content
@@ -179,52 +191,63 @@ export function useDownloadAs() {
             const imgProps = pdf.getImageProperties(imgData);
             const contentWidth = pdfWidth - margin * 2;
             const contentHeight = (imgProps.height * contentWidth) / imgProps.width;
-            pdf.addImage(imgData, 'PNG', margin, position, contentWidth, contentHeight);
-
-            // Footer
-            const footerY = pdfHeight - 65;
-            pdf.setLineWidth(0.2);
-            pdf.line(margin, footerY, pdfWidth - margin, footerY);
             
-            const qrSize = 40;
-            const qrX = pdfWidth - margin - qrSize;
-            if (qrImg && qrDataUrl) {
-                pdf.addImage(qrDataUrl, 'PNG', qrX, footerY + 5, qrSize, qrSize);
-            }
-            
-            pdf.setFontSize(11);
-            pdf.setTextColor(19, 106, 51);
-            pdf.text('For Donations & Contact', margin, footerY + 12);
-            pdf.setFontSize(9);
-            pdf.setTextColor(0, 0, 0);
-
-            const textBlockWidth = qrImg ? qrX - margin - 5 : pdfWidth - margin * 2;
-            let textY = footerY + 18;
-            
-            const addFooterLine = (label: string, value: string | undefined) => {
-                if (!value) return;
-                const fullText = `${label}: ${value}`;
-                const lines = pdf.splitTextToSize(fullText, textBlockWidth);
-                pdf.text(lines, margin, textY);
-                textY += lines.length * 4;
-            };
-
-            addFooterLine('UPI', paymentSettings?.upiId);
-            addFooterLine('Phone', paymentSettings?.contactPhone);
-            addFooterLine('Email', paymentSettings?.contactEmail);
-            addFooterLine('Website', paymentSettings?.website);
-            addFooterLine('PAN', paymentSettings?.pan);
-            addFooterLine('Reg. No', paymentSettings?.regNo);
-            
-            if (paymentSettings?.address) {
-                 const lines = pdf.splitTextToSize(paymentSettings.address, textBlockWidth);
-                 pdf.text(lines, margin, textY);
+            // Handle page overflow or multiple pages if not skipLayout
+            // For receipts (skipLayout: true), we usually want it scaled to fit or on one page while maintaining aspect ratio
+            if (options.skipLayout && contentHeight > pdfHeight) {
+                const finalWidth = (imgProps.width * pdfHeight) / imgProps.height;
+                const xOffset = (pdfWidth - finalWidth) / 2;
+                pdf.addImage(imgData, 'PNG', xOffset, 0, finalWidth, pdfHeight);
+            } else {
+                pdf.addImage(imgData, 'PNG', margin, position, contentWidth, contentHeight);
             }
 
-            // Copyright
-            pdf.setFontSize(8);
-            pdf.setTextColor(128, 128, 128);
-            pdf.text(paymentSettings?.copyright || '© 2026 Baitulmal Samajik Sanstha Solapur. All Rights Reserved.', pdfWidth / 2, pdfHeight - 10, { align: 'center' });
+            if (!options.skipLayout) {
+                // Footer
+                const footerY = pdfHeight - 65;
+                pdf.setLineWidth(0.2);
+                pdf.line(margin, footerY, pdfWidth - margin, footerY);
+                
+                const qrSize = 40;
+                const qrX = pdfWidth - margin - qrSize;
+                if (qrImg && qrDataUrl) {
+                    pdf.addImage(qrDataUrl, 'PNG', qrX, footerY + 5, qrSize, qrSize);
+                }
+                
+                pdf.setFontSize(11);
+                pdf.setTextColor(19, 106, 51);
+                pdf.text('For Donations & Contact', margin, footerY + 12);
+                pdf.setFontSize(9);
+                pdf.setTextColor(0, 0, 0);
+
+                const textBlockWidth = qrImg ? qrX - margin - 5 : pdfWidth - margin * 2;
+                let textY = footerY + 18;
+                
+                const addFooterLine = (label: string, value: string | undefined) => {
+                    if (!value) return;
+                    const fullText = `${label}: ${value}`;
+                    const lines = pdf.splitTextToSize(fullText, textBlockWidth);
+                    pdf.text(lines, margin, textY);
+                    textY += lines.length * 4;
+                };
+
+                addFooterLine('UPI', paymentSettings?.upiId);
+                addFooterLine('Phone', paymentSettings?.contactPhone);
+                addFooterLine('Email', paymentSettings?.contactEmail);
+                addFooterLine('Website', paymentSettings?.website);
+                addFooterLine('PAN', paymentSettings?.pan);
+                addFooterLine('Reg. No', paymentSettings?.regNo);
+                
+                if (paymentSettings?.address) {
+                    const lines = pdf.splitTextToSize(paymentSettings.address, textBlockWidth);
+                    pdf.text(lines, margin, textY);
+                }
+
+                // Copyright
+                pdf.setFontSize(8);
+                pdf.setTextColor(128, 128, 128);
+                pdf.text(paymentSettings?.copyright || '© 2026 Institutional Registry. All Rights Reserved.', pdfWidth / 2, pdfHeight - 10, { align: 'center' });
+            }
 
             pdf.save(`${documentName}.pdf`);
         }

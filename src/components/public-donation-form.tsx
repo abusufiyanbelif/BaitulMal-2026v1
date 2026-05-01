@@ -43,15 +43,31 @@ import {
     QrCode,
     ChevronRight,
     ArrowLeft,
-    ShieldCheck
+    ShieldCheck,
+    Plus,
+    Trash2,
+    ScanLine,
+    ImageIcon,
+    RotateCw,
+    ZoomIn,
+    ZoomOut,
+    RefreshCw,
+    FolderKanban,
+    Lightbulb
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { processPublicDonationAction } from '@/app/donations/public-actions';
-import { upiProviders, supportedBanks } from '@/lib/modules';
+import { upiProviders, supportedBanks, donationCategories } from '@/lib/modules';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
+import { usePublicData } from '@/hooks/use-public-data';
 import Image from 'next/image';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 
 const donationSchema = z.object({
   donorName: z.string().min(2, "Name must be at least 2 characters."),
@@ -62,6 +78,18 @@ const donationSchema = z.object({
   paymentProvider: z.string().min(1, "Please select a payment provider."),
   transactionId: z.string().min(4, "Transaction Reference ID is required."),
   notes: z.string().optional(),
+  isTypeSplit: z.boolean().default(false),
+  typeSplit: z.array(z.object({
+    category: z.enum(donationCategories),
+    amount: z.coerce.number().min(0, "Amount cannot be negative."),
+    forFundraising: z.boolean().default(false),
+  })).min(1, "At least one category is required."),
+  isSplit: z.boolean().default(false),
+  linkSplit: z.array(z.object({
+    linkId: z.string(),
+    amount: z.coerce.number().min(0, "Allocation cannot be negative."),
+  })).optional(),
+  screenshotFile: z.any().optional(),
 });
 
 type DonationFormValues = z.infer<typeof donationSchema>;
@@ -74,6 +102,9 @@ interface PublicDonationFormProps {
     onSuccess?: (id: string) => void;
 }
 
+import { useFieldArray } from 'react-hook-form';
+import { storageRef, uploadBytes, getDownloadURL, useStorage } from '@/firebase';
+
 export function PublicDonationForm({ 
     initialCampaignId, 
     initialLeadId, 
@@ -82,11 +113,18 @@ export function PublicDonationForm({
     onSuccess 
 }: PublicDonationFormProps) {
     const { toast } = useToast();
+    const storage = useStorage();
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
+    const { campaignsWithProgress: campaigns, leadsWithProgress: leads, isLoading: isPublicDataLoading } = usePublicData();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [donationId, setDonationId] = useState<string | null>(null);
     const [copiedField, setCopiedField] = useState<string | null>(null);
+    const [preview, setPreview] = useState<string | null>(null);
+    const [isScanning, setIsScanning] = useState(false);
+    const [isViewerOpen, setIsViewerOpen] = useState(false);
+    const [zoom, setZoom] = useState(1);
+    const [rotation, setRotation] = useState(0);
 
     const form = useForm<DonationFormValues>({
         resolver: zodResolver(donationSchema),
@@ -99,10 +137,49 @@ export function PublicDonationForm({
             paymentProvider: '',
             transactionId: '',
             notes: '',
+            isTypeSplit: false,
+            typeSplit: [{ category: 'Sadaqah', amount: 0, forFundraising: false }],
+            isSplit: false,
+            linkSplit: (initialCampaignId || initialLeadId) ? [{ linkId: initialCampaignId ? `campaign_${initialCampaignId}` : `lead_${initialLeadId}`, amount: 0 }] : [],
         },
     });
 
-    const paymentMethod = form.watch('paymentMethod');
+    const { control, watch, setValue, getValues, register, handleSubmit } = form;
+    const { fields: typeSplitFields, append: appendTypeSplit, remove: removeTypeSplit, replace: replaceTypeSplit } = useFieldArray({ control, name: "typeSplit" });
+    const { fields: linkSplitFields, append: appendLinkSplit, remove: removeLinkSplit, replace: replaceLinkSplit } = useFieldArray({ control, name: "linkSplit" });
+
+    const paymentMethod = watch('paymentMethod');
+    const totalAmount = watch('amount');
+    const isTypeSplit = watch('isTypeSplit');
+    const isLinkSplit = watch('isSplit');
+    const screenshotFile = watch('screenshotFile');
+
+    useEffect(() => {
+        if (screenshotFile && screenshotFile.length > 0) {
+            const file = screenshotFile[0];
+            const reader = new FileReader();
+            reader.onloadend = () => setPreview(reader.result as string);
+            reader.readAsDataURL(file);
+        } else {
+            setPreview(null);
+        }
+    }, [screenshotFile]);
+
+    useEffect(() => {
+        if (!isTypeSplit) {
+            const currentSplits = getValues('typeSplit');
+            const firstCategory = currentSplits.length > 0 ? currentSplits[0].category : 'Sadaqah';
+            replaceTypeSplit([{ category: firstCategory, amount: totalAmount, forFundraising: false }]);
+        }
+    }, [isTypeSplit, totalAmount, replaceTypeSplit, getValues]);
+
+    useEffect(() => {
+        if (!isLinkSplit) {
+            const currentLinks = getValues('linkSplit') || [];
+            const firstLink = currentLinks.length > 0 ? currentLinks[0].linkId : 'unallocated';
+            replaceLinkSplit([{ linkId: firstLink, amount: totalAmount }]);
+        }
+    }, [isLinkSplit, totalAmount, replaceLinkSplit, getValues]);
 
     const handleCopy = (text: string, field: string) => {
         navigator.clipboard.writeText(text);
@@ -111,14 +188,62 @@ export function PublicDonationForm({
         toast({ title: "Copied to clipboard", variant: "success" });
     };
 
+    const handleScanScreenshot = async () => {
+        const fileList = getValues('screenshotFile');
+        if (!fileList || fileList.length === 0) {
+            toast({ title: 'No Evidence', description: 'Please upload a payment screenshot first.', variant: 'destructive' });
+            return;
+        }
+
+        setIsScanning(true);
+        try {
+            const file = fileList[0];
+            const dataUri = await new Promise<string>((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => resolve(e.target?.result as string);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+
+            const apiResponse = await fetch('/api/scan-payment', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ photoDataUri: dataUri }) 
+            });
+            
+            if (!apiResponse.ok) throw new Error('AI Scan Request Failed');
+            const response = await apiResponse.json();
+            
+            if (response.amount) setValue('amount', response.amount, { shouldDirty: true, shouldValidate: true });
+            if (response.transactionId) setValue('transactionId', response.transactionId, { shouldDirty: true, shouldValidate: true });
+            if (response.upiId) setValue('paymentProvider', response.upiId, { shouldDirty: true, shouldValidate: true });
+            if (response.onlineProvider) setValue('paymentMethod', 'UPI');
+            
+            toast({ title: 'AI Scan Successful', description: 'Transaction details extracted automatically.', variant: "success"});
+        } catch (error: any) {
+            toast({ title: 'Scan Failed', description: error.message || 'Error occurred while scanning.', variant: 'destructive'});
+        } finally { 
+            setIsScanning(false); 
+        }
+    };
+
     async function onSubmit(values: DonationFormValues) {
         setIsSubmitting(true);
         try {
+            let screenshotUrl = '';
+            const fileList = getValues('screenshotFile');
+            
+            if (fileList && fileList.length > 0 && storage) {
+                const file = fileList[0];
+                const sRef = storageRef(storage, `evidence/public_${Date.now()}_${file.name}`);
+                const uploadResult = await uploadBytes(sRef, file);
+                screenshotUrl = await getDownloadURL(uploadResult.ref);
+            }
+
             const result = await processPublicDonationAction({
                 ...values,
-                campaignId: initialCampaignId,
-                leadId: initialLeadId,
-            });
+                screenshotUrl
+            } as any);
 
             if (result.success) {
                 setIsSuccess(true);
@@ -129,6 +254,7 @@ export function PublicDonationForm({
                 toast({ title: "Submission Failed", description: result.message, variant: "destructive" });
             }
         } catch (error: any) {
+            console.error("Submission error:", error);
             toast({ title: "Critical Error", description: "An unexpected error occurred. Please try again later.", variant: "destructive" });
         } finally {
             setIsSubmitting(false);
@@ -162,7 +288,7 @@ export function PublicDonationForm({
 
     return (
         <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 animate-fade-in-up">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 animate-fade-in-up">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
                     {/* Step 1: Donor & Amount */}
                     <div className="space-y-6">
@@ -174,80 +300,20 @@ export function PublicDonationForm({
                                 <CardDescription className="font-normal">Tell us who you are and how much you'd like to share.</CardDescription>
                             </CardHeader>
                             <CardContent className="pt-6 space-y-4">
-                                {(campaignName || leadName) && (
-                                    <div className="p-3 bg-primary/5 rounded-lg border border-primary/10 flex items-center justify-between">
-                                        <div className="space-y-0.5">
-                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Supporting Cause</p>
-                                            <p className="text-sm font-bold text-primary truncate max-w-[200px]">{campaignName || leadName}</p>
-                                        </div>
-                                        <Badge variant="outline" className="font-bold bg-white text-primary border-primary/20">Linked</Badge>
-                                    </div>
-                                )}
-
-                                <FormField
-                                    control={form.control}
-                                    name="donorName"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">Full Name</FormLabel>
-                                            <FormControl><Input placeholder="Your Name" {...field} className="h-11 rounded-xl border-primary/10 focus:border-primary/30 transition-all font-normal" /></FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField
-                                        control={form.control}
-                                        name="donorPhone"
+                                        control={control}
+                                        name="donorName"
                                         render={({ field }) => (
                                             <FormItem>
-                                                <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">Phone Number (WhatsApp)</FormLabel>
-                                                <div className="flex gap-2">
-                                                    <div className="w-24 shrink-0">
-                                                        <Select 
-                                                            defaultValue="+91" 
-                                                            value={field.value?.startsWith('+') ? field.value.slice(0, 3) : '+91'}
-                                                            onValueChange={(val) => {
-                                                                const currentNumber = field.value?.replace(/^\+\d{2}/, '') || '';
-                                                                field.onChange(val + currentNumber);
-                                                            }}
-                                                        >
-                                                            <FormControl>
-                                                                <SelectTrigger className="h-11 rounded-xl border-primary/10 transition-all font-bold">
-                                                                    <SelectValue />
-                                                                </SelectTrigger>
-                                                            </FormControl>
-                                                            <SelectContent className="rounded-xl shadow-dropdown border-primary/10">
-                                                                <SelectItem value="+91">🇮🇳 +91</SelectItem>
-                                                                <SelectItem value="+1">🇺🇸 +1</SelectItem>
-                                                                <SelectItem value="+44">🇬🇧 +44</SelectItem>
-                                                                <SelectItem value="+971">🇦🇪 +971</SelectItem>
-                                                                <SelectItem value="+966">🇸🇦 +966</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-                                                    <FormControl>
-                                                        <Input 
-                                                            placeholder="Mobile Number" 
-                                                            {...field} 
-                                                            value={field.value?.startsWith('+') ? field.value.slice(3) : field.value || ''} 
-                                                            onChange={(e) => {
-                                                                const prefix = field.value?.startsWith('+') ? field.value.slice(0, 3) : '+91';
-                                                                const val = e.target.value.replace(/\D/g, '');
-                                                                field.onChange(prefix + val);
-                                                            }}
-                                                            className="h-11 rounded-xl border-primary/10 transition-all font-normal flex-1" 
-                                                        />
-                                                    </FormControl>
-                                                </div>
-                                                <FormDescription className="text-[10px] font-normal italic">Mandatory for secure tracking.</FormDescription>
+                                                <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">Full Name</FormLabel>
+                                                <FormControl><Input placeholder="Your Name" {...field} className="h-11 rounded-xl border-primary/10 focus:border-primary/30 transition-all font-normal" /></FormControl>
                                                 <FormMessage />
                                             </FormItem>
                                         )}
                                     />
                                     <FormField
-                                        control={form.control}
+                                        control={control}
                                         name="amount"
                                         render={({ field }) => (
                                             <FormItem>
@@ -265,125 +331,211 @@ export function PublicDonationForm({
                                 </div>
 
                                 <FormField
-                                    control={form.control}
-                                    name="donorEmail"
+                                    control={control}
+                                    name="donorPhone"
                                     render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">Email Address (Optional)</FormLabel>
-                                            <FormControl><Input placeholder="email@example.com" {...field} className="h-11 rounded-xl border-primary/10 transition-all font-normal" /></FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                            </CardContent>
-                        </Card>
-
-                        <Card className="border-primary/10 shadow-lg bg-white overflow-hidden">
-                            <CardHeader className="bg-primary/5 border-b">
-                                <CardTitle className="flex items-center gap-2 text-lg font-bold text-primary">
-                                    <Smartphone className="h-5 w-5" /> 2. Payment Method
-                                </CardTitle>
-                                <CardDescription className="font-normal">Select how you've transferred the funds.</CardDescription>
-                            </CardHeader>
-                            <CardContent className="pt-6 space-y-6">
-                                <FormField
-                                    control={form.control}
-                                    name="paymentMethod"
-                                    render={({ field }) => (
-                                        <FormItem className="space-y-3">
+                                            <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">Phone Number (WhatsApp)</FormLabel>
                                             <FormControl>
-                                                <div className="grid grid-cols-2 gap-4">
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => field.onChange('UPI')}
-                                                        className={cn(
-                                                            "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-2 h-24 shadow-sm",
-                                                            field.value === 'UPI' ? "border-primary bg-primary/5 shadow-inner" : "border-primary/10 bg-white hover:bg-primary/[0.02]"
-                                                        )}
-                                                    >
-                                                        <div className={cn("p-2 rounded-full", field.value === 'UPI' ? "bg-primary text-white" : "bg-primary/5 text-primary")}>
-                                                            <Smartphone className="h-4 w-4" />
-                                                        </div>
-                                                        <span className="text-xs font-bold uppercase tracking-widest">Online UPI</span>
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => field.onChange('Bank Transfer')}
-                                                        className={cn(
-                                                            "flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all gap-2 h-24 shadow-sm",
-                                                            field.value === 'Bank Transfer' ? "border-primary bg-primary/5 shadow-inner" : "border-primary/10 bg-white hover:bg-primary/[0.02]"
-                                                        )}
-                                                    >
-                                                        <div className={cn("p-2 rounded-full", field.value === 'Bank Transfer' ? "bg-primary text-white" : "bg-primary/5 text-primary")}>
-                                                            <Landmark className="h-4 w-4" />
-                                                        </div>
-                                                        <span className="text-xs font-bold uppercase tracking-widest">Bank Transfer</span>
-                                                    </button>
-                                                </div>
+                                                <Input placeholder="+91 0000000000" {...field} className="h-11 rounded-xl border-primary/10 transition-all font-normal" />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
                                 />
 
-                                <div className="animate-fade-in-up">
-                                    {paymentMethod === 'UPI' ? (
-                                        <FormField
-                                            control={form.control}
-                                            name="paymentProvider"
-                                            render={({ field }) => (
-                                                <FormItem>
-                                                    <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">UPI Provider</FormLabel>
-                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                                        <FormControl>
-                                                            <SelectTrigger className="h-11 rounded-xl border-primary/10 shadow-sm font-normal">
-                                                                <SelectValue placeholder="Select App (GPay, Paytm...)" />
-                                                            </SelectTrigger>
-                                                        </FormControl>
-                                                        <SelectContent className="rounded-xl border-primary/10 shadow-dropdown">
-                                                            {upiProviders.map(provider => (
-                                                                <SelectItem key={provider} value={provider} className="font-normal">{provider}</SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-                                                    <FormMessage />
-                                                </FormItem>
-                                            )}
-                                        />
+                                <div className="space-y-4 pt-4">
+                                    <div className="flex items-center space-x-2">
+                                        <Checkbox id="isTypeSplit" checked={isTypeSplit} onCheckedChange={(checked) => setValue('isTypeSplit', checked === true)} />
+                                        <Label htmlFor="isTypeSplit" className="text-xs font-bold text-primary cursor-pointer uppercase tracking-wider">Split By Designation (Category)</Label>
+                                    </div>
+
+                                    {isTypeSplit ? (
+                                        <div className="space-y-3 animate-fade-in-up bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                            {typeSplitFields.map((field, index) => (
+                                                <div key={field.id} className="flex gap-2 items-end">
+                                                    <div className="flex-1 space-y-1">
+                                                        <FormField
+                                                            control={control}
+                                                            name={`typeSplit.${index}.category`}
+                                                            render={({ field }) => (
+                                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                                    <FormControl>
+                                                                        <SelectTrigger className="h-9 rounded-lg border-slate-200">
+                                                                            <SelectValue />
+                                                                        </SelectTrigger>
+                                                                    </FormControl>
+                                                                    <SelectContent>
+                                                                        {donationCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    <div className="w-24">
+                                                        <FormField
+                                                            control={control}
+                                                            name={`typeSplit.${index}.amount`}
+                                                            render={({ field }) => (
+                                                                <FormControl><Input type="number" {...field} className="h-9 rounded-lg border-slate-200 font-bold" /></FormControl>
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeTypeSplit(index)} disabled={typeSplitFields.length <= 1} className="h-9 w-9 text-slate-400">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                            <Button type="button" variant="outline" size="sm" onClick={() => appendTypeSplit({ category: 'Sadaqah', amount: 0, forFundraising: false })} className="w-full text-[10px] font-bold uppercase tracking-widest h-8 rounded-lg border-dashed">
+                                                <Plus className="mr-2 h-3 w-3" /> Add Category
+                                            </Button>
+                                        </div>
                                     ) : (
                                         <FormField
-                                            control={form.control}
-                                            name="paymentProvider"
+                                            control={control}
+                                            name="typeSplit.0.category"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">Sending From Bank</FormLabel>
+                                                    <FormLabel className="font-bold text-[10px] uppercase tracking-widest opacity-60">Designation / Category</FormLabel>
                                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                         <FormControl>
-                                                            <SelectTrigger className="h-11 rounded-xl border-primary/10 shadow-sm font-normal">
-                                                                <SelectValue placeholder="Select Your Bank" />
+                                                            <SelectTrigger className="h-11 rounded-xl border-primary/10">
+                                                                <SelectValue />
                                                             </SelectTrigger>
                                                         </FormControl>
-                                                        <SelectContent className="rounded-xl border-primary/10 shadow-dropdown">
-                                                            {supportedBanks.map(bank => (
-                                                                <SelectItem key={bank} value={bank} className="font-normal">{bank}</SelectItem>
-                                                            ))}
+                                                        <SelectContent className="rounded-xl border-primary/10">
+                                                            {donationCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
                                                         </SelectContent>
                                                     </Select>
-                                                    <FormMessage />
                                                 </FormItem>
                                             )}
                                         />
                                     )}
                                 </div>
 
+                                <div className="space-y-4 pt-4">
+                                    <div className="flex items-center space-x-2">
+                                        <Checkbox id="isSplit" checked={isLinkSplit} onCheckedChange={(checked) => setValue('isSplit', checked === true)} />
+                                        <Label htmlFor="isSplit" className="text-xs font-bold text-primary cursor-pointer uppercase tracking-wider">Allocate to Multiple Initiatives</Label>
+                                    </div>
+
+                                    {isLinkSplit ? (
+                                        <div className="space-y-3 animate-fade-in-up bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                                            {linkSplitFields.map((field, index) => (
+                                                <div key={field.id} className="flex gap-2 items-end">
+                                                    <div className="flex-1 space-y-1">
+                                                        <FormField
+                                                            control={control}
+                                                            name={`linkSplit.${index}.linkId`}
+                                                            render={({ field }) => (
+                                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                                    <FormControl>
+                                                                        <SelectTrigger className="h-9 rounded-lg border-slate-200">
+                                                                            <SelectValue placeholder="Select target..." />
+                                                                        </SelectTrigger>
+                                                                    </FormControl>
+                                                                    <SelectContent>
+                                                                        <div className="px-2 py-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Campaigns</div>
+                                                                        {campaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`}>{c.name}</SelectItem>)}
+                                                                        <div className="px-2 py-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Active Appeals</div>
+                                                                        {leads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`}>{l.name}</SelectItem>)}
+                                                                    </SelectContent>
+                                                                </Select>
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    <div className="w-24">
+                                                        <FormField
+                                                            control={control}
+                                                            name={`linkSplit.${index}.amount`}
+                                                            render={({ field }) => (
+                                                                <FormControl><Input type="number" {...field} className="h-9 rounded-lg border-slate-200 font-bold" /></FormControl>
+                                                            )}
+                                                        />
+                                                    </div>
+                                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeLinkSplit(index)} disabled={linkSplitFields.length <= 1} className="h-9 w-9 text-slate-400">
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                            <Button type="button" variant="outline" size="sm" onClick={() => appendLinkSplit({ linkId: 'unallocated', amount: 0 })} className="w-full text-[10px] font-bold uppercase tracking-widest h-8 rounded-lg border-dashed">
+                                                <Plus className="mr-2 h-3 w-3" /> Add Initiative
+                                            </Button>
+                                        </div>
+                                    ) : (
+                                        <FormField
+                                            control={control}
+                                            name="linkSplit.0.linkId"
+                                            render={({ field }) => (
+                                                <FormItem>
+                                                    <FormLabel className="font-bold text-[10px] uppercase tracking-widest opacity-60">Target Initiative</FormLabel>
+                                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                        <FormControl>
+                                                            <SelectTrigger className="h-11 rounded-xl border-primary/10">
+                                                                <SelectValue placeholder="Select Target..." />
+                                                            </SelectTrigger>
+                                                        </FormControl>
+                                                        <SelectContent className="rounded-xl border-primary/10">
+                                                            <div className="px-2 py-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Campaigns</div>
+                                                            {campaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`}>{c.name}</SelectItem>)}
+                                                            <div className="px-2 py-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Active Appeals</div>
+                                                            {leads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`}>{l.name}</SelectItem>)}
+                                                        </SelectContent>
+                                                    </Select>
+                                                </FormItem>
+                                            )}
+                                        />
+                                    )}
+                                </div>
+                            </CardContent>
+                        </Card>
+
+                        <Card className="border-primary/10 shadow-lg bg-white overflow-hidden">
+                            <CardHeader className="bg-primary/5 border-b">
+                                <CardTitle className="flex items-center gap-2 text-lg font-bold text-primary">
+                                    <Smartphone className="h-5 w-5" /> 2. Evidence Verification
+                                </CardTitle>
+                                <CardDescription className="font-normal">Upload your payment screenshot for AI-powered verification.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="pt-6 space-y-6">
                                 <FormField
-                                    control={form.control}
+                                    control={control}
+                                    name="screenshotFile"
+                                    render={({ field: { value, onChange, ...field } }) => (
+                                        <FormItem>
+                                            <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">Payment Evidence (Screenshot)</FormLabel>
+                                            <FormControl>
+                                                <Input 
+                                                    type="file" 
+                                                    accept="image/*" 
+                                                    onChange={(e) => onChange(e.target.files)}
+                                                    className="h-11 rounded-xl border-primary/10 font-normal" 
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+
+                                {preview && (
+                                    <div className="relative group w-full h-48 rounded-2xl border border-primary/10 bg-slate-50 shadow-inner overflow-hidden">
+                                        <Image src={preview} alt="Evidence Preview" fill className="object-contain p-2" />
+                                        <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                            <Button type="button" size="sm" onClick={handleScanScreenshot} disabled={isScanning} className="font-bold bg-white text-primary hover:bg-white/90">
+                                                {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />}
+                                                Auto-Fill With AI
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                <FormField
+                                    control={control}
                                     name="transactionId"
                                     render={({ field }) => (
                                         <FormItem>
                                             <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">Transaction Reference ID</FormLabel>
-                                            <FormControl><Input placeholder="UPI Ref/Bank TxID" {...field} className="h-11 rounded-xl border-primary/10 font-mono font-bold" /></FormControl>
-                                            <FormDescription className="text-[10px] font-normal italic">Enter the Ref ID from your payment successful screen.</FormDescription>
+                                            <FormControl><Input placeholder="UPI Ref / UTR / TxID" {...field} className="h-11 rounded-xl border-primary/10 font-mono font-bold" /></FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )}
@@ -439,42 +591,12 @@ export function PublicDonationForm({
                                                     </Button>
                                                 </div>
                                             )}
-
-                                            {paymentMethod === 'Bank Transfer' && paymentSettings?.bankAccountNumber && (
-                                                <div className="space-y-4 animate-fade-in-down">
-                                                    <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200/50 flex items-center justify-between">
-                                                        <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold text-amber-800/60 uppercase tracking-widest">Bank Name</p>
-                                                            <p className="font-bold text-amber-900">{paymentSettings.bankAccountName || 'Official Trust Account'}</p>
-                                                        </div>
-                                                        <Landmark className="h-5 w-5 text-amber-600/40" />
-                                                    </div>
-                                                    <div className="p-4 rounded-2xl bg-primary/[0.03] border border-primary/10 flex items-center justify-between group transition-colors">
-                                                        <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Account Number</p>
-                                                            <p className="font-mono font-bold text-primary">{paymentSettings.bankAccountNumber}</p>
-                                                        </div>
-                                                        <Button variant="ghost" size="icon" className="h-10 w-10 text-primary border border-primary/10 rounded-xl" onClick={() => handleCopy(paymentSettings.bankAccountNumber!, 'bank_acc')}>
-                                                            {copiedField === 'bank_acc' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                                                        </Button>
-                                                    </div>
-                                                    <div className="p-4 rounded-2xl bg-primary/[0.03] border border-primary/10 flex items-center justify-between group transition-colors">
-                                                        <div className="space-y-1">
-                                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">IFSC Code</p>
-                                                            <p className="font-mono font-bold text-primary">{paymentSettings.bankIfsc}</p>
-                                                        </div>
-                                                        <Button variant="ghost" size="icon" className="h-10 w-10 text-primary border border-primary/10 rounded-xl" onClick={() => handleCopy(paymentSettings.bankIfsc!, 'bank_ifsc')}>
-                                                            {copiedField === 'bank_ifsc' ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            )}
                                         </div>
                                     </div>
                                 )}
 
                                 <FormField
-                                    control={form.control}
+                                    control={control}
                                     name="notes"
                                     render={({ field }) => (
                                         <FormItem>

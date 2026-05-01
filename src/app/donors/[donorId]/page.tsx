@@ -157,7 +157,7 @@ export default function DonorProfilePage() {
         checkPendingVerificationAction(donorId).then(setExistingPendingRequest);
     }, [donorId, isEditMode]);
 
-    const donorDocRef = useMemoFirebase(() => donorId && firestore ? doc(firestore, 'donors', donorId) as DocumentReference<Donor> : null, [donorId, firestore]);
+    const donorDocRef = useMemoFirebase(() => (donorId && firestore && userProfile) ? doc(firestore, 'donors', donorId) as DocumentReference<Donor> : null, [donorId, firestore, !!userProfile]);
     const { data: donor, isLoading: donorLoading, forceRefetch } = useDoc<Donor>(donorDocRef);
  
     const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donor_config') : null, [firestore]);

@@ -1,238 +1,280 @@
-
 'use server';
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
-import { FieldValue } from 'firebase-admin/firestore';
-import type { UserProfile, Donor, Beneficiary } from '@/lib/types';
+import { revalidatePath } from 'next/cache';
+
+const ADMIN_SDK_ERROR_MESSAGE = "Authentication infrastructure is currently offline.";
 
 /**
- * Robust authentication for Supporters (Donors/Beneficiaries) using DB Passwords.
- * Supports login via Phone or Institutional ID.
+ * Robust portal authentication.
+ * Verifies credentials against Firestore and generates a Custom Token.
  */
-export async function authenticateSupporterAction(identifier: string, password: string) {
+export async function authenticatePortalUserAction(identifier: string, password: string) {
     const { adminDb, adminAuth } = getAdminServices();
-    if (!adminDb || !adminAuth) return { success: false, message: 'Institutional Authentication Hub Unavailable.' };
+    if (!adminDb || !adminAuth) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        let targetId: string | null = null;
-        let targetRole: string = 'Donor';
+        const cleanIdentifier = identifier.trim();
+        let targetDoc: any = null;
+        let role: 'Donor' | 'Beneficiary' | 'User' | 'Admin' = 'Donor';
 
-        const numericOnly = identifier.replace(/\D/g, '');
-        const isPhoneIdentifier = numericOnly.length >= 10;
-        const phone10 = isPhoneIdentifier ? numericOnly.slice(-10) : identifier;
-        const phoneWithPrefix = '+91' + phone10;
-
-        // 1. Search in Users collection (Centralized Accounts)
-        let userByPhone;
-        if (isPhoneIdentifier) {
-            userByPhone = await adminDb.collection('users').where('phone', 'in', [phone10, phoneWithPrefix]).limit(1).get();
-        } else {
-            userByPhone = await adminDb.collection('users').where('phone', '==', identifier).limit(1).get();
-        }
-        
-        if (userByPhone.empty && isPhoneIdentifier) {
-            userByPhone = await adminDb.collection('users').where('phones', 'array-contains-any', [phone10, phoneWithPrefix]).limit(1).get();
-        } else if (userByPhone.empty) {
-            userByPhone = await adminDb.collection('users').where('phones', 'array-contains', identifier).limit(1).get();
-        }
-
-        const userById = await adminDb.collection('users').doc(identifier).get();
-        const userByLoginId = await adminDb.collection('users').where('loginId', '==', identifier).limit(1).get();
-
-        let userData: any = null;
-
-        if (!userByPhone.empty) {
-            userData = userByPhone.docs[0].data();
-            targetId = userByPhone.docs[0].id;
-        } else if (userById.exists) {
-            userData = userById.data();
-            targetId = userById.id;
-        } else if (!userByLoginId.empty) {
-            userData = userByLoginId.docs[0].data();
-            targetId = userByLoginId.docs[0].id;
-        }
-
-        if (userData && userData.password === password) {
-            const customToken = await adminAuth.createCustomToken(targetId!, { role: userData.role });
-            return { success: true, token: customToken, role: userData.role };
-        }
-
-        // 2. Search in Donors collection (Profile-based Auth)
-        let donorByPhone;
-        if (isPhoneIdentifier) {
-            donorByPhone = await adminDb.collection('donors').where('phone', 'in', [phone10, phoneWithPrefix]).limit(1).get();
-        } else {
-            donorByPhone = await adminDb.collection('donors').where('phone', '==', identifier).limit(1).get();
-        }
-
-        if (donorByPhone.empty && isPhoneIdentifier) {
-            donorByPhone = await adminDb.collection('donors').where('phones', 'array-contains-any', [phone10, phoneWithPrefix]).limit(1).get();
-        } else if (donorByPhone.empty) {
-            donorByPhone = await adminDb.collection('donors').where('phones', 'array-contains', identifier).limit(1).get();
-        }
-
-        const donorById = await adminDb.collection('donors').doc(identifier).get();
-
-        if (!donorByPhone.empty) {
-            const dData = donorByPhone.docs[0].data();
-            if (dData.password === password) {
-                const token = await adminAuth.createCustomToken(donorByPhone.docs[0].id, { role: 'Donor' });
-                return { success: true, token, role: 'Donor' };
-            }
-        } else if (donorById.exists) {
-            const dData = donorById.data();
-            if (dData?.password === password) {
-                const token = await adminAuth.createCustomToken(identifier, { role: 'Donor' });
-                return { success: true, token, role: 'Donor' };
+        // 1. Search in Centralized Users first (Staff or unified accounts)
+        // We check by loginId, phone, or userKey
+        const userLookups = await adminDb.collection('user_lookups').doc(cleanIdentifier).get();
+        if (userLookups.exists) {
+            const lookupData = userLookups.data();
+            const userSnap = await adminDb.collection('users').doc(lookupData?.userKey || cleanIdentifier).get();
+            if (userSnap.exists) {
+                targetDoc = userSnap.data();
+                role = targetDoc.role;
             }
         }
 
-        // 3. Search in Beneficiaries collection
-        let benByPhone;
-        if (isPhoneIdentifier) {
-            benByPhone = await adminDb.collection('beneficiaries').where('phone', 'in', [phone10, phoneWithPrefix]).limit(1).get();
-        } else {
-            benByPhone = await adminDb.collection('beneficiaries').where('phone', '==', identifier).limit(1).get();
-        }
-
-        if (benByPhone.empty && isPhoneIdentifier) {
-            benByPhone = await adminDb.collection('beneficiaries').where('phones', 'array-contains-any', [phone10, phoneWithPrefix]).limit(1).get();
-        } else if (benByPhone.empty) {
-            benByPhone = await adminDb.collection('beneficiaries').where('phones', 'array-contains', identifier).limit(1).get();
-        }
-
-        const benById = await adminDb.collection('beneficiaries').doc(identifier).get();
-
-        if (!benByPhone.empty) {
-            const bData = benByPhone.docs[0].data();
-            if (bData.password === password) {
-                const token = await adminAuth.createCustomToken(benByPhone.docs[0].id, { role: 'Beneficiary' });
-                return { success: true, token, role: 'Beneficiary' };
-            }
-        } else if (benById.exists) {
-            const bData = benById.data();
-            if (bData?.password === password) {
-                const token = await adminAuth.createCustomToken(identifier, { role: 'Beneficiary' });
-                return { success: true, token, role: 'Beneficiary' };
+        // 2. If not found in Users, check Donors directly (Legacy or direct portal entries)
+        if (!targetDoc) {
+            const donorSnap = await adminDb.collection('donors').where('phone', '==', cleanIdentifier).limit(1).get();
+            if (!donorSnap.empty) {
+                targetDoc = donorSnap.docs[0].data();
+                targetDoc.id = donorSnap.docs[0].id;
+                role = 'Donor';
             }
         }
 
-        return { success: false, message: 'Invalid Credentials. Please verify your Mobile/ID and Password.' };
-    } catch (e: any) {
-        console.error('Portal Auth Error:', e);
-        return { success: false, message: e.message };
+        // 3. Finally check Beneficiaries
+        if (!targetDoc) {
+            const benSnap = await adminDb.collection('beneficiaries').where('phone', '==', cleanIdentifier).limit(1).get();
+            if (!benSnap.empty) {
+                targetDoc = benSnap.docs[0].data();
+                targetDoc.id = benSnap.docs[0].id;
+                role = 'Beneficiary';
+            }
+        }
+
+        if (!targetDoc) {
+            return { success: false, message: "Identification failed. Please verify your ID or Mobile Number." };
+        }
+
+        // 4. Password Verification (Database Centric)
+        if (!targetDoc.password || targetDoc.password !== password) {
+            return { success: false, message: "Invalid credentials. Please check your password." };
+        }
+
+        if (targetDoc.status === 'Inactive') {
+            return { success: false, message: "This account is currently restricted. Please contact support." };
+        }
+
+        // 5. Generate Custom Token with Role Claim
+        const targetId = targetDoc.id || targetDoc.userKey || cleanIdentifier;
+        const customToken = await adminAuth.createCustomToken(targetId, { role });
+
+        return { 
+            success: true, 
+            token: customToken, 
+            role, 
+            sessionStart: Date.now(),
+            redirect: role === 'Donor' ? '/donor-portal' : '/beneficiary-portal',
+            message: `Authentication successful. Accessing ${role} workspace...`
+        };
+
+    } catch (error: any) {
+        console.error("Portal Auth Error:", error);
+        return { success: false, message: `System error during login: ${error.message}` };
     }
 }
 
 /**
- * Set or Reset password for any institutional profile.
- * Restricted to Administrators.
+ * Handle password updates for portal users.
  */
-export async function setInstitutionalPasswordAction(targetId: string, collectionName: 'users' | 'donors' | 'beneficiaries', password: string) {
-    const { adminDb } = getAdminServices();
-    if (!adminDb) return { success: false, message: 'Database Unavailable' };
-
-    try {
-        await adminDb.collection(collectionName).doc(targetId).update({
-            password,
-            updatedAt: FieldValue.serverTimestamp()
-        });
-        return { success: true, message: 'Credential Updated Successfully.' };
-    } catch (e: any) {
-        return { success: false, message: e.message };
-    }
-}
-
-/**
- * Exchange Firebase Auth Phone Number for a secure custom token using the correct institutional UID.
- */
-export async function exchangeOtpForCustomTokenAction(phoneE164: string) {
+export async function updatePortalPasswordAction(userId: string, role: string, newPassword: string) {
     const { adminDb, adminAuth } = getAdminServices();
-    if (!adminDb || !adminAuth) return { success: false, message: 'Institutional Authentication Hub Unavailable.' };
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        const numericOnly = phoneE164.replace(/\D/g, '');
-        const phone10 = numericOnly.length >= 10 ? numericOnly.slice(-10) : numericOnly;
-        const phoneWithPrefix = '+91' + phone10;
-
-        // 1. Search in Users
-        const userByPhone = await adminDb.collection('users')
-            .where('phone', 'in', [phone10, phoneWithPrefix])
-            .limit(1).get();
-
-        if (!userByPhone.empty) {
-            const userData = userByPhone.docs[0].data();
-            const token = await adminAuth.createCustomToken(userByPhone.docs[0].id, { role: userData.role });
-            return { success: true, token, role: userData.role };
-        }
-
-        // 2. Search in Donors
-        const donorByPhone = await adminDb.collection('donors')
-            .where('phone', 'in', [phone10, phoneWithPrefix])
-            .limit(1).get();
-
-        if (!donorByPhone.empty) {
-            const token = await adminAuth.createCustomToken(donorByPhone.docs[0].id, { role: 'Donor' });
-            return { success: true, token, role: 'Donor' };
-        }
-
-        // 3. Search in Beneficiaries
-        const benByPhone = await adminDb.collection('beneficiaries')
-            .where('phone', 'in', [phone10, phoneWithPrefix])
-            .limit(1).get();
-
-        if (!benByPhone.empty) {
-            const token = await adminAuth.createCustomToken(benByPhone.docs[0].id, { role: 'Beneficiary' });
-            return { success: true, token, role: 'Beneficiary' };
-        }
-
-        return { success: false, message: 'Phone number not registered in our database.' };
-
-    } catch (e: any) {
-        console.error('OTP Exchange Error:', e);
-        return { success: false, message: e.message };
-    }
-}
-
-export async function supporterUpdatePasswordAction(userId: string, role: string, password: string) {
-    const { adminDb, adminAuth } = getAdminServices();
-    if (!adminDb) return { success: false, message: 'Database Unavailable' };
-
-    try {
-        let collectionName = 'users';
-        if (role === 'Donor') collectionName = 'donors';
-        else if (role === 'Beneficiary') collectionName = 'beneficiaries';
-
-        // Check if doc exists in the chosen collection, fallback to 'users' if not found
+        const collectionName = role === 'Donor' ? 'donors' : (role === 'Beneficiary' ? 'beneficiaries' : 'users');
         const docRef = adminDb.collection(collectionName).doc(userId);
-        const docSnap = await docRef.get();
         
-        if (docSnap.exists) {
-            await docRef.update({
-                password,
-                updatedAt: FieldValue.serverTimestamp()
-            });
-        } else {
-            // Fallback to updating the users collection
-            await adminDb.collection('users').doc(userId).update({
-                password,
-                updatedAt: FieldValue.serverTimestamp()
-            });
+        await docRef.update({ 
+            password: newPassword,
+            updatedAt: new Date()
+        });
+
+        // Also update users collection if it's a mirrored profile
+        if (collectionName !== 'users') {
+            await adminDb.collection('users').doc(userId).update({ password: newPassword }).catch(() => {});
         }
 
-        // Also update Firebase Auth password if the service is available
+        // Sync with Firebase Auth if user exists there
         if (adminAuth) {
-            try {
-                await adminAuth.updateUser(userId, { password });
-            } catch (authError: any) {
-                console.warn("Firebase Auth password update skipped or failed:", authError.message);
-                // Don't fail the whole operation if the user isn't in Firebase Auth
-            }
+            await adminAuth.updateUser(userId, { password: newPassword }).catch(() => {});
         }
 
-        return { success: true, message: 'Password Updated Successfully.' };
-    } catch (e: any) {
-        return { success: false, message: e.message };
+        return { success: true, message: "Password synchronized successfully." };
+    } catch (error: any) {
+        return { success: false, message: error.message };
     }
 }
 
+/**
+ * Admin-facing password reset that works with collection names directly.
+ */
+export async function setInstitutionalPasswordAction(userId: string, collectionName: 'users' | 'donors' | 'beneficiaries', newPassword: string) {
+    const role = collectionName === 'donors' ? 'Donor' : (collectionName === 'beneficiaries' ? 'Beneficiary' : 'User');
+    return updatePortalPasswordAction(userId, role, newPassword);
+}
+
+/**
+ * Generate and send a secure OTP via Telegram for portal authentication.
+ */
+export async function sendPortalOTPAction(identifier: string) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const cleanIdentifier = identifier.trim();
+        let targetDoc: any = null;
+        let telegramChatId: string = '';
+
+        // 1. Resolve Identity and find Telegram ID
+        // Check Users
+        const userLookups = await adminDb.collection('user_lookups').doc(cleanIdentifier).get();
+        if (userLookups.exists) {
+            const lookupData = userLookups.data();
+            const userSnap = await adminDb.collection('users').doc(lookupData?.userKey || cleanIdentifier).get();
+            if (userSnap.exists) {
+                targetDoc = userSnap.data();
+                telegramChatId = targetDoc.telegramChatId || '';
+            }
+        }
+
+        // Check Donors
+        if (!targetDoc) {
+            const donorSnap = await adminDb.collection('donors').where('phone', '==', cleanIdentifier).limit(1).get();
+            if (!donorSnap.empty) {
+                targetDoc = donorSnap.docs[0].data();
+                telegramChatId = targetDoc.telegramChatId || '';
+            }
+        }
+
+        // Check Beneficiaries
+        if (!targetDoc) {
+            const benSnap = await adminDb.collection('beneficiaries').where('phone', '==', cleanIdentifier).limit(1).get();
+            if (!benSnap.empty) {
+                targetDoc = benSnap.docs[0].data();
+                telegramChatId = targetDoc.telegramChatId || '';
+            }
+        }
+
+        if (!targetDoc) return { success: false, message: "Identification failed. Please verify your ID or Mobile Number." };
+        if (!telegramChatId) return { success: false, message: "Telegram account not linked. Please use password login or contact support." };
+
+        // 2. Generate OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+
+        // 3. Store OTP in secure collection
+        await adminDb.collection('portal_otps').doc(cleanIdentifier).set({
+            otp,
+            expiresAt,
+            createdAt: new Date()
+        });
+
+        // 4. Dispatch via Telegram (Calling the existing action from messages)
+        const { sendTelegramAction } = await import('@/app/messages/actions');
+        const message = `🔐 *Institutional Portal Access*\n\nYour One-Time Password (OTP) is: *${otp}*\n\nThis code expires in 5 minutes. If you did not request this, please ignore this message.`;
+        
+        const telRes = await sendTelegramAction({ 
+            message, 
+            chatId: telegramChatId, 
+            bypassAutoCheck: true 
+        });
+
+        if (!telRes.success) return { success: false, message: "Failed to dispatch OTP. Please try again later." };
+
+        return { success: true, message: "Secure OTP has been dispatched to your linked Telegram account." };
+
+    } catch (error: any) {
+        console.error("OTP Dispatch Error:", error);
+        return { success: false, message: `System error: ${error.message}` };
+    }
+}
+
+/**
+ * Verify OTP and generate Custom Token.
+ */
+export async function verifyPortalOTPAction(identifier: string, otp: string) {
+    const { adminDb, adminAuth } = getAdminServices();
+    if (!adminDb || !adminAuth) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const cleanIdentifier = identifier.trim();
+        
+        // 1. Fetch and Verify OTP
+        const otpDoc = await adminDb.collection('portal_otps').doc(cleanIdentifier).get();
+        if (!otpDoc.exists) return { success: false, message: "No active OTP session found. Please request a new one." };
+        
+        const data = otpDoc.data();
+        if (data?.otp !== otp) return { success: false, message: "Invalid verification code. Please try again." };
+        
+        const now = new Date();
+        const expiresAt = data.expiresAt.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
+        if (now > expiresAt) return { success: false, message: "OTP has expired. Please request a new one." };
+
+        // 2. Resolve Role (Mirroring authenticatePortalUserAction logic)
+        let targetDoc: any = null;
+        let role: any = 'Donor';
+        let targetId = '';
+
+        // Search Users
+        const userLookups = await adminDb.collection('user_lookups').doc(cleanIdentifier).get();
+        if (userLookups.exists) {
+            const lookupData = userLookups.data();
+            const userSnap = await adminDb.collection('users').doc(lookupData?.userKey || cleanIdentifier).get();
+            if (userSnap.exists) {
+                targetDoc = userSnap.data();
+                role = targetDoc.role;
+                targetId = userSnap.id;
+            }
+        }
+
+        // Search Donors
+        if (!targetDoc) {
+            const donorSnap = await adminDb.collection('donors').where('phone', '==', cleanIdentifier).limit(1).get();
+            if (!donorSnap.empty) {
+                targetDoc = donorSnap.docs[0].data();
+                role = 'Donor';
+                targetId = donorSnap.docs[0].id;
+            }
+        }
+
+        // Search Beneficiaries
+        if (!targetDoc) {
+            const benSnap = await adminDb.collection('beneficiaries').where('phone', '==', cleanIdentifier).limit(1).get();
+            if (!benSnap.empty) {
+                targetDoc = benSnap.docs[0].data();
+                role = 'Beneficiary';
+                targetId = benSnap.docs[0].id;
+            }
+        }
+
+        if (!targetDoc) return { success: false, message: "Identity resolution failed after verification." };
+
+        // 3. Clear OTP session
+        await adminDb.collection('portal_otps').doc(cleanIdentifier).delete().catch(() => {});
+
+        // 4. Generate Custom Token
+        const customToken = await adminAuth.createCustomToken(targetId, { role });
+
+        return { 
+            success: true, 
+            token: customToken, 
+            role, 
+            sessionStart: Date.now(),
+            redirect: role === 'Donor' ? '/donor-portal' : '/beneficiary-portal',
+            message: `OTP Verified. Accessing ${role} workspace...`
+        };
+
+    } catch (error: any) {
+        console.error("OTP Verification Error:", error);
+        return { success: false, message: error.message };
+    }
+}

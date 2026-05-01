@@ -86,16 +86,13 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
         setUserAuthState(prev => ({ ...prev, isUserLoading: true }));
         
         if (firebaseUser) {
-          // Sync token to server session cookie
-          try {
-            const idToken = await firebaseUser.getIdToken();
-            await createSessionAction(idToken);
-          } catch (err) {
-            console.error("FirebaseProvider: Session sync failed:", err);
-          }
+          // Sync token to server session cookie (non-blocking for UI)
+          firebaseUser.getIdToken().then(idToken => {
+             createSessionAction(idToken).catch(err => console.error("FirebaseProvider: Session sync failed:", err));
+          }).catch(err => console.warn("FirebaseProvider: Token retrieval failed:", err));
         } else {
           // Clear server session cookie
-          await clearSessionAction();
+          clearSessionAction().catch(err => console.error("FirebaseProvider: Session clear failed:", err));
         }
         setUserAuthState({ user: firebaseUser, isUserLoading: false, userError: null });
       },

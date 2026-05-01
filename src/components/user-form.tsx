@@ -91,6 +91,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
       aadhaarDob: user?.aadhaarDob || '',
       aadhaarGender: user?.aadhaarGender || '',
       aadhaarAddress: user?.aadhaarAddress || '',
+      bankDetails: user?.bankDetails || [{ bankName: '', accountNo: '', ifscCode: '' }],
+      upiIds: user?.upiIds || [''],
       _isEditing: isEditing,
       idProofDeleted: false,
     },
@@ -126,6 +128,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
         aadhaarDob: user.aadhaarDob || '',
         aadhaarGender: user.aadhaarGender || '',
         aadhaarAddress: user.aadhaarAddress || '',
+        bankDetails: user.bankDetails || [{ bankName: '', accountNo: '', ifscCode: '' }],
+        upiIds: user.upiIds || [''],
         _isEditing: isEditing,
         idProofDeleted: false,
       });
@@ -647,7 +651,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                             <Image src={aadhaarPreview} alt="Aadhaar Preview" fill sizes="100vw" className="object-contain" />
                                             {!isReadOnly && (
                                                 <div className="absolute inset-0 bg-black/60 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Button type="button" size="icon" variant="outline" className="text-white border-white hover:bg-white/20" onClick={() => document.getElementById('user-aadhaar-proof-file-input')?.click()}><Replace className="h-5 w-5"/></Button>
+                                                     <Button type="button" size="icon" variant="outline" className="text-white border-white hover:bg-white/20" onClick={() => document.getElementById('user-aadhaar-proof-file-input')?.click()}><Replace className="h-5 w-5"/></Button>
                                                 </div>
                                             )}
                                         </div>
@@ -747,6 +751,81 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                         <FormDescription className="font-normal text-xs opacity-70">Inactive Members Are Immediately Restricted From All System Access.</FormDescription>
                                     </FormItem>
                                 )}/>
+
+                                 <Separator className="bg-primary/10" />
+                                 
+                                 <div className="space-y-6">
+                                     <div className="flex items-center justify-between">
+                                         <h3 className="text-sm font-bold text-primary capitalize tracking-widest flex items-center gap-2">
+                                             <Landmark className="h-4 w-4" /> Settlement & Bank Accounts
+                                         </h3>
+                                         <Button type="button" variant="outline" size="sm" onClick={() => setValue('bankDetails', [...(watch('bankDetails') || []), { bankName: '', accountNo: '', ifscCode: '' }])} className="h-8 text-[10px] font-bold uppercase rounded-xl border-primary/10">
+                                             <Plus className="h-3 w-3 mr-1" /> Add Account
+                                         </Button>
+                                     </div>
+                                     <div className="space-y-4">
+                                         {(watch('bankDetails') || []).map((_, idx) => (
+                                             <div key={idx} className="p-4 rounded-2xl bg-primary/5 border border-primary/10 space-y-4 relative group">
+                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                     <FormField control={control as any} name={`bankDetails.${idx}.bankName`} render={({ field }) => (
+                                                         <FormItem>
+                                                             <FormLabel className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Bank Name</FormLabel>
+                                                             <FormControl><Input {...field} placeholder="e.g. HDFC Bank" className="h-10 text-xs font-bold rounded-xl border-primary/5 bg-white" /></FormControl>
+                                                         </FormItem>
+                                                     )}/>
+                                                     <FormField control={control as any} name={`bankDetails.${idx}.accountNo`} render={({ field }) => (
+                                                         <FormItem>
+                                                             <FormLabel className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Account Number</FormLabel>
+                                                             <FormControl><Input {...field} placeholder="Account No" className="h-10 text-xs font-bold rounded-xl border-primary/5 bg-white" /></FormControl>
+                                                         </FormItem>
+                                                     )}/>
+                                                 </div>
+                                                 <FormField control={control as any} name={`bankDetails.${idx}.ifscCode`} render={({ field }) => (
+                                                     <FormItem>
+                                                         <FormLabel className="text-[10px] font-black text-slate-400 uppercase tracking-widest">IFSC Code</FormLabel>
+                                                         <FormControl><Input {...field} placeholder="IFSC" className="h-10 text-xs font-bold rounded-xl border-primary/5 bg-white font-mono uppercase" /></FormControl>
+                                                     </FormItem>
+                                                 )}/>
+                                                 {(watch('bankDetails') || []).length > 1 && (
+                                                     <Button type="button" variant="ghost" size="icon" onClick={() => setValue('bankDetails', (watch('bankDetails') || []).filter((_, i) => i !== idx))} className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-white border border-red-100 text-red-500 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity">
+                                                         <X className="h-3 w-3" />
+                                                     </Button>
+                                                 )}
+                                             </div>
+                                         ))}
+                                     </div>
+                                 </div>
+
+                                 <Separator className="bg-primary/10" />
+
+                                 <div className="space-y-4">
+                                     <div className="flex items-center justify-between">
+                                         <h3 className="text-sm font-bold text-primary capitalize tracking-widest flex items-center gap-2">
+                                             <SmartphoneNfc className="h-4 w-4" /> UPI Identities
+                                         </h3>
+                                         <Button type="button" variant="outline" size="sm" onClick={() => setValue('upiIds', [...(watch('upiIds') || []), ''])} className="h-8 text-[10px] font-bold uppercase rounded-xl border-primary/10">
+                                             <Plus className="h-3 w-3 mr-1" /> Add UPI
+                                         </Button>
+                                     </div>
+                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                         {(watch('upiIds') || []).map((_, idx) => (
+                                             <FormField key={idx} control={control as any} name={`upiIds.${idx}`} render={({ field }) => (
+                                                 <FormItem className="relative group">
+                                                     <FormControl>
+                                                         <div className="flex gap-2">
+                                                            <Input {...field} placeholder="handle@upi" className="h-11 text-xs font-bold rounded-xl border-primary/5 bg-white font-mono" />
+                                                            {(watch('upiIds') || []).length > 1 && (
+                                                                <Button type="button" variant="ghost" size="icon" onClick={() => setValue('upiIds', (watch('upiIds') || []).filter((_, i) => i !== idx))} className="h-11 w-11 rounded-xl text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <X className="h-4 w-4" />
+                                                                </Button>
+                                                            )}
+                                                         </div>
+                                                     </FormControl>
+                                                 </FormItem>
+                                             )}/>
+                                         ))}
+                                     </div>
+                                 </div>
                             </TabsContent>
                             <TabsContent value="organization" className="mt-6 space-y-6 animate-fade-in-up">
                                 <FormField control={control as any} name="role" render={({ field }: any) => (

@@ -54,16 +54,16 @@ export default function UserDetailsPage() {
   const { userProfile: currentUserProfile, isLoading: isProfileLoading } = useCurrentUserSession();
   
   const userDocRef = useMemoFirebase(() => {
-    if (!firestore || !userId) return null;
+    if (!firestore || !userId || !currentUserProfile) return null;
     return doc(firestore, 'users', userId) as DocumentReference<UserProfile>;
-  }, [firestore, userId]);
+  }, [firestore, userId, !!currentUserProfile]);
 
   const { data: user, isLoading: isUserLoading, forceRefetch } = useDoc<UserProfile>(userDocRef);
 
-  const donorDocRef = useMemoFirebase(() => firestore && userId ? doc(firestore, 'donors', userId) as DocumentReference<Donor> : null, [firestore, userId]);
+  const donorDocRef = useMemoFirebase(() => (firestore && userId && currentUserProfile) ? doc(firestore, 'donors', userId) as DocumentReference<Donor> : null, [firestore, userId, !!currentUserProfile]);
   const { data: donor } = useDoc<Donor>(donorDocRef);
 
-  const beneficiaryDocRef = useMemoFirebase(() => firestore && userId ? doc(firestore, 'beneficiaries', userId) as DocumentReference<Beneficiary> : null, [firestore, userId]);
+  const beneficiaryDocRef = useMemoFirebase(() => (firestore && userId && currentUserProfile) ? doc(firestore, 'beneficiaries', userId) as DocumentReference<Beneficiary> : null, [firestore, userId, !!currentUserProfile]);
   const { data: beneficiary } = useDoc<Beneficiary>(beneficiaryDocRef);
 
   const handleMirrorToDonor = async () => {

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, ShieldAlert, Info, RefreshCw, X } from 'lucide-react';
+import { ArrowLeft, Plus, Trash2, Download, Loader2, Edit, Save, ShieldAlert, Info, RefreshCw, X, CheckCircle2 } from 'lucide-react';
 import Link from 'next/link';
 import {
   AlertDialog,
@@ -336,8 +336,6 @@ export default function LeadDetailsPage() {
     );
   }
 
-  const totalKitCost = useMemo(() => calculateTotal(itemList), [itemList]);
-
   return (
     <>
     {isSyncing && <BrandedLoader message="Synchronizing Registry Amounts..." />}
@@ -464,7 +462,6 @@ export default function LeadDetailsPage() {
                 )}
             </div>
           </div>
->
           <ScrollArea className="w-full">
             <div className="min-w-[800px] border rounded-xl overflow-hidden shadow-inner">
                 <Table>

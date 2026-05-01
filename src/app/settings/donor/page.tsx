@@ -4,13 +4,14 @@
  import { useFirestore, useMemoFirebase, useDoc } from '@/firebase';
  import { doc, setDoc } from 'firebase/firestore';
  import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
- import { Settings, Save, Loader2, CheckSquare, Edit, X, UserSearch, ShieldCheck, Bell, Smartphone } from 'lucide-react';
+ import { Settings, Save, Loader2, CheckSquare, Edit, X, UserSearch, ShieldCheck, Bell, Smartphone, KeyRound, RefreshCw } from 'lucide-react';
  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
  import { Checkbox } from '@/components/ui/checkbox';
  import { Label } from '@/components/ui/label';
  import { useToast } from '@/hooks/use-toast';
  import { BrandedLoader } from '@/components/branded-loader';
  import { Button } from '@/components/ui/button';
+import { revokeAllSessionsForRoleAction } from '../auth-actions';
  
  const VISIBILITY_OPTIONS = [
      { id: 'donor_stat_cards', name: 'Total profile count metrics' },
@@ -288,6 +289,41 @@
                           <p className="text-[10px] text-muted-foreground font-medium">Show alerts on profile dashboard and approval toast messages after login.</p>
                       </div>
                   </div>
+              </CardContent>
+          </Card>
+
+          <Card className="border-red-200 bg-red-50/30 shadow-none overflow-hidden mt-6 animate-fade-in-up">
+              <CardHeader className="bg-red-50 border-b border-red-100 pb-4">
+                  <CardTitle className="flex items-center gap-2 font-bold text-base text-red-900">
+                      <KeyRound className="h-5 w-5" /> Security & Access Control
+                  </CardTitle>
+                  <CardDescription className="text-xs font-normal text-red-700/70">Global session management and emergency access termination for the donor portal.</CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+                  <div className="space-y-1 text-center sm:text-left">
+                      <p className="text-sm font-bold text-red-900">Terminate Active Donor Sessions</p>
+                      <p className="text-[10px] text-red-700/60 font-medium max-w-sm">
+                          This action will immediately invalidate all active login sessions for every donor profile. 
+                          Users will be redirected to the login page upon their next interaction.
+                      </p>
+                  </div>
+                  <Button 
+                      variant="destructive" 
+                      className="font-black shadow-lg shadow-red-500/20 active:scale-95 transition-all h-11 px-8 rounded-2xl shrink-0"
+                      onClick={async () => {
+                          if (confirm("CRITICAL ACTION: Are you sure you want to log out ALL donors across the entire system? This cannot be undone.")) {
+                              setIsSubmitting(true);
+                              const res = await revokeAllSessionsForRoleAction('Donor');
+                              setIsSubmitting(false);
+                              if (res.success) toast({ title: "Portal Reset Successful", description: res.message, variant: "success" });
+                              else toast({ title: "Reset Failed", description: res.message, variant: "destructive" });
+                          }
+                      }}
+                      disabled={isSubmitting}
+                  >
+                      {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                      Terminate All Sessions
+                  </Button>
               </CardContent>
           </Card>
       </div>

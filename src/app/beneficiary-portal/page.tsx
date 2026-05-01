@@ -1,258 +1,251 @@
 'use client';
 
 import { useSession } from '@/hooks/use-session';
-import { useFirestore, useMemoFirebase, useDoc, doc, collection, getDocs, getDoc, useAuth } from '@/firebase';
+import { useFirestore, useMemoFirebase, useDoc, doc, collection, getDocs, getDoc } from '@/firebase';
 import { BrandedLoader } from '@/components/branded-loader';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { 
-    HeartHandshake, 
-    Calendar, 
-    ShieldCheck, 
-    User,
-    Gift,
-    HandHelping,
-    Sparkles,
-    CheckCircle2,
-    Activity,
-    LogOut
+    Gift, 
+    HandHelping, 
+    Sparkles, 
+    CheckCircle2, 
+    Activity, 
+    LogOut,
+    ShieldCheck,
+    Landmark
 } from 'lucide-react';
-import { formatCurrency, formatDate } from '@/lib/utils';
-import { useBranding } from '@/hooks/use-branding';
+import { formatCurrency } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { useState, useEffect, useCallback } from 'react';
 import type { Beneficiary, Campaign, Lead } from '@/lib/types';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/firebase';
 
 interface LinkedInitiative {
     id: string;
     name: string;
     type: 'Campaign' | 'Lead';
-    initiativeStatus: Campaign['status'] | Lead['status'];
+    initiativeStatus: string;
     purpose: string;
-    category?: string;
     kitAmount: number;
-    zakatAllocation: number;
-    beneficiaryStatus: Beneficiary['status'];
+    beneficiaryStatus: string;
     addedDate: string;
 }
 
 export default function BeneficiaryPortalPage() {
-    const { user, userProfile } = useSession();
+    const { userProfile, isLoading: isSessionLoading } = useSession();
     const firestore = useFirestore();
     const auth = useAuth();
     const router = useRouter();
-    const { brandingSettings } = useBranding();
-
-    const targetBeneficiaryId = userProfile?.linkedBeneficiaryId || userProfile?.id || user?.uid;
-
-    const beneficiaryDocRef = useMemoFirebase(() => {
-        if (!firestore || !targetBeneficiaryId) return null;
-        return doc(firestore, 'beneficiaries', targetBeneficiaryId) as any;
-    }, [firestore, targetBeneficiaryId]);
-
-    const { data: beneficiaryProfile, isLoading: isBenLoading } = useDoc<any>(beneficiaryDocRef);
 
     const [linkedInitiatives, setLinkedInitiatives] = useState<LinkedInitiative[]>([]);
-    const [isLinksLoading, setIsLinksLoading] = useState(true);
+    const [isDataLoading, setIsDataLoading] = useState(true);
 
-    const fetchLinkedInitiatives = useCallback(async () => {
-        if (!firestore || !targetBeneficiaryId) return;
-        setIsLinksLoading(true);
+    const fetchInitiatives = useCallback(async () => {
+        if (!firestore || !userProfile?.id) return;
+        setIsDataLoading(true);
         try {
-            const initiatives: LinkedInitiative[] = [];
-            
-            // 1. Fetch from Campaigns
-            const camps = await getDocs(collection(firestore, 'campaigns'));
-            for (const c of camps.docs) {
-                const bRef = doc(firestore, `campaigns/${c.id}/beneficiaries`, targetBeneficiaryId);
-                const bSnap = await getDoc(bRef);
-                if (bSnap.exists()) {
-                    const bData = bSnap.data() as Beneficiary;
-                    const cData = c.data() as Campaign;
-                    initiatives.push({ 
-                        id: c.id, 
-                        name: cData.name, 
-                        type: 'Campaign', 
-                        initiativeStatus: cData.status, 
-                        purpose: cData.category || 'General',
-                        category: bData.itemCategoryName || 'N/A',
-                        kitAmount: bData.kitAmount || 0, 
-                        zakatAllocation: bData.zakatAllocation || 0,
-                        beneficiaryStatus: bData.status || 'Pending',
-                        addedDate: bData.addedDate || 'N/A'
+            const results: LinkedInitiative[] = [];
+            const targetId = userProfile.id;
+
+            // 1. Scan Campaigns
+            const campsSnap = await getDocs(collection(firestore, 'campaigns'));
+            for (const c of campsSnap.docs) {
+                const benRef = doc(firestore, `campaigns/${c.id}/beneficiaries`, targetId);
+                const benSnap = await getDoc(benRef);
+                if (benSnap.exists()) {
+                    const bData = benSnap.data();
+                    const cData = c.data();
+                    results.push({
+                        id: c.id,
+                        name: cData.name,
+                        type: 'Campaign',
+                        initiativeStatus: cData.status,
+                        purpose: cData.category || 'General Assistance',
+                        kitAmount: bData.kitAmount || 0,
+                        beneficiaryStatus: bData.status || 'Verified',
+                        addedDate: bData.addedDate || ''
                     });
                 }
             }
 
-            // 2. Fetch from Leads
-            const leads = await getDocs(collection(firestore, 'leads'));
-            for (const l of leads.docs) {
-                const bRef = doc(firestore, `leads/${l.id}/beneficiaries`, targetBeneficiaryId);
-                const bSnap = await getDoc(bRef);
-                if (bSnap.exists()) {
-                    const bData = bSnap.data() as Beneficiary;
-                    const lData = l.data() as Lead;
-                    initiatives.push({ 
-                        id: l.id, 
-                        name: lData.name, 
-                        type: 'Lead', 
-                        initiativeStatus: lData.status, 
-                        purpose: lData.purpose || 'General',
-                        category: bData.idProofType || 'N/A',
-                        kitAmount: bData.kitAmount || 0, 
-                        zakatAllocation: bData.zakatAllocation || 0,
-                        beneficiaryStatus: bData.status || 'Pending',
-                        addedDate: bData.addedDate || 'N/A'
+            // 2. Scan Leads
+            const leadsSnap = await getDocs(collection(firestore, 'leads'));
+            for (const l of leadsSnap.docs) {
+                const benRef = doc(firestore, `leads/${l.id}/beneficiaries`, targetId);
+                const benSnap = await getDoc(benRef);
+                if (benSnap.exists()) {
+                    const bData = benSnap.data();
+                    const lData = l.data();
+                    results.push({
+                        id: l.id,
+                        name: lData.name,
+                        type: 'Lead',
+                        initiativeStatus: lData.status,
+                        purpose: lData.purpose || 'Individual Support',
+                        kitAmount: bData.kitAmount || 0,
+                        beneficiaryStatus: bData.status || 'Verified',
+                        addedDate: bData.addedDate || ''
                     });
                 }
             }
 
-            setLinkedInitiatives(initiatives.sort((a, b) => new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime()));
+            setLinkedInitiatives(results.sort((a, b) => new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime()));
         } catch (error) {
-            console.error('Error fetching linked beneficiary records:', error);
+            console.error("Error fetching beneficiary data:", error);
         } finally {
-            setIsLinksLoading(false);
+            setIsDataLoading(false);
         }
-    }, [firestore, targetBeneficiaryId]);
+    }, [firestore, userProfile?.id]);
 
     useEffect(() => {
-        fetchLinkedInitiatives();
-    }, [fetchLinkedInitiatives]);
+        fetchInitiatives();
+    }, [fetchInitiatives]);
 
-    if (isBenLoading || isLinksLoading || !user) {
-         return <BrandedLoader message="Accessing Your Support Records..." />;
+    if (isSessionLoading || isDataLoading) {
+         return <BrandedLoader message="Accessing Your Support Dashboard..." />;
     }
 
-    const disbursedAssistance = linkedInitiatives.filter(i => i.beneficiaryStatus === 'Given' || i.beneficiaryStatus === 'Verified');
-    const totalDisbursedValue = disbursedAssistance.reduce((sum, i) => sum + (Number(i.kitAmount) || Number(i.zakatAllocation) || 0), 0);
-    const pendingAssistanceCount = linkedInitiatives.filter(i => i.beneficiaryStatus === 'Pending' || i.beneficiaryStatus === 'Hold').length;
+    if (!userProfile || userProfile.role !== 'Beneficiary') {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
+                <HandHelping className="h-12 w-12 text-slate-300" />
+                <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Access Restricted to Beneficiaries</p>
+                <Button asChild variant="outline"><Link href="/portal-login">Return to Login</Link></Button>
+            </div>
+        );
+    }
+
+    const totalDisbursed = linkedInitiatives.reduce((sum, i) => sum + (Number(i.kitAmount) || 0), 0);
+    const activeCount = linkedInitiatives.length;
 
     return (
-        <div className="space-y-8 animate-fade-in-up pb-20 text-primary font-normal">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="space-y-1">
-                    <h1 className="text-3xl font-bold tracking-tight text-primary flex items-center gap-3">
-                        <HandHelping className="h-8 w-8 text-primary/60" />
-                        My Beneficiary Portal
-                    </h1>
-                    <p className="text-sm font-normal text-muted-foreground tracking-tight">
-                        Welcome back, {beneficiaryProfile?.name || userProfile?.name || 'Community Member'}. Below is a secure summary of support allocations prepared for you.
-                    </p>
-                </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in-up space-y-8">
+            {/* Header Section */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                 <div className="flex items-center gap-4">
-                    <Badge variant="outline" className="font-bold border-primary/20 text-primary bg-primary/5 flex items-center gap-2 px-3 py-1.5 rounded-xl h-10">
-                        <ShieldCheck className="h-4 w-4 text-primary" /> Verified Profile
+                    <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                        <HandHelping className="h-8 w-8" />
+                    </div>
+                    <div>
+                        <h1 className="text-3xl font-black tracking-tight text-slate-900">Beneficiary Portal</h1>
+                        <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] flex items-center gap-2">
+                            <ShieldCheck className="h-3 w-3" /> Community Member: {userProfile.name}
+                        </p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-3">
+                    <Badge variant="outline" className="h-12 px-4 rounded-xl border-slate-200 bg-white font-bold text-xs flex items-center gap-2">
+                        <Landmark className="h-4 w-4 text-primary" /> Verified Profile
                     </Badge>
                     <Button 
                         variant="outline" 
-                        className="font-bold shadow-sm border-primary/20 hover:bg-red-50 hover:text-red-600 transition-colors h-10 px-4 rounded-xl flex items-center gap-2"
-                        onClick={async () => {
-                            if (auth) {
-                                await auth.signOut();
-                                if (typeof window !== 'undefined') {
-                                    localStorage.removeItem('portal_role');
-                                }
-                                router.push('/portal-login');
-                            }
-                        }}
+                        className="font-bold h-12 px-6 rounded-xl border-slate-200 hover:bg-red-50 hover:text-red-600 transition-all"
+                        onClick={() => auth?.signOut().then(() => router.push('/portal-login'))}
                     >
                         <LogOut className="h-4 w-4" />
-                        Sign Out
                     </Button>
                 </div>
             </div>
 
+            {/* Stats Overview */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <Card className="shadow-lg border-primary/10 overflow-hidden relative group bg-white">
-                    <div className="absolute inset-x-0 bottom-0 h-1 bg-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
-                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total Support Delivered</CardTitle>
-                        <Gift className="h-4 w-4 text-primary opacity-60" />
+                <Card className="border-none shadow-xl shadow-slate-200/40 bg-white group">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Support Received</CardTitle>
+                        <Gift className="h-5 w-5 text-primary opacity-60" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-black text-primary tracking-tight font-mono">
-                            {formatCurrency(totalDisbursedValue)}
+                        <div className="text-4xl font-black text-slate-900 tracking-tight font-mono">
+                            {formatCurrency(totalDisbursed)}
                         </div>
-                        <p className="text-[9px] text-muted-foreground mt-1 font-bold tracking-tight">Cumulative institutional assistance provided</p>
-                    </CardContent>
-                </Card>
-
-                <Card className="shadow-lg border-primary/10 overflow-hidden relative group bg-white">
-                    <div className="absolute inset-x-0 bottom-0 h-1 bg-green-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
-                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Ongoing Initiatives</CardTitle>
-                        <Sparkles className="h-4 w-4 text-green-500 animate-pulse" />
-                    </CardHeader>
-                    <CardContent>
-                        <div className="text-3xl font-black text-primary tracking-tight font-mono">
-                            {disbursedAssistance.length}
+                        <div className="mt-2 flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                            Institutional assistance allocated
                         </div>
                     </CardContent>
                 </Card>
 
-                <Card className="shadow-lg border-primary/10 overflow-hidden relative group bg-white">
-                    <div className="absolute inset-x-0 bottom-0 h-1 bg-orange-500 scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
-                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-                        <CardTitle className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Pending Disbursals</CardTitle>
-                        <Activity className="h-4 w-4 text-orange-500" />
+                <Card className="border-none shadow-xl shadow-slate-200/40 bg-white group">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Linked Programs</CardTitle>
+                        <Sparkles className="h-5 w-5 text-green-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-3xl font-black text-primary tracking-tight font-mono">
-                            {pendingAssistanceCount}
+                        <div className="text-4xl font-black text-slate-900 tracking-tight font-mono">
+                            {activeCount}
                         </div>
-                        <p className="text-[9px] text-muted-foreground mt-1 font-bold tracking-tight">Requires administrative verification</p>
+                        <div className="mt-2 text-[10px] font-bold text-green-600 uppercase tracking-widest">
+                            Verified participation
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-none shadow-xl shadow-slate-200/40 bg-slate-900 text-white group">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Application State</CardTitle>
+                        <Activity className="h-5 w-5 text-white/40" />
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-black tracking-tight">
+                            Verified Member
+                        </div>
+                        <div className="mt-2 text-[10px] font-bold text-white/60 uppercase tracking-widest">
+                            Active registry status
+                        </div>
                     </CardContent>
                 </Card>
             </div>
 
-            <Card className="shadow-xl border-primary/10 bg-white overflow-hidden">
-                <CardHeader className="bg-primary/5 border-b px-6 py-4">
-                    <CardTitle className="text-xl font-bold tracking-tight text-primary flex items-center gap-2">
-                        <CheckCircle2 className="h-5 w-5 text-primary/60" />
-                        Allocated Support Records
-                    </CardTitle>
-                    <CardDescription className="font-normal text-primary/70">
-                        Track your application progress and verification workflows.
-                    </CardDescription>
+            {/* Assistance Records */}
+            <Card className="border-none shadow-2xl shadow-slate-200/50 bg-white rounded-3xl overflow-hidden">
+                <CardHeader className="bg-slate-50/50 px-8 py-6 border-b border-slate-100">
+                    <div>
+                        <CardTitle className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                            <CheckCircle2 className="h-5 w-5 text-primary/60" />
+                            Allocated Support
+                        </CardTitle>
+                        <p className="text-slate-500 text-xs font-normal">Records of institutional support linked to your profile.</p>
+                    </div>
                 </CardHeader>
                 <CardContent className="p-0">
                     <div className="overflow-x-auto">
                         <Table>
-                            <TableHeader className="bg-primary/[0.02]">
-                                <TableRow className="border-b border-primary/10">
-                                    <TableHead className="font-bold text-[10px] tracking-widest uppercase pl-6 py-4">Linked Program</TableHead>
-                                    <TableHead className="font-bold text-[10px] tracking-widest uppercase">Support Type</TableHead>
-                                    <TableHead className="font-bold text-[10px] tracking-widest uppercase">Disbursement Value</TableHead>
-                                    <TableHead className="font-bold text-[10px] tracking-widest uppercase">Allocation Status</TableHead>
+                            <TableHeader className="bg-slate-50/30">
+                                <TableRow className="border-slate-100 hover:bg-transparent">
+                                    <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400 pl-8 py-4">Linked Program</TableHead>
+                                    <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400">Support Type</TableHead>
+                                    <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400">Allocation Value</TableHead>
+                                    <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400 text-right pr-8">Status</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {linkedInitiatives.length === 0 ? (
                                     <TableRow>
-                                        <TableCell colSpan={4} className="text-center h-64 bg-primary/[0.01]">
-                                            <div className="flex flex-col items-center justify-center space-y-4 opacity-20">
-                                                <HeartHandshake className="h-16 w-16 text-primary" />
-                                                <p className="font-bold text-sm tracking-widest uppercase italic">No Active Allocations Provided.</p>
+                                        <TableCell colSpan={4} className="h-64 text-center">
+                                            <div className="flex flex-col items-center justify-center space-y-3 opacity-20">
+                                                <HandHelping className="h-12 w-12" />
+                                                <p className="font-black text-xs uppercase tracking-widest">No Active Records</p>
                                             </div>
                                         </TableCell>
                                     </TableRow>
                                 ) : (
                                     linkedInitiatives.map((item) => (
-                                        <TableRow key={item.id} className="group hover:bg-primary/[0.02] transition-colors border-b border-primary/5 last:border-0 bg-white">
-                                            <TableCell className="font-bold text-xs whitespace-nowrap pl-6">
-                                                {item.name}
-                                                <span className="block text-[10px] font-normal text-muted-foreground mt-0.5">{item.type}</span>
+                                        <TableRow key={item.id} className="border-slate-50 hover:bg-slate-50/50 transition-colors">
+                                            <TableCell className="pl-8 py-5">
+                                                <div className="font-bold text-slate-900 text-sm">{item.name}</div>
+                                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{item.type}</div>
                                             </TableCell>
-                                            <TableCell className="font-bold text-xs">
+                                            <TableCell className="font-bold text-slate-600 text-xs">
                                                 {item.purpose}
                                             </TableCell>
-                                            <TableCell className="font-black text-sm tracking-tight text-primary font-mono">
-                                                {formatCurrency(Number(item.kitAmount) || Number(item.zakatAllocation) || 0)}
+                                            <TableCell className="font-black text-primary text-base font-mono">
+                                                {formatCurrency(item.kitAmount)}
                                             </TableCell>
-                                            <TableCell>
-                                                <Badge variant={item.beneficiaryStatus === 'Given' || item.beneficiaryStatus === 'Verified' ? 'eligible' : 'outline'} className="font-bold text-[9px] tracking-widest uppercase">
+                                            <TableCell className="text-right pr-8">
+                                                <Badge variant={item.beneficiaryStatus === 'Given' || item.beneficiaryStatus === 'Verified' ? 'eligible' : 'outline'} className="font-bold text-[9px] uppercase tracking-widest px-2 py-0.5">
                                                     {item.beneficiaryStatus}
                                                 </Badge>
                                             </TableCell>

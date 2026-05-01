@@ -503,7 +503,7 @@ import { generateChanges } from '@/lib/utils';
  export async function processPortalProfileUpdateAction(
     userId: string,
     userName: string,
-    updateData: { name?: string; phone?: string }
+    updateData: any
  ) {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
@@ -692,3 +692,109 @@ export async function remindVerifiersAction(requestId: string) {
     }
 }
 
+export async function processPortalDonorUpdateAction(
+    donorId: string,
+    donorName: string,
+    updateData: Partial<Donor>
+ ) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const membersSnap = await adminDb.collection('users')
+            .where('status', '==', 'Active')
+            .where('role', 'in', ['Admin', 'User'])
+            .get();
+
+        const assignedVerifiers = membersSnap.docs.map((doc: any) => ({
+            id: doc.id,
+            name: doc.data().name,
+            status: 'Pending' as const
+        }));
+
+        if (assignedVerifiers.length === 0) {
+           return { success: false, message: 'No Active Team Members Found to verify your request.' };
+        }
+
+        const originalSnap = await adminDb.collection('donors').doc(donorId).get();
+
+        const payload: PendingVerification = {
+            id: adminDb.collection('pending_verifications').doc().id,
+            targetId: donorId,
+            targetCollection: 'donors',
+            revalidatePath: '/donor-portal/profile',
+            newValue: updateData,
+            originalValue: originalSnap.exists ? originalSnap.data() : null,
+            requestedBy: { id: donorId, name: donorName },
+            assignedVerifiers,
+            assignedVerifierIds: assignedVerifiers.map((v: { id: string }) => v.id),
+            status: 'Pending',
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+            module: 'donors',
+            description: 'Donor profile update requested via Supporter Portal.'
+        };
+
+        await adminDb.doc(`pending_verifications/${payload.id}`).set(payload);
+        
+        let sentCount = 0;
+        let failCount = 0;
+ 
+        // Notify assigned verifiers (Admins)
+        for (const verifier of payload.assignedVerifiers) {
+            try {
+                const verifierSnap = await adminDb.collection('users').doc(verifier.id).get();
+                const verifierPhone = verifierSnap.data()?.phone;
+                
+                if (verifierPhone && verifierPhone !== 'Unknown') {
+                    let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
+                    try {
+                        const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+                        if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
+                            baseUrl = resourceSnap.data()?.baseUrl;
+                        }
+                    } catch (e) {}
+
+                    await sendWhatsAppAction({
+                        to: verifierPhone,
+                        templateId: 'portal_profile_update',
+                        variables: {
+                            verifierName: verifier.name,
+                            userName: donorName,
+                            requestId: payload.id,
+                            url: `${baseUrl}/verifications?requestId=${payload.id}`
+                        },
+                        metadata: {
+                            moduleId: 'donors',
+                            recordId: donorId,
+                            userId: verifier.id,
+                            templateId: 'portal_profile_update'
+                        },
+                        moduleId: 'donor'
+                    });
+                    
+                    const verifierTelegramId = verifierSnap.data()?.telegramChatId;
+                    if (verifierTelegramId) {
+                        await sendTelegramAction({
+                            message: `🔔 *New Donor Profile Update Request*\n\n*Requested By:* ${donorName}\n\n🔗 Review: ${baseUrl}/verifications?requestId=${payload.id}`,
+                            chatId: verifierTelegramId,
+                            moduleId: 'donor'
+                        });
+                    }
+                    
+                    sentCount++;
+                } else {
+                    failCount++;
+                }
+            } catch (notifyError) {
+                failCount++;
+                console.error(`Failed to notify admin for donor portal update:`, notifyError);
+            }
+        }
+
+        return { success: true, message: `Profile update dispatched for administrative approval.` };
+    } catch (error: any) {
+        console.error('Failed to submit donor portal profile change:', error);
+        return { success: false, message: `Failed: ${error.message}` };
+    }
+ }
