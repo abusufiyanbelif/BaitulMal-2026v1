@@ -73,8 +73,8 @@ export function DocuExtractHeader() {
                 )
             )}
             </div>
-          <h1 className="text-xl sm:text-2xl font-bold text-primary tracking-tight leading-tight transition-colors group-hover:opacity-80">
-            {isBrandingLoading ? <Skeleton className="h-6 w-48" /> : (brandingSettings?.name || "Community Support Organization")}
+          <h1 className="text-lg sm:text-2xl font-bold text-primary tracking-tight leading-tight transition-colors group-hover:opacity-80 line-clamp-1 sm:line-clamp-none">
+            {isBrandingLoading ? <Skeleton className="h-6 w-32 sm:w-48" /> : (brandingSettings?.name || "Community Support Organization")}
           </h1>
         </Link>
 

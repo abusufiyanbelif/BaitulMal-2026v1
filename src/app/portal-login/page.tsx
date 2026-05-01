@@ -104,12 +104,14 @@ export default function PortalLoginPage() {
 
     const handleAuthResult = async (res: any) => {
         if (res.success && res.token && auth) {
-            await signInWithCustomToken(auth, res.token);
+            // Set session metadata BEFORE signing in to ensure RouteGuard sees it
             if (typeof window !== 'undefined') {
                 localStorage.setItem('portal_role', res.role || '');
                 localStorage.setItem('portal_session_start', res.sessionStart?.toString() || Date.now().toString());
                 if (res.sessionId) localStorage.setItem('portal_session_id', res.sessionId);
             }
+            
+            await signInWithCustomToken(auth, res.token);
             toast({ title: "Welcome", description: res.message, variant: "success" });
             router.push(res.redirect || '/dashboard');
         } else {

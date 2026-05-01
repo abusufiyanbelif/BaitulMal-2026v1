@@ -46,7 +46,7 @@ export function WisdomAndReflection() {
                     Wisdom And Reflection
                 </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6 pl-10">
+            <CardContent className="space-y-6 pl-4 sm:pl-10">
                 <Skeleton className="h-8 w-4/5" />
                 <Skeleton className="h-8 w-3/4" />
             </CardContent>

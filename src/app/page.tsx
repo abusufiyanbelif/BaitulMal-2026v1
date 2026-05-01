@@ -137,7 +137,7 @@ export default function Home() {
                         <span className="text-[10px] font-black uppercase tracking-[0.2em]">{brandingSettings?.name || 'Baitulmal'} Official Portal</span>
                     </div>
 
-                    <h1 className="text-4xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-primary max-w-[1200px] mx-auto leading-[0.95] drop-shadow-sm px-4 animate-fade-in-up animate-hero-text-glow">
+                    <h1 className="text-3xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-primary max-w-[1200px] mx-auto leading-[1.1] sm:leading-[0.95] drop-shadow-sm px-4 animate-fade-in-up animate-hero-text-glow">
                         {heroTitle}
                     </h1>
 
@@ -167,6 +167,17 @@ export default function Home() {
                                     Appeals
                                 </Link>
                             </Button>
+                        </div>
+                        
+                        {/* APK Download Button */}
+                        <div className="pt-4 flex flex-col items-center gap-2">
+                            <Button asChild variant="outline" size="lg" className="h-14 px-10 rounded-[20px] border-emerald-500/20 bg-emerald-500/5 text-emerald-700 font-black text-[10px] uppercase tracking-widest transition-all hover:bg-emerald-500 hover:text-white hover:shadow-xl active:scale-95 group">
+                                <Link href="/app-release.apk" download>
+                                    <ShieldCheck className="mr-3 h-5 w-5 text-emerald-500 transition-transform group-hover:scale-110" />
+                                    Download Mobile App (APK)
+                                </Link>
+                            </Button>
+                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest opacity-60">Install directly on Android devices</p>
                         </div>
                     </div>
                     
@@ -248,15 +259,17 @@ export default function Home() {
             </div>
             
             {/* Global Portal Quick Access */}
-            <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-fade-in-up" style={{ animationDelay: '1s' }}>
-                <div className="flex items-center gap-2 bg-white/60 backdrop-blur-2xl p-2 rounded-full border border-primary/10 shadow-2xl">
-                    <Button asChild variant="ghost" className="h-12 px-6 rounded-full font-black text-[10px] uppercase tracking-widest text-primary hover:bg-primary/5">
-                        <Link href="/login">Team Access</Link>
-                    </Button>
-                    <div className="w-px h-6 bg-primary/10" />
-                    <Button asChild className="h-12 px-8 rounded-full bg-primary text-white font-black text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all">
-                        <Link href="/portal-login">Donor Portal <ChevronRight className="ml-2 h-4 w-4" /></Link>
-                    </Button>
+            <div className="fixed bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-50 animate-fade-in-up" style={{ animationDelay: '1s' }}>
+                <div className="flex flex-col sm:flex-row items-center gap-2 bg-white/80 backdrop-blur-2xl p-2 rounded-[24px] sm:rounded-full border border-primary/10 shadow-[0_20px_50px_rgba(0,0,0,0.1)] w-full sm:w-auto">
+                    <div className="flex w-full sm:w-auto items-center">
+                        <Button asChild variant="ghost" className="flex-1 sm:flex-none h-10 sm:h-12 px-4 sm:px-6 rounded-full font-black text-[9px] sm:text-[10px] uppercase tracking-widest text-primary hover:bg-primary/5">
+                            <Link href="/login">Team Access</Link>
+                        </Button>
+                        <div className="w-px h-6 bg-primary/10 mx-1" />
+                        <Button asChild className="flex-[2] sm:flex-none h-10 sm:h-12 px-6 sm:px-8 rounded-full bg-primary text-white font-black text-[9px] sm:text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all">
+                            <Link href="/portal-login">Donor Portal <ChevronRight className="ml-1 sm:ml-2 h-3 sm:h-4 w-3 sm:h-4" /></Link>
+                        </Button>
+                    </div>
                 </div>
             </div>
         </main>

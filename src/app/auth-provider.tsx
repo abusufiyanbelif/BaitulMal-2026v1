@@ -113,7 +113,7 @@ function RouteGuard({ children }: { children: ReactNode }) {
         
         const maxRevocationTime = Math.max(revokedAt, userRevokedAt);
 
-        if (maxRevocationTime > sessionStart) {
+        if (sessionStart > 0 && maxRevocationTime > sessionStart) {
             console.warn("Session revocation detected by administrative or user security action.");
             localStorage.removeItem('portal_session_start');
             localStorage.removeItem('portal_session_id');

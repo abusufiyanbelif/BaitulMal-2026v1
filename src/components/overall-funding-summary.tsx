@@ -109,28 +109,28 @@ export function OverallFundingSummary() {
                             </ResponsiveContainer>
                         </ChartContainer>
                         <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom">
-                            <span className="text-4xl font-bold text-primary">
+                            <span className="text-3xl sm:text-4xl font-bold text-primary">
                                 {Math.round(overallSummary.progress || 0)}%
                             </span>
-                            <span className="text-[10px] text-muted-foreground font-bold tracking-tight capitalize">Funded</span>
+                            <span className="text-[9px] sm:text-[10px] text-muted-foreground font-bold tracking-tight capitalize">Funded</span>
                         </div>
                     </div>
-                    <div className="space-y-4 text-center md:text-left font-bold text-primary">
+                    <div className="space-y-4 text-center md:text-left font-bold text-primary px-2">
                         <div className="space-y-1">
                             <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">Raised For Goal</p>
-                            <p className="text-3xl font-bold font-mono">
+                            <p className="text-2xl sm:text-3xl font-bold font-mono">
                             ₹{(overallSummary.totalCollectedForGoals || 0).toLocaleString('en-IN')}
                             </p>
                         </div>
                         <div className="space-y-1">
                             <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">Combined Target Goal</p>
-                            <p className="text-3xl font-bold font-mono opacity-40">
+                            <p className="text-2xl sm:text-3xl font-bold font-mono opacity-40">
                             ₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}
                             </p>
                         </div>
                         <div className="space-y-1">
                             <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">Period Total Received</p>
-                            <p className="text-3xl font-bold font-mono">
+                            <p className="text-2xl sm:text-3xl font-bold font-mono">
                             ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}
                             </p>
                         </div>
@@ -153,8 +153,8 @@ export function OverallFundingSummary() {
                     <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60 capitalize">Families Impacted</CardTitle>
                     <Users className="h-5 w-5 text-primary opacity-40" />
                 </CardHeader>
-                <CardContent>
-                    <div className="text-3xl font-bold text-primary">{overallSummary.familiesImpacted.toLocaleString()}</div>
+                <CardContent className="p-4 sm:p-6">
+                    <div className="text-2xl sm:text-3xl font-bold text-primary">{overallSummary.familiesImpacted.toLocaleString()}</div>
                     <p className="text-[9px] text-muted-foreground mt-1 font-normal">Unique Beneficiaries Supported Across Initiatives.</p>
                 </CardContent>
             </Card>
@@ -164,8 +164,8 @@ export function OverallFundingSummary() {
                     <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60 capitalize">Verified Donations</CardTitle>
                     <CheckCircle2 className="h-5 w-5 text-primary opacity-40" />
                 </CardHeader>
-                <CardContent>
-                    <div className="text-3xl font-bold text-primary font-mono">₹{overallSummary.grandTotalRaised.toLocaleString('en-IN')}</div>
+                <CardContent className="p-4 sm:p-6">
+                    <div className="text-2xl sm:text-3xl font-bold text-primary font-mono">₹{overallSummary.grandTotalRaised.toLocaleString('en-IN')}</div>
                     <p className="text-[9px] text-muted-foreground mt-1 font-normal">Confirmed Community Contributions Recorded.</p>
                 </CardContent>
             </Card>
@@ -175,8 +175,8 @@ export function OverallFundingSummary() {
                     <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60 capitalize">Target Progress</CardTitle>
                     <Target className="h-5 w-5 text-primary opacity-40" />
                 </CardHeader>
-                <CardContent>
-                    <div className="text-3xl font-bold text-primary font-mono">{Math.round(overallSummary.progress)}%</div>
+                <CardContent className="p-4 sm:p-6">
+                    <div className="text-2xl sm:text-3xl font-bold text-primary font-mono">{Math.round(overallSummary.progress)}%</div>
                     <p className="text-[9px] text-muted-foreground mt-1 font-normal">Organization Goal Achievement For Selected Period.</p>
                 </CardContent>
             </Card>
