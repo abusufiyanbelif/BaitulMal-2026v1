@@ -249,6 +249,40 @@ import { generateChanges } from '@/lib/utils';
              const profileModules: string[] = ['donors', 'users', 'beneficiaries'];
              if (profileModules.includes(request.module)) {
                  await targetRef.set(request.newValue, { merge: true });
+                 
+                 // --- SYNC TO MIRROR COLLECTION ---
+                 // If we updated 'donors' or 'beneficiaries', we must also update the 'users' mirror.
+                 // If we updated 'users', we might need to update 'donors' or 'beneficiaries' depending on the role.
+                 if (request.module === 'donors' || request.module === 'beneficiaries') {
+                     await adminDb.collection('users').doc(request.targetId).set(request.newValue, { merge: true });
+                 } else if (request.module === 'users') {
+                     const userSnap = await targetRef.get();
+                     const userData = userSnap.data();
+                     if (userData?.role === 'Donor') {
+                         await adminDb.collection('donors').doc(request.targetId).set(request.newValue, { merge: true });
+                     } else if (userData?.role === 'Beneficiary') {
+                         await adminDb.collection('beneficiaries').doc(request.targetId).set(request.newValue, { merge: true });
+                     }
+                 }
+
+                 // --- UPDATE USER LOOKUPS IF PHONE CHANGED ---
+                 const oldPhone = (request.originalValue as any)?.phone;
+                 const newPhone = (request.newValue as any)?.phone;
+                 if (newPhone && oldPhone && newPhone !== oldPhone) {
+                     const userSnap = await adminDb.collection('users').doc(request.targetId).get();
+                     const userData = userSnap.data();
+                     
+                     // 1. Delete old lookup
+                     await adminDb.collection('user_lookups').doc(oldPhone).delete().catch(() => {});
+                     
+                     // 2. Create new lookup
+                     await adminDb.collection('user_lookups').doc(newPhone).set({
+                         userKey: request.targetId,
+                         role: userData?.role || 'User',
+                         phone: newPhone,
+                         name: userData?.name || 'User'
+                     }, { merge: true });
+                 }
              } else {
                  await targetRef.update(request.newValue);
              }

@@ -495,7 +495,7 @@ export interface UserProfile extends DocumentData {
   telegramChatId?: string; // Telegram Chat ID for individual alerts
   notificationsEnabled?: boolean;
   whatsappNotificationsEnabled?: boolean;
-  bankDetails?: { bankName: string; accountNo: string; ifscCode: string }[];
+  bankDetails?: BankDetail[];
   upiIds?: string[];
   updatedAt?: Timestamp | FieldValue;
 }

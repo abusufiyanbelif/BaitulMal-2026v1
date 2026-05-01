@@ -16,7 +16,8 @@ import {
     LogOut,
     ShieldCheck,
     Landmark,
-    UserCircle2
+    UserCircle2,
+    Smartphone
 } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 import { Button } from '@/components/ui/button';

@@ -25,6 +25,7 @@ import {
 import { updatePortalPasswordAction } from '@/app/portal-login/actions';
 import { revokeUserSessionsAction } from '../../settings/auth-actions';
 import { SessionTable } from '@/components/session-table';
+import Link from 'next/link';
 
 export default function DonorSettingsPage() {
     const { userProfile, isLoading: isSessionLoading } = useSession();
@@ -43,6 +44,18 @@ export default function DonorSettingsPage() {
 
     if (isSessionLoading) {
          return <BrandedLoader message="Synchronizing Security Preferences..." />;
+    }
+
+    if (!userProfile) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[40vh] space-y-4">
+                <ShieldAlert className="h-12 w-12 text-slate-300" />
+                <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Security Session Unavailable</p>
+                <Button asChild variant="outline">
+                    <Link href="/portal-login">Return to Login</Link>
+                </Button>
+            </div>
+        );
     }
 
     const handlePasswordUpdate = async (e: React.FormEvent) => {

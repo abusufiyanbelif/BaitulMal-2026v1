@@ -129,14 +129,14 @@ export async function updateMasterBeneficiaryAction(
                 userKey: beneficiaryId,
                 role: 'Beneficiary',
                 phone: cleanPhone,
-                name: data.name || oldData.name
+                name: data.name || oldData?.name
             });
         } else if (cleanPhone && !oldPhone) {
              batch.set(adminDb.collection('user_lookups').doc(cleanPhone), {
                 userKey: beneficiaryId,
                 role: 'Beneficiary',
                 phone: cleanPhone,
-                name: data.name || oldData.name
+                name: data.name || oldData?.name
             });
         }
 

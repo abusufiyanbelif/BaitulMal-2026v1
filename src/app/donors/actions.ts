@@ -89,7 +89,7 @@ export async function updateDonorAction(donorId: string, data: Partial<Donor>, u
     try {
         const docRef = adminDb.collection('donors').doc(donorId);
         const oldSnap = await docRef.get();
-        const oldData = oldSnap.exists ? oldSnap.data() : {};
+        const oldData = oldSnap.exists ? oldSnap.data() as Donor : {} as Partial<Donor>;
 
         const cleanPhone = data.phone?.trim().replace(/\D/g, '').slice(-10);
         const oldPhone = oldData?.phone?.trim().replace(/\D/g, '').slice(-10);

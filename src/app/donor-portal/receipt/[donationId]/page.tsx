@@ -98,7 +98,7 @@ export default function DonorReceiptPage() {
 
             <div className="flex justify-center bg-slate-50/50 p-4 md:p-12 rounded-[40px] border border-slate-100 shadow-inner">
                 <div className="w-full max-w-2xl bg-white shadow-2xl rounded-2xl overflow-hidden ring-1 ring-slate-200">
-                    <DonationReceipt ref={receiptRef} donation={donation} brandingSettings={brandingSettings} paymentSettings={paymentSettings} />
+                    <DonationReceipt ref={receiptRef} donation={donation} brandingSettings={brandingSettings || undefined} paymentSettings={paymentSettings || undefined} />
                 </div>
             </div>
 

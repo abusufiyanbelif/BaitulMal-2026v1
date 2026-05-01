@@ -48,6 +48,13 @@ export async function revokeAllSessionsForRoleAction(role: 'Donor' | 'Beneficiar
         const batch = adminDb.batch();
         usersSnap.docs.forEach(snap => {
             batch.update(snap.ref, { forceLogoutAt: now });
+            
+            // Sync to mirror collections
+            if (role === 'Donor') {
+                batch.update(adminDb.collection('donors').doc(snap.id), { forceLogoutAt: now });
+            } else if (role === 'Beneficiary') {
+                batch.update(adminDb.collection('beneficiaries').doc(snap.id), { forceLogoutAt: now });
+            }
         });
 
         // 5. Mark sessions as revoked

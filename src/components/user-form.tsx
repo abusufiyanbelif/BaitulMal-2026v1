@@ -30,7 +30,7 @@ import { useAuth, useFirestore, useMemoFirebase, useDoc, doc, sendPasswordResetE
 import { createAdminPermissions, type UserPermissions, GROUPS } from '@/lib/modules';
 import type { UserProfile } from '@/lib/types';
 import { userFormSchema, type UserFormData } from '@/lib/schemas';
-import { Loader2, Send, Replace, Trash2, FileIcon, ScanLine, Save, X, MessageCircle, HelpCircle, Info, Landmark, Plus, SmartphoneNfc } from 'lucide-react';
+import { Loader2, Send, Replace, Trash2, FileIcon, ScanLine, Save, X, MessageCircle, HelpCircle, Info, Landmark, Plus, SmartphoneNfc, Users } from 'lucide-react';
 import { PermissionsTable } from './permissions-table';
 import { set, getInitials } from '@/lib/utils';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
@@ -119,7 +119,6 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
       reset({
         name: user.name || '',
         email: user.email?.includes('@donor.demo.local') ? '' : user.email || '',
-        phone: user.phone || '',
         userKey: user.userKey || '',
         loginId: user.loginId || '',
         role: (user.role || 'User') as any,

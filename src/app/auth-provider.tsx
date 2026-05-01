@@ -27,8 +27,11 @@ function RouteGuard({ children }: { children: ReactNode }) {
 
     const donorConfigRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donor_config') : null, [firestore]);
     const beneficiaryConfigRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'beneficiary_config') : null, [firestore]);
+    const userConfigRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'user_config') : null, [firestore]);
+    
     const { data: donorConfig } = useDoc<any>(donorConfigRef);
     const { data: beneficiaryConfig } = useDoc<any>(beneficiaryConfigRef);
+    const { data: userConfig } = useDoc<any>(userConfigRef);
 
     // 4. Specific Session Revocation Listener (Real-time document watch)
     const sessionId = typeof window !== 'undefined' ? localStorage.getItem('portal_session_id') : null;
@@ -104,7 +107,9 @@ function RouteGuard({ children }: { children: ReactNode }) {
         // If missing, we treat it as an 'old' session (pre-revocation tracking) and set to 0 to trigger revocation check
         const sessionStart = sessionStartStr ? parseInt(sessionStartStr) : 0;
         
-        const config = userProfile?.role === 'Donor' ? donorConfig : (userProfile?.role === 'Beneficiary' ? beneficiaryConfig : null);
+        const config = userProfile?.role === 'Donor' ? donorConfig : 
+                       (userProfile?.role === 'Beneficiary' ? beneficiaryConfig : 
+                       (isStaff ? userConfig : null));
         
         const revokedAt = (config && typeof config.sessionRevokedAt === 'number') ? config.sessionRevokedAt : (config?.sessionRevokedAt?.toMillis ? config.sessionRevokedAt.toMillis() : 0);
         
@@ -118,10 +123,11 @@ function RouteGuard({ children }: { children: ReactNode }) {
             localStorage.removeItem('portal_session_start');
             localStorage.removeItem('portal_session_id');
             signOut(auth).then(() => {
-                router.push('/portal-login?revoked=true');
+                const targetPath = isStaff ? '/login?revoked=true' : '/portal-login?revoked=true';
+                router.push(targetPath);
             });
         }
-    }, [user, userProfile, donorConfig, beneficiaryConfig, isLoading, auth, router]);
+    }, [user, userProfile, donorConfig, beneficiaryConfig, userConfig, isLoading, auth, router, isStaff]);
 
     // 6. Handle Specific Session Revocation (from sessionData listener)
     useEffect(() => {
@@ -130,10 +136,11 @@ function RouteGuard({ children }: { children: ReactNode }) {
             localStorage.removeItem('portal_session_start');
             localStorage.removeItem('portal_session_id');
             signOut(auth).then(() => {
-                router.push('/portal-login?revoked=true');
+                const targetPath = isStaff ? '/login?revoked=true' : '/portal-login?revoked=true';
+                router.push(targetPath);
             });
         }
-    }, [sessionData, auth, router]);
+    }, [sessionData, auth, router, isStaff]);
 
     if (isPublicRoute && !isRedirecting) {
         return <>{children}</>;

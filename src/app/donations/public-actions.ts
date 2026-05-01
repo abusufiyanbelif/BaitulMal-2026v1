@@ -159,7 +159,7 @@ export async function processPublicDonationAction(
             status: 'Pending',
             transactions: [transaction],
             linkSplit: finalLinkSplit,
-            typeSplit: (isTypeSplit && typeSplit) ? typeSplit : (typeSplit?.[0] ? [{ category: typeSplit[0].category as any, amount: amount, forFundraising: typeSplit[0].forFundraising }] : []),
+            typeSplit: (isTypeSplit && typeSplit) ? typeSplit.map(s => ({ ...s, category: s.category as any })) : (typeSplit?.[0] ? [{ category: typeSplit[0].category as any, amount: amount, forFundraising: typeSplit[0].forFundraising }] : []),
             comments: notes,
             uploadedBy: 'Public Gateway',
             uploadedById: 'public_gateway',
