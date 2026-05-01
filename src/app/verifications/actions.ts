@@ -246,7 +246,7 @@ import { generateChanges } from '@/lib/utils';
              const targetRef = adminDb.doc(`${request.targetCollection}/${request.targetId}`);
  
              // Profile modules: use set(merge) to preserve existing fields not in the update payload.
-             const profileModules: string[] = ['donors', 'users'];
+             const profileModules: string[] = ['donors', 'users', 'beneficiaries'];
              if (profileModules.includes(request.module)) {
                  await targetRef.set(request.newValue, { merge: true });
              } else {
@@ -795,6 +795,113 @@ export async function processPortalDonorUpdateAction(
         return { success: true, message: `Profile update dispatched for administrative approval.` };
     } catch (error: any) {
         console.error('Failed to submit donor portal profile change:', error);
+        return { success: false, message: `Failed: ${error.message}` };
+    }
+ }
+ 
+ export async function processPortalBeneficiaryUpdateAction(
+    beneficiaryId: string,
+    beneficiaryName: string,
+    updateData: Partial<Beneficiary>
+ ) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const membersSnap = await adminDb.collection('users')
+            .where('status', '==', 'Active')
+            .where('role', 'in', ['Admin', 'User'])
+            .get();
+
+        const assignedVerifiers = membersSnap.docs.map((doc: any) => ({
+            id: doc.id,
+            name: doc.data().name,
+            status: 'Pending' as const
+        }));
+
+        if (assignedVerifiers.length === 0) {
+           return { success: false, message: 'No Active Team Members Found to verify your request.' };
+        }
+
+        const originalSnap = await adminDb.collection('beneficiaries').doc(beneficiaryId).get();
+
+        const payload: PendingVerification = {
+            id: adminDb.collection('pending_verifications').doc().id,
+            targetId: beneficiaryId,
+            targetCollection: 'beneficiaries',
+            revalidatePath: '/beneficiary-portal/profile',
+            newValue: updateData,
+            originalValue: originalSnap.exists ? originalSnap.data() : null,
+            requestedBy: { id: beneficiaryId, name: beneficiaryName },
+            assignedVerifiers,
+            assignedVerifierIds: assignedVerifiers.map((v: { id: string }) => v.id),
+            status: 'Pending',
+            createdAt: Timestamp.now(),
+            updatedAt: Timestamp.now(),
+            module: 'beneficiaries',
+            description: 'Beneficiary profile update requested via Supporter Portal.'
+        };
+
+        await adminDb.doc(`pending_verifications/${payload.id}`).set(payload);
+        
+        let sentCount = 0;
+        let failCount = 0;
+ 
+        // Notify assigned verifiers (Admins)
+        for (const verifier of payload.assignedVerifiers) {
+            try {
+                const verifierSnap = await adminDb.collection('users').doc(verifier.id).get();
+                const verifierPhone = verifierSnap.data()?.phone;
+                
+                if (verifierPhone && verifierPhone !== 'Unknown') {
+                    let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
+                    try {
+                        const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+                        if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
+                            baseUrl = resourceSnap.data()?.baseUrl;
+                        }
+                    } catch (e) {}
+
+                    await sendWhatsAppAction({
+                        to: verifierPhone,
+                        templateId: 'portal_profile_update',
+                        variables: {
+                            verifierName: verifier.name,
+                            userName: beneficiaryName,
+                            requestId: payload.id,
+                            url: `${baseUrl}/verifications?requestId=${payload.id}`
+                        },
+                        metadata: {
+                            moduleId: 'beneficiaries',
+                            recordId: beneficiaryId,
+                            userId: verifier.id,
+                            templateId: 'portal_profile_update'
+                        },
+                        moduleId: 'beneficiary'
+                    });
+                    
+                    const verifierTelegramId = verifierSnap.data()?.telegramChatId;
+                    if (verifierTelegramId) {
+                        await sendTelegramAction({
+                            message: `🔔 *New Beneficiary Profile Update Request*\n\n*Requested By:* ${beneficiaryName}\n\n🔗 Review: ${baseUrl}/verifications?requestId=${payload.id}`,
+                            chatId: verifierTelegramId,
+                            moduleId: 'beneficiary'
+                        });
+                    }
+                    
+                    sentCount++;
+                } else {
+                    failCount++;
+                }
+            } catch (notifyError) {
+                failCount++;
+                console.error(`Failed to notify admin for beneficiary portal update:`, notifyError);
+            }
+        }
+
+        return { success: true, message: `Profile update dispatched for administrative approval.` };
+    } catch (error: any) {
+        console.error('Failed to submit beneficiary portal profile change:', error);
         return { success: false, message: `Failed: ${error.message}` };
     }
  }

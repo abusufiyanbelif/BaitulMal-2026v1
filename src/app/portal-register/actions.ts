@@ -10,16 +10,19 @@ export async function registerPortalUserAction(data: {
     phone: string;
     role: 'Donor' | 'Beneficiary';
     password?: string;
+    email?: string;
+    gender?: string;
+    aadhaarNumber?: string;
 }) {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        const { name, phone, role, password } = data;
-        const cleanPhone = phone.trim().replace(/\D/g, '');
+        const { name, phone, role, password, email, gender, aadhaarNumber } = data;
+        const cleanPhone = phone.trim().replace(/\D/g, '').slice(-10);
         
-        if (cleanPhone.length < 10) {
-            return { success: false, message: "Invalid mobile number. Please enter at least 10 digits." };
+        if (cleanPhone.length !== 10) {
+            return { success: false, message: "Invalid mobile number. Please enter a valid 10-digit number." };
         }
 
         // Check if phone already registered in centralized users or specific role
@@ -38,9 +41,12 @@ export async function registerPortalUserAction(data: {
             id: profileId,
             name,
             phone: cleanPhone,
+            email: email || '',
+            gender: gender || '',
+            aadhaarNumber: aadhaarNumber || '',
             role,
             status: 'Active',
-            password: password || cleanPhone, // Default password is phone if none provided
+            password: password || 'password', // Default password is 'password' as per request
             createdAt: new Date(),
             updatedAt: new Date(),
         };
@@ -57,18 +63,12 @@ export async function registerPortalUserAction(data: {
 
         // Also create a entry in 'users' for system-wide identity
         await adminDb.collection('users').doc(profileId).set({
-            id: profileId,
-            name,
-            phone: cleanPhone,
-            role,
-            status: 'Active',
-            password: password || cleanPhone,
+            ...newProfile,
             userKey: profileId,
             loginId: cleanPhone,
             permissions: {},
-            createdAt: new Date(),
-            updatedAt: new Date(),
         });
+
 
         return { 
             success: true, 

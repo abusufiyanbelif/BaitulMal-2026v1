@@ -30,7 +30,7 @@ import { useAuth, useFirestore, useMemoFirebase, useDoc, doc, sendPasswordResetE
 import { createAdminPermissions, type UserPermissions, GROUPS } from '@/lib/modules';
 import type { UserProfile } from '@/lib/types';
 import { userFormSchema, type UserFormData } from '@/lib/schemas';
-import { Loader2, Send, Replace, Trash2, FileIcon, ScanLine, Save, X, MessageCircle, HelpCircle, Info } from 'lucide-react';
+import { Loader2, Send, Replace, Trash2, FileIcon, ScanLine, Save, X, MessageCircle, HelpCircle, Info, Landmark, Plus, SmartphoneNfc } from 'lucide-react';
 import { PermissionsTable } from './permissions-table';
 import { set, getInitials } from '@/lib/utils';
 import { useSession as useCurrentUserSession } from '@/hooks/use-session';
@@ -78,7 +78,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
       loginId: user?.loginId || '',
       role: (user?.role || 'User') as any,
       status: user?.status || 'Active',
-      password: '',
+      password: isEditing ? '' : 'password',
       telegramChatId: user?.telegramChatId || '',
       notificationsEnabled: user?.notificationsEnabled ?? true,
       whatsappNotificationsEnabled: user?.whatsappNotificationsEnabled ?? true,
@@ -89,9 +89,18 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
       aadhaarNumber: user?.aadhaarNumber || '',
       aadhaarName: user?.aadhaarName || '',
       aadhaarDob: user?.aadhaarDob || '',
-      aadhaarGender: user?.aadhaarGender || '',
-      aadhaarAddress: user?.aadhaarAddress || '',
-      bankDetails: user?.bankDetails || [{ bankName: '', accountNo: '', ifscCode: '' }],
+      gender: user?.gender || '',
+      dob: user?.dob || '',
+      address: user?.address || '',
+      panNumber: user?.panNumber || '',
+      familyDetails: user?.familyDetails || {
+        members: 1,
+        earningMembers: 0,
+        male: 0,
+        female: 0,
+        occupation: '',
+      },
+      bankDetails: user?.bankDetails || [{ bankName: '', accountNumber: '', ifscCode: '' }],
       upiIds: user?.upiIds || [''],
       _isEditing: isEditing,
       idProofDeleted: false,
@@ -128,7 +137,19 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
         aadhaarDob: user.aadhaarDob || '',
         aadhaarGender: user.aadhaarGender || '',
         aadhaarAddress: user.aadhaarAddress || '',
-        bankDetails: user.bankDetails || [{ bankName: '', accountNo: '', ifscCode: '' }],
+        gender: user.gender || '',
+        dob: user.dob || '',
+        address: user.address || '',
+        panNumber: user.panNumber || '',
+        phone: user.phone ? user.phone.replace(/\D/g, '').slice(-10) : '',
+        familyDetails: user.familyDetails || {
+            members: 1,
+            earningMembers: 0,
+            male: 0,
+            female: 0,
+            occupation: '',
+        },
+        bankDetails: user.bankDetails || [{ bankName: '', accountNumber: '', ifscCode: '' }],
         upiIds: user.upiIds || [''],
         _isEditing: isEditing,
         idProofDeleted: false,
@@ -439,55 +460,86 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                             <TabsContent value="profile" className="mt-6 space-y-6 animate-fade-in-up">
                                 <FormField control={control as any} name="name" render={({ field }) => (<FormItem>{renderLabel('Full Name', 'name')}<FormControl><Input placeholder="e.g. Moosa Shaikh" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
                                 <FormField control={control as any} name="email" render={({ field }) => (<FormItem>{renderLabel('Email Address', 'email')}<FormControl><Input type="email" placeholder="user@example.com" {...field} value={field.value || ''} disabled={isFormDisabled || (isEditing && !isCurrentUserAdmin)} className="font-normal" /></FormControl><FormDescription className="font-normal text-xs opacity-70">Primary Institutional Contact And Authentication Identity.</FormDescription><FormMessage /></FormItem>)}/>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <FormField control={control as any} name="gender" render={({ field }) => (
+                                        <FormItem>
+                                            {renderLabel('Gender', 'gender')}
+                                            <Select onValueChange={field.onChange} value={field.value || ''} disabled={isFormDisabled}>
+                                                <FormControl><SelectTrigger className="font-normal"><SelectValue placeholder="Select Gender"/></SelectTrigger></FormControl>
+                                                <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                                                    <SelectItem value="Male">Male</SelectItem>
+                                                    <SelectItem value="Female">Female</SelectItem>
+                                                    <SelectItem value="Other">Other</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}/>
+                                    <FormField control={control as any} name="dob" render={({ field }) => (
+                                        <FormItem>
+                                            {renderLabel('Date of Birth', 'dob')}
+                                            <FormControl><Input type="date" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}/>
+                                </div>
+                                <FormField control={control as any} name="address" render={({ field }) => (
+                                    <FormItem>
+                                        {renderLabel('Residential Address', 'address')}
+                                        <FormControl><Input placeholder="Full Address" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}/>
+                                <FormField control={control as any} name="panNumber" render={({ field }) => (
+                                    <FormItem>
+                                        {renderLabel('PAN Number', 'panNumber')}
+                                        <FormControl><Input placeholder="ABCDE1234F" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-mono font-normal" /></FormControl>
+                                        <FormDescription className="font-normal text-[10px] opacity-70 italic tracking-tighter">Required For 80G Tax Exemption Certificates.</FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}/>
                                  <FormField control={control as any} name="phone" render={({ field }) => (
                                      <FormItem>
                                          {renderLabel('Phone Number', 'phone')}
                                          <div className="flex gap-2">
-                                             <div className="w-24 shrink-0">
+                                             <div className="w-28 shrink-0">
                                                  <Select 
                                                      defaultValue="+91" 
-                                                     value={field.value?.startsWith('+') ? field.value.slice(0, 3) : '+91'}
-                                                     onValueChange={(val) => {
-                                                         const currentNumber = field.value?.replace(/^\+\d{2}/, '') || '';
-                                                         field.onChange(val + currentNumber);
-                                                     }}
                                                      disabled={isFormDisabled}
                                                  >
-                                                     <SelectTrigger className="font-bold">
-                                                         <SelectValue />
+                                                     <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-slate-50/50 font-bold">
+                                                         <SelectValue placeholder="+91" />
                                                      </SelectTrigger>
-                                                     <SelectContent className="rounded-xl shadow-dropdown">
-                                                         <SelectItem value="+91">🇮🇳 +91</SelectItem>
-                                                         <SelectItem value="+1">🇺🇸 +1</SelectItem>
-                                                         <SelectItem value="+44">🇬🇧 +44</SelectItem>
-                                                         <SelectItem value="+971">🇦🇪 +971</SelectItem>
-                                                         <SelectItem value="+966">🇸🇦 +966</SelectItem>
+                                                     <SelectContent className="rounded-xl shadow-dropdown border-primary/10">
+                                                         <SelectItem value="+91" className="font-bold">🇮🇳 +91</SelectItem>
+                                                         <SelectItem value="+1" className="font-bold">🇺🇸 +1</SelectItem>
+                                                         <SelectItem value="+44" className="font-bold">🇬🇧 +44</SelectItem>
+                                                         <SelectItem value="+971" className="font-bold">🇦🇪 +971</SelectItem>
+                                                         <SelectItem value="+966" className="font-bold">🇸🇦 +966</SelectItem>
                                                      </SelectContent>
                                                  </Select>
                                              </div>
                                              <FormControl>
                                                  <Input 
-                                                     placeholder="Number" 
+                                                     placeholder="10-Digit Mobile Number" 
                                                      {...field} 
-                                                     value={field.value?.startsWith('+') ? field.value.slice(3) : field.value || ''} 
+                                                     maxLength={10}
                                                      onChange={(e) => {
-                                                         const prefix = field.value?.startsWith('+') ? field.value.slice(0, 3) : '+91';
-                                                         const val = e.target.value.replace(/\D/g, '');
-                                                         field.onChange(prefix + val);
+                                                         const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                                         field.onChange(val);
                                                      }}
                                                      disabled={isFormDisabled} 
-                                                     className="font-normal flex-1" 
+                                                     className="h-12 border-slate-200 bg-slate-50/50 focus:bg-white rounded-xl font-bold flex-1" 
                                                  />
                                              </FormControl>
-                                             {field.value && (
+                                             {field.value && field.value.length === 10 && (
                                                  <Button 
                                                      type="button" 
                                                      variant="outline" 
                                                      size="icon" 
-                                                     className="shrink-0 border-green-200 text-green-600 hover:bg-green-50"
+                                                     className="h-12 w-12 shrink-0 border-green-200 text-green-600 hover:bg-green-50 rounded-xl"
                                                      onClick={() => {
-                                                         const clean = String(field.value || '').replace(/\D/g, '');
-                                                         window.open(`https://wa.me/${clean}`, '_blank');
+                                                         window.open(`https://wa.me/91${field.value}`, '_blank');
                                                      }}
                                                  >
                                                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -603,6 +655,49 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                         </FormItem>
                                     )}/>
                                 </div>
+
+                                <Separator className="bg-primary/10" />
+
+                                {roleValue === 'Beneficiary' && (
+                                    <div className="space-y-6 rounded-xl border border-primary/5 p-4 bg-primary/[0.02] animate-fade-in-up">
+                                        <div className="flex items-center gap-2">
+                                            <Users className="h-4 w-4 text-primary" />
+                                            <h3 className="text-sm font-bold text-primary capitalize tracking-widest">Family & Occupation</h3>
+                                        </div>
+                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                                            <FormField control={control as any} name="familyDetails.members" render={({ field }) => (
+                                                <FormItem>
+                                                    {renderLabel('Total Members', 'familyDetails.members')}
+                                                    <FormControl><Input type="number" {...field} value={field.value ?? 1} disabled={isFormDisabled} className="font-normal" /></FormControl>
+                                                </FormItem>
+                                            )}/>
+                                            <FormField control={control as any} name="familyDetails.earningMembers" render={({ field }) => (
+                                                <FormItem>
+                                                    {renderLabel('Earning Members', 'familyDetails.earningMembers')}
+                                                    <FormControl><Input type="number" {...field} value={field.value ?? 0} disabled={isFormDisabled} className="font-normal" /></FormControl>
+                                                </FormItem>
+                                            )}/>
+                                            <FormField control={control as any} name="familyDetails.male" render={({ field }) => (
+                                                <FormItem>
+                                                    {renderLabel('Male', 'familyDetails.male')}
+                                                    <FormControl><Input type="number" {...field} value={field.value ?? 0} disabled={isFormDisabled} className="font-normal" /></FormControl>
+                                                </FormItem>
+                                            )}/>
+                                            <FormField control={control as any} name="familyDetails.female" render={({ field }) => (
+                                                <FormItem>
+                                                    {renderLabel('Female', 'familyDetails.female')}
+                                                    <FormControl><Input type="number" {...field} value={field.value ?? 0} disabled={isFormDisabled} className="font-normal" /></FormControl>
+                                                </FormItem>
+                                            )}/>
+                                        </div>
+                                        <FormField control={control as any} name="familyDetails.occupation" render={({ field }) => (
+                                            <FormItem>
+                                                {renderLabel('Primary Occupation', 'familyDetails.occupation')}
+                                                <FormControl><Input placeholder="e.g. Daily Wage Laborer" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl>
+                                            </FormItem>
+                                        )}/>
+                                    </div>
+                                )}
 
                                 <Separator className="bg-primary/10" />
 
@@ -759,7 +854,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                          <h3 className="text-sm font-bold text-primary capitalize tracking-widest flex items-center gap-2">
                                              <Landmark className="h-4 w-4" /> Settlement & Bank Accounts
                                          </h3>
-                                         <Button type="button" variant="outline" size="sm" onClick={() => setValue('bankDetails', [...(watch('bankDetails') || []), { bankName: '', accountNo: '', ifscCode: '' }])} className="h-8 text-[10px] font-bold uppercase rounded-xl border-primary/10">
+                                         <Button type="button" variant="outline" size="sm" onClick={() => setValue('bankDetails', [...(watch('bankDetails') || []), { bankName: '', accountNumber: '', ifscCode: '' }])} className="h-8 text-[10px] font-bold uppercase rounded-xl border-primary/10">
                                              <Plus className="h-3 w-3 mr-1" /> Add Account
                                          </Button>
                                      </div>
@@ -773,7 +868,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                                              <FormControl><Input {...field} placeholder="e.g. HDFC Bank" className="h-10 text-xs font-bold rounded-xl border-primary/5 bg-white" /></FormControl>
                                                          </FormItem>
                                                      )}/>
-                                                     <FormField control={control as any} name={`bankDetails.${idx}.accountNo`} render={({ field }) => (
+                                                     <FormField control={control as any} name={`bankDetails.${idx}.accountNumber`} render={({ field }) => (
                                                          <FormItem>
                                                              <FormLabel className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Account Number</FormLabel>
                                                              <FormControl><Input {...field} placeholder="Account No" className="h-10 text-xs font-bold rounded-xl border-primary/5 bg-white" /></FormControl>

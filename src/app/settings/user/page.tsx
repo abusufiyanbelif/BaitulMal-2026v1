@@ -3,7 +3,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
-import { Settings, Save, Loader2, CheckSquare, Edit, X, RefreshCw, Users, ShieldCheck, Bell, Smartphone } from 'lucide-react';
+import { Settings, Save, Loader2, CheckSquare, Edit, X, RefreshCw, Users, ShieldCheck, Bell, Smartphone, KeyRound } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
@@ -11,6 +11,7 @@ import { BrandedLoader } from '@/components/branded-loader';
 import { Button } from '@/components/ui/button';
 import { syncAllUsersToDonorsAction } from '@/app/users/actions';
 import { useSession } from '@/hooks/use-session';
+import { revokeAllSessionsForRoleAction } from '../auth-actions';
 
 const MANDATORY_FIELDS = [
     { id: 'name', name: 'Full name' },
@@ -237,6 +238,68 @@ export default function UserSettingsPage() {
                          </div>
                          <p className="text-[10px] text-muted-foreground font-medium">Show alerts on profile dashboard and approval toast messages after login.</p>
                      </div>
+                 </div>
+             </CardContent>
+         </Card>
+
+         <Card className="animate-fade-in-up border-red-200 bg-red-50/30 shadow-none overflow-hidden mt-6">
+             <CardHeader className="bg-red-50 border-b border-red-100 pb-4">
+                 <CardTitle className="flex items-center gap-2 font-bold text-base text-red-900">
+                     <KeyRound className="h-5 w-5" /> Security & Access Control
+                 </CardTitle>
+                 <CardDescription className="text-xs font-normal text-red-700/70">Global session management and emergency access termination for all institutional accounts.</CardDescription>
+             </CardHeader>
+             <CardContent className="pt-6 space-y-6">
+                 <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+                     <div className="space-y-1 text-center sm:text-left">
+                         <p className="text-sm font-bold text-red-900">Terminate Active Member Sessions</p>
+                         <p className="text-[10px] text-red-700/60 font-medium max-w-sm">
+                             This action will immediately invalidate all active login sessions for every user with the 'User' role.
+                         </p>
+                     </div>
+                     <Button 
+                         variant="destructive" 
+                         className="font-black shadow-lg shadow-red-500/20 active:scale-95 transition-all h-11 px-8 rounded-2xl shrink-0"
+                         onClick={async () => {
+                             if (confirm("CRITICAL ACTION: Are you sure you want to log out ALL members? This will force immediate re-authentication.")) {
+                                 setIsSubmitting(true);
+                                 const res = await revokeAllSessionsForRoleAction('User');
+                                 setIsSubmitting(false);
+                                 if (res.success) toast({ title: "Sessions Terminated", description: res.message, variant: "success" });
+                                 else toast({ title: "Operation Failed", description: res.message, variant: "destructive" });
+                             }
+                         }}
+                         disabled={isSubmitting}
+                     >
+                         {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                         Revoke Member Sessions
+                     </Button>
+                 </div>
+
+                 <div className="flex flex-col sm:flex-row items-center justify-between gap-6 pt-6 border-t border-red-100">
+                     <div className="space-y-1 text-center sm:text-left">
+                         <p className="text-sm font-bold text-red-900">Terminate Active Administrator Sessions</p>
+                         <p className="text-[10px] text-red-700/60 font-medium max-w-sm">
+                             This action will immediately invalidate all active login sessions for every 'Admin' account. Use with caution.
+                         </p>
+                     </div>
+                     <Button 
+                         variant="destructive" 
+                         className="font-black shadow-lg shadow-red-500/20 active:scale-95 transition-all h-11 px-8 rounded-2xl shrink-0"
+                         onClick={async () => {
+                             if (confirm("CRITICAL ACTION: Are you sure you want to log out ALL administrators? You will also be logged out.")) {
+                                 setIsSubmitting(true);
+                                 const res = await revokeAllSessionsForRoleAction('Admin');
+                                 setIsSubmitting(false);
+                                 if (res.success) toast({ title: "Admin Sessions Revoked", description: res.message, variant: "success" });
+                                 else toast({ title: "Operation Failed", description: res.message, variant: "destructive" });
+                             }
+                         }}
+                         disabled={isSubmitting}
+                     >
+                         {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-4 w-4" />}
+                         Revoke Admin Sessions
+                     </Button>
                  </div>
              </CardContent>
          </Card>

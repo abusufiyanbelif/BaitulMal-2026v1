@@ -28,6 +28,66 @@ function sanitizePayload(data: Record<string, any>) {
     return sanitized;
 }
 
+export async function saveUserAction(uid: string, data: Partial<UserProfile>, admin: { id: string, name: string }): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const cleanPhone = data.phone?.trim().replace(/\D/g, '').slice(-10) || '';
+        const cleanLoginId = data.loginId?.trim().replace(/\D/g, '').slice(-10) || '';
+        const userKey = data.userKey?.trim() || uid;
+
+        const batch = adminDb.batch();
+        const userRef = adminDb.collection('users').doc(uid);
+        
+        // 1. Save core user document
+        const payload = sanitizePayload({
+            ...data,
+            phone: cleanPhone || data.phone, // Keep original if cleaning results in empty but was provided? No, force 10 digit.
+            loginId: cleanLoginId || data.loginId,
+            updatedAt: FieldValue.serverTimestamp(),
+        });
+        batch.set(userRef, payload, { merge: true });
+
+        // 2. Manage Lookups
+        // Delete old lookups if they exist? (Hard to know without getting old doc, but lookups are cheap)
+        // For simplicity, we overwrite/set new ones.
+        if (cleanPhone && cleanPhone.length === 10) {
+            batch.set(adminDb.collection('user_lookups').doc(cleanPhone), {
+                userKey: userKey,
+                role: data.role || 'User',
+                phone: cleanPhone,
+                name: data.name
+            });
+        }
+        if (cleanLoginId && cleanLoginId.length > 0) {
+            batch.set(adminDb.collection('user_lookups').doc(cleanLoginId), {
+                userKey: userKey,
+                role: data.role || 'User',
+                phone: cleanPhone,
+                name: data.name
+            });
+        }
+        if (userKey) {
+            batch.set(adminDb.collection('user_lookups').doc(userKey), {
+                userKey: userKey,
+                role: data.role || 'User',
+                phone: cleanPhone,
+                name: data.name
+            });
+        }
+
+        await batch.commit();
+        revalidatePath('/users');
+        revalidatePath(`/users/${uid}`);
+        return { success: true, message: 'User Registry Updated Successfully.' };
+    } catch (error: any) {
+        console.error("Error saving user:", error);
+        return { success: false, message: `Save Failed: ${error.message}` };
+    }
+}
+
+
 export async function createUserAuthAction(data: UserFormData): Promise<{ success: boolean; message: string; uid?: string; }> {
     const { adminAuth } = getAdminServices();
     if (!adminAuth) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
@@ -70,9 +130,17 @@ export async function deleteUserAction(uidToDelete: string): Promise<{ success: 
         const batch = adminDb.batch();
         batch.delete(userRef);
         batch.delete(adminDb.collection('donors').doc(uidToDelete));
+        batch.delete(adminDb.collection('beneficiaries').doc(uidToDelete));
         
+        const cleanPhone = userData?.phone?.trim().replace(/\D/g, '').slice(-10);
+        const cleanLoginId = userData?.loginId?.trim().replace(/\D/g, '').slice(-10);
+
         if (userData?.loginId) batch.delete(adminDb.collection('user_lookups').doc(userData.loginId));
+        if (cleanLoginId) batch.delete(adminDb.collection('user_lookups').doc(cleanLoginId));
         if (userData?.phone) batch.delete(adminDb.collection('user_lookups').doc(userData.phone));
+        if (cleanPhone) batch.delete(adminDb.collection('user_lookups').doc(cleanPhone));
+        if (userData?.userKey) batch.delete(adminDb.collection('user_lookups').doc(userData.userKey));
+        if (uidToDelete) batch.delete(adminDb.collection('user_lookups').doc(uidToDelete));
 
         await batch.commit();
         revalidatePath('/users');
@@ -253,6 +321,17 @@ export async function syncAllUsersToDonorsAction(adminUserId: string, adminUserN
                     name: user.name,
                     phone: user.phone || '',
                     email: user.email || '',
+                    gender: user.gender || '',
+                    dob: user.dob || '',
+                    address: user.address || '',
+                    panNumber: user.panNumber || '',
+                    aadhaarNumber: user.aadhaarNumber || '',
+                    aadhaarName: user.aadhaarName || '',
+                    aadhaarDob: user.aadhaarDob || '',
+                    aadhaarGender: user.aadhaarGender || '',
+                    aadhaarAddress: user.aadhaarAddress || '',
+                    bankDetails: user.bankDetails || [],
+                    upiIds: user.upiIds || [],
                     status: user.status === 'Active' ? 'Active' : 'Inactive',
                     createdAt: FieldValue.serverTimestamp(),
                     createdById: adminUserId,
@@ -283,6 +362,17 @@ export async function mirrorIndividualUserToDonorAction(uid: string, admin: { id
             name: user.name,
             phone: user.phone || '',
             email: user.email || '',
+            gender: user.gender || '',
+            dob: user.dob || '',
+            address: user.address || '',
+            panNumber: user.panNumber || '',
+            aadhaarNumber: user.aadhaarNumber || '',
+            aadhaarName: user.aadhaarName || '',
+            aadhaarDob: user.aadhaarDob || '',
+            aadhaarGender: user.aadhaarGender || '',
+            aadhaarAddress: user.aadhaarAddress || '',
+            bankDetails: user.bankDetails || [],
+            upiIds: user.upiIds || [],
             status: user.status === 'Active' ? 'Active' : 'Inactive',
             updatedAt: FieldValue.serverTimestamp(),
             createdById: admin.id,
@@ -321,6 +411,18 @@ export async function mirrorIndividualUserToBeneficiaryAction(uid: string, admin
             name: user.name,
             phone: user.phone || '',
             email: user.email || '',
+            gender: user.gender || '',
+            dob: user.dob || '',
+            address: user.address || '',
+            panNumber: user.panNumber || '',
+            aadhaarNumber: user.aadhaarNumber || '',
+            aadhaarName: user.aadhaarName || '',
+            aadhaarDob: user.aadhaarDob || '',
+            aadhaarGender: user.aadhaarGender || '',
+            aadhaarAddress: user.aadhaarAddress || '',
+            bankDetails: user.bankDetails || [],
+            upiIds: user.upiIds || [],
+            familyDetails: user.familyDetails || null,
             status: user.status === 'Active' ? 'Active' : 'Inactive',
             updatedAt: FieldValue.serverTimestamp(),
             createdById: admin.id,

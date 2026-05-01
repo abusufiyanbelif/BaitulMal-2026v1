@@ -9,14 +9,17 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Loader2, UserPlus, ArrowRight, Phone, User, KeyRound } from 'lucide-react';
+import { Loader2, UserPlus, ArrowRight, Phone, User, KeyRound, Mail, Fingerprint, Users } from 'lucide-react';
 import Link from 'next/link';
 
 export default function PortalRegisterPage() {
     const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [gender, setGender] = useState('');
+    const [aadhaarNumber, setAadhaarNumber] = useState('');
     const [phone, setPhone] = useState('');
     const [role, setRole] = useState<'Donor' | 'Beneficiary'>('Donor');
-    const [password, setPassword] = useState('');
+    const [password, setPassword] = useState('password');
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
     const { toast } = useToast();
@@ -24,13 +27,21 @@ export default function PortalRegisterPage() {
     const handleRegister = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!name || !phone || !password) {
-            toast({ title: "Required Fields", description: "Please complete all fields to join.", variant: "destructive" });
+            toast({ title: "Required Fields", description: "Please complete all mandatory fields to join.", variant: "destructive" });
             return;
         }
 
         setIsLoading(true);
         try {
-            const res = await registerPortalUserAction({ name, phone, role, password });
+            const res = await registerPortalUserAction({ 
+                name, 
+                phone, 
+                role, 
+                password,
+                email,
+                gender,
+                aadhaarNumber
+            });
             if (res.success) {
                 toast({ title: "Registration Successful", description: res.message, variant: "success" });
                 router.push('/portal-login');
@@ -43,6 +54,7 @@ export default function PortalRegisterPage() {
             setIsLoading(false);
         }
     };
+
 
     return (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
@@ -86,22 +98,90 @@ export default function PortalRegisterPage() {
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         disabled={isLoading}
+                                        required
                                     />
                                 </div>
                             </div>
 
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="gender" className="text-xs font-bold uppercase tracking-wider text-slate-500">Gender</Label>
+                                    <div className="relative group">
+                                        <Users className="absolute left-3 top-3.5 h-4 w-4 text-slate-400 z-10" />
+                                        <Select value={gender} onValueChange={setGender} disabled={isLoading}>
+                                            <SelectTrigger className="pl-10 h-12 border-slate-200 bg-slate-50/50 focus:bg-white rounded-xl font-bold">
+                                                <SelectValue placeholder="Select" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl border-slate-100 shadow-xl">
+                                                <SelectItem value="Male" className="font-bold">Male</SelectItem>
+                                                <SelectItem value="Female" className="font-bold">Female</SelectItem>
+                                                <SelectItem value="Other" className="font-bold">Other</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-slate-500">Email (Optional)</Label>
+                                    <div className="relative group">
+                                        <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400 group-focus-within:text-primary" />
+                                        <Input 
+                                            id="email"
+                                            type="email"
+                                            placeholder="mail@example.com"
+                                            className="pl-10 h-12 border-slate-200 bg-slate-50/50 focus:bg-white rounded-xl"
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            disabled={isLoading}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
                             <div className="space-y-2">
-                                <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-slate-500">Mobile Number</Label>
+                                <Label htmlFor="aadhaar" className="text-xs font-bold uppercase tracking-wider text-slate-500">Aadhaar Number (Optional)</Label>
                                 <div className="relative group">
-                                    <Phone className="absolute left-3 top-3 h-4 w-4 text-slate-400 group-focus-within:text-primary" />
+                                    <Fingerprint className="absolute left-3 top-3 h-4 w-4 text-slate-400 group-focus-within:text-primary" />
                                     <Input 
-                                        id="phone"
-                                        placeholder="e.g. 9876543210"
-                                        className="pl-10 h-12 border-slate-200 bg-slate-50/50 focus:bg-white rounded-xl"
-                                        value={phone}
-                                        onChange={(e) => setPhone(e.target.value)}
+                                        id="aadhaar"
+                                        placeholder="12-Digit UIDAI Number"
+                                        maxLength={12}
+                                        className="pl-10 h-12 border-slate-200 bg-slate-50/50 focus:bg-white rounded-xl font-mono"
+                                        value={aadhaarNumber}
+                                        onChange={(e) => setAadhaarNumber(e.target.value.replace(/\D/g, '').slice(0, 12))}
                                         disabled={isLoading}
                                     />
+                                </div>
+                            </div>
+
+
+                            <div className="space-y-2">
+                                <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-slate-500">Mobile Number</Label>
+                                <div className="flex gap-2">
+                                    <div className="w-24 shrink-0">
+                                        <Select defaultValue="+91" disabled={isLoading}>
+                                            <SelectTrigger className="h-12 border-slate-200 bg-slate-50/50 focus:bg-white rounded-xl font-bold">
+                                                <SelectValue placeholder="+91" />
+                                            </SelectTrigger>
+                                            <SelectContent className="rounded-xl border-slate-100 shadow-xl">
+                                                <SelectItem value="+91" className="font-bold">🇮🇳 +91</SelectItem>
+                                                <SelectItem value="+1" className="font-bold">🇺🇸 +1</SelectItem>
+                                                <SelectItem value="+44" className="font-bold">🇬🇧 +44</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="relative group flex-1">
+                                        <Phone className="absolute left-3 top-3.5 h-4 w-4 text-slate-400 group-focus-within:text-primary" />
+                                        <Input 
+                                            id="phone"
+                                            placeholder="10-Digit Number"
+                                            maxLength={10}
+                                            className="pl-10 h-12 border-slate-200 bg-slate-50/50 focus:bg-white rounded-xl font-bold"
+                                            value={phone}
+                                            onChange={(e) => setPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                                            disabled={isLoading}
+                                        />
+                                    </div>
                                 </div>
                             </div>
 

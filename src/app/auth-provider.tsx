@@ -30,6 +30,11 @@ function RouteGuard({ children }: { children: ReactNode }) {
     const { data: donorConfig } = useDoc<any>(donorConfigRef);
     const { data: beneficiaryConfig } = useDoc<any>(beneficiaryConfigRef);
 
+    // 4. Specific Session Revocation Listener (Real-time document watch)
+    const sessionId = typeof window !== 'undefined' ? localStorage.getItem('portal_session_id') : null;
+    const sessionRef = useMemoFirebase(() => (firestore && sessionId) ? doc(firestore, 'user_sessions', sessionId) : null, [firestore, sessionId]);
+    const { data: sessionData } = useDoc<any>(sessionRef);
+
     const isPublicRoute = ['/login', '/seed', '/', '/portal-login', '/portal-register', '/donate'].includes(pathname) || 
                           pathname.startsWith('/campaigns-public') || 
                           pathname.startsWith('/leads-public') || 
@@ -103,14 +108,32 @@ function RouteGuard({ children }: { children: ReactNode }) {
         
         const revokedAt = (config && typeof config.sessionRevokedAt === 'number') ? config.sessionRevokedAt : (config?.sessionRevokedAt?.toMillis ? config.sessionRevokedAt.toMillis() : 0);
         
-        if (revokedAt > sessionStart) {
-            console.warn("Global session revocation detected by administrative action.");
+        // 5. Individual User Revocation (e.g. after password reset or manual "Close All Sessions")
+        const userRevokedAt = (userProfile && typeof userProfile.forceLogoutAt === 'number') ? userProfile.forceLogoutAt : (userProfile?.forceLogoutAt?.toMillis ? userProfile.forceLogoutAt.toMillis() : 0);
+        
+        const maxRevocationTime = Math.max(revokedAt, userRevokedAt);
+
+        if (maxRevocationTime > sessionStart) {
+            console.warn("Session revocation detected by administrative or user security action.");
             localStorage.removeItem('portal_session_start');
+            localStorage.removeItem('portal_session_id');
             signOut(auth).then(() => {
                 router.push('/portal-login?revoked=true');
             });
         }
     }, [user, userProfile, donorConfig, beneficiaryConfig, isLoading, auth, router]);
+
+    // 6. Handle Specific Session Revocation (from sessionData listener)
+    useEffect(() => {
+        if (sessionData?.status === 'Revoked' && auth) {
+            console.warn("Current session has been explicitly revoked via security settings.");
+            localStorage.removeItem('portal_session_start');
+            localStorage.removeItem('portal_session_id');
+            signOut(auth).then(() => {
+                router.push('/portal-login?revoked=true');
+            });
+        }
+    }, [sessionData, auth, router]);
 
     if (isPublicRoute && !isRedirecting) {
         return <>{children}</>;

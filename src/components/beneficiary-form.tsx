@@ -18,7 +18,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import type { Beneficiary, ItemCategory, RationItem } from '@/lib/types';
-import { Loader2, Edit, Trash2, FileIcon, Replace, ScanLine, Save, X } from 'lucide-react';
+import { Loader2, Edit, Trash2, FileIcon, Replace, ScanLine, Save, X, Landmark } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -53,6 +53,9 @@ const formSchema = z.object({
   earningMembers: numericOptional,
   male: numericOptional,
   female: numericOptional,
+  gender: z.string().optional(),
+  dob: z.string().optional(),
+  panNumber: z.string().optional(),
   idProofType: z.string().optional(),
   idNumber: z.string().optional(),
   idProofFile: z.any().optional(),
@@ -69,6 +72,12 @@ const formSchema = z.object({
   notes: z.string().optional(),
   isEligibleForZakat: z.boolean().default(false),
   zakatAllocation: numericOptional,
+  bankDetails: z.array(z.object({
+    bankName: z.string(),
+    accountNumber: z.string(),
+    ifscCode: z.string(),
+  })).optional(),
+  upiIds: z.array(z.string()).optional(),
 });
 
 export type BeneficiaryFormData = z.infer<typeof formSchema>;
@@ -124,13 +133,16 @@ export function BeneficiaryForm({
         defaultValues: {
             name: beneficiary?.name || '',
             address: beneficiary?.address || '',
-            phone: beneficiary?.phone || '',
+            phone: beneficiary?.phone ? beneficiary.phone.replace(/\D/g, '').slice(-10) : '',
             age: beneficiary?.age || undefined,
             occupation: beneficiary?.occupation || '',
             members: beneficiary?.members || 1,
             earningMembers: beneficiary?.earningMembers || 0,
             male: beneficiary?.male || 0,
             female: beneficiary?.female || 0,
+            gender: beneficiary?.gender || '',
+            dob: beneficiary?.dob || '',
+            panNumber: beneficiary?.panNumber || '',
             idProofType: beneficiary?.idProofType || '',
             idNumber: beneficiary?.idNumber || '',
             aadhaarNumber: beneficiary?.aadhaarNumber || '',
@@ -144,6 +156,8 @@ export function BeneficiaryForm({
             notes: beneficiary?.notes || '',
             isEligibleForZakat: beneficiary?.isEligibleForZakat || false,
             zakatAllocation: beneficiary?.zakatAllocation || 0,
+            bankDetails: beneficiary?.bankDetails || [{ bankName: '', accountNumber: '', ifscCode: '' }],
+            upiIds: beneficiary?.upiIds || [''],
             idProofDeleted: false,
         },
     });
@@ -155,13 +169,16 @@ export function BeneficiaryForm({
             reset({
                 name: beneficiary.name || '',
                 address: beneficiary.address || '',
-                phone: beneficiary.phone || '',
+                phone: beneficiary.phone ? beneficiary.phone.replace(/\D/g, '').slice(-10) : '',
                 age: beneficiary.age || undefined,
                 occupation: beneficiary.occupation || '',
                 members: beneficiary.members || 1,
                 earningMembers: beneficiary.earningMembers || 0,
                 male: beneficiary.male || 0,
                 female: beneficiary.female || 0,
+                gender: beneficiary.gender || '',
+                dob: beneficiary.dob || '',
+                panNumber: beneficiary.panNumber || '',
                 idProofType: beneficiary.idProofType || '',
                 idNumber: beneficiary.idNumber || '',
                 aadhaarNumber: beneficiary.aadhaarNumber || '',
@@ -175,6 +192,8 @@ export function BeneficiaryForm({
                 notes: beneficiary.notes || '',
                 isEligibleForZakat: beneficiary.isEligibleForZakat || false,
                 zakatAllocation: beneficiary.zakatAllocation || 0,
+                bankDetails: beneficiary.bankDetails || [{ bankName: '', accountNumber: '', ifscCode: '' }],
+                upiIds: beneficiary.upiIds || [''],
                 idProofDeleted: false,
             });
         }
@@ -389,17 +408,12 @@ export function BeneficiaryForm({
                                                 <div className="w-24 shrink-0">
                                                     <Select 
                                                         defaultValue="+91" 
-                                                        value={field.value?.startsWith('+') ? field.value.slice(0, 3) : '+91'}
-                                                        onValueChange={(val) => {
-                                                            const currentNumber = field.value?.replace(/^\+\d{2}/, '') || '';
-                                                            field.onChange(val + currentNumber);
-                                                        }}
                                                         disabled={formIsDisabled}
                                                     >
-                                                        <SelectTrigger className="font-bold">
-                                                            <SelectValue />
+                                                        <SelectTrigger className="h-10 rounded-xl border-primary/5 bg-slate-50/50 font-bold">
+                                                            <SelectValue placeholder="+91" />
                                                         </SelectTrigger>
-                                                        <SelectContent className="rounded-xl shadow-dropdown">
+                                                        <SelectContent className="rounded-xl shadow-dropdown border-primary/10">
                                                             <SelectItem value="+91">🇮🇳 +91</SelectItem>
                                                             <SelectItem value="+1">🇺🇸 +1</SelectItem>
                                                             <SelectItem value="+44">🇬🇧 +44</SelectItem>
@@ -410,27 +424,25 @@ export function BeneficiaryForm({
                                                 </div>
                                                 <FormControl>
                                                     <Input 
-                                                        placeholder="Number" 
+                                                        placeholder="10-Digit Mobile" 
                                                         {...field} 
-                                                        value={field.value?.startsWith('+') ? field.value.slice(3) : field.value || ''} 
+                                                        maxLength={10}
                                                         onChange={(e) => {
-                                                            const prefix = field.value?.startsWith('+') ? field.value.slice(0, 3) : '+91';
-                                                            const val = e.target.value.replace(/\D/g, '');
-                                                            field.onChange(prefix + val);
+                                                            const val = e.target.value.replace(/\D/g, '').slice(0, 10);
+                                                            field.onChange(val);
                                                         }}
                                                         disabled={formIsDisabled} 
-                                                        className="font-normal flex-1" 
+                                                        className="h-10 text-xs font-bold rounded-xl border-primary/5 bg-white" 
                                                     />
                                                 </FormControl>
-                                                {field.value && (
+                                                {field.value && field.value.length === 10 && (
                                                     <Button 
                                                         type="button" 
                                                         variant="outline" 
                                                         size="icon" 
                                                         className="shrink-0 border-green-200 text-green-600 hover:bg-green-50"
                                                         onClick={() => {
-                                                            const clean = String(field.value || '').replace(/\D/g, '');
-                                                            window.open(`https://wa.me/${clean}`, '_blank');
+                                                            window.open(`https://wa.me/91${field.value}`, '_blank');
                                                         }}
                                                     >
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
@@ -443,6 +455,36 @@ export function BeneficiaryForm({
                                         </FormItem>
                                     )}/>
                                     <FormField control={control} name="occupation" render={({ field }) => (<FormItem>{renderLabel('Occupation', 'occupation')}<FormControl><Input placeholder="e.g. Daily Wage Laborer" {...field} value={field.value || ''} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <FormField control={control} name="gender" render={({ field }) => (
+                                        <FormItem>
+                                            {renderLabel('Gender', 'gender')}
+                                            <Select onValueChange={field.onChange} value={field.value || ''} disabled={formIsDisabled}>
+                                                <FormControl><SelectTrigger className="font-normal h-11"><SelectValue placeholder="Gender"/></SelectTrigger></FormControl>
+                                                <SelectContent className="rounded-xl shadow-dropdown">
+                                                    <SelectItem value="Male">Male</SelectItem>
+                                                    <SelectItem value="Female">Female</SelectItem>
+                                                    <SelectItem value="Other">Other</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}/>
+                                    <FormField control={control} name="dob" render={({ field }) => (
+                                        <FormItem>
+                                            {renderLabel('Date of Birth', 'dob')}
+                                            <FormControl><Input type="date" {...field} value={field.value || ''} disabled={formIsDisabled} className="font-normal h-11" /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}/>
+                                    <FormField control={control} name="panNumber" render={({ field }) => (
+                                        <FormItem>
+                                            {renderLabel('PAN Number', 'panNumber')}
+                                            <FormControl><Input placeholder="ABCDE1234F" {...field} value={field.value || ''} disabled={formIsDisabled} className="font-mono font-normal uppercase h-11" /></FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}/>
                                 </div>
                                 <FormField control={control} name="address" render={({ field }) => (<FormItem>{renderLabel('Address', 'address')}<FormControl><Input placeholder="Full Residential Address" {...field} value={field.value || ''} disabled={formIsDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
                             </div>
@@ -509,6 +551,77 @@ export function BeneficiaryForm({
                                                 {isScanningAadhaar ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />} Scan Aadhaar & Autofill
                                             </Button>
                                         )}
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="text-sm font-bold text-primary capitalize tracking-widest flex items-center gap-2">
+                                            <Landmark className="h-4 w-4" /> Settlement & Bank Accounts
+                                        </h4>
+                                        {!formIsDisabled && (
+                                            <Button type="button" variant="outline" size="sm" onClick={() => setValue('bankDetails', [...(watch('bankDetails') || []), { bankName: '', accountNumber: '', ifscCode: '' }])} className="h-8 text-[10px] font-bold uppercase rounded-xl border-primary/10">
+                                                Add Account
+                                            </Button>
+                                        )}
+                                    </div>
+                                    <div className="space-y-4">
+                                        {(watch('bankDetails') || []).map((_, idx) => (
+                                            <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl border border-primary/5 bg-slate-50/50 relative group">
+                                                <FormField control={control} name={`bankDetails.${idx}.bankName`} render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Bank Name</FormLabel>
+                                                        <FormControl><Input {...field} placeholder="e.g. HDFC Bank" disabled={formIsDisabled} className="h-10 text-xs font-bold rounded-xl border-primary/5 bg-white" /></FormControl>
+                                                    </FormItem>
+                                                )}/>
+                                                <FormField control={control} name={`bankDetails.${idx}.accountNumber`} render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Account Number</FormLabel>
+                                                        <FormControl><Input {...field} placeholder="Account No" disabled={formIsDisabled} className="h-10 text-xs font-bold rounded-xl border-primary/5 bg-white" /></FormControl>
+                                                    </FormItem>
+                                                )}/>
+                                                <FormField control={control} name={`bankDetails.${idx}.ifscCode`} render={({ field }) => (
+                                                    <FormItem>
+                                                        <FormLabel className="text-[10px] font-black text-slate-400 uppercase tracking-widest">IFSC Code</FormLabel>
+                                                        <FormControl><Input {...field} placeholder="IFSC" disabled={formIsDisabled} className="h-10 text-xs font-bold rounded-xl border-primary/5 bg-white font-mono" /></FormControl>
+                                                    </FormItem>
+                                                )}/>
+                                                {(watch('bankDetails') || []).length > 1 && !formIsDisabled && (
+                                                    <Button type="button" variant="ghost" size="icon" onClick={() => setValue('bankDetails', (watch('bankDetails') || []).filter((_, i) => i !== idx))} className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white shadow-sm border border-red-100 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <X className="h-4 w-4" />
+                                                    </Button>
+                                                )}
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <h4 className="text-sm font-bold text-primary capitalize tracking-widest flex items-center gap-2">
+                                            <ScanLine className="h-4 w-4" /> UPI Identities
+                                        </h4>
+                                        {!formIsDisabled && (
+                                            <Button type="button" variant="outline" size="sm" onClick={() => setValue('upiIds', [...(watch('upiIds') || []), ''])} className="h-8 text-[10px] font-bold uppercase rounded-xl border-primary/10">
+                                                Add UPI
+                                            </Button>
+                                        )}
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {(watch('upiIds') || []).map((_, idx) => (
+                                            <FormField key={idx} control={control} name={`upiIds.${idx}`} render={({ field }) => (
+                                                <FormItem className="relative group">
+                                                    <FormControl>
+                                                        <div className="flex gap-2">
+                                                            <Input {...field} placeholder="handle@upi" disabled={formIsDisabled} className="h-11 text-xs font-bold rounded-xl border-primary/5 bg-white font-mono" />
+                                                            {(watch('upiIds') || []).length > 1 && !formIsDisabled && (
+                                                                <Button type="button" variant="ghost" size="icon" onClick={() => setValue('upiIds', (watch('upiIds') || []).filter((_, i) => i !== idx))} className="h-11 w-11 rounded-xl text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                                    <X className="h-4 w-4" />
+                                                                </Button>
+                                                            )}
+                                                        </div>
+                                                    </FormControl>
+                                                </FormItem>
+                                            )}/>
+                                        ))}
                                     </div>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">

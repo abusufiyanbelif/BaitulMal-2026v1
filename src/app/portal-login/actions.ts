@@ -2,6 +2,8 @@
 
 import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
+import { randomUUID } from 'crypto';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Authentication infrastructure is currently offline.";
 
@@ -14,7 +16,7 @@ export async function authenticatePortalUserAction(identifier: string, password:
     if (!adminDb || !adminAuth) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        const cleanIdentifier = identifier.trim();
+        const cleanIdentifier = identifier.trim().replace(/\D/g, '').slice(-10);
         let targetDoc: any = null;
         let role: 'Donor' | 'Beneficiary' | 'User' | 'Admin' = 'Donor';
 
@@ -67,11 +69,29 @@ export async function authenticatePortalUserAction(identifier: string, password:
         const targetId = targetDoc.id || targetDoc.userKey || cleanIdentifier;
         const customToken = await adminAuth.createCustomToken(targetId, { role });
 
+        // 6. Record Session in Firestore
+        const sessionId = randomUUID();
+        const headerList = await headers();
+        const userAgent = headerList.get('user-agent') || 'Unknown Device';
+        const ip = headerList.get('x-forwarded-for')?.split(',')[0] || 'Unknown IP';
+        
+        await adminDb.collection('user_sessions').doc(sessionId).set({
+            userId: targetId,
+            userName: targetDoc.name,
+            role,
+            userAgent,
+            ip,
+            loginAt: Date.now(),
+            lastActive: Date.now(),
+            status: 'Active'
+        });
+
         return { 
             success: true, 
             token: customToken, 
             role, 
             sessionStart: Date.now(),
+            sessionId,
             redirect: role === 'Donor' ? '/donor-portal' : '/beneficiary-portal',
             message: `Authentication successful. Accessing ${role} workspace...`
         };
@@ -130,7 +150,7 @@ export async function sendPortalOTPAction(identifier: string) {
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        const cleanIdentifier = identifier.trim();
+        const cleanIdentifier = identifier.trim().replace(/\D/g, '').slice(-10);
         let targetDoc: any = null;
         let telegramChatId: string = '';
 
@@ -206,7 +226,7 @@ export async function verifyPortalOTPAction(identifier: string, otp: string) {
     if (!adminDb || !adminAuth) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        const cleanIdentifier = identifier.trim();
+        const cleanIdentifier = identifier.trim().replace(/\D/g, '').slice(-10);
         
         // 1. Fetch and Verify OTP
         const otpDoc = await adminDb.collection('portal_otps').doc(cleanIdentifier).get();
@@ -264,11 +284,29 @@ export async function verifyPortalOTPAction(identifier: string, otp: string) {
         // 4. Generate Custom Token
         const customToken = await adminAuth.createCustomToken(targetId, { role });
 
+        // 5. Record Session
+        const sessionId = randomUUID();
+        const headerList = await headers();
+        const userAgent = headerList.get('user-agent') || 'Unknown Device';
+        const ip = headerList.get('x-forwarded-for')?.split(',')[0] || 'Unknown IP';
+        
+        await adminDb.collection('user_sessions').doc(sessionId).set({
+            userId: targetId,
+            userName: targetDoc.name,
+            role,
+            userAgent,
+            ip,
+            loginAt: Date.now(),
+            lastActive: Date.now(),
+            status: 'Active'
+        });
+
         return { 
             success: true, 
             token: customToken, 
             role, 
             sessionStart: Date.now(),
+            sessionId,
             redirect: role === 'Donor' ? '/donor-portal' : '/beneficiary-portal',
             message: `OTP Verified. Accessing ${role} workspace...`
         };

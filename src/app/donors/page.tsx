@@ -3,7 +3,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useFirestore, useMemoFirebase, useCollection, collection } from '@/firebase';
+import { useFirestore, useMemoFirebase, useCollection, collection, useStorage } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import type { Donor, BankDetail, Donation } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
@@ -114,17 +114,33 @@ export default function DonorRegistryPage() {
   const [designationFilter, setDesignationFilter] = useState('All');
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isResolverOpen, setIsResolverOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [editingDonor, setEditingDonor] = useState<Donor | null>(null);
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [isResolverOpen, setIsResolverOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [editingDonor, setEditingDonor] = useState<Donor | null>(null);
 
-  const [bankDetails, setBankDetails] = useState<BankDetail[]>([{ bankName: '', accountNumber: '', ifscCode: '' }]);
-  const [upiIds, setUpiIds] = useState<string[]>(['']);
-  const [phonePrefix, setPhonePrefix] = useState('+91');
+    const [bankDetails, setBankDetails] = useState<BankDetail[]>([{ bankName: '', accountNumber: '', ifscCode: '' }]);
+    const [upiIds, setUpiIds] = useState<string[]>(['']);
+    const [phonePrefix, setPhonePrefix] = useState('+91');
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 15;
+    // KYC State for creation
+    const [aadhaarPreview, setAadhaarPreview] = useState<string | null>(null);
+    const [idProofPreview, setIdProofPreview] = useState<string | null>(null);
+    const [isScanningId, setIsScanningId] = useState(false);
+    const [isScanningAadhaar, setIsScanningAadhaar] = useState(false);
+    const [aadhaarData, setAadhaarData] = useState({
+        aadhaarNumber: '',
+        aadhaarName: '',
+        aadhaarDob: '',
+        aadhaarGender: '',
+        aadhaarAddress: ''
+    });
+    const [idProofType, setIdProofType] = useState('Aadhaar');
+    const [idNumber, setIdNumber] = useState('');
+
+    const storage = useStorage();
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 15;
 
   const donorsRef = useMemoFirebase(() => (firestore && user) ? collection(firestore, 'donors') : null, [firestore, user]);
   const { data: donors, isLoading: areDonorsLoading } = useCollection<Donor>(donorsRef);
@@ -186,41 +202,139 @@ export default function DonorRegistryPage() {
       };
   }, [donors]);
 
-  const handleSaveDonor = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!canCreate || !userProfile) return;
-    setIsSubmitting(true);
+   const handleScanIdProof = async (e: React.ChangeEvent<HTMLInputElement>) => {
+     const files = e.target.files;
+     if (!files || files.length === 0) return;
+     setIsScanningId(true);
+     toast({ title: "Analyzing Identification Evidence..." });
+     const file = files[0];
+     const reader = new FileReader();
+     reader.onload = async (event) => {
+         const dataUri = event.target?.result as string;
+         if (!dataUri) { setIsScanningId(false); return; }
+         try {
+             const apiResponse = await fetch('/api/scan-id', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ photoDataUri: dataUri }) });
+             if (!apiResponse.ok) throw new Error('API Request Failed');
+             const response = await apiResponse.json();
+             if (response) {
+                 if (response.aadhaarNumber) setIdNumber(response.aadhaarNumber);
+                 setIdProofType('Aadhaar');
+                 setIdProofPreview(dataUri);
+                 toast({ title: "ID Extracted Successfully", variant: "success" });
+             }
+         } catch (error: any) {
+             toast({ title: "Extraction Failed", description: error.message || "Could Not Analyze Document.", variant: "destructive" });
+         } finally { setIsScanningId(false); }
+     };
+     reader.readAsDataURL(file);
+   };
 
-    try {
-        const formData = new FormData(e.currentTarget);
-        const validBanks = bankDetails.filter(b => b.bankName || b.accountNumber);
-        const validUpis = upiIds.filter(u => u.trim() !== '');
+   const handleScanAadhaarCard = async (e: React.ChangeEvent<HTMLInputElement>) => {
+     const files = e.target.files;
+     if (!files || files.length === 0) return;
+     setIsScanningAadhaar(true);
+     toast({ title: "Analyzing Aadhaar Document..." });
+     const file = files[0];
+     const reader = new FileReader();
+     reader.onload = async (event) => {
+         const dataUri = event.target?.result as string;
+         if (!dataUri) { setIsScanningAadhaar(false); return; }
+         try {
+             const apiResponse = await fetch('/api/scan-aadhaar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ photoDataUri: dataUri }) });
+             if (!apiResponse.ok) throw new Error('API Request Failed');
+             const response = await apiResponse.json();
+             if (response) {
+                 setAadhaarData({
+                     aadhaarNumber: response.aadhaarNumber || '',
+                     aadhaarName: response.aadhaarName || '',
+                     aadhaarDob: response.aadhaarDob || '',
+                     aadhaarGender: response.aadhaarGender || '',
+                     aadhaarAddress: response.aadhaarAddress || ''
+                 });
+                 setAadhaarPreview(dataUri);
+                 toast({ title: "Aadhaar Extracted Successfully", variant: "success" });
+             }
+         } catch (error: any) {
+             toast({ title: "Extraction Failed", description: error.message || "Could Not Analyze Aadhaar.", variant: "destructive" });
+         } finally { setIsScanningAadhaar(false); }
+     };
+     reader.readAsDataURL(file);
+   };
 
-        const data: Partial<Donor> = {
-            name: formData.get('name') as string,
-            phone: `${phonePrefix}${formData.get('phone') as string}`,
-            email: formData.get('email') as string,
-            address: formData.get('address') as string,
-            bankDetails: validBanks,
-            accountNumbers: validBanks.map(b => b.accountNumber).filter(Boolean),
-            upiIds: validUpis,
-            status: (formData.get('status') as any) || 'Active',
-            notes: formData.get('notes') as string,
-        };
+   const handleSaveDonor = async (e: React.FormEvent<HTMLFormElement>) => {
+     e.preventDefault();
+     if (!canCreate || !userProfile) return;
+     setIsSubmitting(true);
+ 
+     try {
+         const formData = new FormData(e.currentTarget);
+         const validBanks = bankDetails.filter(b => b.bankName || b.accountNumber);
+         const validUpis = upiIds.filter(u => u.trim() !== '');
 
-        const res = await createDonorAction(data, { id: userProfile.id, name: userProfile.name });
-        if (res.success) {
-            toast({ title: 'Donor Registered', description: res.message, variant: 'success' });
-            setIsFormOpen(false);
-            setBankDetails([{ bankName: '', accountNumber: '', ifscCode: '' }]);
-            setUpiIds(['']);
-        } else {
-            toast({ title: 'Registration Failed', description: res.message, variant: 'destructive' });
-        }
-    } finally {
-        setIsSubmitting(false);
-    }
-  };
+         let aadhaarProofUrl = '';
+         let idProofUrl = '';
+
+         // Temporary ID to upload files
+         const tempId = `new_donor_${Date.now()}`;
+
+         if (aadhaarPreview && aadhaarPreview.startsWith('data:') && storage) {
+             const blobResponse = await fetch(aadhaarPreview);
+             const blob = await blobResponse.blob();
+             const fileRef = storageRef(storage, `donors/${tempId}/aadhaar_proof.png`);
+             const uploadRes = await uploadBytes(fileRef, blob);
+             aadhaarProofUrl = await getDownloadURL(uploadRes.ref);
+         }
+
+         if (idProofPreview && idProofPreview.startsWith('data:') && storage) {
+             const blobResponse = await fetch(idProofPreview);
+             const blob = await blobResponse.blob();
+             const fileRef = storageRef(storage, `donors/${tempId}/id_proof.png`);
+             const uploadRes = await uploadBytes(fileRef, blob);
+             idProofUrl = await getDownloadURL(uploadRes.ref);
+         }
+ 
+         const data: Partial<Donor> = {
+             name: formData.get('name') as string,
+             phone: `${phonePrefix}${formData.get('phone') as string}`,
+             email: formData.get('email') as string,
+             address: formData.get('address') as string,
+             telegramChatId: formData.get('telegramChatId') as string,
+             bankDetails: validBanks,
+             accountNumbers: validBanks.map(b => b.accountNumber).filter(Boolean),
+             upiIds: validUpis,
+             status: (formData.get('status') as any) || 'Active',
+             notes: formData.get('notes') as string,
+             aadhaarNumber: formData.get('aadhaarNumber') as string || aadhaarData.aadhaarNumber,
+             aadhaarName: formData.get('aadhaarName') as string || aadhaarData.aadhaarName,
+             aadhaarDob: formData.get('aadhaarDob') as string || aadhaarData.aadhaarDob,
+             aadhaarGender: formData.get('aadhaarGender') as string || aadhaarData.aadhaarGender,
+             aadhaarAddress: formData.get('aadhaarAddress') as string || aadhaarData.aadhaarAddress,
+             aadhaarProofUrl: aadhaarProofUrl,
+             idProofType: formData.get('idProofType') as string || idProofType,
+             idNumber: formData.get('idNumber') as string || idNumber,
+             idProofUrl: idProofUrl,
+             panNumber: formData.get('panNumber') as string,
+             gender: formData.get('gender') as string,
+             dob: formData.get('dob') as string,
+         };
+ 
+         const res = await createDonorAction(data, { id: userProfile.id, name: userProfile.name });
+         if (res.success) {
+             toast({ title: 'Donor Registered', description: res.message, variant: 'success' });
+             setIsFormOpen(false);
+             setBankDetails([{ bankName: '', accountNumber: '', ifscCode: '' }]);
+             setUpiIds(['']);
+             setAadhaarPreview(null);
+             setIdProofPreview(null);
+         } else {
+             toast({ title: 'Registration Failed', description: res.message, variant: 'destructive' });
+         }
+     } catch (err: any) {
+         toast({ title: 'Error', description: err.message, variant: 'destructive' });
+     } finally {
+         setIsSubmitting(false);
+     }
+   };
 
   const handleDelete = async (donor: Donor) => {
     if (!canDelete) return;
@@ -371,6 +485,7 @@ export default function DonorRegistryPage() {
                                     <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Donor Identity</TableHead>
                                     <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Primary Contact</TableHead>
                                     <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Financial Handles</TableHead>
+                                    <TableHead className="text-center text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">KYC Integrity</TableHead>
                                     <TableHead className="text-center text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Registry Status</TableHead>
                                     <TableHead className="text-right pr-8 text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Audit</TableHead>
                                 </TableRow>
@@ -398,6 +513,16 @@ export default function DonorRegistryPage() {
                                                 {donor.upiIds && donor.upiIds.length > 2 && <span className="text-[9px] opacity-30 font-black tracking-widest uppercase">+{donor.upiIds.length - 2} More</span>}
                                             </div>
                                         </TableCell>
+                                         <TableCell className="text-center">
+                                             <div className="flex items-center justify-center gap-2">
+                                                 <Badge variant={donor.aadhaarNumber ? 'success' : 'outline'} className={cn("text-[8px] font-black uppercase px-2 h-5 rounded-md tracking-tighter border-primary/10", donor.aadhaarNumber ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "opacity-30")}>
+                                                     {donor.aadhaarNumber ? 'AADHAAR' : 'NO KYC'}
+                                                 </Badge>
+                                                 <Badge variant={donor.panNumber ? 'success' : 'outline'} className={cn("text-[8px] font-black uppercase px-2 h-5 rounded-md tracking-tighter border-primary/10", donor.panNumber ? "bg-blue-500/10 text-blue-600 border-blue-500/20" : "opacity-30")}>
+                                                     {donor.panNumber ? 'PAN' : 'NO PAN'}
+                                                 </Badge>
+                                             </div>
+                                         </TableCell>
                                         <TableCell className="text-center">
                                             <Badge 
                                                 variant={donor.status === 'Active' ? 'active' : 'outline'} 
@@ -559,6 +684,111 @@ export default function DonorRegistryPage() {
                                     <Input name="address" className="font-bold h-12 rounded-2xl border-primary/10 shadow-sm" placeholder="Primary Address"/>
                                 </div>
                             </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                                <div className="space-y-2.5">
+                                    <Label className="font-black text-[10px] text-muted-foreground uppercase tracking-widest pl-1">Gender</Label>
+                                    <Select name="gender">
+                                        <SelectTrigger className="font-bold h-12 rounded-2xl border-primary/10 shadow-sm">
+                                            <SelectValue placeholder="Select Gender" />
+                                        </SelectTrigger>
+                                        <SelectContent className="rounded-2xl shadow-dropdown border-primary/10 p-1.5">
+                                            <SelectItem value="Male" className="font-bold text-xs p-3 rounded-xl">Male</SelectItem>
+                                            <SelectItem value="Female" className="font-bold text-xs p-3 rounded-xl">Female</SelectItem>
+                                            <SelectItem value="Other" className="font-bold text-xs p-3 rounded-xl">Other</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="space-y-2.5">
+                                    <Label className="font-black text-[10px] text-muted-foreground uppercase tracking-widest pl-1">Date of Birth</Label>
+                                    <Input name="dob" type="date" className="font-bold h-12 rounded-2xl border-primary/10 shadow-sm" />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                                <div className="space-y-2.5">
+                                    <Label className="font-black text-[10px] text-muted-foreground uppercase tracking-widest pl-1">Telegram Chat ID</Label>
+                                    <Input name="telegramChatId" className="font-mono font-bold h-12 rounded-2xl border-primary/10 shadow-sm" placeholder="e.g. 123456789"/>
+                                </div>
+                                <div className="space-y-2.5">
+                                    <Label className="font-black text-[10px] text-muted-foreground uppercase tracking-widest pl-1">PAN Number (80G Tax Exemption)</Label>
+                                    <Input name="panNumber" className="font-mono font-bold h-12 rounded-2xl border-primary/10 shadow-sm" placeholder="ABCDE1234F"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            <div className="flex items-center gap-3 border-b border-primary/5 pb-3">
+                                <ScanLine className="h-4 w-4 text-primary opacity-40" />
+                                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Institutional Identity Verification (KYC)</h4>
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-6">
+                                    <div className="space-y-2.5">
+                                        <Label className="font-black text-[10px] text-muted-foreground uppercase tracking-widest pl-1">Aadhaar Proof Document</Label>
+                                        <div className="p-4 rounded-2xl border-2 border-dashed border-primary/10 bg-primary/[0.01] hover:bg-primary/[0.03] transition-all">
+                                            <Input type="file" accept="image/*" onChange={handleScanAadhaarCard} disabled={isScanningAadhaar} className="h-10 text-[10px] cursor-pointer" />
+                                            {isScanningAadhaar && <div className="flex items-center gap-2 text-[10px] font-black text-primary mt-2 animate-pulse"><Loader2 className="h-3 w-3 animate-spin" /> Analyzing Document Evidence...</div>}
+                                        </div>
+                                    </div>
+                                    {aadhaarPreview && (
+                                        <div className="relative h-40 w-full rounded-2xl border border-primary/10 bg-white overflow-hidden shadow-inner group">
+                                            <Image src={aadhaarPreview} alt="Aadhaar" fill className="object-contain p-2" />
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => setAadhaarPreview(null)} className="absolute top-2 right-2 h-8 w-8 bg-white/80 hover:bg-red-50 hover:text-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"><X className="h-4 w-4"/></Button>
+                                        </div>
+                                    )}
+                                    <div className="space-y-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Aadhaar Number</Label>
+                                            <Input name="aadhaarNumber" value={aadhaarData.aadhaarNumber} onChange={(e) => setAadhaarData({...aadhaarData, aadhaarNumber: e.target.value})} className="h-10 text-xs font-mono font-black rounded-xl border-primary/10" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Name on Aadhaar</Label>
+                                            <Input name="aadhaarName" value={aadhaarData.aadhaarName} onChange={(e) => setAadhaarData({...aadhaarData, aadhaarName: e.target.value})} className="h-10 text-xs font-black rounded-xl border-primary/10" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="space-y-2.5">
+                                        <Label className="font-black text-[10px] text-muted-foreground uppercase tracking-widest pl-1">Other Identity (PAN/Passport/ID)</Label>
+                                        <div className="p-4 rounded-2xl border-2 border-dashed border-primary/10 bg-primary/[0.01] hover:bg-primary/[0.03] transition-all">
+                                            <Input type="file" accept="image/*,application/pdf" onChange={handleScanIdProof} disabled={isScanningId} className="h-10 text-[10px] cursor-pointer" />
+                                            {isScanningId && <div className="flex items-center gap-2 text-[10px] font-black text-primary mt-2 animate-pulse"><Loader2 className="h-3 w-3 animate-spin" /> Analyzing ID Proof...</div>}
+                                        </div>
+                                    </div>
+                                    {idProofPreview && (
+                                        <div className="relative h-40 w-full rounded-2xl border border-primary/10 bg-white overflow-hidden shadow-inner group">
+                                            {idProofPreview.startsWith('data:application/pdf') ? (
+                                                <div className="flex flex-col items-center justify-center h-full text-primary/40"><FileIcon className="h-10 w-10 mb-2"/><p className="text-[10px] font-black uppercase">PDF Document</p></div>
+                                            ) : (
+                                                <Image src={idProofPreview} alt="ID" fill className="object-contain p-2" />
+                                            )}
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => setIdProofPreview(null)} className="absolute top-2 right-2 h-8 w-8 bg-white/80 hover:bg-red-50 hover:text-red-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"><X className="h-4 w-4"/></Button>
+                                        </div>
+                                    )}
+                                    <div className="space-y-4">
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">ID Type</Label>
+                                                <Input name="idProofType" value={idProofType} onChange={(e) => setIdProofType(e.target.value)} className="h-10 text-xs font-black rounded-xl border-primary/10" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">ID Number</Label>
+                                                <Input name="idNumber" value={idNumber} onChange={(e) => setIdNumber(e.target.value)} className="h-10 text-xs font-mono font-black rounded-xl border-primary/10" />
+                                            </div>
+                                        </div>
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">DOB (ID Proof)</Label>
+                                                <Input name="aadhaarDob" value={aadhaarData.aadhaarDob} onChange={(e) => setAadhaarData({...aadhaarData, aadhaarDob: e.target.value})} className="h-10 text-xs font-black rounded-xl border-primary/10" placeholder="DD/MM/YYYY" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Gender</Label>
+                                                <Input name="aadhaarGender" value={aadhaarData.aadhaarGender} onChange={(e) => setAadhaarData({...aadhaarData, aadhaarGender: e.target.value})} className="h-10 text-xs font-black rounded-xl border-primary/10" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <div className="space-y-6">
@@ -600,7 +830,7 @@ export default function DonorRegistryPage() {
                             <div className="flex items-center justify-between border-b border-primary/5 pb-3">
                                 <div className="flex items-center gap-3">
                                     <SmartphoneNfc className="h-4 w-4 text-primary opacity-40" />
-                                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">UPI Digital Identities</h4>
+                                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Digital UPI Identities</h4>
                                 </div>
                                 <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ''])} className="h-8 text-[10px] font-black uppercase tracking-widest rounded-xl px-4 border-primary/10 hover:bg-primary/5 transition-all">
                                     <Plus className="h-3.5 w-3.5 mr-2"/> Add UPI

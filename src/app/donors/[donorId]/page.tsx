@@ -424,6 +424,7 @@ export default function DonorProfilePage() {
                 idProofType: formData.get('idProofType') as string || '',
                 idNumber: formData.get('idNumber') as string || '',
                 idProofUrl: finalIdProofUrl,
+                panNumber: formData.get('panNumber') as string || '',
             };
             const isApprovalRequired = configSettings?.verificationMode 
                 ? (configSettings.verificationMode !== 'Disabled' && configSettings.verificationMode !== 'disabled')
@@ -670,6 +671,11 @@ export default function DonorProfilePage() {
                                                     <Input name="telegramChatId" defaultValue={donor.telegramChatId || ''} placeholder="e.g. 123456789" className="font-mono"/>
                                                     <p className="text-[10px] text-muted-foreground font-normal">For direct Telegram alerts. Message @userinfobot on Telegram.</p>
                                                 </div>
+                                                <div className="space-y-2">
+                                                    <Label className="text-xs font-bold capitalize text-muted-foreground tracking-widest">PAN Number (80G Tax Exemption)</Label>
+                                                    <Input name="panNumber" defaultValue={donor.panNumber || ''} placeholder="ABCDE1234F" className="font-mono uppercase"/>
+                                                    <p className="text-[10px] text-muted-foreground font-normal">For institutional tax compliance and 80G certificate generation.</p>
+                                                </div>
                                             </div>
 
                                             <div className="space-y-4 rounded-xl border border-primary/5 p-4 bg-muted/10">
@@ -773,6 +779,7 @@ export default function DonorProfilePage() {
                                             <DetailItem icon={Mail} label="Email Address" value={donor.email} />
                                             <DetailItem icon={MapPin} label="Residential Address" value={donor.address} />
                                             <DetailItem icon={Phone} label="Telegram Chat ID" value={donor.telegramChatId} isMono />
+                                            <DetailItem icon={ShieldCheck} label="PAN Number (80G)" value={donor.panNumber} isMono />
                                         </div>
 
                                         <div className="space-y-6">

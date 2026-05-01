@@ -379,6 +379,8 @@ export interface Beneficiary extends DocumentData {
     updatedAt?: Timestamp | FieldValue;
     updatedById?: string;
     updatedByName?: string;
+    bankDetails?: BankDetail[];
+    upiIds?: string[];
 }
 
 export interface BankDetail {
@@ -491,6 +493,11 @@ export interface UserProfile extends DocumentData {
   linkedBeneficiaryId?: string;
   password?: string; // Encrypted/Hashed password for manual login
   telegramChatId?: string; // Telegram Chat ID for individual alerts
+  notificationsEnabled?: boolean;
+  whatsappNotificationsEnabled?: boolean;
+  bankDetails?: { bankName: string; accountNo: string; ifscCode: string }[];
+  upiIds?: string[];
+  updatedAt?: Timestamp | FieldValue;
 }
  
 export interface PendingVerification extends DocumentData {

@@ -31,7 +31,8 @@ import {
     RefreshCw,
     BadgeInfo,
     Hash,
-    Eye
+    Eye,
+    ShieldAlert
 } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import type { User, BankDetail, PendingVerification } from '@/lib/types';
@@ -45,6 +46,8 @@ import { FileUploader } from '@/components/file-uploader';
 import { useToast } from '@/hooks/use-toast';
 import { processPortalProfileUpdateAction, checkPendingVerificationAction } from '@/app/verifications/actions';
 import { supporterUpdatePasswordAction } from '@/app/portal-login/actions';
+import { revokeUserSessionsAction } from '../settings/auth-actions';
+import { SessionTable } from '@/components/session-table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
@@ -60,6 +63,7 @@ export default function ProfilePage() {
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [pendingRequest, setPendingRequest] = useState<PendingVerification | null>(null);
+    const [refreshSessionsKey, setRefreshSessionsKey] = useState(0);
     
     // Password States
     const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
@@ -89,6 +93,28 @@ export default function ProfilePage() {
             });
         }
     }, [userProfile, isEditDialogOpen]);
+
+    const handleRevokeSessions = async () => {
+        if (!userProfile) return;
+        if (!confirm("Are you sure you want to terminate all other active sessions? You will need to log back in on your other devices.")) return;
+
+        setIsSubmitting(true);
+        try {
+            const res = await revokeUserSessionsAction(userProfile.id);
+            if (res.success) {
+                // Update local session start to prevent logging out the current tab
+                localStorage.setItem('portal_session_start', Date.now().toString());
+                setRefreshSessionsKey(prev => prev + 1);
+                toast({ title: "Sessions Terminated", description: res.message, variant: "success" });
+            } else {
+                toast({ title: "Operation Failed", description: res.message, variant: "destructive" });
+            }
+        } catch (error: any) {
+            toast({ title: "System Error", description: error.message, variant: "destructive" });
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     if (isSessionLoading) {
          return <BrandedLoader message="Synchronizing Identity Records..." />;
@@ -381,6 +407,35 @@ export default function ProfilePage() {
                                     <p className="text-[10px] font-bold text-slate-300 italic">No accounts linked</p>
                                 )}
                             </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-xl shadow-slate-200/40 bg-slate-900 text-white rounded-3xl overflow-hidden mt-8">
+                        <CardContent className="p-8 space-y-6">
+                            <div className="flex items-center justify-between">
+                                <ShieldAlert className="h-8 w-8 text-white/40" />
+                                <Badge className="bg-white/10 text-white border-white/20 font-mono text-[9px]">
+                                    SECURE-SSL-256-BIT
+                                </Badge>
+                            </div>
+                            <div className="space-y-2">
+                                <h3 className="font-bold text-lg">Session Security</h3>
+                                <p className="text-xs text-white/60 leading-relaxed">
+                                    Your session is protected by multi-layer encryption. If you suspect unauthorized access, terminate all other active sessions immediately.
+                                </p>
+                            </div>
+
+                            <SessionTable userId={userProfile.id} refreshKey={refreshSessionsKey} />
+
+                            <Button 
+                                variant="outline" 
+                                className="w-full border-white/20 bg-white/5 hover:bg-white/10 text-white font-bold h-11 rounded-xl transition-all active:scale-95 mt-4"
+                                onClick={handleRevokeSessions}
+                                disabled={isSubmitting}
+                            >
+                                {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                                Terminate Other Sessions
+                            </Button>
                         </CardContent>
                     </Card>
                 </div>

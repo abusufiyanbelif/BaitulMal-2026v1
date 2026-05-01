@@ -108,6 +108,7 @@ export default function PortalLoginPage() {
             if (typeof window !== 'undefined') {
                 localStorage.setItem('portal_role', res.role || '');
                 localStorage.setItem('portal_session_start', res.sessionStart?.toString() || Date.now().toString());
+                if (res.sessionId) localStorage.setItem('portal_session_id', res.sessionId);
             }
             toast({ title: "Welcome", description: res.message, variant: "success" });
             router.push(res.redirect || '/dashboard');
@@ -185,7 +186,11 @@ export default function PortalLoginPage() {
                                             placeholder="Mobile or ID Number"
                                             className="pl-12 h-12 border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-primary/20 transition-all rounded-2xl font-medium"
                                             value={identifier}
-                                            onChange={(e) => { setIdentifier(e.target.value); setOtpSent(false); }}
+                                            onChange={(e) => { 
+                                                const val = e.target.value.replace(/\D/g, '').slice(-10);
+                                                setIdentifier(val); 
+                                                setOtpSent(false); 
+                                            }}
                                             disabled={isLoading || (authMethod === 'OTP' && otpSent)}
                                         />
                                     </div>

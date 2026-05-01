@@ -26,7 +26,7 @@ import { updatePortalPasswordAction } from '@/app/portal-login/actions';
 import { revokeUserSessionsAction } from '../../settings/auth-actions';
 import { SessionTable } from '@/components/session-table';
 
-export default function DonorSettingsPage() {
+export default function BeneficiarySettingsPage() {
     const { userProfile, isLoading: isSessionLoading } = useSession();
     const firestore = useFirestore();
     const { toast } = useToast();
@@ -37,8 +37,8 @@ export default function DonorSettingsPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [refreshSessionsKey, setRefreshSessionsKey] = useState(0);
 
-    // Fetch Donor Config for notification visibility
-    const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donor_config') : null, [firestore]);
+    // Fetch Beneficiary Config for notification visibility
+    const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'beneficiary_config') : null, [firestore]);
     const { data: config } = useDoc<any>(configRef);
 
     if (isSessionLoading) {
@@ -58,7 +58,7 @@ export default function DonorSettingsPage() {
 
         setIsUpdatingPassword(true);
         try {
-            const res = await updatePortalPasswordAction(userProfile!.id, 'Donor', newPassword);
+            const res = await updatePortalPasswordAction(userProfile!.id, 'Beneficiary', newPassword);
             if (res.success) {
                 toast({ title: "Security Updated", description: "Your portal password has been synchronized.", variant: "success" });
                 setNewPassword('');
@@ -96,7 +96,7 @@ export default function DonorSettingsPage() {
     };
 
     return (
-        <div className="space-y-8 animate-fade-in-up">
+        <div className="container mx-auto p-4 md:p-8 space-y-8 animate-fade-in-up pb-12">
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
                 <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
                     <Settings className="h-6 w-6 text-primary" /> Security & Preferences
@@ -111,7 +111,7 @@ export default function DonorSettingsPage() {
                         <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900">
                             <KeyRound className="h-5 w-5 text-primary/60" /> Portal Password
                         </CardTitle>
-                        <CardDescription className="text-xs font-medium">Update your secure entry password for the donor portal.</CardDescription>
+                        <CardDescription className="text-xs font-medium">Update your secure entry password for the beneficiary portal.</CardDescription>
                     </CardHeader>
                     <CardContent className="pt-8">
                         <form onSubmit={handlePasswordUpdate} className="space-y-6">
@@ -176,7 +176,7 @@ export default function DonorSettingsPage() {
                                     </div>
                                     <div className="space-y-0.5">
                                         <p className="text-xs font-bold text-slate-800">WhatsApp Updates</p>
-                                        <p className="text-[10px] text-slate-400">Transaction receipts & verifications</p>
+                                        <p className="text-[10px] text-slate-400">Transaction notifications & verifications</p>
                                     </div>
                                 </div>
                                 {config?.enableWhatsAppNotifications !== false ? (

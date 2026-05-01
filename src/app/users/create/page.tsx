@@ -113,6 +113,29 @@ export default function CreateUserPage() {
         }
     }
 
+    // Step 2b: Handle Aadhaar Proof Upload
+    let aadhaarProofUrl = '';
+    const aadhaarFileList = data.aadhaarProofFile as FileList | undefined;
+    if (aadhaarFileList && aadhaarFileList.length > 0 && storage) {
+        try {
+            const file = aadhaarFileList[0];
+            let fileToUpload: Blob | File = file;
+            
+            if (file.type.startsWith('image/')) {
+                fileToUpload = await new Promise<Blob>((resolve) => {
+                     (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => resolve(blob as Blob), 'blob');
+                });
+            }
+            
+            const filePath = `users/${newUserUid}/aadhaar_proof.png`;
+            const fileRef = storageRef(storage, filePath);
+            await uploadBytes(fileRef, fileToUpload);
+            aadhaarProofUrl = await getDownloadURL(fileRef);
+        } catch (aadhaarError: any) {
+            console.error("Error during Aadhaar upload on create:", aadhaarError);
+        }
+    }
+
     setProgress(85);
     setLoadingMessage('Synchronizing Permissions & Lookup Maps...');
 
@@ -130,10 +153,26 @@ export default function CreateUserPage() {
         userKey: data.userKey,
         role: data.role,
         status: data.status,
+        gender: data.gender,
+        dob: data.dob,
+        address: data.address,
+        panNumber: data.panNumber,
         permissions: data.permissions,
         idProofType: data.idProofType,
         idNumber: data.idNumber,
         idProofUrl,
+        aadhaarNumber: data.aadhaarNumber,
+        aadhaarName: data.aadhaarName,
+        aadhaarDob: data.aadhaarDob,
+        aadhaarGender: data.aadhaarGender,
+        aadhaarAddress: data.aadhaarAddress,
+        aadhaarProofUrl,
+        familyDetails: data.familyDetails,
+        bankDetails: data.bankDetails,
+        upiIds: data.upiIds,
+        telegramChatId: data.telegramChatId || '',
+        notificationsEnabled: data.notificationsEnabled ?? true,
+        whatsappNotificationsEnabled: data.whatsappNotificationsEnabled ?? true,
         password: data.password,
         organizationGroup: data.organizationGroup === 'none' ? null : data.organizationGroup,
         organizationRole: data.organizationRole,
@@ -148,6 +187,10 @@ export default function CreateUserPage() {
         name: data.name,
         phone: data.phone || '',
         email: data.email || '',
+        gender: data.gender || '',
+        dob: data.dob || '',
+        address: data.address || '',
+        panNumber: data.panNumber || '',
         status: data.status === 'Active' ? 'Active' : 'Inactive',
         createdAt: serverTimestamp(),
         createdById: userProfile?.id || 'system',

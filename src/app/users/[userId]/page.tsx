@@ -187,6 +187,45 @@ export default function UserDetailsPage() {
          return;
     }
 
+    // Step 2b: Handle Aadhaar Proof Upload
+    let aadhaarProofUrl = user?.aadhaarProofUrl || '';
+    const aadhaarFileList = data.aadhaarProofFile as FileList | undefined;
+    const hasAadhaarFileToUpload = aadhaarFileList && aadhaarFileList.length > 0;
+
+    if (hasAadhaarFileToUpload) {
+        try {
+            const file = aadhaarFileList[0];
+            let fileToUpload: Blob | File = file;
+            
+            if (aadhaarProofUrl) {
+                const fileRefToDelete = storageRef(storage, aadhaarProofUrl);
+                await deleteObject(fileRefToDelete).catch((err: any) => {
+                    if ((err.code !== 'storage/object-not-found')) console.warn("Old Aadhaar proof deletion failed:", err);
+                });
+            }
+
+            fileToUpload = await new Promise<Blob>((resolve) => {
+                (Resizer as any).imageFileResizer(file, 1024, 1024, 'PNG', 100, 0, (blob: any) => {
+                    resolve(blob as Blob);
+                }, 'blob');
+            });
+            
+            const filePath = `users/${userId}/aadhaar_proof.png`;
+            const fileRef = storageRef(storage, filePath);
+            const uploadResult = await uploadBytes(fileRef, fileToUpload);
+            aadhaarProofUrl = await getDownloadURL(uploadResult.ref);
+        } catch (aadhaarError: any) {
+            console.error("Error during Aadhaar upload:", aadhaarError);
+            toast({ 
+                title: 'Aadhaar Upload Error', 
+                description: `Could not upload Aadhaar artifact: ${aadhaarError.message}.`, 
+                variant: 'destructive',
+            });
+            setIsSubmitting(false);
+            return;
+        }
+    }
+
     // Step 3: Update Firestore documents in a batch (User + Linked Donor Profile)
     const batch = writeBatch(firestore);
     const docRef = doc(firestore, 'users', userId);
@@ -198,10 +237,23 @@ export default function UserDetailsPage() {
         phone: data.phone,
         role: data.role,
         status: data.status,
+        gender: data.gender,
+        dob: data.dob,
+        address: data.address,
+        panNumber: data.panNumber,
         permissions: permissionsToSave,
         idProofType: data.idProofType,
         idNumber: data.idNumber,
         idProofUrl,
+        aadhaarNumber: data.aadhaarNumber,
+        aadhaarName: data.aadhaarName,
+        aadhaarDob: data.aadhaarDob,
+        aadhaarGender: data.aadhaarGender,
+        aadhaarAddress: data.aadhaarAddress,
+        aadhaarProofUrl,
+        familyDetails: data.familyDetails,
+        bankDetails: data.bankDetails,
+        upiIds: data.upiIds,
         telegramChatId: data.telegramChatId || '',
         notificationsEnabled: data.notificationsEnabled ?? true,
         whatsappNotificationsEnabled: data.whatsappNotificationsEnabled ?? true,

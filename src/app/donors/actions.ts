@@ -17,64 +17,70 @@ export async function createDonorAction(data: Partial<Donor>, createdBy: {id: st
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        if (data.phone && data.phone.trim().length >= 10) {
-            const phoneStr = data.phone.trim();
-            // Check in donors
-            const existingQuery = await adminDb.collection('donors').where('phone', '==', phoneStr).limit(1).get();
-            if (!existingQuery.empty) {
-                const existingDonor = existingQuery.docs[0];
-                return { 
-                    success: false, 
-                    message: `A verified profile for '${existingDonor.data().name}' already exists with this phone number in the Donor Registry.`,
-                    id: existingDonor.id
-                };
-            }
-
-            // Check in users
-            const existingUserQuery = await adminDb.collection('users').where('phone', '==', phoneStr).limit(1).get();
-            if (!existingUserQuery.empty) {
-                const existingUser = existingUserQuery.docs[0];
-                const existingUserData = existingUser.data();
-                
-                const docRef = adminDb.collection('donors').doc(existingUser.id);
-                await docRef.set({
-                    ...data,
-                    id: existingUser.id,
-                    name: existingUserData.name || data.name,
-                    email: existingUserData.email || data.email || '',
-                    status: data.status || 'Active',
-                    createdAt: FieldValue.serverTimestamp(),
-                    createdById: createdBy.id,
-                    createdByName: createdBy.name,
-                }, { merge: true });
-
-                revalidatePath('/donors');
-                return { 
-                    success: true, 
-                    message: `Linked to existing User Profile for '${existingUserData.name}'.`, 
-                    id: existingUser.id 
-                };
-            }
+        const cleanPhone = data.phone?.trim().replace(/\D/g, '').slice(-10) || '';
+        
+        if (cleanPhone.length !== 10) {
+            return { success: false, message: "A valid 10-digit mobile number is required for registration." };
         }
 
+        // Check for existing records using the cleaned phone
+        const lookupRef = adminDb.collection('user_lookups').doc(cleanPhone);
+        const lookupSnap = await lookupRef.get();
+        
+        if (lookupSnap.exists) {
+            const lookupData = lookupSnap.data();
+            return { 
+                success: false, 
+                message: `An identity for '${lookupData?.name || 'User'}' already exists with this phone number.`,
+                id: lookupData?.userKey
+            };
+        }
+
+        const batch = adminDb.batch();
         const docRef = adminDb.collection('donors').doc();
-        await docRef.set({
+        const profileId = docRef.id;
+
+        const donorData = {
             ...data,
-            id: docRef.id,
+            id: profileId,
+            phone: cleanPhone,
             status: data.status || 'Active',
             createdAt: FieldValue.serverTimestamp(),
             createdById: createdBy.id,
             createdByName: createdBy.name,
+            password: data.password || 'password', // Default password as requested
+        };
+
+        batch.set(docRef, donorData);
+
+        // Mirror to 'users' collection for session management
+        batch.set(adminDb.collection('users').doc(profileId), {
+            ...donorData,
+            role: 'Donor',
+            loginId: cleanPhone,
+            userKey: profileId,
+            permissions: {},
         });
+
+        // Register in 'user_lookups'
+        batch.set(lookupRef, {
+            userKey: profileId,
+            role: 'Donor',
+            phone: cleanPhone,
+            name: data.name
+        });
+
+        await batch.commit();
 
         revalidatePath('/donors');
         revalidatePath('/donations');
-        return { success: true, message: 'Donor Profile Registered Successfully.', id: docRef.id };
+        return { success: true, message: 'Donor Profile Registered & Identity Synchronized.', id: profileId };
     } catch (error: any) {
         console.error("Error Creating Donor:", error);
         return { success: false, message: `Registration Failed: ${error.message}` };
     }
 }
+
 
 export async function updateDonorAction(donorId: string, data: Partial<Donor>, updatedBy: {id: string, name: string}): Promise<{ success: boolean; message: string }> {
     const { adminDb } = getAdminServices();
@@ -85,6 +91,9 @@ export async function updateDonorAction(donorId: string, data: Partial<Donor>, u
         const oldSnap = await docRef.get();
         const oldData = oldSnap.exists ? oldSnap.data() : {};
 
+        const cleanPhone = data.phone?.trim().replace(/\D/g, '').slice(-10);
+        const oldPhone = oldData?.phone?.trim().replace(/\D/g, '').slice(-10);
+
         const updatePayload: any = {
             ...data,
             updatedAt: FieldValue.serverTimestamp(),
@@ -92,7 +101,37 @@ export async function updateDonorAction(donorId: string, data: Partial<Donor>, u
             updatedByName: updatedBy.name,
         };
 
-        await docRef.update(updatePayload);
+        if (cleanPhone) updatePayload.phone = cleanPhone;
+
+        const batch = adminDb.batch();
+        batch.set(docRef, updatePayload, { merge: true });
+
+        // Update Mirrored User
+        batch.set(adminDb.collection('users').doc(donorId), {
+            ...updatePayload,
+            loginId: cleanPhone || oldPhone,
+            role: 'Donor'
+        }, { merge: true });
+
+        // Handle Lookup Synchronization
+        if (cleanPhone && cleanPhone !== oldPhone) {
+            if (oldPhone) batch.delete(adminDb.collection('user_lookups').doc(oldPhone));
+            batch.set(adminDb.collection('user_lookups').doc(cleanPhone), {
+                userKey: donorId,
+                role: 'Donor',
+                phone: cleanPhone,
+                name: data.name || oldData.name
+            });
+        } else if (cleanPhone && !oldPhone) {
+             batch.set(adminDb.collection('user_lookups').doc(cleanPhone), {
+                userKey: donorId,
+                role: 'Donor',
+                phone: cleanPhone,
+                name: data.name || oldData.name
+            });
+        }
+
+        await batch.commit();
 
         // Log Audit
         const changes = generateChanges(oldData, updatePayload);
@@ -110,12 +149,13 @@ export async function updateDonorAction(donorId: string, data: Partial<Donor>, u
 
         revalidatePath(`/donors/${donorId}`);
         revalidatePath('/donors');
-        return { success: true, message: 'Donor Profile Updated Successfully.' };
+        return { success: true, message: 'Donor Profile Synchronized System-Wide.' };
     } catch (error: any) {
         console.error("Error Updating Donor:", error);
         return { success: false, message: `Update Failed: ${error.message}` };
     }
 }
+
 
 /**
  * Removes a donor profile after safely unlinking all associated donations.

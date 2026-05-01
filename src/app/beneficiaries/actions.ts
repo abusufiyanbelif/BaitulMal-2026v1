@@ -13,70 +13,74 @@ const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure 
 
 export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, createdBy: {id: string, name: string}): Promise<{ success: boolean; message: string; id?: string }> {
     const { adminDb } = getAdminServices();
-    if (!adminDb) {
-        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
-    }
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    
     try {
-        if (data.phone && data.phone.trim().length >= 10) {
-            const phoneStr = data.phone.trim();
-            // Check in beneficiaries
-            const existingQuery = await adminDb.collection('beneficiaries').where('phone', '==', phoneStr).limit(1).get();
-            if (!existingQuery.empty) {
-                const existingBen = existingQuery.docs[0];
-                return { 
-                    success: false, 
-                    message: `A beneficiary profile for '${existingBen.data().name}' already exists with this phone number.`,
-                    id: existingBen.id
-                };
-            }
-
-            // Check in users
-            const existingUserQuery = await adminDb.collection('users').where('phone', '==', phoneStr).limit(1).get();
-            if (!existingUserQuery.empty) {
-                const existingUser = existingUserQuery.docs[0];
-                const existingUserData = existingUser.data();
-                
-                const docRef = adminDb.collection('beneficiaries').doc(existingUser.id);
-                await docRef.set({
-                    ...data,
-                    id: existingUser.id,
-                    name: existingUserData.name || data.name,
-                    email: existingUserData.email || data.email || '',
-                    status: data.status || 'Pending',
-                    addedDate: data.addedDate || new Date().toISOString().split('T')[0],
-                    createdAt: FieldValue.serverTimestamp(),
-                    createdById: createdBy.id,
-                    createdByName: createdBy.name,
-                    beneficiaryKey: existingUserData.userKey || `BEN-${existingUser.id.slice(0, 5).toUpperCase()}`,
-                }, { merge: true });
-
-                revalidatePath('/beneficiaries');
-                return { 
-                    success: true, 
-                    message: `Linked to existing User Profile for '${existingUserData.name}'.`, 
-                    id: existingUser.id 
-                };
-            }
+        const cleanPhone = data.phone?.trim().replace(/\D/g, '').slice(-10) || '';
+        
+        if (cleanPhone.length !== 10) {
+            return { success: false, message: "A valid 10-digit mobile number is required for registration." };
         }
 
+        // Check for existing records using the cleaned phone
+        const lookupRef = adminDb.collection('user_lookups').doc(cleanPhone);
+        const lookupSnap = await lookupRef.get();
+        
+        if (lookupSnap.exists) {
+            const lookupData = lookupSnap.data();
+            return { 
+                success: false, 
+                message: `An identity for '${lookupData?.name || 'User'}' already exists with this phone number.`,
+                id: lookupData?.userKey
+            };
+        }
+
+        const batch = adminDb.batch();
         const docRef = adminDb.collection('beneficiaries').doc();
-        await docRef.set({
+        const profileId = docRef.id;
+
+        const beneficiaryData = {
             ...data,
-            id: docRef.id,
+            id: profileId,
+            phone: cleanPhone,
             status: data.status || 'Pending',
             addedDate: data.addedDate || new Date().toISOString().split('T')[0],
             createdAt: FieldValue.serverTimestamp(),
             createdById: createdBy.id,
             createdByName: createdBy.name,
+            password: data.password || 'password', // Default password as requested
+            beneficiaryKey: `BEN-${profileId.slice(0, 5).toUpperCase()}`,
+        };
+
+        batch.set(docRef, beneficiaryData);
+
+        // Mirror to 'users' collection for session management
+        batch.set(adminDb.collection('users').doc(profileId), {
+            ...beneficiaryData,
+            role: 'Beneficiary',
+            loginId: cleanPhone,
+            userKey: profileId,
+            permissions: {},
         });
 
+        // Register in 'user_lookups'
+        batch.set(lookupRef, {
+            userKey: profileId,
+            role: 'Beneficiary',
+            phone: cleanPhone,
+            name: data.name
+        });
+
+        await batch.commit();
+
         revalidatePath('/beneficiaries');
-        return { success: true, message: 'Beneficiary Record Registered Successfully.', id: docRef.id };
+        return { success: true, message: 'Beneficiary Record Registered & Identity Synchronized.', id: profileId };
     } catch (error: any) {
         console.error("Error Creating Beneficiary:", error);
         return { success: false, message: `Registration Failed: ${error.message}` };
     }
 }
+
 
 export async function updateMasterBeneficiaryAction(
     beneficiaryId: string, 
@@ -84,13 +88,15 @@ export async function updateMasterBeneficiaryAction(
     updatedBy: {id: string, name: string}
 ): Promise<{ success: boolean; message: string }> {
     const { adminDb } = getAdminServices();
-    if (!adminDb) {
-        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
-    }
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+    
     try {
         const masterBeneficiaryRef = adminDb.collection('beneficiaries').doc(beneficiaryId);
         const oldSnap = await masterBeneficiaryRef.get();
         const oldData = oldSnap.exists ? oldSnap.data() : {};
+
+        const cleanPhone = data.phone?.trim().replace(/\D/g, '').slice(-10);
+        const oldPhone = oldData?.phone?.trim().replace(/\D/g, '').slice(-10);
 
         const { zakatAllocation, kitAmount, status, ...masterData } = data;
         
@@ -101,11 +107,40 @@ export async function updateMasterBeneficiaryAction(
             updatedByName: updatedBy.name,
         };
 
-        if (status) {
-            updatePayload.status = status;
+        if (cleanPhone) updatePayload.phone = cleanPhone;
+        if (status) updatePayload.status = status;
+
+        const batch = adminDb.batch();
+        batch.set(masterBeneficiaryRef, updatePayload, { merge: true });
+
+        // Update Mirrored User
+        batch.set(adminDb.collection('users').doc(beneficiaryId), {
+            ...updatePayload,
+            loginId: cleanPhone || oldPhone,
+            role: 'Beneficiary'
+        }, { merge: true });
+
+        // Handle Lookup Synchronization
+        if (cleanPhone && cleanPhone !== oldPhone) {
+            // Delete old lookup if it exists
+            if (oldPhone) batch.delete(adminDb.collection('user_lookups').doc(oldPhone));
+            // Create new lookup
+            batch.set(adminDb.collection('user_lookups').doc(cleanPhone), {
+                userKey: beneficiaryId,
+                role: 'Beneficiary',
+                phone: cleanPhone,
+                name: data.name || oldData.name
+            });
+        } else if (cleanPhone && !oldPhone) {
+             batch.set(adminDb.collection('user_lookups').doc(cleanPhone), {
+                userKey: beneficiaryId,
+                role: 'Beneficiary',
+                phone: cleanPhone,
+                name: data.name || oldData.name
+            });
         }
 
-        await masterBeneficiaryRef.set(updatePayload, { merge: true });
+        await batch.commit();
         
         // Log Audit
         const changes = generateChanges(oldData, updatePayload);
@@ -123,15 +158,13 @@ export async function updateMasterBeneficiaryAction(
 
         revalidatePath(`/beneficiaries/${beneficiaryId}`);
         revalidatePath('/beneficiaries');
-        revalidatePath('/campaign-members', 'layout');
-        revalidatePath('/leads-members', 'layout');
-
-        return { success: true, message: `Beneficiary Master Record Synchronized.` };
+        return { success: true, message: `Beneficiary Master Record Synchronized System-Wide.` };
     } catch (error: any) {
         console.error("Error Updating Master Beneficiary:", error);
         return { success: false, message: `Update Failed: ${error.message}` };
     }
 }
+
 
 /**
  * Robust server-side action to upsert a beneficiary within an initiative context.
