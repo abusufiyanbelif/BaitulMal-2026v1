@@ -1,7 +1,7 @@
 # 📘 User Guide: /campaign-members/[campaignId]/donations/[donationId]
     
 **Build Version:** `2026.05.02.18`
-**Last Updated:** 2/5/2026, 6:50:56 pm
+**Last Updated:** 2/5/2026, 8:35:11 pm
 **Internal Route:** `/campaign-members/[campaignId]/donations/[donationId]`
 
 ---

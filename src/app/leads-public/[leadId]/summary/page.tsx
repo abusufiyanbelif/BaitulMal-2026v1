@@ -45,6 +45,8 @@ import {
     HeartPulse,
     Info,
     ShieldCheck,
+    ChevronRight,
+    Calendar,
     HeartHandshake
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';

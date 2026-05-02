@@ -31,6 +31,7 @@ import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import registryData from '@/lib/registry-index.json';
+import versionData from '@/lib/version.json';
 import { cn } from '@/lib/utils';
 
 // Purpose: Administrative Registry Index and Navigational Map
@@ -361,11 +362,11 @@ export default function RegistryIndexPage() {
                         </div>
                         
                         <div className="flex items-center gap-6">
-                            <Badge variant="ghost" className="text-[9px] font-black text-slate-400 hover:text-emerald-600 transition-colors">v2026.05.02.16</Badge>
+                            <Badge variant="outline" className="border-none shadow-none bg-transparent text-[9px] font-black text-slate-400 hover:text-emerald-600 transition-colors">v{versionData.version}</Badge>
                             <span className="text-slate-200">|</span>
-                            <Badge variant="ghost" className="text-[9px] font-black text-slate-400 hover:text-emerald-600 transition-colors">Audit Trail Verified</Badge>
+                            <Badge variant="outline" className="border-none shadow-none bg-transparent text-[9px] font-black text-slate-400 hover:text-emerald-600 transition-colors">Audit Trail Verified</Badge>
                             <span className="text-slate-200">|</span>
-                            <Badge variant="ghost" className="text-[9px] font-black text-slate-400 hover:text-emerald-600 transition-colors">Encryption Level 4</Badge>
+                            <Badge variant="outline" className="border-none shadow-none bg-transparent text-[9px] font-black text-slate-400 hover:text-emerald-600 transition-colors">Encryption Level 4</Badge>
                         </div>
                     </div>
                 </footer>
