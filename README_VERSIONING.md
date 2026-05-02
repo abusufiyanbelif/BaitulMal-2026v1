@@ -12,8 +12,17 @@ This document outlines the automated and manual workflows for tracking applicati
 | `scripts/generate-architecture.js` | **Architecture Mapper**: Maps Firestore collections to application modules. |
 | `src/lib/version.json` | **Version Truth**: The single source of truth for the current application build. |
 | `commit-summary.txt` | **Commit Template**: Automated git commit message generated on every publish. |
+| `build-error.log` | **Error Trace**: Persistent log of the most recent build failure for agent debugging. |
 | `docs/releases/` | **Release Ledger**: Standalone build-specific release documents. |
 | `docs/history/` | **Historical Archive**: Date-stamped backups of all previous documentation. |
+
+## 🤖 Agent Debugging & Build Loops
+
+The system is optimized for iterative fixing. If a build fails:
+1.  **Detection**: The `build-wrapper.js` captures the failure and writes it to `build-error.log`.
+2.  **Analysis**: The Agent (or Human) should read `build-error.log` to identify the specific error.
+3.  **Remediation**: Apply the necessary fix.
+4.  **Verification**: Run `npm run build` again. If successful, `build-error.log` is automatically deleted, and the documentation suite is refreshed.
 
 ---
 

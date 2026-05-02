@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && npm run docs:generate",
+    "build": "node scripts/build-wrapper.js",
     "docs:generate": "node scripts/generate-index.js && node scripts/generate-user-guides.js && node scripts/generate-architecture.js && node scripts/update-build-summary.js",
     "publish": "node scripts/publish.js",
     "start": "next start",
