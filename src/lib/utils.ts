@@ -75,7 +75,7 @@ export function formatCurrency(amount: number | null | undefined): string {
 /**
  * Formats A Date String Or Object Into An Institutional Standard Display.
  */
-export function formatDate(dateInput: Date | string | null | undefined, options?: Intl.DateTimeFormatOptions): string {
+export function formatDate(dateInput: any, options?: Intl.DateTimeFormatOptions): string {
     if (!dateInput) return 'N/A';
     
     let date: Date;

@@ -28,7 +28,7 @@ export function initializeFirebase() {
         // Modern v10 way to enable persistence with multi-tab support
         firestoreInstance = initializeFirestore(app, {
           localCache: persistentLocalCache({
-            tabManager: persistentSingleTabManager()
+            tabManager: persistentSingleTabManager({})
           })
         });
         console.log('Firestore Persistence Initialized (v10)');
