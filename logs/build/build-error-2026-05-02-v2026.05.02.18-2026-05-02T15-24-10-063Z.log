@@ -1,0 +1,461 @@
+BUILD FAILURE LOG - 2/5/2026, 8:54:52 pm
+Version: 2026.05.02.18
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/86) ...
+   Generating static pages (21/86) 
+   Generating static pages (42/86) 
+   Generating static pages (64/86) 
+ ✓ Generating static pages (86/86)
+
+
+STDERR:
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/scan-aadhaar.ts
+./src/app/api/scan-aadhaar/route.ts
+
+ ⚠ Using edge runtime on a page currently disables static generation for that page
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/campaign-public". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/campaign-public". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/donate". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/donate". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/info/guidance". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/info/guidance". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/info/members". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/info/members". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/info/donation-info". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/info/donation-info". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/info/guiding-principles". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/info/guiding-principles". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/info/organization". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/info/organization". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/login". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/login". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/leads-public". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/leads-public". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/portal-login". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/portal-login". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/portal-register". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/portal-register". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/seed". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/seed". Read more: https://nextjs.org/docs/messages/prerender-error
+
+
+> Export encountered errors on following paths:
+	/campaign-public/page: /campaign-public
+	/donate/page: /donate
+	/info/donation-info/page: /info/donation-info
+	/info/guidance/page: /info/guidance
+	/info/guiding-principles/page: /info/guiding-principles
+	/info/members/page: /info/members
+	/info/organization/page: /info/organization
+	/leads-public/page: /leads-public
+	/login/page: /login
+	/page: /
+	/portal-login/page: /portal-login
+	/portal-register/page: /portal-register
+	/seed/page: /seed
+
+
+ERROR MESSAGE:
+Command failed: next build
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/scan-aadhaar.ts
+./src/app/api/scan-aadhaar/route.ts
+
+ ⚠ Using edge runtime on a page currently disables static generation for that page
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/campaign-public". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/campaign-public". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/donate". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/donate". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/info/guidance". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/info/guidance". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/info/members". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/info/members". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/info/donation-info". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/info/donation-info". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/info/guiding-principles". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/info/guiding-principles". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/info/organization". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/info/organization". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/login". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/login". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/leads-public". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/leads-public". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/portal-login". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/portal-login". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/portal-register". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/portal-register". Read more: https://nextjs.org/docs/messages/prerender-error
+
+ ⨯ useSearchParams() should be wrapped in a suspense boundary at page "/seed". Read more: https://nextjs.org/docs/messages/missing-suspense-with-csr-bailout
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:232712)
+    at c (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\9095.js:3:243734)
+    at r (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\chunks\7269.js:1:47575)
+    at nj (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:46252)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:47572)
+    at nM (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:61547)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64547)
+    at nB (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:67539)
+    at nD (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:66681)
+    at nL (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:64854)
+
+Error occurred prerendering page "/seed". Read more: https://nextjs.org/docs/messages/prerender-error
+
+
+> Export encountered errors on following paths:
+	/campaign-public/page: /campaign-public
+	/donate/page: /donate
+	/info/donation-info/page: /info/donation-info
+	/info/guidance/page: /info/guidance
+	/info/guiding-principles/page: /info/guiding-principles
+	/info/members/page: /info/members
+	/info/organization/page: /info/organization
+	/leads-public/page: /leads-public
+	/login/page: /login
+	/page: /
+	/portal-login/page: /portal-login
+	/portal-register/page: /portal-register
+	/seed/page: /seed

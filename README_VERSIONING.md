@@ -12,9 +12,10 @@ This document outlines the automated and manual workflows for tracking applicati
 | `scripts/generate-architecture.js` | **Architecture Mapper**: Maps Firestore collections to application modules. |
 | `src/lib/version.json` | **Version Truth**: The single source of truth for the current application build. |
 | `commit-summary.txt` | **Commit Template**: Automated git commit message generated on every publish. |
-| `build-error.log` | **Error Trace**: Persistent log of the most recent build failure for agent debugging. |
-| `docs/releases/` | **Release Ledger**: Standalone build-specific release documents. |
-| `docs/history/` | **Historical Archive**: Date-stamped backups of all previous documentation. |
+| `logs/build/` | **Build Archive**: Persistent, versioned logs of every success and failure. |
+| `logs/runtime/` | **Operational Trace**: Daily rotating logs of user activity and system errors. |
+| `src/lib/logger.ts` | **Logging Core**: Winston-based engine for backend and server error tracking. |
+| `src/hooks/use-logger.ts` | **Telemetry Hook**: Client-side hook for component-level event logging. |
 
 ## 🤖 Agent Debugging & Build Loops
 

@@ -1,0 +1,85 @@
+BUILD FAILURE LOG - 2/5/2026, 8:53:58 pm
+Version: 2026.05.02.18
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-education-story.ts
+./src/app/api/create-education-story/route.ts
+
+Failed to compile.
+
+./src/hooks/use-logger.ts:30:18
+Type error: Cannot find name 'session'.
+
+[0m [90m 28 |[39m             console[33m.[39merror([32m'Logging failed:'[39m[33m,[39m e)[33m;[39m[0m
+[0m [90m 29 |[39m         }[0m
+[0m[31m[1m>[22m[39m[90m 30 |[39m     }[33m,[39m [profile[33m,[39m session])[33m;[39m[0m
+[0m [90m    |[39m                  [31m[1m^[22m[39m[0m
+[0m [90m 31 |[39m[0m
+[0m [90m 32 |[39m     [36mreturn[39m {[0m
+[0m [90m 33 |[39m         info[33m:[39m (msg[33m:[39m string[33m,[39m meta[33m?[39m[33m:[39m any) [33m=>[39m log([32m'info'[39m[33m,[39m msg[33m,[39m meta)[33m,[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: next build
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-education-story.ts
+./src/app/api/create-education-story/route.ts
+
+Failed to compile.
+
+./src/hooks/use-logger.ts:30:18
+Type error: Cannot find name 'session'.
+
+[0m [90m 28 |[39m             console[33m.[39merror([32m'Logging failed:'[39m[33m,[39m e)[33m;[39m[0m
+[0m [90m 29 |[39m         }[0m
+[0m[31m[1m>[22m[39m[90m 30 |[39m     }[33m,[39m [profile[33m,[39m session])[33m;[39m[0m
+[0m [90m    |[39m                  [31m[1m^[22m[39m[0m
+[0m [90m 31 |[39m[0m
+[0m [90m 32 |[39m     [36mreturn[39m {[0m
+[0m [90m 33 |[39m         info[33m:[39m (msg[33m:[39m string[33m,[39m meta[33m?[39m[33m:[39m any) [33m=>[39m log([32m'info'[39m[33m,[39m msg[33m,[39m meta)[33m,[39m[0m
+Next.js build worker exited with code: 1 and signal: null

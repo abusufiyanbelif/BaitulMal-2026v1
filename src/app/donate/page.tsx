@@ -1,4 +1,6 @@
 'use client';
+
+import React, { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useFirestore, useMemoFirebase, useDoc } from '@/firebase';
 import { doc, type DocumentReference } from 'firebase/firestore';
@@ -9,11 +11,10 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Landmark, Verified, ShieldCheck, ChevronRight } from 'lucide-react';
 import { useBranding } from '@/hooks/use-branding';
-import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
+import { Card } from '@/components/ui/card';
 
-export default function PublicDonatePage() {
+function DonationContent() {
     const searchParams = useSearchParams();
     const campaignId = searchParams.get('campaignId') || undefined;
     const leadId = searchParams.get('leadId') || undefined;
@@ -94,7 +95,7 @@ export default function PublicDonatePage() {
                                 <h3 className="text-xs font-bold text-primary uppercase tracking-widest opacity-60">Donor Verification</h3>
                                 <p className="text-xs leading-relaxed text-muted-foreground font-normal">After submitting, our finance team will verify the Transaction ID against our bank statement. Once confirmed, you will receive an official digital receipt.</p>
                                 <Button variant="link" asChild className="p-0 h-auto font-bold text-primary hover:no-underline underline-offset-4 decoration-primary/20 hover:decoration-primary">
-                                    <Link href="/guidance">View Guiding Principles <ChevronRight className="ml-1 h-3 w-3" /></Link>
+                                    <Link href="/info/guidance">View Guiding Principles <ChevronRight className="ml-1 h-3 w-3" /></Link>
                                 </Button>
                             </div>
                         </div>
@@ -102,10 +103,18 @@ export default function PublicDonatePage() {
 
                     <div className="p-6 rounded-2xl border border-dashed border-primary/20 text-center space-y-2 opacity-60">
                         <p className="text-[10px] font-bold uppercase tracking-widest">Questions or Support?</p>
-                        <p className="text-xs font-bold text-primary">Contact: {brandingSettings?.name || 'Trust Office'}</p>
+                        <p className="text-sm font-bold text-primary">Contact: {brandingSettings?.name || 'Trust Office'}</p>
                     </div>
                 </div>
             </div>
         </main>
+    );
+}
+
+export default function PublicDonatePage() {
+    return (
+        <Suspense fallback={<BrandedLoader message="Initializing Secure Environment..." />}>
+            <DonationContent />
+        </Suspense>
     );
 }

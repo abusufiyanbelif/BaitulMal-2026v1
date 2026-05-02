@@ -1,5 +1,4 @@
 
-
 'use client';
 import {
   signInWithEmailAndPassword,
@@ -11,6 +10,17 @@ import {
   getDoc,
   type Firestore,
 } from 'firebase/firestore';
+
+// Helper to set cookie
+const setAuthCookie = async (user: any) => {
+    if (!user) {
+        document.cookie = "auth-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 UTC;";
+        return;
+    }
+    const token = await user.getIdToken();
+    const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toUTCString();
+    document.cookie = `auth-token=${token}; path=/; expires=${expires}; SameSite=Strict`;
+};
 
 export const signInWithLoginId = async (auth: Auth, firestore: Firestore, loginId: string, password?: string) => {
     // Sanitize loginId: if it's a 10-digit number, prefix with +91 for standardized lookup
@@ -52,6 +62,7 @@ export const signInWithLoginId = async (auth: Auth, firestore: Firestore, loginI
         }
 
         const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        await setAuthCookie(userCredential.user);
 
         // Post-login check to ensure the user is active with latency retry mechanism.
         const userDocRef = doc(firestore, 'users', userCredential.user.uid);
@@ -103,5 +114,6 @@ export const signInWithLoginId = async (auth: Auth, firestore: Firestore, loginI
 };
 
 export const signOut = async (auth: Auth) => {
+  await setAuthCookie(null);
   return firebaseSignOut(auth);
 };

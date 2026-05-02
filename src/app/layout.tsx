@@ -35,6 +35,8 @@ export const viewport: Viewport = {
 };
 
 
+import { ActivityLogger } from '@/components/activity-logger';
+
 export default function RootLayout({
   children,
 }: {
@@ -43,7 +45,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning className={`${inter.variable} ${spaceGrotesk.variable}`}>
       <body>
-        <Providers>{children}</Providers>
+        <Providers>
+          <ActivityLogger />
+          {children}
+        </Providers>
       </body>
     </html>
   );

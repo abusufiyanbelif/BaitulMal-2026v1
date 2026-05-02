@@ -1,7 +1,7 @@
 # 🏗️ Institutional Data Architecture
 
 **Build Version:** `2026.05.02.18`
-**Last Updated:** 2/5/2026, 8:38:34 pm
+**Last Updated:** 3/5/2026, 1:06:26 am
 
 Mapping between Application Modules and Firestore Collections.
 
@@ -72,3 +72,4 @@ Mapping between Application Modules and Firestore Collections.
 | `app\verifications\actions.ts` | `donors` | Read/Write |
 | `app\verifications\actions.ts` | `beneficiaries` | Read/Write |
 | `app\verifications\actions.ts` | `user_lookups` | Read/Write |
+| `lib\auth-server.ts` | `users` | Read-Only |

@@ -2,42 +2,50 @@ const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
 
-const LOG_FILE = path.join(__dirname, '../build-error.log');
+const LOGS_DIR = path.join(__dirname, '../logs/build');
+const VERSION_FILE = path.join(__dirname, '../src/lib/version.json');
 
 function runBuild() {
-    console.log('🚀 Initiating Institutional Build Sequence...');
+    if (!fs.existsSync(LOGS_DIR)) fs.mkdirSync(LOGS_DIR, { recursive: true });
+
+    let version = 'unknown';
+    try {
+        const versionData = JSON.parse(fs.readFileSync(VERSION_FILE, 'utf8'));
+        version = versionData.version;
+    } catch (e) {}
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const date = new Date().toISOString().split('T')[0];
+    
+    console.log(`🚀 Initiating Institutional Build Sequence [v${version}]...`);
     
     try {
-        // Run build. We don't use 'inherit' because we want to capture output on failure
         const output = execSync('next build', { encoding: 'utf8' });
         console.log(output);
         
-        // If success, clean up log
-        if (fs.existsSync(LOG_FILE)) {
-            fs.unlinkSync(LOG_FILE);
-        }
-        console.log('✅ Build Successful.');
+        const successLog = `BUILD SUCCESS LOG - ${new Date().toLocaleString()}\nVersion: ${version}\n\n${output}`;
+        const logPath = path.join(LOGS_DIR, `build-success-${date}-v${version}-${timestamp}.log`);
+        fs.writeFileSync(logPath, successLog);
         
-        // Trigger documentation generation
+        console.log('✅ Build Successful.');
         console.log('🔄 Triggering Automated Documentation Suite...');
         execSync('npm run docs:generate', { stdio: 'inherit' });
         
     } catch (error) {
-        console.error('❌ Build Failed. Logging error details...');
+        console.error('❌ Build Failed.');
         
-        // Extract stderr and stdout from error object
-        const errorLog = `BUILD FAILURE LOG - ${new Date().toLocaleString()}\n\n` + 
+        const errorLog = `BUILD FAILURE LOG - ${new Date().toLocaleString()}\nVersion: ${version}\n\n` + 
                          `STDOUT:\n${error.stdout}\n\n` + 
                          `STDERR:\n${error.stderr}\n\n` + 
                          `ERROR MESSAGE:\n${error.message}`;
         
-        fs.writeFileSync(LOG_FILE, errorLog);
+        const logPath = path.join(LOGS_DIR, `build-error-${date}-v${version}-${timestamp}.log`);
+        fs.writeFileSync(logPath, errorLog);
         
-        // Also print to console so user/agent sees it
         console.error(error.stdout);
         console.error(error.stderr);
         
-        console.log(`\n⚠️ Error details saved to: ${path.basename(LOG_FILE)}`);
+        console.log(`\n⚠️ Error details saved to: logs/build/${path.basename(logPath)}`);
         process.exit(1);
     }
 }

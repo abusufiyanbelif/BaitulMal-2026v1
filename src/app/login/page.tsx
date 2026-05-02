@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,6 +30,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { BrandedLoader } from '@/components/branded-loader';
 
 const loginSchema = z.object({
   loginId: z.string().min(3, 'Login ID or Phone Number is required.'),
@@ -38,7 +39,7 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-export default function LoginPage() {
+function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl');
@@ -51,7 +52,6 @@ export default function LoginPage() {
   const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
   usePageHit('login');
 
-  // State for password reset dialog
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [isSendingReset, setIsSendingReset] = useState(false);
@@ -81,7 +81,6 @@ export default function LoginPage() {
        }
        toast({ title: 'Login successful', description: "Welcome back!", variant: 'success' });
       
-      // Fetch role directly to accelerate explicit routing with latency retry mechanism
       const userDocRef = doc(firestore, 'users', userCredential.user.uid);
       let userDocSnap = null;
       let attempts = 0;
@@ -103,7 +102,6 @@ export default function LoginPage() {
       const userProfile = userDocSnap?.exists() ? userDocSnap.data() : null;
       const isStaff = userProfile?.role === 'Admin' || userProfile?.role === 'User';
 
-      // Redirect to callbackUrl if it exists, otherwise default to role-based dashboard
       if (callbackUrl) {
           router.push(callbackUrl);
       } else {
@@ -137,7 +135,6 @@ export default function LoginPage() {
     };
     try {
         await sendPasswordResetEmail(auth, resetEmail, actionCodeSettings);
-        // Always show success to prevent user enumeration
         toast({
             title: "Password reset email sent",
             description: `If an account exists for ${resetEmail}, you will receive an email with instructions to reset your password.`,
@@ -145,7 +142,6 @@ export default function LoginPage() {
             duration: 9000,
         });
     } catch (error: any) {
-        // Log the actual error for debugging but show a generic success message to the user for security.
         console.error("Password reset error:", error);
         toast({
             title: "Password reset email sent",
@@ -159,7 +155,6 @@ export default function LoginPage() {
         setResetEmail('');
     }
   };
-
 
   const firebaseProjectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
   const authUrl = `https://console.firebase.google.com/project/${firebaseProjectId}/authentication/sign-in-method`;
@@ -339,6 +334,14 @@ export default function LoginPage() {
           </Card>
       </TabsContent>
       </Tabs>
-  </div>
+    </div>
   );
+}
+
+export default function LoginPage() {
+    return (
+        <Suspense fallback={<BrandedLoader message="Synchronizing Auth Protocols..." />}>
+            <LoginContent />
+        </Suspense>
+    );
 }

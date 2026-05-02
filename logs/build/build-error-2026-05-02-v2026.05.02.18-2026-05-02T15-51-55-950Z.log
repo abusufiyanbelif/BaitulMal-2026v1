@@ -1,0 +1,85 @@
+BUILD FAILURE LOG - 2/5/2026, 9:22:33 pm
+Version: 2026.05.02.18
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/scan-aadhaar.ts
+./src/app/api/scan-aadhaar/route.ts
+
+Failed to compile.
+
+./src/app/campaign-public/page.tsx:22:8
+Type error: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+
+[0m [90m 20 |[39m         [33m<[39m[33m/[39m[33mButton[39m[33m>[39m[0m
+[0m [90m 21 |[39m       [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 22 |[39m       [33m<[39m[33mReact[39m[33m.[39m[33mSuspense[39m fallback[33m=[39m{[33m<[39m[33mdiv[39m className[33m=[39m[32m"h-48 flex items-center justify-center font-bold text-slate-400"[39m[33m>[39m[33mLoading[39m [33mCampaigns[39m[33m...[39m[33m<[39m[33m/[39m[33mdiv[39m[33m>[39m}[33m>[39m[0m
+[0m [90m    |[39m        [31m[1m^[22m[39m[0m
+[0m [90m 23 |[39m         [33m<[39m[33mPublicCampaignsView[39m [33m/[39m[33m>[39m[0m
+[0m [90m 24 |[39m       [33m<[39m[33m/[39m[33mReact[39m[33m.[39m[33mSuspense[39m[33m>[39m[0m
+[0m [90m 25 |[39m     [33m<[39m[33m/[39m[33mmain[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: next build
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/scan-aadhaar.ts
+./src/app/api/scan-aadhaar/route.ts
+
+Failed to compile.
+
+./src/app/campaign-public/page.tsx:22:8
+Type error: 'React' refers to a UMD global, but the current file is a module. Consider adding an import instead.
+
+[0m [90m 20 |[39m         [33m<[39m[33m/[39m[33mButton[39m[33m>[39m[0m
+[0m [90m 21 |[39m       [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 22 |[39m       [33m<[39m[33mReact[39m[33m.[39m[33mSuspense[39m fallback[33m=[39m{[33m<[39m[33mdiv[39m className[33m=[39m[32m"h-48 flex items-center justify-center font-bold text-slate-400"[39m[33m>[39m[33mLoading[39m [33mCampaigns[39m[33m...[39m[33m<[39m[33m/[39m[33mdiv[39m[33m>[39m}[33m>[39m[0m
+[0m [90m    |[39m        [31m[1m^[22m[39m[0m
+[0m [90m 23 |[39m         [33m<[39m[33mPublicCampaignsView[39m [33m/[39m[33m>[39m[0m
+[0m [90m 24 |[39m       [33m<[39m[33m/[39m[33mReact[39m[33m.[39m[33mSuspense[39m[33m>[39m[0m
+[0m [90m 25 |[39m     [33m<[39m[33m/[39m[33mmain[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null

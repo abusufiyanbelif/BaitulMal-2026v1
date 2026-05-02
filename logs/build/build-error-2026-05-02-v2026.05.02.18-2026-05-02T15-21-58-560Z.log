@@ -1,0 +1,85 @@
+BUILD FAILURE LOG - 2/5/2026, 8:52:43 pm
+Version: 2026.05.02.18
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/scan-aadhaar.ts
+./src/app/api/scan-aadhaar/route.ts
+
+Failed to compile.
+
+./src/hooks/use-logger.ts:7:13
+Type error: Property 'session' does not exist on type '{ forceRefetch: () => void; user: User | null; userProfile: UserProfile | null; isLoading: boolean; isStaff: boolean; isContributor: boolean; }'.
+
+[0m [90m  5 |[39m[0m
+[0m [90m  6 |[39m [36mexport[39m [36mfunction[39m useLogger() {[0m
+[0m[31m[1m>[22m[39m[90m  7 |[39m     [36mconst[39m { session } [33m=[39m useSession()[33m;[39m[0m
+[0m [90m    |[39m             [31m[1m^[22m[39m[0m
+[0m [90m  8 |[39m     [36mconst[39m profile [33m=[39m session[33m?[39m[33m.[39mrole [33m||[39m [32m'guest'[39m[33m;[39m[0m
+[0m [90m  9 |[39m[0m
+[0m [90m 10 |[39m     [36mconst[39m log [33m=[39m useCallback([36masync[39m (level[33m:[39m [32m'info'[39m [33m|[39m [32m'warn'[39m [33m|[39m [32m'error'[39m[33m,[39m message[33m:[39m string[33m,[39m metadata[33m:[39m any [33m=[39m {}) [33m=>[39m {[0m
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: next build
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/scan-aadhaar.ts
+./src/app/api/scan-aadhaar/route.ts
+
+Failed to compile.
+
+./src/hooks/use-logger.ts:7:13
+Type error: Property 'session' does not exist on type '{ forceRefetch: () => void; user: User | null; userProfile: UserProfile | null; isLoading: boolean; isStaff: boolean; isContributor: boolean; }'.
+
+[0m [90m  5 |[39m[0m
+[0m [90m  6 |[39m [36mexport[39m [36mfunction[39m useLogger() {[0m
+[0m[31m[1m>[22m[39m[90m  7 |[39m     [36mconst[39m { session } [33m=[39m useSession()[33m;[39m[0m
+[0m [90m    |[39m             [31m[1m^[22m[39m[0m
+[0m [90m  8 |[39m     [36mconst[39m profile [33m=[39m session[33m?[39m[33m.[39mrole [33m||[39m [32m'guest'[39m[33m;[39m[0m
+[0m [90m  9 |[39m[0m
+[0m [90m 10 |[39m     [36mconst[39m log [33m=[39m useCallback([36masync[39m (level[33m:[39m [32m'info'[39m [33m|[39m [32m'warn'[39m [33m|[39m [32m'error'[39m[33m,[39m message[33m:[39m string[33m,[39m metadata[33m:[39m any [33m=[39m {}) [33m=>[39m {[0m
+Next.js build worker exited with code: 1 and signal: null

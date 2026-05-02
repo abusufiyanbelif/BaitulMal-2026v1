@@ -1,4 +1,5 @@
 'use client';
+import React, { Suspense } from 'react';
 import { Button } from '@/components/ui/button';
 import { PublicCampaignsView } from '@/components/public-campaigns-view';
 import Link from 'next/link';
@@ -19,7 +20,9 @@ export default function PublicCampaignPage() {
           </Link>
         </Button>
       </div>
-      <PublicCampaignsView />
+      <Suspense fallback={<div className="h-48 flex items-center justify-center font-bold text-slate-400">Loading Campaigns...</div>}>
+        <PublicCampaignsView />
+      </Suspense>
     </main>
   );
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/firebase';
 import { signInWithCustomToken } from 'firebase/auth';
@@ -14,21 +14,19 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { 
     Loader2, 
     ShieldCheck, 
-    Phone, 
-    KeyRound, 
-    ArrowRight, 
     UserCircle2, 
-    SendHorizontal,
-    ShieldQuestion,
+    ArrowRight, 
+    KeyRound, 
     MessageSquare,
-    Unlock
+    ShieldQuestion
 } from 'lucide-react';
 import { useBranding } from '@/hooks/use-branding';
 import Link from 'next/link';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { updatePortalPasswordAction } from './actions';
+import { BrandedLoader } from '@/components/branded-loader';
 
-export default function PortalLoginPage() {
+function PortalLoginContent() {
     const [identifier, setIdentifier] = useState('');
     const [password, setPassword] = useState('');
     const [otp, setOtp] = useState('');
@@ -43,13 +41,6 @@ export default function PortalLoginPage() {
     const searchParams = useSearchParams();
     const isRevoked = searchParams.get('revoked') === 'true';
 
-    // Set initial auth method based on branding once loaded
-    useState(() => {
-        if (brandingSettings?.portalAuthMethod) {
-            setAuthMethod(brandingSettings.portalAuthMethod as any);
-        }
-    });
-    
     // Forgot Password Flow
     const [showForgotDialog, setShowForgotDialog] = useState(false);
     const [forgotIdentifier, setForgotIdentifier] = useState('');
@@ -76,7 +67,6 @@ export default function PortalLoginPage() {
                 const res = await authenticatePortalUserAction(identifier, password);
                 handleAuthResult(res);
             } else {
-                // OTP Verification
                 if (!otpSent) {
                     const res = await sendPortalOTPAction(identifier);
                     if (res.success) {
@@ -104,7 +94,6 @@ export default function PortalLoginPage() {
 
     const handleAuthResult = async (res: any) => {
         if (res.success && res.token && auth) {
-            // Set session metadata BEFORE signing in to ensure RouteGuard sees it
             if (typeof window !== 'undefined') {
                 localStorage.setItem('portal_role', res.role || '');
                 localStorage.setItem('portal_session_start', res.sessionStart?.toString() || Date.now().toString());
@@ -278,7 +267,7 @@ export default function PortalLoginPage() {
                     <span className="opacity-20">|</span>
                     <Link href="/portal-register" className="hover:text-primary transition-colors">Register</Link>
                     <span className="opacity-20">|</span>
-                    <Link href="/campaigns-public" className="hover:text-primary transition-colors">Campaigns</Link>
+                    <Link href="/campaign-public" className="hover:text-primary transition-colors">Campaigns</Link>
                 </div>
             </div>
 
@@ -345,5 +334,13 @@ export default function PortalLoginPage() {
                 </DialogContent>
             </Dialog>
         </div>
+    );
+}
+
+export default function PortalLoginPage() {
+    return (
+        <Suspense fallback={<BrandedLoader message="Authenticating Supporter Identity..." />}>
+            <PortalLoginContent />
+        </Suspense>
     );
 }
