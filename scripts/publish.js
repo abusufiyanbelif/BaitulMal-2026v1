@@ -4,17 +4,7 @@ const path = require('path');
 // Configuration
 const VERSION_FILE = path.join(__dirname, '../src/lib/version.json');
 const RELEASES_DIR = path.join(__dirname, '../docs/releases');
-
-// Auto-trigger Documentation Generation
-try {
-    const { execSync } = require('child_process');
-    console.log('🔄 Regenerating Institutional Documentation...');
-    execSync('node scripts/generate-index.js');
-    execSync('node scripts/generate-user-guides.js');
-    execSync('node scripts/generate-architecture.js');
-} catch (e) {
-    console.error('Failed to generate documentation suite:', e.message);
-}
+const COMMIT_SUMMARY_FILE = path.join(__dirname, '../commit-summary.txt');
 
 // Args: node scripts/publish.js [type] [message] [reference] [steps]
 const type = process.argv[2] || 'Enhancement'; 
@@ -52,9 +42,12 @@ function updateVersion() {
         history: []
     };
 
+    let previousVersion = 'n/a';
+
     if (fs.existsSync(VERSION_FILE)) {
         try {
             versionData = JSON.parse(fs.readFileSync(VERSION_FILE, 'utf8'));
+            previousVersion = versionData.version;
             const parts = versionData.version.split('.');
             const currentPrefix = parts.slice(0, 3).join('.');
             let buildNum = parseInt(parts[3]) || 0;
@@ -97,6 +90,27 @@ function updateVersion() {
 
     // Create Separate Release Doc
     createReleaseDoc(entry);
+
+    // Auto-trigger Documentation Generation (AFTER version update so docs see the NEW version)
+    try {
+        const { execSync } = require('child_process');
+        console.log('🔄 Regenerating Institutional Documentation Suite...');
+        // Pass previous version as env var so documentation generators can archive correctly
+        execSync(`node scripts/generate-index.js`, { env: { ...process.env, PREVIOUS_VERSION: previousVersion } });
+        execSync(`node scripts/generate-user-guides.js`, { env: { ...process.env, PREVIOUS_VERSION: previousVersion } });
+        execSync(`node scripts/generate-architecture.js`, { env: { ...process.env, PREVIOUS_VERSION: previousVersion } });
+    } catch (e) {
+        console.error('Failed to generate documentation suite:', e.message);
+    }
+
+    // Generate Commit Summary File
+    generateCommitSummary(entry);
+}
+
+function generateCommitSummary(entry) {
+    const summary = `release: v${entry.version}\n\nType: ${entry.type}\nMessage: ${entry.message}\nReference: ${entry.reference || 'n/a'}\nBranch: ${entry.branch}\nCommit: ${entry.commit}\n\nVerification Steps:\n${entry.steps || 'Manual verification required.'}`;
+    fs.writeFileSync(COMMIT_SUMMARY_FILE, summary);
+    console.log(`📝 Commit summary generated: ${path.basename(COMMIT_SUMMARY_FILE)}`);
 }
 
 function createReleaseDoc(entry) {

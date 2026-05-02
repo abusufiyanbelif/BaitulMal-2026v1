@@ -1,0 +1,10 @@
+release: v2026.05.02.15
+
+Type: Enhancement
+Message: Fixed documentation generation crash and finalized versioned archiving logic.
+Reference: #L1-144
+Branch: test_bmss_26
+Commit: 09efb72e
+
+Verification Steps:
+1. Verify commit-summary.txt. 2. Confirm docs/architecture/history/release-v2026.05.02.14/ exists. 3. Confirm docs/user-guides/history/ exists.

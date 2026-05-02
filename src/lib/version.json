@@ -1,9 +1,53 @@
 {
-  "version": "2026.05.02.11",
-  "buildDate": "2026-05-02T09:43:31.414Z",
+  "version": "2026.05.02.15",
+  "buildDate": "2026-05-02T10:33:17.943Z",
   "commitHash": "initial",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.05.02.15",
+      "date": "2026-05-02T10:33:17.943Z",
+      "commit": "09efb72e",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "#L1-144",
+      "steps": "1. Verify commit-summary.txt. 2. Confirm docs/architecture/history/release-v2026.05.02.14/ exists. 3. Confirm docs/user-guides/history/ exists.",
+      "type": "Enhancement",
+      "message": "Fixed documentation generation crash and finalized versioned archiving logic."
+    },
+    {
+      "version": "2026.05.02.14",
+      "date": "2026-05-02T10:31:12.546Z",
+      "commit": "09efb72e",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "#L1-144",
+      "steps": "1. Check commit-summary.txt in root. 2. Verify docs/user-guides/history/release-v2026.05.02.13/ folder exists (if guides were updated). 3. Verify releases/ folder for new release doc.",
+      "type": "Enhancement",
+      "message": "Finalized versioned documentation archiving and automated git commit summary generation."
+    },
+    {
+      "version": "2026.05.02.13",
+      "date": "2026-05-02T10:24:01.862Z",
+      "commit": "09efb72e",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "#L1-1796",
+      "steps": "1. Navigate to Resource Settings. 2. Verify WhatsApp Subscription fields. 3. Visit 'Infrastructure Support' via Profile/Dashboard. 4. Verify Rich Notification payload generation in actions.ts.",
+      "type": "Enhancement",
+      "message": "Upgraded Institutional Notification Logic with Rich Metadata & Infrastructure Fundraising Module."
+    },
+    {
+      "version": "2026.05.02.12",
+      "date": "2026-05-02T09:54:21.811Z",
+      "commit": "09efb72e",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "#L1-300",
+      "steps": "1. Navigate to Dashboard. 2. Verify 'Mobile App Experience' section replacement. 3. Go to Profile. 4. Verify 'System Taskbar Alerts' setup button. 5. Confirm footer links to Registry Index instead of broken APK.",
+      "type": "Enhancement",
+      "message": "Upgraded Mobile Notification Strategy & Transitioned to PWA-Native Experience."
+    },
     {
       "version": "2026.05.02.11",
       "date": "2026-05-02T09:43:31.414Z",

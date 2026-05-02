@@ -66,7 +66,24 @@ function generateIndex() {
         architecture: scanDir(path.join(__dirname, '../docs/architecture'))
     };
 
-    fs.writeFileSync(OUTPUT_FILE, JSON.stringify({ pages: registry, docs }, null, 2));
+    const newRegistry = JSON.stringify({ pages: registry, docs }, null, 2);
+    
+    // Archiving Logic
+    const versionFile = path.join(__dirname, '../src/lib/version.json');
+    if (fs.existsSync(versionFile)) {
+        const versionData = JSON.parse(fs.readFileSync(versionFile, 'utf8'));
+        const previousVersion = process.env.PREVIOUS_VERSION || versionData.version;
+        const historyDir = path.join(__dirname, '../docs/system_manual/history', `release-v${previousVersion}`);
+        
+        if (fs.existsSync(OUTPUT_FILE)) {
+            if (!fs.existsSync(historyDir)) fs.mkdirSync(historyDir, { recursive: true });
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            fs.renameSync(OUTPUT_FILE, path.join(historyDir, `registry-index-${timestamp}.json`));
+            console.log(`📂 Archived previous registry index to ${historyDir}`);
+        }
+    }
+
+    fs.writeFileSync(OUTPUT_FILE, newRegistry);
     console.log(`📂 Registry Index generated with ${registry.length} pages and ${docs.releases.length + docs.userGuides.length + docs.architecture.length} documents.`);
 }
 

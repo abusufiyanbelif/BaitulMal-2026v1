@@ -98,6 +98,55 @@ export interface ResourceSettings extends DocumentData {
     appId?: string;
     measurementId?: string;
   };
+
+  // WhatsApp Plan Tracking
+  waPlanDetails?: {
+    planName: string;
+    price: number;
+    currency: string;
+    expiryDate: string;
+    status: 'Active' | 'Expired' | 'Not Purchased';
+    usageLimit?: number;
+    currentUsage?: number;
+  };
+}
+
+export interface AppSubscription extends DocumentData {
+  id: string;
+  resourceName: string; // e.g. "WhatsApp API (Whapi)", "Firebase Storage", "Gemini Pro"
+  provider: string;
+  planDetails: string;
+  price: number;
+  currency: string;
+  billingCycle: 'Monthly' | 'Yearly' | 'One-time';
+  purchaseDate: string;
+  expiryDate: string;
+  status: 'Active' | 'Expired' | 'Canceled' | 'Pending';
+  leadContact?: string; // Person responsible for this resource
+  notes?: string;
+  createdAt?: Timestamp | FieldValue;
+  updatedAt?: Timestamp | FieldValue;
+}
+
+export interface InternalFundraising extends DocumentData {
+  id: string;
+  title: string;
+  purpose: string; // e.g. "WhatsApp API Subscription 2026"
+  targetAmount: number;
+  collectedAmount: number;
+  startDate: string;
+  endDate: string;
+  status: 'Active' | 'Completed' | 'On Hold';
+  relatedResourceId?: string; // Link to AppSubscription
+  contributions: {
+    userId: string;
+    userName: string;
+    amount: number;
+    date: string;
+    status: 'Verified' | 'Pending';
+  }[];
+  createdAt?: Timestamp | FieldValue;
+  updatedAt?: Timestamp | FieldValue;
 }
 
 export interface NotificationGroup extends DocumentData {

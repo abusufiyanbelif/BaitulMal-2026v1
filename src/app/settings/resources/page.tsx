@@ -239,17 +239,45 @@ export default function ResourceSettingsPage() {
                 <div className="space-y-6">
                     <Card className="border-primary/10 shadow-sm overflow-hidden bg-white mb-6">
                         <CardHeader className="bg-primary/5 border-b">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 rounded-lg bg-green-500/10 text-green-600">
-                                    <Smartphone className="h-5 w-5" />
+                            <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 rounded-lg bg-green-500/10 text-green-600">
+                                        <Smartphone className="h-5 w-5" />
+                                    </div>
+                                    <div>
+                                        <CardTitle className="text-lg font-bold text-primary tracking-tight">WhatsApp Provider</CardTitle>
+                                        <CardDescription className="text-xs font-normal text-primary/60">Choose your primary WhatsApp gateway.</CardDescription>
+                                    </div>
                                 </div>
-                                <div>
-                                    <CardTitle className="text-lg font-bold text-primary tracking-tight">WhatsApp Provider</CardTitle>
-                                    <CardDescription className="text-xs font-normal text-primary/60">Choose your primary WhatsApp gateway.</CardDescription>
-                                </div>
+                                <Badge variant={resourceSettings?.waPlanDetails?.status === 'Active' ? 'success' : 'destructive'} className="font-mono text-[9px]">
+                                    {resourceSettings?.waPlanDetails?.status || 'NOT CONFIGURED'}
+                                </Badge>
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-6">
+                            {/* Plan Alert */}
+                            {resourceSettings?.waPlanDetails?.status !== 'Active' && (
+                                <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-3 animate-in fade-in zoom-in duration-500">
+                                    <div className="flex items-center gap-2 text-amber-800">
+                                        <AlertCircle className="h-5 w-5" />
+                                        <p className="text-sm font-black uppercase tracking-tight">Service Interrupt Alert</p>
+                                    </div>
+                                    <p className="text-xs text-amber-700 leading-relaxed font-medium">
+                                        The WhatsApp notification service is currently <strong>{resourceSettings?.waPlanDetails?.status || 'Offline'}</strong>. 
+                                        {resourceSettings?.waPlanDetails?.price && ` A subscription of ${resourceSettings.waPlanDetails.currency}${resourceSettings.waPlanDetails.price} is required to restore automated taskbar alerts.`}
+                                    </p>
+                                    <div className="flex gap-2">
+                                        <Link href="/settings/resources/fundraising" className="flex-1">
+                                            <Button variant="outline" className="w-full h-8 text-[10px] font-black uppercase border-amber-300 text-amber-800 hover:bg-amber-100">
+                                                Raise Internal Fund
+                                            </Button>
+                                        </Link>
+                                        <Button variant="outline" className="flex-1 h-8 text-[10px] font-black uppercase border-amber-300 text-amber-800 hover:bg-amber-100">
+                                            View Resource Ledger
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
                             <RadioGroup 
                                 value={editableData?.activeWhatsAppProvider || 'whapi'} 
                                 onValueChange={(val: 'whapi' | 'meta') => handleFieldChange('activeWhatsAppProvider', val)}
@@ -360,6 +388,63 @@ export default function ResourceSettingsPage() {
                                     onCheckedChange={(checked) => isEditMode && handleFieldChange('isAutoWhatsAppEnabled', checked.toString())}
                                     disabled={!isEditMode}
                                 />
+                            </div>
+
+                            <div className="pt-4 space-y-2">
+                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">WhatsApp Subscription Detail</Label>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-[9px] font-bold">Plan Name</Label>
+                                        <Input 
+                                            value={editableData?.waPlanDetails?.planName || ''} 
+                                            onChange={(e) => handleFieldChange('waPlanDetails.planName', e.target.value)}
+                                            placeholder="Standard Monthly"
+                                            className="h-9 text-xs"
+                                            readOnly={!isEditMode}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[9px] font-bold">Price & Currency</Label>
+                                        <div className="flex gap-2">
+                                            <Input 
+                                                value={editableData?.waPlanDetails?.currency || '₹'} 
+                                                onChange={(e) => handleFieldChange('waPlanDetails.currency', e.target.value)}
+                                                className="h-9 w-12 text-xs"
+                                                readOnly={!isEditMode}
+                                            />
+                                            <Input 
+                                                type="number"
+                                                value={editableData?.waPlanDetails?.price || 0} 
+                                                onChange={(e) => handleFieldChange('waPlanDetails.price', e.target.value)}
+                                                className="h-9 text-xs"
+                                                readOnly={!isEditMode}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[9px] font-bold">Expiry Date</Label>
+                                        <Input 
+                                            type="date"
+                                            value={editableData?.waPlanDetails?.expiryDate || ''} 
+                                            onChange={(e) => handleFieldChange('waPlanDetails.expiryDate', e.target.value)}
+                                            className="h-9 text-xs"
+                                            readOnly={!isEditMode}
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[9px] font-bold">Subscription Status</Label>
+                                        <select 
+                                            value={editableData?.waPlanDetails?.status || 'Not Purchased'} 
+                                            onChange={(e) => handleFieldChange('waPlanDetails.status', e.target.value)}
+                                            className="h-9 w-full text-xs rounded-md border border-input bg-background px-3 py-1 ring-offset-background"
+                                            disabled={!isEditMode}
+                                        >
+                                            <option value="Active">Active</option>
+                                            <option value="Expired">Expired</option>
+                                            <option value="Not Purchased">Not Purchased</option>
+                                        </select>
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="pt-4 space-y-2">

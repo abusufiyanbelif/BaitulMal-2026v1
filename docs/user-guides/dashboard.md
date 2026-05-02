@@ -1,7 +1,7 @@
 # 📘 User Guide: /dashboard
 
-**Build Version:** `2026.05.02.10`
-**Last Updated:** 2/5/2026, 3:13:31 pm
+**Build Version:** `2026.05.02.15`
+**Last Updated:** 2/5/2026, 4:03:18 pm
 **Internal Route:** `/dashboard`
 
 ---
@@ -13,8 +13,9 @@ Application Module
 - Monitor institutional statistics and metrics.
 
 ## ⚡ Interactive Action Items
-- **Download APK**: Execute context-specific operation.
-- **Add to Home**: Execute context-specific operation.
+- **Raise Fund**: Execute context-specific operation.
+- **Manage Plan**: Execute context-specific operation.
+- **Mobile Setup Guide**: Execute context-specific operation.
 
 ## 🛡️ Security & Access
 Access to this module is restricted based on institutional roles (Admin, Staff, or Portal User). Ensure you have the necessary clearance before attempting modifications.

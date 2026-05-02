@@ -2,12 +2,13 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
 import { useSession } from '@/hooks/use-session';
-import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, Database, FlaskConical, IndianRupee, Eye, BarChart, BookOpen, HeartHandshake, ShieldCheck, Activity, ChevronRight } from 'lucide-react';
+import { Users, FolderKanban, ScanSearch, Settings, MessageSquare, Lightbulb, Database, FlaskConical, IndianRupee, Eye, BarChart, BookOpen, HeartHandshake, ShieldCheck, Activity, ChevronRight, Smartphone, Navigation2 } from 'lucide-react';
 import { getNestedValue } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { NotificationManager } from '@/components/notification-manager';
+import { useResourceConfig } from '@/hooks/use-resource-config';
 import React from 'react';
 
 function HomeDashboardCard({ title, description, href, icon: Icon, delay, badge }: { title: string, description: string, href: string, icon: React.ComponentType<{ className?: string }>, delay: string, badge?: string }) {
@@ -38,6 +39,7 @@ function HomeDashboardCard({ title, description, href, icon: Icon, delay, badge 
 
 export default function Home() {
     const { userProfile, isLoading, isContributor } = useSession();
+    const { resourceSettings } = useResourceConfig();
 
     const allCards = [
         {
@@ -146,6 +148,36 @@ export default function Home() {
                 </div>
             ) : userProfile ? (
             <div className="space-y-6 md:space-y-10 animate-fade-in-zoom relative">
+                {/* Infrastructure Health Alert (Admin Only) */}
+                {userProfile?.role === 'Admin' && resourceSettings?.waPlanDetails?.status !== 'Active' && (
+                    <div className="p-5 rounded-[32px] bg-red-50 border border-red-100 flex flex-col md:flex-row items-center justify-between gap-4 animate-in slide-in-from-top-4 duration-500">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-red-100 rounded-2xl text-red-600">
+                                <Activity className="h-6 w-6" />
+                            </div>
+                            <div>
+                                <p className="text-sm font-black text-red-900 uppercase tracking-tight">Critical Infrastructure Alert</p>
+                                <p className="text-xs text-red-700 font-medium leading-relaxed">
+                                    WhatsApp Notification System is <strong>{resourceSettings?.waPlanDetails?.status || 'OFFLINE'}</strong>. 
+                                    Automated tray alerts for donors and members are currently suspended.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex gap-2 shrink-0">
+                            <Link href="/settings/resources/fundraising">
+                                <Button size="sm" className="bg-red-600 hover:bg-red-700 text-white font-bold h-9 rounded-xl shadow-lg shadow-red-100">
+                                    Raise Fund
+                                </Button>
+                            </Link>
+                            <Link href="/settings/resources">
+                                <Button size="sm" variant="outline" className="border-red-200 text-red-800 font-bold h-9 rounded-xl">
+                                    Manage Plan
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
+                )}
+                
                 <div className="absolute -top-20 -left-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10 animate-pulse" />
                 <div className="absolute top-40 -right-20 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl -z-10 animate-pulse" />
 
@@ -200,23 +232,18 @@ export default function Home() {
                         <CardContent className="p-6">
                             <div className="flex flex-col sm:flex-row gap-6 items-center">
                                 <div className="flex-1 space-y-3">
-                                    <h4 className="text-sm font-bold text-primary">APK & Native Support</h4>
+                                    <h4 className="text-sm font-bold text-primary uppercase tracking-tighter">Mobile App Experience</h4>
                                     <p className="text-xs text-muted-foreground font-normal leading-relaxed">
-                                        The institutional platform is now **Native-Ready**. Download the APK for real-time system alerts.
+                                        Enable **System Tray Alerts** for instant notifications on your mobile device. Install the portal as a native home screen app for a premium experience.
                                     </p>
                                     <div className="flex gap-2">
-                                        <Button asChild variant="outline" className="h-9 text-xs font-bold border-primary/20 text-primary rounded-xl transition-transform active:scale-95 px-5">
-                                            <a 
-                                                href="/app-release.apk" 
-                                                download="baitulamal-solapur.apk"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                Download APK
-                                            </a>
+                                        <Button asChild variant="default" className="h-9 text-xs font-bold bg-slate-900 text-white rounded-xl transition-transform active:scale-95 px-5">
+                                            <Link href="/registry-index">
+                                                <Navigation2 className="h-4 w-4 mr-2" /> Mobile Setup Guide
+                                            </Link>
                                         </Button>
-                                        <Button variant="secondary" className="h-9 text-xs font-bold bg-primary/10 text-primary rounded-xl transition-transform active:scale-95 border-none px-5">
-                                            Add to Home
+                                        <Button variant="outline" onClick={() => window.location.href = '/registry-index'} className="h-9 text-xs font-bold border-primary/20 text-primary rounded-xl transition-transform active:scale-95 px-5">
+                                            <Smartphone className="h-4 w-4 mr-2" /> Add to Home
                                         </Button>
                                     </div>
                                 </div>

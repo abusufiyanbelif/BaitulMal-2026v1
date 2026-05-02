@@ -90,6 +90,47 @@ export async function sendWhatsAppAction(params: {
     if (!auth.isAuthorized) return { success: false, message: 'Unauthorized. Administrative clearance required.' };
 
     try {
+        return await sendWhatsAppCore({ ...params, bypassAutoCheck: true }, auth.user?.name);
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+
+/**
+ * Generates a rich, detailed message payload with context, data changes, and action links.
+ */
+function generateDetailedPayload(params: {
+    title: string;
+    cause: string;
+    purpose: string;
+    oldData?: any;
+    newData?: any;
+    actionUrl?: string;
+    userName?: string;
+}) {
+    const changes = params.oldData && params.newData ? generateChanges(params.oldData, params.newData) : [];
+    
+    let message = `🔔 *${params.title}*\n\n`;
+    message += `👤 *Performed by:* ${params.userName || 'System'}\n`;
+    message += `🎯 *Purpose:* ${params.purpose}\n`;
+    message += `⚠️ *Cause:* ${params.cause}\n\n`;
+
+    if (changes.length > 0) {
+        message += `📝 *Data Changes:*\n`;
+        changes.forEach(c => {
+            message += `• ${c.field}: _${c.old}_ ➔ *${c.new}*\n`;
+        });
+        message += `\n`;
+    }
+
+    if (params.actionUrl) {
+        message += `🔗 *Action Required:* ${params.actionUrl}\n\n`;
+    }
+
+    message += `_This is an institutional automated alert._`;
+    return message;
+}
+
 async function sendWhatsAppCore(params: {
     to: string;
     templateId?: string;
@@ -99,7 +140,16 @@ async function sendWhatsAppCore(params: {
     configOverride?: Partial<ResourceSettings>;
     bypassAutoCheck?: boolean;
     moduleId?: 'campaign' | 'lead' | 'donation' | 'beneficiary' | 'donor' | 'user';
-}) {
+    // Rich Data
+    richData?: {
+        title: string;
+        cause: string;
+        purpose: string;
+        oldData?: any;
+        newData?: any;
+        actionUrl?: string;
+    }
+}, userName?: string) {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: 'Administrative Services Unavailable.' };
 
@@ -108,6 +158,16 @@ async function sendWhatsAppCore(params: {
         const resourceSnap = await adminDb.collection('settings').doc('resources').get();
         const resources = resourceSnap.data() as ResourceSettings;
         
+        // --- Subscription Check ---
+        if (resources?.waPlanDetails?.status !== 'Active' && !params.bypassAutoCheck) {
+            return { 
+                success: false, 
+                message: `WhatsApp service is ${resources?.waPlanDetails?.status || 'Inactive'}. Please check resource subscription status.`,
+                requiresSubscription: true,
+                planDetails: resources?.waPlanDetails
+            };
+        }
+
         const API_URL = params.configOverride?.whatsappApiUrl || resources?.whatsappApiUrl || process.env.WHATSAPP_API_URL;
         const API_KEY = params.configOverride?.whatsappApiKey || resources?.whatsappApiKey || process.env.WHATSAPP_API_KEY;
         const IS_AUTO_ENABLED = resources?.isAutoWhatsAppEnabled ?? true;
@@ -127,8 +187,15 @@ async function sendWhatsAppCore(params: {
 
         let finalMessage = params.customMessage || '';
 
-        // 3. Handle Template if provided
-        if (params.templateId) {
+        // 3. Handle Rich Data if provided (Highest Priority)
+        if (params.richData) {
+            finalMessage = generateDetailedPayload({
+                ...params.richData,
+                userName: auth.user?.name
+            });
+        }
+        // 4. Handle Template if provided (Secondary Priority)
+        else if (params.templateId) {
             const templateSnap = await adminDb.collection('settings').doc('message_templates').collection('templates').doc(params.templateId).get();
             if (templateSnap.exists) {
                 const template = templateSnap.data() as MessageTemplate;
@@ -893,11 +960,20 @@ export async function getWhatsAppAccountInfoAction(configOverride?: Partial<Reso
  * Send a Telegram Message
  */
 export async function sendTelegramAction(params: {
-    message: string;
+    message?: string;
     chatId?: string;
     configOverride?: Partial<ResourceSettings>;
     bypassAutoCheck?: boolean;
     moduleId?: 'campaign' | 'lead' | 'donation' | 'beneficiary' | 'donor' | 'user';
+    // Rich Data
+    richData?: {
+        title: string;
+        cause: string;
+        purpose: string;
+        oldData?: any;
+        newData?: any;
+        actionUrl?: string;
+    }
 }) {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: 'DB Unavailable' };
@@ -923,8 +999,15 @@ export async function sendTelegramAction(params: {
             }
         }
 
+        let finalMessage = params.message || '';
+        if (params.richData) {
+            finalMessage = generateDetailedPayload({
+                ...params.richData
+            });
+        }
+
         if (!TOKEN || !CHAT_ID) {
-            console.log(`[SIMULATED TELEGRAM] Chat: ${CHAT_ID} | Content: ${params.message}`);
+            console.log(`[SIMULATED TELEGRAM] Chat: ${CHAT_ID} | Content: ${finalMessage}`);
             return { success: true, message: 'Telegram simulated (keys missing).' };
         }
 
@@ -938,7 +1021,7 @@ export async function sendTelegramAction(params: {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 chat_id: CHAT_ID,
-                text: params.message,
+                text: finalMessage,
                 parse_mode: 'Markdown'
             })
         });
@@ -1162,6 +1245,14 @@ export async function dispatchNotificationToGroups(params: {
         id: string;
         variables: Record<string, string>;
     };
+    richData?: {
+        title: string;
+        cause: string;
+        purpose: string;
+        oldData?: any;
+        newData?: any;
+        actionUrl?: string;
+    };
     metadata?: any;
     excludeUserIds?: string[];
 }) {
@@ -1192,7 +1283,7 @@ export async function dispatchNotificationToGroups(params: {
         for (const group of groups) {
             if (group.type === 'Telegram') {
                 if (group.channelType === 'Group' && group.targetId) {
-                    await sendTelegramAction({ message: params.message, chatId: group.targetId, bypassAutoCheck: true });
+                    await sendTelegramAction({ message: params.message, chatId: group.targetId, bypassAutoCheck: true, richData: params.richData });
                     sentCount++;
                 } else if (group.channelType === 'Individual') {
                     if (!group.memberIds || group.memberIds.length === 0) continue;
@@ -1217,7 +1308,7 @@ export async function dispatchNotificationToGroups(params: {
                     }
 
                     for (const tId of memberTelegramIds) {
-                        await sendTelegramAction({ message: params.message, chatId: tId, bypassAutoCheck: true });
+                        await sendTelegramAction({ message: params.message, chatId: tId, bypassAutoCheck: true, richData: params.richData });
                         sentCount++;
                     }
                 }
@@ -1250,9 +1341,10 @@ export async function dispatchNotificationToGroups(params: {
                         to: phone,
                         templateId: params.whatsappTemplate?.id,
                         variables: params.whatsappTemplate?.variables,
-                        customMessage: params.whatsappTemplate ? undefined : params.message,
+                        customMessage: params.whatsappTemplate || params.richData ? undefined : params.message,
                         metadata: params.metadata,
-                        bypassAutoCheck: true // Staff alerts bypass the "isAutoWhatsAppEnabled" toggle if coming via group
+                        bypassAutoCheck: true, // Staff alerts bypass the "isAutoWhatsAppEnabled" toggle if coming via group
+                        richData: params.richData
                     });
                     sentCount++;
                 }

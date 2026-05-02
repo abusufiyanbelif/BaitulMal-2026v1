@@ -12,6 +12,9 @@ function generateUserGuides() {
     const pages = registry.pages || [];
     const versionData = JSON.parse(fs.readFileSync(VERSION_FILE, 'utf8'));
     const currentVersion = versionData.version;
+    const previousVersion = process.env.PREVIOUS_VERSION || currentVersion;
+
+    const releaseHistoryDir = path.join(HISTORY_DIR, `release-v${previousVersion}`);
 
     if (!fs.existsSync(GUIDES_DIR)) fs.mkdirSync(GUIDES_DIR, { recursive: true });
     if (!fs.existsSync(HISTORY_DIR)) fs.mkdirSync(HISTORY_DIR, { recursive: true });
@@ -30,12 +33,14 @@ function generateUserGuides() {
         if (fs.existsSync(guidePath)) {
             const oldContent = fs.readFileSync(guidePath, 'utf8');
             if (oldContent !== newContent) {
-                // Version changed or content updated, move to history
+                // Version changed or content updated, move to history in version-specific folder
+                if (!fs.existsSync(releaseHistoryDir)) fs.mkdirSync(releaseHistoryDir, { recursive: true });
+                
                 const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-                const historyFilename = `${guideName}-v${currentVersion}-${timestamp}.md`;
-                fs.renameSync(guidePath, path.join(HISTORY_DIR, historyFilename));
+                const historyFilename = `${guideName}-${timestamp}.md`;
+                fs.renameSync(guidePath, path.join(releaseHistoryDir, historyFilename));
                 fs.writeFileSync(guidePath, newContent);
-                console.log(`📝 Updated User Guide: ${guideName} (Archived previous version)`);
+                console.log(`📝 Updated User Guide: ${guideName} (Archived to ${releaseHistoryDir})`);
             }
         } else {
             fs.writeFileSync(guidePath, newContent);

@@ -1,7 +1,7 @@
 # 📘 User Guide: /settings/resources
 
-**Build Version:** `2026.05.02.10`
-**Last Updated:** 2/5/2026, 3:13:31 pm
+**Build Version:** `2026.05.02.15`
+**Last Updated:** 2/5/2026, 4:03:18 pm
 **Internal Route:** `/settings/resources`
 
 ---
@@ -13,6 +13,8 @@ Application Module
 - Configure administrative parameters and resources.
 
 ## ⚡ Interactive Action Items
+- **Raise Internal Fund**: Execute context-specific operation.
+- **View Resource Ledger**: Execute context-specific operation.
 - **Send Test**: Execute context-specific operation.
 - **handleSendTest**: Execute context-specific operation.
 - **handleTestTelegram**: Execute context-specific operation.

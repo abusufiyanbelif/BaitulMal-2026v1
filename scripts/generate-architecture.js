@@ -3,14 +3,24 @@ const path = require('path');
 
 const APP_DIR = path.join(__dirname, '../src');
 const ARCH_DIR = path.join(__dirname, '../docs/architecture');
+const HISTORY_DIR = path.join(__dirname, '../docs/architecture/history');
+const VERSION_FILE = path.join(__dirname, '../src/lib/version.json');
 
 function generateArchitectureDocs() {
     if (!fs.existsSync(ARCH_DIR)) fs.mkdirSync(ARCH_DIR, { recursive: true });
+    if (!fs.existsSync(HISTORY_DIR)) fs.mkdirSync(HISTORY_DIR, { recursive: true });
+
+    const versionData = JSON.parse(fs.readFileSync(VERSION_FILE, 'utf8'));
+    const currentVersion = versionData.version;
+    const previousVersion = process.env.PREVIOUS_VERSION || currentVersion;
+    const releaseHistoryDir = path.join(HISTORY_DIR, `release-v${previousVersion}`);
 
     const collectionMap = scanCollections();
     
     // Generate Collection Map
     let md = `# 🏗️ Institutional Data Architecture\n\n`;
+    md += `**Build Version:** \`${currentVersion}\`\n`;
+    md += `**Last Updated:** ${new Date().toLocaleString()}\n\n`;
     md += `Mapping between Application Modules and Firestore Collections.\n\n`;
     md += `| Module / File | Firestore Collection | Access Type |\n`;
     md += `| :--- | :--- | :--- |\n`;
@@ -19,7 +29,20 @@ function generateArchitectureDocs() {
         md += `| \`${item.file}\` | \`${item.collection}\` | ${item.type} |\n`;
     });
 
-    fs.writeFileSync(path.join(ARCH_DIR, 'collection-map.md'), md);
+    const filePath = path.join(ARCH_DIR, 'collection-map.md');
+
+    if (fs.existsSync(filePath)) {
+        const oldContent = fs.readFileSync(filePath, 'utf8');
+        if (oldContent !== md) {
+            // Archive old version
+            if (!fs.existsSync(releaseHistoryDir)) fs.mkdirSync(releaseHistoryDir, { recursive: true });
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            fs.renameSync(filePath, path.join(releaseHistoryDir, `collection-map-${timestamp}.md`));
+            console.log(`🏗️ Archived previous architecture map to ${releaseHistoryDir}`);
+        }
+    }
+
+    fs.writeFileSync(filePath, md);
     console.log(`🏗️ Architecture documentation updated: collection-map.md`);
 }
 

@@ -3,6 +3,8 @@
 import { useSession } from '@/hooks/use-session';
 import { useFirestore, useMemoFirebase, useDoc, doc, storageRef, uploadBytes, getDownloadURL, useStorage } from '@/firebase';
 import { BrandedLoader } from '@/components/branded-loader';
+import { NotificationManager } from '@/components/notification-manager';
+import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
@@ -490,7 +492,39 @@ export default function ProfilePage() {
                                         </Button>
                                     </div>
                                 </div>
+
+                                <Separator className="bg-slate-100" />
+                                
+                                <div className="space-y-4 pt-2">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">System Taskbar Alerts</p>
+                                    <NotificationManager />
+                                </div>
                             </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Infrastructure Support Card */}
+                    <Card className="rounded-[32px] overflow-hidden border-pink-100 bg-pink-50/20 group">
+                        <CardHeader className="px-8 pt-8 pb-4">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-pink-100 rounded-2xl text-pink-600 group-hover:scale-110 transition-transform duration-500">
+                                    <HeartHandshake className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-xl font-black text-slate-900 tracking-tight">Institutional Support</CardTitle>
+                                    <CardDescription className="text-xs font-medium text-slate-500">Contribute to portal maintenance & resources.</CardDescription>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="px-8 pb-8 space-y-4">
+                            <p className="text-xs text-slate-600 leading-relaxed font-normal">
+                                Help us keep the BaitulMal Registry running. Your contributions fund our WhatsApp APIs, AI Vision systems, and secure cloud storage.
+                            </p>
+                            <Link href="/settings/resources/fundraising">
+                                <Button className="w-full h-11 rounded-2xl bg-pink-600 hover:bg-pink-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-pink-200">
+                                    Contribute to Infrastructure
+                                </Button>
+                            </Link>
                         </CardContent>
                     </Card>
                 </div>
