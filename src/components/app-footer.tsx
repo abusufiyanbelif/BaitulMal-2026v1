@@ -34,6 +34,7 @@ import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
+import versionData from '@/lib/version.json';
 
 /**
  * App Footer - Organization profile and contribution hub.
@@ -146,6 +147,10 @@ export function AppFooter() {
                 <BookOpen className="h-4 w-4 opacity-30" />
                 Guidance Directory
               </Link>
+              <Link href="/registry-index" className="text-sm text-emerald-600 hover:text-emerald-700 transition-colors flex items-center gap-3 font-bold bg-emerald-50/50 p-2 rounded-lg border border-emerald-100/50">
+                <Navigation2 className="h-4 w-4 opacity-80" />
+                Registry Index Map
+              </Link>
             </nav>
           </div>
 
@@ -184,9 +189,16 @@ export function AppFooter() {
               </span>
             )}
           </div>
-          <p className="text-center sm:text-right font-normal text-muted-foreground opacity-80">
-            {paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Organization Name'}. All Rights Reserved.`}
-          </p>
+          <div className="flex flex-col items-center sm:items-end gap-1.5">
+            <p className="text-center sm:text-right font-normal text-muted-foreground opacity-80">
+              {paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Organization Name'}. All Rights Reserved.`}
+            </p>
+            <div className="flex items-center gap-2 font-mono text-[8px] opacity-30 hover:opacity-100 transition-all cursor-default">
+                <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-black uppercase tracking-widest">Build</span>
+                <span>{versionData.version}</span>
+                <span className="opacity-40">({new Date(versionData.buildDate).toLocaleDateString()})</span>
+            </div>
+          </div>
         </div>
       </div>
 

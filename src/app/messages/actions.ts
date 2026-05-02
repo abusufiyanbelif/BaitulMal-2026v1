@@ -90,6 +90,20 @@ export async function sendWhatsAppAction(params: {
     if (!auth.isAuthorized) return { success: false, message: 'Unauthorized. Administrative clearance required.' };
 
     try {
+async function sendWhatsAppCore(params: {
+    to: string;
+    templateId?: string;
+    variables?: Record<string, string>;
+    customMessage?: string;
+    metadata?: MessageLog['metadata'];
+    configOverride?: Partial<ResourceSettings>;
+    bypassAutoCheck?: boolean;
+    moduleId?: 'campaign' | 'lead' | 'donation' | 'beneficiary' | 'donor' | 'user';
+}) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: 'Administrative Services Unavailable.' };
+
+    try {
         // 1. Fetch Resource Config
         const resourceSnap = await adminDb.collection('settings').doc('resources').get();
         const resources = resourceSnap.data() as ResourceSettings;
@@ -233,6 +247,26 @@ export async function sendWhatsAppAction(params: {
         console.error('Messaging Action Error:', e);
         return { success: false, message: `System Error: ${e.message}` };
     }
+}
+
+/**
+ * Core utility to send a WhatsApp message using configured resources.
+ */
+export async function sendWhatsAppAction(params: {
+    to: string;
+    templateId?: string;
+    variables?: Record<string, string>;
+    customMessage?: string;
+    metadata?: MessageLog['metadata'];
+    configOverride?: Partial<ResourceSettings>;
+    bypassAutoCheck?: boolean;
+    moduleId?: 'campaign' | 'lead' | 'donation' | 'beneficiary' | 'donor' | 'user';
+}) {
+    // Standard authorization check
+    const auth = await checkAuth('messages', 'update');
+    if (!auth.isAuthorized) return { success: false, message: 'Unauthorized. Administrative clearance required.' };
+
+    return await sendWhatsAppCore(params);
 }
 
 /**
@@ -932,7 +966,7 @@ export async function sendTestWhatsAppAction(to: string, configOverride?: Partia
     const auth = await checkAuth('settings', 'update');
     if (!auth.isAuthorized) return { success: false, message: 'Unauthorized' };
 
-    return await sendWhatsAppAction({
+    return await sendWhatsAppCore({
         to,
         customMessage: '🧪 *BaitulMal Resource Test*\n\nThis is a diagnostic message to verify your WhatsApp API configuration.\n\n*Status:* Verified ✅\n*Timestamp:* ' + new Date().toLocaleString(),
         metadata: {
@@ -942,6 +976,67 @@ export async function sendTestWhatsAppAction(to: string, configOverride?: Partia
         configOverride,
         bypassAutoCheck: true // Test messages should always bypass the toggle
     });
+}
+
+/**
+ * User-Specific Connectivity Test for WhatsApp
+ */
+export async function sendUserWhatsAppTestAction() {
+    const { adminDb, adminAuth } = getAdminServices();
+    if (!adminDb || !adminAuth) return { success: false, message: 'DB Unavailable' };
+
+    const sessionCookie = cookies().get('__session')?.value;
+    if (!sessionCookie) return { success: false, message: 'Unauthorized' };
+
+    try {
+        const decodedToken = await adminAuth.verifySessionCookie(sessionCookie);
+        const userSnap = await adminDb.collection('users').doc(decodedToken.uid).get();
+        if (!userSnap.exists) return { success: false, message: 'User Record Not Found' };
+        
+        const userData = userSnap.data() as UserProfile;
+        if (!userData.phone) return { success: false, message: 'Phone Number Missing in Profile' };
+
+        return await sendWhatsAppCore({
+            to: userData.phone,
+            customMessage: `🧪 *BaitulMal Connectivity Test*\n\nHello *${userData.name}*,\n\nYour WhatsApp connectivity is verified for institutional alerts.\n\n*Test OTP:* ${Math.floor(100000 + Math.random() * 900000)}\n\n*Status:* Success ✅`,
+            metadata: {
+                moduleId: 'user',
+                userId: userData.id,
+                type: 'connectivity_test'
+            },
+            bypassAutoCheck: true
+        });
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+
+/**
+ * User-Specific Connectivity Test for Telegram
+ */
+export async function sendUserTelegramTestAction() {
+    const { adminDb, adminAuth } = getAdminServices();
+    if (!adminDb || !adminAuth) return { success: false, message: 'DB Unavailable' };
+
+    const sessionCookie = cookies().get('__session')?.value;
+    if (!sessionCookie) return { success: false, message: 'Unauthorized' };
+
+    try {
+        const decodedToken = await adminAuth.verifySessionCookie(sessionCookie);
+        const userSnap = await adminDb.collection('users').doc(decodedToken.uid).get();
+        if (!userSnap.exists) return { success: false, message: 'User Record Not Found' };
+        
+        const userData = userSnap.data() as UserProfile;
+        if (!userData.telegramChatId) return { success: false, message: 'Telegram Chat ID Missing in Profile' };
+
+        return await sendTelegramAction({
+            message: `🧪 *BaitulMal Telegram Test*\n\nHello *${userData.name}*,\n\nYour Telegram integration is verified.\n\n*Status:* Active ✅\n*Chat ID:* \`${userData.telegramChatId}\``,
+            chatId: userData.telegramChatId,
+            bypassAutoCheck: true
+        });
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
 }
 
 /**

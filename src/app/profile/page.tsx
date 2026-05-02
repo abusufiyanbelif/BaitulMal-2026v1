@@ -44,6 +44,7 @@ import { useToast } from '@/hooks/use-toast';
 import { processPortalProfileUpdateAction, checkPendingVerificationAction } from '@/app/verifications/actions';
 import { updatePortalPasswordAction } from '@/app/portal-login/actions';
 import { revokeUserSessionsAction } from '../settings/auth-actions';
+import { sendUserWhatsAppTestAction, sendUserTelegramTestAction } from '@/app/messages/actions';
 import { SessionTable } from '@/components/session-table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
@@ -79,6 +80,10 @@ export default function ProfilePage() {
     const [imageToView, setImageToView] = useState<string | null>(null);
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0);
+
+    // Testing States
+    const [isTestingWhatsApp, setIsTestingWhatsApp] = useState(false);
+    const [isTestingTelegram, setIsTestingTelegram] = useState(false);
 
     useEffect(() => {
         if (userProfile) {
@@ -199,6 +204,38 @@ export default function ProfilePage() {
             }
         } finally {
             setIsSavingPassword(false);
+        }
+    };
+
+    const handleTestWhatsApp = async () => {
+        setIsTestingWhatsApp(true);
+        try {
+            const res = await sendUserWhatsAppTestAction();
+            if (res.success) {
+                toast({ title: 'Test Dispatched', description: 'Connectivity verified. Check your WhatsApp.', variant: 'success' });
+            } else {
+                toast({ title: 'Verification Failed', description: res.message, variant: 'destructive' });
+            }
+        } catch (e: any) {
+            toast({ title: 'System Error', description: e.message, variant: 'destructive' });
+        } finally {
+            setIsTestingWhatsApp(false);
+        }
+    };
+
+    const handleTestTelegram = async () => {
+        setIsTestingTelegram(true);
+        try {
+            const res = await sendUserTelegramTestAction();
+            if (res.success) {
+                toast({ title: 'Telegram Pulse Sent', description: 'Diagnostic message received successfully.', variant: 'success' });
+            } else {
+                toast({ title: 'Telegram Fault', description: res.message, variant: 'destructive' });
+            }
+        } catch (e: any) {
+            toast({ title: 'System Error', description: e.message, variant: 'destructive' });
+        } finally {
+            setIsTestingTelegram(false);
         }
     };
 
@@ -403,6 +440,57 @@ export default function ProfilePage() {
                             >
                                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />} Terminate Sessions
                             </Button>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-none shadow-xl shadow-slate-200/40 bg-white rounded-3xl overflow-hidden mt-8">
+                        <CardHeader className="bg-emerald-50/50 border-b border-emerald-100 pb-6">
+                            <CardTitle className="flex items-center gap-2 text-base font-bold text-emerald-900">
+                                <Activity className="h-5 w-5 text-emerald-600/60" /> Connectivity Diagnostics
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-8 space-y-6">
+                            <div className="space-y-4">
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">WhatsApp (OTP) Status</p>
+                                    <div className="flex items-center justify-between gap-4 pt-2">
+                                        <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                                            <div className={cn("h-2 w-2 rounded-full", userProfile.phone ? "bg-green-500 animate-pulse" : "bg-slate-300")} />
+                                            {userProfile.phone ? "Ready to Receive" : "Phone Missing"}
+                                        </div>
+                                        <Button 
+                                            size="sm" 
+                                            variant="secondary"
+                                            disabled={isTestingWhatsApp || !userProfile.phone}
+                                            onClick={handleTestWhatsApp}
+                                            className="h-8 font-black text-[9px] uppercase tracking-widest rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                                        >
+                                            {isTestingWhatsApp ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <Smartphone className="h-3 w-3 mr-2" />} Test OTP
+                                        </Button>
+                                    </div>
+                                </div>
+
+                                <Separator className="bg-slate-100" />
+
+                                <div className="space-y-1">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Telegram Integration</p>
+                                    <div className="flex items-center justify-between gap-4 pt-2">
+                                        <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                                            <div className={cn("h-2 w-2 rounded-full", userProfile.telegramChatId ? "bg-sky-500 animate-pulse" : "bg-slate-300")} />
+                                            {userProfile.telegramChatId ? "Linked & Active" : "Not Integrated"}
+                                        </div>
+                                        <Button 
+                                            size="sm" 
+                                            variant="secondary"
+                                            disabled={isTestingTelegram || !userProfile.telegramChatId}
+                                            onClick={handleTestTelegram}
+                                            className="h-8 font-black text-[9px] uppercase tracking-widest rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100"
+                                        >
+                                            {isTestingTelegram ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <Hash className="h-3 w-3 mr-2" />} Test Telegram
+                                        </Button>
+                                    </div>
+                                </div>
+                            </div>
                         </CardContent>
                     </Card>
                 </div>

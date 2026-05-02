@@ -1,6 +1,6 @@
 'use client';
 
-import { LogOut, User, LogIn, Settings, LayoutDashboard, Heart, HandHelping, ShieldCheck } from 'lucide-react';
+import { LogOut, User, LogIn, Settings, LayoutDashboard, Heart, HandHelping, ShieldCheck, Compass } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/firebase';
@@ -158,12 +158,20 @@ export function DocuExtractHeader() {
                     </DropdownMenuItem>
 
                     {userProfile.role === 'Admin' && (
-                      <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
-                        <Link href="/settings" className="flex items-center w-full">
-                          <Settings className="mr-3 h-4 w-4 opacity-60" />
-                          <span>System Administration</span>
-                        </Link>
-                      </DropdownMenuItem>
+                      <>
+                        <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-emerald-600 hover:bg-emerald-50">
+                          <Link href="/registry-index" className="flex items-center w-full">
+                            <Compass className="mr-3 h-4 w-4 opacity-60" />
+                            <span className="font-bold">Registry Index Map</span>
+                          </Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
+                          <Link href="/settings" className="flex items-center w-full">
+                            <Settings className="mr-3 h-4 w-4 opacity-60" />
+                            <span>System Administration</span>
+                          </Link>
+                        </DropdownMenuItem>
+                      </>
                     )}
                     <DropdownMenuSeparator className="bg-primary/5" />
                     <DropdownMenuItem

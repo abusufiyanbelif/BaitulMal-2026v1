@@ -1,0 +1,113 @@
+{
+  "version": "2026.05.02.11",
+  "buildDate": "2026-05-02T09:43:31.414Z",
+  "commitHash": "initial",
+  "changelog": [],
+  "history": [
+    {
+      "version": "2026.05.02.11",
+      "date": "2026-05-02T09:43:31.414Z",
+      "commit": "c9d9353a",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "#L1-50",
+      "steps": "1. Check docs/user-guides/mobile-installation.md. 2. Verify /registry-index shows the new guide. 3. Confirm 1KB APK placeholder is documented as a known issue.",
+      "type": "Bug",
+      "message": "Resolved APK Parsing Error documentation & Deployed Mobile PWA Setup Guide."
+    },
+    {
+      "version": "2026.05.02.10",
+      "date": "2026-05-02T09:41:35.385Z",
+      "commit": "c9d9353a",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "#L1-400",
+      "steps": "1. Navigate to /registry-index. 2. Verify 'Architecture & Engineering' section with collection maps. 3. Explore 'User Documentation' section with 89+ auto-generated guides. 4. Verify 'docs/' folder structure integrity.",
+      "type": "Feature",
+      "message": "Deployed Institutional Documentation Suite (Automated User Guides & Architecture Mapping)."
+    },
+    {
+      "version": "2026.05.02.9",
+      "date": "2026-05-02T09:40:25.809Z",
+      "commit": "c9d9353a",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "#L1-400",
+      "steps": "1. Navigate to /registry-index. 2. Verify 'Architecture & Engineering' section with collection maps. 3. Explore 'User Documentation' section with 89+ auto-generated guides. 4. Verify 'docs/' folder structure integrity.",
+      "type": "Feature",
+      "message": "Deployed Institutional Documentation Suite (Automated User Guides & Architecture Mapping)."
+    },
+    {
+      "version": "2026.05.02.8",
+      "date": "2026-05-02T09:24:30.500Z",
+      "commit": "c9d9353a",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "#L1-200",
+      "steps": "1. Navigate to /registry-index. 2. Verify all 89 pages are indexed. 3. Test search and next/prev navigation.",
+      "type": "Feature",
+      "message": "Deployed Institutional Registry Index & Navigational Map system."
+    },
+    {
+      "version": "2026.05.02.7",
+      "date": "2026-05-02T09:19:48.850Z",
+      "commit": "c9d9353a",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "#L110-130",
+      "steps": "1. Check publish.js for process.argv[5]. 2. Confirm README_VERSIONING.md includes 'Steps' parameter. 3. Inspect latest release doc for 'Verification Steps' header.",
+      "type": "Enhancement",
+      "message": "Integrated 'Verification Steps' into automated release documentation system."
+    },
+    {
+      "version": "2026.05.02.6",
+      "date": "2026-05-02T09:19:26.500Z",
+      "commit": "c9d9353a",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "#L110",
+      "steps": "1. Open releases/ folder. 2. Verify new build document contains 'Verification Steps' section. 3. Confirm default steps appear when no manual steps are provided.",
+      "type": "Enhancement",
+      "message": "Added Verification Steps to automated release documentation."
+    },
+    {
+      "version": "2026.05.02.5",
+      "date": "2026-05-02T09:16:00.926Z",
+      "commit": "c9d9353a",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "#L1-50",
+      "type": "Feature",
+      "message": "Established Institutional Versioning Protocol and Documentation Workflow."
+    },
+    {
+      "version": "2026.05.02.4",
+      "date": "2026-05-02T09:12:18.175Z",
+      "commit": "c9d9353a",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "#L1-100",
+      "type": "Enhancement",
+      "message": "Deepened Git Traceability and Reference Support."
+    },
+    {
+      "version": "2026.05.02.3",
+      "date": "2026-05-02T09:09:58.214Z",
+      "commit": "c9d9353a",
+      "type": "Enhancement",
+      "message": "Restructured Release Ledger into separate build-specific Markdown documents with Git commit traceability."
+    },
+    {
+      "version": "2026.05.02.2",
+      "date": "2026-05-02T09:07:28.483Z",
+      "type": "Enhancement",
+      "message": "Implemented Automated Institutional Versioning & Release Ledger system (YYYY.MM.DD.N)."
+    },
+    {
+      "version": "2026.05.02.1",
+      "date": "2026-05-02T09:07:03.620Z",
+      "type": "Feature",
+      "message": "Integrated User Connectivity Diagnostics (WhatsApp/Telegram test) into profile page."
+    }
+  ]
+}
