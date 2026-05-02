@@ -61,7 +61,7 @@ export function DocuExtractHeader() {
             {isLoading ? (
                 <Skeleton className="h-full w-full rounded-lg" />
             ) : (
-                validLogoUrl && (
+                validLogoUrl ? (
                   <Image
                     src={validLogoUrl.startsWith('http') ? `/api/image-proxy?url=${encodeURIComponent(validLogoUrl)}` : validLogoUrl}
                     alt="Logo"
@@ -70,6 +70,10 @@ export function DocuExtractHeader() {
                     className="object-contain"
                     priority
                   />
+                ) : (
+                  <div className="h-full w-full bg-primary/10 rounded-lg flex items-center justify-center">
+                    <ShieldCheck className="h-8 w-8 text-primary/40" />
+                  </div>
                 )
             )}
             </div>

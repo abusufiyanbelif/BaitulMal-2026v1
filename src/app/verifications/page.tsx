@@ -2,13 +2,15 @@
 
 import React, { useState } from 'react';
 import { 
-    useFirestore, 
-    useCollection, 
-    useMemoFirebase, 
+    useFirestore,
+    useCollection,
+    useMemoFirebase,
+    useDoc,
     collection,
     query,
     orderBy,
-    where
+    where,
+    doc
 } from '@/firebase';
 import { useSearchParams } from 'next/navigation';
 import { useSession } from '@/hooks/use-session';
@@ -48,6 +50,53 @@ import type { PendingVerification } from '@/lib/types';
 import { cn, generateChanges, formatCurrency, formatDate } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+
+function TargetRecordPreview({ requestId, module, targetId, targetCollection }: { requestId: string, module: string, targetId: string, targetCollection: string }) {
+    const firestore = useFirestore();
+    const docRef = useMemoFirebase(() => firestore ? doc(firestore, targetCollection, targetId) : null, [firestore, targetCollection, targetId]);
+    const { data: record, isLoading } = useDoc<any>(docRef);
+
+    if (isLoading) return <div className="h-20 bg-primary/5 animate-pulse rounded-2xl border border-primary/5" />;
+    if (!record) return (
+        <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3">
+            <Ban className="h-5 w-5 text-red-500" />
+            <div className="flex-1">
+                <p className="text-xs font-bold text-red-700">Source Record Not Found</p>
+                <p className="text-[10px] text-red-600/70 font-medium">The document may have been purged from the institutional registry.</p>
+            </div>
+        </div>
+    );
+
+    const name = record.name || record.title || record.donorName || record.beneficiaryName || record.itemName || `Record ${targetId.slice(0, 8)}`;
+    const iconMap: Record<string, any> = {
+        'donations': IndianRupee,
+        'beneficiaries': Users,
+        'campaigns': FolderKanban,
+        'leads': Lightbulb,
+        'donors': HeartHandshake,
+        'users': User,
+    };
+    const Icon = iconMap[module] || Info;
+
+    return (
+        <div className="p-5 bg-white border border-primary/10 rounded-2xl shadow-sm flex items-center gap-4 group hover:border-primary/30 transition-all">
+            <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary shadow-inner border border-primary/5">
+                <Icon className="h-6 w-6" />
+            </div>
+            <div className="flex-1 min-w-0">
+                <p className="text-[9px] font-bold text-primary/40 uppercase tracking-[0.2em] mb-0.5">Record Context</p>
+                <h4 className="font-bold text-primary text-lg truncate leading-tight">{name}</h4>
+                <p className="text-[10px] font-medium text-primary/60 flex items-center gap-1.5 mt-1">
+                    <Activity className="h-3 w-3 text-primary/30" />
+                    Registry: {targetCollection}
+                </p>
+            </div>
+            <div className="hidden sm:block">
+                <Badge variant="outline" className="text-[9px] font-bold opacity-40 uppercase h-6 px-2.5 rounded-lg border-primary/10">ID: {targetId.slice(0, 8)}</Badge>
+            </div>
+        </div>
+    );
+}
 
 export default function VerificationsPage() {
     const firestore = useFirestore();
@@ -244,32 +293,43 @@ export default function VerificationsPage() {
                         </div>
                         <DialogTitle className="text-3xl font-bold text-primary tracking-tighter leading-tight relative z-10">Verification Audit Report</DialogTitle>
                         <DialogDescription className="font-bold opacity-60 text-primary relative z-10 mt-2">
-                            Authored by {selectedRequest?.requestedBy.name} • {selectedRequest?.createdAt ? new Date((selectedRequest.createdAt as any).seconds * 1000).toLocaleString() : 'N/A'}
+                            Authored by <span className="text-primary font-black underline decoration-primary/20">{selectedRequest?.requestedBy.name}</span> • {formatDate(selectedRequest?.createdAt, { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                         </DialogDescription>
                     </DialogHeader>
 
                     <ScrollArea className="flex-1">
-                        <div className="p-8 pb-0 grid grid-cols-1 sm:grid-cols-3 gap-4">
-                            <div className="bg-primary/5 p-4 rounded-2xl border border-primary/5">
-                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">Module</span>
-                                <span className="text-xs font-bold text-primary capitalize flex items-center gap-2">
-                                    <FolderKanban className="h-3 w-3" />
-                                    {selectedRequest?.module}
-                                </span>
+                        <div className="p-8 pb-0 space-y-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="bg-primary/5 p-4 rounded-2xl border border-primary/5">
+                                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">Module</span>
+                                    <span className="text-xs font-bold text-primary capitalize flex items-center gap-2">
+                                        <FolderKanban className="h-3 w-3" />
+                                        {selectedRequest?.module}
+                                    </span>
+                                </div>
+                                <div className="bg-primary/5 p-4 rounded-2xl border border-primary/5">
+                                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">Target Record ID</span>
+                                    <span className="text-xs font-bold text-primary font-mono truncate block">
+                                        {selectedRequest?.targetId}
+                                    </span>
+                                </div>
+                                <div className="bg-primary/5 p-4 rounded-2xl border border-primary/5">
+                                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">Requester</span>
+                                    <span className="text-xs font-bold text-primary flex items-center gap-2">
+                                        <User className="h-3 w-3" />
+                                        {selectedRequest?.requestedBy.name}
+                                    </span>
+                                </div>
                             </div>
-                            <div className="bg-primary/5 p-4 rounded-2xl border border-primary/5">
-                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">Target Record ID</span>
-                                <span className="text-xs font-bold text-primary font-mono truncate block">
-                                    {selectedRequest?.targetId}
-                                </span>
-                            </div>
-                            <div className="bg-primary/5 p-4 rounded-2xl border border-primary/5">
-                                <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">Requester</span>
-                                <span className="text-xs font-bold text-primary flex items-center gap-2">
-                                    <User className="h-3 w-3" />
-                                    {selectedRequest?.requestedBy.name}
-                                </span>
-                            </div>
+
+                            {selectedRequest && (
+                                <TargetRecordPreview 
+                                    requestId={selectedRequest.id}
+                                    module={selectedRequest.module}
+                                    targetId={selectedRequest.targetId}
+                                    targetCollection={selectedRequest.targetCollection}
+                                />
+                            )}
                         </div>
 
                         <div className="p-8 space-y-8">
@@ -347,14 +407,26 @@ export default function VerificationsPage() {
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     {selectedRequest?.assignedVerifiers.map((av, idx) => (
-                                        <div key={idx} className="flex items-center justify-between p-4 rounded-2xl border border-primary/5 bg-white shadow-sm hover:shadow-md transition-shadow">
+                                        <div key={idx} className={cn(
+                                            "flex items-center justify-between p-4 rounded-2xl border transition-all",
+                                            av.status === 'Approved' ? "bg-emerald-50 border-emerald-100" : 
+                                            av.status === 'Rejected' ? "bg-red-50 border-red-100" : 
+                                            "bg-white border-primary/5 shadow-sm hover:shadow-md"
+                                        )}>
                                             <div className="flex items-center gap-3">
-                                                <div className="h-10 w-10 rounded-xl bg-primary/5 flex items-center justify-center text-primary font-bold text-sm">
+                                                <div className={cn(
+                                                    "h-10 w-10 rounded-xl flex items-center justify-center font-bold text-sm",
+                                                    av.status === 'Approved' ? "bg-emerald-100 text-emerald-700" :
+                                                    av.status === 'Rejected' ? "bg-red-100 text-red-700" :
+                                                    "bg-primary/5 text-primary"
+                                                )}>
                                                     {av.name.charAt(0)}
                                                 </div>
                                                 <div className="space-y-0.5">
-                                                    <span className="font-bold text-sm text-primary block">{av.name}</span>
-                                                    <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-tighter">Verifier</span>
+                                                    <span className="font-bold text-sm text-primary block">{av.name} {av.id === userProfile?.id && "(You)"}</span>
+                                                    <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-tighter">
+                                                        {av.status === 'Pending' ? 'Pending Approval' : `Actioned on ${av.updatedAt ? new Date((av.updatedAt as any).seconds * 1000).toLocaleDateString() : 'N/A'}`}
+                                                    </span>
                                                 </div>
                                             </div>
                                             <Badge variant={av.status === 'Approved' ? 'eligible' : av.status === 'Rejected' ? 'destructive' : 'outline'} className="capitalize font-bold text-[10px] px-3 h-6 rounded-full">
@@ -481,7 +553,7 @@ function VerificationCard({ request, index, onView, onWithdraw }: { request: Pen
                     </div>
                     <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
                         <Clock className="h-3 w-3" />
-                        {request.createdAt ? new Date((request.createdAt as any).seconds * 1000).toLocaleDateString() : 'N/A'}
+                        {formatDate(request.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })}
                     </span>
                 </div>
             </CardHeader>

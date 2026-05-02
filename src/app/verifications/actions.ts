@@ -427,7 +427,8 @@ import { generateChanges } from '@/lib/utils';
              revalidatePath(request.revalidatePath, 'page');
              revalidatePath('/dashboard', 'layout');
  
-             return { success: true, message: 'Final Approval Granted. Records Updated Globally.' };
+             const verifierName = updatedVerifiers.find(v => v.id === verifierId)?.name || 'Verifier';
+             return { success: true, message: `Final Approval Granted by ${verifierName}. Records Updated Globally.` };
          } else {
              // Just update the status
              await docRef.update({ 

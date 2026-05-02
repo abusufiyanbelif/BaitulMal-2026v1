@@ -15,6 +15,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
 import { requestVerificationAction } from '@/app/verifications/actions';
+import { generateChanges } from '@/lib/utils';
 
 interface VerificationRequestDialogProps {
   isOpen: boolean;
@@ -176,7 +177,7 @@ export function VerificationRequestDialog({
         </DialogHeader>
 
         <div className="flex-1 overflow-hidden flex flex-col">
-          <div className="p-6 pb-0 space-y-4">
+          <div className="p-6 pb-4 space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
@@ -187,6 +188,32 @@ export function VerificationRequestDialog({
               />
             </div>
           </div>
+          
+          {/* Summary of Changes */}
+          {payload.originalValue && payload.newValue && (
+              <div className="px-6 pb-4 border-b border-primary/5">
+                  <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100/50">
+                      <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-3 flex items-center gap-2">
+                          <Info className="h-3 w-3" /> Change Summary
+                      </p>
+                      <div className="space-y-2.5 max-h-[120px] overflow-y-auto pr-1">
+                          {generateChanges(payload.originalValue, payload.newValue).map((change, idx) => (
+                              <div key={idx} className="text-[10px] leading-tight">
+                                  <p className="font-bold text-primary/60 uppercase tracking-tighter mb-0.5">{change.field.replace(/([A-Z])/g, ' $1')}</p>
+                                  <div className="flex items-center gap-1.5 font-bold">
+                                      <span className="text-red-600/70 line-through truncate max-w-[120px]">{String(typeof change.old === 'object' ? 'OBJ' : change.old)}</span>
+                                      <span className="text-primary/30">→</span>
+                                      <span className="text-emerald-700 truncate">{String(typeof change.new === 'object' ? 'OBJ' : change.new)}</span>
+                                  </div>
+                              </div>
+                          ))}
+                          {generateChanges(payload.originalValue, payload.newValue).length === 0 && (
+                              <p className="text-[10px] font-bold text-muted-foreground italic">No specific field changes detected.</p>
+                          )}
+                      </div>
+                  </div>
+              </div>
+          )}
 
           <ScrollArea className="px-6 h-[320px] w-full">
             <div className="py-4 space-y-2">

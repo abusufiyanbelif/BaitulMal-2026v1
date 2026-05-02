@@ -103,12 +103,40 @@ export function formatDate(dateInput: Date | string | null | undefined, options?
  */
 export function generateChanges(oldVal: any, newVal: any): { field: string, old: any, new: any }[] {
     const changes: { field: string, old: any, new: any }[] = [];
-    if (!oldVal || !newVal) return changes;
+    
+    // If both are missing, no changes
+    if (!oldVal && !newVal) return changes;
+
+    // Handle CREATE scenario: Everything in newVal is a change from N/A
+    if (!oldVal && newVal) {
+        Object.keys(newVal).forEach(key => {
+            if (['updatedAt', 'createdAt', 'id', 'assignedVerifiers', 'assignedVerifierIds', 'requestedBy', 'status', 'module', 'targetId', 'targetCollection', 'revalidatePath'].includes(key)) return;
+            changes.push({
+                field: key,
+                old: 'N/A',
+                new: newVal[key]
+            });
+        });
+        return changes;
+    }
+
+    // Handle DELETE scenario: Everything in oldVal is a change to N/A
+    if (oldVal && !newVal) {
+        Object.keys(oldVal).forEach(key => {
+            if (['updatedAt', 'createdAt', 'id', 'assignedVerifiers', 'assignedVerifierIds', 'requestedBy', 'status', 'module', 'targetId', 'targetCollection', 'revalidatePath'].includes(key)) return;
+            changes.push({
+                field: key,
+                old: oldVal[key],
+                new: 'DELETED'
+            });
+        });
+        return changes;
+    }
 
     const allKeys = Array.from(new Set([...Object.keys(oldVal), ...Object.keys(newVal)]));
     
     for (const key of allKeys) {
-        if (key === 'updatedAt' || key === 'createdAt' || key === 'id') continue;
+        if (['updatedAt', 'createdAt', 'id', 'assignedVerifiers', 'assignedVerifierIds', 'requestedBy', 'status', 'module', 'targetId', 'targetCollection', 'revalidatePath'].includes(key)) continue;
         
         const oldValStr = JSON.stringify(oldVal[key]);
         const newValStr = JSON.stringify(newVal[key]);
@@ -116,8 +144,8 @@ export function generateChanges(oldVal: any, newVal: any): { field: string, old:
         if (oldValStr !== newValStr) {
             changes.push({
                 field: key,
-                old: oldVal[key],
-                new: newVal[key]
+                old: oldVal[key] ?? 'N/A',
+                new: newVal[key] ?? 'N/A'
             });
         }
     }

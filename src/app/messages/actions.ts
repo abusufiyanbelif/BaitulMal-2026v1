@@ -1068,6 +1068,7 @@ export async function dispatchNotificationToGroups(params: {
         variables: Record<string, string>;
     };
     metadata?: any;
+    excludeUserIds?: string[];
 }) {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, sentCount: 0 };
@@ -1100,12 +1101,16 @@ export async function dispatchNotificationToGroups(params: {
                     sentCount++;
                 } else if (group.channelType === 'Individual') {
                     if (!group.memberIds || group.memberIds.length === 0) continue;
+                    
+                    const filteredMemberIds = group.memberIds.filter((id: string) => !params.excludeUserIds?.includes(id));
+                    if (filteredMemberIds.length === 0) continue;
+
                     const { FieldPath } = require('firebase-admin/firestore');
                     
                     const memberTelegramIds: string[] = [];
                     const chunkSize = 10;
-                    for (let i = 0; i < group.memberIds.length; i += chunkSize) {
-                        const chunk = group.memberIds.slice(i, i + chunkSize);
+                    for (let i = 0; i < filteredMemberIds.length; i += chunkSize) {
+                        const chunk = filteredMemberIds.slice(i, i + chunkSize);
                         const membersSnap = await adminDb.collection('users')
                             .where(FieldPath.documentId(), 'in', chunk)
                             .get();
@@ -1124,14 +1129,17 @@ export async function dispatchNotificationToGroups(params: {
             } else if (group.type === 'WhatsApp') {
                 if (!group.memberIds || group.memberIds.length === 0) continue;
                 
+                const filteredMemberIds = group.memberIds.filter((id: string) => !params.excludeUserIds?.includes(id));
+                if (filteredMemberIds.length === 0) continue;
+
                 const { FieldPath } = require('firebase-admin/firestore');
                 
                 // Fetch member phone numbers using document IDs safely
                 // Batch query if more than 10 members (in operator limit)
                 const memberPhones: string[] = [];
                 const chunkSize = 10;
-                for (let i = 0; i < group.memberIds.length; i += chunkSize) {
-                    const chunk = group.memberIds.slice(i, i + chunkSize);
+                for (let i = 0; i < filteredMemberIds.length; i += chunkSize) {
+                    const chunk = filteredMemberIds.slice(i, i + chunkSize);
                     const membersSnap = await adminDb.collection('users')
                         .where(FieldPath.documentId(), 'in', chunk)
                         .get();
@@ -1590,7 +1598,8 @@ export async function notifyVerificationUpdateAction(params: {
                 recordId: request.targetId,
                 requestId: request.id,
                 type: `verification_${action.toLowerCase()}`
-            }
+            },
+            excludeUserIds: [performedBy.id]
         });
     } catch (e: any) {
         console.error('Failed to notify verification update:', e);

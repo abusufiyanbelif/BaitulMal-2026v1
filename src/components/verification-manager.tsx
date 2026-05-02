@@ -12,7 +12,7 @@
  import { ScrollArea } from '@/components/ui/scroll-area';
  import { useToast } from '@/hooks/use-toast';
  import { approveVerificationAction, rejectVerificationAction } from '@/app/verifications/actions';
- import { cn } from '@/lib/utils';
+ import { cn, generateChanges } from '@/lib/utils';
  import { Label } from '@/components/ui/label';
  
  function DiffItem({ label, oldVal, newVal, operation }: { label: string, oldVal?: any, newVal?: any, operation: 'CREATE' | 'UPDATE' | 'DELETE' }) {
@@ -128,9 +128,11 @@
          return config?.enableInAppNotifications !== false;
      });
 
-     // For admins, show all. For members, show where they haven't approved yet.
-     if (userProfile.role === 'Admin') return filteredRequests;
-     return filteredRequests.filter(req => 
+     // For admins, show all except self-requested. For members, show where they haven't approved yet.
+     const othersRequests = filteredRequests.filter(req => req.requestedBy.id !== userProfile.id);
+
+     if (userProfile.role === 'Admin') return othersRequests;
+     return othersRequests.filter(req => 
        req.assignedVerifiers.some(v => v.id === userProfile.id && v.status === 'Pending')
      );
    }, [allRequests, userProfile, moduleConfigs]);

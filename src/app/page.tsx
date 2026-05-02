@@ -172,10 +172,16 @@ export default function Home() {
                         {/* APK Download Button */}
                         <div className="pt-4 flex flex-col items-center gap-2">
                             <Button asChild variant="outline" size="lg" className="h-14 px-10 rounded-[20px] border-emerald-500/20 bg-emerald-500/5 text-emerald-700 font-black text-[10px] uppercase tracking-widest transition-all hover:bg-emerald-500 hover:text-white hover:shadow-xl active:scale-95 group">
-                                <Link href="/app-release.apk" download>
+                                <a 
+                                    href="/app-release.apk" 
+                                    download="baitulamal-solapur.apk" 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="flex items-center"
+                                >
                                     <ShieldCheck className="mr-3 h-5 w-5 text-emerald-500 transition-transform group-hover:scale-110" />
                                     Download Mobile App (APK)
-                                </Link>
+                                </a>
                             </Button>
                             <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest opacity-60">Install directly on Android devices</p>
                         </div>

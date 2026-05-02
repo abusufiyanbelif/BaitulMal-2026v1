@@ -205,8 +205,15 @@ export default function Home() {
                                         The institutional platform is now **Native-Ready**. Download the APK for real-time system alerts.
                                     </p>
                                     <div className="flex gap-2">
-                                        <Button variant="outline" className="h-9 text-xs font-bold border-primary/20 text-primary rounded-xl transition-transform active:scale-95 px-5">
-                                            Download APK
+                                        <Button asChild variant="outline" className="h-9 text-xs font-bold border-primary/20 text-primary rounded-xl transition-transform active:scale-95 px-5">
+                                            <a 
+                                                href="/app-release.apk" 
+                                                download="baitulamal-solapur.apk"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                Download APK
+                                            </a>
                                         </Button>
                                         <Button variant="secondary" className="h-9 text-xs font-bold bg-primary/10 text-primary rounded-xl transition-transform active:scale-95 border-none px-5">
                                             Add to Home
