@@ -71,8 +71,8 @@ export function LeadAndCampaignSummary() {
           <CardDescription className="font-normal text-primary/70">Public Campaigns Grouped By Category.</CardDescription>
         </CardHeader>
         <CardContent className="p-0 flex-1 overflow-hidden">
-          <ScrollArea className="w-full h-full">
-            <div className="min-w-[400px] p-4">
+          <ScrollArea className="w-full">
+            <div className="min-w-[300px] sm:min-w-[400px] p-4">
                 <Table>
                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                     <TableRow className="border-b border-primary/10">
@@ -83,8 +83,8 @@ export function LeadAndCampaignSummary() {
                     <TableBody>
                     {campaignSummary?.chartData.map((entry) => (
                         <TableRow key={entry.name} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5 bg-white">
-                        <TableCell className="font-bold text-primary text-sm pl-6">{entry.name}</TableCell>
-                        <TableCell className="text-right font-normal pr-6">{entry.value}</TableCell>
+                        <TableCell className="font-bold text-primary text-xs sm:text-sm pl-6">{entry.name}</TableCell>
+                        <TableCell className="text-right font-normal text-xs sm:text-sm pr-6">{entry.value}</TableCell>
                         </TableRow>
                     ))}
                     </TableBody>
@@ -109,8 +109,8 @@ export function LeadAndCampaignSummary() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-0 flex-1 overflow-hidden">
-          <ScrollArea className="w-full h-full">
-            <div className="min-w-[400px] p-4">
+          <ScrollArea className="w-full">
+            <div className="min-w-[300px] sm:min-w-[400px] p-4">
                 <Table>
                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                     <TableRow className="border-b border-primary/10">
@@ -121,8 +121,8 @@ export function LeadAndCampaignSummary() {
                     <TableBody>
                     {leadSummary?.chartData.map((entry) => (
                         <TableRow key={entry.name} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5 bg-white">
-                        <TableCell className="font-bold text-primary text-sm pl-6">{entry.name}</TableCell>
-                        <TableCell className="text-right font-normal pr-6">{entry.value}</TableCell>
+                        <TableCell className="font-bold text-primary text-xs sm:text-sm pl-6">{entry.name}</TableCell>
+                        <TableCell className="text-right font-normal text-xs sm:text-sm pr-6">{entry.value}</TableCell>
                         </TableRow>
                     ))}
                     </TableBody>

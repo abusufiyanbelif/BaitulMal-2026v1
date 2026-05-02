@@ -4,7 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build && npm run docs:generate",
+    "docs:generate": "node scripts/generate-index.js && node scripts/generate-user-guides.js && node scripts/generate-architecture.js",
+    "publish": "node scripts/publish.js",
     "start": "next start",
     "lint": "next lint",
     "db:seed": "ts-node --compiler-options \"{\\\"module\\\":\\\"CommonJS\\\"}\" scripts/seed.ts",

@@ -136,25 +136,25 @@ export default function BeneficiaryPortalPage() {
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-fade-in-up space-y-8">
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-[32px] shadow-sm border border-slate-100">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white p-6 sm:p-8 rounded-[32px] shadow-sm border border-slate-100">
                 <div className="flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                        <HandHelping className="h-8 w-8" />
+                    <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner shrink-0">
+                        <HandHelping className="h-6 w-6 sm:h-8 sm:w-8" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-black tracking-tight text-slate-900">Assistance Dashboard</h1>
-                        <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] flex items-center gap-2">
-                            <ShieldCheck className="h-3 w-3 text-green-500" /> Member Registry: {userProfile.name}
+                        <h1 className="text-xl sm:text-3xl font-black tracking-tight text-slate-900">Support Dashboard</h1>
+                        <p className="text-slate-500 font-bold uppercase tracking-widest text-[9px] sm:text-[10px] flex items-center gap-2">
+                            <ShieldCheck className="h-3 w-3 text-green-500" /> Registry: {userProfile.name}
                         </p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Button asChild variant="outline" className="font-black text-[10px] uppercase tracking-widest rounded-xl px-6 h-12 border-slate-200">
+                <div className="flex items-center gap-2 sm:gap-3 w-full lg:w-auto">
+                    <Button asChild variant="outline" className="flex-1 lg:flex-none font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl px-4 sm:px-6 h-10 sm:h-12 border-slate-200">
                         <Link href="/beneficiary-portal/profile">
-                            <UserCircle2 className="mr-2 h-4 w-4" /> My Profile
+                            <UserCircle2 className="mr-2 h-4 w-4" /> Profile
                         </Link>
                     </Button>
-                    <Button asChild variant="outline" className="font-black text-[10px] uppercase tracking-widest rounded-xl px-6 h-12 border-slate-200">
+                    <Button asChild variant="outline" className="flex-1 lg:flex-none font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl px-4 sm:px-6 h-10 sm:h-12 border-slate-200">
                         <Link href="/beneficiary-portal/settings">
                             <ShieldCheck className="mr-2 h-4 w-4" /> Security
                         </Link>
@@ -162,7 +162,7 @@ export default function BeneficiaryPortalPage() {
                     <Button 
                         variant="ghost" 
                         size="icon"
-                        className="font-bold h-12 w-12 rounded-xl text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all"
+                        className="font-bold h-10 w-10 sm:h-12 sm:w-12 rounded-xl text-slate-400 hover:bg-red-50 hover:text-red-600 transition-all shrink-0"
                         onClick={() => auth?.signOut().then(() => router.push('/portal-login'))}
                     >
                         <LogOut className="h-5 w-5" />
@@ -174,29 +174,29 @@ export default function BeneficiaryPortalPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Card className="border-none shadow-xl shadow-slate-200/40 bg-white group">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Support Received</CardTitle>
-                        <Gift className="h-5 w-5 text-primary opacity-60" />
+                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Support Received</CardTitle>
+                        <Gift className="h-4 w-4 sm:h-5 sm:w-5 text-primary opacity-60" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-4xl font-black text-slate-900 tracking-tight font-mono">
+                        <div className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight font-mono">
                             {formatCurrency(totalDisbursed)}
                         </div>
-                        <div className="mt-2 flex items-center gap-2 text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                            Institutional assistance allocated
+                        <div className="mt-2 flex items-center gap-2 text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                            Allocated support
                         </div>
                     </CardContent>
                 </Card>
 
                 <Card className="border-none shadow-xl shadow-slate-200/40 bg-white group">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Linked Programs</CardTitle>
-                        <Sparkles className="h-5 w-5 text-green-500" />
+                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Linked Programs</CardTitle>
+                        <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-4xl font-black text-slate-900 tracking-tight font-mono">
+                        <div className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight font-mono">
                             {activeCount}
                         </div>
-                        <div className="mt-2 text-[10px] font-bold text-green-600 uppercase tracking-widest">
+                        <div className="mt-2 text-[9px] sm:text-[10px] font-bold text-green-600 uppercase tracking-widest">
                             Verified participation
                         </div>
                     </CardContent>
@@ -204,15 +204,15 @@ export default function BeneficiaryPortalPage() {
 
                 <Card className="border-none shadow-xl shadow-slate-200/40 bg-slate-900 text-white group">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Application State</CardTitle>
-                        <Activity className="h-5 w-5 text-white/40" />
+                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-white/40 uppercase tracking-widest">Application State</CardTitle>
+                        <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-white/40" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-black tracking-tight">
+                        <div className="text-xl sm:text-2xl font-black tracking-tight">
                             Verified Member
                         </div>
-                        <div className="mt-2 text-[10px] font-bold text-white/60 uppercase tracking-widest">
-                            Active registry status
+                        <div className="mt-2 text-[9px] sm:text-[10px] font-bold text-white/60 uppercase tracking-widest">
+                            Registry status
                         </div>
                     </CardContent>
                 </Card>
@@ -268,13 +268,13 @@ export default function BeneficiaryPortalPage() {
 
             {/* Assistance Records */}
             <Card className="border-none shadow-2xl shadow-slate-200/50 bg-white rounded-3xl overflow-hidden">
-                <CardHeader className="bg-slate-50/50 px-8 py-6 border-b border-slate-100">
+                <CardHeader className="bg-slate-50/50 px-6 sm:px-8 py-5 sm:py-6 border-b border-slate-100">
                     <div>
-                        <CardTitle className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                        <CardTitle className="text-lg sm:text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                             <CheckCircle2 className="h-5 w-5 text-primary/60" />
                             Allocated Support
                         </CardTitle>
-                        <p className="text-slate-500 text-xs font-normal">Records of institutional support linked to your profile.</p>
+                        <p className="text-slate-500 text-[10px] sm:text-xs font-normal">Institutional support linked to your profile.</p>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">

@@ -126,29 +126,29 @@ export default function DonorPortalPage() {
     return (
         <div className="space-y-8 animate-fade-in-up pb-12">
             {/* Header Section */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 bg-white p-6 sm:p-8 rounded-3xl shadow-sm border border-slate-100">
                 <div className="flex items-center gap-4">
-                    <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner">
-                        <User className="h-8 w-8" />
+                    <div className="h-12 w-12 sm:h-16 sm:w-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shadow-inner shrink-0">
+                        <User className="h-6 w-6 sm:h-8 sm:w-8" />
                     </div>
                     <div>
-                        <h1 className="text-3xl font-black tracking-tight text-slate-900">Assalam-o-Alaikum, {userProfile.name?.split(' ')[0]}</h1>
-                        <p className="text-slate-500 font-bold uppercase tracking-widest text-[10px] flex items-center gap-2 mt-1">
+                        <h1 className="text-xl sm:text-3xl font-black tracking-tight text-slate-900">Assalam-o-Alaikum, {userProfile.name?.split(' ')[0]}</h1>
+                        <p className="text-slate-500 font-bold uppercase tracking-widest text-[9px] sm:text-[10px] flex items-center gap-2 mt-1">
                             <ShieldCheck className="h-3 w-3 text-primary" /> Verified Institutional Donor Profile
                         </p>
                     </div>
                 </div>
-                <div className="flex items-center gap-3">
-                    <Button asChild variant="outline" className="font-bold border-slate-200 rounded-xl h-12 px-6">
+                <div className="flex items-center gap-2 sm:gap-3 w-full lg:w-auto">
+                    <Button asChild variant="outline" className="flex-1 lg:flex-none font-bold border-slate-200 rounded-xl h-10 sm:h-12 px-4 sm:px-6 text-xs sm:text-sm">
                         <Link href="/donor-portal/causes">
                             <Target className="mr-2 h-4 w-4" />
-                            Discover Causes
+                            Discover
                         </Link>
                     </Button>
-                    <Button asChild className="font-bold shadow-lg shadow-primary/20 rounded-xl h-12 px-6">
+                    <Button asChild className="flex-1 lg:flex-none font-bold shadow-lg shadow-primary/20 rounded-xl h-10 sm:h-12 px-4 sm:px-6 text-xs sm:text-sm">
                         <Link href="/donate">
                             <CreditCard className="mr-2 h-4 w-4" />
-                            Contribute Now
+                            Contribute
                         </Link>
                     </Button>
                 </div>
@@ -159,14 +159,14 @@ export default function DonorPortalPage() {
                 <Card className="border-none shadow-xl shadow-slate-200/40 bg-white group hover:scale-[1.02] transition-transform cursor-pointer overflow-hidden" onClick={() => router.push('/donor-portal/donations')}>
                     <div className="absolute top-0 left-0 w-1 h-full bg-green-500" />
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Lifetime Impact</CardTitle>
-                        <HeartHandshake className="h-5 w-5 text-green-500" />
+                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Lifetime Impact</CardTitle>
+                        <HeartHandshake className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-4xl font-black text-slate-900 tracking-tight font-mono">
+                        <div className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight font-mono">
                             {formatCurrency(totalImpact)}
                         </div>
-                        <div className="mt-2 flex items-center gap-2 text-[10px] font-bold text-green-600 uppercase tracking-widest">
+                        <div className="mt-2 flex items-center gap-2 text-[9px] sm:text-[10px] font-bold text-green-600 uppercase tracking-widest">
                             <Activity className="h-3 w-3" /> {verifiedDonations.length} Verified Contributions
                         </div>
                     </CardContent>
@@ -175,30 +175,30 @@ export default function DonorPortalPage() {
                 <Card className="border-none shadow-xl shadow-slate-200/40 bg-white group hover:scale-[1.02] transition-transform cursor-pointer overflow-hidden" onClick={() => router.push('/donor-portal/donations')}>
                     <div className="absolute top-0 left-0 w-1 h-full bg-orange-500" />
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Processing Audits</CardTitle>
-                        <WalletCards className="h-5 w-5 text-orange-500" />
+                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Processing Audits</CardTitle>
+                        <WalletCards className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-4xl font-black text-slate-900 tracking-tight font-mono">
+                        <div className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight font-mono">
                             {pendingCount}
                         </div>
-                        <div className="mt-2 text-[10px] font-bold text-orange-600 uppercase tracking-widest flex items-center gap-2">
-                            <Activity className="h-3 w-3" /> Awaiting Institutional Clearance
+                        <div className="mt-2 text-[9px] sm:text-[10px] font-bold text-orange-600 uppercase tracking-widest flex items-center gap-2">
+                            <Activity className="h-3 w-3" /> Institutional Clearance
                         </div>
                     </CardContent>
                 </Card>
 
                 <Card className="border-none shadow-xl shadow-slate-200/40 bg-slate-900 text-white group hover:scale-[1.02] transition-transform cursor-pointer overflow-hidden" onClick={() => router.push('/donor-portal/profile')}>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[10px] font-bold text-white/40 uppercase tracking-widest">Loyalty Status</CardTitle>
-                        <ShieldCheck className="h-5 w-5 text-primary" />
+                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-white/40 uppercase tracking-widest">Loyalty Status</CardTitle>
+                        <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-black tracking-tight truncate flex items-center gap-2">
+                        <div className="text-xl sm:text-2xl font-black tracking-tight truncate flex items-center gap-2">
                             Platinum Member
                         </div>
-                        <div className="mt-2 text-[10px] font-bold text-white/60 uppercase tracking-widest flex items-center gap-2">
-                            <TrendingUp className="h-3 w-3 text-green-400" /> High Integrity Scoring
+                        <div className="mt-2 text-[9px] sm:text-[10px] font-bold text-white/60 uppercase tracking-widest flex items-center gap-2">
+                            <TrendingUp className="h-3 w-3 text-green-400" /> Integrity Scoring
                         </div>
                     </CardContent>
                 </Card>
@@ -215,7 +215,7 @@ export default function DonorPortalPage() {
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Allocation by Purpose</p>
                         </div>
                     </CardHeader>
-                    <CardContent className="h-[300px]">
+                    <CardContent className="h-[250px] sm:h-[300px]">
                         {pieData.length > 0 ? (
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
@@ -223,8 +223,8 @@ export default function DonorPortalPage() {
                                         data={pieData}
                                         cx="50%"
                                         cy="50%"
-                                        innerRadius={60}
-                                        outerRadius={80}
+                                        innerRadius="40%"
+                                        outerRadius="70%"
                                         paddingAngle={5}
                                         dataKey="value"
                                     >
@@ -236,11 +236,11 @@ export default function DonorPortalPage() {
                                         contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold' }}
                                         formatter={(value: number) => formatCurrency(value)}
                                     />
-                                    <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '10px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }} />
+                                    <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }} />
                                 </PieChart>
                             </ResponsiveContainer>
                         ) : (
-                            <div className="h-full flex items-center justify-center text-slate-300 font-bold uppercase tracking-widest text-[10px]">No Data Available</div>
+                            <div className="h-full flex items-center justify-center text-slate-300 font-bold uppercase tracking-widest text-[9px]">No Data Available</div>
                         )}
                     </CardContent>
                 </Card>
@@ -254,17 +254,17 @@ export default function DonorPortalPage() {
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Contribution Trend (6m)</p>
                         </div>
                     </CardHeader>
-                    <CardContent className="h-[300px] pt-4">
+                    <CardContent className="h-[250px] sm:h-[300px] pt-4">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={barData}>
-                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 10, fontWeight: 'bold', fill: '#94a3b8' }} />
+                                <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fontSize: 9, fontWeight: 'bold', fill: '#94a3b8' }} />
                                 <YAxis hide />
                                 <Tooltip 
                                     cursor={{ fill: '#f8fafc' }}
                                     contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', fontSize: '12px', fontWeight: 'bold' }}
                                     formatter={(value: number) => formatCurrency(value)}
                                 />
-                                <Bar dataKey="amount" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+                                <Bar dataKey="amount" fill="#3b82f6" radius={[4, 4, 0, 0]} />
                             </BarChart>
                         </ResponsiveContainer>
                     </CardContent>
@@ -275,13 +275,13 @@ export default function DonorPortalPage() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Recent Activity Table */}
                 <Card className="lg:col-span-2 border-none shadow-2xl shadow-slate-200/50 bg-white rounded-3xl overflow-hidden">
-                    <CardHeader className="bg-slate-50/50 px-8 py-6 border-b border-slate-100 flex flex-row justify-between items-center">
+                    <CardHeader className="bg-slate-50/50 px-6 sm:px-8 py-5 sm:py-6 border-b border-slate-100 flex flex-row justify-between items-center">
                         <div>
-                            <CardTitle className="text-xl font-black text-slate-900 tracking-tight">Recent Activity</CardTitle>
-                            <p className="text-slate-500 text-xs font-normal">Audit trail of your recent contributions.</p>
+                            <CardTitle className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">Recent Activity</CardTitle>
+                            <p className="text-slate-500 text-[10px] sm:text-xs font-normal">Your recent contributions.</p>
                         </div>
-                        <Button variant="ghost" size="sm" asChild className="text-xs font-bold text-primary">
-                            <Link href="/donor-portal/donations">View Registry <ExternalLink className="ml-2 h-3 w-3" /></Link>
+                        <Button variant="ghost" size="sm" asChild className="text-[10px] sm:text-xs font-bold text-primary">
+                            <Link href="/donor-portal/donations">Registry <ExternalLink className="ml-1 h-3 w-3" /></Link>
                         </Button>
                     </CardHeader>
                     <CardContent className="p-0">

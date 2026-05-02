@@ -84,27 +84,27 @@ export function DonationSummary() {
           <CardDescription className="font-normal text-primary/70">Performance Trends For The Selected Period ({rangeText}).</CardDescription>
         </CardHeader>
         <CardContent className="p-0 flex-1 overflow-hidden">
-            <ScrollArea className="w-full h-full">
-                <div className="min-w-[650px] p-4">
+            <ScrollArea className="w-full">
+                <div className="min-w-[450px] sm:min-w-[650px] p-4">
                     <Table>
                         <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                             <TableRow className="border-b border-primary/10">
                                 <TableHead className="pl-6 font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Year</TableHead>
-                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Target Goal</TableHead>
-                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Raised For Goal</TableHead>
-                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Overall Total</TableHead>
+                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Target</TableHead>
+                                <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Raised</TableHead>
+                                <TableHead className="hidden sm:table-cell font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Overall</TableHead>
                                 <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] pr-6 text-[10px] tracking-tight capitalize">Progress</TableHead>
                             </TableRow>
                         </TableHeader>
                         <TableBody>
                             {yearlySummary.map(({ year, totalTarget, totalGoalReceived, overallTotalReceived, progress }) => (
                                 <TableRow key={year} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5 bg-white">
-                                    <TableCell className="font-bold text-primary pl-4">{year}</TableCell>
-                                    <TableCell className="font-normal text-primary/80">₹{totalTarget.toLocaleString('en-IN')}</TableCell>
-                                    <TableCell className="font-bold text-primary">₹{totalGoalReceived.toLocaleString('en-IN')}</TableCell>
-                                    <TableCell className="font-normal text-primary/60">₹{overallTotalReceived.toLocaleString('en-IN')}</TableCell>
-                                    <TableCell className="text-right w-[150px] pr-6">
-                                        <div className="flex items-center justify-end gap-3">
+                                    <TableCell className="font-bold text-primary pl-6 text-xs sm:text-sm">{year}</TableCell>
+                                    <TableCell className="font-normal text-primary/80 text-xs sm:text-sm font-mono">₹{totalTarget.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell className="font-bold text-primary text-xs sm:text-sm font-mono">₹{totalGoalReceived.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell className="hidden sm:table-cell font-normal text-primary/60 text-xs sm:text-sm font-mono">₹{overallTotalReceived.toLocaleString('en-IN')}</TableCell>
+                                    <TableCell className="text-right w-[120px] sm:w-[150px] pr-6">
+                                        <div className="flex items-center justify-end gap-2 sm:gap-3">
                                             <Progress value={progress} className="h-1 flex-1 bg-primary/10" />
                                             <span className="text-[10px] font-bold text-primary whitespace-nowrap">{Math.round(progress)}%</span>
                                         </div>
@@ -129,10 +129,10 @@ export function DonationSummary() {
         </CardHeader>
         <CardContent className="pt-6">
           {isClient ? (
-            <ChartContainer config={donationCategoryChartConfig} className="h-[300px] w-full">
+            <ChartContainer config={donationCategoryChartConfig} className="h-[300px] sm:h-[400px] w-full">
               <PieChart>
                 <ChartTooltip content={<ChartTooltipContent nameKey="name" />} />
-                <Pie data={categorySummary} dataKey="value" nameKey="name" innerRadius={60} outerRadius={100} strokeWidth={5} paddingAngle={2} className="transition-all duration-1000 ease-out focus:outline-none">
+                <Pie data={categorySummary} dataKey="value" nameKey="name" innerRadius="30%" outerRadius="60%" strokeWidth={2} paddingAngle={2} className="transition-all duration-1000 ease-out focus:outline-none">
                   {categorySummary.map((entry: any) => (
                     <Cell key={`cell-${entry.name}`} fill={entry.fill} className="hover:opacity-80 transition-opacity" />
                   ))}

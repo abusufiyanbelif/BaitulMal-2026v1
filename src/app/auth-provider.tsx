@@ -38,10 +38,11 @@ function RouteGuard({ children }: { children: ReactNode }) {
     const sessionRef = useMemoFirebase(() => (firestore && sessionId) ? doc(firestore, 'user_sessions', sessionId) : null, [firestore, sessionId]);
     const { data: sessionData } = useDoc<any>(sessionRef);
 
-    const isPublicRoute = ['/login', '/seed', '/', '/portal-login', '/portal-register', '/donate'].includes(pathname) || 
-                          pathname.startsWith('/campaigns-public') || 
-                          pathname.startsWith('/leads-public') || 
-                          pathname.startsWith('/info');
+    const isPublicRoute = ['/login', '/seed', '/', '/portal-login', '/portal-register', '/donate', '/campaign-public', '/leads-public'].includes(pathname) || 
+                          pathname.startsWith('/campaign-public/') || 
+                          pathname.startsWith('/leads-public/') || 
+                          pathname.startsWith('/info/') ||
+                          pathname.startsWith('/public/');
 
     useEffect(() => {
         if (isLoading) return;

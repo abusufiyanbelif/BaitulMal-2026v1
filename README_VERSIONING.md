@@ -1,71 +1,73 @@
-# 🛡️ Institutional Versioning & Release Ledger Workflow
+# 🛡️ Institutional Automation & Documentation Workflow
 
-This document outlines the automated and manual workflows for tracking application builds, fixes, and feature enhancements in the BaitulMal 2026v1 Registry.
+This document outlines the automated and manual workflows for tracking application builds, documenting system architecture, and generating user guides in the BaitulMal 2026v1 Registry.
 
-## 📁 System Architecture
+## 📁 System Architecture & Automation Tools
 
-| File/Path | Purpose |
+| Tool / Script | Purpose |
 | :--- | :--- |
-| `scripts/publish.js` | The core engine that handles versioning and document generation. |
-| `src/lib/version.json` | The single source of truth for the current application build. |
-| `releases/` | Directory containing standalone build-specific release documents. |
-| `src/components/app-footer.tsx` | The UI component that displays the live build version. |
+| `scripts/publish.js` | **Core Engine**: Handles versioning, release docs, and triggers the full documentation suite. |
+| `scripts/generate-index.js` | **Registry Indexer**: Scans all 89+ pages to create a navigational map with redirects. |
+| `scripts/generate-user-guides.js` | **Guide Generator**: Creates detailed user manuals with interactive action items. |
+| `scripts/generate-architecture.js` | **Architecture Mapper**: Maps Firestore collections to application modules. |
+| `src/lib/version.json` | **Version Truth**: The single source of truth for the current application build. |
+| `commit-summary.txt` | **Commit Template**: Automated git commit message generated on every publish. |
+| `docs/releases/` | **Release Ledger**: Standalone build-specific release documents. |
+| `docs/history/` | **Historical Archive**: Date-stamped backups of all previous documentation. |
 
 ---
 
-## 🤖 Automated Agent Workflow (AI/Agent Trigger)
+## 🤖 Automated Workflows
 
-Every time an AI Agent (like Antigravity) completes a modification or fix, it is **required** to execute the versioning script.
-
-### Protocol for Agents:
-1.  **Analyze** the changes performed (Bug, Enhancement, or Feature).
-2.  **Execute** the script with the appropriate classification.
-3.  **Reference** any relevant code blocks or issue IDs.
-
----
-
-## 🛠️ Manual Workflow (Human Trigger)
-
-If you make manual changes to the codebase without an agent, you should trigger the release documentation manually to keep the ledger accurate.
-
-### Command Syntax:
+### 1. Build-Time Documentation (Automatic)
+Every time you perform a production build, the documentation suite is automatically refreshed to ensure technical parity.
 ```powershell
-node scripts/publish.js [Type] "[Message]" "[Reference]" "[Steps]"
+npm run build
+```
+*Triggers: next build -> generate-index -> generate-user-guides -> generate-architecture*
+
+### 2. The Publish Workflow (Semi-Automatic)
+Use this command whenever you finalize a set of changes (Bugs, Enhancements, or Features).
+```powershell
+npm run publish -- "[Type]" "[Message]" "[Reference]" "[Steps]"
 ```
 
-### Parameters:
-- **Type**: Must be `Bug`, `Enhancement`, or `Feature`.
-- **Message**: A concise description of what was changed.
-- **Reference** (Optional): A line range or issue ID (e.g., `#L100-150`).
-- **Steps** (Optional): Specific instructions to reproduce or verify the change.
+**Parameters:**
+- **Type**: `Bug`, `Enhancement`, or `Feature`.
+- **Message**: A concise description of the change.
+- **Reference**: File paths or line ranges (e.g. `src/app/page.tsx`).
+- **Steps**: Verification steps for the human/tester to follow.
 
-### Example:
-```powershell
-node scripts/publish.js Bug "Fixed layout shift on mobile profile" "#L405" "1. Login on mobile. 2. Navigate to Profile. 3. Confirm header alignment."
+---
+
+## 🏗️ Technical Documentation Standards
+
+### 📖 Reproducible Steps
+To include technical verification steps in the auto-generated **User Guides**, use the following comment pattern in your code:
+```typescript
+// Step: Navigate to the Donor Dashboard and verify the Pie Chart scaling.
+// Step: Click on 'Verified Contributions' to test the scrollable table.
 ```
+The documentation engine will extract these and present them in a dedicated **Reproducible Steps** section in the markdown guide.
+
+### 🏛️ Architecture Mapping
+The system automatically tracks Firestore collection usage. Any file that calls `.collection('name')` will be mapped in `docs/architecture/collection-map.md`, showing whether the module has **Read-Only** or **Read/Write** access.
+
+### 📂 Historical Archiving
+The system maintains a clear audit trail. When documentation is updated:
+1. The previous version is moved to `docs/[module]/history/release-v[PREVIOUS_VERSION]/`.
+2. It is renamed with a timestamp to prevent collisions.
+3. This ensures that even if a feature is removed or changed, the documentation for that specific build version remains archived.
 
 ---
 
-## 📈 Versioning Format
+## 🛠️ Maintenance Commands
 
-The system uses a **Chronological Build Sequence**:
-`YYYY.MM.DD.BuildNumber`
-
-- **YYYY**: Year (e.g., 2026)
-- **MM**: Month (e.g., 05)
-- **DD**: Day (e.g., 02)
-- **BuildNumber**: Incremental integer starting at `1` each day.
-
----
-
-## 📄 Release Document Content
-
-Every generated document in `releases/` includes:
-- **Build ID**: The atomic version number.
-- **Timestamp**: Exact date and time of the build.
-- **Git Context**: The repository name, active branch, and specific commit hash.
-- **Categorization**: Separation of concerns between fixes and new features.
-- **Code Reference**: Direct links or identifiers for the modified lines.
+| Command | Action |
+| :--- | :--- |
+| `npm run docs:generate` | Refresh all documentation without updating the version number. |
+| `npm run publish` | Update version, archive history, and generate release notes. |
+| `npm run build` | Compile for production and refresh documentation. |
 
 ---
 *Maintained by the Institutional Release Automator.*

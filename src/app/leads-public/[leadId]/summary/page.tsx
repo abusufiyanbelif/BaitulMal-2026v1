@@ -152,11 +152,21 @@ export default function PublicLeadSummaryPage() {
         }
     }, [lead, isRationInitiative, beneficiaryGroups]);
 
-    const fundingData = useMemo(() => {
-        if (!allDonations || !lead) return null;
+    const donationsList = useMemo(() => {
+        if (!allDonations || !lead) return [];
+        return allDonations.filter(d => d.linkSplit?.some(link => link.linkId === lead.id || link.linkId === `lead_${lead.id}`))
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }, [allDonations, lead]);
 
-        const donations = allDonations.filter(d => d.linkSplit?.some(link => link.linkId === lead.id || link.linkId === `lead_${lead.id}`));
-        const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 5;
+    const totalPages = Math.ceil(donationsList.length / itemsPerPage);
+    const paginatedDonations = donationsList.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    const fundingData = useMemo(() => {
+        if (!donationsList || !lead) return null;
+
+        const verifiedDonationsList = donationsList.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
         const paymentTypeStats: Record<string, { count: number, amount: number }> = {};
@@ -560,6 +570,65 @@ export default function PublicLeadSummaryPage() {
                                 </Card>
                             )}
                         </div>
+                        {isVisible('donations_list') && donationsList.length > 0 && (
+                            <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
+                                <CardHeader className="bg-primary/5 border-b">
+                                    <CardTitle className="font-bold text-primary text-sm tracking-tight capitalize">Contribution History</CardTitle>
+                                    <CardDescription className="font-normal text-primary/70">Recent verified contributions to this cause.</CardDescription>
+                                </CardHeader>
+                                <CardContent className="pt-6 px-0 sm:px-6">
+                                    <ScrollArea className="w-full">
+                                        <div className="border rounded-lg overflow-hidden font-normal text-foreground shadow-sm min-w-[400px] border-primary/10 mx-4 sm:mx-0">
+                                            <Table>
+                                                <TableHeader className="bg-[hsl(var(--table-header-bg))]">
+                                                    <TableRow>
+                                                        <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Date</TableHead>
+                                                        <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Reference</TableHead>
+                                                        <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Amount</TableHead>
+                                                    </TableRow>
+                                                </TableHeader>
+                                                <TableBody>
+                                                    {paginatedDonations.map((d) => (
+                                                        <TableRow key={d.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white border-b border-primary/5 last:border-none">
+                                                            <TableCell className="text-xs opacity-70">{new Date(d.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</TableCell>
+                                                            <TableCell className="font-mono text-[10px] opacity-50">{d.id.slice(0, 8)}...</TableCell>
+                                                            <TableCell className="text-right font-mono font-bold text-primary text-xs">₹{d.amount.toLocaleString('en-IN')}</TableCell>
+                                                        </TableRow>
+                                                    ))}
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                        <ScrollBar orientation="horizontal" />
+                                    </ScrollArea>
+                                    
+                                    {totalPages > 1 && (
+                                        <div className="flex items-center justify-between px-4 py-4 border-t border-primary/5">
+                                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Page {currentPage} of {totalPages}</p>
+                                            <div className="flex gap-2">
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                                    disabled={currentPage === 1}
+                                                    className="h-8 w-8 p-0 rounded-lg border-primary/10"
+                                                >
+                                                    <ArrowLeft className="h-4 w-4" />
+                                                </Button>
+                                                <Button 
+                                                    variant="outline" 
+                                                    size="sm" 
+                                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                                    disabled={currentPage === totalPages}
+                                                    className="h-8 w-8 p-0 rounded-lg border-primary/10"
+                                                >
+                                                    <ChevronRight className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
                 )}
 

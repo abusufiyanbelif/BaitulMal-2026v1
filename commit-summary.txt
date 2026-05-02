@@ -1,10 +1,10 @@
-release: v2026.05.02.17
+release: v2026.05.02.18
 
-Type: Enhancement
-Message: Upgraded Institutional Documentation Engine to v1.1 with deep technical scanning, data mapping, and a premium Registry Index UI.
-Reference: #L1-228
+Type: Hardening
+Message: Optimized institutional portals for mobile responsiveness, fixed public access logic, and upgraded documentation engine with reproduction steps and versioned history.
+Reference: src/app/donor-portal/page.tsx, src/app/beneficiary-portal/page.tsx, src/app/auth-provider.tsx
 Branch: test_bmss_26
-Commit: c5ce3f05
+Commit: 37d6d205
 
 Verification Steps:
-1. Navigate to /registry-index. 2. Verify new Firestore, Action, and Field metadata in module cards. 3. Confirm glassmorphism UI enhancements.
+1. Navigate to /campaign-public as guest. 2. Verify mobile charts on Donor Dashboard. 3. Check docs/history for versioning.

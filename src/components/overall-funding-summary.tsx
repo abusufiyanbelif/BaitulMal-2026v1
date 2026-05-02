@@ -75,8 +75,8 @@ export function OverallFundingSummary() {
                 <CardDescription className="font-normal text-primary/70">{rangeDescription}</CardDescription>
             </CardHeader>
             <CardContent className="pt-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center font-normal">
-                    <div className="relative h-48 sm:h-64 w-full">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center font-normal">
+                    <div className="relative h-48 sm:h-56 md:h-64 w-full">
                         <ChartContainer
                             config={{
                                 progress: {
@@ -93,7 +93,7 @@ export function OverallFundingSummary() {
                                     endAngle={90}
                                     innerRadius="75%"
                                     outerRadius="100%"
-                                    barSize={20}
+                                    barSize={15}
                                 >
                                 <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
                                 <RadialBar
@@ -109,35 +109,35 @@ export function OverallFundingSummary() {
                             </ResponsiveContainer>
                         </ChartContainer>
                         <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom">
-                            <span className="text-3xl sm:text-4xl font-bold text-primary">
+                            <span className="text-2xl sm:text-4xl font-bold text-primary">
                                 {Math.round(overallSummary.progress || 0)}%
                             </span>
-                            <span className="text-[9px] sm:text-[10px] text-muted-foreground font-bold tracking-tight capitalize">Funded</span>
+                            <span className="text-[9px] text-muted-foreground font-bold tracking-tight capitalize">Funded</span>
                         </div>
                     </div>
-                    <div className="space-y-4 text-center md:text-left font-bold text-primary px-2">
-                        <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">Raised For Goal</p>
-                            <p className="text-2xl sm:text-3xl font-bold font-mono">
+                    <div className="grid grid-cols-2 lg:grid-cols-1 gap-4 text-left font-bold text-primary px-4 sm:px-6">
+                        <div className="space-y-0.5">
+                            <p className="text-[9px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Raised For Goal</p>
+                            <p className="text-sm sm:text-2xl font-bold font-mono">
                             ₹{(overallSummary.totalCollectedForGoals || 0).toLocaleString('en-IN')}
                             </p>
                         </div>
-                        <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">Combined Target Goal</p>
-                            <p className="text-2xl sm:text-3xl font-bold font-mono opacity-40">
+                        <div className="space-y-0.5">
+                            <p className="text-[9px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Combined Target</p>
+                            <p className="text-sm sm:text-2xl font-bold font-mono opacity-40">
                             ₹{(overallSummary.totalTarget || 0).toLocaleString('en-IN')}
                             </p>
                         </div>
-                        <div className="space-y-1">
-                            <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize">Period Total Received</p>
-                            <p className="text-2xl sm:text-3xl font-bold font-mono">
+                        <div className="space-y-0.5">
+                            <p className="text-[9px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Total Received</p>
+                            <p className="text-sm sm:text-2xl font-bold font-mono">
                             ₹{(overallSummary.grandTotalRaised || 0).toLocaleString('en-IN')}
                             </p>
                         </div>
                         {overallSummary.showUnlinkedFunds && (
-                            <div className="space-y-1 pt-2 border-t border-primary/5">
-                                <p className="text-[10px] font-bold text-amber-600 tracking-tight capitalize">Available Unlinked Funds</p>
-                                <p className="text-xl font-bold font-mono text-amber-700">
+                            <div className="space-y-0.5 pt-2 border-t border-primary/5 lg:border-none lg:pt-0">
+                                <p className="text-[9px] font-bold text-amber-600 tracking-tight capitalize">Unlinked Funds</p>
+                                <p className="text-sm sm:text-xl font-bold font-mono text-amber-700">
                                 ₹{(overallSummary.grandTotalUnlinked || 0).toLocaleString('en-IN')}
                                 </p>
                             </div>

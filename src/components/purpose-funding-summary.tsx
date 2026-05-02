@@ -62,8 +62,8 @@ export function PurposeFundingSummary() {
         </CardDescription>
       </CardHeader>
       <CardContent className="p-0 flex-1 overflow-hidden">
-        <ScrollArea className="w-full h-full">
-            <div className="min-w-[450px] p-4">
+        <ScrollArea className="w-full">
+            <div className="min-w-[300px] sm:min-w-[450px] p-4">
                 <Table>
                     <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                         <TableRow className="border-b border-primary/10">
@@ -74,12 +74,12 @@ export function PurposeFundingSummary() {
                     <TableBody>
                         {purposeData.map((item) => (
                         <TableRow key={item.name} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5 bg-white">
-                            <TableCell className="font-bold text-primary text-sm pl-6">{item.name}</TableCell>
-                            <TableCell className="text-right font-bold font-mono text-primary text-sm pr-6">
-                            <div className="flex items-center justify-end gap-1">
-                                <IndianRupee className="h-3 w-3 opacity-40" />
-                                {item.amount.toLocaleString('en-IN')}
-                            </div>
+                            <TableCell className="font-bold text-primary text-xs sm:text-sm pl-6">{item.name}</TableCell>
+                            <TableCell className="text-right font-bold font-mono text-primary text-xs sm:text-sm pr-6">
+                                <div className="flex items-center justify-end gap-1">
+                                    <IndianRupee className="h-3 w-3 opacity-40" />
+                                    {item.amount.toLocaleString('en-IN')}
+                                </div>
                             </TableCell>
                         </TableRow>
                         ))}
