@@ -69,9 +69,6 @@ async function checkAuth(requiredModule?: string, requiredPerm?: string) {
 /**
  * Core utility to send a WhatsApp message using configured resources.
  */
-/**
- * Core utility to send a WhatsApp message using configured resources.
- */
 export async function sendWhatsAppAction(params: {
     to: string;
     templateId?: string;
@@ -81,6 +78,14 @@ export async function sendWhatsAppAction(params: {
     configOverride?: Partial<ResourceSettings>;
     bypassAutoCheck?: boolean;
     moduleId?: 'campaign' | 'lead' | 'donation' | 'beneficiary' | 'donor' | 'user';
+    richData?: {
+        title: string;
+        cause: string;
+        purpose: string;
+        oldData?: any;
+        newData?: any;
+        actionUrl?: string;
+    };
 }) {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: 'Administrative Services Unavailable.' };
@@ -191,7 +196,7 @@ async function sendWhatsAppCore(params: {
         if (params.richData) {
             finalMessage = generateDetailedPayload({
                 ...params.richData,
-                userName: auth.user?.name
+                userName: userName
             });
         }
         // 4. Handle Template if provided (Secondary Priority)
@@ -316,25 +321,6 @@ async function sendWhatsAppCore(params: {
     }
 }
 
-/**
- * Core utility to send a WhatsApp message using configured resources.
- */
-export async function sendWhatsAppAction(params: {
-    to: string;
-    templateId?: string;
-    variables?: Record<string, string>;
-    customMessage?: string;
-    metadata?: MessageLog['metadata'];
-    configOverride?: Partial<ResourceSettings>;
-    bypassAutoCheck?: boolean;
-    moduleId?: 'campaign' | 'lead' | 'donation' | 'beneficiary' | 'donor' | 'user';
-}) {
-    // Standard authorization check
-    const auth = await checkAuth('messages', 'update');
-    if (!auth.isAuthorized) return { success: false, message: 'Unauthorized. Administrative clearance required.' };
-
-    return await sendWhatsAppCore(params);
-}
 
 /**
  * Seed default templates if they don't exist

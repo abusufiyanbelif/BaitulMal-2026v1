@@ -1,10 +1,10 @@
-release: v2026.05.02.15
+release: v2026.05.02.16
 
-Type: Enhancement
-Message: Fixed documentation generation crash and finalized versioned archiving logic.
-Reference: #L1-144
+Type: Bug
+Message: Resolved multiple build-breaking duplications, missing imports, and type mismatches across actions and UI components.
+Reference: #L1-1782
 Branch: test_bmss_26
-Commit: 09efb72e
+Commit: 5a4876bd
 
 Verification Steps:
-1. Verify commit-summary.txt. 2. Confirm docs/architecture/history/release-v2026.05.02.14/ exists. 3. Confirm docs/user-guides/history/ exists.
+1. Run npm run build successfully. 2. Verify Registry Index and App Footer navigation links. 3. Check Institutional Support card on Profile Page.

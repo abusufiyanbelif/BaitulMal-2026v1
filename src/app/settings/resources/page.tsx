@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useSession } from '@/hooks/use-session';
 import { useResourceConfig } from '@/hooks/use-resource-config';
 import { useFirestore } from '@/firebase';

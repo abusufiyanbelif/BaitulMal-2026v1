@@ -5,7 +5,7 @@ import { useFirestore, useMemoFirebase, useDoc, doc, storageRef, uploadBytes, ge
 import { BrandedLoader } from '@/components/branded-loader';
 import { NotificationManager } from '@/components/notification-manager';
 import { Separator } from '@/components/ui/separator';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { 
     UserCircle2, 
@@ -32,9 +32,10 @@ import {
     RefreshCw,
     Hash,
     ShieldAlert,
-    ArrowLeft
+    ArrowLeft,
+    HeartHandshake
 } from 'lucide-react';
-import { formatDate } from '@/lib/utils';
+import { formatDate, cn } from '@/lib/utils';
 import type { UserProfile, BankDetail, PendingVerification } from '@/lib/types';
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -49,7 +50,6 @@ import { revokeUserSessionsAction } from '../settings/auth-actions';
 import { sendUserWhatsAppTestAction, sendUserTelegramTestAction } from '@/app/messages/actions';
 import { SessionTable } from '@/components/session-table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
 import Image from 'next/image';

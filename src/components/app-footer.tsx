@@ -19,7 +19,8 @@ import {
   Landmark,
   CreditCard,
   Copy,
-  BookOpen
+  BookOpen,
+  Navigation2
 } from 'lucide-react';
 import { 
   Dialog, 

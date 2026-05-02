@@ -1,9 +1,20 @@
 {
-  "version": "2026.05.02.15",
-  "buildDate": "2026-05-02T10:33:17.943Z",
+  "version": "2026.05.02.16",
+  "buildDate": "2026-05-02T11:31:22.799Z",
   "commitHash": "initial",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.05.02.16",
+      "date": "2026-05-02T11:31:22.799Z",
+      "commit": "5a4876bd",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "#L1-1782",
+      "steps": "1. Run npm run build successfully. 2. Verify Registry Index and App Footer navigation links. 3. Check Institutional Support card on Profile Page.",
+      "type": "Bug",
+      "message": "Resolved multiple build-breaking duplications, missing imports, and type mismatches across actions and UI components."
+    },
     {
       "version": "2026.05.02.15",
       "date": "2026-05-02T10:33:17.943Z",

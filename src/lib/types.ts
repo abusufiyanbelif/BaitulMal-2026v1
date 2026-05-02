@@ -186,6 +186,7 @@ export interface MessageLog extends DocumentData {
     recordId?: string;
     userId?: string;
     templateId?: string;
+    type?: string;
   };
 }
 
