@@ -100,9 +100,12 @@ function PortalLoginContent() {
                 if (res.sessionId) localStorage.setItem('portal_session_id', res.sessionId);
             }
             
+            const callbackUrl = searchParams.get('callbackUrl');
+            const defaultRedirect = res.redirect || (res.role === 'Donor' ? '/donor-portal' : '/beneficiary-portal');
+            
             await signInWithCustomToken(auth, res.token);
             toast({ title: "Welcome", description: res.message, variant: "success" });
-            router.push(res.redirect || '/dashboard');
+            router.push(callbackUrl || defaultRedirect);
         } else {
             toast({ title: "Access Denied", description: res.message, variant: "destructive" });
         }

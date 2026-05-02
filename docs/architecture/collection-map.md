@@ -1,13 +1,14 @@
 # 🏗️ Institutional Data Architecture
 
 **Build Version:** `2026.05.02.18`
-**Last Updated:** 3/5/2026, 1:06:26 am
+**Last Updated:** 3/5/2026, 1:55:57 am
 
 Mapping between Application Modules and Firestore Collections.
 
 | Module / File | Firestore Collection | Access Type |
 | :--- | :--- | :--- |
 | `app\analytics\actions.ts` | `page_hits` | Read/Write |
+| `app\api\admin\health\route.ts` | `settings` | Read-Only |
 | `app\audit\actions.ts` | `audit_logs` | Read/Write |
 | `app\beneficiaries\actions.ts` | `user_lookups` | Read/Write |
 | `app\beneficiaries\actions.ts` | `beneficiaries` | Read/Write |

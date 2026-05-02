@@ -7,7 +7,7 @@ import { useLogger } from '@/hooks/use-logger';
 function LoggerInner() {
     const pathname = usePathname();
     const searchParams = useSearchParams();
-    const { info } = useLogger();
+    const { info, error } = useLogger();
 
     useEffect(() => {
         // Log page navigation
@@ -19,7 +19,7 @@ function LoggerInner() {
         // Log startup/reload
         info('Application Session Started/Reloaded', { type: 'session_start' });
         
-        // Log visibility changes (e.g. user switching tabs)
+        // Log visibility changes
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
                 info('Application Tab Focused', { type: 'focus' });
@@ -28,9 +28,32 @@ function LoggerInner() {
             }
         };
 
+        // Capture global errors
+        const handleError = (event: ErrorEvent) => {
+            error(`Global Error: ${event.message}`, {
+                filename: event.filename,
+                lineno: event.lineno,
+                colno: event.colno,
+                stack: event.error?.stack
+            });
+        };
+
+        const handleRejection = (event: PromiseRejectionEvent) => {
+            error(`Unhandled Promise Rejection: ${event.reason}`, {
+                reason: event.reason
+            });
+        };
+
         document.addEventListener('visibilitychange', handleVisibilityChange);
-        return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-    }, [info]);
+        window.addEventListener('error', handleError);
+        window.addEventListener('unhandledrejection', handleRejection);
+        
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            window.removeEventListener('error', handleError);
+            window.removeEventListener('unhandledrejection', handleRejection);
+        };
+    }, [info, error]);
 
     return null;
 }

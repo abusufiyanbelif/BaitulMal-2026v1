@@ -8,6 +8,9 @@ import { PublicCampaignsView } from '@/components/public-campaigns-view';
 import { PublicLeadsView } from '@/components/public-leads-view';
 import { usePageHit } from '@/hooks/use-page-hit';
 
+import { Suspense } from 'react';
+import { BrandedLoader } from '@/components/branded-loader';
+
 export default function PublicInitiativesPage() {
   usePageHit('public_initiatives');
   return (
@@ -26,10 +29,14 @@ export default function PublicInitiativesPage() {
           <TabsTrigger value="leads"><Lightbulb className="mr-2 h-4 w-4" /> Public Leads</TabsTrigger>
         </TabsList>
         <TabsContent value="campaigns" className="mt-4">
-          <PublicCampaignsView />
+          <Suspense fallback={<BrandedLoader />}>
+            <PublicCampaignsView />
+          </Suspense>
         </TabsContent>
         <TabsContent value="leads" className="mt-4">
-          <PublicLeadsView />
+          <Suspense fallback={<BrandedLoader />}>
+            <PublicLeadsView />
+          </Suspense>
         </TabsContent>
       </Tabs>
     </div>

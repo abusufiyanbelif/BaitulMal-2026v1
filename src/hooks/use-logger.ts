@@ -17,17 +17,17 @@ export function useLogger() {
                     message,
                     metadata: {
                         ...metadata,
-                        url: window.location.href,
-                        path: window.location.pathname,
-                        userId: user?.uid || 'guest'
+                        url: typeof window !== 'undefined' ? window.location.href : 'server',
+                        userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'server',
+                        userId: user?.uid || 'guest',
+                        userEmail: user?.email || 'guest',
+                        role: profile
                     },
                     profile
                 })
             });
-        } catch (e) {
-            console.error('Logging failed:', e);
-        }
-    }, [profile, user, userProfile]);
+        } catch (e) {}
+    }, [profile, user]);
 
     return {
         info: (msg: string, meta?: any) => log('info', msg, meta),

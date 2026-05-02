@@ -16,7 +16,11 @@ import {
     BookOpen,
     History,
     Archive,
-    Folder
+    Folder,
+    Activity,
+    Cpu,
+    Zap,
+    Server
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,7 +33,8 @@ import { useSession } from '@/hooks/use-session';
 
 const CATEGORIES = [
     { id: 'logs', name: 'System Logs', icon: Terminal },
-    { id: 'docs', name: 'Institutional Docs', icon: BookOpen }
+    { id: 'docs', name: 'Institutional Docs', icon: BookOpen },
+    { id: 'health', name: 'System Health', icon: Activity }
 ];
 
 const DIRECTORIES = {
@@ -53,7 +58,22 @@ export default function LogManagementPage() {
     const [fileContent, setFileContent] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [healthData, setHealthData] = useState<any>(null);
     const { info } = useLogger();
+
+    const fetchHealth = async () => {
+        setIsLoading(true);
+        try {
+            const res = await fetch('/api/admin/health');
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+            setHealthData(data);
+        } catch (err: any) {
+            setError(err.message);
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     const fetchFiles = async (category: string, dir: string) => {
         setIsLoading(true);
@@ -105,13 +125,19 @@ export default function LogManagementPage() {
 
     useEffect(() => {
         if (userProfile?.role === 'Admin') {
-            fetchFiles(activeCategory, activeSubDir);
+            if (activeCategory === 'health') {
+                fetchHealth();
+            } else {
+                fetchFiles(activeCategory, activeSubDir);
+            }
         }
     }, [activeCategory, activeSubDir, userProfile]);
 
     const handleCategoryChange = (cat: string) => {
         setActiveCategory(cat);
-        setActiveSubDir(DIRECTORIES[cat][0].id);
+        if (cat !== 'health') {
+            setActiveSubDir(DIRECTORIES[cat][0].id);
+        }
         setSelectedFile(null);
         setFileContent(null);
     };
@@ -150,13 +176,13 @@ export default function LogManagementPage() {
                 {/* Sidebar: Categories & Directories */}
                 <div className="lg:col-span-4 space-y-6">
                     {/* Category Selection */}
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-3 gap-2">
                         {CATEGORIES.map(cat => (
                             <Button 
                                 key={cat.id}
                                 variant={activeCategory === cat.id ? 'default' : 'outline'}
                                 onClick={() => handleCategoryChange(cat.id)}
-                                className={`h-12 font-black text-xs uppercase tracking-widest gap-2 ${activeCategory === cat.id ? 'bg-emerald-600 hover:bg-emerald-700' : 'border-emerald-100 text-emerald-600 hover:bg-emerald-50'}`}
+                                className={`h-12 font-black text-[10px] uppercase tracking-widest gap-2 ${activeCategory === cat.id ? 'bg-emerald-600 hover:bg-emerald-700' : 'border-emerald-100 text-emerald-600 hover:bg-emerald-50'}`}
                             >
                                 <cat.icon className="h-4 w-4" />
                                 {cat.name}
@@ -232,9 +258,99 @@ export default function LogManagementPage() {
                     </div>
                 </div>
 
-                {/* Main Content: File Viewer */}
+                {/* Main Content: File Viewer or Health View */}
                 <div className="lg:col-span-8 space-y-6">
-                    {selectedFile ? (
+                    {activeCategory === 'health' ? (
+                        <div className="space-y-6 animate-in fade-in zoom-in duration-500">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <Card className="border-slate-200 shadow-sm overflow-hidden">
+                                    <CardHeader className="bg-slate-50 py-4 flex flex-row items-center justify-between">
+                                        <CardTitle className="text-sm font-black text-primary tracking-tight uppercase">Infrastructure Status</CardTitle>
+                                        <Server className="h-4 w-4 text-emerald-600" />
+                                    </CardHeader>
+                                    <CardContent className="pt-6 space-y-4">
+                                        {healthData?.services.map((service: any) => (
+                                            <div key={service.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`h-2 w-2 rounded-full ${service.status === 'Online' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                                                    <div>
+                                                        <p className="text-xs font-black text-primary">{service.name}</p>
+                                                        <p className="text-[10px] font-bold text-slate-400">{service.message}</p>
+                                                    </div>
+                                                </div>
+                                                <Badge variant="outline" className={`text-[9px] font-black uppercase ${service.status === 'Online' ? 'text-green-600 border-green-100 bg-green-50' : 'text-red-600 border-red-100 bg-red-50'}`}>
+                                                    {service.status}
+                                                </Badge>
+                                            </div>
+                                        ))}
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="border-slate-200 shadow-sm overflow-hidden">
+                                    <CardHeader className="bg-slate-50 py-4 flex flex-row items-center justify-between">
+                                        <CardTitle className="text-sm font-black text-primary tracking-tight uppercase">Resource Utilization</CardTitle>
+                                        <Cpu className="h-4 w-4 text-emerald-600" />
+                                    </CardHeader>
+                                    <CardContent className="pt-6 space-y-6">
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between items-end">
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Memory Usage</p>
+                                                <p className="text-xs font-black text-primary">{healthData ? (healthData.system.memory.rss / (1024 * 1024)).toFixed(1) : 0} MB</p>
+                                            </div>
+                                            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-emerald-500 transition-all duration-1000" 
+                                                    style={{ width: `${Math.min(100, (healthData?.system.memory.rss / healthData?.system.totalMem) * 10000)}%` }} 
+                                                />
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4 pt-2">
+                                            <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">System Uptime</p>
+                                                <p className="text-sm font-black text-primary">
+                                                    {healthData ? Math.floor(healthData.system.uptime / 3600) : 0}h {healthData ? Math.floor((healthData.system.uptime % 3600) / 60) : 0}m
+                                                </p>
+                                            </div>
+                                            <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
+                                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">CPU Load (1m)</p>
+                                                <p className="text-sm font-black text-primary">{healthData?.system.loadAvg[0].toFixed(2) || '0.00'}</p>
+                                            </div>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+
+                            <Card className="border-slate-200 shadow-sm overflow-hidden">
+                                <CardHeader className="bg-slate-50 py-4">
+                                    <CardTitle className="text-sm font-black text-primary tracking-tight uppercase">Environmental Parameters</CardTitle>
+                                </CardHeader>
+                                <CardContent className="p-0">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-y md:divide-y-0 border-t">
+                                        <div className="p-6">
+                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Node Version</p>
+                                            <p className="text-lg font-black text-primary">{healthData?.system.nodeVersion}</p>
+                                        </div>
+                                        <div className="p-6">
+                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Platform</p>
+                                            <p className="text-lg font-black text-primary capitalize">{healthData?.system.platform}</p>
+                                        </div>
+                                        <div className="p-6">
+                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Database Latency</p>
+                                            <p className="text-lg font-black text-emerald-600">{healthData?.database.latency}ms</p>
+                                        </div>
+                                        <div className="p-6">
+                                            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Heartbeat</p>
+                                            <div className="flex items-center gap-2">
+                                                <Zap className="h-5 w-5 text-yellow-500 fill-yellow-500 animate-pulse" />
+                                                <p className="text-lg font-black text-primary">Active</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </div>
+                    ) : selectedFile ? (
                         <Card className="border-slate-200 shadow-xl overflow-hidden bg-[#0a0a0a] ring-1 ring-white/10">
                             <CardHeader className="bg-white border-b flex flex-row items-center justify-between px-6 py-4">
                                 <div className="space-y-0.5 overflow-hidden">

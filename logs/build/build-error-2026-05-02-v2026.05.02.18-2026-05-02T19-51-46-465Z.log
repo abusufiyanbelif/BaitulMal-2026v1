@@ -1,0 +1,512 @@
+BUILD FAILURE LOG - 3/5/2026, 1:41:17 am
+Version: 2026.05.02.18
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/86) ...
+   Generating static pages (21/86) 
+   Generating static pages (42/86) 
+   Generating static pages (64/86) 
+   Generating static pages (82/86) 
+ ✓ Generating static pages (86/86)
+
+
+STDERR:
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-lead-story.ts
+./src/app/api/create-lead-story/route.ts
+
+ ⚠ Using edge runtime on a page currently disables static generation for that page
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at listOnTimeout (node:internal/timers:569:9) {
+  digest: '2031654566'
+}
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+
+Error occurred prerendering page "/_not-found". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:88330)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:98875
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:98962
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:99165) {
+  digest: '2550914549'
+}
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+
+Error occurred prerendering page "/dashboard". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+
+Error occurred prerendering page "/info/donation-info". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\app\api\create-lead-story\route.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\load-components.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\utils.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\worker.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
+    at mod.require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+
+Error occurred prerendering page "/info/organization". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\app\api\extract-dynamic-form\route.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\load-components.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\utils.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\worker.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
+    at mod.require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:88330)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:98875
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:98962
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:99165) {
+  digest: '2550914549'
+}
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+
+Error occurred prerendering page "/leads-public". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+
+Error occurred prerendering page "/login". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\app\api\create-lead-story\route.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\load-components.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\utils.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\worker.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
+    at mod.require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:88330)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:98875
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:98962
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:99165) {
+  digest: '2550914549'
+}
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+
+Error occurred prerendering page "/". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+
+Error occurred prerendering page "/registry-index". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\app\api\extract-medical\route.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\load-components.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\utils.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\worker.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
+    at mod.require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+
+> Export encountered errors on following paths:
+	/_not-found/page: /_not-found
+	/dashboard/page: /dashboard
+	/info/donation-info/page: /info/donation-info
+	/info/organization/page: /info/organization
+	/leads-public/page: /leads-public
+	/login/page: /login
+	/page: /
+	/registry-index/page: /registry-index
+
+
+ERROR MESSAGE:
+Command failed: next build
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-lead-story.ts
+./src/app/api/create-lead-story/route.ts
+
+ ⚠ Using edge runtime on a page currently disables static generation for that page
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+    at runNextTicks (node:internal/process/task_queues:65:5)
+    at listOnTimeout (node:internal/timers:569:9) {
+  digest: '2031654566'
+}
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+
+Error occurred prerendering page "/_not-found". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:88330)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:98875
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:98962
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:99165) {
+  digest: '2550914549'
+}
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+
+Error occurred prerendering page "/dashboard". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+
+Error occurred prerendering page "/info/donation-info". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\app\api\create-lead-story\route.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\load-components.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\utils.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\worker.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
+    at mod.require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+
+Error occurred prerendering page "/info/organization". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\app\api\extract-dynamic-form\route.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\load-components.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\utils.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\worker.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
+    at mod.require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:88330)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:98875
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:98962
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:99165) {
+  digest: '2550914549'
+}
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+
+Error occurred prerendering page "/leads-public". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+
+Error occurred prerendering page "/login". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\app\api\create-lead-story\route.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\load-components.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\utils.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\worker.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
+    at mod.require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at s (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:88330)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:98875
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:98962
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:99165) {
+  digest: '2550914549'
+}
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+
+Error occurred prerendering page "/". Read more: https://nextjs.org/docs/messages/prerender-error
+
+TypeError: Cannot read properties of undefined (reading 'call')
+    at Object.t [as require] (C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js:1:143)
+    at require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:17:18811)
+    at A (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94398)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:96726
+    at B._fromJSON (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:97164)
+    at JSON.parse (<anonymous>)
+    at I (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:94119)
+    at t (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\next-server\app-page.runtime.prod.js:12:100640)
+
+Error occurred prerendering page "/registry-index". Read more: https://nextjs.org/docs/messages/prerender-error
+
+Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\app\api\extract-medical\route.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\load-components.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\utils.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\worker.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
+    at mod.require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16)
+
+> Export encountered errors on following paths:
+	/_not-found/page: /_not-found
+	/dashboard/page: /dashboard
+	/info/donation-info/page: /info/donation-info
+	/info/organization/page: /info/organization
+	/leads-public/page: /leads-public
+	/login/page: /login
+	/page: /
+	/registry-index/page: /registry-index

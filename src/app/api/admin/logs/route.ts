@@ -24,7 +24,7 @@ export async function GET(req: Request) {
         if (fileName) {
             // Read specific file
             const filePath = path.join(targetDir, fileName);
-            if (!filePath.startsWith(LOGS_ROOT)) throw new Error('Path traversal detected');
+            if (!filePath.startsWith(baseRoot)) throw new Error('Path traversal detected');
             const content = fs.readFileSync(filePath, 'utf8');
             return NextResponse.json({ content });
         } else {

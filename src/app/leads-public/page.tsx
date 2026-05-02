@@ -4,6 +4,8 @@ import { PublicLeadsView } from '@/components/public-leads-view';
 import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import { usePublicData } from '@/hooks/use-public-data';
+import { Suspense } from 'react';
+import { BrandedLoader } from '@/components/branded-loader';
 
 export default function PublicLeadPage() {
   const { isLoading, leadsWithProgress } = usePublicData();
@@ -18,7 +20,9 @@ export default function PublicLeadPage() {
           </Link>
         </Button>
       </div>
-      <PublicLeadsView />
+      <Suspense fallback={<BrandedLoader />}>
+        <PublicLeadsView />
+      </Suspense>
     </main>
   );
 }

@@ -1,0 +1,33 @@
+BUILD FAILURE LOG - 3/5/2026, 1:50:01 am
+Version: 2026.05.02.18
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+
+
+STDERR:
+Failed to compile.
+
+./src/app/api/admin/health/route.ts
+Module not found: Can't resolve '@/firebase/admin'
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+> Build failed because of webpack errors
+
+
+ERROR MESSAGE:
+Command failed: next build
+Failed to compile.
+
+./src/app/api/admin/health/route.ts
+Module not found: Can't resolve '@/firebase/admin'
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+> Build failed because of webpack errors

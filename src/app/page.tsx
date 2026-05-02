@@ -3,7 +3,8 @@
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import React, { useMemo } from 'react';
+import React, { useMemo, Suspense } from 'react';
+import { Skeleton } from '@/components/ui/skeleton';
 import { OverallFundingSummary } from '@/components/overall-funding-summary';
 import { DonationSummary } from '@/components/donation-summary';
 import { PurposeFundingSummary } from '@/components/purpose-funding-summary';
@@ -213,19 +214,25 @@ export default function Home() {
                 <div className="space-y-16 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
                     {isOverallSummaryVisible && (
                         <div className="rounded-[48px] bg-white/30 backdrop-blur-2xl border border-primary/5 p-4 sm:p-8 shadow-none transition-all hover:shadow-2xl">
-                            <OverallFundingSummary />
+                            <Suspense fallback={<Skeleton className="h-[200px] w-full rounded-[48px]" />}>
+                                <OverallFundingSummary />
+                            </Suspense>
                         </div>
                     )}
                     
                     <div className="grid gap-12 lg:grid-cols-2">
                         {isDonationSummaryVisible && (
                             <div className="rounded-[40px] bg-white/30 backdrop-blur-2xl border border-primary/5 p-4 sm:p-8 shadow-none transition-all hover:shadow-2xl">
-                                <DonationSummary />
+                                <Suspense fallback={<Skeleton className="h-[300px] w-full rounded-[40px]" />}>
+                                    <DonationSummary />
+                                </Suspense>
                             </div>
                         )}
                         {isPurposeSummaryVisible && (
                             <div className="rounded-[40px] bg-white/30 backdrop-blur-2xl border border-primary/5 p-4 sm:p-8 shadow-none transition-all hover:shadow-2xl">
-                                <PurposeFundingSummary />
+                                <Suspense fallback={<Skeleton className="h-[300px] w-full rounded-[40px]" />}>
+                                    <PurposeFundingSummary />
+                                </Suspense>
                             </div>
                         )}
                     </div>
@@ -241,7 +248,9 @@ export default function Home() {
                                     <p className="text-sm font-bold opacity-40 uppercase tracking-widest">Live Vetting & Progress Analytics</p>
                                 </div>
                             </div>
-                            <LeadAndCampaignSummary />
+                            <Suspense fallback={<Skeleton className="h-[400px] w-full rounded-[48px]" />}>
+                                <LeadAndCampaignSummary />
+                            </Suspense>
                         </div>
                     )}
                     

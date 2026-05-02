@@ -1,7 +1,7 @@
 # 📘 User Guide: /settings/resources/fundraising
     
 **Build Version:** `2026.05.02.18`
-**Last Updated:** 3/5/2026, 1:06:25 am
+**Last Updated:** 3/5/2026, 1:55:57 am
 **Internal Route:** `/settings/resources/fundraising`
 
 ---

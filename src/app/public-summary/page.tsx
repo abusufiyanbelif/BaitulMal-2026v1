@@ -7,6 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PublicCampaignsView } from '@/components/public-campaigns-view';
 import { PublicLeadsView } from '@/components/public-leads-view';
 
+import { Suspense } from 'react';
+import { BrandedLoader } from '@/components/branded-loader';
+
 export default function PublicSummaryPage() {
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -24,10 +27,14 @@ export default function PublicSummaryPage() {
           <TabsTrigger value="leads" className="font-bold"><Lightbulb className="mr-2 h-4 w-4" /> Public Leads</TabsTrigger>
         </TabsList>
         <TabsContent value="campaigns" className="mt-4">
-          <PublicCampaignsView />
+          <Suspense fallback={<BrandedLoader />}>
+            <PublicCampaignsView />
+          </Suspense>
         </TabsContent>
         <TabsContent value="leads" className="mt-4">
-          <PublicLeadsView />
+          <Suspense fallback={<BrandedLoader />}>
+            <PublicLeadsView />
+          </Suspense>
         </TabsContent>
       </Tabs>
     </div>
