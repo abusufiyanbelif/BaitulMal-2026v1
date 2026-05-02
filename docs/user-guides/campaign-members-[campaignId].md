@@ -1,7 +1,7 @@
 # 📘 User Guide: /campaign-members/[campaignId]
-
-**Build Version:** `2026.05.02.16`
-**Last Updated:** 2/5/2026, 5:01:23 pm
+    
+**Build Version:** `2026.05.02.17`
+**Last Updated:** 2/5/2026, 5:31:07 pm
 **Internal Route:** `/campaign-members/[campaignId]`
 
 ---
@@ -10,35 +10,66 @@
 Application Module
 
 ## 📋 Primary Use Cases
-- General portal navigation and data access.
+- Generate and download data reports for external audit.
+
+## 🏗️ Data Architecture (Firestore)
+*No direct Firestore collection interactions detected.*
+
+## ⌨️ Fields & Data Mapping
+The following fields are mapped within this interface:
+- Vetting Date
+- Supplier Store
+- Supplier Phone
+- Procurement Hub
+- Category Name
+- Min Family Members
+- Max Family Members
+- Min Family Size
+- Max Family Size
+- Move Dependents To
+- Source Group
+- Check All
+- Input: Item Name...
+- Input: 0
+- Input: Select Type...
+- Input: Supplier Name
+- Input: Phone Number
+- Input: Store Address
+- Input: e.g. Large Family Kit
+- Input: 1
+- Input: 4
+- Input: Select Destination Category...
+- Input: Select Source Template...
 
 ## ⚡ Interactive Action Items
-- **Back To Campaigns**: Execute context-specific operation.
-- **Cancel**: Execute context-specific operation.
-- **Secure Procurement**: Execute context-specific operation.
-- **Add Category**: Execute context-specific operation.
-- **Create Category**: Execute context-specific operation.
-- **Save Modifications**: Execute context-specific operation.
-- **Replicate Items**: Execute context-specific operation.
-- **handleSave**: Execute context-specific operation.
-- **handleCancel**: Execute context-specific operation.
-- **handleFieldChange**: Execute context-specific operation.
-- **handleItemChange**: Execute context-specific operation.
-- **handleAddItem**: Execute context-specific operation.
-- **handleDeleteItem**: Execute context-specific operation.
-- **handleDeleteItemClick**: Execute context-specific operation.
-- **handleDeleteItemConfirm**: Execute context-specific operation.
-- **handleAddNewCategory**: Execute context-specific operation.
-- **handleEditCategoryClick**: Execute context-specific operation.
-- **handleUpdateCategory**: Execute context-specific operation.
-- **handleDeleteCategoryClick**: Execute context-specific operation.
-- **handleDeleteCategoryConfirm**: Execute context-specific operation.
-- **handleCopyItemsClick**: Execute context-specific operation.
-- **handleCopyItemsConfirm**: Execute context-specific operation.
-- **handleSyncKitAmounts**: Execute context-specific operation.
+- **Back To Campaigns**: Interactive button to initiate back to campaigns operation.
+- **Back To Campaigns**: Interactive button to initiate back to campaigns operation.
+- **Cancel**: Interactive button to initiate cancel operation (Triggers handleCancel).
+- **Secure Procurement**: Interactive button to initiate secure procurement operation (Triggers handleSave).
+- **handleEditCategoryClick(category)}>**: Interactive button to initiate handleeditcategoryclick(category)}> operation (Triggers () => handleEditCategoryClick(category)).
+- **Add Category**: Interactive button to initiate add category operation.
+- **Create Category**: Interactive button to initiate create category operation (Triggers handleAddNewCategory).
+- **Save Modifications**: Interactive button to initiate save modifications operation (Triggers handleUpdateCategory).
+- **Replicate Items**: Interactive button to initiate replicate items operation (Triggers handleCopyItemsConfirm).
+- **handleSave**: Internal logic handler for Save workflow.
+- **handleCancel**: Internal logic handler for Cancel workflow.
+- **handleFieldChange**: Internal logic handler for FieldChange workflow.
+- **handleItemChange**: Internal logic handler for ItemChange workflow.
+- **handleAddItem**: Internal logic handler for AddItem workflow.
+- **handleDeleteItem**: Internal logic handler for DeleteItem workflow.
+- **handleDeleteItemClick**: Internal logic handler for DeleteItemClick workflow.
+- **handleDeleteItemConfirm**: Internal logic handler for DeleteItemConfirm workflow.
+- **handleAddNewCategory**: Internal logic handler for AddNewCategory workflow.
+- **handleEditCategoryClick**: Internal logic handler for EditCategoryClick workflow.
+- **handleUpdateCategory**: Internal logic handler for UpdateCategory workflow.
+- **handleDeleteCategoryClick**: Internal logic handler for DeleteCategoryClick workflow.
+- **handleDeleteCategoryConfirm**: Internal logic handler for DeleteCategoryConfirm workflow.
+- **handleCopyItemsClick**: Internal logic handler for CopyItemsClick workflow.
+- **handleCopyItemsConfirm**: Internal logic handler for CopyItemsConfirm workflow.
+- **handleSyncKitAmounts**: Internal logic handler for SyncKitAmounts workflow.
 
 ## 🛡️ Security & Access
 Access to this module is restricted based on institutional roles (Admin, Staff, or Portal User). Ensure you have the necessary clearance before attempting modifications.
 
 ---
-*Generated by Institutional Documentation Engine v1.0*
+*Generated by Institutional Documentation Engine v1.1*

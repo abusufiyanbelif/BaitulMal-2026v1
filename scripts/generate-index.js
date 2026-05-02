@@ -4,21 +4,21 @@ const path = require('path');
 const APP_DIR = path.join(__dirname, '../src/app');
 const OUTPUT_FILE = path.join(__dirname, '../src/lib/registry-index.json');
 
-function getAllPages(dirPath, arrayOfFiles) {
-    const files = fs.readdirSync(dirPath);
-    arrayOfFiles = arrayOfFiles || [];
-
-    files.forEach(function(file) {
-        if (fs.statSync(dirPath + "/" + file).isDirectory()) {
-            arrayOfFiles = getAllPages(dirPath + "/" + file, arrayOfFiles);
+function getAllPages(dirPath) {
+    let results = [];
+    const list = fs.readdirSync(dirPath);
+    list.forEach(file => {
+        const filePath = path.join(dirPath, file);
+        const stat = fs.statSync(filePath);
+        if (stat && stat.isDirectory()) {
+            results = results.concat(getAllPages(filePath));
         } else {
             if (file === 'page.tsx') {
-                arrayOfFiles.push(path.join(dirPath, "/", file));
+                results.push(filePath);
             }
         }
     });
-
-    return arrayOfFiles;
+    return results;
 }
 
 function generateIndex() {
@@ -27,10 +27,36 @@ function generateIndex() {
         const relativePath = path.relative(APP_DIR, fullPath);
         const route = '/' + relativePath.replace(/\\/g, '/').replace(/\/page\.tsx$/, '').replace(/^page\.tsx$/, '');
         
-        // Try to read file to find purpose
+        // Scan file content for metadata
         const content = fs.readFileSync(fullPath, 'utf8');
         const purposeMatch = content.match(/\/\/\s*Purpose:\s*(.*)/i);
         
+        // Extract Collections
+        const collections = [];
+        const collRegex = /\.collection\(['"](\w+)['"]\)/g;
+        let cMatch;
+        while ((cMatch = collRegex.exec(content)) !== null) {
+            collections.push(cMatch[1]);
+        }
+
+        // Extract Actions
+        const actions = [];
+        const btnRegex = /<Button[^>]*>([\s\S]*?)<\/Button>/g;
+        let bMatch;
+        while ((bMatch = btnRegex.exec(content)) !== null) {
+            let label = bMatch[1].replace(/<[^>]*>/g, '').trim();
+            if (label && label.length < 50) actions.push(label);
+        }
+
+        // Extract Fields
+        const fields = [];
+        const labelRegex = /<Label[^>]*>([\s\S]*?)<\/Label>/g;
+        let lMatch;
+        while ((lMatch = labelRegex.exec(content)) !== null) {
+            const label = lMatch[1].replace(/<[^>]*>/g, '').trim();
+            if (label && label.length < 40) fields.push(label);
+        }
+
         const stats = fs.statSync(fullPath);
 
         return {
@@ -41,6 +67,9 @@ function generateIndex() {
             purpose: purposeMatch ? purposeMatch[1] : 'Application Module',
             createdAt: stats.birthtime.toISOString(),
             updatedAt: stats.mtime.toISOString(),
+            collections: [...new Set(collections)],
+            actions: [...new Set(actions)],
+            fields: [...new Set(fields)],
             suggested: [] 
         };
     });

@@ -1,9 +1,20 @@
 {
-  "version": "2026.05.02.16",
-  "buildDate": "2026-05-02T11:31:22.799Z",
+  "version": "2026.05.02.17",
+  "buildDate": "2026-05-02T12:01:06.732Z",
   "commitHash": "initial",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.05.02.17",
+      "date": "2026-05-02T12:01:06.732Z",
+      "commit": "c5ce3f05",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "#L1-228",
+      "steps": "1. Navigate to /registry-index. 2. Verify new Firestore, Action, and Field metadata in module cards. 3. Confirm glassmorphism UI enhancements.",
+      "type": "Enhancement",
+      "message": "Upgraded Institutional Documentation Engine to v1.1 with deep technical scanning, data mapping, and a premium Registry Index UI."
+    },
     {
       "version": "2026.05.02.16",
       "date": "2026-05-02T11:31:22.799Z",

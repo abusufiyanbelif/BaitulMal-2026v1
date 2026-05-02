@@ -27,8 +27,10 @@ function generateUserGuides() {
         const content = fs.readFileSync(page.path, 'utf8');
         const actionItems = extractActionItems(content);
         const useCases = inferUseCases(page.route, content);
+        const fields = extractFields(content);
+        const collections = scanCollectionsForPage(content);
 
-        const newContent = generateMarkdown(page, currentVersion, useCases, actionItems);
+        const newContent = generateMarkdown(page, currentVersion, useCases, actionItems, fields, collections);
 
         if (fs.existsSync(guidePath)) {
             const oldContent = fs.readFileSync(guidePath, 'utf8');
@@ -51,36 +53,77 @@ function generateUserGuides() {
 
 function extractActionItems(content) {
     const items = [];
-    // Find Button labels
+    // Find Button labels with surrounding context
     const btnRegex = /<Button[^>]*>([\s\S]*?)<\/Button>/g;
     let match;
     while ((match = btnRegex.exec(content)) !== null) {
-        const label = match[1].replace(/<[^>]*>/g, '').trim();
-        if (label && label.length < 30) items.push(label);
+        let label = match[1].replace(/<[^>]*>/g, '').trim();
+        if (label && label.length < 50) {
+            // Try to find if it triggers a handle function
+            const btnContent = match[0];
+            const clickMatch = btnContent.match(/onClick={([^}]+)}/);
+            const action = clickMatch ? ` (Triggers ${clickMatch[1]})` : '';
+            items.push({ label, description: `Interactive button to initiate ${label.toLowerCase()} operation${action}.` });
+        }
     }
     // Find handleX functions
     const funcRegex = /const\s+(handle\w+)\s*=/g;
     while ((match = funcRegex.exec(content)) !== null) {
-        items.push(match[1]);
+        const funcName = match[1];
+        if (!items.find(i => i.label === funcName)) {
+            items.push({ label: funcName, description: `Internal logic handler for ${funcName.replace('handle', '')} workflow.` });
+        }
     }
-    return [...new Set(items)];
+    return items;
+}
+
+function extractFields(content) {
+    const fields = [];
+    const labelRegex = /<Label[^>]*>([\s\S]*?)<\/Label>/g;
+    let match;
+    while ((match = labelRegex.exec(content)) !== null) {
+        const label = match[1].replace(/<[^>]*>/g, '').trim();
+        if (label && label.length < 40) fields.push(label);
+    }
+    const placeholderRegex = /placeholder="([^"]+)"/g;
+    while ((match = placeholderRegex.exec(content)) !== null) {
+        fields.push(`Input: ${match[1]}`);
+    }
+    return [...new Set(fields)];
+}
+
+function scanCollectionsForPage(content) {
+    const collections = [];
+    const collRegex = /\.collection\(['"](\w+)['"]\)/g;
+    let match;
+    while ((match = collRegex.exec(content)) !== null) {
+        collections.push(match[1]);
+    }
+    return [...new Set(collections)];
 }
 
 function inferUseCases(route, content) {
     const cases = [];
-    if (route.includes('dashboard')) cases.push('Monitor institutional statistics and metrics.');
-    if (route.includes('settings')) cases.push('Configure administrative parameters and resources.');
-    if (route.includes('profile')) cases.push('Manage personal identity and security settings.');
-    if (route.includes('donations')) cases.push('Track and verify incoming financial contributions.');
-    if (route.includes('campaigns')) cases.push('Oversee fundraising initiatives and outreach.');
+    if (route.includes('dashboard')) cases.push('Monitor institutional statistics and metrics in real-time.');
+    if (route.includes('settings')) cases.push('Configure administrative parameters, API keys, and resource limits.');
+    if (route.includes('profile')) cases.push('Update user identity, contact details, and security credentials.');
+    if (route.includes('donations')) cases.push('Manage financial contributions, verify receipts, and track donor history.');
+    if (route.includes('campaigns')) cases.push('Create and monitor social outreach initiatives and fundraising goals.');
+    if (route.includes('beneficiaries')) cases.push('Maintain records of individuals receiving institutional support.');
+    if (route.includes('leads')) cases.push('Track potential support requests and initial inquiry data.');
     
-    if (cases.length === 0) cases.push('General portal navigation and data access.');
-    return cases;
+    // Add logic-based use cases
+    if (content.includes('export')) cases.push('Generate and download data reports for external audit.');
+    if (content.includes('upload')) cases.push('Attach supporting documentation or evidence to institutional records.');
+    if (content.includes('verify')) cases.push('Perform administrative verification of submitted data.');
+
+    if (cases.length === 0) cases.push('Standard institutional operations and data management.');
+    return [...new Set(cases)];
 }
 
-function generateMarkdown(page, version, useCases, actionItems) {
+function generateMarkdown(page, version, useCases, actionItems, fields, collections) {
     return `# 📘 User Guide: ${page.route}
-
+    
 **Build Version:** \`${version}\`
 **Last Updated:** ${new Date().toLocaleString()}
 **Internal Route:** \`${page.route}\`
@@ -93,16 +136,26 @@ ${page.purpose || 'Institutional module for administrative operations.'}
 ## 📋 Primary Use Cases
 ${useCases.map(uc => `- ${uc}`).join('\n')}
 
+## 🏗️ Data Architecture (Firestore)
+${collections.length > 0 
+    ? `Interacts with the following collections:\n${collections.map(c => `- \`${c}\``).join('\n')}`
+    : '*No direct Firestore collection interactions detected.*'}
+
+## ⌨️ Fields & Data Mapping
+${fields.length > 0
+    ? `The following fields are mapped within this interface:\n${fields.map(f => `- ${f}`).join('\n')}`
+    : '*No distinct data fields identified.*'}
+
 ## ⚡ Interactive Action Items
 ${actionItems.length > 0 
-    ? actionItems.map(item => `- **${item}**: Execute context-specific operation.`).join('\n')
+    ? actionItems.map(item => `- **${item.label}**: ${item.description}`).join('\n')
     : '*No direct action items identified for this interface.*'}
 
 ## 🛡️ Security & Access
 Access to this module is restricted based on institutional roles (Admin, Staff, or Portal User). Ensure you have the necessary clearance before attempting modifications.
 
 ---
-*Generated by Institutional Documentation Engine v1.0*`;
+*Generated by Institutional Documentation Engine v1.1*`;
 }
 
 generateUserGuides();
