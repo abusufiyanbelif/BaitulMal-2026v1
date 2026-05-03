@@ -124,7 +124,7 @@ export default function BeneficiaryPortalPage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
                 <HandHelping className="h-12 w-12 text-slate-300" />
-                <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Only for people receiving help</p>
+                <p className="text-slate-500 font-bold tracking-widest text-xs">Only for people receiving help</p>
                 <Button asChild variant="outline"><Link href="/portal-login">Return to Login</Link></Button>
             </div>
         );
@@ -149,12 +149,12 @@ export default function BeneficiaryPortalPage() {
                     </div>
                 </div>
                 <div className="flex items-center gap-2 sm:gap-3 w-full lg:w-auto">
-                    <Button asChild variant="outline" className="flex-1 lg:flex-none font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl px-4 sm:px-6 h-10 sm:h-12 border-slate-200">
+                    <Button asChild variant="outline" className="flex-1 lg:flex-none font-black text-[9px] sm:text-[10px] tracking-widest rounded-xl px-4 sm:px-6 h-10 sm:h-12 border-slate-200">
                         <Link href="/beneficiary-portal/profile">
                             <UserCircle2 className="mr-2 h-4 w-4" /> Profile
                         </Link>
                     </Button>
-                    <Button asChild variant="outline" className="flex-1 lg:flex-none font-black text-[9px] sm:text-[10px] uppercase tracking-widest rounded-xl px-4 sm:px-6 h-10 sm:h-12 border-slate-200">
+                    <Button asChild variant="outline" className="flex-1 lg:flex-none font-black text-[9px] sm:text-[10px] tracking-widest rounded-xl px-4 sm:px-6 h-10 sm:h-12 border-slate-200">
                         <Link href="/beneficiary-portal/settings">
                             <ShieldCheck className="mr-2 h-4 w-4" /> Security
                         </Link>
@@ -174,14 +174,14 @@ export default function BeneficiaryPortalPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Card className="border-none shadow-xl shadow-slate-200/40 bg-white group">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Help Received</CardTitle>
+                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-widest">Help Received</CardTitle>
                         <Gift className="h-4 w-4 sm:h-5 sm:w-5 text-primary opacity-60" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight font-mono">
                             {formatCurrency(totalDisbursed)}
                         </div>
-                        <div className="mt-2 flex items-center gap-2 text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                        <div className="mt-2 flex items-center gap-2 text-[9px] sm:text-[10px] font-bold text-slate-500 tracking-widest">
                             Total help amount
                         </div>
                     </CardContent>
@@ -189,14 +189,14 @@ export default function BeneficiaryPortalPage() {
 
                 <Card className="border-none shadow-xl shadow-slate-200/40 bg-white group">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Programs</CardTitle>
+                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-slate-400 tracking-widest">Total Programs</CardTitle>
                         <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight font-mono">
                             {activeCount}
                         </div>
-                        <div className="mt-2 text-[9px] sm:text-[10px] font-bold text-green-600 uppercase tracking-widest">
+                        <div className="mt-2 text-[9px] sm:text-[10px] font-bold text-green-600 tracking-widest">
                             Programs you joined
                         </div>
                     </CardContent>
@@ -204,32 +204,32 @@ export default function BeneficiaryPortalPage() {
 
                 <Card className="border-none shadow-xl shadow-slate-200/40 bg-slate-900 text-white group">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-white/40 uppercase tracking-widest">Your Status</CardTitle>
+                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-white/40 tracking-widest">Your Status</CardTitle>
                         <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-white/40" />
                     </CardHeader>
                     <CardContent>
                         <div className="text-xl sm:text-2xl font-black tracking-tight">
                             Verified Member
                         </div>
-                        <div className="mt-2 text-[9px] sm:text-[10px] font-bold text-white/60 uppercase tracking-widest">
+                        <div className="mt-2 text-[9px] sm:text-[10px] font-bold text-white/60 tracking-widest">
                             Registry status
                         </div>
                     </CardContent>
                 </Card>
             </div>
             
-            {/* Institutional Action Required */}
+            {/* Organization Action Required */}
             {beneficiaryDoc && (!beneficiaryDoc.aadhaarNumber || !beneficiaryDoc.bankDetails || beneficiaryDoc.bankDetails.length === 0) && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {!beneficiaryDoc.aadhaarNumber && (
                         <Alert className="bg-red-50 border-red-200 rounded-[32px] p-6 shadow-sm border-2 animate-pulse">
                             <ShieldCheck className="h-5 w-5 text-red-600" />
                             <div className="ml-2">
-                                <AlertTitle className="text-red-900 font-black text-xs uppercase tracking-[0.2em]">Identity Check Needed</AlertTitle>
+                                <AlertTitle className="text-red-900 font-black text-xs tracking-[0.2em]">Identity Check Needed</AlertTitle>
                                 <AlertDescription className="text-red-700/80 text-[11px] font-bold mt-1 leading-relaxed">
                                     Your records are not complete. Please add your Aadhaar details to stay verified.
                                 </AlertDescription>
-                                <Button asChild variant="link" className="p-0 h-auto text-red-600 font-black text-[10px] uppercase tracking-widest mt-3 hover:text-red-700">
+                                <Button asChild variant="link" className="p-0 h-auto text-red-600 font-black text-[10px] tracking-widest mt-3 hover:text-red-700">
                                     <Link href="/beneficiary-portal/profile">Update Identity Records <Sparkles className="ml-1 h-3 w-3" /></Link>
                                 </Button>
                             </div>
@@ -239,11 +239,11 @@ export default function BeneficiaryPortalPage() {
                         <Alert className="bg-blue-50 border-blue-200 rounded-[32px] p-6 shadow-sm border-2 animate-pulse">
                             <Landmark className="h-5 w-5 text-blue-600" />
                             <div className="ml-2">
-                                <AlertTitle className="text-blue-900 font-black text-xs uppercase tracking-[0.2em]">Bank Details Needed</AlertTitle>
+                                <AlertTitle className="text-blue-900 font-black text-xs tracking-[0.2em]">Bank Details Needed</AlertTitle>
                                 <AlertDescription className="text-blue-700/80 text-[11px] font-bold mt-1 leading-relaxed">
                                     No bank details found. Please add your account to receive help money.
                                 </AlertDescription>
-                                <Button asChild variant="link" className="p-0 h-auto text-blue-600 font-black text-[10px] uppercase tracking-widest mt-3 hover:text-blue-700">
+                                <Button asChild variant="link" className="p-0 h-auto text-blue-600 font-black text-[10px] tracking-widest mt-3 hover:text-blue-700">
                                     <Link href="/beneficiary-portal/profile">Link Bank Account <Sparkles className="ml-1 h-3 w-3" /></Link>
                                 </Button>
                             </div>
@@ -253,11 +253,11 @@ export default function BeneficiaryPortalPage() {
                         <Alert className="bg-amber-50 border-amber-200 rounded-[32px] p-6 shadow-sm border-2 animate-pulse">
                             <Smartphone className="h-5 w-5 text-amber-600" />
                             <div className="ml-2">
-                                <AlertTitle className="text-amber-900 font-black text-xs uppercase tracking-[0.2em]">UPI ID Needed</AlertTitle>
+                                <AlertTitle className="text-amber-900 font-black text-xs tracking-[0.2em]">UPI ID Needed</AlertTitle>
                                 <AlertDescription className="text-amber-700/80 text-[11px] font-bold mt-1 leading-relaxed">
                                     No UPI ID found. Adding a UPI ID (like Google Pay or PhonePe) helps us send help faster.
                                 </AlertDescription>
-                                <Button asChild variant="link" className="p-0 h-auto text-amber-600 font-black text-[10px] uppercase tracking-widest mt-3 hover:text-amber-700">
+                                <Button asChild variant="link" className="p-0 h-auto text-amber-600 font-black text-[10px] tracking-widest mt-3 hover:text-amber-700">
                                     <Link href="/beneficiary-portal/profile">Link UPI Handle <Sparkles className="ml-1 h-3 w-3" /></Link>
                                 </Button>
                             </div>
@@ -282,10 +282,10 @@ export default function BeneficiaryPortalPage() {
                         <Table>
                             <TableHeader className="bg-slate-50/30">
                                 <TableRow className="border-slate-100 hover:bg-transparent">
-                                    <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400 pl-8 py-4">Program Name</TableHead>
-                                    <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400">Type of Help</TableHead>
-                                    <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400">Value / Amount</TableHead>
-                                    <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400 text-right pr-8">Status</TableHead>
+                                    <TableHead className="font-bold text-[10px] tracking-widest text-slate-400 pl-8 py-4">Program Name</TableHead>
+                                    <TableHead className="font-bold text-[10px] tracking-widest text-slate-400">Type of Help</TableHead>
+                                    <TableHead className="font-bold text-[10px] tracking-widest text-slate-400">Value / Amount</TableHead>
+                                    <TableHead className="font-bold text-[10px] tracking-widest text-slate-400 text-right pr-8">Status</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -294,7 +294,7 @@ export default function BeneficiaryPortalPage() {
                                         <TableCell colSpan={4} className="h-64 text-center">
                                             <div className="flex flex-col items-center justify-center space-y-3 opacity-20">
                                                 <HandHelping className="h-12 w-12" />
-                                                <p className="font-black text-xs uppercase tracking-widest">No Active Records</p>
+                                                <p className="font-black text-xs tracking-widest">No Active Records</p>
                                             </div>
                                         </TableCell>
                                     </TableRow>
@@ -312,7 +312,7 @@ export default function BeneficiaryPortalPage() {
                                                 {formatCurrency(item.kitAmount)}
                                             </TableCell>
                                             <TableCell className="text-right pr-8">
-                                                <Badge variant={item.beneficiaryStatus === 'Given' || item.beneficiaryStatus === 'Verified' ? 'eligible' : 'outline'} className="font-bold text-[9px] uppercase tracking-widest px-2 py-0.5">
+                                                <Badge variant={item.beneficiaryStatus === 'Given' || item.beneficiaryStatus === 'Verified' ? 'eligible' : 'outline'} className="font-bold text-[9px] tracking-widest px-2 py-0.5">
                                                     {item.beneficiaryStatus}
                                                 </Badge>
                                             </TableCell>

@@ -239,7 +239,7 @@ export default function DonationDetailsPage() {
                 {donation.donorId && (
                     <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-100 rounded-xl text-green-800 text-xs font-bold animate-fade-in-down">
                         <ShieldCheck className="h-4 w-4 text-green-600" />
-                        Donor Identity Securely Mapped To Institutional Registry.
+                        Donor Identity Securely Mapped To Organization Registry.
                     </div>
                 )}
 
@@ -264,7 +264,7 @@ export default function DonationDetailsPage() {
                             </Card>
 
                             <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
-                                <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Institutional Breakdown</CardTitle></CardHeader>
+                                <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Fund Breakdown</CardTitle></CardHeader>
                                 <CardContent className="grid gap-6 md:grid-cols-2 pt-6">
                                     <div className="space-y-3">
                                         <h3 className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Category Designation</h3>
@@ -302,7 +302,7 @@ export default function DonationDetailsPage() {
                                                                 <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{link.amount.toFixed(2)}</TableCell>
                                                             </TableRow>
                                                         )) : (
-                                                            <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated / General Institutional Fund</TableCell></TableRow>
+                                                            <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated / General Organization Fund</TableCell></TableRow>
                                                         )}
                                                     </TableBody>
                                                 </Table>

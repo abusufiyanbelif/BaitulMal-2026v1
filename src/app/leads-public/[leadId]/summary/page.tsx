@@ -64,10 +64,13 @@ import Image from 'next/image';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { BrandedLoader } from '@/components/branded-loader';
+import { PurposePlaceholder } from '@/components/purpose-placeholder';
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import { getDefaultImage } from '@/lib/default-images';
+import { getImageSrc } from '@/lib/utils';
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-3))" },
@@ -254,11 +257,12 @@ export default function PublicLeadSummaryPage() {
         }));
     }, [fundingData]);
 
-    const isLoading = isLeadLoading || areDonationsLoading || isBrandingLoading || isPaymentLoading;
+    // Only block if branding/payment foundation is missing or if lead is missing and we're not loading
+    if (isBrandingLoading || isPaymentLoading) return <BrandedLoader message="Synchronizing Organization Identity..." />;
 
-    if (isLoading) return <BrandedLoader />;
+    if (isLeadLoading) return <BrandedLoader message="Synchronizing Lead Metadata..." />;
 
-    if (!lead || lead.publicVisibility !== 'Published') {
+    if (!lead) {
         return (
             <main className="container mx-auto p-4 md:p-8 text-center text-primary font-normal">
                 <p className="text-lg text-primary/70 font-normal">This Lead Is Not Available For Public View.</p>
@@ -292,12 +296,35 @@ export default function PublicLeadSummaryPage() {
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
              <div className="mb-4"><Button variant="outline" asChild className="active:scale-95 transition-transform font-bold border-primary/20 text-primary"><Link href="/leads-public"><ArrowLeft className="mr-2 h-4 w-4" /> Back To Leads</Link></Button></div>
             
-            <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center cursor-pointer shadow-sm border border-primary/5" onClick={() => lead.imageUrl && handleViewImage(lead.imageUrl, lead.name)}>
-                {lead.imageUrl ? (
-                    <Image src={`/api/image-proxy?url=${encodeURIComponent(lead.imageUrl)}`} alt={lead.name} fill sizes="100vw" className="object-cover" priority />
-                ) : ( <FallbackIcon className="w-24 h-24 text-muted-foreground/30" /> )}
+            <div className="relative w-full h-48 md:h-64 rounded-lg overflow-hidden mb-6 bg-secondary flex items-center justify-center cursor-pointer shadow-sm border border-primary/5" onClick={() => lead?.imageUrl && lead?.showCustomImage !== false && handleViewImage(lead.imageUrl, lead.name)}>
+                {isLeadLoading ? (
+                    <Skeleton className="w-full h-full" />
+                ) : lead?.imageUrl && lead?.showCustomImage !== false ? (
+                    <Image 
+                        src={getImageSrc(lead.imageUrl)} 
+                        alt={lead.name} 
+                        fill 
+                        sizes="100vw" 
+                        className="object-cover transition-transform duration-700 hover:scale-105" 
+                        priority 
+                    />
+                ) : (
+                    <PurposePlaceholder purpose={lead?.purpose} category={lead?.category} />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                <div className="absolute bottom-0 left-0 p-6"><h1 className="text-3xl lg:text-4xl font-bold text-white shadow-lg">{lead.name}</h1><p className="text-sm text-white/90 shadow-md font-bold tracking-tight">{lead.status}</p></div>
+                <div className="absolute bottom-0 left-0 p-6 w-full">
+                    {isLeadLoading ? (
+                        <div className="space-y-2">
+                            <Skeleton className="h-10 w-3/4 bg-white/20" />
+                            <Skeleton className="h-4 w-1/4 bg-white/20" />
+                        </div>
+                    ) : (
+                        <>
+                            <h1 className="text-3xl lg:text-4xl font-bold text-white shadow-lg">{lead?.name}</h1>
+                            <p className="text-sm text-white/90 shadow-md font-bold tracking-tight">{lead?.status}</p>
+                        </>
+                    )}
+                </div>
             </div>
 
             <div className="flex justify-end items-center mb-4 flex-wrap gap-2">
@@ -316,22 +343,36 @@ export default function PublicLeadSummaryPage() {
 
             <div className="space-y-10" ref={summaryRef}>
                 <Card className="animate-fade-in-zoom shadow-md border-primary/10 bg-white overflow-hidden">
-                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary tracking-tight capitalize">Appeal Objectives</CardTitle></CardHeader>
+                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary tracking-tight capitalize">Appeal Objectives {isLeadLoading && <span className="ml-2 text-[10px] animate-pulse opacity-50">(Fetching...)</span>}</CardTitle></CardHeader>
                     <CardContent className="space-y-6 pt-6 text-foreground font-normal">
                         <div className="space-y-2">
                             <Label className="text-muted-foreground text-[10px] font-bold tracking-tight capitalize opacity-60">Background Context</Label>
-                            <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{lead.description || 'No Detailed Description Provided.'}</p>
+                            {isLeadLoading ? (
+                                <div className="space-y-2">
+                                    <Skeleton className="h-4 w-full" />
+                                    <Skeleton className="h-4 w-full" />
+                                    <Skeleton className="h-4 w-2/3" />
+                                </div>
+                            ) : (
+                                <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{lead?.description || 'No Detailed Description Provided.'}</p>
+                            )}
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-4 border-t border-primary/5">
-                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Required Amount</p><p className="text-lg font-bold text-primary font-mono">₹{(lead.requiredAmount ?? 0).toLocaleString('en-IN')}</p></div>
+                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Required Amount</p>
+                                {isLeadLoading ? <Skeleton className="h-6 w-20" /> : <p className="text-lg font-bold text-primary font-mono">₹{(lead?.requiredAmount ?? 0).toLocaleString('en-IN')}</p>}
+                            </div>
                             <div className="space-y-1">
                                 <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">
                                     {calculatedRequirementTotal > 0 ? "Target Goal (Synced)" : "Target Goal"}
                                 </p>
-                                <p className="text-lg font-bold text-primary font-mono">₹{(fundingData?.targetAmount ?? 0).toLocaleString('en-IN')}</p>
+                                {isLeadLoading || areDonationsLoading ? <Skeleton className="h-6 w-20" /> : <p className="text-lg font-bold text-primary font-mono">₹{(fundingData?.targetAmount ?? 0).toLocaleString('en-IN')}</p>}
                             </div>
-                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Case Purpose</p><Badge variant="outline" className="font-bold text-xs border-primary/20 text-primary capitalize">{lead.purpose}</Badge></div>
-                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Verification Date</p><p className="text-sm font-bold text-primary">{lead.startDate}</p></div>
+                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Case Purpose</p>
+                                {isLeadLoading ? <Skeleton className="h-6 w-24" /> : <Badge variant="outline" className="font-bold text-xs border-primary/20 text-primary capitalize">{lead?.purpose}</Badge>}
+                            </div>
+                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Verification Date</p>
+                                {isLeadLoading ? <Skeleton className="h-6 w-24" /> : <p className="text-sm font-bold text-primary">{lead?.startDate}</p>}
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -341,33 +382,47 @@ export default function PublicLeadSummaryPage() {
                         {isVisible('funding_progress') && (
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden">
                                 <CardHeader className="bg-primary/5 border-b">
-                                    <CardTitle className="flex items-center gap-2 font-bold text-primary capitalize"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
+                                    <CardTitle className="flex items-center gap-2 font-bold text-primary capitalize">
+                                        <Target className="h-6 w-6 text-primary" /> 
+                                        Fundraising Progress 
+                                        {areDonationsLoading && <span className="ml-2 text-[10px] animate-pulse opacity-50">(Tracking Funds...)</span>}
+                                    </CardTitle>
                                     <CardDescription className="font-normal text-primary/70">Verified Donations For This Individual Appeal.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="pt-10">
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center font-normal">
-                                        <div className="relative h-48 sm:h-64 w-full">
-                                            {isClient ? (
-                                                <ChartContainer config={{ progress: { label: 'Progress', color: 'hsl(var(--primary))' } }} className="mx-auto aspect-square h-full">
-                                                    <ResponsiveContainer>
-                                                        <RadialBarChart data={[{ name: 'Progress', value: fundingData.fundingProgress || 0, fill: 'hsl(var(--primary))' }]} startAngle={-270} endAngle={90} innerRadius="75%" outerRadius="100%" barSize={20}>
-                                                            <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
-                                                            <RadialBar dataKey="value" background={{ fill: 'hsl(var(--muted))' }} cornerRadius={10} className="transition-all duration-1000 ease-out" />
-                                                        </RadialBarChart>
-                                                    </ResponsiveContainer>
-                                                </ChartContainer>
-                                            ) : <Skeleton className="w-full h-full rounded-full" />}
-                                            <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold tracking-tight capitalize">Funded</span></div>
-                                        </div>
-                                        <div className="space-y-6 text-center md:text-left text-primary font-bold animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-                                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Raised For Goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
-                                            <div className="space-y-1">
-                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Target Goal</p>
-                                                <p className="text-3xl font-bold text-primary opacity-40 font-mono">₹{(fundingData?.targetAmount || 0).toLocaleString('en-IN')}</p>
+                                    {areDonationsLoading ? (
+                                        <div className="space-y-8 animate-pulse">
+                                            <div className="flex justify-center"><Skeleton className="h-48 w-48 rounded-full" /></div>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <Skeleton className="h-10 w-full" />
+                                                <Skeleton className="h-10 w-full" />
                                             </div>
-                                            <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Grand Total Received</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData?.grandTotal || 0).toLocaleString('en-IN')}</p></div>
                                         </div>
-                                    </div>
+                                    ) : fundingData ? (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center font-normal">
+                                            <div className="relative h-48 sm:h-64 w-full">
+                                                {isClient ? (
+                                                    <ChartContainer config={{ progress: { label: 'Progress', color: 'hsl(var(--primary))' } }} className="mx-auto aspect-square h-full">
+                                                        <ResponsiveContainer>
+                                                            <RadialBarChart data={[{ name: 'Progress', value: fundingData.fundingProgress || 0, fill: 'hsl(var(--primary))' }]} startAngle={-270} endAngle={90} innerRadius="75%" outerRadius="100%" barSize={20}>
+                                                                <PolarAngleAxis type="number" domain={[0, 100]} tick={false} />
+                                                                <RadialBar dataKey="value" background={{ fill: 'hsl(var(--muted))' }} cornerRadius={10} className="transition-all duration-1000 ease-out" />
+                                                            </RadialBarChart>
+                                                        </ResponsiveContainer>
+                                                    </ChartContainer>
+                                                ) : <Skeleton className="w-full h-full rounded-full" />}
+                                                <div className="absolute inset-0 flex flex-col items-center justify-center animate-fade-in-zoom"><span className="text-4xl font-bold text-primary">{(fundingData.fundingProgress || 0).toFixed(0)}%</span><span className="text-[10px] text-muted-foreground font-bold tracking-tight capitalize">Funded</span></div>
+                                            </div>
+                                            <div className="space-y-6 text-center md:text-left text-primary font-bold animate-fade-in-up" style={{ animationDelay: '300ms' }}>
+                                                <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Raised For Goal</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')}</p></div>
+                                                <div className="space-y-1">
+                                                    <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Target Goal</p>
+                                                    <p className="text-3xl font-bold text-primary opacity-40 font-mono">₹{(fundingData?.targetAmount || 0).toLocaleString('en-IN')}</p>
+                                                </div>
+                                                <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Grand Total Received</p><p className="text-3xl font-bold text-primary font-mono">₹{(fundingData?.grandTotal || 0).toLocaleString('en-IN')}</p></div>
+                                            </div>
+                                        </div>
+                                    ) : null}
                                 </CardContent>
                             </Card>
                         )}
@@ -641,11 +696,22 @@ export default function PublicLeadSummaryPage() {
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                 {publicDocuments.map((doc) => {
                                     const isImg = doc.name.match(/\.(jpeg|jpg|gif|png|webp)$/i);
+                                    const displayUrl = doc.url;
                                     return (
-                                        <Card key={doc.url} className="overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col hover:-translate-y-1 bg-white border-primary/10 cursor-pointer shadow-sm group" onClick={() => isImg ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}>
+                                        <Card key={doc.url} className="overflow-hidden hover:shadow-xl transition-all duration-300 flex flex-col hover:-translate-y-1 bg-white border-primary/10 cursor-pointer shadow-sm group" onClick={() => isImg ? handleViewImage(doc.url, doc.name) : window.open(doc.url, '_blank')}>
                                             <div className="block h-full">
                                                 <div className="relative aspect-square w-full bg-muted flex items-center justify-center overflow-hidden">
-                                                    {isImg ? <Image src={`/api/image-proxy?url=${encodeURIComponent(doc.url)}`} alt={doc.name} fill sizes="100vw" className="object-cover transition-transform duration-500 group-hover:scale-110" /> : <File className="w-10 h-10 text-muted-foreground transition-transform duration-500 group-hover:scale-110" />}
+                                                    {isImg ? (
+                                                        <Image 
+                                                            src={getImageSrc(displayUrl)} 
+                                                            alt={doc.name} 
+                                                            fill 
+                                                            sizes="100vw" 
+                                                            className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                                                        />
+                                                    ) : (
+                                                        <File className="w-10 h-10 text-muted-foreground transition-transform duration-500 group-hover:scale-110" />
+                                                    )}
                                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                                 </div>
                                                 <div className="p-2 text-center text-primary font-bold">
@@ -668,7 +734,15 @@ export default function PublicLeadSummaryPage() {
                     <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary tracking-tight text-sm">{imageToView?.name}</DialogTitle></DialogHeader>
                     <div className="p-4 bg-secondary/20 flex-1 overflow-hidden relative min-h-[70vh]">
                         {imageToView && (
-                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                            <Image 
+                                src={getImageSrc(imageToView.url)} 
+                                alt="Viewer" 
+                                fill 
+                                sizes="100vw" 
+                                className="object-contain transition-transform duration-200 ease-out origin-center" 
+                                style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} 
+                                unoptimized 
+                            />
                         )}
                     </div>
                     <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">

@@ -47,7 +47,7 @@ export function Providers({ children }: { children: ReactNode }) {
         attribute="data-theme" 
         defaultTheme="bms3-a" 
         enableSystem={false}
-        storageKey="institutional-theme-persistent-v2"
+        storageKey="organization-theme-persistent-v2"
         themes={allThemes}
         disableTransitionOnChange
       >

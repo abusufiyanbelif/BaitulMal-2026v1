@@ -1,5 +1,5 @@
 /**
- * Default Institutional Asset Mapping
+ * Default Registry Asset Mapping
  * Maps purposes, categories, and subcategories to premium high-fidelity background images.
  */
 
@@ -11,7 +11,7 @@ export interface DefaultAsset {
     subcategory?: string;
 }
 
-export const defaultInstitutionalAssets: DefaultAsset[] = [
+export const defaultRegistryAssets: DefaultAsset[] = [
     {
         id: 'medical_surgery',
         url: '/defaults/images/medical_surgery.png',
@@ -66,7 +66,7 @@ export const defaultInstitutionalAssets: DefaultAsset[] = [
     {
         id: 'other_general',
         url: '/defaults/images/zakat_charity.png',
-        label: 'Institutional Support',
+        label: 'Organization Support',
         purpose: 'Other'
     }
 ];
@@ -77,7 +77,7 @@ export const defaultInstitutionalAssets: DefaultAsset[] = [
 export function getDefaultImage(purpose: string, subcategory?: string): string {
     // 1. Try to match purpose AND subcategory
     if (subcategory) {
-        const exactMatch = defaultInstitutionalAssets.find(
+        const exactMatch = defaultRegistryAssets.find(
             a => a.purpose.toLowerCase() === purpose.toLowerCase() && 
                  a.subcategory?.toLowerCase() === subcategory.toLowerCase()
         );
@@ -85,7 +85,7 @@ export function getDefaultImage(purpose: string, subcategory?: string): string {
     }
 
     // 2. Try to match purpose
-    const purposeMatch = defaultInstitutionalAssets.find(
+    const purposeMatch = defaultRegistryAssets.find(
         a => a.purpose.toLowerCase() === purpose.toLowerCase()
     );
     if (purposeMatch) return purposeMatch.url;

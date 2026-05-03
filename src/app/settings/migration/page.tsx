@@ -48,7 +48,7 @@ export default function MigrationPage() {
                     <div className="p-4 rounded-2xl bg-amber-50 border border-amber-100 flex gap-3">
                         <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
                         <div className="space-y-1">
-                            <p className="text-xs font-bold text-amber-900 uppercase tracking-wider">Critical Operation</p>
+                            <p className="text-xs font-bold text-amber-900 tracking-wider">Critical Operation</p>
                             <p className="text-[11px] text-amber-800 leading-relaxed font-medium">
                                 This tool will scan `users`, `donors`, `beneficiaries`, and `user_lookups`. 
                                 It will strip country codes (like +91) and extra digits, keeping only the last 10 digits.
@@ -66,7 +66,7 @@ export default function MigrationPage() {
                         <Button 
                             onClick={handleMigration} 
                             disabled={isLoading}
-                            className="w-full h-14 font-black uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20"
+                            className="w-full h-14 font-black tracking-widest rounded-2xl shadow-xl shadow-primary/20"
                         >
                             {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : "Run Phone Migration"}
                         </Button>

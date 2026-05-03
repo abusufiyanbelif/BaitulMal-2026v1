@@ -170,7 +170,7 @@ export function EducationExtractor({ enableStoryCreator = false }: EducationExtr
   const getFullText = () => {
     if (!educationResult) return '';
     const achievementsText = educationResult.achievements.map(f => `- ${f.achievement}: ${f.details}`).join('\n');
-    return `Institution: ${educationResult.institution}\nDegree: ${educationResult.degree}\n\nAchievements:\n${achievementsText}`;
+    return `Center: ${educationResult.institution}\nDegree: ${educationResult.degree}\n\nAchievements:\n${achievementsText}`;
   };
   
   const handleDownloadEducation = () => {
@@ -276,7 +276,7 @@ export function EducationExtractor({ enableStoryCreator = false }: EducationExtr
             )}
             {educationResult && (
               <div className="space-y-4">
-                <ResultDisplay label="Institution" value={educationResult.institution} />
+                <ResultDisplay label="Center" value={educationResult.institution} />
                 <ResultDisplay label="Degree/Program" value={educationResult.degree} />
                 <div>
                    <h3 className="text-sm font-medium text-muted-foreground mb-1">Key Achievements/Grades</h3>

@@ -140,7 +140,7 @@ export default function InfrastructureFundraisingPage() {
                 <Card className="border-primary/10 animate-in slide-in-from-top-4 duration-300">
                     <CardHeader>
                         <CardTitle className="text-lg">Launch Infrastructure Fund</CardTitle>
-                        <CardDescription>This request will only be visible to registered institutional members.</CardDescription>
+                        <CardDescription>This request will only be visible to registered organization members.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -198,7 +198,7 @@ export default function InfrastructureFundraisingPage() {
                                                 </div>
                                                 <div className="text-right">
                                                     <p className="text-2xl font-black text-primary">₹{campaign.collectedAmount.toLocaleString()}</p>
-                                                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Raised of ₹{campaign.targetAmount.toLocaleString()}</p>
+                                                    <p className="text-[10px] text-muted-foreground font-bold tracking-widest">Raised of ₹{campaign.targetAmount.toLocaleString()}</p>
                                                 </div>
                                             </div>
 
@@ -256,7 +256,7 @@ export default function InfrastructureFundraisingPage() {
                                             <ShieldCheck className="h-4 w-4" />
                                         </div>
                                         <div className="space-y-0.5">
-                                            <p className="text-[10px] font-bold text-primary/60 uppercase tracking-tight">Active Resources</p>
+                                            <p className="text-[10px] font-bold text-primary/60 tracking-tight">Active Resources</p>
                                             <p className="text-lg font-black">04 Items</p>
                                         </div>
                                     </div>
@@ -268,7 +268,7 @@ export default function InfrastructureFundraisingPage() {
                                             <Clock className="h-4 w-4" />
                                         </div>
                                         <div className="space-y-0.5">
-                                            <p className="text-[10px] font-bold text-amber-600 uppercase tracking-tight">Due This Month</p>
+                                            <p className="text-[10px] font-bold text-amber-600 tracking-tight">Due This Month</p>
                                             <p className="text-lg font-black text-amber-900">₹4,200</p>
                                         </div>
                                     </div>
@@ -276,7 +276,7 @@ export default function InfrastructureFundraisingPage() {
                             </div>
 
                             <div className="pt-2 border-t mt-4 space-y-3">
-                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Recent Maintenance</p>
+                                <p className="text-xs font-bold text-muted-foreground tracking-widest">Recent Maintenance</p>
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-between text-xs">
                                         <span className="font-normal">Whapi Monthly Sub.</span>
@@ -304,13 +304,13 @@ export default function InfrastructureFundraisingPage() {
                                 <Zap className="h-5 w-5 text-amber-300" />
                             </div>
                             <div className="space-y-1">
-                                <h4 className="font-black text-lg">Institutional Strength</h4>
+                                <h4 className="font-black text-lg">Organization Strength</h4>
                                 <p className="text-xs text-primary-foreground/80 font-normal leading-relaxed">
                                     Our platform infrastructure is entirely community-funded. 
                                     Internal contributions ensure our system remains independent and operational.
                                 </p>
                             </div>
-                            <Button variant="secondary" className="w-full font-black uppercase text-[10px] tracking-widest h-9">
+                            <Button variant="secondary" className="w-full font-black text-[10px] tracking-widest h-9">
                                 View Full Ledger
                             </Button>
                         </div>

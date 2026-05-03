@@ -283,7 +283,7 @@ export default function DonorProfilePage() {
                             <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900">
                                 <IdCard className="h-5 w-5 text-primary/60" /> Identity Verification (KYC)
                             </CardTitle>
-                            <CardDescription className="text-xs font-medium">Verified institutional identification records.</CardDescription>
+                            <CardDescription className="text-xs font-medium">Verified organization identification records.</CardDescription>
                         </CardHeader>
                         <CardContent className="pt-8 grid grid-cols-1 sm:grid-cols-2 gap-8">
                             <div className="space-y-1.5">
@@ -345,9 +345,9 @@ export default function DonorProfilePage() {
                                 <p className="text-sm font-bold text-slate-800">{donorData.createdByName || 'System Automated'}</p>
                             </div>
                             <div className="sm:col-span-2 space-y-1.5">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Institutional Notes</p>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Organization Notes</p>
                                 <p className="text-xs font-medium text-slate-500 italic bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                                    {donorData.notes || 'No special institutional notes recorded for this profile.'}
+                                    {donorData.notes || 'No special organization notes recorded for this profile.'}
                                 </p>
                             </div>
                         </CardContent>
@@ -407,7 +407,7 @@ export default function DonorProfilePage() {
                             </div>
 
                             <p className="text-[9px] text-slate-400 font-medium leading-relaxed italic">
-                                These details are used to verify contributions and assist in institutional audits.
+                                These details are used to verify contributions and assist in organization audits.
                             </p>
                         </CardContent>
                     </Card>

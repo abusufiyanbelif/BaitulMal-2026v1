@@ -108,19 +108,19 @@ function IssueRow({
             {expanded && (
                 <div className="border-t border-primary/5 p-4 bg-primary/[0.01] grid grid-cols-1 sm:grid-cols-2 gap-4 animate-in slide-in-from-top-1 duration-150">
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Current Value</p>
+                        <p className="text-[10px] font-bold text-muted-foreground tracking-widest">Current Value</p>
                         <pre className="text-[11px] font-mono bg-red-50 border border-red-100 p-2 rounded-lg whitespace-pre-wrap overflow-auto max-h-28 text-red-700">
                             {JSON.stringify(issue.currentValue, null, 2) ?? 'undefined'}
                         </pre>
                     </div>
                     <div className="space-y-1">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Suggested Fix</p>
+                        <p className="text-[10px] font-bold text-muted-foreground tracking-widest">Suggested Fix</p>
                         <pre className="text-[11px] font-mono bg-green-50 border border-green-100 p-2 rounded-lg whitespace-pre-wrap overflow-auto max-h-28 text-green-700">
                             {JSON.stringify(issue.suggestedValue, null, 2)}
                         </pre>
                     </div>
                     <div className="sm:col-span-2">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1">Target Document</p>
+                        <p className="text-[10px] font-bold text-muted-foreground tracking-widest mb-1">Target Document</p>
                         <p className="text-[11px] font-mono text-primary/70 bg-primary/5 rounded-lg px-3 py-1.5 border border-primary/10">
                             <span className="font-bold">{issue.collection}</span>/<span className="opacity-70">{issue.docId}</span>
                         </p>
@@ -329,25 +329,25 @@ export default function DataHealthPage() {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 animate-fade-in-up">
                         <Card className="bg-white border-primary/10 shadow-sm">
                             <CardContent className="p-4 text-center">
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Total Issues</p>
+                                <p className="text-[10px] font-bold text-muted-foreground tracking-widest">Total Issues</p>
                                 <p className="text-3xl font-black text-primary mt-1">{allIssues.length}</p>
                             </CardContent>
                         </Card>
                         <Card className="bg-white border-red-100 shadow-sm">
                             <CardContent className="p-4 text-center">
-                                <p className="text-[10px] font-bold text-red-500 uppercase tracking-widest">Critical</p>
+                                <p className="text-[10px] font-bold text-red-500 tracking-widest">Critical</p>
                                 <p className="text-3xl font-black text-red-600 mt-1">{criticalCount}</p>
                             </CardContent>
                         </Card>
                         <Card className="bg-white border-amber-100 shadow-sm">
                             <CardContent className="p-4 text-center">
-                                <p className="text-[10px] font-bold text-amber-500 uppercase tracking-widest">Warnings</p>
+                                <p className="text-[10px] font-bold text-amber-500 tracking-widest">Warnings</p>
                                 <p className="text-3xl font-black text-amber-600 mt-1">{warningCount}</p>
                             </CardContent>
                         </Card>
                         <Card className="bg-white border-blue-100 shadow-sm">
                             <CardContent className="p-4 text-center">
-                                <p className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">Info</p>
+                                <p className="text-[10px] font-bold text-blue-500 tracking-widest">Info</p>
                                 <p className="text-3xl font-black text-blue-600 mt-1">{infoCount}</p>
                             </CardContent>
                         </Card>

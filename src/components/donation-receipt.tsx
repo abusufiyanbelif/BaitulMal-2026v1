@@ -35,7 +35,7 @@ export const DonationReceipt = React.forwardRef<HTMLDivElement, DonationReceiptP
     return (
         <div ref={ref} className="bg-white p-0 rounded-none w-full">
             <Card className="w-full max-w-2xl mx-auto shadow-none border-none relative overflow-hidden bg-white">
-                {/* Institutional Header */}
+                {/* Organization Header */}
                 <div className="bg-slate-900 text-white p-12 flex flex-col items-center text-center space-y-6 relative overflow-hidden">
                     <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-transparent opacity-40 pointer-events-none" />
                     {brandingSettings?.logoUrl ? (
@@ -48,7 +48,7 @@ export const DonationReceipt = React.forwardRef<HTMLDivElement, DonationReceiptP
                         </div>
                     )}
                     <div className="relative z-10">
-                        <h2 className="text-2xl font-black tracking-tighter uppercase leading-none">{brandingSettings?.name || 'Institutional Registry'}</h2>
+                        <h2 className="text-2xl font-black tracking-tighter uppercase leading-none">{brandingSettings?.name || 'Organization Registry'}</h2>
                         <div className="h-px w-12 bg-primary/40 mx-auto mt-4 mb-2" />
                         <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em]">Official Contribution Certificate</p>
                     </div>
@@ -145,7 +145,7 @@ export const DonationReceipt = React.forwardRef<HTMLDivElement, DonationReceiptP
                         <div className="pt-8 space-y-6 border-t border-slate-50">
                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 items-start">
                                  <div className="space-y-4">
-                                     <h3 className="text-[9px] font-black text-primary uppercase tracking-[0.2em] border-b border-slate-100 pb-2">Institutional Contact</h3>
+                                     <h3 className="text-[9px] font-black text-primary uppercase tracking-[0.2em] border-b border-slate-100 pb-2">Organization Contact</h3>
                                      <div className="space-y-1">
                                          {paymentSettings?.upiId && <ReceiptRow label="UPI ID" value={paymentSettings.upiId} isMono isSmall />}
                                          {paymentSettings?.contactPhone && <ReceiptRow label="Contact" value={paymentSettings.contactPhone} isMono isSmall />}
@@ -167,7 +167,7 @@ export const DonationReceipt = React.forwardRef<HTMLDivElement, DonationReceiptP
                              </div>
                              
                              <div className="text-center pt-4">
-                                 <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Institutional Audit Trail Verified</p>
+                                 <p className="text-[9px] font-black text-slate-300 uppercase tracking-[0.2em]">Organization Audit Trail Verified</p>
                                  {paymentSettings?.address && <p className="text-[8px] font-medium text-slate-400 mt-2 max-w-xs mx-auto">{paymentSettings.address}</p>}
                              </div>
                         </div>
@@ -175,7 +175,7 @@ export const DonationReceipt = React.forwardRef<HTMLDivElement, DonationReceiptP
                     <CardFooter className="flex-col items-center justify-center text-center p-8 bg-slate-900 text-white rounded-b-[32px] mt-8">
                         <p className="font-black text-xl tracking-tight">JazakAllah Khair!</p>
                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mt-2">May Allah accept your donation and bless you abundantly.</p>
-                        <p className="text-[8px] font-medium text-white/20 mt-4">{paymentSettings?.copyright || '© 2026 Institutional Registry. All Rights Reserved.'}</p>
+                        <p className="text-[8px] font-medium text-white/20 mt-4">{paymentSettings?.copyright || '© 2026 Organization Registry. All Rights Reserved.'}</p>
                     </CardFooter>
                 </div>
             </Card>

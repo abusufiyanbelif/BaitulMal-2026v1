@@ -42,11 +42,11 @@ export default function SeedPage() {
                     </div>
                     <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-primary">Maintenance Hub</h1>
                 </div>
-                <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">Institutional database orchestration, migration protocols, and system maintenance suite.</p>
+                <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">Organization database orchestration, migration protocols, and system maintenance suite.</p>
             </div>
             
             <div className="flex items-center gap-2 bg-white/50 backdrop-blur-md p-1.5 rounded-2xl border border-primary/5 shadow-sm">
-                <div className="flex items-center gap-2 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-primary/60">
+                <div className="flex items-center gap-2 px-4 py-2 text-[10px] font-black tracking-widest text-primary/60">
                     <Terminal className="h-3.5 w-3.5" />
                     CLI Authorized
                 </div>
@@ -61,16 +61,16 @@ export default function SeedPage() {
                       <ShieldCheck className="h-8 w-8" />
                   </div>
                   <div className="space-y-4">
-                      <AlertTitle className="text-xl font-black text-primary tracking-tighter">Institutional Credentials Required</AlertTitle>
+                      <AlertTitle className="text-xl font-black text-primary tracking-tighter">Organization Credentials Required</AlertTitle>
                       <AlertDescription className="text-sm font-bold text-primary/60 leading-relaxed">
                           To execute these orchestration protocols, the system requires root service account authorization. Ensure the primary identity key is present in the server environment.
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                               <div className="p-4 rounded-2xl bg-primary/5 border border-primary/5">
-                                  <p className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-2">Protocol 1</p>
+                                  <p className="text-[10px] font-black tracking-widest opacity-40 mb-2">Protocol 1</p>
                                   <p className="text-xs font-bold leading-tight">Extract JSON key from Firebase Console &gt; Service Accounts.</p>
                               </div>
                               <div className="p-4 rounded-2xl bg-primary/5 border border-primary/5">
-                                  <p className="text-[10px] font-black uppercase tracking-widest opacity-40 mb-2">Protocol 2</p>
+                                  <p className="text-[10px] font-black tracking-widest opacity-40 mb-2">Protocol 2</p>
                                   <p className="text-xs font-bold leading-tight">Rename to <span className="font-mono text-primary">serviceAccountKey.json</span> in root directory.</p>
                               </div>
                           </div>
@@ -87,7 +87,7 @@ export default function SeedPage() {
                       </div>
                       <div className="space-y-0.5">
                           <h3 className="text-lg font-black text-primary tracking-tighter">Database Seeding</h3>
-                          <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Initial Boot Protocol</p>
+                          <p className="text-[10px] font-bold text-primary/40 tracking-widest">Initial Boot Protocol</p>
                       </div>
                   </div>
                   <p className="text-sm font-bold text-primary/60 leading-relaxed">Ensures the root administrator exists and repairs structural integrity for core settings. Use this to re-initialize a fresh environment.</p>
@@ -109,7 +109,7 @@ export default function SeedPage() {
                       </div>
                       <div className="space-y-0.5">
                           <h3 className="text-lg font-black text-primary tracking-tighter">Migration Matrix</h3>
-                          <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Schema Evolution</p>
+                          <p className="text-[10px] font-bold text-primary/40 tracking-widest">Schema Evolution</p>
                       </div>
                   </div>
                   <div className="space-y-4">
@@ -141,15 +141,15 @@ export default function SeedPage() {
                       </div>
                       <div className="space-y-1">
                           <h3 className="text-2xl font-black text-rose-900 tracking-tighter">Critical Erase Protocol</h3>
-                          <p className="text-sm font-bold text-rose-800/40 uppercase tracking-widest">Data Purge & System Reset</p>
+                          <p className="text-sm font-bold text-rose-800/40 tracking-widest">Data Purge & System Reset</p>
                       </div>
                   </div>
-                  <Badge className="bg-rose-500 text-white font-black text-[10px] uppercase tracking-[0.2em] px-6 py-2 rounded-full border-4 border-white shadow-xl">High Risk</Badge>
+                  <Badge className="bg-rose-500 text-white font-black text-[10px] tracking-[0.2em] px-6 py-2 rounded-full border-4 border-white shadow-xl">High Risk</Badge>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                   <div className="space-y-6">
-                      <p className="text-sm font-bold text-rose-900/60 leading-relaxed">This command initiates a total wipe of all institutional operational data. Campaigns, Beneficiaries, Donations, and Non-Root Users will be permanently expunged along with their cloud artifacts.</p>
+                      <p className="text-sm font-bold text-rose-900/60 leading-relaxed">This command initiates a total wipe of all organization operational data. Campaigns, Beneficiaries, Donations, and Non-Root Users will be permanently expunged along with their cloud artifacts.</p>
                       <div className="p-6 rounded-[24px] bg-rose-500/5 border border-rose-500/10 text-rose-900 font-bold text-xs italic leading-relaxed">
                           "Authorized purge is irreversible. All linked identifiers and storage vectors will be discarded from the cloud matrix."
                       </div>
@@ -164,7 +164,7 @@ export default function SeedPage() {
                               <Trash2 className="h-5 w-5 animate-pulse" />
                           </div>
                       </div>
-                      <p className="text-[10px] font-black text-rose-900/40 uppercase tracking-widest text-center">Protocol Requires Manual Confirmation in CLI</p>
+                      <p className="text-[10px] font-black text-rose-900/40 tracking-widest text-center">Protocol Requires Manual Confirmation in CLI</p>
                   </div>
               </div>
           </Card>

@@ -56,7 +56,7 @@ export interface UserHookResult {
 export const FirebaseContext = createContext<FirebaseContextState | undefined>(undefined);
 
 /**
- * FirebaseProvider - Root provider for institutional SDK services.
+ * FirebaseProvider - Root provider for system SDK services.
  * Refactored to eliminate circular dependencies by isolating internal logic from the index barrel.
  */
 export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({

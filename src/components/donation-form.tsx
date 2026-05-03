@@ -571,7 +571,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
 
     if (res.success && res.id) {
         setValue('donorId', res.id, { shouldDirty: true });
-        toast({ title: 'Profile Created', description: 'Institutional Identity Secured.', variant: 'success' });
+        toast({ title: 'Profile Created', description: 'Organization Identity Secured.', variant: 'success' });
     } else {
         toast({ title: 'Creation Failed', description: res.message, variant: 'destructive' });
     }

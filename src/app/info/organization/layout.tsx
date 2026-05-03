@@ -2,7 +2,7 @@ import type {Metadata} from 'next';
 
 export const metadata: Metadata = {
   title: 'Organization profile',
-  description: 'Meet the team and learn about our core institutional values.',
+  description: 'Meet the team and learn about our core organization values.',
 };
 
 export default function OrgProfileLayout({

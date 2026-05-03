@@ -114,7 +114,7 @@ export default function DonorSettingsPage() {
                 <h1 className="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
                     <Settings className="h-6 w-6 text-primary" /> Security & Preferences
                 </h1>
-                <p className="text-slate-500 text-sm font-medium mt-1">Manage your access credentials and institutional notification rules.</p>
+                <p className="text-slate-500 text-sm font-medium mt-1">Manage your access credentials and organization notification rules.</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -177,7 +177,7 @@ export default function DonorSettingsPage() {
                     <Card className="border-none shadow-xl shadow-slate-200/40 bg-white rounded-3xl overflow-hidden">
                         <CardHeader className="bg-slate-50/50 border-b border-slate-100 pb-6">
                             <CardTitle className="flex items-center gap-2 text-base font-bold text-slate-900">
-                                <Bell className="h-5 w-5 text-primary/60" /> Institutional Alerts
+                                <Bell className="h-5 w-5 text-primary/60" /> Organization Alerts
                             </CardTitle>
                             <CardDescription className="text-xs font-medium">Global notification rules configured by administrators.</CardDescription>
                         </CardHeader>

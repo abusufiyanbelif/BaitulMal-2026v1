@@ -1,7 +1,7 @@
-# 🏗️ Institutional Data Architecture
+# 🏗️ Organization Data Architecture
 
-**Build Version:** `2026.05.03.3`
-**Last Updated:** 3/5/2026, 5:43:50 am
+**Build Version:** `2026.05.04.10`
+**Last Updated:** 4/5/2026, 4:43:32 am
 
 Mapping between Application Modules and Firestore Collections.
 
@@ -31,20 +31,20 @@ Mapping between Application Modules and Firestore Collections.
 | `app\donors\actions.ts` | `donations` | Read/Write |
 | `app\leads-members\actions.ts` | `leads` | Read/Write |
 | `app\messages\actions.ts` | `users` | Read/Write |
+| `app\messages\actions.ts` | `donors` | Read/Write |
+| `app\messages\actions.ts` | `beneficiaries` | Read/Write |
 | `app\messages\actions.ts` | `settings` | Read/Write |
 | `app\messages\actions.ts` | `templates` | Read/Write |
 | `app\messages\actions.ts` | `message_logs` | Read/Write |
-| `app\messages\actions.ts` | `donors` | Read/Write |
 | `app\messages\actions.ts` | `notifications` | Read/Write |
 | `app\messages\actions.ts` | `donations` | Read/Write |
 | `app\messages\actions.ts` | `notification_groups` | Read/Write |
 | `app\messages\actions.ts` | `leads` | Read/Write |
 | `app\messages\actions.ts` | `campaigns` | Read/Write |
-| `app\messages\actions.ts` | `beneficiaries` | Read/Write |
 | `app\portal-login\actions.ts` | `user_lookups` | Read/Write |
-| `app\portal-login\actions.ts` | `users` | Read/Write |
 | `app\portal-login\actions.ts` | `donors` | Read/Write |
 | `app\portal-login\actions.ts` | `beneficiaries` | Read/Write |
+| `app\portal-login\actions.ts` | `users` | Read/Write |
 | `app\portal-login\actions.ts` | `user_sessions` | Read/Write |
 | `app\portal-login\actions.ts` | `portal_otps` | Read/Write |
 | `app\portal-register\actions.ts` | `user_lookups` | Read/Write |
@@ -74,3 +74,5 @@ Mapping between Application Modules and Firestore Collections.
 | `app\verifications\actions.ts` | `beneficiaries` | Read/Write |
 | `app\verifications\actions.ts` | `user_lookups` | Read/Write |
 | `lib\auth-server.ts` | `users` | Read-Only |
+| `lib\auth-server.ts` | `donors` | Read-Only |
+| `lib\auth-server.ts` | `beneficiaries` | Read-Only |

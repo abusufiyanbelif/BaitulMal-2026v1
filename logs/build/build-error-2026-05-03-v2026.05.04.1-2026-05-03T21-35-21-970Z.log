@@ -1,0 +1,199 @@
+BUILD FAILURE LOG - 4/5/2026, 3:06:40 am
+Version: 2026.05.04.1
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+
+
+STDERR:
+Failed to compile.
+
+./src/app/users/page.tsx
+Error: 
+  [31mx[0m the name `cn` is defined multiple times
+    ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\users\page.tsx[0m:18:1]
+ [2m18[0m | import Link from 'next/link';
+ [2m19[0m | import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+ [2m20[0m | import { Badge } from '@/components/ui/badge';
+ [2m21[0m | import { cn } from '@/lib/utils';
+    : [31;1m         ^|[0m
+    :           [31;1m`-- [31;1mprevious definition of `cn` here[0m[0m
+ [2m22[0m | import { 
+ [2m23[0m |     ArrowLeft, 
+ [2m24[0m |     Edit, 
+ [2m25[0m |     MoreHorizontal, 
+ [2m26[0m |     PlusCircle, 
+ [2m27[0m |     Trash2, 
+ [2m28[0m |     ShieldAlert, 
+ [2m29[0m |     UserCheck, 
+ [2m30[0m |     UserX, 
+ [2m31[0m |     Database, 
+ [2m32[0m |     ArrowUp, 
+ [2m33[0m |     ArrowDown, 
+ [2m34[0m |     RefreshCw, 
+ [2m35[0m |     ShieldCheck, 
+ [2m36[0m |     Loader2, 
+ [2m37[0m |     Eye,
+ [2m38[0m |     Fingerprint,
+ [2m39[0m |     HeartHandshake,
+ [2m40[0m |     Users,
+ [2m41[0m |     Search,
+ [2m42[0m |     AlertCircle,
+ [2m43[0m |     CheckCircle2,
+ [2m44[0m |     DatabaseZap,
+ [2m45[0m |     ArrowRight,
+ [2m46[0m |     UserPlus,
+ [2m47[0m |     Activity,
+ [2m48[0m |     Shield,
+ [2m49[0m |     Lock,
+ [2m50[0m |     Key,
+ [2m51[0m |     IdCard,
+ [2m52[0m |     Smartphone,
+ [2m53[0m |     Mail,
+ [2m54[0m |     ChevronRight,
+ [2m55[0m |     Zap,
+ [2m56[0m |     Scale,
+ [2m57[0m |     Merge,
+ [2m58[0m |     X
+ [2m59[0m | } from 'lucide-react';
+ [2m60[0m | import {
+ [2m61[0m |   DropdownMenu,
+ [2m62[0m |   DropdownMenuContent,
+ [2m63[0m |   DropdownMenuItem,
+ [2m64[0m |   DropdownMenuSeparator,
+ [2m65[0m |   DropdownMenuTrigger,
+ [2m66[0m |   DropdownMenuPortal,
+ [2m67[0m |   DropdownMenuSub,
+ [2m68[0m |   DropdownMenuSubTrigger,
+ [2m69[0m |   DropdownMenuSubContent,
+ [2m70[0m |   DropdownMenuRadioGroup,
+ [2m71[0m |   DropdownMenuRadioItem,
+ [2m72[0m | } from '@/components/ui/dropdown-menu';
+ [2m73[0m | import {
+ [2m74[0m |     AlertDialog,
+ [2m75[0m |     AlertDialogAction,
+ [2m76[0m |     AlertDialogCancel,
+ [2m77[0m |     AlertDialogContent,
+ [2m78[0m |     AlertDialogDescription,
+ [2m79[0m |     AlertDialogFooter,
+ [2m80[0m |     AlertDialogHeader,
+ [2m81[0m |     AlertDialogTitle,
+ [2m82[0m | } from "@/components/ui/alert-dialog";
+ [2m83[0m | import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+ [2m84[0m | import { useToast } from '@/hooks/use-toast';
+ [2m85[0m | import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+ [2m86[0m | import { deleteUserAction, mirrorIndividualUserToDonorAction, consolidateIdentitiesAction } from './actions';
+ [2m87[0m | import { Input } from '@/components/ui/input';
+ [2m88[0m | import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+ [2m89[0m | import { cn, getNestedValue } from '@/lib/utils';
+    : [33;1m         ^|[0m
+    :           [33;1m`-- [33;1m`cn` redefined here[0m[0m
+ [2m90[0m | import { usePageHit } from '@/hooks/use-page-hit';
+ [2m91[0m | import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+ [2m92[0m | import { Label } from '@/components/ui/label';
+    `----
+
+Import trace for requested module:
+./src/app/users/page.tsx
+
+
+> Build failed because of webpack errors
+
+
+ERROR MESSAGE:
+Command failed: next build
+Failed to compile.
+
+./src/app/users/page.tsx
+Error: 
+  [31mx[0m the name `cn` is defined multiple times
+    ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\users\page.tsx[0m:18:1]
+ [2m18[0m | import Link from 'next/link';
+ [2m19[0m | import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+ [2m20[0m | import { Badge } from '@/components/ui/badge';
+ [2m21[0m | import { cn } from '@/lib/utils';
+    : [31;1m         ^|[0m
+    :           [31;1m`-- [31;1mprevious definition of `cn` here[0m[0m
+ [2m22[0m | import { 
+ [2m23[0m |     ArrowLeft, 
+ [2m24[0m |     Edit, 
+ [2m25[0m |     MoreHorizontal, 
+ [2m26[0m |     PlusCircle, 
+ [2m27[0m |     Trash2, 
+ [2m28[0m |     ShieldAlert, 
+ [2m29[0m |     UserCheck, 
+ [2m30[0m |     UserX, 
+ [2m31[0m |     Database, 
+ [2m32[0m |     ArrowUp, 
+ [2m33[0m |     ArrowDown, 
+ [2m34[0m |     RefreshCw, 
+ [2m35[0m |     ShieldCheck, 
+ [2m36[0m |     Loader2, 
+ [2m37[0m |     Eye,
+ [2m38[0m |     Fingerprint,
+ [2m39[0m |     HeartHandshake,
+ [2m40[0m |     Users,
+ [2m41[0m |     Search,
+ [2m42[0m |     AlertCircle,
+ [2m43[0m |     CheckCircle2,
+ [2m44[0m |     DatabaseZap,
+ [2m45[0m |     ArrowRight,
+ [2m46[0m |     UserPlus,
+ [2m47[0m |     Activity,
+ [2m48[0m |     Shield,
+ [2m49[0m |     Lock,
+ [2m50[0m |     Key,
+ [2m51[0m |     IdCard,
+ [2m52[0m |     Smartphone,
+ [2m53[0m |     Mail,
+ [2m54[0m |     ChevronRight,
+ [2m55[0m |     Zap,
+ [2m56[0m |     Scale,
+ [2m57[0m |     Merge,
+ [2m58[0m |     X
+ [2m59[0m | } from 'lucide-react';
+ [2m60[0m | import {
+ [2m61[0m |   DropdownMenu,
+ [2m62[0m |   DropdownMenuContent,
+ [2m63[0m |   DropdownMenuItem,
+ [2m64[0m |   DropdownMenuSeparator,
+ [2m65[0m |   DropdownMenuTrigger,
+ [2m66[0m |   DropdownMenuPortal,
+ [2m67[0m |   DropdownMenuSub,
+ [2m68[0m |   DropdownMenuSubTrigger,
+ [2m69[0m |   DropdownMenuSubContent,
+ [2m70[0m |   DropdownMenuRadioGroup,
+ [2m71[0m |   DropdownMenuRadioItem,
+ [2m72[0m | } from '@/components/ui/dropdown-menu';
+ [2m73[0m | import {
+ [2m74[0m |     AlertDialog,
+ [2m75[0m |     AlertDialogAction,
+ [2m76[0m |     AlertDialogCancel,
+ [2m77[0m |     AlertDialogContent,
+ [2m78[0m |     AlertDialogDescription,
+ [2m79[0m |     AlertDialogFooter,
+ [2m80[0m |     AlertDialogHeader,
+ [2m81[0m |     AlertDialogTitle,
+ [2m82[0m | } from "@/components/ui/alert-dialog";
+ [2m83[0m | import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+ [2m84[0m | import { useToast } from '@/hooks/use-toast';
+ [2m85[0m | import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+ [2m86[0m | import { deleteUserAction, mirrorIndividualUserToDonorAction, consolidateIdentitiesAction } from './actions';
+ [2m87[0m | import { Input } from '@/components/ui/input';
+ [2m88[0m | import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+ [2m89[0m | import { cn, getNestedValue } from '@/lib/utils';
+    : [33;1m         ^|[0m
+    :           [33;1m`-- [33;1m`cn` redefined here[0m[0m
+ [2m90[0m | import { usePageHit } from '@/hooks/use-page-hit';
+ [2m91[0m | import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+ [2m92[0m | import { Label } from '@/components/ui/label';
+    `----
+
+Import trace for requested module:
+./src/app/users/page.tsx
+
+
+> Build failed because of webpack errors

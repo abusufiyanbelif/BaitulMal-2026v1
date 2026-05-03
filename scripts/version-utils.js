@@ -10,13 +10,56 @@ function getGitInfo() {
         const branch = execSync('git rev-parse --abbrev-ref HEAD').toString().trim();
         const remote = execSync('git remote get-url origin').toString().trim();
         const repo = remote.split('/').pop().replace('.git', '');
-        return { hash, branch, repo };
+        
+        // Get the last commit that is NOT a release commit
+        const lastNonRelease = execSync('git log --grep="^release: " --invert-grep -1 --pretty=%B').toString().trim();
+        const lines = lastNonRelease.split('\n');
+        const subject = lines[0] || 'Manual Build Update';
+        
+        // Try to parse structured fields if they exist in the commit message
+        let type = 'Build';
+        let message = subject;
+        let reference = 'n/a';
+        let steps = 'Manual verification required.';
+
+        lines.forEach(line => {
+            if (line.toLowerCase().startsWith('type:')) {
+                const parts = line.split(':');
+                if (parts.length > 1) type = parts.slice(1).join(':').trim();
+            }
+            if (line.toLowerCase().startsWith('message:')) {
+                const parts = line.split(':');
+                if (parts.length > 1) message = parts.slice(1).join(':').trim();
+            }
+            if (line.toLowerCase().startsWith('reference:')) {
+                const parts = line.split(':');
+                if (parts.length > 1) reference = parts.slice(1).join(':').trim();
+            }
+            if (line.toLowerCase().startsWith('verification steps:')) {
+                const parts = line.split(':');
+                if (parts.length > 1) steps = parts.slice(1).join(':').trim();
+            }
+        });
+
+        // Use the commit hash of the ACTUAL last commit (which might be the release commit)
+        // or should we use the hash of the last NON-release commit?
+        // Usually, the release hash is what's being built.
+        
+        return { hash, branch, repo, type, message, reference, steps };
     } catch (e) {
-        return { hash: 'n/a', branch: 'n/a', repo: 'BaitulMal-2026v1' };
+        return { 
+            hash: 'n/a', 
+            branch: 'n/a', 
+            repo: 'BaitulMal-2026v1', 
+            type: 'Build', 
+            message: 'Automated build update', 
+            reference: 'n/a', 
+            steps: 'Manual verification required.' 
+        };
     }
 }
 
-function updateVersion(type = 'Build', message = 'Automated build update', reference = '', steps = '') {
+function updateVersion(overrideType = null, overrideMessage = null, overrideReference = null, overrideSteps = null) {
     const now = new Date();
     const year = now.getFullYear();
     const month = String(now.getMonth() + 1).padStart(2, '0');
@@ -56,10 +99,10 @@ function updateVersion(type = 'Build', message = 'Automated build update', refer
         commit: gitInfo.hash,
         branch: gitInfo.branch,
         repo: gitInfo.repo,
-        reference: reference,
-        steps: steps,
-        type: type.charAt(0).toUpperCase() + type.slice(1).toLowerCase(),
-        message: message
+        reference: overrideReference || gitInfo.reference,
+        steps: overrideSteps || gitInfo.steps,
+        type: (overrideType || gitInfo.type).charAt(0).toUpperCase() + (overrideType || gitInfo.type).slice(1).toLowerCase(),
+        message: overrideMessage || gitInfo.message
     };
     
     if (!versionData.history) versionData.history = [];

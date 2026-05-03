@@ -18,7 +18,7 @@ function generateArchitectureDocs() {
     const collectionMap = scanCollections();
     
     // Generate Collection Map
-    let md = `# 🏗️ Institutional Data Architecture\n\n`;
+    let md = `# 🏗️ Organization Data Architecture\n\n`;
     md += `**Build Version:** \`${currentVersion}\`\n`;
     md += `**Last Updated:** ${new Date().toLocaleString()}\n\n`;
     md += `Mapping between Application Modules and Firestore Collections.\n\n`;

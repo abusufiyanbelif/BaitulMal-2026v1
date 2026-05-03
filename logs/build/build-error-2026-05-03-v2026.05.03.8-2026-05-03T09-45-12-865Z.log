@@ -1,0 +1,85 @@
+BUILD FAILURE LOG - 3/5/2026, 3:18:08 pm
+Version: 2026.05.03.8
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-lead-story.ts
+./src/app/api/create-lead-story/route.ts
+
+Failed to compile.
+
+./src/app/verifications/page.tsx:232:72
+Type error: Cannot find name 'allRequests'.
+
+[0m [90m 230 |[39m                     [33m<[39m[33mdiv[39m className[33m=[39m[32m"px-4 py-1 text-center"[39m[33m>[39m[0m
+[0m [90m 231 |[39m                         [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] uppercase font-bold opacity-40 tracking-widest"[39m[33m>[39m[33mSystem[39m [33mTotal[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 232 |[39m                         [33m<[39m[33mp[39m className[33m=[39m[32m"text-xl font-bold text-primary"[39m[33m>[39m{allRequests[33m.[39mlength}[33m<[39m[33m/[39m[33mp[39m[33m>[39m[0m
+[0m [90m     |[39m                                                                        [31m[1m^[22m[39m[0m
+[0m [90m 233 |[39m                     [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m[0m
+[0m [90m 234 |[39m                 [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m[0m
+[0m [90m 235 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: next build
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-lead-story.ts
+./src/app/api/create-lead-story/route.ts
+
+Failed to compile.
+
+./src/app/verifications/page.tsx:232:72
+Type error: Cannot find name 'allRequests'.
+
+[0m [90m 230 |[39m                     [33m<[39m[33mdiv[39m className[33m=[39m[32m"px-4 py-1 text-center"[39m[33m>[39m[0m
+[0m [90m 231 |[39m                         [33m<[39m[33mp[39m className[33m=[39m[32m"text-[10px] uppercase font-bold opacity-40 tracking-widest"[39m[33m>[39m[33mSystem[39m [33mTotal[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 232 |[39m                         [33m<[39m[33mp[39m className[33m=[39m[32m"text-xl font-bold text-primary"[39m[33m>[39m{allRequests[33m.[39mlength}[33m<[39m[33m/[39m[33mp[39m[33m>[39m[0m
+[0m [90m     |[39m                                                                        [31m[1m^[22m[39m[0m
+[0m [90m 233 |[39m                     [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m[0m
+[0m [90m 234 |[39m                 [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m[0m
+[0m [90m 235 |[39m             [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null

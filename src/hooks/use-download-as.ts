@@ -97,7 +97,7 @@ export function useDownloadAs() {
                 ctx.fillStyle = '#0f172a';
                 ctx.font = 'bold 36px sans-serif';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(brandingSettings?.name || 'Institutional Registry', headerTextX, HEADER_HEIGHT / 2);
+                ctx.fillText(brandingSettings?.name || 'Registry', headerTextX, HEADER_HEIGHT / 2);
 
                 // Title
                 ctx.font = 'bold 30px sans-serif';
@@ -138,7 +138,7 @@ export function useDownloadAs() {
                 ctx.textAlign = 'center';
                 ctx.font = '16px sans-serif';
                 ctx.fillStyle = '#64748b';
-                ctx.fillText(paymentSettings?.copyright || '© 2026 Institutional Registry. All Rights Reserved.', finalCanvas.width / 2, finalCanvas.height - 25);
+                ctx.fillText(paymentSettings?.copyright || '© 2026 Charity Registry. All Rights Reserved.', finalCanvas.width / 2, finalCanvas.height - 25);
             }
 
             const link = document.createElement('a');
@@ -163,11 +163,11 @@ export function useDownloadAs() {
                     pdf.addImage(logoDataUrl, 'PNG', margin, position, logoWidth, logoHeight);
                     pdf.setFontSize(16);
                     const textY = position + (logoHeight / 2) + 3; // Vertically center text with logo
-                    pdf.text(brandingSettings?.name || 'Institutional Registry', margin + logoWidth + 5, textY);
+                    pdf.text(brandingSettings?.name || 'Registry', margin + logoWidth + 5, textY);
                     position += logoHeight + 10;
                 } else {
                     pdf.setFontSize(16);
-                    pdf.text(brandingSettings?.name || 'Institutional Registry', pdfWidth / 2, position, { align: 'center' });
+                    pdf.text(brandingSettings?.name || 'Registry', pdfWidth / 2, position, { align: 'center' });
                     position += 15;
                 }
 
@@ -246,7 +246,7 @@ export function useDownloadAs() {
                 // Copyright
                 pdf.setFontSize(8);
                 pdf.setTextColor(128, 128, 128);
-                pdf.text(paymentSettings?.copyright || '© 2026 Institutional Registry. All Rights Reserved.', pdfWidth / 2, pdfHeight - 10, { align: 'center' });
+                pdf.text(paymentSettings?.copyright || '© 2026 Charity Registry. All Rights Reserved.', pdfWidth / 2, pdfHeight - 10, { align: 'center' });
             }
 
             pdf.save(`${documentName}.pdf`);

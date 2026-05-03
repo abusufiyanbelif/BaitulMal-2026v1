@@ -55,7 +55,7 @@ export default function ExtractorPage() {
                     </div>
                     <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-primary">Intelligence Hub</h1>
                 </div>
-                <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">Advanced AI document analysis and metadata extraction suite for institutional vetting.</p>
+                <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">Advanced AI document analysis and metadata extraction suite for organization vetting.</p>
             </div>
             
             <div className="flex items-center gap-2 bg-white/50 backdrop-blur-md p-1.5 rounded-2xl border border-primary/5 shadow-sm">

@@ -203,7 +203,7 @@ export default function AboutOrganizationPage() {
                             </div>
                         </AccordionTrigger>
                         <AccordionContent className="px-6 pt-8 pb-10">
-                            {/* Institutional Areas of Focus - Now Dynamic */}
+                            {/* Organization Areas of Focus - Now Dynamic */}
                             {visibleFocusAreas.length > 0 && (
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-10">
                                     {visibleFocusAreas.map((area) => (

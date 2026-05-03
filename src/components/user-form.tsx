@@ -458,7 +458,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                             </TabsList>
                             <TabsContent value="profile" className="mt-6 space-y-6 animate-fade-in-up">
                                 <FormField control={control as any} name="name" render={({ field }) => (<FormItem>{renderLabel('Full Name', 'name')}<FormControl><Input placeholder="e.g. Moosa Shaikh" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl><FormMessage /></FormItem>)}/>
-                                <FormField control={control as any} name="email" render={({ field }) => (<FormItem>{renderLabel('Email Address', 'email')}<FormControl><Input type="email" placeholder="user@example.com" {...field} value={field.value || ''} disabled={isFormDisabled || (isEditing && !isCurrentUserAdmin)} className="font-normal" /></FormControl><FormDescription className="font-normal text-xs opacity-70">Primary Institutional Contact And Authentication Identity.</FormDescription><FormMessage /></FormItem>)}/>
+                                <FormField control={control as any} name="email" render={({ field }) => (<FormItem>{renderLabel('Email Address', 'email')}<FormControl><Input type="email" placeholder="user@example.com" {...field} value={field.value || ''} disabled={isFormDisabled || (isEditing && !isCurrentUserAdmin)} className="font-normal" /></FormControl><FormDescription className="font-normal text-xs opacity-70">Primary Organization Contact And Authentication Identity.</FormDescription><FormMessage /></FormItem>)}/>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <FormField control={control as any} name="gender" render={({ field }) => (
                                         <FormItem>
@@ -623,7 +623,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                                  </ol>
                                                  <div className="bg-amber-50 border border-amber-200/50 p-2 rounded-lg text-[11px] text-amber-800 font-medium flex items-start gap-2">
                                                      <Info className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
-                                                     <span><strong>IMPORTANT:</strong> You MUST click <strong>START</strong> on our institutional notification bot before testing or receiving live updates.</span>
+                                                     <span><strong>IMPORTANT:</strong> You MUST click <strong>START</strong> on our system notification bot before testing or receiving live updates.</span>
                                                  </div>
                                              </div>
                                             <FormControl>
@@ -949,7 +949,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                         <FormDescription className="font-normal text-xs opacity-70">Determines Visibility In The Public Team Directory.</FormDescription>
                                     </FormItem>
                                 )}/>
-                                <FormField control={control as any} name="organizationRole" render={({ field }: any) => (<FormItem>{renderLabel('Institutional Title', 'organizationRole')}<FormControl><Input placeholder="e.g. President, Treasurer" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                <FormField control={control as any} name="organizationRole" render={({ field }: any) => (<FormItem>{renderLabel('Organization Title', 'organizationRole')}<FormControl><Input placeholder="e.g. President, Treasurer" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                             </TabsContent>
                             <TabsContent value="permissions" className="mt-6 space-y-6 animate-fade-in-up">
                                 <div className="space-y-2">

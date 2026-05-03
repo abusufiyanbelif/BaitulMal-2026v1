@@ -8,7 +8,7 @@ export async function GET(request: Request) {
     return new NextResponse('URL parameter is required', { status: 400 });
   }
 
-  // Institutional Safeguard: Ensure we only proxy absolute remote URLs
+  // System Safeguard: Ensure we only proxy absolute remote URLs
   if (!imageUrl.startsWith('http')) {
       console.warn(`[Image Proxy] Attempted to proxy non-remote URL: ${imageUrl}`);
       return new NextResponse('Only remote URLs can be proxied', { status: 400 });

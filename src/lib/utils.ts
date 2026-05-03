@@ -73,7 +73,7 @@ export function formatCurrency(amount: number | null | undefined): string {
 }
 
 /**
- * Formats A Date String Or Object Into An Institutional Standard Display.
+ * Formats A Date String Or Object Into An Organization Standard Display.
  */
 export function formatDate(dateInput: any, options?: Intl.DateTimeFormatOptions): string {
     if (!dateInput) return 'N/A';
@@ -155,7 +155,7 @@ export function generateChanges(oldVal: any, newVal: any): { field: string, old:
 
 /**
  * Resolves an image source URL, bypassing the proxy for local assets
- * while routing remote URLs through the institutional proxy for compatibility.
+ * while routing remote URLs through the system proxy for compatibility.
  */
 export function getImageSrc(url: string | null | undefined): string {
     if (!url) return '';

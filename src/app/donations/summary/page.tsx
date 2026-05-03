@@ -233,14 +233,14 @@ export default function DonationsSummaryPage() {
             .sort((a, b) => b.amount - a.amount);
 
 
-        const totalInstitutionalTarget = (campaigns?.reduce((sum, c) => sum + (c.targetAmount || 0), 0) || 0) + (leads?.reduce((sum, l) => sum + (l.targetAmount || 0), 0) || 0);
+        const totalOrganizationTarget = (campaigns?.reduce((sum, c) => sum + (c.targetAmount || 0), 0) || 0) + (leads?.reduce((sum, l) => sum + (l.targetAmount || 0), 0) || 0);
         const totalRaisedForGoals = sortedInitiatives.reduce((sum, i) => sum + i.amount, 0);
-        const institutionalProgress = totalInstitutionalTarget > 0 ? (totalRaisedForGoals / totalInstitutionalTarget) * 100 : 0;
+        const organizationProgress = totalOrganizationTarget > 0 ? (totalRaisedForGoals / totalOrganizationTarget) * 100 : 0;
 
         return {
-            totalInstitutionalTarget,
+            totalOrganizationTarget,
             totalRaisedForGoals,
-            institutionalProgress,
+            organizationProgress,
             allocatedCount,
             unallocatedCount,
             totalCount: filteredDonations.length,
@@ -409,12 +409,12 @@ export default function DonationsSummaryPage() {
             </div>
             
             <div className="space-y-6 animate-fade-in-zoom">
-                {/* Institutional Progress Hub */}
+                {/* Organization Progress Hub */}
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
                     <Card className="lg:col-span-4 border-primary/10 shadow-sm overflow-hidden bg-white">
                         <CardHeader className="bg-primary/5 border-b pb-3">
                             <CardTitle className="text-sm font-bold text-primary flex items-center gap-2">
-                                <Target className="h-4 w-4 opacity-40"/> Institutional Roadmap
+                                <Target className="h-4 w-4 opacity-40"/> Organization Roadmap
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-6 flex flex-col items-center justify-center min-h-[240px]">
@@ -424,7 +424,7 @@ export default function DonationsSummaryPage() {
                                         innerRadius="70%" 
                                         outerRadius="100%" 
                                         barSize={20} 
-                                        data={[{ name: 'Progress', value: summaryData?.institutionalProgress || 0, fill: 'hsl(var(--primary))' }]} 
+                                        data={[{ name: 'Progress', value: summaryData?.organizationProgress || 0, fill: 'hsl(var(--primary))' }]} 
                                         startAngle={90} 
                                         endAngle={-270}
                                     >
@@ -433,7 +433,7 @@ export default function DonationsSummaryPage() {
                                     </RadialBarChart>
                                 </ResponsiveContainer>
                                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                                    <p className="text-3xl font-black text-primary">{(summaryData?.institutionalProgress || 0).toFixed(1)}%</p>
+                                    <p className="text-3xl font-black text-primary">{(summaryData?.organizationProgress || 0).toFixed(1)}%</p>
                                     <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Achieved</p>
                                 </div>
                             </div>
@@ -444,8 +444,8 @@ export default function DonationsSummaryPage() {
                         <Card className="p-6 bg-white border-primary/10 shadow-sm flex flex-col justify-between">
                             <div className="space-y-1">
                                 <div className="p-2 w-fit rounded-lg bg-primary/10 text-primary mb-3"><Target className="h-5 w-5"/></div>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Institutional Goal</p>
-                                <p className="text-2xl font-black text-primary font-mono tracking-tighter">₹{summaryData?.totalInstitutionalTarget.toLocaleString('en-IN')}</p>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Organization Goal</p>
+                                <p className="text-2xl font-black text-primary font-mono tracking-tighter">₹{summaryData?.totalOrganizationTarget.toLocaleString('en-IN')}</p>
                             </div>
                             <p className="text-[10px] font-medium text-muted-foreground mt-4 italic">Total Target Across All Initiatives</p>
                         </Card>
@@ -463,7 +463,7 @@ export default function DonationsSummaryPage() {
                             <div className="space-y-1">
                                 <div className="p-2 w-fit rounded-lg bg-amber-50 text-amber-600 mb-3"><Hourglass className="h-5 w-5"/></div>
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Remaining Balance</p>
-                                <p className="text-2xl font-black text-primary font-mono tracking-tighter">₹{(Math.max(0, (summaryData?.totalInstitutionalTarget || 0) - (summaryData?.totalRaisedForGoals || 0))).toLocaleString('en-IN')}</p>
+                                <p className="text-2xl font-black text-primary font-mono tracking-tighter">₹{(Math.max(0, (summaryData?.totalOrganizationTarget || 0) - (summaryData?.totalRaisedForGoals || 0))).toLocaleString('en-IN')}</p>
                             </div>
                             <p className="text-[10px] font-medium text-muted-foreground mt-4 italic">Outstanding Fundraising Requirement</p>
                         </Card>

@@ -23,7 +23,7 @@ function HomeDashboardCard({ title, description, href, icon: Icon, delay, badge 
             <div className="space-y-1.5 flex-1">
               <div className="flex items-center gap-2">
                 <CardTitle className="text-sm sm:text-md font-bold text-primary group-hover:text-primary transition-colors tracking-tight">{title}</CardTitle>
-                {badge && <Badge variant="secondary" className="text-[7px] font-bold uppercase px-1.5 h-3.5 bg-primary/10 text-primary border-none">{badge}</Badge>}
+                {badge && <Badge variant="secondary" className="text-[7px] font-bold px-1.5 h-3.5 bg-primary/10 text-primary border-none">{badge}</Badge>}
               </div>
               <CardDescription className="text-[10px] sm:text-xs font-medium leading-relaxed opacity-70 group-hover:opacity-100 transition-opacity">{description}</CardDescription>
             </div>
@@ -156,9 +156,9 @@ export default function Home() {
                                 <Activity className="h-6 w-6" />
                             </div>
                             <div>
-                                <p className="text-sm font-black text-red-900 uppercase tracking-tight">WhatsApp System Problem</p>
+                                <p className="text-sm font-black text-red-900 tracking-tight">WhatsApp System Problem</p>
                                 <p className="text-xs text-red-700 font-medium leading-relaxed">
-                                    WhatsApp Notification System is <strong>{resourceSettings?.waPlanDetails?.status || 'OFFLINE'}</strong>. 
+                                    WhatsApp Notification System is <strong>{resourceSettings?.waPlanDetails?.status || 'Offline'}</strong>. 
                                     Automated tray alerts for donors and members are currently suspended.
                                 </p>
                             </div>
@@ -195,11 +195,11 @@ export default function Home() {
                     
                     <div className="flex items-center gap-3 bg-white/50 backdrop-blur-md p-2 rounded-2xl border border-primary/5 shadow-sm overflow-hidden animate-fade-in-up" style={{ animationDelay: '200ms' }}>
                         <div className="px-4 py-2 text-center border-r border-primary/10">
-                            <p className="text-[10px] uppercase font-bold opacity-40 tracking-widest">Active Tasks</p>
+                            <p className="text-[10px] font-bold opacity-40 tracking-widest">Active Tasks</p>
                             <p className="text-xl font-bold text-primary">08</p>
                         </div>
                         <div className="px-4 py-2 text-center">
-                            <p className="text-[10px] uppercase font-bold opacity-40 tracking-widest">Team Live</p>
+                            <p className="text-[10px] font-bold opacity-40 tracking-widest">Team Live</p>
                             <div className="flex items-center justify-center gap-1">
                                 <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
                                 <p className="text-xl font-bold text-primary">24</p>
@@ -232,7 +232,7 @@ export default function Home() {
                         <CardContent className="p-6">
                             <div className="flex flex-col sm:flex-row gap-6 items-center">
                                 <div className="flex-1 space-y-3">
-                                    <h4 className="text-sm font-bold text-primary uppercase tracking-tighter">Mobile App Experience</h4>
+                                    <h4 className="text-sm font-bold text-primary tracking-tighter">Mobile App Experience</h4>
                                     <p className="text-xs text-muted-foreground font-normal leading-relaxed">
                                         Enable **System Tray Alerts** for instant notifications on your mobile device. Install the portal as a native home screen app for a premium experience.
                                     </p>

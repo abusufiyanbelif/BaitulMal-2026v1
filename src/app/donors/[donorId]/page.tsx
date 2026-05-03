@@ -493,14 +493,14 @@ export default function DonorProfilePage() {
                         {canUpdate && !isEditMode && (
                             <Button 
                                 onClick={() => setIsEditMode(true)} 
-                                disabled={!!existingPendingRequest && userProfile.role !== 'Admin'}
+                                disabled={!!existingPendingRequest && userProfile?.role !== 'Admin'}
                                 className={cn(
                                     "font-bold shadow-sm active:scale-95 transition-transform h-9 px-4",
-                                    (existingPendingRequest && userProfile.role !== 'Admin') ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-white"
+                                    (existingPendingRequest && userProfile?.role !== 'Admin') ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-white"
                                 )}
                             >
                                 <Edit className="mr-2 h-4 w-4"/> 
-                                {existingPendingRequest ? (userProfile.role === 'Admin' ? "Admin Override" : "Approval Pending") : "Edit Profile"}
+                                {existingPendingRequest ? (userProfile?.role === 'Admin' ? "Admin Override" : "Approval Pending") : "Edit Profile"}
                             </Button>
                         )}
                         {canUpdate && (
@@ -676,7 +676,7 @@ export default function DonorProfilePage() {
                                                 <div className="space-y-2">
                                                     <Label className="text-xs font-bold capitalize text-muted-foreground tracking-widest">PAN Number (80G Tax Exemption)</Label>
                                                     <Input name="panNumber" defaultValue={donor.panNumber || ''} placeholder="ABCDE1234F" className="font-mono uppercase"/>
-                                                    <p className="text-[10px] text-muted-foreground font-normal">For institutional tax compliance and 80G certificate generation.</p>
+                                                    <p className="text-[10px] text-muted-foreground font-normal">For organization tax compliance and 80G certificate generation.</p>
                                                 </div>
                                             </div>
 

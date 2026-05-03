@@ -20,6 +20,7 @@ import {
     MessageSquare,
     ShieldQuestion
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useBranding } from '@/hooks/use-branding';
 import Link from 'next/link';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -33,9 +34,17 @@ function PortalLoginContent() {
     const [isLoading, setIsLoading] = useState(false);
     const [otpSent, setOtpSent] = useState(false);
     const [authMethod, setAuthMethod] = useState<'Password' | 'OTP'>('Password');
-    
+    const [workspace, setWorkspace] = useState<'Donor' | 'Beneficiary'>('Donor');
+
     const auth = useAuth();
     const router = useRouter();
+    
+    // Optimistic Prefetching to speed up redirection after login
+    React.useEffect(() => {
+        router.prefetch('/donor-portal');
+        router.prefetch('/beneficiary-portal');
+        router.prefetch('/dashboard');
+    }, [router]);
     const { toast } = useToast();
     const { brandingSettings } = useBranding();
     const searchParams = useSearchParams();
@@ -64,7 +73,7 @@ function PortalLoginContent() {
                     setIsLoading(false);
                     return;
                 }
-                const res = await authenticatePortalUserAction(identifier, password);
+                const res = await authenticatePortalUserAction(identifier, password, workspace);
                 handleAuthResult(res);
             } else {
                 if (!otpSent) {
@@ -81,7 +90,7 @@ function PortalLoginContent() {
                         setIsLoading(false);
                         return;
                     }
-                    const res = await verifyPortalOTPAction(identifier, otp);
+                    const res = await verifyPortalOTPAction(identifier, otp, workspace);
                     handleAuthResult(res);
                 }
             }
@@ -149,17 +158,38 @@ function PortalLoginContent() {
                         <ShieldCheck className="h-8 w-8" />
                     </div>
                     <h1 className="text-3xl font-black tracking-tight text-slate-900">Portal Access</h1>
-                    <p className="text-slate-500 font-medium">Secure entry for {brandingSettings?.name || 'Institutional'} supporters.</p>
+                    <p className="text-slate-500 font-medium">Secure entry for {brandingSettings?.name || 'Organization'} supporters.</p>
                 </div>
 
                 {isRevoked && (
                     <div className="p-4 bg-red-50 border border-red-100 rounded-2xl animate-fade-in text-center space-y-1">
                         <p className="text-sm font-bold text-red-700">Access Revoked</p>
-                        <p className="text-[10px] text-red-600/70 font-medium uppercase tracking-widest">Previous session terminated by administrator.</p>
+                        <p className="text-[10px] text-red-600/70 font-medium tracking-widest">Previous session terminated by administrator.</p>
                     </div>
                 )}
 
                 <Card className="border-none shadow-2xl shadow-slate-200/50 bg-white rounded-3xl overflow-hidden">
+                    <div className="bg-slate-900 p-1 flex rounded-none">
+                        <button 
+                            onClick={() => { setWorkspace('Donor'); setOtpSent(false); }}
+                            className={cn(
+                                "flex-1 py-3 text-[10px] font-black tracking-[0.2em] transition-all rounded-t-2xl",
+                                workspace === 'Donor' ? "bg-white text-primary" : "text-white/40 hover:text-white"
+                            )}
+                        >
+                            Donor Portal
+                        </button>
+                        <button 
+                            onClick={() => { setWorkspace('Beneficiary'); setOtpSent(false); }}
+                            className={cn(
+                                "flex-1 py-3 text-[10px] font-black tracking-[0.2em] transition-all rounded-t-2xl",
+                                workspace === 'Beneficiary' ? "bg-white text-primary" : "text-white/40 hover:text-white"
+                            )}
+                        >
+                            Beneficiary Portal
+                        </button>
+                    </div>
+
                     <Tabs defaultValue={authMethod} onValueChange={(v) => { setAuthMethod(v as any); setOtpSent(false); }} className="w-full">
                         <TabsList className="grid w-full grid-cols-2 rounded-none h-14 bg-slate-50/50 border-b border-slate-100">
                             <TabsTrigger value="Password" disabled={isLoading} className="font-bold data-[state=active]:bg-white data-[state=active]:text-primary rounded-none border-r border-slate-100">
@@ -173,7 +203,7 @@ function PortalLoginContent() {
                         <CardContent className="pt-8">
                             <form onSubmit={handleLogin} className="space-y-6">
                                 <div className="space-y-2">
-                                    <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-1">Identification</Label>
+                                    <Label className="text-[10px] font-black tracking-widest text-slate-400 pl-1">Identification</Label>
                                     <div className="relative group">
                                         <UserCircle2 className="absolute left-4 top-3.5 h-5 w-5 text-slate-300 group-focus-within:text-primary transition-colors" />
                                         <Input 
@@ -193,11 +223,11 @@ function PortalLoginContent() {
                                 <TabsContent value="Password" title="Password Login" className="mt-0 space-y-6">
                                     <div className="space-y-2">
                                         <div className="flex justify-between items-center pl-1">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Security Password</Label>
+                                            <Label className="text-[10px] font-black tracking-widest text-slate-400">Security Password</Label>
                                             <button 
                                                 type="button" 
                                                 onClick={() => setShowForgotDialog(true)}
-                                                className="text-[10px] font-black text-primary hover:underline uppercase tracking-widest"
+                                                className="text-[10px] font-black text-primary hover:underline tracking-widest"
                                             >
                                                 Forgot?
                                             </button>
@@ -219,7 +249,7 @@ function PortalLoginContent() {
                                 <TabsContent value="OTP" title="OTP Login" className="mt-0 space-y-6">
                                     {otpSent && (
                                         <div className="space-y-2 animate-fade-in-up">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 pl-1">Verification Code</Label>
+                                            <Label className="text-[10px] font-black tracking-widest text-slate-400 pl-1">Verification Code</Label>
                                             <div className="relative group">
                                                 <ShieldCheck className="absolute left-4 top-3.5 h-5 w-5 text-slate-300 group-focus-within:text-primary transition-colors" />
                                                 <Input 
@@ -231,7 +261,7 @@ function PortalLoginContent() {
                                                     disabled={isLoading}
                                                 />
                                             </div>
-                                            <p className="text-[10px] text-center text-slate-400 font-bold uppercase tracking-widest">
+                                            <p className="text-[10px] text-center text-slate-400 font-bold tracking-widest">
                                                 Code sent to Telegram. <button type="button" onClick={() => setOtpSent(false)} className="text-primary hover:underline">Change Number</button>
                                             </p>
                                         </div>
@@ -240,7 +270,7 @@ function PortalLoginContent() {
                                         <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-3">
                                             <ShieldQuestion className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                                             <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
-                                                We will send a secure verification code to your linked **Telegram** account. Ensure you have started a chat with our institutional bot.
+                                                We will send a secure verification code to your linked **Telegram** account. Ensure you have started a chat with our charity bot.
                                             </p>
                                         </div>
                                     )}
@@ -248,7 +278,7 @@ function PortalLoginContent() {
 
                                 <Button 
                                     type="submit" 
-                                    className="w-full h-14 font-black text-sm uppercase tracking-widest shadow-2xl shadow-primary/20 hover:shadow-primary/40 transition-all rounded-2xl group"
+                                    className="w-full h-14 font-black text-sm tracking-widest shadow-2xl shadow-primary/20 hover:shadow-primary/40 transition-all rounded-2xl group"
                                     disabled={isLoading}
                                 >
                                     {isLoading ? (
@@ -265,7 +295,7 @@ function PortalLoginContent() {
                     </Tabs>
                 </Card>
 
-                <div className="flex justify-center gap-6 text-[10px] font-black text-slate-400 uppercase tracking-widest pt-4">
+                <div className="flex justify-center gap-6 text-[10px] font-black text-slate-400 tracking-widest pt-4">
                     <Link href="/" className="hover:text-primary transition-colors">Home</Link>
                     <span className="opacity-20">|</span>
                     <Link href="/portal-register" className="hover:text-primary transition-colors">Register</Link>
@@ -288,7 +318,7 @@ function PortalLoginContent() {
                     <div className="py-6 space-y-4">
                         {forgotStep === 'ID' && (
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Mobile or ID Number</Label>
+                                <Label className="text-[10px] font-black tracking-widest text-slate-400">Mobile or ID Number</Label>
                                 <Input 
                                     placeholder="Enter identifier" 
                                     className="h-12 rounded-2xl border-slate-100 bg-slate-50 font-medium"
@@ -299,7 +329,7 @@ function PortalLoginContent() {
                         )}
                         {forgotStep === 'OTP' && (
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Recovery Code</Label>
+                                <Label className="text-[10px] font-black tracking-widest text-slate-400">Recovery Code</Label>
                                 <Input 
                                     placeholder="6-Digit OTP" 
                                     className="h-12 rounded-2xl border-slate-100 bg-slate-50 font-mono text-center text-lg tracking-[0.5em]"
@@ -311,7 +341,7 @@ function PortalLoginContent() {
                         )}
                         {forgotStep === 'RESET' && (
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">New Password</Label>
+                                <Label className="text-[10px] font-black tracking-widest text-slate-400">New Password</Label>
                                 <Input 
                                     type="password"
                                     placeholder="••••••••" 
@@ -325,7 +355,7 @@ function PortalLoginContent() {
 
                     <DialogFooter>
                         <Button 
-                            className="w-full h-12 font-black text-xs uppercase tracking-widest rounded-2xl shadow-xl shadow-primary/20"
+                            className="w-full h-12 font-black text-xs tracking-widest rounded-2xl shadow-xl shadow-primary/20"
                             onClick={handleForgotFlow}
                             disabled={isForgotLoading}
                         >

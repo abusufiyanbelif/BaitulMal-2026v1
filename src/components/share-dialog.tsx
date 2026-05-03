@@ -72,79 +72,82 @@ export function ShareDialog({ open, onOpenChange, shareData }: ShareDialogProps)
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Share</DialogTitle>
-          <DialogDescription>
+      <DialogContent className="sm:max-w-md h-[90vh] max-h-[90vh] flex flex-col p-0 overflow-hidden border-primary/10 rounded-[16px]">
+        <DialogHeader className="p-6 bg-primary/5 border-b shrink-0">
+          <DialogTitle className="font-bold text-primary">Share</DialogTitle>
+          <DialogDescription className="font-normal text-xs text-primary/70">
             Share this with your network to help spread the word.
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 pt-4">
-             <div className="space-y-2">
-              <Label htmlFor="share-message" className="text-sm font-medium">
-                Share Message
-              </Label>
-              <Textarea
-                id="share-message"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                rows={8}
-              />
-            </div>
-            <div className="space-y-2">
-                <Label htmlFor="share-url" className="text-sm font-medium">
-                    Shareable Link
+        <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+          <div className="p-6 space-y-4">
+               <div className="space-y-2">
+                <Label htmlFor="share-message" className="text-xs font-bold text-primary/60">
+                  Share Message
                 </Label>
-                <div className="flex items-center gap-2">
-                    <Input id="share-url" value={url} readOnly className="h-9" />
-                    <Button type="button" size="icon" variant="outline" className="h-9 w-9" onClick={() => copyToClipboard(url, 'Link copied to clipboard!')}>
-                        <Copy className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div>
-
-            <Separator />
-
-            <div className="flex flex-wrap justify-center gap-2">
-                <Button asChild variant="outline" className="flex-1">
-                    <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(message + '\n\n' + url)}`} target="_blank" rel="noopener noreferrer" >
-                        <WhatsAppIcon /> <span className="ml-2">WhatsApp</span>
-                    </a>
-                </Button>
-                 <Button asChild variant="outline" className="flex-1">
-                    <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
-                        <XIcon /> X (Twitter)
-                    </a>
-                </Button>
-                 <Button asChild variant="outline" className="flex-1">
-                    <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer">
-                        <FacebookIcon /> <span className="ml-2">Facebook</span>
-                    </a>
-                </Button>
-                <Button asChild variant="outline" className="flex-1">
-                    <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&summary=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer">
-                        <LinkedInIcon /> <span className="ml-2">LinkedIn</span>
-                    </a>
-                </Button>
-                <Button asChild variant="outline" className="flex-1">
-                    <a href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer">
-                        <Send className="mr-2" /> Telegram
-                    </a>
-                </Button>
-                <Button asChild variant="outline" className="flex-1">
-                    <a href={`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(message + '\n\n' + url)}`} target="_blank" rel="noopener noreferrer">
-                        <Mail className="mr-2" /> Email
-                    </a>
-                </Button>
-                <Button asChild variant="outline" className="flex-1">
-                    <a href={`sms:?body=${encodeURIComponent(message + '\n\n' + url)}`}>
-                        <MessageSquare className="mr-2" /> Sms
-                    </a>
-                </Button>
-                 <Button variant="outline" onClick={() => copyToClipboard(message, 'Summary text copied!')} className="flex-1">
-                    <Copy className="mr-2" /> Copy Text
-                </Button>
-            </div>
+                <Textarea
+                  id="share-message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  rows={8}
+                  className="font-normal text-sm"
+                />
+              </div>
+              <div className="space-y-2">
+                  <Label htmlFor="share-url" className="text-xs font-bold text-primary/60">
+                      Shareable Link
+                  </Label>
+                  <div className="flex items-center gap-2">
+                      <Input id="share-url" value={url} readOnly className="h-9 font-mono text-xs" />
+                      <Button type="button" size="icon" variant="outline" className="h-9 w-9 shrink-0" onClick={() => copyToClipboard(url, 'Link copied to clipboard!')}>
+                          <Copy className="h-4 w-4" />
+                      </Button>
+                  </div>
+              </div>
+  
+              <Separator className="my-2" />
+  
+              <div className="flex flex-wrap justify-center gap-2">
+                  <Button asChild variant="outline" className="flex-1 min-w-[120px] font-bold text-xs">
+                      <a href={`https://api.whatsapp.com/send?text=${encodeURIComponent(message + '\n\n' + url)}`} target="_blank" rel="noopener noreferrer" >
+                          <WhatsAppIcon /> <span className="ml-2">WhatsApp</span>
+                      </a>
+                  </Button>
+                   <Button asChild variant="outline" className="flex-1 min-w-[120px] font-bold text-xs">
+                      <a href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(title)}&url=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                          <XIcon /> X (Twitter)
+                      </a>
+                  </Button>
+                   <Button asChild variant="outline" className="flex-1 min-w-[120px] font-bold text-xs">
+                      <a href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`} target="_blank" rel="noopener noreferrer">
+                          <FacebookIcon /> <span className="ml-2">Facebook</span>
+                      </a>
+                  </Button>
+                  <Button asChild variant="outline" className="flex-1 min-w-[120px] font-bold text-xs">
+                      <a href={`https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(url)}&title=${encodeURIComponent(title)}&summary=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer">
+                          <LinkedInIcon /> <span className="ml-2">LinkedIn</span>
+                      </a>
+                  </Button>
+                  <Button asChild variant="outline" className="flex-1 min-w-[120px] font-bold text-xs">
+                      <a href={`https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(message)}`} target="_blank" rel="noopener noreferrer">
+                          <Send className="mr-2 h-4 w-4" /> Telegram
+                      </a>
+                  </Button>
+                  <Button asChild variant="outline" className="flex-1 min-w-[120px] font-bold text-xs">
+                      <a href={`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(message + '\n\n' + url)}`} target="_blank" rel="noopener noreferrer">
+                          <Mail className="mr-2 h-4 w-4" /> Email
+                      </a>
+                  </Button>
+                  <Button asChild variant="outline" className="flex-1 min-w-[120px] font-bold text-xs">
+                      <a href={`sms:?body=${encodeURIComponent(message + '\n\n' + url)}`}>
+                          <MessageSquare className="mr-2 h-4 w-4" /> Sms
+                      </a>
+                  </Button>
+                   <Button variant="outline" onClick={() => copyToClipboard(message, 'Summary text copied!')} className="flex-1 min-w-[120px] font-bold text-xs">
+                      <Copy className="mr-2 h-4 w-4" /> Copy Text
+                  </Button>
+              </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

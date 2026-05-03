@@ -33,7 +33,11 @@ import {
     Hash,
     ShieldAlert,
     ArrowLeft,
-    HeartHandshake
+    HeartHandshake,
+    CheckCircle2,
+    AlertCircle,
+    Info,
+    LayoutDashboard
 } from 'lucide-react';
 import { formatDate, cn } from '@/lib/utils';
 import type { UserProfile, BankDetail, PendingVerification } from '@/lib/types';
@@ -256,7 +260,7 @@ export default function ProfilePage() {
         return (
             <div className="flex flex-col items-center justify-center min-h-[40vh] space-y-4">
                 <UserCircle2 className="h-12 w-12 text-slate-300" />
-                <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Profile Data Unavailable</p>
+                <p className="text-slate-500 font-bold tracking-widest text-xs">Profile Data Unavailable</p>
                 <Button asChild variant="outline">
                     <Link href="/portal-login">Return to Login</Link>
                 </Button>
@@ -278,7 +282,7 @@ export default function ProfilePage() {
             {pendingRequest && (
                 <Alert className="bg-amber-50 border-amber-200 rounded-3xl animate-pulse">
                     <Clock className="h-4 w-4 text-amber-600" />
-                    <AlertTitle className="text-amber-800 font-black text-xs uppercase tracking-widest">Update Pending Approval</AlertTitle>
+                    <AlertTitle className="text-amber-800 font-black text-xs tracking-widest">Update Pending Approval</AlertTitle>
                     <AlertDescription className="text-amber-700 text-[11px] font-bold">
                         A change request is awaiting administrative review. Edits are restricted.
                     </AlertDescription>
@@ -296,11 +300,11 @@ export default function ProfilePage() {
                 <div className="flex-1 text-center md:text-left z-10">
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">{userProfile.name}</h1>
                     <div className="flex flex-wrap justify-center md:justify-start gap-4">
-                        <Badge variant="secondary" className="font-black text-[10px] uppercase tracking-widest px-3 py-1">{userProfile.role}</Badge>
-                        <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                        <Badge variant="secondary" className="font-black text-[10px] tracking-widest px-3 py-1">{userProfile.role}</Badge>
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-500 tracking-widest">
                             <Smartphone className="h-3 w-3 text-primary/60" /> {userProfile.phone || 'No phone'}
                         </div>
-                        <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-widest">
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-500 tracking-widest">
                             <Mail className="h-3 w-3 text-primary/60" /> {userProfile.email}
                         </div>
                     </div>
@@ -309,11 +313,11 @@ export default function ProfilePage() {
                     <Button 
                         onClick={() => setIsEditDialogOpen(true)} 
                         disabled={!!pendingRequest}
-                        className="font-black text-[10px] uppercase tracking-widest rounded-xl px-6 h-11 shadow-xl"
+                        className="font-black text-[10px] tracking-widest rounded-xl px-6 h-11 shadow-xl"
                     >
                         <Edit3 className="mr-2 h-4 w-4" /> Modify Profile
                     </Button>
-                    <Button variant="outline" onClick={() => setIsPasswordDialogOpen(true)} className="font-black text-[10px] uppercase tracking-widest rounded-xl px-6 h-11 border-slate-200">
+                    <Button variant="outline" onClick={() => setIsPasswordDialogOpen(true)} className="font-black text-[10px] tracking-widest rounded-xl px-6 h-11 border-slate-200">
                         <KeyRound className="mr-2 h-4 w-4" /> Change Password
                     </Button>
                 </div>
@@ -329,15 +333,15 @@ export default function ProfilePage() {
                         </CardHeader>
                         <CardContent className="pt-8 grid grid-cols-1 sm:grid-cols-2 gap-8">
                             <div className="space-y-1.5">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Full Name (As per ID)</p>
+                                <p className="text-[10px] font-black text-slate-400 tracking-widest">Full Name (As per ID)</p>
                                 <p className="text-sm font-bold text-slate-800">{userProfile.aadhaarName || userProfile.name}</p>
                             </div>
                             <div className="space-y-1.5">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Aadhaar Number</p>
+                                <p className="text-[10px] font-black text-slate-400 tracking-widest">Aadhaar Number</p>
                                 <p className="text-sm font-bold text-slate-800 font-mono">{userProfile.aadhaarNumber ? `XXXX XXXX ${userProfile.aadhaarNumber.slice(-4)}` : 'Not Linked'}</p>
                             </div>
                             <div className="sm:col-span-2 space-y-1.5">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Residential Address</p>
+                                <p className="text-[10px] font-black text-slate-400 tracking-widest">Residential Address</p>
                                 <div className="flex items-start gap-2 pt-1 text-sm font-medium text-slate-700 leading-relaxed">
                                     <MapPin className="h-4 w-4 text-primary/40 shrink-0 mt-0.5" />
                                     {userProfile.address || userProfile.aadhaarAddress || 'No address recorded'}
@@ -345,12 +349,12 @@ export default function ProfilePage() {
                             </div>
                             <div className="flex gap-4 sm:col-span-2 pt-4">
                                 {userProfile.aadhaarProofUrl && (
-                                    <Button variant="outline" size="sm" onClick={() => handleViewImage(userProfile.aadhaarProofUrl!)} className="font-bold text-[10px] uppercase tracking-widest rounded-xl border-slate-200">
+                                    <Button variant="outline" size="sm" onClick={() => handleViewImage(userProfile.aadhaarProofUrl!)} className="font-bold text-[10px] tracking-widest rounded-xl border-slate-200">
                                         <FileText className="mr-2 h-4 w-4 opacity-40" /> View Aadhaar
                                     </Button>
                                 )}
                                 {userProfile.idProofUrl && (
-                                    <Button variant="outline" size="sm" onClick={() => handleViewImage(userProfile.idProofUrl!)} className="font-bold text-[10px] uppercase tracking-widest rounded-xl border-slate-200">
+                                    <Button variant="outline" size="sm" onClick={() => handleViewImage(userProfile.idProofUrl!)} className="font-bold text-[10px] tracking-widest rounded-xl border-slate-200">
                                         <FileText className="mr-2 h-4 w-4 opacity-40" /> View ID Proof
                                     </Button>
                                 )}
@@ -366,11 +370,11 @@ export default function ProfilePage() {
                         </CardHeader>
                         <CardContent className="pt-8 grid grid-cols-1 sm:grid-cols-2 gap-8">
                             <div className="space-y-1.5">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Group / Department</p>
+                                <p className="text-[10px] font-black text-slate-400 tracking-widest">Group / Department</p>
                                 <p className="text-sm font-bold text-slate-800">{userProfile.organizationGroup || 'General'}</p>
                             </div>
                             <div className="space-y-1.5">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Member Since</p>
+                                <p className="text-[10px] font-black text-slate-400 tracking-widest">Member Since</p>
                                 <div className="flex items-center gap-2 text-sm font-bold text-slate-800">
                                     <CalendarDays className="h-4 w-4 text-slate-300" />
                                     {userProfile.createdAt ? formatDate(userProfile.createdAt as any) : 'N/A'}
@@ -389,7 +393,7 @@ export default function ProfilePage() {
                         </CardHeader>
                         <CardContent className="pt-8 space-y-6">
                             <div className="space-y-4">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">UPI Identities</p>
+                                <p className="text-[10px] font-black text-slate-400 tracking-widest">UPI Identities</p>
                                 <div className="flex flex-wrap gap-2">
                                     {userProfile.upiIds && userProfile.upiIds.length > 0 ? (
                                         userProfile.upiIds.map((upi, i) => (
@@ -402,7 +406,7 @@ export default function ProfilePage() {
                             </div>
                             <Separator className="bg-slate-100" />
                             <div className="space-y-4">
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Bank Accounts</p>
+                                <p className="text-[10px] font-black text-slate-400 tracking-widest">Bank Accounts</p>
                                 {userProfile.bankDetails && userProfile.bankDetails.length > 0 ? (
                                     userProfile.bankDetails.map((bank, idx) => (
                                         <div key={idx} className="space-y-3 p-5 rounded-2xl bg-slate-50 border border-slate-100">
@@ -411,7 +415,7 @@ export default function ProfilePage() {
                                                 <span className="text-sm font-black text-slate-800">{bank.bankName}</span>
                                             </div>
                                             <div className="space-y-1">
-                                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Account Number</p>
+                                                <p className="text-[8px] font-black text-slate-400 tracking-widest">Account Number</p>
                                                 <p className="text-xs font-mono text-slate-900 font-bold">{bank.accountNumber}</p>
                                             </div>
                                         </div>
@@ -454,7 +458,7 @@ export default function ProfilePage() {
                         <CardContent className="p-8 space-y-6">
                             <div className="space-y-4">
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">WhatsApp (OTP) Status</p>
+                                    <p className="text-[10px] font-black text-slate-400 tracking-widest">WhatsApp (OTP) Status</p>
                                     <div className="flex items-center justify-between gap-4 pt-2">
                                         <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
                                             <div className={cn("h-2 w-2 rounded-full", userProfile.phone ? "bg-green-500 animate-pulse" : "bg-slate-300")} />
@@ -465,7 +469,7 @@ export default function ProfilePage() {
                                             variant="secondary"
                                             disabled={isTestingWhatsApp || !userProfile.phone}
                                             onClick={handleTestWhatsApp}
-                                            className="h-8 font-black text-[9px] uppercase tracking-widest rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                                            className="h-8 font-black text-[9px] tracking-widest rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
                                         >
                                             {isTestingWhatsApp ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <Smartphone className="h-3 w-3 mr-2" />} Test OTP
                                         </Button>
@@ -475,7 +479,7 @@ export default function ProfilePage() {
                                 <Separator className="bg-slate-100" />
 
                                 <div className="space-y-1">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Telegram Integration</p>
+                                    <p className="text-[10px] font-black text-slate-400 tracking-widest">Telegram Integration</p>
                                     <div className="flex items-center justify-between gap-4 pt-2">
                                         <div className="flex items-center gap-2 text-xs font-bold text-slate-600">
                                             <div className={cn("h-2 w-2 rounded-full", userProfile.telegramChatId ? "bg-sky-500 animate-pulse" : "bg-slate-300")} />
@@ -486,7 +490,7 @@ export default function ProfilePage() {
                                             variant="secondary"
                                             disabled={isTestingTelegram || !userProfile.telegramChatId}
                                             onClick={handleTestTelegram}
-                                            className="h-8 font-black text-[9px] uppercase tracking-widest rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100"
+                                            className="h-8 font-black text-[9px] tracking-widest rounded-lg bg-sky-50 text-sky-700 hover:bg-sky-100"
                                         >
                                             {isTestingTelegram ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <Hash className="h-3 w-3 mr-2" />} Test Telegram
                                         </Button>
@@ -496,7 +500,7 @@ export default function ProfilePage() {
                                 <Separator className="bg-slate-100" />
                                 
                                 <div className="space-y-4 pt-2">
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">System Taskbar Alerts</p>
+                                    <p className="text-[10px] font-black text-slate-400 tracking-widest">System Taskbar Alerts</p>
                                     <NotificationManager />
                                 </div>
                             </div>
@@ -511,7 +515,7 @@ export default function ProfilePage() {
                                     <HeartHandshake className="h-6 w-6" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-xl font-black text-slate-900 tracking-tight">Institutional Support</CardTitle>
+                                    <CardTitle className="text-xl font-black text-slate-900 tracking-tight">Organization Support</CardTitle>
                                     <CardDescription className="text-xs font-medium text-slate-500">Contribute to portal maintenance & resources.</CardDescription>
                                 </div>
                             </div>
@@ -521,7 +525,7 @@ export default function ProfilePage() {
                                 Help us keep the BaitulMal Registry running. Your contributions fund our WhatsApp APIs, AI Vision systems, and secure cloud storage.
                             </p>
                             <Link href="/settings/resources/fundraising">
-                                <Button className="w-full h-11 rounded-2xl bg-pink-600 hover:bg-pink-700 text-white font-black uppercase text-[10px] tracking-widest shadow-lg shadow-pink-200">
+                                <Button className="w-full h-11 rounded-2xl bg-pink-600 hover:bg-pink-700 text-white font-black text-[10px] tracking-widest shadow-lg shadow-pink-200">
                                     Contribute to Infrastructure
                                 </Button>
                             </Link>
@@ -541,14 +545,14 @@ export default function ProfilePage() {
                         <ScrollArea className="flex-1">
                             <div className="p-8 space-y-10 pb-32">
                                 <div className="space-y-6">
-                                    <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Core Information</h4>
+                                    <h4 className="text-[10px] font-black text-slate-400 tracking-widest">Core Information</h4>
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Full Name</Label>
+                                            <Label className="text-[10px] font-black tracking-widest text-slate-400">Full Name</Label>
                                             <Input name="name" defaultValue={userProfile.name} required className="h-11 rounded-xl" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Phone</Label>
+                                            <Label className="text-[10px] font-black tracking-widest text-slate-400">Phone</Label>
                                             <Input name="phone" defaultValue={userProfile.phone} required className="h-11 rounded-xl" />
                                         </div>
                                     </div>

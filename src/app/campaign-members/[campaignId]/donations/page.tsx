@@ -703,7 +703,7 @@ function DonationListContent() {
             <StatCard 
                 title="Campaign Target" 
                 count={(campaign?.targetAmount || 0).toLocaleString('en-IN')} 
-                description="Institutional Goal" 
+                description="Organization Goal" 
                 icon={Flag} 
                 delay="0ms" 
                 isCurrency 
@@ -1048,7 +1048,7 @@ function DonationListContent() {
                 <DonationForm donation={editingDonation} onSubmit={handleFormSubmit} onCancel={() => setIsFormOpen(false)} campaigns={allCampaigns || []} leads={allLeads || []} defaultLinkId={`campaign_${campaignId}`} />
             </div>
             <DialogFooter className="bg-primary/5 border-t p-4 shrink-0 flex justify-between items-center">
-                <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Securing Institutional Records</p>
+                <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Securing Organization Records</p>
                 <Button variant="outline" onClick={() => setIsFormOpen(false)} className="font-bold border-primary/20 text-primary">Close Form</Button>
             </DialogFooter>
         </DialogContent>

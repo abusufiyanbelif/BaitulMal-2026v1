@@ -34,6 +34,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { SectionLoader } from '@/components/section-loader';
 import { BrandedLoader } from '@/components/branded-loader';
 import { getDefaultImage } from '@/lib/default-images';
+import { PurposePlaceholder } from '@/components/purpose-placeholder';
 import {
   Carousel,
   CarouselContent,
@@ -94,13 +95,17 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
             onClick={() => router.push(`/leads-members/${lead.id}/summary`)}
         >
           <div className="relative h-32 w-full bg-secondary flex items-center justify-center border-b border-primary/5">
-            <Image
-                src={getImageSrc(lead.imageUrl || getDefaultImage(lead.purpose))}
-                alt={lead.name}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-110"
-            />
+            {lead.showCustomImage !== false && lead.imageUrl ? (
+              <Image
+                  src={getImageSrc(lead.imageUrl)}
+                  alt={lead.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+            ) : (
+              <PurposePlaceholder purpose={lead.purpose} category={lead.category} />
+            )}
           </div>
           <CardHeader className="p-4 space-y-3">
             <div className="flex justify-between items-start gap-2">

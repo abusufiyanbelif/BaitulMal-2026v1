@@ -67,7 +67,7 @@ export function StorageAnalytics() {
     const fileTypeChartData = data?.fileTypes.slice(0, 10) || [];
     const fileTypeChartConfig: ChartConfig = fileTypeChartData.reduce((acc, { type }) => {
         acc[type] = {
-            label: type.toUpperCase(),
+            label: type,
             color: `hsl(var(--chart-${(Object.keys(acc).length % 5) + 1}))`,
         };
         return acc;

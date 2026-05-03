@@ -95,7 +95,7 @@ export async function createUserAuthAction(data: UserFormData): Promise<{ succes
     // Skip Firebase Auth account creation for Donors and Beneficiaries
     // They will be authenticated via Custom Tokens based on Firestore credentials.
     if (data.role === 'Donor' || data.role === 'Beneficiary') {
-        return { success: true, message: 'Institutional Registry Only. Auth Managed Via Portal.', uid: data.userKey };
+        return { success: true, message: 'Organization Registry Only. Auth Managed Via Portal.', uid: data.userKey };
     }
 
     try {
@@ -298,7 +298,7 @@ export async function updateUserAuthAction(uid: string, updates: { email?: strin
     } catch (error: any) {
         if (error.code === 'auth/user-not-found') {
              // For Donors/Beneficiaries who haven't logged in yet, this is expected if we didn't pre-create them
-             return { success: true, message: 'Institutional Credentials Updated (Auth Sync Skipped).' };
+             return { success: true, message: 'Organization Credentials Updated (Auth Sync Skipped).' };
         }
         return { success: false, message: `Operation Failed: ${error.message}` };
     }

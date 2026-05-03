@@ -32,7 +32,7 @@ export default function LeadAuditPage() {
 
     const isLoading = isLeadLoading || isProfileLoading;
 
-    if (isLoading) return <BrandedLoader message="Retrieving Institutional Logs..." />;
+    if (isLoading) return <BrandedLoader message="Retrieving System Logs..." />;
 
     if (!lead) return <p className="text-center mt-20 text-primary font-bold">Appeal Record Not Found.</p>;
 

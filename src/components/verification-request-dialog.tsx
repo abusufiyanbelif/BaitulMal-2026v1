@@ -11,6 +11,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Loader2, UserCheck, ShieldCheck, Users, Search, MessageCircle, Share2, ZapOff, Info } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { cn } from '@/lib/utils';
@@ -68,6 +69,7 @@ export function VerificationRequestDialog({
   const { resourceSettings } = useResourceConfig();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [requesterComment, setRequesterComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const usersRef = useMemoFirebase(() => {
@@ -146,7 +148,8 @@ export function VerificationRequestDialog({
       const result = await requestVerificationAction(serializeData({
         ...payload,
         requestedBy: { id: user.id, name: user.name },
-        assignedVerifiers
+        assignedVerifiers,
+        requesterComment
       }));
 
       if (result.success) {
@@ -163,7 +166,7 @@ export function VerificationRequestDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md w-[95vw] rounded-[20px] border-primary/10 shadow-2xl overflow-hidden p-0 flex flex-col max-h-[90vh]">
+      <DialogContent className="max-w-md w-[95vw] h-[90vh] rounded-[20px] border-primary/10 shadow-2xl overflow-hidden p-0 flex flex-col max-h-[90vh]">
         <DialogHeader className="bg-primary/5 p-6 border-b shrink-0">
           <div className="flex items-center gap-3 mb-1">
             <div className="p-2 bg-primary/10 rounded-full text-primary">
@@ -176,8 +179,8 @@ export function VerificationRequestDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden flex flex-col">
-          <div className="p-6 pb-4 space-y-4">
+        <div className="flex-1 overflow-hidden flex flex-col min-h-0">
+          <div className="p-6 pb-4 space-y-4 shrink-0">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input 
@@ -187,11 +190,21 @@ export function VerificationRequestDialog({
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
+
+            <div className="space-y-2">
+              <Label className="text-[10px] font-bold text-primary/60 uppercase tracking-widest">Requester Comment (Optional)</Label>
+              <Textarea 
+                placeholder="Explain the context of this modification..." 
+                className="min-h-[80px] border-primary/10 font-normal focus-visible:ring-primary/20 text-xs resize-none"
+                value={requesterComment}
+                onChange={(e) => setRequesterComment(e.target.value)}
+              />
+            </div>
           </div>
           
           {/* Summary of Changes */}
           {payload.originalValue && payload.newValue && (
-              <div className="px-6 pb-4 border-b border-primary/5">
+              <div className="px-6 pb-4 border-b border-primary/5 shrink-0">
                   <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100/50">
                       <p className="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-3 flex items-center gap-2">
                           <Info className="h-3 w-3" /> Change Summary
@@ -215,7 +228,7 @@ export function VerificationRequestDialog({
               </div>
           )}
 
-          <ScrollArea className="px-6 h-[320px] w-full">
+          <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar w-full px-6">
             <div className="py-4 space-y-2">
               {isLoading ? (
                 <div className="flex items-center justify-center py-20">
@@ -258,7 +271,7 @@ export function VerificationRequestDialog({
                 </>
               )}
             </div>
-          </ScrollArea>
+          </div>
           
           {selectedUserIds.length > 0 && (
               <div className="px-6 pb-6 pt-2 shrink-0">

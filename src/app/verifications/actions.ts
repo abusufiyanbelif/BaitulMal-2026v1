@@ -88,13 +88,23 @@ import { generateChanges } from '@/lib/utils';
          const newDoc = verificationsRef.doc();
          
          const payload: PendingVerification = {
-             ...verificationData,
-             id: newDoc.id,
-             assignedVerifierIds: verificationData.assignedVerifiers.map((v: { id: string }) => v.id),
-             status: 'Pending',
-             createdAt: Timestamp.now(),
-             updatedAt: Timestamp.now(),
-         } as PendingVerification;
+            targetId: verificationData.targetId,
+            targetCollection: verificationData.targetCollection,
+            revalidatePath: verificationData.revalidatePath,
+            newValue: verificationData.newValue,
+            originalValue: verificationData.originalValue,
+            requestedBy: verificationData.requestedBy,
+            assignedVerifiers: verificationData.assignedVerifiers,
+            module: verificationData.module,
+            description: verificationData.description,
+            id: newDoc.id,
+            assignedVerifierIds: verificationData.assignedVerifiers.map((v: { id: string }) => v.id),
+            status: 'Pending',
+            requesterComment: verificationData.requesterComment || '',
+            approverComments: [],
+            createdAt: Timestamp.now() as any,
+            updatedAt: Timestamp.now() as any,
+        } as PendingVerification;
  
          await newDoc.set(payload);
 
@@ -224,7 +234,8 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
  
  export async function approveVerificationAction(
      requestId: string,
-     verifierId: string
+     verifierId: string,
+     comment?: string
  ) {
      const { adminDb } = getAdminServices();
      if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
@@ -239,7 +250,7 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
          
          // --- SAFETY CHECK: Prevent Self-Approval ---
          if (request.requestedBy.id === verifierId) {
-             return { success: false, message: 'Institutional Safety: Self-approval of modifications is strictly prohibited.' };
+             return { success: false, message: 'Organization Safety: Self-approval of modifications is strictly prohibited.' };
          }
          
          // Update this specific verifier's status
@@ -251,6 +262,17 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
              }
              return v;
          });
+ 
+         const updatedApproverComments = [
+             ...(request.approverComments || []),
+             {
+                 verifierId,
+                 verifierName: updatedVerifiers.find(v => v.id === verifierId)?.name || 'Verifier',
+                 comment: comment || 'Verified',
+                 status: 'Approved' as const,
+                 updatedAt: Timestamp.now()
+             }
+         ];
  
          if (!verifierFound) {
              return { success: false, message: 'Unauthorized: You are not assigned to verify this specific request.' };
@@ -414,8 +436,13 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
                  console.error('Failed to notify internal groups of final approval:', notifyError);
              }
 
-             // Cleanup: Delete the pending request
-             await docRef.delete();
+            // Update the pending request to Approved status (we no longer delete it to preserve history)
+            await docRef.update({
+                assignedVerifiers: updatedVerifiers,
+                approverComments: updatedApproverComments,
+                status: 'Approved',
+                updatedAt: Timestamp.now()
+            });
             
             // Notify Requester
             try {
@@ -501,8 +528,19 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
          const request = docSnap.data() as PendingVerification;
  
          // If anyone rejects, the whole thing is rejected
-         await docRef.update({ 
-           status: 'Rejected',
+          const updatedApproverComments = [
+              ...(request.approverComments || []),
+              {
+                  verifierId,
+                  verifierName: request.assignedVerifiers.find(v => v.id === verifierId)?.name || 'Verifier',
+                  comment: reason,
+                  status: 'Rejected' as const,
+                  updatedAt: Timestamp.now()
+              }
+          ];
+
+          await docRef.update({ 
+            status: 'Rejected',
            description: reason ? `Rejected by ${verifierId}: ${reason}` : `Rejected by Member ${verifierId}`,
            updatedAt: Timestamp.now()
          });

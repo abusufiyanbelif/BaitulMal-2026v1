@@ -18,6 +18,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import Link from 'next/link';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import { 
     ArrowLeft, 
     Edit, 
@@ -85,7 +86,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { deleteUserAction, mirrorIndividualUserToDonorAction, consolidateIdentitiesAction } from './actions';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { cn, getNestedValue } from '@/lib/utils';
+import { getNestedValue } from '@/lib/utils';
 import { usePageHit } from '@/hooks/use-page-hit';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Label } from '@/components/ui/label';
@@ -112,7 +113,7 @@ function StatCard({ title, count, description, icon: Icon, delay, onClick, color
                     <Icon className="h-5 w-5" />
                 </div>
                 <div className="text-right">
-                    <p className="text-[10px] font-black text-muted-foreground tracking-[0.2em] uppercase opacity-40 mb-1">{title}</p>
+                    <p className="text-[10px] font-black text-muted-foreground tracking-[0.2em] opacity-40 mb-1">{title}</p>
                     <p className="text-3xl font-black text-primary tracking-tighter">{count}</p>
                 </div>
             </div>
@@ -303,14 +304,14 @@ export default function UsersPage() {
 
   const isLoading = areUsersLoading || isProfileLoading;
   
-  if (isLoading) return <SectionLoader label="Syncing Team Neural Network..." description="Retrieving Institutional Member Records." />;
+  if (isLoading) return <SectionLoader label="Syncing Team Network..." description="Retrieving Team Member Records." />;
 
   if (!canRead) return (
     <main className="container mx-auto p-8 text-primary font-normal">
         <Alert variant="destructive" className="rounded-3xl border-primary/10 shadow-2xl">
             <ShieldAlert className="h-4 w-4"/>
             <AlertTitle className="font-black tracking-tight">Access Restricted</AlertTitle>
-            <AlertDescription className="font-bold opacity-70">Insufficient credentials to access the institutional member center.</AlertDescription>
+            <AlertDescription className="font-bold opacity-70">Insufficient credentials to access the team member center.</AlertDescription>
         </Alert>
     </main>
   );
@@ -332,7 +333,7 @@ export default function UsersPage() {
                     </div>
                     <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-primary">Identity & Team Center</h1>
                 </div>
-                <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">Centralized institutional member registry, role authorization, and cross-module identity reconciliation hub.</p>
+                <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">Centralized member registry, role authorization, and cross-module identity reconciliation hub.</p>
             </div>
             
             <div className="flex flex-wrap items-center gap-3">
@@ -352,7 +353,7 @@ export default function UsersPage() {
           <StatCard 
             title="Registry Total" 
             count={stats.total} 
-            description="Verified Institutional Members" 
+            description="Verified Members" 
             icon={Users} 
             delay="100ms" 
           />
@@ -385,13 +386,13 @@ export default function UsersPage() {
       <Tabs defaultValue="management" className="w-full space-y-10 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
         <div className="bg-white/30 backdrop-blur-md p-1.5 rounded-[24px] border border-primary/5 shadow-sm inline-flex w-fit overflow-hidden">
             <TabsList className="flex flex-nowrap bg-transparent p-0 gap-1 h-auto">
-                <TabsTrigger value="management" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
+                <TabsTrigger value="management" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
                     <Users className="h-3.5 w-3.5" /> Registry List
                 </TabsTrigger>
-                <TabsTrigger value="audit" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
+                <TabsTrigger value="audit" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
                     <ShieldCheck className="h-3.5 w-3.5" /> Identity Audit
                 </TabsTrigger>
-                <TabsTrigger value="duplicates" className={cn("inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 data-[state=active]:shadow-lg", stats.unlinked > 0 ? "text-amber-600 data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-amber-500/20" : "data-[state=active]:bg-primary data-[state=active]:text-white")}>
+                <TabsTrigger value="duplicates" className={cn("inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black tracking-widest transition-all duration-500 data-[state=active]:shadow-lg", stats.unlinked > 0 ? "text-amber-600 data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-amber-500/20" : "data-[state=active]:bg-primary data-[state=active]:text-white")}>
                     <DatabaseZap className={cn("h-3.5 w-3.5", stats.unlinked > 0 && "animate-pulse")} /> Resolution Center
                 </TabsTrigger>
             </TabsList>
@@ -447,12 +448,12 @@ export default function UsersPage() {
                                 <Table className="min-w-[1000px]">
                                     <TableHeader>
                                         <TableRow className="bg-primary/[0.02] border-b border-primary/5">
-                                            <TableHead className="w-[80px] pl-8 text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14"># ID</TableHead>
-                                            <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Member Identity</TableHead>
-                                            <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Contact & Auth</TableHead>
-                                            <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">System Privilege</TableHead>
-                                            <TableHead className="text-center text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Account State</TableHead>
-                                            <TableHead className="text-right pr-8 text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Modify</TableHead>
+                                            <TableHead className="w-[80px] pl-8 text-[10px] font-black tracking-[0.15em] text-muted-foreground h-14"># ID</TableHead>
+                                            <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground h-14">Member Identity</TableHead>
+                                            <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground h-14">Contact & Auth</TableHead>
+                                            <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground h-14">System Privilege</TableHead>
+                                            <TableHead className="text-center text-[10px] font-black tracking-[0.15em] text-muted-foreground h-14">Account State</TableHead>
+                                            <TableHead className="text-right pr-8 text-[10px] font-black tracking-[0.15em] text-muted-foreground h-14">Modify</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -468,16 +469,16 @@ export default function UsersPage() {
                                                 <TableCell>
                                                     <div className="space-y-1">
                                                         <div className="text-xs font-bold text-primary/80 flex items-center gap-1.5"><Mail className="h-3 w-3 opacity-40"/> {u.email}</div>
-                                                        <div className="text-[10px] font-mono font-bold opacity-40 flex items-center gap-1.5"><Smartphone className="h-3 w-3"/> {u.phone || 'NO PHONE LOGGED'}</div>
+                                                        <div className="text-[10px] font-mono font-bold opacity-40 flex items-center gap-1.5"><Smartphone className="h-3 w-3"/> {u.phone || 'No Phone Logged'}</div>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell>
-                                                    <Badge variant={u.role === 'Admin' ? 'destructive' : 'secondary'} className={cn("text-[9px] font-black uppercase tracking-widest px-2.5 h-6 rounded-full border-0 shadow-sm", u.role === 'Admin' ? "bg-primary text-white" : "bg-primary/5 text-primary")}>
+                                                    <Badge variant={u.role === 'Admin' ? 'destructive' : 'secondary'} className={cn("text-[9px] font-black tracking-widest px-2.5 h-6 rounded-full border-0 shadow-sm", u.role === 'Admin' ? "bg-primary text-white" : "bg-primary/5 text-primary")}>
                                                         {u.role}
                                                     </Badge>
                                                 </TableCell>
                                                 <TableCell className="text-center">
-                                                    <Badge variant={u.status === 'Active' ? 'eligible' : 'outline'} className={cn("text-[9px] font-black uppercase px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm", u.status === 'Active' ? "bg-emerald-500 text-white" : "opacity-40")}>
+                                                    <Badge variant={u.status === 'Active' ? 'eligible' : 'outline'} className={cn("text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm", u.status === 'Active' ? "bg-emerald-500 text-white" : "opacity-40")}>
                                                         {u.status}
                                                     </Badge>
                                                 </TableCell>
@@ -526,7 +527,7 @@ export default function UsersPage() {
                                                     <Fingerprint className="h-3 w-3" /> {u.userKey}
                                                 </div>
                                             </div>
-                                            <Badge variant={u.role === 'Admin' ? 'destructive' : 'secondary'} className={cn("text-[9px] font-black uppercase px-2.5 h-6 rounded-full border-0 shadow-sm", u.role === 'Admin' ? "bg-primary text-white" : "bg-primary/5 text-primary")}>
+                                            <Badge variant={u.role === 'Admin' ? 'destructive' : 'secondary'} className={cn("text-[9px] font-black px-2.5 h-6 rounded-full border-0 shadow-sm", u.role === 'Admin' ? "bg-primary text-white" : "bg-primary/5 text-primary")}>
                                                 {u.role}
                                             </Badge>
                                         </div>
@@ -536,12 +537,12 @@ export default function UsersPage() {
                                                 <Mail className="h-4 w-4 opacity-40"/> {u.email}
                                             </div>
                                             <div className="flex items-center gap-3 text-[10px] font-mono font-black text-primary/60 bg-white/50 w-full px-4 py-2.5 rounded-2xl border border-primary/5">
-                                                <Smartphone className="h-4 w-4 opacity-40"/> {u.phone || 'NO PHONE LOGGED'}
+                                                <Smartphone className="h-4 w-4 opacity-40"/> {u.phone || 'No Phone Logged'}
                                             </div>
                                         </div>
                                         
                                         <div className="flex items-center justify-between pt-4 border-t border-primary/5">
-                                            <Badge variant={u.status === 'Active' ? 'eligible' : 'outline'} className={cn("text-[9px] font-black uppercase px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm", u.status === 'Active' ? "bg-emerald-500 text-white" : "opacity-40")}>
+                                            <Badge variant={u.status === 'Active' ? 'eligible' : 'outline'} className={cn("text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm", u.status === 'Active' ? "bg-emerald-500 text-white" : "opacity-40")}>
                                                 {u.status}
                                             </Badge>
                                             <Button variant="ghost" size="sm" className="h-9 text-[10px] font-black text-primary hover:bg-primary/5 px-4 rounded-xl transition-all group-hover/mobile:translate-x-1">
@@ -562,8 +563,8 @@ export default function UsersPage() {
                             <p className="text-xs font-black text-primary tracking-tight">Registry Page <span className="text-primary">{currentPage}</span> <span className="opacity-30">/ {totalPages}</span></p>
                         </div>
                         <div className="flex gap-3">
-                            <Button variant="outline" size="sm" onClick={()=>setCurrentPage(p=>Math.max(1,p-1))} disabled={currentPage===1} className="font-black text-[10px] uppercase tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm">Previous</Button>
-                            <Button variant="outline" size="sm" onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))} disabled={currentPage===totalPages} className="font-black text-[10px] uppercase tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm">Next</Button>
+                            <Button variant="outline" size="sm" onClick={()=>setCurrentPage(p=>Math.max(1,p-1))} disabled={currentPage===1} className="font-black text-[10px] tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm">Previous</Button>
+                            <Button variant="outline" size="sm" onClick={()=>setCurrentPage(p=>Math.min(totalPages,p+1))} disabled={currentPage===totalPages} className="font-black text-[10px] tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm">Next</Button>
                         </div>
                     </CardFooter>
                 )}
@@ -594,7 +595,7 @@ export default function UsersPage() {
                                 <div className="min-w-0">
                                     <div className="flex items-center gap-3">
                                         <h4 className="font-black text-lg text-primary tracking-tighter truncate">{u.name}</h4>
-                                        <Badge variant={u.role === 'Admin' ? 'destructive' : 'secondary'} className="text-[8px] font-black uppercase tracking-widest px-2 h-5 rounded-full border-0">{u.role}</Badge>
+                                        <Badge variant={u.role === 'Admin' ? 'destructive' : 'secondary'} className="text-[8px] font-black tracking-widest px-2 h-5 rounded-full border-0">{u.role}</Badge>
                                     </div>
                                     <p className="text-xs font-bold text-primary/40 truncate mt-0.5">{u.email}</p>
                                 </div>
@@ -603,12 +604,12 @@ export default function UsersPage() {
                             <div className="flex flex-wrap items-center justify-center gap-3 flex-1">
                                 <div className={cn("flex items-center gap-2.5 px-5 py-2.5 rounded-2xl border transition-all", u.isDonor ? "bg-emerald-500/5 border-emerald-500/20 text-emerald-600" : "bg-primary/[0.02] border-primary/5 text-primary/30")}>
                                     <HeartHandshake className={cn("h-4 w-4", u.isDonor && "animate-pulse")} />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Benefactor Registry</span>
+                                    <span className="text-[10px] font-black tracking-widest">Benefactor Registry</span>
                                     {u.isDonor ? <CheckCircle2 className="h-3.5 w-3.5" /> : <X className="h-3 w-3 opacity-30" />}
                                 </div>
                                 <div className={cn("flex items-center gap-2.5 px-5 py-2.5 rounded-2xl border transition-all", u.isBeneficiary ? "bg-blue-500/5 border-blue-500/20 text-blue-600" : "bg-primary/[0.02] border-primary/5 text-primary/30")}>
                                     <IdCard className={cn("h-4 w-4", u.isBeneficiary && "animate-pulse")} />
-                                    <span className="text-[10px] font-black uppercase tracking-widest">Recipient Registry</span>
+                                    <span className="text-[10px] font-black tracking-widest">Recipient Registry</span>
                                     {u.isBeneficiary ? <CheckCircle2 className="h-3.5 w-3.5" /> : <X className="h-3 w-3 opacity-30" />}
                                 </div>
                             </div>
@@ -617,12 +618,12 @@ export default function UsersPage() {
                                 {u.multiRole ? (
                                     <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/5 text-amber-600 border border-amber-500/10 rounded-xl">
                                         <Zap className="h-3.5 w-3.5" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">Unified Profile</span>
+                                        <span className="text-[10px] font-black tracking-widest">Unified Profile</span>
                                     </div>
                                 ) : (
                                     <div className="flex items-center gap-2 px-4 py-2 bg-primary/5 text-primary/40 rounded-xl">
                                         <UserCheck className="h-3.5 w-3.5" />
-                                        <span className="text-[10px] font-black uppercase tracking-widest">Single Entity</span>
+                                        <span className="text-[10px] font-black tracking-widest">Single Entity</span>
                                     </div>
                                 )}
                                 <Button variant="ghost" size="icon" className="h-10 w-10 text-primary/20 hover:text-primary hover:bg-primary/5 rounded-2xl" onClick={() => router.push(`/users/${u.id}`)}>
@@ -663,12 +664,12 @@ export default function UsersPage() {
                                     </div>
                                 </div>
                                 <div className="flex items-center gap-2 shrink-0">
-                                    <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest border-emerald-500/20 text-emerald-600 px-2 h-5 rounded-full">{u.role}</Badge>
+                                    <Badge variant="outline" className="text-[8px] font-black tracking-widest border-emerald-500/20 text-emerald-600 px-2 h-5 rounded-full">{u.role}</Badge>
                                     <Button
                                         size="sm"
                                         onClick={() => handleMirrorToDonor(u.id)}
                                         disabled={isMirroring === u.id}
-                                        className="h-8 px-4 text-[10px] font-black uppercase tracking-widest bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl active:scale-95 transition-all"
+                                        className="h-8 px-4 text-[10px] font-black tracking-widest bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl active:scale-95 transition-all"
                                     >
                                         {isMirroring === u.id ? <Loader2 className="h-3 w-3 animate-spin mr-1.5" /> : <HeartHandshake className="h-3 w-3 mr-1.5" />}
                                         Mirror
@@ -710,7 +711,7 @@ export default function UsersPage() {
                                     variant="outline"
                                     size="sm"
                                     onClick={() => router.push(`/donors/${d.id}`)}
-                                    className="h-8 px-4 text-[10px] font-black uppercase tracking-widest border-blue-500/20 text-blue-600 rounded-xl hover:bg-blue-500 hover:text-white active:scale-95 transition-all shrink-0"
+                                    className="h-8 px-4 text-[10px] font-black tracking-widest border-blue-500/20 text-blue-600 rounded-xl hover:bg-blue-500 hover:text-white active:scale-95 transition-all shrink-0"
                                 >
                                     <Eye className="h-3 w-3 mr-1.5" /> View Profile
                                 </Button>
@@ -749,7 +750,7 @@ export default function UsersPage() {
                                         <p className="text-[10px] font-bold text-primary/40 truncate">{b.phone || 'No phone'} · Status: {b.status || 'Unknown'}</p>
                                     </div>
                                 </div>
-                                <Badge variant="outline" className="text-[8px] font-black uppercase tracking-widest border-violet-500/20 text-violet-600 px-3 h-5 rounded-full shrink-0">Phone Match</Badge>
+                                <Badge variant="outline" className="text-[8px] font-black tracking-widest border-violet-500/20 text-violet-600 px-3 h-5 rounded-full shrink-0">Phone Match</Badge>
                             </div>
                         ))}
                     </div>
@@ -761,14 +762,14 @@ export default function UsersPage() {
                 {duplicatesGroups.length === 0 && crossModuleGaps.usersWithoutDonor.length === 0 && crossModuleGaps.orphanedDonors.length === 0 && crossModuleGaps.unmatchedBeneficiaries.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-32 bg-primary/[0.01] rounded-[48px] border-2 border-dashed border-primary/5">
                         <ShieldCheck className="h-16 w-16 text-primary/10 mb-6" />
-                        <h4 className="font-black text-lg text-primary/30 tracking-widest uppercase">Registry Integrity High</h4>
+                        <h4 className="font-black text-lg text-primary/30 tracking-widest">Registry Integrity High</h4>
                         <p className="text-sm font-bold text-primary/20 mt-2">No identity gaps or collisions detected across User, Donor, and Beneficiary modules.</p>
                     </div>
                 ) : duplicatesGroups.length > 0 && (
                     <>
                         <div className="flex items-center gap-3 pl-2 pt-4">
                             <div className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-                            <h3 className="text-sm font-black uppercase tracking-[0.15em] text-amber-600">User-to-User Duplicate Collisions</h3>
+                            <h3 className="text-sm font-black tracking-[0.15em] text-amber-600">User-To-User Duplicate Collisions</h3>
                         </div>
                         {duplicatesGroups.map((group, gIdx) => (
                         <Card key={gIdx} className="group relative rounded-[40px] border border-amber-500/10 bg-amber-500/[0.02] overflow-hidden shadow-none p-10 animate-fade-in-up" style={{ animationDelay: `${gIdx * 100}ms` }}>
@@ -795,16 +796,16 @@ export default function UsersPage() {
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-3 pl-2">
                                         <div className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600">Primary Preservation Target</Label>
+                                        <Label className="text-[10px] font-black tracking-[0.2em] text-emerald-600">Primary Preservation Target</Label>
                                     </div>
                                     <div className="relative p-8 rounded-[32px] bg-white border-2 border-emerald-500 shadow-2xl shadow-emerald-500/5">
-                                        <Badge className="absolute -top-3 -right-3 bg-emerald-500 text-white font-black text-[10px] uppercase tracking-widest px-4 py-1.5 rounded-full shadow-lg border-4 border-white">Master Record</Badge>
+                                        <Badge className="absolute -top-3 -right-3 bg-emerald-500 text-white font-black text-[10px] tracking-widest px-4 py-1.5 rounded-full shadow-lg border-4 border-white">Master Record</Badge>
                                         <div className="flex items-center gap-6">
                                             <div className="h-16 w-16 rounded-full bg-emerald-500/10 flex items-center justify-center font-black text-emerald-600 text-2xl shadow-inner">{group.primary.name.charAt(0)}</div>
                                             <div className="min-w-0">
                                                 <h4 className="font-black text-xl text-primary tracking-tighter truncate leading-tight">{group.primary.name}</h4>
                                                 <p className="text-xs font-mono font-bold text-muted-foreground opacity-60 mt-1">UID: {group.primary.id.slice(0, 12)}...</p>
-                                                <Badge variant="outline" className="mt-3 text-[10px] font-black uppercase tracking-widest border-primary/10 text-primary py-1 px-3 rounded-xl">{group.primary.role}</Badge>
+                                                <Badge variant="outline" className="mt-3 text-[10px] font-black tracking-widest border-primary/10 text-primary py-1 px-3 rounded-xl">{group.primary.role}</Badge>
                                             </div>
                                         </div>
                                     </div>
@@ -812,7 +813,7 @@ export default function UsersPage() {
                                 <div className="space-y-6">
                                     <div className="flex items-center gap-3 pl-2">
                                         <div className="h-1.5 w-1.5 rounded-full bg-destructive" />
-                                        <Label className="text-[10px] font-black uppercase tracking-[0.2em] text-destructive">Redundant Account Fragments</Label>
+                                        <Label className="text-[10px] font-black tracking-[0.2em] text-destructive">Redundant Account Fragments</Label>
                                     </div>
                                     <div className="grid gap-4">
                                         {group.redundants.map(r => (
@@ -822,7 +823,7 @@ export default function UsersPage() {
                                                     <div className="min-w-0">
                                                         <p className="text-sm font-black text-primary/70 tracking-tight truncate">{r.name}</p>
                                                         <div className="flex items-center gap-2 mt-0.5">
-                                                            <Badge variant="secondary" className="text-[8px] font-black uppercase px-2 h-4 border-0">{r.role}</Badge>
+                                                            <Badge variant="secondary" className="text-[8px] font-black px-2 h-4 border-0">{r.role}</Badge>
                                                             <span className="text-[9px] font-mono text-muted-foreground opacity-40 italic"># {r.id.slice(0, 6)}</span>
                                                         </div>
                                                     </div>
@@ -860,11 +861,11 @@ export default function UsersPage() {
                     </div>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="flex flex-col sm:flex-row gap-4 w-full pt-4">
-                    <AlertDialogCancel className="font-black uppercase tracking-widest text-[10px] border-primary/10 text-primary flex-1 h-14 rounded-2xl bg-white shadow-sm hover:bg-primary/5 transition-all">Discard</AlertDialogCancel>
+                    <AlertDialogCancel className="font-black tracking-widest text-[10px] border-primary/10 text-primary flex-1 h-14 rounded-2xl bg-white shadow-sm hover:bg-primary/5 transition-all">Discard</AlertDialogCancel>
                     <AlertDialogAction 
                         onClick={handleDeleteConfirm} 
                         disabled={isSubmitting}
-                        className="bg-red-600 hover:bg-red-700 text-white font-black uppercase tracking-widest text-[10px] flex-1 h-14 rounded-2xl shadow-xl shadow-red-500/20 active:scale-95 transition-all"
+                        className="bg-red-600 hover:bg-red-700 text-white font-black tracking-widest text-[10px] flex-1 h-14 rounded-2xl shadow-xl shadow-red-500/20 active:scale-95 transition-all"
                     >
                         {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin mr-3" /> : <ShieldAlert className="h-5 w-5 mr-3" />}
                         Expunge Identity

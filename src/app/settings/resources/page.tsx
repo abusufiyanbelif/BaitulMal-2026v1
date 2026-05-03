@@ -251,7 +251,7 @@ export default function ResourceSettingsPage() {
                                     </div>
                                 </div>
                                 <Badge variant={resourceSettings?.waPlanDetails?.status === 'Active' ? 'success' : 'destructive'} className="font-mono text-[9px]">
-                                    {resourceSettings?.waPlanDetails?.status || 'NOT CONFIGURED'}
+                                    {resourceSettings?.waPlanDetails?.status || 'Not Configured'}
                                 </Badge>
                             </div>
                         </CardHeader>
@@ -261,7 +261,7 @@ export default function ResourceSettingsPage() {
                                 <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-3 animate-in fade-in zoom-in duration-500">
                                     <div className="flex items-center gap-2 text-amber-800">
                                         <AlertCircle className="h-5 w-5" />
-                                        <p className="text-sm font-black uppercase tracking-tight">Service Stopped</p>
+                                        <p className="text-sm font-black tracking-tight">Service Stopped</p>
                                     </div>
                                     <p className="text-xs text-amber-700 leading-relaxed font-medium">
                                         The WhatsApp notification service is currently <strong>{resourceSettings?.waPlanDetails?.status || 'Offline'}</strong>. 
@@ -269,11 +269,11 @@ export default function ResourceSettingsPage() {
                                     </p>
                                     <div className="flex gap-2">
                                         <Link href="/settings/resources/fundraising" className="flex-1">
-                                            <Button variant="outline" className="w-full h-8 text-[10px] font-black uppercase border-amber-300 text-amber-800 hover:bg-amber-100">
+                                            <Button variant="outline" className="w-full h-8 text-[10px] font-black border-amber-300 text-amber-800 hover:bg-amber-100">
                                                 Raise Internal Fund
                                             </Button>
                                         </Link>
-                                        <Button variant="outline" className="flex-1 h-8 text-[10px] font-black uppercase border-amber-300 text-amber-800 hover:bg-amber-100">
+                                        <Button variant="outline" className="flex-1 h-8 text-[10px] font-black border-amber-300 text-amber-800 hover:bg-amber-100">
                                             See Payment History
                                         </Button>
                                     </div>
@@ -308,7 +308,7 @@ export default function ResourceSettingsPage() {
                             {editableData?.activeWhatsAppProvider === 'whapi' ? (
                                 <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Whapi API URL</Label>
+                                        <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">Whapi Api Url</Label>
                                         <Input 
                                             value={editableData?.whatsappApiUrl || ''} 
                                             onChange={(e) => handleFieldChange('whatsappApiUrl', e.target.value)}
@@ -318,7 +318,7 @@ export default function ResourceSettingsPage() {
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Whapi API Token</Label>
+                                        <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">Whapi Api Token</Label>
                                         <div className="relative">
                                             <Input 
                                                 type={showApiKey || isEditMode ? "text" : "password"}
@@ -338,7 +338,7 @@ export default function ResourceSettingsPage() {
                             ) : (
                                 <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
                                     <div className="space-y-2">
-                                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Meta Permanent Access Token</Label>
+                                        <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">Meta Permanent Access Token</Label>
                                         <div className="relative">
                                             <Input 
                                                 type={showMetaToken || isEditMode ? "text" : "password"}
@@ -356,7 +356,7 @@ export default function ResourceSettingsPage() {
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Phone Number ID</Label>
+                                            <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">Phone Number Id</Label>
                                             <Input 
                                                 value={editableData?.metaPhoneNumberId || ''} 
                                                 onChange={(e) => handleFieldChange('metaPhoneNumberId', e.target.value)}
@@ -366,7 +366,7 @@ export default function ResourceSettingsPage() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">WABA ID</Label>
+                                            <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">Waba Id</Label>
                                             <Input 
                                                 value={editableData?.metaWabaId || ''} 
                                                 onChange={(e) => handleFieldChange('metaWabaId', e.target.value)}
@@ -392,7 +392,7 @@ export default function ResourceSettingsPage() {
                             </div>
 
                             <div className="pt-4 space-y-2">
-                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">WhatsApp Subscription Detail</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">WhatsApp Subscription Detail</Label>
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
                                         <Label className="text-[9px] font-bold">Plan Name</Label>
@@ -449,7 +449,7 @@ export default function ResourceSettingsPage() {
                             </div>
 
                             <div className="pt-4 space-y-2">
-                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Test WhatsApp Connection</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">Test WhatsApp Connection</Label>
                                 <div className="flex gap-2">
                                     <Input placeholder="+919999999999" value={testPhone} onChange={e => setTestPhone(e.target.value)} className="h-9 text-xs" />
                                     <Button onClick={handleSendTest} disabled={isSubmitting} variant="secondary" className="h-9 font-bold shrink-0">
@@ -486,7 +486,7 @@ export default function ResourceSettingsPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Bot API Token</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">Bot Api Token</Label>
                                 <div className="relative">
                                     <Input 
                                         type={showTelegramToken || isEditMode ? "text" : "password"}
@@ -505,7 +505,7 @@ export default function ResourceSettingsPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Target Chat ID</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">Target Chat Id</Label>
                                 <Input 
                                     value={editableData?.telegramChatId || ''} 
                                     onChange={(e) => handleFieldChange('telegramChatId', e.target.value)}
@@ -541,7 +541,7 @@ export default function ResourceSettingsPage() {
                         </CardHeader>
                         <CardContent className="pt-6 space-y-4">
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Public Base URL</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">Public Base Url</Label>
                                 <Input 
                                     value={editableData?.baseUrl || ''} 
                                     onChange={(e) => handleFieldChange('baseUrl', e.target.value)}
@@ -563,14 +563,14 @@ export default function ResourceSettingsPage() {
                                     <Sparkles className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-lg font-bold text-primary tracking-tight">AI Image Scanning (Gemini)</CardTitle>
+                                    <CardTitle className="text-lg font-bold text-primary tracking-tight">Ai Image Scanning (Gemini)</CardTitle>
                                     <CardDescription className="text-xs font-normal text-primary/60">AI tools for reading images and documents.</CardDescription>
                                 </div>
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-4">
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Gemini API Key</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">Gemini Api Key</Label>
                                 <div className="relative">
                                     <Input 
                                         type={showGeminiKey || isEditMode ? "text" : "password"}
@@ -595,7 +595,7 @@ export default function ResourceSettingsPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Vision/Google API Key</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">Vision/Google Api Key</Label>
                                 <div className="relative">
                                     <Input 
                                         type={showGoogleKey || isEditMode ? "text" : "password"}
@@ -643,33 +643,33 @@ export default function ResourceSettingsPage() {
                         <CardContent className="pt-6 space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Project ID</Label>
+                                    <Label className="text-[9px] font-bold text-muted-foreground tracking-widest opacity-60">Project Id</Label>
                                     <Input value={editableData?.firebaseConfig?.projectId || ''} readOnly className="h-8 text-[10px] font-mono bg-muted/20" />
                                 </div>
                                 <div className="space-y-1">
-                                    <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Storage Bucket</Label>
+                                    <Label className="text-[9px] font-bold text-muted-foreground tracking-widest opacity-60">Storage Bucket</Label>
                                     <Input value={editableData?.firebaseConfig?.storageBucket || ''} readOnly className="h-8 text-[10px] font-mono bg-muted/20" />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-1">
-                                    <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Auth Domain</Label>
+                                    <Label className="text-[9px] font-bold text-muted-foreground tracking-widest opacity-60">Auth Domain</Label>
                                     <Input value={editableData?.firebaseConfig?.authDomain || ''} readOnly className="h-8 text-[10px] font-mono bg-muted/20" />
                                 </div>
                                 <div className="space-y-1">
-                                    <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Messaging Sender ID</Label>
+                                    <Label className="text-[9px] font-bold text-muted-foreground tracking-widest opacity-60">Messaging Sender Id</Label>
                                     <Input value={editableData?.firebaseConfig?.messagingSenderId || ''} readOnly className="h-8 text-[10px] font-mono bg-muted/20" />
                                 </div>
                             </div>
 
                             <div className="space-y-1">
-                                <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">App ID</Label>
+                                <Label className="text-[9px] font-bold text-muted-foreground tracking-widest opacity-60">App Id</Label>
                                 <Input value={editableData?.firebaseConfig?.appId || ''} readOnly className="h-8 text-[10px] font-mono bg-muted/20" />
                             </div>
 
                             <div className="space-y-1">
-                                <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">API Key</Label>
+                                <Label className="text-[9px] font-bold text-muted-foreground tracking-widest opacity-60">Api Key</Label>
                                 <div className="relative">
                                     <Input 
                                         type={showFbApiKey ? "text" : "password"}
@@ -690,12 +690,12 @@ export default function ResourceSettingsPage() {
                             </div>
 
                             <div className="space-y-1">
-                                <Label className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Measurement ID</Label>
+                                <Label className="text-[9px] font-bold text-muted-foreground tracking-widest opacity-60">Measurement Id</Label>
                                 <Input value={editableData?.firebaseConfig?.measurementId || ''} readOnly className="h-8 text-[10px] font-mono bg-muted/20" />
                             </div>
                             <p className="text-[10px] text-muted-foreground italic leading-relaxed pt-2">
                                 <Info className="h-3 w-3 inline mr-1" /> 
-                                These infrastructure values are managed via institutional environment variables and cannot be modified here for security.
+                                These infrastructure values are managed via system environment variables and cannot be modified here for security.
                             </p>
                         </CardContent>
                     </Card>
@@ -710,7 +710,7 @@ export default function ResourceSettingsPage() {
                     <div className="space-y-1">
                         <p className="text-sm font-bold text-amber-900">Security Rules</p>
                         <p className="text-xs text-amber-800 leading-relaxed font-normal">
-                            Credentials stored here are synchronized across all institutional modules. 
+                            Credentials stored here are synchronized across all organization modules. 
                             Unauthorized modification of these resources may disrupt automated alerts and financial tracking.
                         </p>
                     </div>

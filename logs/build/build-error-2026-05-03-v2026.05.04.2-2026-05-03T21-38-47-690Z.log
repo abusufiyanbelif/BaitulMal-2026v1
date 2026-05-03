@@ -1,0 +1,85 @@
+BUILD FAILURE LOG - 4/5/2026, 3:12:09 am
+Version: 2026.05.04.2
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/extract-education-findings.ts
+./src/app/api/extract-education/route.ts
+
+Failed to compile.
+
+./src/app/campaign-members/[campaignId]/summary/page.tsx:753:50
+Type error: Cannot find name 'PurposePlaceholder'.
+
+[0m [90m 751 |[39m                                         ) [33m:[39m ( [0m
+[0m [90m 752 |[39m                                             [33m<[39m[33mdiv[39m className[33m=[39m[32m"w-full h-full relative group"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 753 |[39m                                                 [33m<[39m[33mPurposePlaceholder[39m purpose[33m=[39m{editableCampaign[33m.[39mcategory} className[33m=[39m[32m"rounded-lg"[39m [33m/[39m[33m>[39m[0m
+[0m [90m     |[39m                                                  [31m[1m^[22m[39m[0m
+[0m [90m 754 |[39m                                                 [33m<[39m[33mdiv[39m className[33m=[39m[32m"absolute inset-0 flex flex-col items-center justify-center bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"[39m[33m>[39m[0m
+[0m [90m 755 |[39m                                                     [33m<[39m[33mUploadCloud[39m className[33m=[39m[32m"w-8 h-8 mb-2 text-primary"[39m [33m/[39m[33m>[39m[0m
+[0m [90m 756 |[39m                                                     [33m<[39m[33mp[39m className[33m=[39m[32m"text-sm font-bold text-primary"[39m[33m>[39m[33mClick[39m [33mTo[39m [33mUpload[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: next build
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/extract-education-findings.ts
+./src/app/api/extract-education/route.ts
+
+Failed to compile.
+
+./src/app/campaign-members/[campaignId]/summary/page.tsx:753:50
+Type error: Cannot find name 'PurposePlaceholder'.
+
+[0m [90m 751 |[39m                                         ) [33m:[39m ( [0m
+[0m [90m 752 |[39m                                             [33m<[39m[33mdiv[39m className[33m=[39m[32m"w-full h-full relative group"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 753 |[39m                                                 [33m<[39m[33mPurposePlaceholder[39m purpose[33m=[39m{editableCampaign[33m.[39mcategory} className[33m=[39m[32m"rounded-lg"[39m [33m/[39m[33m>[39m[0m
+[0m [90m     |[39m                                                  [31m[1m^[22m[39m[0m
+[0m [90m 754 |[39m                                                 [33m<[39m[33mdiv[39m className[33m=[39m[32m"absolute inset-0 flex flex-col items-center justify-center bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity"[39m[33m>[39m[0m
+[0m [90m 755 |[39m                                                     [33m<[39m[33mUploadCloud[39m className[33m=[39m[32m"w-8 h-8 mb-2 text-primary"[39m [33m/[39m[33m>[39m[0m
+[0m [90m 756 |[39m                                                     [33m<[39m[33mp[39m className[33m=[39m[32m"text-sm font-bold text-primary"[39m[33m>[39m[33mClick[39m [33mTo[39m [33mUpload[39m[33m<[39m[33m/[39m[33mp[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null

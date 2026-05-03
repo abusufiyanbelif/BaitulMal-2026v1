@@ -43,6 +43,7 @@ import { CopyCampaignDialog } from '@/components/copy-campaign-dialog';
 import { copyCampaignAction, deleteCampaignAction } from './actions';
 import { cn, getNestedValue, getImageSrc } from '@/lib/utils';
 import { getDefaultImage } from '@/lib/default-images';
+import { PurposePlaceholder } from '@/components/purpose-placeholder';
 import { priorityLevels } from '@/lib/modules';
 import Image from 'next/image';
 import { DateRange } from "react-day-picker";
@@ -113,13 +114,17 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
             onClick={() => router.push(`/campaign-members/${campaign.id}/summary`)}
         >
           <div className="relative h-32 w-full bg-secondary flex items-center justify-center border-b border-primary/5">
-            <Image
-                src={getImageSrc(campaign.imageUrl || getDefaultImage(campaign.category))}
-                alt={campaign.name}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-110"
-            />
+            {campaign.showCustomImage !== false && campaign.imageUrl ? (
+              <Image
+                  src={getImageSrc(campaign.imageUrl)}
+                  alt={campaign.name}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+            ) : (
+              <PurposePlaceholder purpose={campaign.category} />
+            )}
           </div>
           <CardHeader className="p-4 space-y-3">
             <div className="flex justify-between items-start gap-2">

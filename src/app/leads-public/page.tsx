@@ -20,7 +20,7 @@ export default function PublicLeadPage() {
           </Link>
         </Button>
       </div>
-      <Suspense fallback={<BrandedLoader />}>
+      <Suspense fallback={<BrandedLoader message="Synchronizing Community Appeals..." />}>
         <PublicLeadsView />
       </Suspense>
     </main>

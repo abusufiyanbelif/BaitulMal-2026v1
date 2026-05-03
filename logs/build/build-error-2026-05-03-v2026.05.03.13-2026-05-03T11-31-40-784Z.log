@@ -1,0 +1,85 @@
+BUILD FAILURE LOG - 3/5/2026, 5:02:51 pm
+Version: 2026.05.03.13
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-lead-story.ts
+./src/app/api/create-lead-story/route.ts
+
+Failed to compile.
+
+./src/components/purpose-placeholder.tsx:36:33
+Type error: Cannot find name 'Utensils'.
+
+[0m [90m 34 |[39m         bgClass [33m=[39m [32m"bg-blue-50"[39m[33m;[39m[0m
+[0m [90m 35 |[39m     } [36melse[39m [36mif[39m (p [33m===[39m [32m'relief'[39m [33m||[39m p [33m===[39m [32m'ration'[39m) {[0m
+[0m[31m[1m>[22m[39m[90m 36 |[39m         [33mIcon[39m [33m=[39m p [33m===[39m [32m'ration'[39m [33m?[39m [33mUtensils[39m [33m:[39m [33mLifeBuoy[39m[33m;[39m[0m
+[0m [90m    |[39m                                 [31m[1m^[22m[39m[0m
+[0m [90m 37 |[39m         colorClass [33m=[39m [32m"from-orange-500 to-amber-700"[39m[33m;[39m[0m
+[0m [90m 38 |[39m         bgClass [33m=[39m [32m"bg-orange-50"[39m[33m;[39m[0m
+[0m [90m 39 |[39m     } [36melse[39m [36mif[39m (p [33m===[39m [32m'zakat'[39m [33m||[39m p [33m===[39m [32m'general'[39m [33m||[39m p [33m===[39m [32m'campaign'[39m) {[0m
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: next build
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-lead-story.ts
+./src/app/api/create-lead-story/route.ts
+
+Failed to compile.
+
+./src/components/purpose-placeholder.tsx:36:33
+Type error: Cannot find name 'Utensils'.
+
+[0m [90m 34 |[39m         bgClass [33m=[39m [32m"bg-blue-50"[39m[33m;[39m[0m
+[0m [90m 35 |[39m     } [36melse[39m [36mif[39m (p [33m===[39m [32m'relief'[39m [33m||[39m p [33m===[39m [32m'ration'[39m) {[0m
+[0m[31m[1m>[22m[39m[90m 36 |[39m         [33mIcon[39m [33m=[39m p [33m===[39m [32m'ration'[39m [33m?[39m [33mUtensils[39m [33m:[39m [33mLifeBuoy[39m[33m;[39m[0m
+[0m [90m    |[39m                                 [31m[1m^[22m[39m[0m
+[0m [90m 37 |[39m         colorClass [33m=[39m [32m"from-orange-500 to-amber-700"[39m[33m;[39m[0m
+[0m [90m 38 |[39m         bgClass [33m=[39m [32m"bg-orange-50"[39m[33m;[39m[0m
+[0m [90m 39 |[39m     } [36melse[39m [36mif[39m (p [33m===[39m [32m'zakat'[39m [33m||[39m p [33m===[39m [32m'general'[39m [33m||[39m p [33m===[39m [32m'campaign'[39m) {[0m
+Next.js build worker exited with code: 1 and signal: null

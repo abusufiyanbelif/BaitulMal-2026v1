@@ -156,7 +156,7 @@ function VisibilityToggle({ id, label, description, icon: Icon, checked, onChang
                 </div>
             </div>
             <div className="flex items-center space-x-3 bg-white/50 px-3 py-1.5 rounded-full border border-primary/5">
-                <Label htmlFor={id} className="font-black text-[9px] opacity-40 tracking-widest uppercase">Visible</Label>
+                <Label htmlFor={id} className="font-black text-[9px] opacity-40 tracking-widest">Visible</Label>
                 <Switch 
                     id={id} 
                     checked={checked} 
@@ -375,7 +375,7 @@ export default function AppSettingsPage() {
 
     const handleSave = async () => {
         if (!firestore || !storage || !canUpdateSettings || !editableData) {
-            toast({ title: "Auth Restriction", description: "Insufficient Privilege to secure institutional settings.", variant: "destructive" });
+            toast({ title: "Auth Restriction", description: "Insufficient Privilege to secure organization settings.", variant: "destructive" });
             return;
         }
 
@@ -465,10 +465,10 @@ export default function AppSettingsPage() {
             batch.set(doc(firestore, 'settings', 'guidingPrinciples'), gpData);
 
             await batch.commit();
-            toast({ title: 'Configuration Finalized', description: 'Cloud Institutional Configuration Synchronized Successfully.', variant: 'success' });
+            toast({ title: 'Configuration Finalized', description: 'Cloud Organization Configuration Synchronized Successfully.', variant: 'success' });
             setIsEditMode(false);
         } catch (error: any) {
-            toast({ title: 'Sync Failure', description: error.message || 'Critical error during institutional sync.', variant: 'destructive' });
+            toast({ title: 'Sync Failure', description: error.message || 'Critical error during system sync.', variant: 'destructive' });
         } finally {
             setIsSubmitting(false);
         }
@@ -479,7 +479,7 @@ export default function AppSettingsPage() {
     const isGlobalLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
 
     if (isGlobalLoading) {
-        return <SectionLoader label="Syncing Cloud Hub..." description="Retrieving Institutional Parameters." />;
+        return <SectionLoader label="Syncing Cloud Hub..." description="Retrieving Organization Parameters." />;
     }
 
     const isFormDisabled = !isEditMode || isSubmitting;
@@ -584,7 +584,7 @@ export default function AppSettingsPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                         <div className="space-y-6">
                             <div className="space-y-4">
-                                <Label htmlFor="heroTitle" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40">Big Title / Headline</Label>
+                                <Label htmlFor="heroTitle" className="text-[10px] font-black text-muted-foreground tracking-[0.2em] pl-1 opacity-40">Big Title / Headline</Label>
                                 <div className="relative">
                                     <Textarea 
                                         id="heroTitle"
@@ -597,7 +597,7 @@ export default function AppSettingsPage() {
                                 </div>
                             </div>
                             <div className="space-y-4">
-                                <Label htmlFor="heroDescription" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40">Short Description</Label>
+                                <Label htmlFor="heroDescription" className="text-[10px] font-black text-muted-foreground tracking-[0.2em] pl-1 opacity-40">Short Description</Label>
                                 <Textarea 
                                     id="heroDescription"
                                     rows={4}
@@ -613,7 +613,7 @@ export default function AppSettingsPage() {
                             <div className="p-8 rounded-[40px] bg-primary/[0.02] border border-primary/5 space-y-6">
                                 <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
                                     <Activity className="h-5 w-5 text-primary opacity-40" />
-                                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Latest Updates Bar</h4>
+                                    <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Latest Updates Bar</h4>
                                 </div>
                                 
                                 <div className="grid grid-cols-2 gap-4">
@@ -623,7 +623,7 @@ export default function AppSettingsPage() {
                                         { id: 'ticker-completed', label: 'Completed Help', field: 'isTickerCompletedVisible' },
                                     ].map(ticker => (
                                         <div key={ticker.id} className="flex items-center justify-between p-4 rounded-2xl bg-white border border-primary/5 shadow-sm">
-                                            <Label htmlFor={ticker.id} className="text-[10px] font-black uppercase tracking-widest">{ticker.label}</Label>
+                                            <Label htmlFor={ticker.id} className="text-[10px] font-black tracking-widest">{ticker.label}</Label>
                                             <Switch id={ticker.id} checked={displayData[ticker.field as keyof typeof displayData] as boolean} onCheckedChange={(val) => handleFieldChange(ticker.field as keyof FormDataType, val)} disabled={isFormDisabled} className="data-[state=checked]:bg-primary" />
                                         </div>
                                     ))}
@@ -631,11 +631,11 @@ export default function AppSettingsPage() {
 
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Max Feed Items</Label>
+                                        <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Max Feed Items</Label>
                                         <Input type="number" value={displayData.tickerMaxDonations} onChange={e => handleFieldChange('tickerMaxDonations', e.target.value)} disabled={isFormDisabled} className="h-12 font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Archive Depth</Label>
+                                        <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Archive Depth</Label>
                                         <Input type="number" value={displayData.tickerMaxCompleted} onChange={e => handleFieldChange('tickerMaxCompleted', e.target.value)} disabled={isFormDisabled} className="h-12 font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5" />
                                     </div>
                                 </div>
@@ -711,7 +711,7 @@ export default function AppSettingsPage() {
                             <div className="space-y-6">
                                 <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
                                     <QrCode className="h-5 w-5 text-primary opacity-40" />
-                                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">QR Code Settings</h4>
+                                    <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">QR Code Settings</h4>
                                 </div>
                                 <div className="flex items-start gap-8">
                                     <div className="relative group">
@@ -724,7 +724,7 @@ export default function AppSettingsPage() {
                                         </div>
                                         {isEditMode && (
                                             <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm rounded-[32px]">
-                                                <Label htmlFor="qr-upload" className="cursor-pointer bg-white text-primary font-black text-[10px] uppercase tracking-widest px-6 h-10 rounded-xl flex items-center shadow-xl active:scale-95 transition-all">
+                                                <Label htmlFor="qr-upload" className="cursor-pointer bg-white text-primary font-black text-[10px] tracking-widest px-6 h-10 rounded-xl flex items-center shadow-xl active:scale-95 transition-all">
                                                     Update Vector
                                                 </Label>
                                                 <Input id="qr-upload" type="file" className="hidden" accept="image/*" onChange={e => setQrCodeFile(e.target.files?.[0] || null)} />
@@ -733,7 +733,7 @@ export default function AppSettingsPage() {
                                     </div>
                                     <div className="space-y-6 flex-1 pt-4">
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Your UPI ID</Label>
+                                            <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Your UPI ID</Label>
                                             <Input 
                                                 value={displayData.upiId} 
                                                 onChange={e => handleFieldChange('upiId', e.target.value)} 
@@ -743,7 +743,7 @@ export default function AppSettingsPage() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Mobile Number for Payment</Label>
+                                            <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Mobile Number for Payment</Label>
                                             <Input 
                                                 value={displayData.paymentMobileNumber} 
                                                 onChange={e => handleFieldChange('paymentMobileNumber', e.target.value)} 
@@ -761,21 +761,21 @@ export default function AppSettingsPage() {
                             <div className="p-8 rounded-[40px] bg-primary/[0.02] border border-primary/5 space-y-8">
                                 <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
                                     <Landmark className="h-5 w-5 text-primary opacity-40" />
-                                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Bank Account Details</h4>
+                                    <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Bank Account Details</h4>
                                 </div>
                                 <div className="space-y-6">
                                     <div className="space-y-2">
-                                        <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Account Holder Name</Label>
+                                        <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Account Holder Name</Label>
                                         <Input value={displayData.bankAccountName} onChange={e => handleFieldChange('bankAccountName', e.target.value)} disabled={isFormDisabled} className="h-12 font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" />
                                     </div>
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Account Number</Label>
+                                            <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Account Number</Label>
                                             <Input value={displayData.bankAccountNumber} onChange={e => handleFieldChange('bankAccountNumber', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Bank IFSC Code</Label>
-                                            <Input value={displayData.bankIfsc} onChange={e => handleFieldChange('bankIfsc', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0 uppercase" />
+                                            <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Bank IFSC Code</Label>
+                                            <Input value={displayData.bankIfsc} onChange={e => handleFieldChange('bankIfsc', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" />
                                         </div>
                                     </div>
                                 </div>
@@ -793,19 +793,19 @@ export default function AppSettingsPage() {
                         <div className="p-8 rounded-[40px] bg-primary/[0.02] border border-primary/5 space-y-6">
                             <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
                                 <Lock className="h-5 w-5 text-primary opacity-40" />
-                                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Login Security</h4>
+                                <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Login Security</h4>
                             </div>
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between p-5 rounded-3xl bg-white border border-primary/5 shadow-sm">
                                     <div className="space-y-1">
-                                        <Label className="text-xs font-black uppercase tracking-widest">Inbound Portal (Donors)</Label>
+                                        <Label className="text-xs font-black tracking-widest">Inbound Portal (Donors)</Label>
                                         <p className="text-[9px] font-bold text-muted-foreground opacity-60">Authorize donors to access their cloud history.</p>
                                     </div>
                                     <Switch checked={displayData.isDonorLoginEnabled} onCheckedChange={(val) => handleFieldChange('isDonorLoginEnabled', val)} disabled={isFormDisabled} className="data-[state=checked]:bg-primary" />
                                 </div>
                                 <div className="flex items-center justify-between p-5 rounded-3xl bg-white border border-primary/5 shadow-sm">
                                     <div className="space-y-1">
-                                        <Label className="text-xs font-black uppercase tracking-widest">Outbound Portal (Recipients)</Label>
+                                        <Label className="text-xs font-black tracking-widest">Outbound Portal (Recipients)</Label>
                                         <p className="text-[9px] font-bold text-muted-foreground opacity-60">Authorize beneficiaries to track their aid status.</p>
                                     </div>
                                     <Switch checked={displayData.isBeneficiaryLoginEnabled} onCheckedChange={(val) => handleFieldChange('isBeneficiaryLoginEnabled', val)} disabled={isFormDisabled} className="data-[state=checked]:bg-primary" />
@@ -816,11 +816,11 @@ export default function AppSettingsPage() {
                         <div className="p-8 rounded-[40px] bg-primary/[0.02] border border-primary/5 space-y-6">
                             <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
                                 <Key className="h-5 w-5 text-primary opacity-40" />
-                                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Credential Protocol</h4>
+                                <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Credential Protocol</h4>
                             </div>
                             <div className="space-y-6">
                                 <div className="space-y-2">
-                                    <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Primary Auth Method</Label>
+                                    <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Primary Auth Method</Label>
                                     <Select value={displayData.portalAuthMethod} onValueChange={(val) => handleFieldChange('portalAuthMethod', val)} disabled={isFormDisabled}>
                                         <SelectTrigger className="h-12 font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5">
                                             <SelectValue />
@@ -833,7 +833,7 @@ export default function AppSettingsPage() {
                                 </div>
                                 <div className="flex items-center justify-between p-5 rounded-3xl bg-white border border-primary/5 shadow-sm">
                                     <div className="space-y-1">
-                                        <Label className="text-xs font-black uppercase tracking-widest">Donor Self-Reporting</Label>
+                                        <Label className="text-xs font-black tracking-widest">Donor Self-Reporting</Label>
                                         <p className="text-[9px] font-bold text-muted-foreground opacity-60">Authorize donors to log their own financial transfers.</p>
                                     </div>
                                     <Switch checked={displayData.isDonorSelfRecordPaymentEnabled} onCheckedChange={(val) => handleFieldChange('isDonorSelfRecordPaymentEnabled', val)} disabled={isFormDisabled} className="data-[state=checked]:bg-primary" />
@@ -844,29 +844,29 @@ export default function AppSettingsPage() {
                 </SettingsSection>
 
                 <SettingsSection 
-                    title="Institutional Branding Matrix" 
-                    description="Orchestrate the visual identity and metadata of the institution."
+                    title="Organization Branding Matrix" 
+                    description="Orchestrate the visual identity and metadata of the organization."
                     icon={Palette}
                 >
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                         <div className="space-y-6">
                             <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
                                 <Activity className="h-5 w-5 text-primary opacity-40" />
-                                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Institutional Profile</h4>
+                                <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Organization Profile</h4>
                             </div>
                             <div className="space-y-6">
                                 <div className="space-y-4">
-                                    <Label className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40">Organization Name</Label>
+                                    <Label className="text-[10px] font-black text-muted-foreground tracking-[0.2em] pl-1 opacity-40">Organization Name</Label>
                                     <Input value={displayData.name} onChange={e => handleFieldChange('name', e.target.value)} disabled={isFormDisabled} className="h-14 font-black text-xl rounded-3xl border-primary/5 bg-white shadow-sm px-6 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" />
                                 </div>
                                 <div className="grid grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Registration No.</Label>
+                                        <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Registration No.</Label>
                                         <Input value={displayData.regNo} onChange={e => handleFieldChange('regNo', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">PAN Vector</Label>
-                                        <Input value={displayData.pan} onChange={e => handleFieldChange('pan', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0 uppercase" />
+                                        <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">PAN Vector</Label>
+                                        <Input value={displayData.pan} onChange={e => handleFieldChange('pan', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" />
                                     </div>
                                 </div>
                             </div>
@@ -875,16 +875,16 @@ export default function AppSettingsPage() {
                         <div className="space-y-6">
                             <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
                                 <Globe2 className="h-5 w-5 text-primary opacity-40" />
-                                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Digital Presence Vectors</h4>
+                                <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Digital Presence Vectors</h4>
                             </div>
                             <div className="space-y-6">
                                 <div className="space-y-2">
-                                    <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Official Portal URL</Label>
-                                    <Input value={displayData.website} onChange={e => handleFieldChange('website', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-bold text-xs rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" placeholder="https://institution.org" />
+                                    <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Official Portal URL</Label>
+                                    <Input value={displayData.website} onChange={e => handleFieldChange('website', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-bold text-xs rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" placeholder="https://organization.org" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Contact Email Vector</Label>
-                                    <Input value={displayData.contactEmail} onChange={e => handleFieldChange('contactEmail', e.target.value)} disabled={isFormDisabled} className="h-12 font-bold text-xs rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" placeholder="admin@institution.org" />
+                                    <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Contact Email Vector</Label>
+                                    <Input value={displayData.contactEmail} onChange={e => handleFieldChange('contactEmail', e.target.value)} disabled={isFormDisabled} className="h-12 font-bold text-xs rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" placeholder="admin@organization.org" />
                                 </div>
                             </div>
                         </div>
@@ -895,10 +895,10 @@ export default function AppSettingsPage() {
             {isEditMode && (
                 <div className="fixed bottom-10 left-1/2 -translate-x-1/2 z-50 animate-fade-in-up">
                     <div className="flex items-center gap-2 bg-primary/20 backdrop-blur-2xl p-2 rounded-[32px] border border-primary/20 shadow-2xl">
-                        <Button variant="ghost" onClick={handleCancel} disabled={isSubmitting} className="font-black uppercase tracking-widest text-[10px] text-primary h-12 px-8 rounded-3xl hover:bg-white/20 transition-all">
+                        <Button variant="ghost" onClick={handleCancel} disabled={isSubmitting} className="font-black tracking-widest text-[10px] text-primary h-12 px-8 rounded-3xl hover:bg-white/20 transition-all">
                             <X className="mr-2 h-4 w-4" /> Discard Updates
                         </Button>
-                        <Button onClick={handleSave} disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-white font-black uppercase tracking-widest text-[10px] h-12 px-12 rounded-3xl shadow-xl shadow-primary/40 transition-all active:scale-95">
+                        <Button onClick={handleSave} disabled={isSubmitting} className="bg-primary hover:bg-primary/90 text-white font-black tracking-widest text-[10px] h-12 px-12 rounded-3xl shadow-xl shadow-primary/40 transition-all active:scale-95">
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <CloudCog className="mr-2 h-4 w-4"/>} 
                             Commit Sync
                         </Button>

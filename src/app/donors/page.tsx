@@ -342,7 +342,7 @@ export default function DonorRegistryPage() {
 
   const handleDelete = async (donor: Donor) => {
     if (!canDelete) return;
-    const confirmMessage = `Permanently Remove Profile For ${donor.name}? Institutional Financial History Will Be Preserved As Unlinked Records.`;
+    const confirmMessage = `Permanently Remove Profile For ${donor.name}? Organization Financial History Will Be Preserved As Unlinked Records.`;
     if (!confirm(confirmMessage)) return;
     
     setIsSubmitting(true);
@@ -360,7 +360,7 @@ export default function DonorRegistryPage() {
 
   const isLoading = areDonorsLoading || isProfileLoading;
   
-  if (isLoading && !donors) return <SectionLoader label="Syncing Donor Network..." description="Retrieving Institutional Benefactor Data." />;
+  if (isLoading && !donors) return <SectionLoader label="Syncing Donor Network..." description="Retrieving Organization Benefactor Data." />;
   
   if (!canRead) return (
     <main className="container mx-auto p-8 text-primary font-normal">
@@ -390,7 +390,7 @@ export default function DonorRegistryPage() {
         <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
             <div className="space-y-1.5">
                 <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-primary">Donor Registry</h1>
-                <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">Centralized database of institutional benefactors, contribution history, and verified payment handles.</p>
+                <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">Centralized database of organization benefactors, contribution history, and verified payment handles.</p>
             </div>
             
             <div className="flex flex-wrap items-center gap-3">
@@ -412,7 +412,7 @@ export default function DonorRegistryPage() {
           <StatCard 
             title="Registry Total" 
             count={stats.total} 
-            description="Verified Institutional Donors" 
+            description="Verified Organization Donors" 
             icon={Users} 
             delay="100ms" 
             onClick={() => { setStatusFilter('All'); setDesignationFilter('All'); setSearchTerm(''); }}
@@ -485,13 +485,13 @@ export default function DonorRegistryPage() {
                         <Table className="min-w-[1000px]">
                             <TableHeader>
                                 <TableRow className="bg-primary/[0.02] border-b border-primary/5">
-                                    <TableHead className="w-[80px] pl-8 text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14"># Index</TableHead>
-                                    <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Donor Identity</TableHead>
-                                    <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Primary Contact</TableHead>
-                                    <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Financial Handles</TableHead>
-                                    <TableHead className="text-center text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">KYC Integrity</TableHead>
-                                    <TableHead className="text-center text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Registry Status</TableHead>
-                                    <TableHead className="text-right pr-8 text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase h-14">Audit</TableHead>
+                                    <TableHead className="w-[80px] pl-8 text-[10px] font-black tracking-[0.15em] text-muted-foreground h-14"># Index</TableHead>
+                                    <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground h-14">Donor Identity</TableHead>
+                                    <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground h-14">Primary Contact</TableHead>
+                                    <TableHead className="text-[10px] font-black tracking-[0.15em] text-muted-foreground h-14">Financial Handles</TableHead>
+                                    <TableHead className="text-center text-[10px] font-black tracking-[0.15em] text-muted-foreground h-14">Kyc Integrity</TableHead>
+                                    <TableHead className="text-center text-[10px] font-black tracking-[0.15em] text-muted-foreground h-14">Registry Status</TableHead>
+                                    <TableHead className="text-right pr-8 text-[10px] font-black tracking-[0.15em] text-muted-foreground h-14">Audit</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -514,23 +514,23 @@ export default function DonorRegistryPage() {
                                                 {(donor.upiIds || []).slice(0, 2).map((upi, i) => (
                                                     <Badge key={i} variant="outline" className="text-[9px] font-bold font-mono border-primary/10 bg-white/50 px-2 py-0.5 rounded-lg text-primary/60">{upi}</Badge>
                                                 ))}
-                                                {donor.upiIds && donor.upiIds.length > 2 && <span className="text-[9px] opacity-30 font-black tracking-widest uppercase">+{donor.upiIds.length - 2} More</span>}
+                                                {donor.upiIds && donor.upiIds.length > 2 && <span className="text-[9px] opacity-30 font-black tracking-widest">+{donor.upiIds.length - 2} More</span>}
                                             </div>
                                         </TableCell>
                                          <TableCell className="text-center">
                                              <div className="flex items-center justify-center gap-2">
-                                                 <Badge variant={donor.aadhaarNumber ? 'success' : 'outline'} className={cn("text-[8px] font-black uppercase px-2 h-5 rounded-md tracking-tighter border-primary/10", donor.aadhaarNumber ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "opacity-30")}>
-                                                     {donor.aadhaarNumber ? 'AADHAAR' : 'NO KYC'}
+                                                 <Badge variant={donor.aadhaarNumber ? 'success' : 'outline'} className={cn("text-[8px] font-black px-2 h-5 rounded-md tracking-tighter border-primary/10", donor.aadhaarNumber ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "opacity-30")}>
+                                                     {donor.aadhaarNumber ? 'Aadhaar' : 'No Kyc'}
                                                  </Badge>
-                                                 <Badge variant={donor.panNumber ? 'success' : 'outline'} className={cn("text-[8px] font-black uppercase px-2 h-5 rounded-md tracking-tighter border-primary/10", donor.panNumber ? "bg-blue-500/10 text-blue-600 border-blue-500/20" : "opacity-30")}>
-                                                     {donor.panNumber ? 'PAN' : 'NO PAN'}
+                                                 <Badge variant={donor.panNumber ? 'success' : 'outline'} className={cn("text-[8px] font-black px-2 h-5 rounded-md tracking-tighter border-primary/10", donor.panNumber ? "bg-blue-500/10 text-blue-600 border-blue-500/20" : "opacity-30")}>
+                                                     {donor.panNumber ? 'Pan' : 'No Pan'}
                                                  </Badge>
                                              </div>
                                          </TableCell>
                                         <TableCell className="text-center">
                                             <Badge 
                                                 variant={donor.status === 'Active' ? 'active' : 'outline'} 
-                                                className={cn("text-[9px] font-black uppercase px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm", donor.status === 'Active' ? "bg-emerald-500 text-white" : "opacity-40")}
+                                                className={cn("text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm", donor.status === 'Active' ? "bg-emerald-500 text-white" : "opacity-40")}
                                             >
                                                 {donor.status}
                                             </Badge>
@@ -563,12 +563,12 @@ export default function DonorRegistryPage() {
                                     <div className="space-y-1.5">
                                         <h3 className="font-black text-lg text-primary tracking-tighter group-hover/mobile:text-primary transition-colors leading-tight">{donor.name}</h3>
                                         <div className="flex items-center gap-2 text-[11px] text-muted-foreground font-bold opacity-60">
-                                            <Mail className="h-3 w-3" /> {donor.email || 'NO EMAIL REGISTERED'}
+                                            <Mail className="h-3 w-3" /> {donor.email || 'No Email Registered'}
                                         </div>
                                     </div>
                                     <Badge 
                                         variant={donor.status === 'Active' ? 'active' : 'outline'} 
-                                        className={cn("text-[9px] font-black uppercase px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm", donor.status === 'Active' ? "bg-emerald-500 text-white" : "opacity-40")}
+                                        className={cn("text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm", donor.status === 'Active' ? "bg-emerald-500 text-white" : "opacity-40")}
                                     >
                                         {donor.status}
                                     </Badge>
@@ -576,7 +576,7 @@ export default function DonorRegistryPage() {
                                 
                                 <div className="grid grid-cols-1 gap-3">
                                     <div className="flex items-center gap-3 text-xs font-black text-primary/80 bg-primary/[0.03] w-full px-4 py-2.5 rounded-2xl border border-primary/5">
-                                        <Smartphone className="h-4 w-4 opacity-40"/> {donor.phone || 'NO CONTACT'}
+                                        <Smartphone className="h-4 w-4 opacity-40"/> {donor.phone || 'No Contact'}
                                     </div>
                                 </div>
                                 
@@ -588,7 +588,7 @@ export default function DonorRegistryPage() {
                                 
                                 <div className="flex items-center justify-between pt-4 border-t border-primary/5">
                                     <div className="space-y-0.5">
-                                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-40">#{(currentPage - 1) * itemsPerPage + idx + 1} REGISTRY</p>
+                                        <p className="text-[9px] font-black text-muted-foreground tracking-[0.2em] opacity-40">#{(currentPage - 1) * itemsPerPage + idx + 1} Registry</p>
                                     </div>
                                     <Button variant="ghost" size="sm" className="h-9 text-[10px] font-black text-primary hover:bg-primary/5 px-4 rounded-xl transition-all group-hover/mobile:translate-x-1">
                                         History View <ChevronRight className="ml-1 h-3.5 w-3.5" />
@@ -601,7 +601,7 @@ export default function DonorRegistryPage() {
                     {paginatedDonors.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-32 bg-primary/[0.01] animate-pulse">
                             <Users className="h-12 w-12 text-primary/10 mb-4" />
-                            <p className="font-black text-sm text-primary/30 tracking-widest uppercase">No benefactor profiles matched search.</p>
+                            <p className="font-black text-sm text-primary/30 tracking-widest">No benefactor profiles matched search.</p>
                         </div>
                     )}
                 </div>
@@ -621,7 +621,7 @@ export default function DonorRegistryPage() {
                 size="sm" 
                 onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
                 disabled={currentPage === 1} 
-                className="font-black text-[10px] uppercase tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm"
+                className="font-black text-[10px] tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm"
             >
                 Prev
             </Button>
@@ -630,7 +630,7 @@ export default function DonorRegistryPage() {
                 size="sm" 
                 onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
                 disabled={currentPage === totalPages} 
-                className="font-black text-[10px] uppercase tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm"
+                className="font-black text-[10px] tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm"
             >
                 Next
             </Button>
@@ -642,7 +642,7 @@ export default function DonorRegistryPage() {
         <DialogContent className="max-w-3xl rounded-[32px] border-primary/10 p-0 flex flex-col max-h-[92vh] overflow-hidden shadow-2xl animate-fade-in-zoom gap-0">
             <DialogHeader className="px-8 py-7 bg-primary/5 border-b shrink-0">
                 <DialogTitle className="text-2xl font-black tracking-tighter text-primary">Register Donor Identity</DialogTitle>
-                <DialogDescription className="font-bold text-primary opacity-60 mt-1">Authenticate a new benefactor profile for institutional cloud synchronization.</DialogDescription>
+                <DialogDescription className="font-bold text-primary opacity-60 mt-1">Authenticate a new benefactor profile for organization cloud synchronization.</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSaveDonor} className="flex flex-col h-full overflow-hidden bg-white/95 backdrop-blur-sm">
                 <ScrollArea className="flex-1">
@@ -650,15 +650,15 @@ export default function DonorRegistryPage() {
                         <div className="space-y-6">
                             <div className="flex items-center gap-3 border-b border-primary/5 pb-3">
                                 <Activity className="h-4 w-4 text-primary opacity-40" />
-                                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Core Identity Matrix</h4>
+                                <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Core Identity Matrix</h4>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                                 <div className="space-y-2.5">
-                                    <Label className="font-black text-[10px] text-muted-foreground uppercase tracking-widest pl-1">Full Legal Name *</Label>
+                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Full Legal Name *</Label>
                                     <Input name="name" required className="font-bold h-12 rounded-2xl border-primary/10 focus:ring-primary shadow-sm" placeholder="e.g. John Doe"/>
                                 </div>
                                 <div className="space-y-2.5">
-                                    <Label className="font-black text-[10px] text-muted-foreground uppercase tracking-widest pl-1">Primary Contact *</Label>
+                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Primary Contact *</Label>
                                     <div className="flex gap-3">
                                         <div className="w-28 shrink-0">
                                             <Select value={phonePrefix} onValueChange={setPhonePrefix}>
@@ -680,17 +680,17 @@ export default function DonorRegistryPage() {
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                                 <div className="space-y-2.5">
-                                    <Label className="font-black text-[10px] text-muted-foreground uppercase tracking-widest pl-1">Email Identifier</Label>
-                                    <Input name="email" type="email" className="font-bold h-12 rounded-2xl border-primary/10 shadow-sm" placeholder="donor@institution.com"/>
+                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Email Identifier</Label>
+                                    <Input name="email" type="email" className="font-bold h-12 rounded-2xl border-primary/10 shadow-sm" placeholder="donor@organization.com"/>
                                 </div>
                                 <div className="space-y-2.5">
-                                    <Label className="font-black text-[10px] text-muted-foreground uppercase tracking-widest pl-1">Residential Vector</Label>
+                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Residential Vector</Label>
                                     <Input name="address" className="font-bold h-12 rounded-2xl border-primary/10 shadow-sm" placeholder="Primary Address"/>
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                                 <div className="space-y-2.5">
-                                    <Label className="font-black text-[10px] text-muted-foreground uppercase tracking-widest pl-1">Gender</Label>
+                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Gender</Label>
                                     <Select name="gender">
                                         <SelectTrigger className="font-bold h-12 rounded-2xl border-primary/10 shadow-sm">
                                             <SelectValue placeholder="Select Gender" />
@@ -703,17 +703,17 @@ export default function DonorRegistryPage() {
                                     </Select>
                                 </div>
                                 <div className="space-y-2.5">
-                                    <Label className="font-black text-[10px] text-muted-foreground uppercase tracking-widest pl-1">Date of Birth</Label>
+                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Date of Birth</Label>
                                     <Input name="dob" type="date" className="font-bold h-12 rounded-2xl border-primary/10 shadow-sm" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                                 <div className="space-y-2.5">
-                                    <Label className="font-black text-[10px] text-muted-foreground uppercase tracking-widest pl-1">Telegram Chat ID</Label>
+                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Telegram Chat Id</Label>
                                     <Input name="telegramChatId" className="font-mono font-bold h-12 rounded-2xl border-primary/10 shadow-sm" placeholder="e.g. 123456789"/>
                                 </div>
                                 <div className="space-y-2.5">
-                                    <Label className="font-black text-[10px] text-muted-foreground uppercase tracking-widest pl-1">PAN Number (80G Tax Exemption)</Label>
+                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Pan Number (80G Tax Exemption)</Label>
                                     <Input name="panNumber" className="font-mono font-bold h-12 rounded-2xl border-primary/10 shadow-sm" placeholder="ABCDE1234F"/>
                                 </div>
                             </div>
@@ -722,12 +722,12 @@ export default function DonorRegistryPage() {
                         <div className="space-y-6">
                             <div className="flex items-center gap-3 border-b border-primary/5 pb-3">
                                 <ScanLine className="h-4 w-4 text-primary opacity-40" />
-                                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Institutional Identity Verification (KYC)</h4>
+                                <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Organization Identity Verification (Kyc)</h4>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-6">
                                     <div className="space-y-2.5">
-                                        <Label className="font-black text-[10px] text-muted-foreground uppercase tracking-widest pl-1">Aadhaar Proof Document</Label>
+                                        <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Aadhaar Proof Document</Label>
                                         <div className="p-4 rounded-2xl border-2 border-dashed border-primary/10 bg-primary/[0.01] hover:bg-primary/[0.03] transition-all">
                                             <Input type="file" accept="image/*" onChange={handleScanAadhaarCard} disabled={isScanningAadhaar} className="h-10 text-[10px] cursor-pointer" />
                                             {isScanningAadhaar && <div className="flex items-center gap-2 text-[10px] font-black text-primary mt-2 animate-pulse"><Loader2 className="h-3 w-3 animate-spin" /> Analyzing Document Evidence...</div>}
@@ -741,11 +741,11 @@ export default function DonorRegistryPage() {
                                     )}
                                     <div className="space-y-4">
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Aadhaar Number</Label>
+                                            <Label className="text-[9px] font-black tracking-widest text-muted-foreground ml-1">Aadhaar Number</Label>
                                             <Input name="aadhaarNumber" value={aadhaarData.aadhaarNumber} onChange={(e) => setAadhaarData({...aadhaarData, aadhaarNumber: e.target.value})} className="h-10 text-xs font-mono font-black rounded-xl border-primary/10" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Name on Aadhaar</Label>
+                                            <Label className="text-[9px] font-black tracking-widest text-muted-foreground ml-1">Name on Aadhaar</Label>
                                             <Input name="aadhaarName" value={aadhaarData.aadhaarName} onChange={(e) => setAadhaarData({...aadhaarData, aadhaarName: e.target.value})} className="h-10 text-xs font-black rounded-xl border-primary/10" />
                                         </div>
                                     </div>
@@ -753,7 +753,7 @@ export default function DonorRegistryPage() {
 
                                 <div className="space-y-6">
                                     <div className="space-y-2.5">
-                                        <Label className="font-black text-[10px] text-muted-foreground uppercase tracking-widest pl-1">Other Identity (PAN/Passport/ID)</Label>
+                                        <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Other Identity (Pan/Passport/Id)</Label>
                                         <div className="p-4 rounded-2xl border-2 border-dashed border-primary/10 bg-primary/[0.01] hover:bg-primary/[0.03] transition-all">
                                             <Input type="file" accept="image/*,application/pdf" onChange={handleScanIdProof} disabled={isScanningId} className="h-10 text-[10px] cursor-pointer" />
                                             {isScanningId && <div className="flex items-center gap-2 text-[10px] font-black text-primary mt-2 animate-pulse"><Loader2 className="h-3 w-3 animate-spin" /> Analyzing ID Proof...</div>}
@@ -762,7 +762,7 @@ export default function DonorRegistryPage() {
                                     {idProofPreview && (
                                         <div className="relative h-40 w-full rounded-2xl border border-primary/10 bg-white overflow-hidden shadow-inner group">
                                             {idProofPreview.startsWith('data:application/pdf') ? (
-                                                <div className="flex flex-col items-center justify-center h-full text-primary/40"><FileIcon className="h-10 w-10 mb-2"/><p className="text-[10px] font-black uppercase">PDF Document</p></div>
+                                                <div className="flex flex-col items-center justify-center h-full text-primary/40"><FileIcon className="h-10 w-10 mb-2"/><p className="text-[10px] font-black">Pdf Document</p></div>
                                             ) : (
                                                 <Image src={idProofPreview} alt="ID" fill className="object-contain p-2" />
                                             )}
@@ -772,21 +772,21 @@ export default function DonorRegistryPage() {
                                     <div className="space-y-4">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">ID Type</Label>
+                                                <Label className="text-[9px] font-black tracking-widest text-muted-foreground ml-1">Id Type</Label>
                                                 <Input name="idProofType" value={idProofType} onChange={(e) => setIdProofType(e.target.value)} className="h-10 text-xs font-black rounded-xl border-primary/10" />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">ID Number</Label>
+                                                <Label className="text-[9px] font-black tracking-widest text-muted-foreground ml-1">Id Number</Label>
                                                 <Input name="idNumber" value={idNumber} onChange={(e) => setIdNumber(e.target.value)} className="h-10 text-xs font-mono font-black rounded-xl border-primary/10" />
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">DOB (ID Proof)</Label>
+                                                <Label className="text-[9px] font-black tracking-widest text-muted-foreground ml-1">Dob (Id Proof)</Label>
                                                 <Input name="aadhaarDob" value={aadhaarData.aadhaarDob} onChange={(e) => setAadhaarData({...aadhaarData, aadhaarDob: e.target.value})} className="h-10 text-xs font-black rounded-xl border-primary/10" placeholder="DD/MM/YYYY" />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label className="text-[9px] font-black uppercase tracking-widest text-muted-foreground ml-1">Gender</Label>
+                                                <Label className="text-[9px] font-black tracking-widest text-muted-foreground ml-1">Gender</Label>
                                                 <Input name="aadhaarGender" value={aadhaarData.aadhaarGender} onChange={(e) => setAadhaarData({...aadhaarData, aadhaarGender: e.target.value})} className="h-10 text-xs font-black rounded-xl border-primary/10" />
                                             </div>
                                         </div>
@@ -799,9 +799,9 @@ export default function DonorRegistryPage() {
                             <div className="flex items-center justify-between border-b border-primary/5 pb-3">
                                 <div className="flex items-center gap-3">
                                     <CreditCard className="h-4 w-4 text-primary opacity-40" />
-                                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Verified Financial Handles</h4>
+                                    <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Verified Financial Handles</h4>
                                 </div>
-                                <Button type="button" variant="outline" size="sm" onClick={() => setBankDetails([...bankDetails, { bankName: '', accountNumber: '', ifscCode: '' }])} className="h-8 text-[10px] font-black uppercase tracking-widest rounded-xl px-4 border-primary/10 hover:bg-primary/5 transition-all">
+                                <Button type="button" variant="outline" size="sm" onClick={() => setBankDetails([...bankDetails, { bankName: '', accountNumber: '', ifscCode: '' }])} className="h-8 text-[10px] font-black tracking-widest rounded-xl px-4 border-primary/10 hover:bg-primary/5 transition-all">
                                     <Plus className="h-3.5 w-3.5 mr-2"/> Add Account
                                 </Button>
                             </div>
@@ -814,15 +814,15 @@ export default function DonorRegistryPage() {
                                             </Button>
                                         )}
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-widest pl-1">Bank Name</Label>
+                                            <Label className="text-[9px] font-black tracking-widest pl-1">Bank Name</Label>
                                             <Input value={bank.bankName} onChange={(e) => { const newB = [...bankDetails]; newB[idx].bankName = e.target.value; setBankDetails(newB); }} className="h-10 text-xs font-black rounded-xl border-primary/5 bg-white shadow-sm"/>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-widest pl-1">Account No.</Label>
+                                            <Label className="text-[9px] font-black tracking-widest pl-1">Account No.</Label>
                                             <Input value={bank.accountNumber} onChange={(e) => { const newB = [...bankDetails]; newB[idx].accountNumber = e.target.value; setBankDetails(newB); }} className="h-10 text-xs font-mono font-black rounded-xl border-primary/5 bg-white shadow-sm"/>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-widest pl-1">IFSC Vector</Label>
+                                            <Label className="text-[9px] font-black tracking-widest pl-1">Ifsc Vector</Label>
                                             <Input value={bank.ifscCode} onChange={(e) => { const newB = [...bankDetails]; newB[idx].ifscCode = e.target.value; setBankDetails(newB); }} className="h-10 text-xs font-mono font-black rounded-xl border-primary/5 bg-white shadow-sm"/>
                                         </div>
                                     </div>
@@ -834,9 +834,9 @@ export default function DonorRegistryPage() {
                             <div className="flex items-center justify-between border-b border-primary/5 pb-3">
                                 <div className="flex items-center gap-3">
                                     <SmartphoneNfc className="h-4 w-4 text-primary opacity-40" />
-                                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Digital UPI Identities</h4>
+                                    <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Digital Upi Identities</h4>
                                 </div>
-                                <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ''])} className="h-8 text-[10px] font-black uppercase tracking-widest rounded-xl px-4 border-primary/10 hover:bg-primary/5 transition-all">
+                                <Button type="button" variant="outline" size="sm" onClick={() => setUpiIds([...upiIds, ''])} className="h-8 text-[10px] font-black tracking-widest rounded-xl px-4 border-primary/10 hover:bg-primary/5 transition-all">
                                     <Plus className="h-3.5 w-3.5 mr-2"/> Add UPI
                                 </Button>
                             </div>
@@ -859,7 +859,7 @@ export default function DonorRegistryPage() {
                         <div className="space-y-4">
                             <div className="flex items-center gap-3 border-b border-primary/5 pb-3">
                                 <Activity className="h-4 w-4 text-primary opacity-40" />
-                                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Operational Notes</h4>
+                                <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Operational Notes</h4>
                             </div>
                             <Textarea name="notes" rows={5} className="font-bold text-sm rounded-3xl border-primary/10 shadow-sm leading-relaxed p-6" placeholder="Document donor preferences, historical context, or team vetting observations..."/>
                         </div>
@@ -867,8 +867,8 @@ export default function DonorRegistryPage() {
                     <ScrollBar orientation="vertical" />
                 </ScrollArea>
                 <div className="px-8 py-6 bg-primary/5 border-t shrink-0 flex flex-col sm:flex-row justify-end gap-3">
-                    <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)} className="w-full sm:w-auto font-black uppercase tracking-widest text-[10px] border-primary/10 px-8 rounded-2xl h-12 shadow-sm transition-all active:scale-95 bg-white">Discard changes</Button>
-                    <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto font-black uppercase tracking-widest text-[10px] px-10 h-12 rounded-2xl active:scale-95 transition-all shadow-xl shadow-primary/20 bg-primary text-white">
+                    <Button type="button" variant="outline" onClick={() => setIsFormOpen(false)} className="w-full sm:w-auto font-black tracking-widest text-[10px] border-primary/10 px-8 rounded-2xl h-12 shadow-sm transition-all active:scale-95 bg-white">Discard changes</Button>
+                    <Button type="submit" disabled={isSubmitting} className="w-full sm:w-auto font-black tracking-widest text-[10px] px-10 h-12 rounded-2xl active:scale-95 transition-all shadow-xl shadow-primary/20 bg-primary text-white">
                         {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>} Authorize Profile
                     </Button>
                 </div>

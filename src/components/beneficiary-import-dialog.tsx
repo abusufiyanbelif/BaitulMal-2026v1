@@ -143,30 +143,30 @@ export function BeneficiaryImportDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl max-h-[90vh] flex flex-col rounded-[16px] border-primary/10">
-        <DialogHeader>
+      <DialogContent className="w-[95vw] sm:max-w-5xl max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10 shadow-2xl animate-fade-in-zoom">
+        <DialogHeader className="p-6 bg-primary/5 border-b shrink-0">
           <DialogTitle className="text-xl font-bold text-primary tracking-tight">Full Data Import & Sync</DialogTitle>
-          <DialogDescription className="font-normal text-primary/70">
+          <DialogDescription className="font-normal text-xs text-primary/70">
             Upload A CSV To Batch-Register New Beneficiaries Or Update Existing Ones Using Unique IDs.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 space-y-6 overflow-hidden flex flex-col py-4">
+        <div className="flex-1 overflow-hidden flex flex-col p-6 space-y-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 shrink-0">
-            <Button variant="outline" onClick={handleDownloadTemplate} className="font-bold border-primary/20 text-primary h-12 shadow-sm active:scale-95 transition-transform">
+            <Button variant="outline" onClick={handleDownloadTemplate} className="font-bold border-primary/20 text-primary h-12 shadow-sm active:scale-95 transition-transform text-xs">
                 <Download className="mr-2 h-4 w-4" /> Download Full Template
             </Button>
             <div className="relative">
                 <Input id="csv-import-file" type="file" accept=".csv" onChange={handleFileChange} className="hidden" />
                 <label htmlFor="csv-import-file" className="flex items-center justify-center gap-2 border-2 border-dashed border-primary/20 rounded-[12px] h-12 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors">
                     <UploadCloud className="h-5 w-5 text-primary" />
-                    <span className="text-sm font-bold text-primary truncate max-w-[200px]">{file ? file.name : 'Select Data File (.csv)'}</span>
+                    <span className="text-xs font-bold text-primary truncate max-w-[200px]">{file ? file.name : 'Select Data File (.csv)'}</span>
                 </label>
             </div>
           </div>
 
           {processedRecords.length > 0 && (
-            <div className="flex-1 min-h-0 space-y-4 flex flex-col">
+            <div className="flex-1 min-h-0 space-y-4 flex flex-col overflow-hidden">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 shrink-0">
                     <div className="p-3 rounded-xl bg-blue-50 border border-blue-100 flex items-center gap-3">
                         <RefreshCcw className="h-5 w-5 text-blue-600" />
@@ -182,36 +182,36 @@ export function BeneficiaryImportDialog({
                     </div>
                 </div>
 
-                <div className="flex-1 border rounded-xl overflow-hidden bg-white shadow-inner">
+                <div className="flex-1 border rounded-xl overflow-hidden bg-white shadow-inner relative">
                     <ScrollArea className="h-full w-full">
                         <Table>
                             <TableHeader className="bg-primary/5 sticky top-0 z-10 shadow-sm">
                                 <TableRow>
-                                    <TableHead className="w-[60px] pl-4">Row</TableHead>
-                                    <TableHead className="w-[120px]">Sync Status</TableHead>
-                                    <TableHead>Full Name</TableHead>
-                                    <TableHead>Contact</TableHead>
-                                    <TableHead>Unique ID</TableHead>
-                                    <TableHead className="text-right pr-4">Action</TableHead>
+                                    <TableHead className="w-[60px] pl-4 text-[10px] font-bold uppercase tracking-widest">Row</TableHead>
+                                    <TableHead className="w-[120px] text-[10px] font-bold uppercase tracking-widest">Sync Status</TableHead>
+                                    <TableHead className="text-[10px] font-bold uppercase tracking-widest">Full Name</TableHead>
+                                    <TableHead className="text-[10px] font-bold uppercase tracking-widest">Contact</TableHead>
+                                    <TableHead className="text-[10px] font-bold uppercase tracking-widest">Unique ID</TableHead>
+                                    <TableHead className="text-right pr-4 text-[10px] font-bold uppercase tracking-widest">Action</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {processedRecords.map((record) => (
                                     <TableRow key={record.row} className={cn("border-b border-primary/5 transition-colors", !record.isValid ? "bg-red-50/30" : "hover:bg-primary/[0.02]")}>
-                                        <TableCell className="pl-4 font-mono text-xs opacity-60">{record.row}</TableCell>
+                                        <TableCell className="pl-4 font-mono text-[10px] opacity-60">{record.row}</TableCell>
                                         <TableCell>
                                             <Badge variant={!record.isValid ? 'destructive' : record.isUpdate ? 'active' : 'eligible'} className="text-[9px] font-bold">
                                                 {!record.isValid ? 'Error' : record.isUpdate ? 'Updating' : 'Inserting'}
                                             </Badge>
                                         </TableCell>
-                                        <TableCell className="font-bold text-sm text-primary">{record.data.name || '---'}</TableCell>
-                                        <TableCell className="text-xs font-mono">{record.data.phone || '---'}</TableCell>
-                                        <TableCell className="text-[10px] font-mono opacity-60 truncate max-w-[100px]">{record.data.id || 'Generated'}</TableCell>
+                                        <TableCell className="font-bold text-xs text-primary">{record.data.name || '---'}</TableCell>
+                                        <TableCell className="text-[10px] font-mono">{record.data.phone || '---'}</TableCell>
+                                        <TableCell className="text-[9px] font-mono opacity-60 truncate max-w-[100px]">{record.data.id || 'Generated'}</TableCell>
                                         <TableCell className="text-right pr-4">
                                             {record.isValid ? (
                                                 <span className="text-[10px] text-green-600 font-bold">Ready</span>
                                             ) : (
-                                                <span className="text-[10px] text-red-600 font-bold">{record.reason}</span>
+                                                <span className="text-[9px] text-red-600 font-bold">{record.reason}</span>
                                             )}
                                         </TableCell>
                                     </TableRow>
@@ -219,15 +219,16 @@ export function BeneficiaryImportDialog({
                             </TableBody>
                         </Table>
                         <ScrollBar orientation="horizontal" />
+                        <ScrollBar orientation="vertical" />
                     </ScrollArea>
                 </div>
             </div>
           )}
         </div>
 
-        <DialogFooter className="px-6 py-4 bg-primary/5 border-t">
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting} className="font-bold border-primary/20">Cancel</Button>
-          <Button onClick={handleConfirmImport} disabled={isSubmitting || processedRecords.length === 0 || isProcessing} className="font-bold shadow-md px-8 h-10 transition-all active:scale-95">
+        <DialogFooter className="px-6 py-4 bg-primary/5 border-t shrink-0 flex flex-col sm:flex-row gap-3">
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting} className="font-bold border-primary/20 text-primary w-full sm:w-auto">Cancel</Button>
+          <Button onClick={handleConfirmImport} disabled={isSubmitting || processedRecords.length === 0 || isProcessing} className="font-bold shadow-md px-8 h-10 transition-all active:scale-95 w-full sm:flex-1">
             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
             Register & Sync {updateCount + newCount} Records
           </Button>

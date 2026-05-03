@@ -664,7 +664,7 @@ export function BeneficiaryForm({
                             )}
                             <Separator />
                             <div className="space-y-4 pb-10">
-                                <h3 className="text-lg font-bold text-primary tracking-tight">Institutional Notes</h3>
+                                <h3 className="text-lg font-bold text-primary tracking-tight">Organization Notes</h3>
                                 <FormField control={control} name="notes" render={({ field }) => (<FormItem>{renderLabel('Internal Notes', 'notes')}<FormControl><Textarea placeholder="Vetting Details, Background Checks, Etc." {...field} value={field.value || ''} disabled={formIsDisabled} className="font-normal" /></FormControl></FormItem>)}/>
                             </div>
                         </div>

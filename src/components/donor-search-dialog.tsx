@@ -13,6 +13,7 @@ import { Separator } from '@/components/ui/separator';
 import { useSession } from '@/hooks/use-session';
 import { createDonorAction } from '@/app/donors/actions';
 import { useToast } from '@/hooks/use-toast';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 interface DonorSearchDialogProps {
   open: boolean;
@@ -151,59 +152,64 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
                 )}
             </div>
 
-            <div className="rounded-2xl border border-primary/10 bg-primary/[0.02] shadow-inner relative max-h-[350px] sm:max-h-[450px] overflow-y-auto w-full p-2 space-y-2">
-                {isInitialLoading ? (
-                    <div className="space-y-3 p-2">
-                        {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)}
-                    </div>
-                ) : filteredResults.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-16 text-center px-4">
-                        <AlertCircle className="h-12 w-12 mb-4 text-primary/20" />
-                        <p className="text-sm font-bold text-primary tracking-tight">No Matching Profile Found</p>
-                        <p className="text-[10px] text-muted-foreground mt-1 mb-8 font-normal max-w-[200px]">Would you like to register this contributor as a new donor?</p>
-                        
-                        {currentFormData?.name && (
-                            <Button onClick={handleRegisterNewProfile} disabled={isCreating} className="font-bold shadow-md rounded-xl h-12 px-8 group active:scale-95 transition-transform w-full sm:w-auto">
-                                {isCreating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <UserPlus className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />}
-                                <span className="truncate">Register '{currentFormData.name}'</span>
-                            </Button>
+            <div className="flex-1 rounded-2xl border border-primary/10 bg-primary/[0.02] shadow-inner relative overflow-hidden">
+                <ScrollArea className="h-full w-full">
+                    <div className="p-2 space-y-2">
+                        {isInitialLoading ? (
+                            <div className="space-y-3 p-2">
+                                {[...Array(4)].map((_, i) => <Skeleton key={i} className="h-20 w-full rounded-xl" />)}
+                            </div>
+                        ) : filteredResults.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center py-16 text-center px-4">
+                                <AlertCircle className="h-12 w-12 mb-4 text-primary/20" />
+                                <p className="text-sm font-bold text-primary tracking-tight">No Matching Profile Found</p>
+                                <p className="text-[10px] text-muted-foreground mt-1 mb-8 font-normal max-w-[200px]">Would you like to register this contributor as a new donor?</p>
+                                
+                                {currentFormData?.name && (
+                                    <Button onClick={handleRegisterNewProfile} disabled={isCreating} className="font-bold shadow-md rounded-xl h-12 px-8 group active:scale-95 transition-transform w-full sm:w-auto">
+                                        {isCreating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <UserPlus className="mr-2 h-4 w-4 group-hover:scale-110 transition-transform" />}
+                                        <span className="truncate">Register '{currentFormData.name}'</span>
+                                    </Button>
+                                )}
+                            </div>
+                        ) : (
+                            <div className="pb-4">
+                                {filteredResults.map(donor => (
+                                    <div 
+                                        key={donor.id} 
+                                        className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl bg-white border border-transparent hover:border-primary/20 hover:shadow-sm transition-all group cursor-pointer mb-2"
+                                        onClick={() => handleSelect(donor)}
+                                    >
+                                        <div className="flex-1 min-w-0 space-y-1 pr-2">
+                                            <div className="flex items-center gap-2">
+                                                <p className="font-bold text-sm text-primary truncate">{donor.name}</p>
+                                                <Badge variant={donor.status === 'Active' ? 'eligible' : 'outline'} className="text-[9px] font-bold">
+                                                    {donor.status}
+                                                </Badge>
+                                            </div>
+                                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-primary/70">
+                                                <span className="flex items-center gap-1.5 font-mono font-bold"><Phone className="h-3 w-3 opacity-40"/> {donor.phone}</span>
+                                                {donor.email && <span className="flex items-center gap-1.5"><Mail className="h-3 w-3 opacity-40"/> {donor.email}</span>}
+                                            </div>
+                                        </div>
+                                        <Button size="sm" className="mt-3 sm:mt-0 font-bold bg-primary hover:bg-primary/90 text-white rounded-lg h-8 px-4 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow-sm shrink-0">
+                                            Select Profile
+                                        </Button>
+                                    </div>
+                                ))}
+                                
+                                <Separator className="my-6 bg-primary/10" />
+                                <div className="p-6 bg-primary/[0.03] rounded-2xl border border-dashed border-primary/20 flex flex-col items-center gap-4 text-center mx-2">
+                                    <p className="text-[10px] font-bold text-primary/60 capitalize tracking-widest">Donor Not Listed?</p>
+                                    <Button variant="outline" size="sm" onClick={handleRegisterNewProfile} disabled={isCreating} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform h-10 px-8 rounded-xl bg-white shadow-sm w-full sm:w-auto">
+                                        Register New Donor <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
                         )}
                     </div>
-                ) : (
-                    <div className="pb-4">
-                        {filteredResults.map(donor => (
-                            <div 
-                                key={donor.id} 
-                                className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-xl bg-white border border-transparent hover:border-primary/20 hover:shadow-sm transition-all group cursor-pointer mb-2"
-                                onClick={() => handleSelect(donor)}
-                            >
-                                <div className="flex-1 min-w-0 space-y-1 pr-2">
-                                    <div className="flex items-center gap-2">
-                                        <p className="font-bold text-sm text-primary truncate">{donor.name}</p>
-                                        <Badge variant={donor.status === 'Active' ? 'eligible' : 'outline'} className="text-[9px] font-bold">
-                                            {donor.status}
-                                        </Badge>
-                                    </div>
-                                    <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-primary/70">
-                                        <span className="flex items-center gap-1.5 font-mono font-bold"><Phone className="h-3 w-3 opacity-40"/> {donor.phone}</span>
-                                        {donor.email && <span className="flex items-center gap-1.5"><Mail className="h-3 w-3 opacity-40"/> {donor.email}</span>}
-                                    </div>
-                                </div>
-                                <Button size="sm" className="mt-3 sm:mt-0 font-bold bg-primary hover:bg-primary/90 text-white rounded-lg h-8 px-4 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow-sm shrink-0">
-                                    Select Profile
-                                </Button>
-                            </div>
-                        ))}
-                        
-                        <Separator className="my-6 bg-primary/10" />
-                        <div className="p-6 bg-primary/[0.03] rounded-2xl border border-dashed border-primary/20 flex flex-col items-center gap-4 text-center mx-2">
-                            <p className="text-[10px] font-bold text-primary/60 capitalize tracking-widest">Donor Not Listed?</p>
-                            <Button variant="outline" size="sm" onClick={handleRegisterNewProfile} disabled={isCreating} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform h-10 px-8 rounded-xl bg-white shadow-sm w-full sm:w-auto">
-                                Register New Donor <ArrowRight className="ml-2 h-4 w-4" />
-                            </Button>
-                        </div>
-                    </div>
-                )}
+                    <ScrollBar orientation="vertical" />
+                </ScrollArea>
             </div>
         </div>
 

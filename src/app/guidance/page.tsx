@@ -138,7 +138,7 @@ export default function GuidanceHubPage() {
         setLocalGuidance({ ...localGuidance, categories: updated });
     };
 
-    if (isSessionLoading || isDataLoading) return <SectionLoader label="Syncing Guidance Hub..." description="Retrieving Institutional Assistance Protocols." />;
+    if (isSessionLoading || isDataLoading) return <SectionLoader label="Syncing Guidance Hub..." description="Retrieving Organization Assistance Protocols." />;
 
     if (!canRead) {
         return (
@@ -164,7 +164,7 @@ export default function GuidanceHubPage() {
                             <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link>
                         </Button>
                         <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-primary">Guidance Hub</h1>
-                        <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">Institutional directory of external assistance resources, medical protocols, and public support vectors.</p>
+                        <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">Organization directory of external assistance resources, medical protocols, and public support vectors.</p>
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-3">
@@ -321,7 +321,7 @@ export default function GuidanceHubPage() {
                                                         onChange={(e) => updateResource(cat.id, res.id, 'description', e.target.value)} 
                                                         disabled={!isEditMode}
                                                         className="font-bold text-sm leading-relaxed min-h-[100px] bg-white/50 border-primary/5 rounded-2xl p-5 disabled:opacity-100 disabled:bg-primary/[0.02] disabled:border-none"
-                                                        placeholder="Detail the assistance protocols, application requirements, and institutional vetting criteria..."
+                                                        placeholder="Detail the assistance protocols, application requirements, and organization vetting criteria..."
                                                     />
                                                 </div>
                                                 

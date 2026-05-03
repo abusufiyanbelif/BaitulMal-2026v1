@@ -109,7 +109,7 @@ export default function DonorDonationsPage() {
                 <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl" />
                 <div className="z-10">
                     <h1 className="text-3xl font-black text-slate-900 tracking-tight">Contribution Registry</h1>
-                    <p className="text-slate-500 text-sm font-medium mt-1">A verifiable audit trail of your institutional impact.</p>
+                    <p className="text-slate-500 text-sm font-medium mt-1">A verifiable audit trail of your organization impact.</p>
                 </div>
                 <div className="flex items-center gap-3 bg-slate-900 px-6 py-4 rounded-2xl shadow-xl z-10">
                     <div className="flex flex-col">
@@ -255,7 +255,7 @@ export default function DonorDonationsPage() {
                                                     </TableCell>
                                                     <TableCell>
                                                         <div className="font-bold text-slate-700 text-xs truncate max-w-[180px]">
-                                                            {donation.linkName || donation.campaignName || 'General Institutional Fund'}
+                                                            {donation.linkName || donation.campaignName || 'General Organization Fund'}
                                                         </div>
                                                         <div className="text-[10px] font-black text-primary uppercase tracking-widest mt-0.5">
                                                             {donation.linkSplit?.[0]?.linkType || (donation.campaignId ? 'campaign' : (donation.leadId ? 'lead' : 'unallocated'))}

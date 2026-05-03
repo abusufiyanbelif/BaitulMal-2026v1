@@ -30,7 +30,7 @@ export function InactivityMonitor() {
         }
         toast({
           title: "Session Expired",
-          description: "You have been signed out due to inactivity to protect institutional data.",
+          description: "You have been signed out due to inactivity to protect organization data.",
           variant: "info",
         });
         router.push('/login');

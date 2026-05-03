@@ -93,7 +93,7 @@ export default function CreateUserPage() {
             }
             
             setProgress(65);
-            setLoadingMessage('Securing Proof In Institutional Storage...');
+            setLoadingMessage('Securing Proof In Organization Storage...');
             if (file.type.startsWith('image/') || file.type === 'application/pdf') {
                 const filePath = `users/${newUserUid}/id_proof.${fileExtension}`;
                 const fileRef = storageRef(storage, filePath);
@@ -195,7 +195,7 @@ export default function CreateUserPage() {
         createdAt: serverTimestamp(),
         createdById: userProfile?.id || 'system',
         createdByName: userProfile?.name || 'System',
-        notes: `Institutional Member Profile (Linked to User ${data.userKey})`,
+        notes: `Organization Member Profile (Linked to User ${data.userKey})`,
     };
     
     batch.set(userDocRef, newUserProfile);

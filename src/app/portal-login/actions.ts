@@ -11,45 +11,56 @@ const ADMIN_SDK_ERROR_MESSAGE = "Authentication infrastructure is currently offl
  * Robust portal authentication.
  * Verifies credentials against Firestore and generates a Custom Token.
  */
-export async function authenticatePortalUserAction(identifier: string, password: string) {
+export async function authenticatePortalUserAction(identifier: string, password: string, requestedRole?: 'Donor' | 'Beneficiary') {
     const { adminDb, adminAuth } = getAdminServices();
     if (!adminDb || !adminAuth) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
         const cleanIdentifier = identifier.trim().replace(/\D/g, '').slice(-10);
         let targetDoc: any = null;
-        let role: 'Donor' | 'Beneficiary' | 'User' | 'Admin' = 'Donor';
+        let role: 'Donor' | 'Beneficiary' | 'User' | 'Admin' = requestedRole || 'Donor';
 
-        // 1. Search in Centralized Users first (Staff or unified accounts)
-        // We check by loginId, phone, or userKey
-        const userLookups = await adminDb.collection('user_lookups').doc(cleanIdentifier).get();
-        if (userLookups.exists) {
-            const lookupData = userLookups.data();
+        // 1. Parallel identity lookup
+        // We fetch the lookup doc and the specific donor/beneficiary docs in parallel
+        const [userLookupSnap, donorSnap, benSnap] = await Promise.all([
+            adminDb.collection('user_lookups').doc(cleanIdentifier).get(),
+            adminDb.collection('donors').where('phone', '==', cleanIdentifier).limit(1).get(),
+            adminDb.collection('beneficiaries').where('phone', '==', cleanIdentifier).limit(1).get()
+        ]);
+
+        // 2. Identity Resolution with Role Priority
+        // Priority 1: Requested Role
+        if (requestedRole === 'Donor' && !donorSnap.empty) {
+            targetDoc = donorSnap.docs[0].data();
+            targetDoc.id = donorSnap.docs[0].id;
+            role = 'Donor';
+        } else if (requestedRole === 'Beneficiary' && !benSnap.empty) {
+            targetDoc = benSnap.docs[0].data();
+            targetDoc.id = benSnap.docs[0].id;
+            role = 'Beneficiary';
+        } 
+        
+        // Priority 2: Staff Profile (if no specific role requested or requested role not found)
+        if (!targetDoc && userLookupSnap.exists) {
+            const lookupData = userLookupSnap.data();
             const userSnap = await adminDb.collection('users').doc(lookupData?.userKey || cleanIdentifier).get();
             if (userSnap.exists) {
                 targetDoc = userSnap.data();
+                targetDoc.id = userSnap.id;
                 role = targetDoc.role;
             }
         }
 
-        // 2. If not found in Users, check Donors directly (Legacy or direct portal entries)
-        if (!targetDoc) {
-            const donorSnap = await adminDb.collection('donors').where('phone', '==', cleanIdentifier).limit(1).get();
-            if (!donorSnap.empty) {
-                targetDoc = donorSnap.docs[0].data();
-                targetDoc.id = donorSnap.docs[0].id;
-                role = 'Donor';
-            }
+        // Priority 3: Fallback to whatever exists
+        if (!targetDoc && !donorSnap.empty) {
+            targetDoc = donorSnap.docs[0].data();
+            targetDoc.id = donorSnap.docs[0].id;
+            role = 'Donor';
         }
-
-        // 3. Finally check Beneficiaries
-        if (!targetDoc) {
-            const benSnap = await adminDb.collection('beneficiaries').where('phone', '==', cleanIdentifier).limit(1).get();
-            if (!benSnap.empty) {
-                targetDoc = benSnap.docs[0].data();
-                targetDoc.id = benSnap.docs[0].id;
-                role = 'Beneficiary';
-            }
+        if (!targetDoc && !benSnap.empty) {
+            targetDoc = benSnap.docs[0].data();
+            targetDoc.id = benSnap.docs[0].id;
+            role = 'Beneficiary';
         }
 
         if (!targetDoc) {
@@ -69,13 +80,13 @@ export async function authenticatePortalUserAction(identifier: string, password:
         const targetId = targetDoc.id || targetDoc.userKey || cleanIdentifier;
         const customToken = await adminAuth.createCustomToken(targetId, { role });
 
-        // 6. Record Session in Firestore
+        // 6. Record Session in Firestore (Non-blocking)
         const sessionId = randomUUID();
         const headerList = await headers();
         const userAgent = headerList.get('user-agent') || 'Unknown Device';
         const ip = headerList.get('x-forwarded-for')?.split(',')[0] || 'Unknown IP';
         
-        await adminDb.collection('user_sessions').doc(sessionId).set({
+        const sessionPromise = adminDb.collection('user_sessions').doc(sessionId).set({
             userId: targetId,
             userName: targetDoc.name,
             role,
@@ -86,13 +97,18 @@ export async function authenticatePortalUserAction(identifier: string, password:
             status: 'Active'
         });
 
+        // 7. Determine Final Redirect
+        let redirect = '/donor-portal';
+        if (role === 'Beneficiary') redirect = '/beneficiary-portal';
+        if (role === 'Admin' || role === 'User') redirect = '/dashboard';
+
         return { 
             success: true, 
             token: customToken, 
             role, 
             sessionStart: Date.now(),
             sessionId,
-            redirect: role === 'Donor' ? '/donor-portal' : '/beneficiary-portal',
+            redirect,
             message: `Authentication successful. Accessing ${role} workspace...`
         };
 
@@ -137,7 +153,7 @@ export async function updatePortalPasswordAction(userId: string, role: string, n
 /**
  * Admin-facing password reset that works with collection names directly.
  */
-export async function setInstitutionalPasswordAction(userId: string, collectionName: 'users' | 'donors' | 'beneficiaries', newPassword: string) {
+export async function setPortalPasswordAction(userId: string, collectionName: 'users' | 'donors' | 'beneficiaries', newPassword: string) {
     const role = collectionName === 'donors' ? 'Donor' : (collectionName === 'beneficiaries' ? 'Beneficiary' : 'User');
     return updatePortalPasswordAction(userId, role, newPassword);
 }
@@ -200,7 +216,7 @@ export async function sendPortalOTPAction(identifier: string) {
 
         // 4. Dispatch via Telegram (Calling the existing action from messages)
         const { sendTelegramAction } = await import('@/app/messages/actions');
-        const message = `🔐 *Institutional Portal Access*\n\nYour One-Time Password (OTP) is: *${otp}*\n\nThis code expires in 5 minutes. If you did not request this, please ignore this message.`;
+        const message = `🔐 *Organization Portal Access*\n\nYour One-Time Password (OTP) is: *${otp}*\n\nThis code expires in 5 minutes. If you did not request this, please ignore this message.`;
         
         const telRes = await sendTelegramAction({ 
             message, 
@@ -221,7 +237,7 @@ export async function sendPortalOTPAction(identifier: string) {
 /**
  * Verify OTP and generate Custom Token.
  */
-export async function verifyPortalOTPAction(identifier: string, otp: string) {
+export async function verifyPortalOTPAction(identifier: string, otp: string, requestedRole?: 'Donor' | 'Beneficiary') {
     const { adminDb, adminAuth } = getAdminServices();
     if (!adminDb || !adminAuth) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
@@ -239,15 +255,33 @@ export async function verifyPortalOTPAction(identifier: string, otp: string) {
         const expiresAt = data.expiresAt.toDate ? data.expiresAt.toDate() : new Date(data.expiresAt);
         if (now > expiresAt) return { success: false, message: "OTP has expired. Please request a new one." };
 
-        // 2. Resolve Role (Mirroring authenticatePortalUserAction logic)
+        // 2. Identity Resolution with Role Priority
         let targetDoc: any = null;
-        let role: any = 'Donor';
+        let role: any = requestedRole || 'Donor';
         let targetId = '';
 
-        // Search Users
-        const userLookups = await adminDb.collection('user_lookups').doc(cleanIdentifier).get();
-        if (userLookups.exists) {
-            const lookupData = userLookups.data();
+        // 3. Parallel identity lookup
+        const [userLookupSnap, donorSnap, benSnap] = await Promise.all([
+            adminDb.collection('user_lookups').doc(cleanIdentifier).get(),
+            adminDb.collection('donors').where('phone', '==', cleanIdentifier).limit(1).get(),
+            adminDb.collection('beneficiaries').where('phone', '==', cleanIdentifier).limit(1).get()
+        ]);
+
+        // 4. Resolve Identity
+        // Priority 1: Requested Role
+        if (requestedRole === 'Donor' && !donorSnap.empty) {
+            targetDoc = donorSnap.docs[0].data();
+            targetId = donorSnap.docs[0].id;
+            role = 'Donor';
+        } else if (requestedRole === 'Beneficiary' && !benSnap.empty) {
+            targetDoc = benSnap.docs[0].data();
+            targetId = benSnap.docs[0].id;
+            role = 'Beneficiary';
+        } 
+        
+        // Priority 2: Staff Profile
+        if (!targetDoc && userLookupSnap.exists) {
+            const lookupData = userLookupSnap.data();
             const userSnap = await adminDb.collection('users').doc(lookupData?.userKey || cleanIdentifier).get();
             if (userSnap.exists) {
                 targetDoc = userSnap.data();
@@ -256,24 +290,16 @@ export async function verifyPortalOTPAction(identifier: string, otp: string) {
             }
         }
 
-        // Search Donors
-        if (!targetDoc) {
-            const donorSnap = await adminDb.collection('donors').where('phone', '==', cleanIdentifier).limit(1).get();
-            if (!donorSnap.empty) {
-                targetDoc = donorSnap.docs[0].data();
-                role = 'Donor';
-                targetId = donorSnap.docs[0].id;
-            }
+        // Priority 3: Fallback
+        if (!targetDoc && !donorSnap.empty) {
+            targetDoc = donorSnap.docs[0].data();
+            role = 'Donor';
+            targetId = donorSnap.docs[0].id;
         }
-
-        // Search Beneficiaries
-        if (!targetDoc) {
-            const benSnap = await adminDb.collection('beneficiaries').where('phone', '==', cleanIdentifier).limit(1).get();
-            if (!benSnap.empty) {
-                targetDoc = benSnap.docs[0].data();
-                role = 'Beneficiary';
-                targetId = benSnap.docs[0].id;
-            }
+        if (!targetDoc && !benSnap.empty) {
+            targetDoc = benSnap.docs[0].data();
+            role = 'Beneficiary';
+            targetId = benSnap.docs[0].id;
         }
 
         if (!targetDoc) return { success: false, message: "Identity resolution failed after verification." };
@@ -284,13 +310,13 @@ export async function verifyPortalOTPAction(identifier: string, otp: string) {
         // 4. Generate Custom Token
         const customToken = await adminAuth.createCustomToken(targetId, { role });
 
-        // 5. Record Session
+        // 5. Record Session (Non-blocking)
         const sessionId = randomUUID();
         const headerList = await headers();
         const userAgent = headerList.get('user-agent') || 'Unknown Device';
         const ip = headerList.get('x-forwarded-for')?.split(',')[0] || 'Unknown IP';
         
-        await adminDb.collection('user_sessions').doc(sessionId).set({
+        adminDb.collection('user_sessions').doc(sessionId).set({
             userId: targetId,
             userName: targetDoc.name,
             role,
@@ -299,7 +325,12 @@ export async function verifyPortalOTPAction(identifier: string, otp: string) {
             loginAt: Date.now(),
             lastActive: Date.now(),
             status: 'Active'
-        });
+        }).catch(err => console.error("Session recording failed:", err));
+
+        // 7. Determine Final Redirect
+        let redirect = '/donor-portal';
+        if (role === 'Beneficiary') redirect = '/beneficiary-portal';
+        if (role === 'Admin' || role === 'User') redirect = '/dashboard';
 
         return { 
             success: true, 
@@ -307,7 +338,7 @@ export async function verifyPortalOTPAction(identifier: string, otp: string) {
             role, 
             sessionStart: Date.now(),
             sessionId,
-            redirect: role === 'Donor' ? '/donor-portal' : '/beneficiary-portal',
+            redirect,
             message: `OTP Verified. Accessing ${role} workspace...`
         };
 

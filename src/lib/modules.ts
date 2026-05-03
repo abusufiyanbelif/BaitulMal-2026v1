@@ -65,7 +65,7 @@ export const settingsSubModules = [
     { id: 'resources', name: 'Resource Config', permissions: crudPermissions },
     { id: 'notifications', name: '🔔 Notifications', permissions: crudPermissions },
     { id: 'data-health', name: '🩺 Data Health', permissions: simpleReadPermission },
-    { id: 'logs', name: '🛡️ Institutional Diagnostics', permissions: simpleReadPermission },
+    { id: 'logs', name: '🛡️ System Diagnostics', permissions: simpleReadPermission },
 ] as const;
 
 export const leadPurposesConfig = [

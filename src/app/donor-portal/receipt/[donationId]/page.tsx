@@ -103,10 +103,10 @@ export default function DonorReceiptPage() {
             </div>
 
             <div className="max-w-2xl mx-auto text-center space-y-4">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Institutional Authentication</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Organization Authentication</p>
                 <p className="text-xs text-slate-500 leading-relaxed font-medium">
                     This document serves as an official acknowledgment of your contribution. 
-                    It is electronically generated and verified by our institutional audit systems. 
+                    It is electronically generated and verified by our organization audit systems. 
                     For any discrepancies, please contact our support desk with the Donation ID.
                 </p>
             </div>

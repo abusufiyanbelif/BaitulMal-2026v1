@@ -16,7 +16,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Key, Loader2, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { setInstitutionalPasswordAction } from '@/app/portal-login/actions';
+import { setPortalPasswordAction } from '@/app/portal-login/actions';
 
 interface ResetPasswordDialogProps {
     targetId: string;
@@ -33,13 +33,13 @@ export function ResetPasswordDialog({ targetId, collectionName, trigger }: Reset
 
     const handleReset = async () => {
         if (password.length < 4) {
-            toast({ title: 'Invalid Password', description: 'Institutional standard requires at least 4 characters.', variant: 'destructive' });
+            toast({ title: 'Invalid Password', description: 'Security standard requires at least 4 characters.', variant: 'destructive' });
             return;
         }
 
         setIsLoading(true);
         try {
-            const res = await setInstitutionalPasswordAction(targetId, collectionName, password);
+            const res = await setPortalPasswordAction(targetId, collectionName, password);
             if (res.success) {
                 toast({ title: 'Portal Access Secured', description: 'Credential Updated Successfully.', variant: 'success' });
                 setIsOpen(false);
@@ -69,7 +69,7 @@ export function ResetPasswordDialog({ targetId, collectionName, trigger }: Reset
                         <ShieldCheck className="h-5 w-5 text-primary" /> Reset Portal Credential
                     </DialogTitle>
                     <DialogDescription className="font-normal text-xs leading-relaxed">
-                        Establishing a manual password allows this member to bypass SMS OTP and log in directly using their Mobile or Institutional ID.
+                        Establishing a manual password allows this member to bypass SMS OTP and log in directly using their Mobile or Member ID.
                     </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-4 py-4">

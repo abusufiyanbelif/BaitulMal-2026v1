@@ -31,32 +31,48 @@ async function checkAuth(requiredModule?: string, requiredPerm?: string) {
     const { adminAuth, adminDb } = getAdminServices();
     if (!adminAuth || !adminDb) return { isAuthorized: false };
 
-    const sessionCookie = cookies().get('__session')?.value;
+    const sessionCookie = cookies().get('__session')?.value || cookies().get('auth-token')?.value;
     if (!sessionCookie) {
-        console.warn('checkAuth: No __session cookie found.');
+        console.warn('checkAuth: No valid session cookie found.');
         return { isAuthorized: false };
     }
 
     try {
-        const decodedToken = await adminAuth.verifySessionCookie(sessionCookie);
+        const decodedToken = await adminAuth.verifySessionCookie(sessionCookie).catch(() => adminAuth.verifyIdToken(sessionCookie));
 
-        // --- SOVEREIGN BYPASS (Layer 1 & 2: UID + Email — no DB read) ---
+        // --- SOVEREIGN BYPASS ---
         if (SOVEREIGN_ADMIN_UIDS.includes(decodedToken.uid) ||
             (decodedToken.email && SOVEREIGN_ADMIN_EMAILS.includes(decodedToken.email))) {
-            console.log(`checkAuth: Sovereign admin bypass for UID: ${decodedToken.uid}`);
             return { isAuthorized: true, user: { role: 'Admin', id: decodedToken.uid } };
         }
 
-        // --- DB ROLE CHECK (Layer 3: Firestore profile) ---
+        // --- DB ROLE CHECK ---
+        // Check users collection (Staff)
         const userSnap = await adminDb.collection('users').doc(decodedToken.uid).get();
-        const userData = userSnap.data();
-
-        if (userData?.role === 'Admin') return { isAuthorized: true, user: userData };
-        
-        if (requiredModule && requiredPerm) {
-            const hasPerm = userData?.permissions?.[requiredModule]?.[requiredPerm] === true;
-            return { isAuthorized: hasPerm, user: userData };
+        if (userSnap.exists) {
+            const userData = userSnap.data();
+            if (userData?.role === 'Admin') return { isAuthorized: true, user: userData };
+            
+            if (requiredModule && requiredPerm) {
+                const hasPerm = userData?.permissions?.[requiredModule]?.[requiredPerm] === true;
+                return { isAuthorized: hasPerm, user: userData };
+            }
+            return { isAuthorized: true, user: userData };
         }
+
+        // Check donors collection
+        const donorSnap = await adminDb.collection('donors').doc(decodedToken.uid).get();
+        if (donorSnap.exists) {
+            return { isAuthorized: true, user: { ...donorSnap.data(), role: 'Donor' } };
+        }
+
+        // Check beneficiaries collection
+        const benSnap = await adminDb.collection('beneficiaries').doc(decodedToken.uid).get();
+        if (benSnap.exists) {
+            return { isAuthorized: true, user: { ...benSnap.data(), role: 'Beneficiary' } };
+        }
+
+        return { isAuthorized: false };
 
         console.warn(`checkAuth: User ${decodedToken.uid} is not an Admin and lacks ${requiredModule}:${requiredPerm} permissions.`);
         return { isAuthorized: false };
@@ -132,7 +148,7 @@ function generateDetailedPayload(params: {
         message += `🔗 *Action Required:* ${params.actionUrl}\n\n`;
     }
 
-    message += `_This is an institutional automated alert._`;
+    message += `_This is an organization automated alert._`;
     return message;
 }
 
@@ -481,8 +497,8 @@ export async function seedDefaultTemplatesAction() {
         {
             id: 'verification_request',
             name: 'Approval Required',
-            subject: 'New Institutional Approval Request',
-            body: '📋 *Institutional Action Required*\n\nHello {{verifierName}},\n\nA new *{{module}}* request ({{recordId}}) is pending your approval.\n\n*Purpose:* {{purpose}}\n*Requested By:* {{requesterName}}\n\nReview & Finalize: {{url}}',
+            subject: 'New Organization Approval Request',
+            body: '📋 *Organization Action Required*\n\nHello {{verifierName}},\n\nA new *{{module}}* request ({{recordId}}) is pending your approval.\n\n*Purpose:* {{purpose}}\n*Requested By:* {{requesterName}}\n\nReview & Finalize: {{url}}',
             type: 'WhatsApp',
             category: 'Approval',
             variables: ['verifierName', 'module', 'recordId', 'purpose', 'requesterName', 'url'],
@@ -523,7 +539,7 @@ export async function seedDefaultTemplatesAction() {
             id: 'user_status_changed',
             name: 'User: Status Update',
             subject: 'Account Status Modification',
-            body: '🛡️ *Account Status Update*\n\nThe status of your BaitulMal account has been updated to *{{status}}*.\n\n*Note:* {{note}}\n\nIf you believe this is an error, please contact the institutional head immediately.',
+            body: '🛡️ *Account Status Update*\n\nThe status of your BaitulMal account has been updated to *{{status}}*.\n\n*Note:* {{note}}\n\nIf you believe this is an error, please contact the organization head immediately.',
             type: 'WhatsApp',
             category: 'Security',
             variables: ['status', 'note'],
@@ -542,7 +558,7 @@ export async function seedDefaultTemplatesAction() {
         {
             id: 'security_password_reset',
             name: 'Portal: Password Reset Alert',
-            subject: 'Institutional Security Alert',
+            subject: 'Security Alert',
             body: '🛡️ *Portal Access Updated*\n\nHello {{name}},\n\nYour portal access password for *{{orgName}}* has been updated by the administration.\n\nIf you did not request this change, please contact us immediately for assistance.\n\n*Login URL:* {{url}}',
             type: 'WhatsApp',
             category: 'Security',
@@ -553,7 +569,7 @@ export async function seedDefaultTemplatesAction() {
             id: 'security_access_credential',
             name: 'Portal: New Access Credentials',
             subject: 'Portal Access Provisioned',
-            body: '🔐 *Institutional Portal Access*\n\nYour secure portal access is now active. You can log in using your registered mobile and the credentials provided below.\n\n*ID/Mobile:* {{identifier}}\n*Temp Password:* {{password}}\n\n*Login Here:* {{url}}\n\n_Please change your password after your first successful login._',
+            body: '🔐 *Registry Portal Access*\n\nYour secure portal access is now active. You can log in using your registered mobile and the credentials provided below.\n\n*ID/Mobile:* {{identifier}}\n*Temp Password:* {{password}}\n\n*Login Here:* {{url}}\n\n_Please change your password after your first successful login._',
             type: 'WhatsApp',
             category: 'Security',
             variables: ['identifier', 'password', 'url'],
@@ -1067,7 +1083,7 @@ export async function sendUserWhatsAppTestAction() {
 
         return await sendWhatsAppCore({
             to: userData.phone,
-            customMessage: `🧪 *BaitulMal Connectivity Test*\n\nHello *${userData.name}*,\n\nYour WhatsApp connectivity is verified for institutional alerts.\n\n*Test OTP:* ${Math.floor(100000 + Math.random() * 900000)}\n\n*Status:* Success ✅`,
+            customMessage: `🧪 *BaitulMal Connectivity Test*\n\nHello *${userData.name}*,\n\nYour WhatsApp connectivity is verified for system alerts.\n\n*Test OTP:* ${Math.floor(100000 + Math.random() * 900000)}\n\n*Status:* Success ✅`,
             metadata: {
                 moduleId: 'user',
                 userId: userData.id,
@@ -1084,27 +1100,56 @@ export async function sendUserWhatsAppTestAction() {
  * User-Specific Connectivity Test for Telegram
  */
 export async function sendUserTelegramTestAction() {
-    const { adminDb, adminAuth } = getAdminServices();
-    if (!adminDb || !adminAuth) return { success: false, message: 'DB Unavailable' };
-
-    const sessionCookie = cookies().get('__session')?.value;
-    if (!sessionCookie) return { success: false, message: 'Unauthorized' };
+    const { adminAuth, adminDb } = getAdminServices();
+    if (!adminAuth || !adminDb) return { success: false, message: 'DB Unavailable' };
 
     try {
-        const decodedToken = await adminAuth.verifySessionCookie(sessionCookie);
-        const userSnap = await adminDb.collection('users').doc(decodedToken.uid).get();
-        if (!userSnap.exists) return { success: false, message: 'User Record Not Found' };
+        const sessionCookie = cookies().get('__session')?.value || cookies().get('auth-token')?.value;
+        if (!sessionCookie) return { success: false, message: 'Unauthorized' };
+
+        // Verify either session cookie or ID token
+        let decodedToken;
+        try {
+            decodedToken = await adminAuth.verifySessionCookie(sessionCookie);
+        } catch (e) {
+            decodedToken = await adminAuth.verifyIdToken(sessionCookie);
+        }
+
+        if (!decodedToken) return { success: false, message: 'Session Invalid' };
+
+        // Identity Resolution (Unified Search)
+        let userData: any = null;
         
-        const userData = userSnap.data() as UserProfile;
-        if (!userData.telegramChatId) return { success: false, message: 'Telegram Chat ID Missing in Profile' };
+        // 1. Try Users (Staff)
+        const userSnap = await adminDb.collection('users').doc(decodedToken.uid).get();
+        if (userSnap.exists) {
+            userData = userSnap.data();
+        }
+
+        // 2. Try Donors
+        if (!userData) {
+            const donorSnap = await adminDb.collection('donors').doc(decodedToken.uid).get();
+            if (donorSnap.exists) userData = donorSnap.data();
+        }
+
+        // 3. Try Beneficiaries
+        if (!userData) {
+            const benSnap = await adminDb.collection('beneficiaries').doc(decodedToken.uid).get();
+            if (benSnap.exists) userData = benSnap.data();
+        }
+
+        if (!userData) return { success: false, message: 'Identity profile not found.' };
+        if (!userData.telegramChatId) return { success: false, message: 'Telegram Chat ID not linked to your profile.' };
 
         return await sendTelegramAction({
-            message: `🧪 *BaitulMal Telegram Test*\n\nHello *${userData.name}*,\n\nYour Telegram integration is verified.\n\n*Status:* Active ✅\n*Chat ID:* \`${userData.telegramChatId}\``,
+            message: `🧪 *BaitulMal Telegram Connectivity Test*\n\nHello *${userData.name || 'User'}*,\n\nYour Telegram integration is verified.\n\n*Status:* Active ✅\n*Chat ID:* \`${userData.telegramChatId}\``,
             chatId: userData.telegramChatId,
             bypassAutoCheck: true
         });
-    } catch (e: any) {
-        return { success: false, message: e.message };
+
+    } catch (error: any) {
+        console.error('sendUserTelegramTestAction error:', error);
+        return { success: false, message: `System error during test: ${error.message || 'Unknown Error'}` };
     }
 }
 
@@ -1185,7 +1230,7 @@ export async function notifyNewInitiativeAction(type: 'lead' | 'campaign', id: s
             message = `📍 *New Lead Entry (Registry)*\n*Name:* ${data.name}\n*Need:* ${data.purpose || 'General Assistance'}\n*Phone:* ${data.shopContact || 'N/A'}\n\nReview: ${baseUrl}/leads-members/${id}/summary`;
             templateId = 'lead_alert';
             variables = {
-                adminName: 'Institutional Head',
+                adminName: 'Registry Admin',
                 leadName: data.name,
                 phone: data.shopContact || 'N/A',
                 need: data.purpose || 'General Assistance',
@@ -1642,7 +1687,7 @@ export async function notifyApprovalFinalizedAction(params: {
             } catch (e) {}
         }
 
-        const message = `🏛️ *Institutional Registry Updated*\n\n` +
+        const message = `🏛️ *Organization Registry Updated*\n\n` +
             `*Action:* Final Approval Granted\n` +
             `*Module:* ${params.module.toUpperCase()}\n` +
             `*Description:* ${params.description}\n\n` +

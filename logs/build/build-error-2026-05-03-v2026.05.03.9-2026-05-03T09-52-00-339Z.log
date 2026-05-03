@@ -1,0 +1,85 @@
+BUILD FAILURE LOG - 3/5/2026, 3:23:11 pm
+Version: 2026.05.03.9
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-education-story.ts
+./src/app/api/create-education-story/route.ts
+
+Failed to compile.
+
+./src/components/donor-search-dialog.tsx:155:18
+Type error: Cannot find name 'ScrollArea'. Did you mean 'scrollbars'?
+
+[0m [90m 153 |[39m[0m
+[0m [90m 154 |[39m             [33m<[39m[33mdiv[39m className[33m=[39m[32m"flex-1 rounded-2xl border border-primary/10 bg-primary/[0.02] shadow-inner relative overflow-hidden"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 155 |[39m                 [33m<[39m[33mScrollArea[39m className[33m=[39m[32m"h-full w-full"[39m[33m>[39m[0m
+[0m [90m     |[39m                  [31m[1m^[22m[39m[0m
+[0m [90m 156 |[39m                     [33m<[39m[33mdiv[39m className[33m=[39m[32m"p-2 space-y-2"[39m[33m>[39m[0m
+[0m [90m 157 |[39m                         {isInitialLoading [33m?[39m ([0m
+[0m [90m 158 |[39m                             [33m<[39m[33mdiv[39m className[33m=[39m[32m"space-y-3 p-2"[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: next build
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-education-story.ts
+./src/app/api/create-education-story/route.ts
+
+Failed to compile.
+
+./src/components/donor-search-dialog.tsx:155:18
+Type error: Cannot find name 'ScrollArea'. Did you mean 'scrollbars'?
+
+[0m [90m 153 |[39m[0m
+[0m [90m 154 |[39m             [33m<[39m[33mdiv[39m className[33m=[39m[32m"flex-1 rounded-2xl border border-primary/10 bg-primary/[0.02] shadow-inner relative overflow-hidden"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 155 |[39m                 [33m<[39m[33mScrollArea[39m className[33m=[39m[32m"h-full w-full"[39m[33m>[39m[0m
+[0m [90m     |[39m                  [31m[1m^[22m[39m[0m
+[0m [90m 156 |[39m                     [33m<[39m[33mdiv[39m className[33m=[39m[32m"p-2 space-y-2"[39m[33m>[39m[0m
+[0m [90m 157 |[39m                         {isInitialLoading [33m?[39m ([0m
+[0m [90m 158 |[39m                             [33m<[39m[33mdiv[39m className[33m=[39m[32m"space-y-3 p-2"[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null

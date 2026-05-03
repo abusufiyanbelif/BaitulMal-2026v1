@@ -327,14 +327,14 @@ export default function BeneficiaryDetailsPage() {
                         {canUpdate && !isEditMode && ( 
                             <Button 
                                 onClick={() => setIsEditMode(true)} 
-                                disabled={!!existingPendingRequest && currentUserProfile.role !== 'Admin'}
+                                disabled={!!existingPendingRequest && currentUserProfile?.role !== 'Admin'}
                                 className={cn(
                                     "font-bold shadow-md active:scale-95 transition-transform",
-                                    (existingPendingRequest && currentUserProfile.role !== 'Admin') ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-white"
+                                    (existingPendingRequest && currentUserProfile?.role !== 'Admin') ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-white"
                                 )}
                             >
                                 <Edit className="mr-2 h-4 w-4"/>
-                                {existingPendingRequest ? (currentUserProfile.role === 'Admin' ? "Admin Override" : "Approval Pending") : "Edit Profile"}
+                                {existingPendingRequest ? (currentUserProfile?.role === 'Admin' ? "Admin Override" : "Approval Pending") : "Edit Profile"}
                             </Button> 
                         )}
                     </div>

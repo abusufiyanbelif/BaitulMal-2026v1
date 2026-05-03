@@ -28,7 +28,7 @@ export function TempLogo() {
         Bms3
       </text>
       
-      {/* Decorative institutional elements */}
+      {/* Decorative organization elements */}
       <circle cx="50" cy="22" r="3" fill="white" fillOpacity="0.8" />
       <circle cx="50" cy="78" r="3" fill="white" fillOpacity="0.8" />
       <path d="M30 50 H35 M65 50 H70" stroke="white" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.5" />

@@ -29,7 +29,7 @@ import { Label } from '@/components/ui/label';
 import { FileUploader } from '@/components/file-uploader';
 import { BrandedLoader } from '@/components/branded-loader';
 import { notifyLeadAction } from '@/app/messages/actions';
-import { getDefaultImage, defaultInstitutionalAssets } from '@/lib/default-images';
+import { getDefaultImage, defaultRegistryAssets } from '@/lib/default-images';
 import { cn } from '@/lib/utils';
 import { Check, Sparkles } from 'lucide-react';
 
@@ -264,7 +264,7 @@ export default function CreateLeadPage() {
         newLeadData.imageUrlFilename = imageUrlFilename;
     } else if (selectedDefaultImageUrl) {
         newLeadData.imageUrl = selectedDefaultImageUrl;
-        newLeadData.imageUrlFilename = 'institutional_default.png';
+        newLeadData.imageUrlFilename = 'registry_default.png';
     }
 
     if (documents && documents.length > 0) {
@@ -370,7 +370,7 @@ export default function CreateLeadPage() {
                                     </Button>
                                 ) : (
                                     <div className="absolute top-2 right-2 px-3 py-1 bg-primary text-white text-[9px] font-black uppercase tracking-widest rounded-full shadow-lg z-10 flex items-center gap-1">
-                                        <Sparkles className="h-3 w-3" /> Institutional Suggestion
+                                        <Sparkles className="h-3 w-3" /> Registry Suggestion
                                     </div>
                                 )}
                                 <div className="absolute bottom-2 left-2 right-2 text-center text-white/80 text-[10px] font-bold opacity-0 group-hover:opacity-100 transition-opacity">
@@ -390,9 +390,9 @@ export default function CreateLeadPage() {
                     
                     {/* Suggested Assets Selector */}
                     <div className="pt-4 space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary/40">Suggested Institutional Backgrounds</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary/40">Suggested Registry Backgrounds</Label>
                         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                            {defaultInstitutionalAssets
+                            {defaultRegistryAssets
                                 .filter(a => a.purpose === purpose)
                                 .map(asset => (
                                     <button

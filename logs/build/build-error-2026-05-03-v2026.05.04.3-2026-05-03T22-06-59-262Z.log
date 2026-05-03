@@ -1,0 +1,122 @@
+BUILD FAILURE LOG - 4/5/2026, 3:39:50 am
+Version: 2026.05.04.3
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+
+
+STDERR:
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-lead-story.ts
+./src/app/api/create-lead-story/route.ts
+
+unhandledRejection Error: Cannot find module './1682.js'
+Require stack:
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\pages\_document.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\load-components.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\utils.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\worker.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
+    at mod.require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\.next\\server\\pages\\_document.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\build\\worker.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\compiled\\jest-worker\\processChild.js'
+  ]
+}
+
+
+ERROR MESSAGE:
+Command failed: next build
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-lead-story.ts
+./src/app/api/create-lead-story/route.ts
+
+unhandledRejection Error: Cannot find module './1682.js'
+Require stack:
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\webpack-runtime.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\pages\_document.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\load-components.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\utils.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\worker.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
+    at mod.require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16) {
+  type: 'Error',
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\.next\\server\\webpack-runtime.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\.next\\server\\pages\\_document.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\build\\worker.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\compiled\\jest-worker\\processChild.js'
+  ]
+}

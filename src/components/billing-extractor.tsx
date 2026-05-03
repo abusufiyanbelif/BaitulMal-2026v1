@@ -15,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { DynamicFields } from './dynamic-fields';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 function ResultDisplay({ label, value }: { label: string; value: string }) {
   return (
@@ -201,54 +202,58 @@ export function BillingExtractor() {
               </Button>
             )}
           </CardHeader>
-          <CardContent className="space-y-4">
-            {isLoadingBilling && (
-              <div className="space-y-4">
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-16 w-full" />
-                <Skeleton className="h-24 w-full" />
-              </div>
-            )}
-            {billingResult && (
-              <div className="space-y-4">
-                <ResultDisplay label="Vendor Information" value={billingResult.vendorInformation} />
-                <ResultDisplay label="Dates" value={billingResult.dates} />
-                <ResultDisplay label="Amounts" value={billingResult.amounts} />
-                <div>
-                  <h3 className="text-sm font-medium text-muted-foreground mb-1">Purchased Items</h3>
-                  <div className="border rounded-md">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Item</TableHead>
-                          <TableHead className="text-right">Qty</TableHead>
-                          <TableHead className="text-right">Unit Price (₹)</TableHead>
-                          <TableHead className="text-right">Total (₹)</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {billingResult.purchasedItems.map((item, index) => (
-                          <TableRow key={index}>
-                            <TableCell className="font-medium">{item.item}</TableCell>
-                            <TableCell className="text-right">{item.quantity ?? 'N/A'}</TableCell>
-                            <TableCell className="text-right">
-                              {item.unitPrice ? `₹${item.unitPrice.toFixed(2)}` : 'N/A'}
-                            </TableCell>
-                            <TableCell className="text-right">₹{item.totalPrice.toFixed(2)}</TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+          <CardContent className="p-0 overflow-hidden h-[500px]">
+            <ScrollArea className="h-full w-full">
+              <div className="p-6 space-y-4">
+                {isLoadingBilling && (
+                  <div className="space-y-4">
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-24 w-full" />
                   </div>
-                </div>
+                )}
+                {billingResult && (
+                  <div className="space-y-4">
+                    <ResultDisplay label="Vendor Information" value={billingResult.vendorInformation} />
+                    <ResultDisplay label="Dates" value={billingResult.dates} />
+                    <ResultDisplay label="Amounts" value={billingResult.amounts} />
+                    <div>
+                      <h3 className="text-sm font-medium text-muted-foreground mb-1">Purchased Items</h3>
+                      <div className="border rounded-md overflow-x-auto">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Item</TableHead>
+                              <TableHead className="text-right">Qty</TableHead>
+                              <TableHead className="text-right">Unit Price (₹)</TableHead>
+                              <TableHead className="text-right">Total (₹)</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {billingResult.purchasedItems.map((item, index) => (
+                              <TableRow key={index}>
+                                <TableCell className="font-medium">{item.item}</TableCell>
+                                <TableCell className="text-right">{item.quantity ?? 'N/A'}</TableCell>
+                                <TableCell className="text-right">
+                                  {item.unitPrice ? `₹${item.unitPrice.toFixed(2)}` : 'N/A'}
+                                </TableCell>
+                                <TableCell className="text-right">₹{item.totalPrice.toFixed(2)}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                {!isLoadingBilling && !billingResult && (
+                  <div className="flex items-center justify-center h-64 text-muted-foreground">
+                    <p>Your results will appear here.</p>
+                  </div>
+                )}
               </div>
-            )}
-            {!isLoadingBilling && !billingResult && (
-              <div className="flex items-center justify-center h-64 text-muted-foreground">
-                <p>Your results will appear here.</p>
-              </div>
-            )}
+            </ScrollArea>
           </CardContent>
         </Card>
       </div>

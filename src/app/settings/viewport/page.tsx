@@ -243,7 +243,7 @@ export default function ViewportSettingsPage() {
                                     <Separator className="bg-primary/10" />
                                     
                                     <div className="space-y-3">
-                                        <Label className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Select Institutional Color Theme</Label>
+                                        <Label className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Select Organization Color Theme</Label>
                                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
                                             {THEME_SUGGESTIONS.map((s) => (
                                                 <Button 
@@ -267,7 +267,7 @@ export default function ViewportSettingsPage() {
                     <Card className={cn("transition-all duration-300 border-primary/10 bg-white", isEditMode && "border-primary/40 shadow-md")}>
                         <CardHeader className="bg-primary/5 border-b border-primary/10">
                             <CardTitle className="flex items-center gap-2 font-bold text-base"><Zap className="h-5 w-5" /> Motion & Visual Effects</CardTitle>
-                            <CardDescription className="font-normal text-xs text-primary/60">Customize The Responsiveness And Fluidity Of The Institutional Interface.</CardDescription>
+                            <CardDescription className="font-normal text-xs text-primary/60">Customize The Responsiveness And Fluidity Of The Organization Interface.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4 pt-6">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -362,7 +362,7 @@ export default function ViewportSettingsPage() {
                                 </div>
                             </CardContent>
                             <CardFooter className="bg-muted/5 p-4 border-t border-primary/10 italic text-[10px] text-muted-foreground font-normal text-center w-full">
-                                Optimized For High-Fidelity Institutional Rendering.
+                                Optimized For High-Fidelity Registry Rendering.
                             </CardFooter>
                         </Card>
                     )}

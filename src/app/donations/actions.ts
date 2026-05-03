@@ -98,7 +98,7 @@ export async function syncInitiativeCollectedTotals(db: any, links: DonationLink
                     const baseUrl = resourceSnap.data()?.baseUrl || 'https://baitulamalsolapur.com';
                     
                     await sendWhatsAppAction({
-                        to: '917887646583', // Default admin or institution number
+                        to: '917887646583', // Default admin or organization number
                         templateId: 'campaign_milestone',
                         variables: {
                             campaignName: initiativeData.name,
@@ -262,7 +262,7 @@ export async function upsertDonationWithDonorAction(
         revalidatePath('/donations');
         revalidatePath('/donors');
         revalidatePath('/dashboard');
-        return { success: true, message: 'Institutional record secured and totals reconciled.', id };
+        return { success: true, message: 'Organization record secured and totals reconciled.', id };
     } catch (error: any) {
         console.error("Upsert Donation Failed:", error);
         return { success: false, message: `Operation failed: ${error.message}` };

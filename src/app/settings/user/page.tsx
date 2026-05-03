@@ -247,7 +247,7 @@ export default function UserSettingsPage() {
                  <CardTitle className="flex items-center gap-2 font-bold text-base text-red-900">
                      <KeyRound className="h-5 w-5" /> Security & Access Control
                  </CardTitle>
-                 <CardDescription className="text-xs font-normal text-red-700/70">Global session management and emergency access termination for all institutional accounts.</CardDescription>
+                 <CardDescription className="text-xs font-normal text-red-700/70">Global session management and emergency access termination for all organization accounts.</CardDescription>
              </CardHeader>
              <CardContent className="pt-6 space-y-6">
                  <div className="flex flex-col sm:flex-row items-center justify-between gap-6">

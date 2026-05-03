@@ -1,0 +1,87 @@
+BUILD FAILURE LOG - 3/5/2026, 3:13:53 pm
+Version: 2026.05.03.7
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/extract-dynamic-form.ts
+./src/app/api/extract-dynamic-form/route.ts
+
+Failed to compile.
+
+./src/app/verifications/actions.ts:90:47
+Type error: Conversion of type '{ id: string; assignedVerifierIds: any; status: "Pending"; requesterComment: any; approverComments: never[]; createdAt: Timestamp; updatedAt: Timestamp; }' to type 'PendingVerification' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ id: string; assignedVerifierIds: any; status: "Pending"; requesterComment: any; approverComments: never[]; createdAt: Timestamp; updatedAt: Timestamp; }' is missing the following properties from type 'PendingVerification': targetId, targetCollection, revalidatePath, newValue, and 3 more.
+
+[0m [90m 88 |[39m          [36mconst[39m newDoc [33m=[39m verificationsRef[33m.[39mdoc()[33m;[39m[0m
+[0m [90m 89 |[39m          [0m
+[0m[31m[1m>[22m[39m[90m 90 |[39m          [36mconst[39m payload[33m:[39m [33mPendingVerification[39m [33m=[39m {[0m
+[0m [90m    |[39m                                               [31m[1m^[22m[39m[0m
+[0m [90m 91 |[39m              [33m...[39mverificationData[33m,[39m[0m
+[0m [90m 92 |[39m              id[33m:[39m newDoc[33m.[39mid[33m,[39m[0m
+[0m [90m 93 |[39m              assignedVerifierIds[33m:[39m verificationData[33m.[39massignedVerifiers[33m.[39mmap((v[33m:[39m { id[33m:[39m string }) [33m=>[39m v[33m.[39mid)[33m,[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: next build
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/extract-dynamic-form.ts
+./src/app/api/extract-dynamic-form/route.ts
+
+Failed to compile.
+
+./src/app/verifications/actions.ts:90:47
+Type error: Conversion of type '{ id: string; assignedVerifierIds: any; status: "Pending"; requesterComment: any; approverComments: never[]; createdAt: Timestamp; updatedAt: Timestamp; }' to type 'PendingVerification' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ id: string; assignedVerifierIds: any; status: "Pending"; requesterComment: any; approverComments: never[]; createdAt: Timestamp; updatedAt: Timestamp; }' is missing the following properties from type 'PendingVerification': targetId, targetCollection, revalidatePath, newValue, and 3 more.
+
+[0m [90m 88 |[39m          [36mconst[39m newDoc [33m=[39m verificationsRef[33m.[39mdoc()[33m;[39m[0m
+[0m [90m 89 |[39m          [0m
+[0m[31m[1m>[22m[39m[90m 90 |[39m          [36mconst[39m payload[33m:[39m [33mPendingVerification[39m [33m=[39m {[0m
+[0m [90m    |[39m                                               [31m[1m^[22m[39m[0m
+[0m [90m 91 |[39m              [33m...[39mverificationData[33m,[39m[0m
+[0m [90m 92 |[39m              id[33m:[39m newDoc[33m.[39mid[33m,[39m[0m
+[0m [90m 93 |[39m              assignedVerifierIds[33m:[39m verificationData[33m.[39massignedVerifiers[33m.[39mmap((v[33m:[39m { id[33m:[39m string }) [33m=>[39m v[33m.[39mid)[33m,[39m[0m
+Next.js build worker exited with code: 1 and signal: null

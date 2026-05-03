@@ -1,13 +1,35 @@
 {
-  "version": "2026.05.03.4",
-  "buildDate": "2026-05-03T00:19:47.967Z",
+  "version": "2026.05.04.10",
+  "buildDate": "2026-05-03T23:11:33.471Z",
   "commitHash": "initial",
   "changelog": [],
   "history": [
     {
-      "version": "2026.05.03.4",
-      "date": "2026-05-03T00:19:47.967Z",
-      "commit": "a40c9f8a",
+      "version": "2026.05.04.10",
+      "date": "2026-05-03T23:11:33.471Z",
+      "commit": "ee070d6d",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "Manual verification required.",
+      "type": "Build",
+      "message": "doc auto"
+    },
+    {
+      "version": "2026.05.04.9",
+      "date": "2026-05-03T23:00:53.313Z",
+      "commit": "ee070d6d",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "",
+      "type": "Build",
+      "message": "Automated build initiated via npm run build"
+    },
+    {
+      "version": "2026.05.04.8",
+      "date": "2026-05-03T22:52:51.434Z",
+      "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
       "reference": "",
@@ -16,9 +38,9 @@
       "message": "Automated build initiated via npm run build"
     },
     {
-      "version": "2026.05.03.3",
-      "date": "2026-05-03T00:09:35.759Z",
-      "commit": "a40c9f8a",
+      "version": "2026.05.04.7",
+      "date": "2026-05-03T22:48:04.661Z",
+      "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
       "reference": "",
@@ -27,9 +49,9 @@
       "message": "Automated build initiated via npm run build"
     },
     {
-      "version": "2026.05.03.2",
-      "date": "2026-05-02T23:53:55.488Z",
-      "commit": "a40c9f8a",
+      "version": "2026.05.04.6",
+      "date": "2026-05-03T22:42:08.241Z",
+      "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
       "reference": "",
@@ -38,9 +60,9 @@
       "message": "Automated build initiated via npm run build"
     },
     {
-      "version": "2026.05.03.1",
-      "date": "2026-05-02T23:40:58.952Z",
-      "commit": "a40c9f8a",
+      "version": "2026.05.04.5",
+      "date": "2026-05-03T22:33:16.114Z",
+      "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
       "reference": "",
@@ -49,186 +71,134 @@
       "message": "Automated build initiated via npm run build"
     },
     {
-      "version": "2026.05.02.18",
-      "date": "2026-05-02T13:20:55.417Z",
-      "commit": "37d6d205",
+      "version": "2026.05.04.4",
+      "date": "2026-05-03T22:10:13.741Z",
+      "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
-      "reference": "src/app/donor-portal/page.tsx, src/app/beneficiary-portal/page.tsx, src/app/auth-provider.tsx",
-      "steps": "1. Navigate to /campaign-public as guest. 2. Verify mobile charts on Donor Dashboard. 3. Check docs/history for versioning.",
-      "type": "Hardening",
-      "message": "Optimized institutional portals for mobile responsiveness, fixed public access logic, and upgraded documentation engine with reproduction steps and versioned history."
+      "reference": "",
+      "steps": "",
+      "type": "Build",
+      "message": "Automated build initiated via npm run build"
     },
     {
-      "version": "2026.05.02.17",
-      "date": "2026-05-02T12:01:06.732Z",
-      "commit": "c5ce3f05",
+      "version": "2026.05.04.3",
+      "date": "2026-05-03T22:06:58.805Z",
+      "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
-      "reference": "#L1-228",
-      "steps": "1. Navigate to /registry-index. 2. Verify new Firestore, Action, and Field metadata in module cards. 3. Confirm glassmorphism UI enhancements.",
-      "type": "Enhancement",
-      "message": "Upgraded Institutional Documentation Engine to v1.1 with deep technical scanning, data mapping, and a premium Registry Index UI."
+      "reference": "",
+      "steps": "",
+      "type": "Build",
+      "message": "Automated build initiated via npm run build"
     },
     {
-      "version": "2026.05.02.16",
-      "date": "2026-05-02T11:31:22.799Z",
-      "commit": "5a4876bd",
+      "version": "2026.05.04.2",
+      "date": "2026-05-03T21:38:47.220Z",
+      "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
-      "reference": "#L1-1782",
-      "steps": "1. Run npm run build successfully. 2. Verify Registry Index and App Footer navigation links. 3. Check Institutional Support card on Profile Page.",
-      "type": "Bug",
-      "message": "Resolved multiple build-breaking duplications, missing imports, and type mismatches across actions and UI components."
+      "reference": "",
+      "steps": "",
+      "type": "Build",
+      "message": "Automated build initiated via npm run build"
     },
     {
-      "version": "2026.05.02.15",
-      "date": "2026-05-02T10:33:17.943Z",
-      "commit": "09efb72e",
+      "version": "2026.05.04.1",
+      "date": "2026-05-03T21:35:21.484Z",
+      "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
-      "reference": "#L1-144",
-      "steps": "1. Verify commit-summary.txt. 2. Confirm docs/architecture/history/release-v2026.05.02.14/ exists. 3. Confirm docs/user-guides/history/ exists.",
-      "type": "Enhancement",
-      "message": "Fixed documentation generation crash and finalized versioned archiving logic."
+      "reference": "",
+      "steps": "",
+      "type": "Build",
+      "message": "Automated build initiated via npm run build"
     },
     {
-      "version": "2026.05.02.14",
-      "date": "2026-05-02T10:31:12.546Z",
-      "commit": "09efb72e",
+      "version": "2026.05.03.13",
+      "date": "2026-05-03T11:31:40.324Z",
+      "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
-      "reference": "#L1-144",
-      "steps": "1. Check commit-summary.txt in root. 2. Verify docs/user-guides/history/release-v2026.05.02.13/ folder exists (if guides were updated). 3. Verify releases/ folder for new release doc.",
-      "type": "Enhancement",
-      "message": "Finalized versioned documentation archiving and automated git commit summary generation."
+      "reference": "",
+      "steps": "",
+      "type": "Build",
+      "message": "Automated build initiated via npm run build"
     },
     {
-      "version": "2026.05.02.13",
-      "date": "2026-05-02T10:24:01.862Z",
-      "commit": "09efb72e",
+      "version": "2026.05.03.12",
+      "date": "2026-05-03T10:11:21.965Z",
+      "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
-      "reference": "#L1-1796",
-      "steps": "1. Navigate to Resource Settings. 2. Verify WhatsApp Subscription fields. 3. Visit 'Infrastructure Support' via Profile/Dashboard. 4. Verify Rich Notification payload generation in actions.ts.",
-      "type": "Enhancement",
-      "message": "Upgraded Institutional Notification Logic with Rich Metadata & Infrastructure Fundraising Module."
+      "reference": "",
+      "steps": "",
+      "type": "Build",
+      "message": "Automated build initiated via npm run build"
     },
     {
-      "version": "2026.05.02.12",
-      "date": "2026-05-02T09:54:21.811Z",
-      "commit": "09efb72e",
+      "version": "2026.05.03.11",
+      "date": "2026-05-03T10:08:04.715Z",
+      "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
-      "reference": "#L1-300",
-      "steps": "1. Navigate to Dashboard. 2. Verify 'Mobile App Experience' section replacement. 3. Go to Profile. 4. Verify 'System Taskbar Alerts' setup button. 5. Confirm footer links to Registry Index instead of broken APK.",
-      "type": "Enhancement",
-      "message": "Upgraded Mobile Notification Strategy & Transitioned to PWA-Native Experience."
+      "reference": "",
+      "steps": "",
+      "type": "Build",
+      "message": "Automated build initiated via npm run build"
     },
     {
-      "version": "2026.05.02.11",
-      "date": "2026-05-02T09:43:31.414Z",
-      "commit": "c9d9353a",
+      "version": "2026.05.03.10",
+      "date": "2026-05-03T09:55:39.702Z",
+      "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
-      "reference": "#L1-50",
-      "steps": "1. Check docs/user-guides/mobile-installation.md. 2. Verify /registry-index shows the new guide. 3. Confirm 1KB APK placeholder is documented as a known issue.",
-      "type": "Bug",
-      "message": "Resolved APK Parsing Error documentation & Deployed Mobile PWA Setup Guide."
+      "reference": "",
+      "steps": "",
+      "type": "Build",
+      "message": "Automated build initiated via npm run build"
     },
     {
-      "version": "2026.05.02.10",
-      "date": "2026-05-02T09:41:35.385Z",
-      "commit": "c9d9353a",
+      "version": "2026.05.03.9",
+      "date": "2026-05-03T09:52:00.102Z",
+      "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
-      "reference": "#L1-400",
-      "steps": "1. Navigate to /registry-index. 2. Verify 'Architecture & Engineering' section with collection maps. 3. Explore 'User Documentation' section with 89+ auto-generated guides. 4. Verify 'docs/' folder structure integrity.",
-      "type": "Feature",
-      "message": "Deployed Institutional Documentation Suite (Automated User Guides & Architecture Mapping)."
+      "reference": "",
+      "steps": "",
+      "type": "Build",
+      "message": "Automated build initiated via npm run build"
     },
     {
-      "version": "2026.05.02.9",
-      "date": "2026-05-02T09:40:25.809Z",
-      "commit": "c9d9353a",
+      "version": "2026.05.03.8",
+      "date": "2026-05-03T09:45:12.568Z",
+      "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
-      "reference": "#L1-400",
-      "steps": "1. Navigate to /registry-index. 2. Verify 'Architecture & Engineering' section with collection maps. 3. Explore 'User Documentation' section with 89+ auto-generated guides. 4. Verify 'docs/' folder structure integrity.",
-      "type": "Feature",
-      "message": "Deployed Institutional Documentation Suite (Automated User Guides & Architecture Mapping)."
+      "reference": "",
+      "steps": "",
+      "type": "Build",
+      "message": "Automated build initiated via npm run build"
     },
     {
-      "version": "2026.05.02.8",
-      "date": "2026-05-02T09:24:30.500Z",
-      "commit": "c9d9353a",
+      "version": "2026.05.03.7",
+      "date": "2026-05-03T09:41:43.582Z",
+      "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
-      "reference": "#L1-200",
-      "steps": "1. Navigate to /registry-index. 2. Verify all 89 pages are indexed. 3. Test search and next/prev navigation.",
-      "type": "Feature",
-      "message": "Deployed Institutional Registry Index & Navigational Map system."
+      "reference": "",
+      "steps": "",
+      "type": "Build",
+      "message": "Automated build initiated via npm run build"
     },
     {
-      "version": "2026.05.02.7",
-      "date": "2026-05-02T09:19:48.850Z",
-      "commit": "c9d9353a",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "#L110-130",
-      "steps": "1. Check publish.js for process.argv[5]. 2. Confirm README_VERSIONING.md includes 'Steps' parameter. 3. Inspect latest release doc for 'Verification Steps' header.",
-      "type": "Enhancement",
-      "message": "Integrated 'Verification Steps' into automated release documentation system."
-    },
-    {
-      "version": "2026.05.02.6",
-      "date": "2026-05-02T09:19:26.500Z",
-      "commit": "c9d9353a",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "#L110",
-      "steps": "1. Open releases/ folder. 2. Verify new build document contains 'Verification Steps' section. 3. Confirm default steps appear when no manual steps are provided.",
-      "type": "Enhancement",
-      "message": "Added Verification Steps to automated release documentation."
-    },
-    {
-      "version": "2026.05.02.5",
-      "date": "2026-05-02T09:16:00.926Z",
-      "commit": "c9d9353a",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "#L1-50",
-      "type": "Feature",
-      "message": "Established Institutional Versioning Protocol and Documentation Workflow."
-    },
-    {
-      "version": "2026.05.02.4",
-      "date": "2026-05-02T09:12:18.175Z",
-      "commit": "c9d9353a",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "#L1-100",
-      "type": "Enhancement",
-      "message": "Deepened Git Traceability and Reference Support."
-    },
-    {
-      "version": "2026.05.02.3",
-      "date": "2026-05-02T09:09:58.214Z",
-      "commit": "c9d9353a",
-      "type": "Enhancement",
-      "message": "Restructured Release Ledger into separate build-specific Markdown documents with Git commit traceability."
-    },
-    {
-      "version": "2026.05.02.2",
-      "date": "2026-05-02T09:07:28.483Z",
-      "type": "Enhancement",
-      "message": "Implemented Automated Institutional Versioning & Release Ledger system (YYYY.MM.DD.N)."
-    },
-    {
-      "version": "2026.05.02.1",
-      "date": "2026-05-02T09:07:03.620Z",
-      "type": "Feature",
-      "message": "Integrated User Connectivity Diagnostics (WhatsApp/Telegram test) into profile page."
+      "version": "2026.05.03.6",
+      "date": "2026-05-03T00:30:04.818Z",
+      "commit": "ee070d6d",
+      "reference": "",
+      "steps": "",
+      "type": "Build",
+      "message": "Stabilized Administrative Image Persistence and Override Workflows"
     }
   ]
 }

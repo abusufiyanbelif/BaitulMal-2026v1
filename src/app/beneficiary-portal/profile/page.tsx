@@ -153,7 +153,7 @@ export default function BeneficiaryProfilePage() {
                     <Clock className="h-4 w-4 text-amber-600" />
                     <AlertTitle className="text-amber-800 font-black text-xs uppercase tracking-widest">Update Pending Approval</AlertTitle>
                     <AlertDescription className="text-amber-700 text-[11px] font-bold">
-                        Institutional records modification is awaiting administrative review. Edits are temporarily restricted.
+                        Organization records modification is awaiting administrative review. Edits are temporarily restricted.
                     </AlertDescription>
                 </Alert>
             )}
@@ -318,7 +318,7 @@ export default function BeneficiaryProfilePage() {
                             </div>
                             <Separator className="bg-slate-100" />
                             <p className="text-[9px] text-slate-400 font-medium leading-relaxed italic">
-                                Institutional support and disbursements are processed using these verified settlement records.
+                                Organization support and disbursements are processed using these verified settlement records.
                             </p>
                         </CardContent>
                     </Card>

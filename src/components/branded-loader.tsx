@@ -15,6 +15,36 @@ import type { BrandingSettings } from '@/lib/types';
 export function BrandedLoader({ message = "Updating Your Organization Records...", progress }: { message?: string, progress?: number }) {
   const firebase = useFirebase();
   const [branding, setBranding] = useState<BrandingSettings | null>(null);
+  const [simulatedProgress, setSimulatedProgress] = useState(0);
+  const [stage, setStage] = useState(0);
+
+  const stages = [
+    "Authenticating Secure Session...",
+    "Synchronizing With Cloud Vault...",
+    "Fetching Organization Branding...",
+    "Validating Verification Protocols...",
+    "Hydrating Dynamic Components...",
+    "Securing Contribution Records...",
+    "Rendering System Assets...",
+    "Finalizing Interface Layouts...",
+    "Optimizing Database Stream..."
+  ];
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setSimulatedProgress(old => {
+        if (old >= 95) {
+          clearInterval(timer);
+          return old;
+        }
+        const diff = Math.random() * 10;
+        return Math.min(old + diff, 95);
+      });
+      setStage(s => (s + 1) % stages.length);
+    }, 800);
+
+    return () => clearInterval(timer);
+  }, [stages.length]);
 
   useEffect(() => {
     if (firebase?.firestore) {
@@ -60,23 +90,20 @@ export function BrandedLoader({ message = "Updating Your Organization Records...
         </div>
 
         <div className="flex flex-col items-center gap-5 w-full text-center">
-          <div className="space-y-1.5">
-            <p className="text-sm font-bold text-primary tracking-tight">
-              {message}
+          <div className="space-y-1.5 h-12">
+            <p className="text-sm font-bold text-primary tracking-tight animate-pulse">
+              {progress === undefined ? stages[stage] : message}
             </p>
-            {progress !== undefined && (
-              <p className="text-[10px] font-black text-primary/40 tracking-widest">
-                {Math.round(progress)}% Secure
-              </p>
-            )}
+            <p className="text-[10px] font-black text-primary/40 tracking-widest uppercase">
+              {Math.round(progress ?? simulatedProgress)}% Secure
+            </p>
           </div>
           
-          <div className="w-full h-1 rounded-full bg-primary/5 overflow-hidden border border-primary/10 shadow-inner relative">
+          <div className="w-full h-1.5 rounded-full bg-primary/5 overflow-hidden border border-primary/10 shadow-inner relative">
             <Progress 
-                value={progress ?? 33} 
+                value={progress ?? simulatedProgress} 
                 className={cn(
-                    "h-full bg-primary transition-all duration-500 ease-out",
-                    progress === undefined && "animate-pulse"
+                    "h-full bg-primary transition-all duration-700 ease-in-out"
                 )} 
             />
           </div>

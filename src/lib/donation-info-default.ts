@@ -57,10 +57,10 @@ export const defaultDonationInfo: DonationTypeInfo[] = [
     {
         id: 'lillah',
         title: "Lillah (For The Sake Of Allah)",
-        description: "Voluntary Contributions Intended Specifically For Public Welfare, Institutions, And Religious Infrastructure.",
+        description: "Voluntary Contributions Intended Specifically For Public Welfare, Organizations, And Religious Infrastructure.",
         useCases: [],
         qaItems: [],
-        usage: "Used for running costs, salaries, and maintenance of community institutions like schools and mosques.",
+        usage: "Used for running costs, salaries, and maintenance of community organizations like schools and mosques.",
     },
     {
         id: 'interest',

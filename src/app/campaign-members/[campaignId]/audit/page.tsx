@@ -32,7 +32,7 @@ export default function CampaignAuditPage() {
 
     const isLoading = isCampaignLoading || isProfileLoading;
 
-    if (isLoading) return <BrandedLoader message="Retrieving Institutional Logs..." />;
+    if (isLoading) return <BrandedLoader message="Retrieving System Logs..." />;
 
     if (!campaign) return <p className="text-center mt-20 text-primary font-bold">Campaign Record Not Found.</p>;
 

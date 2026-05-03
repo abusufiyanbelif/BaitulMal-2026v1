@@ -103,9 +103,9 @@ export default function RegistryIndexPage() {
                                     <Compass className="h-8 w-8 text-white" />
                                 </div>
                                 <div>
-                                    <h1 className="text-4xl font-black tracking-tight text-slate-900 uppercase">Site Map</h1>
+                                    <h1 className="text-4xl font-black tracking-tight text-slate-900">Site Map</h1>
                                     <div className="flex items-center gap-2 mt-1">
-                                        <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100 text-[10px] font-black uppercase">Live List</Badge>
+                                        <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100 text-[10px] font-black">Live List</Badge>
                                         <span className="text-slate-400 text-xs font-normal">• All Pages & Help Guides</span>
                                     </div>
                                 </div>
@@ -126,7 +126,7 @@ export default function RegistryIndexPage() {
                                 className="h-14 px-8 rounded-2xl bg-slate-900 hover:bg-emerald-600 shadow-xl transition-all duration-300 font-bold text-sm"
                                 onClick={() => window.history.back()}
                             >
-                                <ArrowLeft className="h-5 w-5 mr-3" /> Return back
+                                <ArrowLeft className="h-5 w-5 mr-3" /> Return Back
                             </Button>
                         </div>
                     </div>
@@ -158,7 +158,7 @@ export default function RegistryIndexPage() {
                                 <FileCode2 className="h-6 w-6 text-emerald-600" />
                             </div>
                             <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Endpoints</p>
+                                <p className="text-[10px] font-black text-slate-400 tracking-widest mb-1">Endpoints</p>
                                 <p className="text-3xl font-black text-slate-900 leading-none">{pages.length}</p>
                             </div>
                         </Card>
@@ -167,7 +167,7 @@ export default function RegistryIndexPage() {
                                 <CheckCircle2 className="h-6 w-6 text-sky-600" />
                             </div>
                             <div>
-                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Guides</p>
+                                <p className="text-[10px] font-black text-slate-400 tracking-widest mb-1">Guides</p>
                                 <p className="text-3xl font-black text-slate-900 leading-none">{docs.userGuides.length}</p>
                             </div>
                         </Card>
@@ -179,7 +179,7 @@ export default function RegistryIndexPage() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="h-10 w-1.5 bg-sky-500 rounded-full" />
-                            <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">🏗️ System Info & Data Maps</h2>
+                            <h2 className="text-2xl font-black text-slate-800 tracking-tight">🏗️ System Info & Data Maps</h2>
                         </div>
                         <Badge variant="outline" className="rounded-full border-sky-100 bg-sky-50 text-sky-700 font-bold px-4">Core Infrastructure</Badge>
                     </div>
@@ -193,7 +193,7 @@ export default function RegistryIndexPage() {
                                             <Database className="h-6 w-6 text-sky-600" />
                                         </div>
                                         <div className="text-right">
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Type</p>
+                                            <p className="text-[10px] font-black text-slate-400 tracking-widest">Type</p>
                                             <p className="text-xs font-bold text-sky-600">Technical Spec</p>
                                         </div>
                                     </div>
@@ -202,7 +202,7 @@ export default function RegistryIndexPage() {
                                         <p className="text-sm font-normal text-slate-500 leading-relaxed">Details about how our system handles data and records.</p>
                                     </div>
                                     <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
-                                        <span className="text-[10px] font-normal text-slate-400">v2026.1.0</span>
+                                        <span className="text-[10px] font-normal text-slate-400">v{versionData.version}</span>
                                         <Button variant="ghost" size="sm" className="rounded-full text-sky-600 font-bold hover:bg-sky-100">
                                             Open Spec <ExternalLink className="ml-2 h-3 w-3" />
                                         </Button>
@@ -218,7 +218,7 @@ export default function RegistryIndexPage() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="h-10 w-1.5 bg-emerald-500 rounded-full" />
-                            <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">📱 All Website Pages</h2>
+                            <h2 className="text-2xl font-black text-slate-800 tracking-tight">📱 All Website Pages</h2>
                         </div>
                         <Badge variant="outline" className="rounded-full border-emerald-100 bg-emerald-50 text-emerald-700 font-bold px-4">Interactive Registry</Badge>
                     </div>
@@ -229,26 +229,26 @@ export default function RegistryIndexPage() {
                                 {/* Left Visual Panel */}
                                 <div className="md:w-1/3 bg-slate-50 p-8 flex flex-col justify-between border-r border-slate-100 group-hover:bg-emerald-50/30 transition-colors duration-700">
                                     <div className="space-y-6">
-                                        <Badge className="rounded-xl bg-slate-900 text-white font-black text-[10px] px-3 py-1 uppercase shadow-lg shadow-slate-200">
+                                        <Badge className="rounded-xl bg-slate-900 text-white font-black text-[10px] px-3 py-1 shadow-lg shadow-slate-200">
                                             MOD-00{page.id}
                                         </Badge>
                                         <div className="space-y-1">
-                                            <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-none uppercase group-hover:text-emerald-700 transition-colors">{page.name}</h3>
-                                            <p className="text-[10px] font-normal text-slate-400 uppercase tracking-[0.2em]">{page.purpose}</p>
+                                            <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-none group-hover:text-emerald-700 transition-colors">{page.name}</h3>
+                                            <p className="text-[10px] font-normal text-slate-400 tracking-[0.2em]">{page.purpose}</p>
                                         </div>
                                     </div>
 
                                     <div className="space-y-4 pt-8">
                                         {page.route.includes('[') ? (
                                             <div className="space-y-2">
-                                                <Button disabled className="w-full h-12 rounded-[1.2rem] bg-slate-100 border border-slate-200 text-slate-400 font-black text-xs uppercase tracking-wider cursor-not-allowed">
+                                                <Button disabled className="w-full h-12 rounded-[1.2rem] bg-slate-100 border border-slate-200 text-slate-400 font-black text-xs tracking-wider cursor-not-allowed">
                                                     Dynamic Route
                                                 </Button>
-                                                <p className="text-[9px] font-normal text-amber-600 text-center uppercase tracking-tighter">Requires ID</p>
+                                                <p className="text-[9px] font-normal text-amber-600 text-center tracking-tighter">Requires ID</p>
                                             </div>
                                         ) : (
                                             <Link href={page.route} className="block">
-                                                <Button className="w-full h-12 rounded-[1.2rem] bg-white border border-slate-200 text-slate-900 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 shadow-sm transition-all duration-300 font-black text-xs uppercase tracking-wider">
+                                                <Button className="w-full h-12 rounded-[1.2rem] bg-white border border-slate-200 text-slate-900 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 shadow-sm transition-all duration-300 font-black text-xs tracking-wider">
                                                     Go to Live View
                                                 </Button>
                                             </Link>
@@ -256,14 +256,14 @@ export default function RegistryIndexPage() {
                                         <div className="flex gap-2">
                                             {page.prev && !page.prev.includes('[') && (
                                                 <Link href={page.prev} className="flex-1">
-                                                    <Button variant="ghost" size="sm" className="w-full rounded-xl text-[9px] font-black uppercase text-slate-400 hover:text-emerald-600 hover:bg-emerald-50">
+                                                    <Button variant="ghost" size="sm" className="w-full rounded-xl text-[9px] font-black text-slate-400 hover:text-emerald-600 hover:bg-emerald-50">
                                                         <ArrowLeft className="mr-1 h-3 w-3" /> Prev
                                                     </Button>
                                                 </Link>
                                             )}
                                             {page.next && !page.next.includes('[') && (
                                                 <Link href={page.next} className="flex-1">
-                                                    <Button variant="ghost" size="sm" className="w-full rounded-xl text-[9px] font-black uppercase text-slate-400 hover:text-emerald-600 hover:bg-emerald-50">
+                                                    <Button variant="ghost" size="sm" className="w-full rounded-xl text-[9px] font-black text-slate-400 hover:text-emerald-600 hover:bg-emerald-50">
                                                         Next <ArrowRight className="ml-1 h-3 w-3" />
                                                     </Button>
                                                 </Link>
@@ -277,7 +277,7 @@ export default function RegistryIndexPage() {
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-3 text-slate-300">
                                             <Clock className="h-4 w-4" />
-                                            <span className="text-[10px] font-normal uppercase tracking-widest">Last Sync: {isMounted ? new Date(page.updatedAt).toLocaleDateString() : '2026-05-01'}</span>
+                                            <span className="text-[10px] font-normal tracking-widest">Last Sync: {isMounted ? new Date(page.updatedAt).toLocaleDateString() : '2026-05-01'}</span>
                                         </div>
                                         <Badge variant="outline" className="rounded-lg text-[9px] font-black border-slate-100 text-slate-400">{page.route}</Badge>
                                     </div>
@@ -289,7 +289,7 @@ export default function RegistryIndexPage() {
                                         <div className="space-y-3">
                                             <div className="flex items-center gap-2 text-emerald-600">
                                                 <Database className="h-4 w-4" />
-                                                <h4 className="text-[10px] font-black uppercase tracking-wider">Firestore Collections</h4>
+                                                <h4 className="text-[10px] font-black tracking-wider">Firestore Collections</h4>
                                             </div>
                                             <div className="flex flex-wrap gap-1.5">
                                                 {page.collections && page.collections.length > 0 ? (
@@ -308,7 +308,7 @@ export default function RegistryIndexPage() {
                                         <div className="space-y-3">
                                             <div className="flex items-center gap-2 text-sky-600">
                                                 <Table2 className="h-4 w-4" />
-                                                <h4 className="text-[10px] font-black uppercase tracking-wider">Mapped Fields</h4>
+                                                <h4 className="text-[10px] font-black tracking-wider">Mapped Fields</h4>
                                             </div>
                                             <ScrollArea className="h-24 pr-4">
                                                 <div className="flex flex-wrap gap-1.5">
@@ -330,7 +330,7 @@ export default function RegistryIndexPage() {
                                     <div className="pt-2">
                                         <div className="flex items-center gap-2 text-amber-600 mb-4">
                                             <Zap className="h-4 w-4" />
-                                            <h4 className="text-[10px] font-black uppercase tracking-wider">Available Interactions</h4>
+                                            <h4 className="text-[10px] font-black tracking-wider">Available Interactions</h4>
                                         </div>
                                         <div className="flex flex-wrap gap-2">
                                             {page.actions && page.actions.length > 0 ? (
@@ -356,7 +356,7 @@ export default function RegistryIndexPage() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="h-10 w-1.5 bg-amber-500 rounded-full" />
-                            <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">📘 Operational User Guides</h2>
+                            <h2 className="text-2xl font-black text-slate-800 tracking-tight">📘 Operational User Guides</h2>
                         </div>
                         <Badge variant="outline" className="rounded-full border-amber-100 bg-amber-50 text-amber-700 font-bold px-4">Documentation Engine v1.1</Badge>
                     </div>
@@ -373,7 +373,7 @@ export default function RegistryIndexPage() {
                                         <ExternalLink className="h-4 w-4 text-slate-200 group-hover:text-amber-400 transition-colors" />
                                     </div>
                                     <div>
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1">User Guide</p>
+                                        <p className="text-[10px] font-black text-slate-400 tracking-[0.2em] mb-1">User Guide</p>
                                         <h4 className="text-sm font-black text-slate-800 group-hover:text-amber-700 transition-colors line-clamp-1">{guide.name}</h4>
                                     </div>
                                 </div>
@@ -394,7 +394,7 @@ export default function RegistryIndexPage() {
                         </div>
                         
                         <div className="text-center space-y-2">
-                            <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.5em]">Website System Map</p>
+                            <p className="text-[11px] font-black text-slate-400 tracking-[0.5em]">Website System Map</p>
                             <p className="text-xs font-bold text-slate-300 tracking-wide">BaitulMal 2026v1 System • Secure Website Area</p>
                         </div>
                         

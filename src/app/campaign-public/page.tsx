@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { ArrowLeft } from 'lucide-react';
 import type { Campaign, Beneficiary, Donation, DonationCategory } from '@/lib/types';
 import { usePublicData } from '@/hooks/use-public-data';
+import { BrandedLoader } from '@/components/branded-loader';
 
 export default function PublicCampaignPage() {
   const { isLoading, campaignsWithProgress } = usePublicData();
@@ -20,7 +21,7 @@ export default function PublicCampaignPage() {
           </Link>
         </Button>
       </div>
-      <Suspense fallback={<div className="h-48 flex items-center justify-center font-bold text-slate-400">Loading Campaigns...</div>}>
+      <Suspense fallback={<BrandedLoader message="Synchronizing Organization Projects..." />}>
         <PublicCampaignsView />
       </Suspense>
     </main>

@@ -15,6 +15,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { usePublicData } from '@/hooks/use-public-data';
 import Link from 'next/link';
 import { cn, getImageSrc } from '@/lib/utils';
+import { PurposePlaceholder } from '@/components/purpose-placeholder';
+import { LoadingProgressBar } from './loading-progress-bar';
 import { getDefaultImage } from '@/lib/default-images';
 import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -58,10 +60,6 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
         >
             <CarouselContent className="-ml-4">
                 {leads.map((lead, index) => {
-                    const FallbackIcon = lead.purpose === 'Education' ? GraduationCap : 
-                                         lead.purpose === 'Medical' ? HeartPulse : 
-                                         lead.purpose === 'Relief' ? LifeBuoy : 
-                                         lead.purpose === 'Other' ? Info : HandHelping;
                     const priorityLabel = lead.priority || 'Medium';
                     const isCompleted = lead.status === 'Completed';
                     const isUrgent = priorityLabel === 'Urgent' && !isCompleted;
@@ -79,14 +77,17 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                                 style={{ animationDelay: `${50 + index * 30}ms`, animationFillMode: 'backwards' }}
                                 onClick={() => router.push(`/leads-public/${lead.id}/summary`)}
                             >
-                                <div className="relative h-32 w-full bg-secondary flex items-center justify-center border-b border-primary/5">
-                                    <Image
-                                        src={getImageSrc(lead.imageUrl || getDefaultImage(lead.purpose))}
-                                        alt={lead.name}
-                                        fill
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                        className="object-cover"
-                                    />
+                                <div className="relative aspect-video w-full overflow-hidden">
+                                    {lead.imageUrl && lead.showCustomImage !== false ? (
+                                        <Image 
+                                            src={getImageSrc(lead.imageUrl)} 
+                                            alt={lead.name} 
+                                            fill 
+                                            className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                                        />
+                                    ) : (
+                                        <PurposePlaceholder purpose={lead.purpose} category={lead.category} />
+                                    )}
                                 </div>
                                 <CardHeader className="p-4">
                                     <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 tracking-tight text-primary">{lead.name}</CardTitle>
@@ -280,9 +281,19 @@ export function PublicLeadsView() {
         </div>
       </div>
 
+      <LoadingProgressBar isLoading={isLoading} label="Synchronizing Community Appeals..." />
+
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full rounded-xl" />)}
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="space-y-4">
+               <Skeleton className="h-48 w-full rounded-xl" />
+               <div className="space-y-2">
+                 <Skeleton className="h-4 w-3/4" />
+                 <Skeleton className="h-4 w-1/2" />
+               </div>
+            </div>
+          ))}
         </div>
       ) : (sections && sections.length > 0) ? (
         <Accordion type="multiple" defaultValue={['priority', 'ongoing_upcoming', 'completed']} className="space-y-6">

@@ -26,7 +26,7 @@ import { revokeAllSessionsForRoleAction } from '../auth-actions';
      { id: 'email', name: 'Email address' },
      { id: 'address', name: 'Residential address' },
      { id: 'status', name: 'Active status' },
-     { id: 'notes', name: 'Institutional notes' },
+     { id: 'notes', name: 'Organization notes' },
      { id: 'aadhaarNumber', name: 'Aadhaar Card' },
  ];
  
@@ -222,7 +222,7 @@ import { revokeAllSessionsForRoleAction } from '../auth-actions';
                      <UserSearch className="h-8 w-8" />
                  </div>
                  <div className="space-y-1">
-                     <h3 className="font-bold text-lg tracking-tight">Institutional Donor Search</h3>
+                     <h3 className="font-bold text-lg tracking-tight">Organization Donor Search</h3>
                      <p className="text-xs text-muted-foreground font-normal max-w-lg mx-auto">
                          This configuration applies to the **Search Donor** feature within donation registries. Enforcing phone or email as mandatory ensures that profiles can be accurately retrieved and merged.
                      </p>

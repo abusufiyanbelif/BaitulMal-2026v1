@@ -15,6 +15,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { usePublicData } from '@/hooks/use-public-data';
 import Link from 'next/link';
 import { cn, getImageSrc } from '@/lib/utils';
+import { PurposePlaceholder } from '@/components/purpose-placeholder';
+import { LoadingProgressBar } from './loading-progress-bar';
 import { getDefaultImage } from '@/lib/default-images';
 import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -58,7 +60,6 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
         >
             <CarouselContent className="-ml-4">
                 {campaigns.map((campaign, index) => {
-                    const FallbackIcon = campaign.category === 'Ration' ? Utensils : campaign.category === 'Relief' ? LifeBuoy : HandHelping;
                     const priorityLabel = campaign.priority || 'Medium';
                     const isCompleted = campaign.status === 'Completed';
                     const isUrgent = priorityLabel === 'Urgent' && !isCompleted;
@@ -76,14 +77,17 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                                 style={{ animationDelay: `${50 + index * 30}ms` }}
                                 onClick={() => router.push(`/campaign-public/${campaign.id}/summary`)}
                             >
-                                <div className="relative h-32 w-full bg-secondary flex items-center justify-center border-b border-primary/5">
-                                    <Image
-                                        src={getImageSrc(campaign.imageUrl || getDefaultImage(campaign.category))}
-                                        alt={campaign.name}
-                                        fill
-                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                                        className="object-cover"
-                                    />
+                                <div className="relative aspect-video w-full overflow-hidden">
+                                    {campaign.imageUrl && campaign.showCustomImage !== false ? (
+                                        <Image 
+                                            src={getImageSrc(campaign.imageUrl)} 
+                                            alt={campaign.name} 
+                                            fill 
+                                            className="object-cover transition-transform duration-500 group-hover:scale-110" 
+                                        />
+                                    ) : (
+                                        <PurposePlaceholder purpose={campaign.category} />
+                                    )}
                                 </div>
                                 <CardHeader className="p-4">
                                     <CardTitle className="w-full break-words text-sm sm:text-base font-bold line-clamp-2 text-primary">
@@ -278,9 +282,19 @@ export function PublicCampaignsView() {
         </div>
       </div>
 
+      <LoadingProgressBar isLoading={isLoading} label="Synchronizing Project Initiatives..." />
+
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(6)].map((_, i) => <Skeleton key={i} className="h-64 w-full rounded-xl" />)}
+          {[...Array(6)].map((_, i) => (
+            <div key={i} className="space-y-4">
+               <Skeleton className="h-48 w-full rounded-xl" />
+               <div className="space-y-2">
+                 <Skeleton className="h-4 w-3/4" />
+                 <Skeleton className="h-4 w-1/2" />
+               </div>
+            </div>
+          ))}
         </div>
       ) : sections.length > 0 ? (
         <Accordion type="multiple" defaultValue={['priority', 'ongoing_upcoming', 'completed']} className="space-y-6">

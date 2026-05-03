@@ -22,6 +22,7 @@ import {
 import { formatCurrency, formatDate } from '@/lib/utils';
 import Link from 'next/link';
 import { useState, useMemo } from 'react';
+import { PurposePlaceholder } from '@/components/purpose-placeholder';
 
 export default function DonorCausesPage() {
     const { isLoading, campaignsWithProgress, leadsWithProgress } = usePublicData();
@@ -44,7 +45,7 @@ export default function DonorCausesPage() {
         });
     }, [allCauses, filter]);
 
-    if (isLoading) return <BrandedLoader message="Discovering Active Institutional Initiatives..." />;
+    if (isLoading) return <BrandedLoader message="Discovering Active Organization Initiatives..." />;
 
     return (
         <div className="space-y-8 animate-fade-in-up pb-12">
@@ -75,16 +76,17 @@ export default function DonorCausesPage() {
                 {filteredCauses.map((cause) => (
                     <Card key={cause.id} className="border-none shadow-xl shadow-slate-200/40 bg-white rounded-[32px] overflow-hidden flex flex-col group hover:shadow-2xl transition-all duration-500 border border-transparent hover:border-slate-100">
                         <div className="relative h-56 w-full overflow-hidden">
-                            {cause.imageUrl ? (
+                            {(cause.imageUrl && (cause as any).showCustomImage !== false) ? (
                                 <img 
                                     src={cause.imageUrl} 
                                     alt={cause.name} 
                                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
                                 />
                             ) : (
-                                <div className="w-full h-full bg-slate-50 flex items-center justify-center">
-                                    <Target className="h-16 w-16 text-slate-100" />
-                                </div>
+                                <PurposePlaceholder 
+                                    purpose={(cause as any).purpose || (cause as any).category} 
+                                    category={(cause as any).category} 
+                                />
                             )}
                             <div className="absolute top-4 left-4">
                                 <Badge className={`${cause.type === 'Campaign' ? 'bg-indigo-600' : 'bg-primary'} text-white font-black text-[9px] uppercase tracking-widest border-none shadow-xl px-3 py-1`}>
@@ -95,7 +97,7 @@ export default function DonorCausesPage() {
                                 <p className="text-white font-black text-base line-clamp-1 tracking-tight">{cause.name}</p>
                                 <div className="flex items-center gap-2 mt-2">
                                     <ShieldCheck className="h-3 w-3 text-primary" />
-                                    <span className="text-[8px] font-bold text-white/60 uppercase tracking-widest">Verified Institutional Cause</span>
+                                    <span className="text-[8px] font-bold text-white/60 uppercase tracking-widest">Verified Organization Cause</span>
                                 </div>
                             </div>
                         </div>
@@ -140,7 +142,7 @@ export default function DonorCausesPage() {
                             </div>
 
                             <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed font-medium">
-                                {cause.description || 'This institutional initiative is verified for direct impact and follows strict administrative audit protocols.'}
+                                {cause.description || 'This organization initiative is verified for direct impact and follows strict administrative audit protocols.'}
                             </p>
                         </CardContent>
 

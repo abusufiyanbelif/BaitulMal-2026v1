@@ -15,7 +15,7 @@ import type { Donation, Beneficiary, Lead, Campaign } from '@/lib/types';
 
 /**
  * PWABadgeHandler - Invisible Component
- * Synchronizes the Home Screen App Icon Badge with institutional data.
+ * Synchronizes the Home Screen App Icon Badge with system data.
  */
 export function PWABadgeHandler() {
     const { user, isStaff } = useSession();

@@ -330,6 +330,7 @@ export interface Campaign extends DocumentData {
   documents?: CampaignDocument[];
   itemCategories: ItemCategory[];
   allowedDonationTypes?: DonationCategory[];
+  showCustomImage?: boolean;
   createdAt?: Timestamp | FieldValue;
   updatedAt?: Timestamp | FieldValue;
   createdById?: string;
@@ -371,6 +372,7 @@ export interface Lead extends DocumentData {
     zakatEligible: number;
   };
   allowedDonationTypes?: DonationCategory[];
+  showCustomImage?: boolean;
   createdAt?: Timestamp | FieldValue;
   updatedAt?: Timestamp | FieldValue;
   createdById?: string;
@@ -576,6 +578,14 @@ export interface PendingVerification extends DocumentData {
   updatedAt: Timestamp | FieldValue;
   module: 'donations' | 'beneficiaries' | 'campaigns' | 'leads' | 'donors' | 'users';
   description?: string;
+  requesterComment?: string;
+  approverComments?: { 
+    verifierId: string, 
+    verifierName: string, 
+    comment: string, 
+    status: 'Approved' | 'Rejected', 
+    updatedAt: any 
+  }[];
 }
  
 export interface InAppNotification extends DocumentData {

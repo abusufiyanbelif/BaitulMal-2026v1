@@ -16,7 +16,7 @@ interface AuditHistoryProps {
   title?: string;
 }
  
-export function AuditHistory({ targetId, module, title = "Institutional Audit Trail" }: AuditHistoryProps) {
+export function AuditHistory({ targetId, module, title = "Organization Audit Trail" }: AuditHistoryProps) {
     const firestore = useFirestore();
     const auditQuery = React.useMemo(() => {
         if (!firestore) return null;

@@ -26,6 +26,9 @@ const nextConfig = {
       },
     ],
   },
+  experimental: {
+    serverExternalPackages: ['genkit', '@genkit-ai/google-genai', '@genkit-ai/core', '@genkit-ai/ai', '@genkit-ai/flow'],
+  }
 };
 
 module.exports = nextConfig;

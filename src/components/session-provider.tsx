@@ -22,7 +22,10 @@ export const SessionContext = createContext<SessionContextType | undefined>(unde
  */
 export function SessionProvider({ authUser, children, isAuthenticating }: { authUser?: User | null; children: ReactNode; isAuthenticating: boolean; }) {
   const firestore = useFirestore();
-  const [tokenRole, setTokenRole] = useState<string | null>(null);
+  const [tokenRole, setTokenRole] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') return localStorage.getItem('portal_role');
+    return null;
+  });
 
   // 1. Resolve Role from Token Claims (Most Secure)
   useEffect(() => {
@@ -37,7 +40,7 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
       }
     }, 5000);
 
-    authUser.getIdTokenResult(true).then(result => {
+    authUser.getIdTokenResult().then(result => {
       clearTimeout(timeout);
       setTokenRole((result.claims?.role as string) || 'None');
     }).catch(err => {

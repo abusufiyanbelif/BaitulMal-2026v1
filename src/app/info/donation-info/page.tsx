@@ -54,7 +54,7 @@ const ZakatCustomIcon = ({ className }: { className?: string }) => (
       strokeWidth="4"
     />
 
-    {/* The Tie (Institutional Green) */}
+    {/* The Tie (Organization Green) */}
     <path 
       d="M190 135C190 135 235 155 256 155C277 155 322 135 322 135" 
       stroke="#166534" 
@@ -101,7 +101,7 @@ const typeIcons: Record<string, any> = {
 const comparisonData = [
     { feature: 'Status', zakat: 'Obligatory (Fard)', sadaqah: 'Voluntary', lillah: 'Voluntary', fidiya: 'Compensation', interest: 'Mandatory' },
     { feature: 'Amount', zakat: 'Fixed (2.5%)', sadaqah: 'Any', lillah: 'Any', fidiya: 'Fixed', interest: 'Total' },
-    { feature: 'Recipient', zakat: 'Specific 8 Groups', sadaqah: 'Anyone', lillah: 'Institutional', fidiya: 'Needy', interest: 'Public Welfare' },
+    { feature: 'Recipient', zakat: 'Specific 8 Groups', sadaqah: 'Anyone', lillah: 'Organization', fidiya: 'Needy', interest: 'Public Welfare' },
 ];
 
 export default function DonationInfoPage() {

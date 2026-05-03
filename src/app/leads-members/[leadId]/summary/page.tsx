@@ -82,6 +82,7 @@ import { Separator } from '@/components/ui/separator';
 import { FileUploader } from '@/components/file-uploader';
 import { Switch } from '@/components/ui/switch';
 import { BrandedLoader } from '@/components/branded-loader';
+import { PurposePlaceholder } from '@/components/purpose-placeholder';
 import Resizer from 'react-image-file-resizer';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -116,7 +117,7 @@ import { checkPendingVerificationAction, cleanupPendingVerificationsAction } fro
 import { recordAuditLogAction } from '@/app/audit/actions';
 import { notifyLeadAction } from '@/app/messages/actions';
 import { AuditHistory } from '@/components/audit-history';
-import { getDefaultImage, defaultInstitutionalAssets } from '@/lib/default-images';
+import { getDefaultImage, defaultRegistryAssets } from '@/lib/default-images';
 import type { PendingVerification } from '@/lib/types';
 
 const donationCategoryChartConfig = {
@@ -198,7 +199,7 @@ export default function LeadSummaryPage() {
 
     const galleryImages = useMemo(() => {
         const urls = new Set<string>();
-        defaultInstitutionalAssets.forEach(a => urls.add(a.url));
+        defaultRegistryAssets.forEach(a => urls.add(a.url));
         if (globalCampaigns) globalCampaigns.forEach(c => { if (c.imageUrl && !c.imageUrl.startsWith('data:')) urls.add(c.imageUrl); });
         if (globalLeads) globalLeads.forEach(l => { if (l.imageUrl && !l.imageUrl.startsWith('data:')) urls.add(l.imageUrl); });
         return Array.from(urls);
@@ -382,6 +383,7 @@ export default function LeadSummaryPage() {
                 diseaseStage: lead.diseaseStage || '',
                 seriousness: lead.seriousness || null,
                 itemCategories: lead.itemCategories || [],
+                showCustomImage: lead.showCustomImage ?? true,
             });
             if (lead.shopContact && lead.shopContact.startsWith('+')) {
                 const match = lead.shopContact.match(/^(\+\d+)/);
@@ -401,12 +403,12 @@ export default function LeadSummaryPage() {
     const purpose = editableLead.purpose;
     // Handle default image suggestions when purpose changes
     useEffect(() => {
-        // Only suggest a default image if there's no existing image and we're in edit mode
-        if (editMode && purpose && !editableLead.imageUrl && !imagePreview) {
+        // Only suggest a default image if there's no existing image, we're in edit mode, and the user hasn't explicitly deleted the current image
+        if (editMode && purpose && !editableLead.imageUrl && !imagePreview && !isImageDeleted) {
             const suggested = getDefaultImage(purpose);
             setSelectedDefaultImageUrl(suggested);
         }
-    }, [purpose, editMode, editableLead.imageUrl, imagePreview]);
+    }, [purpose, editMode, editableLead.imageUrl, imagePreview, isImageDeleted]);
 
     const handleFieldChange = (field: keyof Lead, value: any) => {
         setEditableLead(p => (p ? { ...p, [field]: value } : null));
@@ -482,15 +484,15 @@ export default function LeadSummaryPage() {
                 return;
             }
         } 
-        // Priority 2: Explicit Deletion (User clicked "Remove")
+        // Priority 2: Gallery Selection (User picked an existing image)
+        else if (selectedDefaultImageUrl) {
+            imageUrl = selectedDefaultImageUrl;
+            imageUrlFilename = 'registry_default.png';
+        }
+        // Priority 3: Explicit Deletion (User clicked "Remove")
         else if (isImageDeleted) {
             imageUrl = '';
             imageUrlFilename = '';
-        }
-        // Priority 3: Gallery Selection (User picked an existing image)
-        else if (selectedDefaultImageUrl) {
-            imageUrl = selectedDefaultImageUrl;
-            imageUrlFilename = 'institutional_default.png';
         }
         // Priority 4: Keep Existing (Handled by the initial let assignments)
         const documentUploadPromises = newDocuments.map(async (file) => {
@@ -512,6 +514,7 @@ export default function LeadSummaryPage() {
             updatedAt: serverTimestamp(),
             updatedById: userProfile.id,
             updatedByName: userProfile.name,
+            showCustomImage: editableLead.showCustomImage,
         };
         setPendingSaveData(saveData);
 
@@ -689,10 +692,21 @@ export default function LeadSummaryPage() {
                             {editMode ? (
                                 <div className="space-y-6 font-normal animate-fade-in-zoom">
                                     <div className="space-y-2">
-                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize opacity-60">Upload Image</Label>
+                                        <div className="flex items-center justify-between">
+                                            <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize opacity-60">Upload Image</Label>
+                                            <div className="flex items-center gap-2">
+                                                <Label htmlFor="showCustomImage" className="text-[10px] font-bold text-muted-foreground">Show Custom Image</Label>
+                                                <Switch 
+                                                    id="showCustomImage" 
+                                                    checked={editableLead.showCustomImage} 
+                                                    onCheckedChange={(val) => handleFieldChange('showCustomImage', val)} 
+                                                    className="scale-75"
+                                                />
+                                            </div>
+                                        </div>
                                         <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
                                         <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-all duration-300 group border-primary/20 overflow-hidden">
-                                            {imagePreview || selectedDefaultImageUrl ? ( 
+                                            { (imagePreview || selectedDefaultImageUrl) && editableLead.showCustomImage ? ( 
                                                 <>
                                                     <Image src={getImageSrc(imagePreview || selectedDefaultImageUrl!)} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg transition-transform duration-700 group-hover:scale-105" />
                                                     <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
@@ -706,9 +720,12 @@ export default function LeadSummaryPage() {
                                                     </div>
                                                 </> 
                                             ) : ( 
-                                                <div className="flex flex-col items-center justify-center pt-5 pb-6 transition-transform group-hover:scale-105">
-                                                    <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground group-hover:text-primary" />
-                                                    <p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click To Upload</span></p>
+                                                <div className="w-full h-full relative group">
+                                                    <PurposePlaceholder purpose={editableLead.purpose} category={editableLead.category} className="rounded-lg" />
+                                                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                        <UploadCloud className="w-8 h-8 mb-2 text-primary" />
+                                                        <p className="text-sm font-bold text-primary">Click To Upload</p>
+                                                    </div>
                                                 </div> 
                                             )}
                                         </label>
@@ -723,6 +740,7 @@ export default function LeadSummaryPage() {
                                                         type="button"
                                                         onClick={() => {
                                                             handleRemoveImage();
+                                                            setIsImageDeleted(false); // Reset deletion state as we are selecting a new one
                                                             setSelectedDefaultImageUrl(url);
                                                         }}
                                                         className={cn(
@@ -891,8 +909,12 @@ export default function LeadSummaryPage() {
                                 </div>
                             ) : (
                                 <>
-                                    <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer transition-all duration-500 hover:shadow-lg group" onClick={() => { if (lead?.imageUrl || getDefaultImage(lead?.purpose)) handleViewImage(getImageSrc(lead?.imageUrl || getDefaultImage(lead?.purpose)), lead?.name || 'Lead Image'); }}>
-                                        <Image src={getImageSrc(lead?.imageUrl || getDefaultImage(lead?.purpose))} alt={lead?.name || 'Lead Image'} fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                                    <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer transition-all duration-500 hover:shadow-lg group" onClick={() => { if (lead?.imageUrl && lead?.showCustomImage !== false) handleViewImage(getImageSrc(lead?.imageUrl), lead?.name || 'Lead Image'); }}>
+                                        {lead?.imageUrl && lead?.showCustomImage !== false ? (
+                                            <Image src={getImageSrc(lead.imageUrl)} alt={lead?.name || 'Lead Image'} fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                                        ) : (
+                                            <PurposePlaceholder purpose={lead?.purpose} category={lead?.category} />
+                                        )}
                                         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                     </div>
                                     <div className="space-y-2 font-normal text-foreground">

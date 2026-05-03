@@ -49,6 +49,7 @@ import { approveVerificationAction, rejectVerificationAction, cancelVerification
 import type { PendingVerification } from '@/lib/types';
 import { cn, generateChanges, formatCurrency, formatDate } from '@/lib/utils';
 import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
 function TargetRecordPreview({ requestId, module, targetId, targetCollection }: { requestId: string, module: string, targetId: string, targetCollection: string }) {
@@ -62,7 +63,7 @@ function TargetRecordPreview({ requestId, module, targetId, targetCollection }: 
             <Ban className="h-5 w-5 text-red-500" />
             <div className="flex-1">
                 <p className="text-xs font-bold text-red-700">Source Record Not Found</p>
-                <p className="text-[10px] text-red-600/70 font-medium">The document may have been purged from the institutional registry.</p>
+                <p className="text-[10px] text-red-600/70 font-medium">The document may have been purged from the system registry.</p>
             </div>
         </div>
     );
@@ -84,7 +85,7 @@ function TargetRecordPreview({ requestId, module, targetId, targetCollection }: 
                 <Icon className="h-6 w-6" />
             </div>
             <div className="flex-1 min-w-0">
-                <p className="text-[9px] font-bold text-primary/40 uppercase tracking-[0.2em] mb-0.5">Record Context</p>
+                <p className="text-[9px] font-bold text-primary/40 tracking-[0.2em] mb-0.5">Record Context</p>
                 <h4 className="font-bold text-primary text-lg truncate leading-tight">{name}</h4>
                 <p className="text-[10px] font-medium text-primary/60 flex items-center gap-1.5 mt-1">
                     <Activity className="h-3 w-3 text-primary/30" />
@@ -92,7 +93,7 @@ function TargetRecordPreview({ requestId, module, targetId, targetCollection }: 
                 </p>
             </div>
             <div className="hidden sm:block">
-                <Badge variant="outline" className="text-[9px] font-bold opacity-40 uppercase h-6 px-2.5 rounded-lg border-primary/10">ID: {targetId.slice(0, 8)}</Badge>
+                <Badge variant="outline" className="text-[9px] font-bold opacity-40 h-6 px-2.5 rounded-lg border-primary/10">Id: {targetId.slice(0, 8)}</Badge>
             </div>
         </div>
     );
@@ -109,6 +110,7 @@ export default function VerificationsPage() {
     const [isDetailOpen, setIsDetailOpen] = useState(false);
     const [isActionLoading, setIsActionLoading] = useState(false);
     const [rejectionReason, setRejectionReason] = useState('');
+    const [approvalComment, setApprovalComment] = useState('');
     const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
 
     const verificationsRef = useMemoFirebase(() => {
@@ -143,10 +145,11 @@ export default function VerificationsPage() {
         if (!userProfile) return;
         setIsActionLoading(true);
         try {
-            const res = await approveVerificationAction(requestId, userProfile.id);
+            const res = await approveVerificationAction(requestId, userProfile.id, approvalComment);
             if (res.success) {
                 toast({ title: "Approved", description: res.message, variant: "success" });
                 setIsDetailOpen(false);
+                setApprovalComment('');
             } else {
                 toast({ title: "Approval Failed", description: res.message, variant: "destructive" });
             }
@@ -197,9 +200,15 @@ export default function VerificationsPage() {
         v.assignedVerifiers.some(av => av.id === userProfile?.id && av.status === 'Pending')
     );
 
-    const allRequests = targetRequestId 
-        ? (verifications || []).filter(v => v.id === targetRequestId) 
-        : (verifications || []);
+    const globalActiveRequests = (verifications || []).filter(v => 
+        v.status === 'Pending' || v.status === 'Partially Approved'
+    );
+
+    const historyRequests = (verifications || []).filter(v => 
+        v.status === 'Approved' || v.status === 'Rejected'
+    );
+
+    const allRequests = verifications || [];
 
     return (
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal relative min-h-screen">
@@ -212,16 +221,16 @@ export default function VerificationsPage() {
                         <ShieldCheck className="h-9 w-9 text-primary" />
                         Verification Pipeline
                     </h1>
-                    <p className="text-sm font-bold opacity-70 leading-relaxed max-w-2xl">Audit and authorize modifications across the institutional cloud registry.</p>
+                    <p className="text-sm font-bold opacity-70 leading-relaxed max-w-2xl">Audit and authorize modifications across the cloud registry.</p>
                 </div>
                 
                 <div className="flex items-center gap-3 bg-white/50 backdrop-blur-md p-2 rounded-2xl border border-primary/5 shadow-sm animate-fade-in-up">
                     <div className="px-4 py-1 text-center border-r border-primary/10">
-                        <p className="text-[10px] uppercase font-bold opacity-40 tracking-widest">Awaiting Me</p>
+                        <p className="text-[10px] font-bold opacity-40 tracking-widest">Awaiting Me</p>
                         <p className="text-xl font-bold text-primary">{myPendingRequests.length}</p>
                     </div>
                     <div className="px-4 py-1 text-center">
-                        <p className="text-[10px] uppercase font-bold opacity-40 tracking-widest">System Total</p>
+                        <p className="text-[10px] font-bold opacity-40 tracking-widest">System Total</p>
                         <p className="text-xl font-bold text-primary">{allRequests.length}</p>
                     </div>
                 </div>
@@ -230,10 +239,13 @@ export default function VerificationsPage() {
             <Tabs defaultValue="assigned" className="w-full space-y-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
                 <TabsList className="bg-white/50 backdrop-blur-md p-1 border border-primary/10 rounded-2xl h-12 shadow-sm">
                     <TabsTrigger value="assigned" className="rounded-xl px-6 font-bold h-10 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
-                        My Assignments
+                        My Tasks
                     </TabsTrigger>
-                    <TabsTrigger value="all" className="rounded-xl px-6 font-bold h-10 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
-                        Full Audit Trail
+                    <TabsTrigger value="global" className="rounded-xl px-6 font-bold h-10 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
+                        Global Pipeline
+                    </TabsTrigger>
+                    <TabsTrigger value="history" className="rounded-xl px-6 font-bold h-10 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
+                        Audit History
                     </TabsTrigger>
                 </TabsList>
 
@@ -253,7 +265,7 @@ export default function VerificationsPage() {
                     ) : (
                         <div className="flex flex-col items-center justify-center py-24 text-center bg-primary/5 rounded-[32px] border-2 border-dashed border-primary/10 animate-fade-in-zoom">
                             <div className="relative mb-6">
-                                <CheckCircle2 className="h-16 w-16 text-primary/10" />
+                                <CheckCircle2 className="h-16 w-16 text-primary/30" />
                                 <div className="absolute inset-0 animate-ping rounded-full border-2 border-primary/20 scale-150 opacity-0" />
                             </div>
                             <h3 className="font-bold text-xl text-primary tracking-tight">Queue All Clear</h3>
@@ -262,32 +274,61 @@ export default function VerificationsPage() {
                     )}
                 </TabsContent>
 
-                <TabsContent value="all" className="space-y-6 outline-none">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {allRequests.map((v, idx) => (
-                            <VerificationCard 
-                                key={v.id} 
-                                request={v} 
-                                index={idx}
-                                onView={() => { setSelectedRequest(v); setIsDetailOpen(true); }} 
-                                onWithdraw={v.requestedBy.id === userProfile?.id && (v.status === 'Pending' || v.status === 'Partially Approved') ? () => handleWithdraw(v.id) : undefined}
-                            />
-                        ))}
-                    </div>
+                <TabsContent value="global" className="space-y-6 outline-none">
+                    {globalActiveRequests.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {globalActiveRequests.map((v, idx) => (
+                                <VerificationCard 
+                                    key={v.id} 
+                                    request={v} 
+                                    index={idx}
+                                    onView={() => { setSelectedRequest(v); setIsDetailOpen(true); }} 
+                                    onWithdraw={v.requestedBy.id === userProfile?.id && (v.status === 'Pending' || v.status === 'Partially Approved') ? () => handleWithdraw(v.id) : undefined}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-24 text-center bg-primary/5 rounded-[32px] border-2 border-dashed border-primary/10">
+                            <Activity className="h-12 w-12 text-primary/30 mb-4" />
+                            <h3 className="font-bold text-lg text-primary tracking-tight">Pipeline Clear</h3>
+                            <p className="text-muted-foreground text-xs font-bold opacity-60 mt-2">No active verification requests across the organization.</p>
+                        </div>
+                    )}
+                </TabsContent>
+
+                <TabsContent value="history" className="space-y-6 outline-none">
+                    {historyRequests.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {historyRequests.map((v, idx) => (
+                                <VerificationCard 
+                                    key={v.id} 
+                                    request={v} 
+                                    index={idx}
+                                    onView={() => { setSelectedRequest(v); setIsDetailOpen(true); }} 
+                                />
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center justify-center py-24 text-center bg-primary/5 rounded-[32px] border-2 border-dashed border-primary/10">
+                            <History className="h-12 w-12 text-primary/30 mb-4" />
+                            <h3 className="font-bold text-lg text-primary tracking-tight">No Historical Records</h3>
+                            <p className="text-muted-foreground text-xs font-bold opacity-60 mt-2">Historical verification actions will appear here once finalized.</p>
+                        </div>
+                    )}
                 </TabsContent>
             </Tabs>
 
             <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-                <DialogContent className="w-[95vw] sm:max-w-3xl max-h-[90vh] flex flex-col rounded-[32px] border-primary/10 shadow-2xl overflow-hidden p-0 gap-0">
+                <DialogContent className="w-[95vw] sm:max-w-3xl h-[90vh] max-h-[90vh] flex flex-col rounded-[32px] border-primary/10 shadow-2xl overflow-hidden p-0 gap-0">
                     <DialogHeader className="bg-primary/5 p-8 border-b relative shrink-0">
                         <div className="absolute top-0 right-0 p-8 opacity-5">
                             <ShieldCheck className="h-32 w-32" />
                         </div>
                         <div className="flex items-center justify-between mb-4 relative z-10">
-                             <Badge className="bg-primary/10 text-primary hover:bg-primary/20 capitalize font-bold border-0 px-4 h-7 rounded-full">
+                             <Badge className="bg-primary/10 text-primary hover:bg-primary/20 font-bold border-0 px-4 h-7 rounded-full">
                                 {selectedRequest?.module} Auditor View
                             </Badge>
-                            <Badge variant={selectedRequest?.status === 'Approved' ? 'eligible' : selectedRequest?.status === 'Rejected' ? 'destructive' : 'outline'} className="capitalize font-bold px-4 h-7 rounded-full shadow-sm">
+                            <Badge variant={selectedRequest?.status === 'Approved' ? 'eligible' : selectedRequest?.status === 'Rejected' ? 'destructive' : 'outline'} className="font-bold px-4 h-7 rounded-full shadow-sm">
                                 {selectedRequest?.status}
                             </Badge>
                         </div>
@@ -297,24 +338,24 @@ export default function VerificationsPage() {
                         </DialogDescription>
                     </DialogHeader>
 
-                    <ScrollArea className="flex-1">
+                    <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar">
                         <div className="p-8 pb-0 space-y-6">
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div className="bg-primary/5 p-4 rounded-2xl border border-primary/5">
-                                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">Module</span>
-                                    <span className="text-xs font-bold text-primary capitalize flex items-center gap-2">
+                                    <span className="text-[9px] font-bold text-muted-foreground tracking-widest block mb-1">Module</span>
+                                    <span className="text-xs font-bold text-primary flex items-center gap-2">
                                         <FolderKanban className="h-3 w-3" />
                                         {selectedRequest?.module}
                                     </span>
                                 </div>
                                 <div className="bg-primary/5 p-4 rounded-2xl border border-primary/5">
-                                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">Target Record ID</span>
+                                    <span className="text-[9px] font-bold text-muted-foreground tracking-widest block mb-1">Target Record ID</span>
                                     <span className="text-xs font-bold text-primary font-mono truncate block">
                                         {selectedRequest?.targetId}
                                     </span>
                                 </div>
                                 <div className="bg-primary/5 p-4 rounded-2xl border border-primary/5">
-                                    <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block mb-1">Requester</span>
+                                    <span className="text-[9px] font-bold text-muted-foreground tracking-widest block mb-1">Requester</span>
                                     <span className="text-xs font-bold text-primary flex items-center gap-2">
                                         <User className="h-3 w-3" />
                                         {selectedRequest?.requestedBy.name}
@@ -330,51 +371,142 @@ export default function VerificationsPage() {
                                     targetCollection={selectedRequest.targetCollection}
                                 />
                             )}
+
+                            {/* Changeset Overview */}
+                            {selectedRequest && (
+                                <div className="bg-primary/[0.02] p-6 rounded-3xl border border-primary/5 shadow-inner">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h4 className="text-[10px] font-black text-primary/40 tracking-[0.2em] flex items-center gap-2">
+                                            <Activity className="h-4 w-4" /> Detected Modifications (Changeset)
+                                        </h4>
+                                        <Badge variant="outline" className="text-[9px] font-bold border-primary/10 text-primary/40 h-5">
+                                            {generateChanges(selectedRequest.originalValue, selectedRequest.newValue).length} Deltas Identified
+                                        </Badge>
+                                    </div>
+                                    
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        {generateChanges(selectedRequest.originalValue, selectedRequest.newValue).map((change, idx) => (
+                                            <div key={idx} className="flex flex-col gap-1 p-3.5 rounded-2xl bg-white border border-primary/5 shadow-sm transition-all hover:border-primary/20">
+                                                <span className="text-[9px] font-black text-primary/30 tracking-widest">{change.field.replace(/([A-Z])/g, ' $1')}</span>
+                                                <div className="flex items-center gap-3 font-mono text-[11px]">
+                                                    <span className="text-red-500/40 line-through truncate max-w-[100px]">{String(change.old !== undefined && change.old !== null ? (typeof change.old === 'object' ? 'Object' : change.old) : 'Null')}</span>
+                                                    <ArrowRight className="h-3 w-3 text-primary/20" />
+                                                    <span className="text-primary font-bold truncate">{String(change.new !== undefined && change.new !== null ? (typeof change.new === 'object' ? 'Object' : change.new) : 'Empty')}</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {generateChanges(selectedRequest.originalValue, selectedRequest.newValue).length === 0 && (
+                                            <div className="col-span-full py-6 flex flex-col items-center justify-center text-center opacity-40">
+                                                <Info className="h-8 w-8 mb-2" />
+                                                <p className="text-[10px] font-bold tracking-widest leading-relaxed">No distinct field-level modifications <br/> detected in this request.</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="p-8 space-y-8">
-                            {selectedRequest?.description && (
-                                <div className="p-5 bg-primary/[0.03] rounded-2xl border border-primary/5 relative overflow-hidden group">
+                             {(selectedRequest?.description || selectedRequest?.requesterComment) && (
+                                <div className="p-6 bg-primary/[0.03] rounded-3xl border border-primary/5 relative overflow-hidden group">
                                     <div className="absolute top-0 left-0 h-full w-1 bg-primary group-hover:w-2 transition-all" />
-                                    <div className="flex items-center gap-2 mb-3 text-primary font-bold text-[10px] uppercase tracking-[0.2em] opacity-50">
-                                        <MessageSquare className="h-3.5 w-3.5" />
-                                        Request Narrative
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="flex items-center gap-2 text-primary font-bold text-[10px] tracking-[0.2em] opacity-50">
+                                            <MessageSquare className="h-3.5 w-3.5" />
+                                            Audit Trail & Narrative
+                                        </div>
                                     </div>
-                                    <p className="text-sm font-bold text-primary/80 leading-relaxed">{selectedRequest.description}</p>
+                                    <div className="space-y-4">
+                                        {selectedRequest?.description && (
+                                            <div>
+                                                <p className="text-[10px] font-black text-primary/40 tracking-widest mb-1">Request Summary</p>
+                                                <p className="text-sm font-bold text-primary/80 leading-relaxed">{selectedRequest.description}</p>
+                                            </div>
+                                        )}
+                                        {selectedRequest?.requesterComment && (
+                                            <div className="pt-3 border-t border-primary/5">
+                                                <p className="text-[10px] font-black text-primary/40 tracking-widest mb-1">Requester Note</p>
+                                                <p className="text-sm font-medium text-primary/70 bg-white/40 p-3 rounded-xl border border-primary/5 italic">
+                                                    "{selectedRequest.requesterComment}"
+                                                </p>
+                                            </div>
+                                        )}
+                                        {selectedRequest?.approverComments && selectedRequest.approverComments.length > 0 && (
+                                            <div className="pt-3 border-t border-primary/5 space-y-3">
+                                                <p className="text-[10px] font-black text-primary/40 tracking-widest mb-2">Reviewer Feedback</p>
+                                                {selectedRequest.approverComments.map((ac, idx) => (
+                                                    <div key={idx} className="flex gap-3 items-start">
+                                                        <div className={cn(
+                                                            "h-6 w-6 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold",
+                                                            ac.status === 'Approved' ? "bg-emerald-100 text-emerald-700" : "bg-red-100 text-red-700"
+                                                        )}>
+                                                            {ac.verifierName.charAt(0)}
+                                                        </div>
+                                                        <div className="flex-1">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <span className="text-[10px] font-bold text-primary">{ac.verifierName}</span>
+                                                                <Badge variant={ac.status === 'Approved' ? 'eligible' : 'destructive'} className="text-[8px] h-3.5 px-1 font-black">{ac.status}</Badge>
+                                                            </div>
+                                                            <p className="text-[11px] text-primary/60 font-medium leading-normal">{ac.comment}</p>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             )}
 
                             <div className="space-y-5">
-                                <h3 className="font-bold text-xs text-primary uppercase tracking-[0.3em] opacity-40 flex items-center gap-2">
+                                <h3 className="font-bold text-xs text-primary tracking-[0.3em] opacity-40 flex items-center gap-2">
                                     <History className="h-4 w-4" />
                                     Detailed State Changes
                                 </h3>
                                 <div className="space-y-3">
                                     {generateChanges(selectedRequest?.originalValue, selectedRequest?.newValue).length > 0 ? (
-                                        <div className="grid grid-cols-1 gap-3">
+                                        <div className="grid grid-cols-1 gap-4">
                                             {generateChanges(selectedRequest?.originalValue, selectedRequest?.newValue).map((change, i) => (
-                                                <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white rounded-2xl border border-primary/5 shadow-sm group hover:border-primary/20 transition-all">
-                                                    <div className="space-y-1">
-                                                        <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block">{change.field}</span>
-                                                        <div className="flex items-center gap-3">
-                                                            <span className="text-xs text-muted-foreground line-through opacity-50">{typeof change.old === 'object' ? 'Object' : String(change.old || 'N/A')}</span>
-                                                            <ArrowRight className="h-3 w-3 text-primary/40" />
-                                                            <span className="text-xs font-bold text-primary">{typeof change.new === 'object' ? 'Object' : String(change.new || 'N/A')}</span>
+                                                <div key={i} className="p-5 bg-white rounded-3xl border border-primary/5 shadow-sm group hover:border-primary/10 transition-all overflow-hidden relative">
+                                                    <div className="absolute top-0 right-0 p-3 opacity-5">
+                                                        <Activity className="h-10 w-10" />
+                                                    </div>
+                                                    <div className="flex items-center justify-between mb-4">
+                                                        <span className="text-[10px] font-black text-primary/40 tracking-[0.2em]">{change.field.replace(/([A-Z])/g, ' $1')}</span>
+                                                        <Badge variant="outline" className="text-[8px] font-black h-4 px-2 tracking-widest opacity-40 border-primary/10">Modified</Badge>
+                                                    </div>
+                                                    <div className="grid grid-cols-1 sm:grid-cols-[1fr,auto,1fr] items-center gap-4">
+                                                        <div className="space-y-1.5">
+                                                            <span className="text-[9px] font-black text-red-400 tracking-widest block ml-1">Previous State</span>
+                                                            <div className="p-4 bg-red-50/40 rounded-2xl border border-red-100/40 text-[11px] font-bold text-red-700/60 truncate shadow-inner">
+                                                                {typeof change.old === 'object' ? 'Structured Object' : String(change.old || 'Null Baseline')}
+                                                            </div>
+                                                        </div>
+                                                        <div className="flex justify-center">
+                                                            <div className="h-8 w-8 rounded-full bg-primary/5 flex items-center justify-center text-primary/20 border border-primary/5">
+                                                                <ArrowRight className="h-4 w-4" />
+                                                            </div>
+                                                        </div>
+                                                        <div className="space-y-1.5">
+                                                            <span className="text-[9px] font-black text-emerald-400 tracking-widest block ml-1">Proposed Update</span>
+                                                            <div className="p-4 bg-emerald-50/40 rounded-2xl border border-emerald-100/40 text-[11px] font-black text-emerald-800 truncate shadow-inner">
+                                                                {typeof change.new === 'object' ? 'Structured Object' : String(change.new || 'Empty Value')}
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
                                     ) : (
-                                        <div className="p-8 bg-primary/[0.02] rounded-2xl border border-dashed border-primary/10 text-center">
-                                            <p className="text-xs font-bold text-primary/40">No atomic field changes detected (Possible deep object update)</p>
+                                        <div className="p-12 bg-primary/[0.02] rounded-[32px] border-2 border-dashed border-primary/5 text-center">
+                                            <Info className="h-8 w-8 text-primary/10 mx-auto mb-3" />
+                                            <p className="text-xs font-bold text-primary/40 tracking-tight">No atomic field changes detected (Possible complex nested modification)</p>
                                         </div>
                                     )}
                                 </div>
                             </div>
 
                             <div className="space-y-5">
-                                <h3 className="font-bold text-xs text-primary uppercase tracking-[0.3em] opacity-40 flex items-center gap-2">
+                                <h3 className="font-bold text-xs text-primary tracking-[0.3em] opacity-40 flex items-center gap-2">
                                     <Lock className="h-4 w-4" />
                                     Raw Protocol Buffers (Audit Reference)
                                 </h3>
@@ -382,7 +514,7 @@ export default function VerificationsPage() {
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-2">
                                             <div className="h-2 w-2 rounded-full bg-muted-foreground/30" />
-                                            <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Institutional Baseline</Label>
+                                            <Label className="text-[10px] font-bold text-muted-foreground tracking-widest">Original Data Baseline</Label>
                                         </div>
                                         <div className="p-5 bg-muted/20 rounded-2xl text-[11px] font-mono whitespace-pre-wrap border border-primary/5 overflow-auto max-h-52 shadow-inner">
                                             {JSON.stringify(selectedRequest?.originalValue, null, 2)}
@@ -391,7 +523,7 @@ export default function VerificationsPage() {
                                     <div className="space-y-3">
                                         <div className="flex items-center gap-2">
                                             <div className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-                                            <Label className="text-[10px] font-bold text-primary uppercase tracking-widest">Proposed Modification</Label>
+                                            <Label className="text-[10px] font-bold text-primary tracking-widest">Proposed Modification</Label>
                                         </div>
                                         <div className="p-5 bg-primary/[0.04] rounded-2xl text-[11px] font-mono whitespace-pre-wrap border border-primary/10 overflow-auto max-h-52 text-primary font-bold shadow-inner">
                                             {JSON.stringify(selectedRequest?.newValue, null, 2)}
@@ -401,7 +533,7 @@ export default function VerificationsPage() {
                             </div>
 
                             <div className="space-y-5">
-                                <h3 className="font-bold text-xs text-primary uppercase tracking-[0.3em] opacity-40 flex items-center gap-2">
+                                <h3 className="font-bold text-xs text-primary tracking-[0.3em] opacity-40 flex items-center gap-2">
                                     <Activity className="h-4 w-4" />
                                     Authorization Quorum
                                 </h3>
@@ -424,12 +556,12 @@ export default function VerificationsPage() {
                                                 </div>
                                                 <div className="space-y-0.5">
                                                     <span className="font-bold text-sm text-primary block">{av.name} {av.id === userProfile?.id && "(You)"}</span>
-                                                    <span className="text-[9px] text-muted-foreground font-bold uppercase tracking-tighter">
+                                                    <span className="text-[9px] text-muted-foreground font-bold tracking-tighter">
                                                         {av.status === 'Pending' ? 'Pending Approval' : `Actioned on ${av.updatedAt ? new Date((av.updatedAt as any).seconds * 1000).toLocaleDateString() : 'N/A'}`}
                                                     </span>
                                                 </div>
                                             </div>
-                                            <Badge variant={av.status === 'Approved' ? 'eligible' : av.status === 'Rejected' ? 'destructive' : 'outline'} className="capitalize font-bold text-[10px] px-3 h-6 rounded-full">
+                                            <Badge variant={av.status === 'Approved' ? 'eligible' : av.status === 'Rejected' ? 'destructive' : 'outline'} className="font-bold text-[10px] px-3 h-6 rounded-full">
                                                 {av.status}
                                             </Badge>
                                         </div>
@@ -437,31 +569,42 @@ export default function VerificationsPage() {
                                 </div>
                             </div>
                         </div>
-                    </ScrollArea>
+                    </div>
 
-                    <DialogFooter className="bg-primary/5 p-8 border-t gap-4 flex-col sm:flex-row justify-between w-full">
+                    <DialogFooter className="bg-primary/5 p-8 border-t gap-4 flex-col sm:flex-row justify-between items-end shrink-0">
                         <Button variant="ghost" onClick={() => setIsDetailOpen(false)} className="font-bold border-primary/10 text-primary h-12 rounded-2xl px-6 hover:bg-white/50">Dismiss Auditor</Button>
                         
                         {selectedRequest?.status !== 'Approved' && selectedRequest?.status !== 'Rejected' && 
                          selectedRequest?.requestedBy.id !== userProfile?.id &&
                          selectedRequest?.assignedVerifiers.some(av => av.id === userProfile?.id && av.status === 'Pending') && (
-                            <div className="flex gap-3">
-                                <Button 
-                                    variant="outline" 
-                                    onClick={() => setIsRejectDialogOpen(true)} 
-                                    disabled={isActionLoading}
-                                    className="font-bold h-12 rounded-2xl px-6 border-destructive/20 text-destructive hover:bg-destructive/10"
-                                >
-                                    <Ban className="mr-2 h-4 w-4" /> Reject
-                                </Button>
-                                <Button 
-                                    onClick={() => handleApprove(selectedRequest.id)} 
-                                    disabled={isActionLoading}
-                                    className="bg-primary hover:bg-primary/90 text-white font-bold h-12 rounded-2xl px-8 shadow-xl hover:shadow-primary/20 transition-all active:scale-95"
-                                >
-                                    {isActionLoading ? <Clock className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
-                                    Verify State
-                                </Button>
+                            <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto items-end">
+                                <div className="w-full sm:w-64 space-y-1.5">
+                                    <Label className="text-[9px] font-black text-primary/40 tracking-widest ml-1">Approval Feedback (Optional)</Label>
+                                    <Input 
+                                        placeholder="Add a note for the requester..." 
+                                        value={approvalComment}
+                                        onChange={(e) => setApprovalComment(e.target.value)}
+                                        className="h-10 rounded-xl border-primary/10 text-xs font-bold bg-white focus-visible:ring-primary/20"
+                                    />
+                                </div>
+                                <div className="flex gap-3 w-full sm:w-auto">
+                                    <Button 
+                                        variant="outline" 
+                                        onClick={() => setIsRejectDialogOpen(true)} 
+                                        disabled={isActionLoading}
+                                        className="font-bold h-10 rounded-xl px-5 border-destructive/20 text-destructive hover:bg-destructive/10 text-xs"
+                                    >
+                                        <Ban className="mr-2 h-3.5 w-3.5" /> Reject
+                                    </Button>
+                                    <Button 
+                                        onClick={() => handleApprove(selectedRequest.id)} 
+                                        disabled={isActionLoading}
+                                        className="bg-primary hover:bg-primary/90 text-white font-bold h-10 rounded-xl px-6 shadow-lg hover:shadow-primary/20 transition-all active:scale-95 text-xs"
+                                    >
+                                        {isActionLoading ? <Clock className="mr-2 h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="mr-2 h-3.5 w-3.5" />}
+                                        Verify State
+                                    </Button>
+                                </div>
                             </div>
                         )}
                     </DialogFooter>
@@ -470,7 +613,7 @@ export default function VerificationsPage() {
 
             <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
                 <DialogContent className="max-w-md rounded-[32px] border-primary/10 shadow-2xl p-8">
-                    <DialogHeader>
+                    <DialogHeader className="shrink-0">
                         <DialogTitle className="font-bold text-primary text-2xl tracking-tighter">Reject Modification</DialogTitle>
                         <DialogDescription className="font-bold opacity-60 text-primary mt-2 leading-relaxed">
                             Specify the reasons for declining this update. This narrative will be logged in the permanent audit trail.
@@ -485,7 +628,7 @@ export default function VerificationsPage() {
                             rows={5}
                         />
                     </div>
-                    <DialogFooter className="gap-3">
+                    <DialogFooter className="gap-3 shrink-0">
                         <Button variant="ghost" onClick={() => setIsRejectDialogOpen(false)} className="font-bold rounded-xl h-11 px-6">Cancel</Button>
                         <Button 
                             variant="destructive" 
@@ -537,12 +680,12 @@ function VerificationCard({ request, index, onView, onWithdraw }: { request: Pen
                     <div className="p-3 bg-white rounded-2xl text-primary shadow-sm group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
                         <Icon className="h-5 w-5" />
                     </div>
-                    <Badge className={cn("font-bold text-[10px] uppercase border-0 px-3 h-6 rounded-full shadow-sm tracking-widest", statusColor)}>
+                    <Badge className={cn("font-bold text-[10px] border-0 px-3 h-6 rounded-full shadow-sm tracking-widest", statusColor)}>
                         {request.status}
                     </Badge>
                 </div>
                 <CardTitle className="text-base font-bold text-primary group-hover:text-primary transition-colors line-clamp-2 leading-tight tracking-tight min-h-[3rem]">
-                    {request.description || `${request.module.toUpperCase()} Modification`}
+                    {request.description || `${request.module} Modification`}
                 </CardTitle>
                 <div className="flex items-center justify-between mt-4">
                     <div className="flex items-center gap-2">
@@ -551,15 +694,22 @@ function VerificationCard({ request, index, onView, onWithdraw }: { request: Pen
                         </div>
                         <span className="text-[10px] font-bold text-primary opacity-60">{request.requestedBy.name}</span>
                     </div>
-                    <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {formatDate(request.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </span>
+                    <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {formatDate(request.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })}
+                        </span>
+                        {(request.requesterComment || (request.approverComments && request.approverComments.length > 0)) && (
+                            <div className="h-5 w-5 rounded-full bg-primary/5 flex items-center justify-center text-primary/40" title="Has Comments">
+                                <MessageSquare className="h-3 w-3" />
+                            </div>
+                        )}
+                    </div>
                 </div>
             </CardHeader>
             <CardContent className="pt-6 space-y-5 font-normal p-6">
                 <div className="space-y-2">
-                    <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                    <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground tracking-widest">
                         <span>Quorum Status</span>
                         <span className="text-primary">{approvedCount} / {totalCount} Verified</span>
                     </div>

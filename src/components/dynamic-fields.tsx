@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type DynamicFieldsProps = {
   isLoading: boolean;
@@ -242,26 +243,30 @@ export function DynamicFields({ isLoading, result, setResult }: DynamicFieldsPro
             {result.fields?.length > 0 && (
               <div className="space-y-3">
                 <h3 className="font-medium text-lg">Other Fields</h3>
-                <div className="max-h-[24rem] overflow-y-auto pr-2 space-y-3">
-                    {result.fields.map((field, index) => (
-                    <div key={index} className="grid grid-cols-[1fr_2fr_auto] gap-2 items-center">
-                        <Input
-                        value={field.key}
-                        onChange={(e) => handleKeyValuePairChange(index, 'key', e.target.value)}
-                        placeholder="Key"
-                        className="font-code"
-                        />
-                        <Input
-                        value={field.value}
-                        onChange={(e) => handleKeyValuePairChange(index, 'value', e.target.value)}
-                        placeholder="Value"
-                        className="font-code"
-                        />
-                        <Button variant="ghost" size="icon" onClick={() => handleRemoveField(index)}>
-                        <Trash2 className="w-4 h-4 text-destructive" />
-                        </Button>
-                    </div>
-                    ))}
+                <div className="h-[400px] rounded-xl border border-primary/5 bg-primary/[0.01] overflow-hidden relative">
+                    <ScrollArea className="h-full w-full">
+                        <div className="p-4 space-y-3">
+                            {result.fields.map((field, index) => (
+                            <div key={index} className="grid grid-cols-[1fr_2fr_auto] gap-2 items-center">
+                                <Input
+                                value={field.key}
+                                onChange={(e) => handleKeyValuePairChange(index, 'key', e.target.value)}
+                                placeholder="Key"
+                                className="font-code text-xs h-10"
+                                />
+                                <Input
+                                value={field.value}
+                                onChange={(e) => handleKeyValuePairChange(index, 'value', e.target.value)}
+                                placeholder="Value"
+                                className="font-code text-xs h-10"
+                                />
+                                <Button variant="ghost" size="icon" onClick={() => handleRemoveField(index)} className="h-10 w-10 text-destructive hover:bg-destructive/10">
+                                    <Trash2 className="w-4 h-4" />
+                                </Button>
+                            </div>
+                            ))}
+                        </div>
+                    </ScrollArea>
                 </div>
               </div>
             )}

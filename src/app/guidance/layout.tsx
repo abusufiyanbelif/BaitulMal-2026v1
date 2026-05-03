@@ -2,7 +2,7 @@ import type {Metadata} from 'next';
 
 export const metadata: Metadata = {
   title: 'Guidance Hub',
-  description: 'Manage institutional help resources and external guidance directory.',
+  description: 'Manage organization help resources and external guidance directory.',
 };
 
 export default function GuidanceHubLayout({

@@ -210,7 +210,7 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
                     <Icon className="h-5 w-5" />
                 </div>
                 <div className="text-right">
-                    <p className="text-[10px] font-black text-muted-foreground tracking-[0.2em] uppercase opacity-40 mb-1">{title}</p>
+                    <p className="text-[10px] font-black text-muted-foreground tracking-[0.2em] opacity-40 mb-1">{title}</p>
                     <p className="text-2xl sm:text-3xl font-black text-primary tracking-tighter">
                         {isCurrency ? `₹${count}` : count}
                     </p>
@@ -226,7 +226,7 @@ function StatCard({ title, count, description, icon: Icon, delay, isCurrency = f
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: SortKey, children: React.ReactNode, className?: string, sortConfig: { key: SortKey; direction: 'ascending' | 'descending' } | null, handleSort: (key: SortKey) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:text-primary transition-colors flex items-center gap-2 font-black text-[10px] text-muted-foreground tracking-[0.1em] uppercase", className)} onClick={() => handleSort(sortKey)}>
+        <div className={cn("cursor-pointer hover:text-primary transition-colors flex items-center gap-2 font-black text-[10px] text-muted-foreground tracking-[0.1em]", className)} onClick={() => handleSort(sortKey)}>
             {children}
             <div className="flex flex-col opacity-30">
                 <ArrowUp className={cn("h-2.5 w-2.5 -mb-0.5 transition-all", isSorted && sortConfig?.direction === 'ascending' && "text-primary opacity-100 scale-125")} />
@@ -288,7 +288,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                 </div>
                 <div className="whitespace-nowrap text-[11px] font-bold text-primary/60 text-center italic">{donation.donationDate}</div>
                 <div className="text-center">
-                    <Badge variant="secondary" className="text-[9px] font-black uppercase px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm bg-primary/5 text-primary">
+                    <Badge variant="secondary" className="text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm bg-primary/5 text-primary">
                         {donation.donationType}
                     </Badge>
                 </div>
@@ -302,7 +302,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                     )}
                 </div>
                 <div className="text-center">
-                    <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="text-[9px] font-black uppercase px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm">
+                    <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm">
                         {donation.status}
                     </Badge>
                 </div>
@@ -347,14 +347,14 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                     </div>
                     <div className="text-right">
                         <div className="font-black text-primary text-lg tracking-tighter">₹{donation.amount.toFixed(2)}</div>
-                        <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="text-[9px] font-black uppercase px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm mt-1">
+                        <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm mt-1">
                             {donation.status}
                         </Badge>
                     </div>
                 </div>
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                        <Badge variant="secondary" className="text-[9px] font-black uppercase px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm bg-primary/5 text-primary">{donation.donationType}</Badge>
+                        <Badge variant="secondary" className="text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm bg-primary/5 text-primary">{donation.donationType}</Badge>
                         <span className="text-[10px] font-bold text-muted-foreground italic">{donation.donationDate}</span>
                     </div>
                     <div className="flex gap-2" onClick={e => e.stopPropagation()}>
@@ -371,14 +371,14 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                     <div className="space-y-8 max-w-6xl mx-auto">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                             <div className="space-y-4">
-                                <h4 className="text-[10px] font-black flex items-center gap-2 text-primary tracking-[0.2em] uppercase opacity-50"><IndianRupee className="h-3.5 w-3.5"/> Classification Matrix</h4>
+                                <h4 className="text-[10px] font-black flex items-center gap-2 text-primary tracking-[0.2em] opacity-50"><IndianRupee className="h-3.5 w-3.5"/> Classification Matrix</h4>
                                 <div className="border border-primary/10 rounded-[24px] bg-white shadow-xl overflow-hidden">
                                     <ScrollArea className="w-full">
                                         <Table>
                                             <TableHeader className="bg-primary/[0.02]">
                                                 <TableRow className="hover:bg-transparent border-primary/5">
-                                                    <TableHead className="h-10 py-0 text-[9px] font-black text-muted-foreground tracking-[0.1em] uppercase px-6">Category</TableHead>
-                                                    <TableHead className="text-right h-10 py-0 text-[9px] font-black text-muted-foreground tracking-[0.1em] uppercase px-6">Allocated Value</TableHead>
+                                                    <TableHead className="h-10 py-0 text-[9px] font-black text-muted-foreground tracking-[0.1em] px-6">Category</TableHead>
+                                                    <TableHead className="text-right h-10 py-0 text-[9px] font-black text-muted-foreground tracking-[0.1em] px-6">Allocated Value</TableHead>
                                                 </TableRow>
                                             </TableHeader>
                                             <TableBody>
@@ -395,15 +395,15 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                 </div>
                             </div>
                             <div className="space-y-4">
-                                <h4 className="text-[10px] font-black flex items-center gap-2 text-primary tracking-[0.2em] uppercase opacity-50"><FolderKanban className="h-3.5 w-3.5"/> Registry Linking</h4>
+                                <h4 className="text-[10px] font-black flex items-center gap-2 text-primary tracking-[0.2em] opacity-50"><FolderKanban className="h-3.5 w-3.5"/> Registry Linking</h4>
                                 <div className="border border-primary/10 rounded-[24px] bg-white shadow-xl overflow-hidden">
                                     <ScrollArea className="w-full">
                                         <div className="min-w-[300px]">
                                             <Table>
                                                 <TableHeader className="bg-primary/[0.02]">
                                                     <TableRow className="hover:bg-transparent border-primary/5">
-                                                        <TableHead className="h-10 py-0 text-[9px] font-black text-muted-foreground tracking-[0.1em] uppercase px-6">Target Initiative</TableHead>
-                                                        <TableHead className="text-right h-10 py-0 text-[9px] font-black text-muted-foreground tracking-[0.1em] uppercase px-6">Assigned Sum</TableHead>
+                                                        <TableHead className="h-10 py-0 text-[9px] font-black text-muted-foreground tracking-[0.1em] px-6">Target Initiative</TableHead>
+                                                        <TableHead className="text-right h-10 py-0 text-[9px] font-black text-muted-foreground tracking-[0.1em] px-6">Assigned Sum</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
@@ -419,7 +419,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                         </TableRow>
                                                     ))}
                                                     {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
-                                                        <TableRow className="hover:bg-transparent"><TableCell colSpan={2} className="text-center text-muted-foreground py-10 italic text-sm font-bold opacity-40 uppercase tracking-widest">Unallocated General Pool</TableCell></TableRow>
+                                                        <TableRow className="hover:bg-transparent"><TableCell colSpan={2} className="text-center text-muted-foreground py-10 italic text-sm font-bold opacity-40 tracking-widest">Unallocated General Pool</TableCell></TableRow>
                                                     )}
                                                 </TableBody>
                                             </Table>
@@ -699,7 +699,7 @@ function DonationListContent() {
                             key={tab.path}
                             href={tab.path} 
                             className={cn(
-                                "inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-500",
+                                "inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black tracking-widest transition-all duration-500",
                                 pathname === tab.path ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-primary/60 hover:bg-primary/5 hover:text-primary"
                             )}
                         >
@@ -761,7 +761,7 @@ function DonationListContent() {
                                 <div className="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center font-black text-xs shadow-lg">
                                     {selectedIds.length}
                                 </div>
-                                <span className="text-xs font-black tracking-tight uppercase text-primary">Batch Financial Operations</span>
+                                <span className="text-xs font-black tracking-tight text-primary">Batch Financial Operations</span>
                             </div>
                             
                             <div className="flex items-center gap-3">
@@ -769,7 +769,7 @@ function DonationListContent() {
                                     variant="secondary" 
                                     size="sm" 
                                     onClick={handleBulkMapDonors} 
-                                    className="bg-white/80 hover:bg-white text-primary font-black h-10 text-[10px] px-5 rounded-xl uppercase tracking-widest shadow-sm"
+                                    className="bg-white/80 hover:bg-white text-primary font-black h-10 text-[10px] px-5 rounded-xl tracking-widest shadow-sm"
                                     disabled={isBulkUpdating}
                                 >
                                     <RefreshCw className={cn("mr-2 h-3.5 w-3.5", isBulkUpdating && "animate-spin")} /> Auto-Map Profiles
@@ -777,7 +777,7 @@ function DonationListContent() {
                                 
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <Button variant="secondary" size="sm" className="bg-white/80 hover:bg-white text-primary font-black h-10 text-[10px] px-5 rounded-xl uppercase tracking-widest shadow-sm" disabled={isBulkUpdating}>
+                                        <Button variant="secondary" size="sm" className="bg-white/80 hover:bg-white text-primary font-black h-10 text-[10px] px-5 rounded-xl tracking-widest shadow-sm" disabled={isBulkUpdating}>
                                             Authentication <ChevronDown className="ml-2 h-3.5 w-3.5" />
                                         </Button>
                                     </DropdownMenuTrigger>
@@ -799,7 +799,7 @@ function DonationListContent() {
             </CardHeader>
             <CardContent className="p-0">
                 <ScrollArea className="w-full">
-                    <div className={cn("hidden md:grid bg-primary/[0.02] border-b border-primary/5 text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase", donationGridClass)}>
+                    <div className={cn("hidden md:grid bg-primary/[0.02] border-b border-primary/5 text-[10px] font-black tracking-[0.15em] text-muted-foreground", donationGridClass)}>
                         <div className="flex justify-center">
                             <Checkbox 
                                 checked={paginatedDonations.length > 0 && selectedIds.length === paginatedDonations.length} 
@@ -832,11 +832,11 @@ function DonationListContent() {
                         <div className={cn("bg-primary/[0.03] border-t border-primary/5 py-6 px-10", donationGridClass)}>
                             <div />
                             <div />
-                            <div className="text-right font-black text-muted-foreground tracking-widest text-[10px] uppercase">Page Liquidity</div>
+                            <div className="text-right font-black text-muted-foreground tracking-widest text-[10px]">Page Liquidity</div>
                             <div className="text-right font-black font-mono text-primary text-lg tracking-tighter">₹{paginatedDonations.reduce((sum, d) => sum + d.amount, 0).toLocaleString('en-IN')}</div>
                             <div className="col-span-3" />
                             <div className="text-right pr-6 flex flex-col items-end">
-                                <span className="text-[9px] font-black text-muted-foreground uppercase opacity-40">Registry Total</span>
+                                <span className="text-[9px] font-black text-muted-foreground opacity-40">Registry Total</span>
                                 <span className="text-sm font-black text-primary tracking-tighter">₹{filteredTotalAmount.toLocaleString('en-IN')}</span>
                             </div>
                         </div>
@@ -855,7 +855,7 @@ function DonationListContent() {
                             size="sm" 
                             onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
                             disabled={currentPage === 1} 
-                            className="font-black text-[10px] uppercase tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm"
+                            className="font-black text-[10px] tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm"
                         >
                             Prev
                         </Button>
@@ -864,7 +864,7 @@ function DonationListContent() {
                             size="sm" 
                             onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
                             disabled={currentPage === totalPages} 
-                            className="font-black text-[10px] uppercase tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm"
+                            className="font-black text-[10px] tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm"
                         >
                             Next
                         </Button>
@@ -892,7 +892,7 @@ function DonationListContent() {
                 <AlertDialogHeader>
                     <AlertDialogTitle className="font-black text-destructive text-2xl tracking-tighter">Confirm Erasure?</AlertDialogTitle>
                     <AlertDialogDescription className="font-bold opacity-70 text-primary mt-2">
-                        You are about to permanently delete this financial record from the institutional cloud registry. This action is irreversible.
+                        You are about to permanently delete this financial record from the organization cloud registry. This action is irreversible.
                     </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter className="mt-6 gap-3">

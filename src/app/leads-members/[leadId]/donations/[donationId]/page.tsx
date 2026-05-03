@@ -238,7 +238,7 @@ export default function DonationDetailsPage() {
                 {donation.donorId && (
                     <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-100 rounded-xl text-green-800 text-xs font-bold animate-fade-in-down">
                         <ShieldCheck className="h-4 w-4 text-green-600" />
-                        Institutional Identity Securely Mapped To Registry
+                        Organization Identity Securely Mapped To Registry
                     </div>
                 )}
 
@@ -270,7 +270,7 @@ export default function DonationDetailsPage() {
                             </Card>
 
                             <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
-                                <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Institutional Breakdown</CardTitle></CardHeader>
+                                <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Fund Breakdown</CardTitle></CardHeader>
                                 <CardContent className="grid gap-6 md:grid-cols-2 pt-6">
                                     <div className="space-y-3">
                                         <h3 className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Category Designation</h3>
@@ -308,7 +308,7 @@ export default function DonationDetailsPage() {
                                                                 <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{link.amount.toFixed(2)}</TableCell>
                                                             </TableRow>
                                                         )) : (
-                                                            <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated / General Institutional Fund</TableCell></TableRow>
+                                                            <TableRow><TableCell colSpan={2} className="text-center text-muted-foreground py-6 italic text-xs font-normal">Unallocated / General Organization Fund</TableCell></TableRow>
                                                         )}
                                                     </TableBody>
                                                 </Table>
@@ -346,7 +346,7 @@ export default function DonationDetailsPage() {
 
                             <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                                 <CardHeader className="bg-primary/5 border-b pb-3">
-                                    <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight capitalize"><History className="h-4 w-4 opacity-40"/> Institutional Audit Log</CardTitle>
+                                    <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight capitalize"><History className="h-4 w-4 opacity-40"/> Organization Audit Log</CardTitle>
                                 </CardHeader>
                                 <CardContent className="pt-6 space-y-4">
                                     <div className="flex items-start gap-3">
@@ -385,7 +385,7 @@ export default function DonationDetailsPage() {
                                                         <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Reference ID</TableHead>
                                                         <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Date Record</TableHead>
                                                         <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Sender UPI</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary text-[9px] capitalize tracking-tighter pr-6">Institutional Artifact</TableHead>
+                                                        <TableHead className="text-right font-bold text-primary text-[9px] capitalize tracking-tighter pr-6">Organization Artifact</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
@@ -416,7 +416,7 @@ export default function DonationDetailsPage() {
 
                     {(donation.comments || donation.suggestions) && (
                         <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
-                            <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Institutional Observations</CardTitle></CardHeader>
+                            <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Organization Observations</CardTitle></CardHeader>
                             <CardContent className="space-y-6 pt-6">
                                 {donation.comments && (
                                     <div className="space-y-1"><p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">Donor Comments</p><p className="text-sm font-normal bg-primary/[0.02] p-4 rounded-lg italic border border-primary/5 leading-relaxed">"{donation.comments}"</p></div>

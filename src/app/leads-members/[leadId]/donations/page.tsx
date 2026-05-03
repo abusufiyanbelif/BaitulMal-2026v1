@@ -711,7 +711,7 @@ function LeadDonationListContent() {
             <StatCard 
                 title="Lead Target" 
                 count={(lead?.targetAmount || 0).toLocaleString('en-IN')} 
-                description="Institutional Goal" 
+                description="Organization Goal" 
                 icon={Flag} 
                 delay="0ms" 
                 isCurrency 

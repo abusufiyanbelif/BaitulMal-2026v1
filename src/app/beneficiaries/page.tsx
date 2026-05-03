@@ -101,7 +101,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, on
                     <Icon className="h-5 w-5" />
                 </div>
                 <div className="text-right">
-                    <p className="text-[10px] font-black text-muted-foreground tracking-[0.2em] uppercase opacity-40 mb-1">{title}</p>
+                    <p className="text-[10px] font-black text-muted-foreground tracking-[0.2em] opacity-40 mb-1">{title}</p>
                     <p className="text-3xl font-black text-primary tracking-tighter">{count}</p>
                 </div>
             </div>
@@ -115,7 +115,7 @@ function StatCard({ title, count, description, icon: Icon, colorClass, delay, on
 function SortableHeader({ sortKey, children, className, sortConfig, handleSort }: { sortKey: any, children: React.ReactNode, className?: string, sortConfig: any, handleSort: (key: any) => void }) {
     const isSorted = sortConfig?.key === sortKey;
     return (
-        <div className={cn("cursor-pointer hover:text-primary transition-colors flex items-center gap-2 font-black text-[10px] text-muted-foreground tracking-[0.1em] uppercase", className)} onClick={() => handleSort(sortKey)}>
+        <div className={cn("cursor-pointer hover:text-primary transition-colors flex items-center gap-2 font-black text-[10px] text-muted-foreground tracking-[0.1em]", className)} onClick={() => handleSort(sortKey)}>
             {children}
             <div className="flex flex-col opacity-30">
                 <ArrowUp className={cn("h-2.5 w-2.5 -mb-0.5 transition-all", isSorted && sortConfig.direction === 'ascending' && "text-primary opacity-100 scale-125")} />
@@ -396,7 +396,7 @@ export default function BeneficiariesPage() {
 
   const isLoading = areBeneficiariesLoading || isProfileLoading;
   
-  if (isLoading) return <SectionLoader label="Syncing Cloud Registry..." description="Retrieving Institutional Beneficiary Data." />;
+  if (isLoading) return <SectionLoader label="Syncing Cloud Registry..." description="Retrieving Organization Beneficiary Data." />;
   
   if (!canRead) return (
     <main className="container mx-auto p-8 text-primary font-normal">
@@ -544,13 +544,13 @@ export default function BeneficiariesPage() {
                             <div className="h-8 w-8 rounded-full bg-primary text-white flex items-center justify-center font-black text-xs shadow-lg">
                                 {selectedIds.length}
                             </div>
-                            <span className="text-xs font-black tracking-tight uppercase text-primary">Selected for Batch Action</span>
+                            <span className="text-xs font-black tracking-tight text-primary">Selected for Batch Action</span>
                         </div>
                         
                         <div className="flex items-center gap-3">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="secondary" size="sm" className="bg-white/80 hover:bg-white text-primary font-black h-10 text-[10px] px-5 rounded-xl uppercase tracking-widest shadow-sm" disabled={isBulkUpdating}>
+                                    <Button variant="secondary" size="sm" className="bg-white/80 hover:bg-white text-primary font-black h-10 text-[10px] px-5 rounded-xl tracking-widest shadow-sm" disabled={isBulkUpdating}>
                                         Set Verification
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -564,7 +564,7 @@ export default function BeneficiariesPage() {
 
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="secondary" size="sm" className="bg-white/80 hover:bg-white text-primary font-black h-10 text-[10px] px-5 rounded-xl uppercase tracking-widest shadow-sm" disabled={isBulkUpdating}>
+                                    <Button variant="secondary" size="sm" className="bg-white/80 hover:bg-white text-primary font-black h-10 text-[10px] px-5 rounded-xl tracking-widest shadow-sm" disabled={isBulkUpdating}>
                                         Zakat Status
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -588,7 +588,7 @@ export default function BeneficiariesPage() {
         <CardContent className="p-0">
             <ScrollArea className="w-full">
                 <div className="max-h-[65vh]">
-                    <div className={cn("hidden md:grid bg-primary/[0.02] border-b border-primary/5 text-[10px] font-black tracking-[0.15em] text-muted-foreground uppercase", gridClass)}>
+                    <div className={cn("hidden md:grid bg-primary/[0.02] border-b border-primary/5 text-[10px] font-black tracking-[0.15em] text-muted-foreground", gridClass)}>
                         <div className="flex justify-center">
                             <Checkbox 
                                 checked={paginatedBeneficiaries.length > 0 && selectedIds.length === paginatedBeneficiaries.length}
@@ -628,17 +628,17 @@ export default function BeneficiariesPage() {
                                 <div className="font-bold text-sm truncate pr-4 text-primary tracking-tight">{b.name}</div>
                                 <div className="font-mono text-[11px] font-bold opacity-50 text-primary">{b.phone || '—'}</div>
                                 <div className="text-center">
-                                    <Badge variant={b.status === 'Verified' ? 'eligible' : 'outline'} className="text-[9px] font-black uppercase px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm">
+                                    <Badge variant={b.status === 'Verified' ? 'eligible' : 'outline'} className="text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm">
                                         {b.status || 'Pending'}
                                     </Badge>
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-[9px] font-black text-muted-foreground opacity-30 tracking-tight uppercase">Operational</p>
+                                    <p className="text-[9px] font-black text-muted-foreground opacity-30 tracking-tight">Operational</p>
                                 </div>
                                 <div className="text-center">
                                     <Badge 
                                         variant={b.isEligibleForZakat ? 'eligible' : 'outline'} 
-                                        className={cn("text-[9px] font-black uppercase px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm", b.isEligibleForZakat ? "bg-emerald-500 text-white" : "opacity-40")}
+                                        className={cn("text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm", b.isEligibleForZakat ? "bg-emerald-500 text-white" : "opacity-40")}
                                     >
                                         {b.isEligibleForZakat ? 'Eligible' : 'Hold'}
                                     </Badge>
@@ -698,7 +698,7 @@ export default function BeneficiariesPage() {
                                         />
                                         <div className="space-y-1">
                                             <h3 className="font-black text-lg text-primary tracking-tighter group-hover/mobile:text-primary transition-colors">{b.name}</h3>
-                                            <p className="font-mono text-[11px] font-bold text-muted-foreground tracking-tight">{b.phone || 'NO CONTACT LOGGED'}</p>
+                                            <p className="font-mono text-[11px] font-bold text-muted-foreground tracking-tight">{b.phone || 'No Contact Logged'}</p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
@@ -715,11 +715,11 @@ export default function BeneficiariesPage() {
                                 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="p-3.5 rounded-[20px] bg-primary/[0.03] border border-primary/5 group-hover/mobile:bg-white group-hover/mobile:shadow-sm transition-all">
-                                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-2 opacity-50">Verification</p>
+                                        <p className="text-[9px] font-black text-muted-foreground tracking-widest mb-2 opacity-50">Verification</p>
                                         <Badge variant={b.status === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-black w-full justify-center py-1.5 h-7 rounded-full border-0 shadow-sm">{b.status || 'Pending'}</Badge>
                                     </div>
                                     <div className="p-3.5 rounded-[20px] bg-primary/[0.03] border border-primary/5 group-hover/mobile:bg-white group-hover/mobile:shadow-sm transition-all">
-                                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest mb-2 opacity-50">Zakat State</p>
+                                        <p className="text-[9px] font-black text-muted-foreground tracking-widest mb-2 opacity-50">Zakat State</p>
                                         <Badge 
                                             variant={b.isEligibleForZakat ? 'eligible' : 'outline'} 
                                             className={cn("text-[10px] font-black w-full justify-center py-1.5 h-7 rounded-full border-0 shadow-sm", b.isEligibleForZakat ? "bg-emerald-500 text-white" : "opacity-40")}
@@ -731,7 +731,7 @@ export default function BeneficiariesPage() {
 
                                 <div className="flex items-center justify-between pt-4 border-t border-primary/5">
                                     <div className="space-y-0.5">
-                                        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] opacity-40">SR-{(currentPage - 1) * itemsPerPage + idx + 1}</p>
+                                        <p className="text-[9px] font-black text-muted-foreground tracking-[0.2em] opacity-40">SR-{(currentPage - 1) * itemsPerPage + idx + 1}</p>
                                         <p className="text-xs font-bold text-primary/60 italic truncate max-w-[150px]">{b.referralBy || 'Self Reported'}</p>
                                     </div>
                                     <Button variant="ghost" size="sm" className="h-9 text-[10px] font-black text-primary hover:bg-primary/5 px-4 rounded-xl transition-all group-hover/mobile:translate-x-1">
@@ -745,7 +745,7 @@ export default function BeneficiariesPage() {
                     {paginatedBeneficiaries.length === 0 && (
                         <div className="flex flex-col items-center justify-center py-32 bg-primary/[0.01] animate-pulse">
                             <Users className="h-12 w-12 text-primary/10 mb-4" />
-                            <p className="font-black text-sm text-primary/30 tracking-widest uppercase">No identities matched query parameters.</p>
+                            <p className="font-black text-sm text-primary/30 tracking-widest">No identities matched query parameters.</p>
                         </div>
                     )}
                 </div>
@@ -765,7 +765,7 @@ export default function BeneficiariesPage() {
                 size="sm" 
                 onClick={() => { setCurrentPage(p => Math.max(1, p - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
                 disabled={currentPage === 1} 
-                className="font-black text-[10px] uppercase tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm"
+                className="font-black text-[10px] tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm"
             >
                 Prev
             </Button>
@@ -774,7 +774,7 @@ export default function BeneficiariesPage() {
                 size="sm" 
                 onClick={() => { setCurrentPage(p => Math.min(totalPages, p + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }} 
                 disabled={currentPage === totalPages} 
-                className="font-black text-[10px] uppercase tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm"
+                className="font-black text-[10px] tracking-widest border-primary/10 h-10 rounded-xl px-6 bg-white transition-all active:scale-90 disabled:opacity-30 shadow-sm"
             >
                 Next
             </Button>

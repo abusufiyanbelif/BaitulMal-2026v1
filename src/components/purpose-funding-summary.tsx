@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 /**
- * Purpose Funding Summary - Verified donation totals by institutional purpose.
+ * Purpose Funding Summary - Verified donation totals by organization purpose.
  * Title Case typography enforced.
  */
 export function PurposeFundingSummary() {

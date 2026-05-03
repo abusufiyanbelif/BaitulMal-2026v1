@@ -26,7 +26,7 @@ const AchievementSchema = z.object({
 });
 
 const ExtractEducationFindingsOutputSchema = z.object({
-  institution: z.string().describe('The name of the educational institution.'),
+  institution: z.string().describe('The name of the educational center.'),
   degree: z.string().describe('The degree, course, or examination name.'),
   achievements: z.array(AchievementSchema).describe('A structured list of key achievements, scores, or grades.'),
 });
@@ -46,7 +46,7 @@ const prompt = ai.definePrompt({
   output: { schema: ExtractEducationFindingsOutputSchema },
   prompt: `You are an expert academic registrar tasked with extracting key information from an image of an educational document.
 
-  Analyze the provided image and extract the institution name, degree/examination, and key achievements or grades.
+  Analyze the provided image and extract the center name, degree/examination, and key achievements or grades.
 
   Here is the image from the educational document:
   ---

@@ -195,7 +195,7 @@ export default function NotificationSettingsPage() {
                         <Bell className="h-6 w-6 text-primary/40" />
                         Notification Management
                     </h2>
-                    <p className="text-sm text-muted-foreground">Orchestrate how and where institutional alerts are delivered.</p>
+                    <p className="text-sm text-muted-foreground">Orchestrate how and where organization alerts are delivered.</p>
                 </div>
                 {canUpdate && (
                     <Button onClick={() => handleOpenDialog()} className="font-bold shadow-md transition-transform active:scale-95">
@@ -227,7 +227,7 @@ export default function NotificationSettingsPage() {
                                             <CardTitle className="text-lg font-bold text-primary leading-none">{group.name}</CardTitle>
                                             {!group.isActive && <Badge variant="outline" className="text-[9px] h-4 bg-muted/20">DISABLED</Badge>}
                                         </div>
-                                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium uppercase tracking-wider">
+                                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-medium tracking-wider">
                                             {group.type === 'Telegram' ? <Send className="h-3 w-3" /> : <Smartphone className="h-3 w-3" />}
                                             {group.type} • {group.channelType}
                                         </div>
@@ -244,9 +244,9 @@ export default function NotificationSettingsPage() {
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <div className="space-y-2">
-                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Subscribed Modules</p>
+                                    <p className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">Subscribed Modules</p>
                                     <div className="flex flex-wrap gap-1.5">
-                                        {group.enabledModules.map(mod => (
+                                        {group.enabledModules?.map(mod => (
                                             <Badge key={mod} variant="secondary" className="bg-primary/5 text-primary text-[9px] font-bold px-1.5 py-0">
                                                 {mod}
                                             </Badge>
@@ -257,7 +257,7 @@ export default function NotificationSettingsPage() {
                                 <div className="pt-4 border-t border-primary/5 flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                         <div className="flex -space-x-2">
-                                            {group.memberIds.slice(0, 3).map(id => {
+                                            {group.memberIds?.slice(0, 3).map(id => {
                                                 const u = users.find(user => user.id === id);
                                                 return (
                                                     <div key={id} className="h-6 w-6 rounded-full bg-muted border border-white flex items-center justify-center text-[10px] font-bold text-primary">
@@ -265,14 +265,14 @@ export default function NotificationSettingsPage() {
                                                     </div>
                                                 );
                                             })}
-                                            {group.memberIds.length > 3 && (
+                                            {(group.memberIds?.length ?? 0) > 3 && (
                                                 <div className="h-6 w-6 rounded-full bg-muted border border-white flex items-center justify-center text-[8px] font-bold text-muted-foreground">
-                                                    +{group.memberIds.length - 3}
+                                                    +{(group.memberIds?.length ?? 0) - 3}
                                                 </div>
                                             )}
                                         </div>
                                         <span className="text-xs text-muted-foreground font-medium">
-                                            {group.memberIds.length} recipient{group.memberIds.length !== 1 ? 's' : ''}
+                                            {group.memberIds?.length ?? 0} recipient{(group.memberIds?.length ?? 0) !== 1 ? 's' : ''}
                                         </span>
                                     </div>
                                     <ChevronRight className="h-4 w-4 text-primary/20" />
@@ -384,7 +384,7 @@ export default function NotificationSettingsPage() {
                                         onClick={() => toggleMember(user.id)}
                                     >
                                         <div className="flex items-center gap-3">
-                                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary uppercase">
+                                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
                                                 {user.name?.charAt(0)}
                                             </div>
                                             <div>

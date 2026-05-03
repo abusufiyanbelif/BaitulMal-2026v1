@@ -65,7 +65,7 @@ function StatCard({ title, value, description, icon: Icon, delay, colorClass }: 
                     <Icon className="h-6 w-6" />
                 </div>
                 <div className="text-right">
-                    <p className="text-[10px] font-black text-muted-foreground tracking-[0.2em] uppercase opacity-40 mb-1">{title}</p>
+                    <p className="text-[10px] font-black text-muted-foreground tracking-[0.2em] opacity-40 mb-1">{title}</p>
                     <p className="text-3xl font-black text-primary tracking-tighter">{value}</p>
                 </div>
             </div>
@@ -326,13 +326,13 @@ export default function AnalyticsPage() {
             <Tabs defaultValue="general" className="w-full space-y-10 animate-fade-in-up">
                 <div className="bg-white/30 backdrop-blur-md p-1.5 rounded-[24px] border border-primary/5 shadow-sm inline-flex w-fit overflow-hidden">
                     <TabsList className="flex flex-nowrap bg-transparent p-0 gap-1 h-auto">
-                        <TabsTrigger value="general" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
+                        <TabsTrigger value="general" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
                             <Activity className="h-3.5 w-3.5" /> General Stats
                         </TabsTrigger>
-                        <TabsTrigger value="database" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
+                        <TabsTrigger value="database" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
                             <Database className="h-3.5 w-3.5" /> Activity Trends
                         </TabsTrigger>
-                        <TabsTrigger value="storage" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
+                        <TabsTrigger value="storage" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
                             <LayoutGrid className="h-3.5 w-3.5" /> Storage Matrix
                         </TabsTrigger>
                     </TabsList>
@@ -340,7 +340,7 @@ export default function AnalyticsPage() {
 
                 <TabsContent value="general" className="animate-fade-in-up mt-0 space-y-10">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <StatCard title="Staff" value={users?.length || 0} description="Verified Institutional Members" icon={Users} delay="100ms" />
+                        <StatCard title="Staff" value={users?.length || 0} description="Verified Organization Members" icon={Users} delay="100ms" />
                         <StatCard title="People Helped" value={beneficiaries?.length || 0} description="List of people getting help" icon={HandHelping} delay="150ms" />
                         <StatCard title="Total Money" value={`₹${totalDonationAmount.toLocaleString('en-IN')}`} description="Total money from donations" icon={IndianRupee} delay="200ms" colorClass="bg-emerald-500/[0.02] border-emerald-500/10" />
                         <StatCard title="Total Campaigns" value={campaigns?.length || 0} description="Total active campaigns" icon={FolderKanban} delay="250ms" />
@@ -354,7 +354,7 @@ export default function AnalyticsPage() {
                                 <h3 className="text-xl font-black text-primary tracking-tighter flex items-center gap-3">
                                     <PieChartIcon className="h-5 w-5 text-primary opacity-40" /> Donations by Type
                                 </h3>
-                                <p className="text-[10px] font-normal text-primary/40 uppercase tracking-widest">Where donations come from</p>
+                                <p className="text-[10px] font-normal text-primary/40 tracking-widest">Where donations come from</p>
                             </div>
                             {isClient ? (
                                 <ChartContainer config={donationCategoryChartConfig} className="h-[350px] w-full">
@@ -376,14 +376,14 @@ export default function AnalyticsPage() {
                                 <h3 className="text-xl font-black text-primary tracking-tighter flex items-center gap-3">
                                     <Target className="h-5 w-5 text-primary opacity-40" /> Top Campaigns
                                 </h3>
-                                <p className="text-[10px] font-normal text-primary/40 uppercase tracking-widest">Campaigns with most donations</p>
+                                <p className="text-[10px] font-normal text-primary/40 tracking-widest">Campaigns with most donations</p>
                             </div>
                             <ScrollArea className="h-[400px]">
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-primary/5 border-b border-primary/5 h-12">
-                                            <TableHead className="pl-10 text-[10px] font-black uppercase tracking-widest">Campaign Name</TableHead>
-                                            <TableHead className="text-right pr-10 text-[10px] font-black uppercase tracking-widest">Collected</TableHead>
+                                            <TableHead className="pl-10 text-[10px] font-black tracking-widest">Campaign Name</TableHead>
+                                            <TableHead className="text-right pr-10 text-[10px] font-black tracking-widest">Collected</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -391,7 +391,7 @@ export default function AnalyticsPage() {
                                             <TableRow key={campaign.name} className="border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors h-16">
                                                 <TableCell className="pl-10">
                                                     <div className="font-bold text-sm text-primary tracking-tight">{campaign.name}</div>
-                                                    <div className="text-[9px] font-black uppercase opacity-30 mt-1">Initiative Tier {idx + 1}</div>
+                                                    <div className="text-[9px] font-black opacity-30 mt-1">Initiative Tier {idx + 1}</div>
                                                 </TableCell>
                                                 <TableCell className="text-right pr-10 font-mono font-bold text-emerald-600">₹{campaign.collected.toLocaleString('en-IN')}</TableCell>
                                             </TableRow>
@@ -406,14 +406,14 @@ export default function AnalyticsPage() {
                                 <h3 className="text-xl font-black text-primary tracking-tighter flex items-center gap-3">
                                     <Eye className="h-5 w-5 text-primary opacity-40" /> Website Visitors
                                 </h3>
-                                <p className="text-[10px] font-normal text-primary/40 uppercase tracking-widest">Page View Engagement</p>
+                                <p className="text-[10px] font-normal text-primary/40 tracking-widest">Page View Engagement</p>
                             </div>
                             <ScrollArea className="h-[400px]">
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-primary/5 border-b border-primary/5 h-12">
-                                            <TableHead className="pl-10 text-[10px] font-black uppercase tracking-widest">Page Name</TableHead>
-                                            <TableHead className="text-right pr-10 text-[10px] font-black uppercase tracking-widest">Views</TableHead>
+                                            <TableHead className="pl-10 text-[10px] font-black tracking-widest">Page Name</TableHead>
+                                            <TableHead className="text-right pr-10 text-[10px] font-black tracking-widest">Views</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -421,7 +421,7 @@ export default function AnalyticsPage() {
                                             <TableRow key={hit.id} className="border-b border-primary/5 last:border-0 hover:bg-primary/[0.02] transition-colors h-16">
                                                 <TableCell className="pl-10">
                                                     <div className="font-bold text-sm text-primary tracking-tight capitalize">{hit.id.replace(/_/g, ' ')}</div>
-                                                    <div className="text-[9px] font-black uppercase opacity-30 mt-1">System Module</div>
+                                                    <div className="text-[9px] font-black opacity-30 mt-1">System Module</div>
                                                 </TableCell>
                                                 <TableCell className="text-right pr-10 font-mono font-bold text-primary">{hit.hits.toLocaleString()}</TableCell>
                                             </TableRow>
@@ -523,7 +523,7 @@ export default function AnalyticsPage() {
                                         tickLine={false}
                                         axisLine={false}
                                         tickMargin={20}
-                                        className="text-[10px] font-black opacity-40 uppercase"
+                                        className="text-[10px] font-black opacity-40"
                                         tickFormatter={(value) => {
                                             try {
                                                 if (granularity === 'monthly') return format(parseISO(`${value}-01`), 'MMM yy');
@@ -563,7 +563,7 @@ export default function AnalyticsPage() {
                                 <h3 className="text-xl font-black text-primary tracking-tighter flex items-center gap-3">
                                     <PieChartIcon className="h-5 w-5 text-primary opacity-40" /> Data Overview
                                 </h3>
-                                <p className="text-[10px] font-normal text-primary/40 uppercase tracking-widest">Record Distribution</p>
+                                <p className="text-[10px] font-normal text-primary/40 tracking-widest">Record Distribution</p>
                             </div>
                             {isClient ? (
                                 <ChartContainer config={documentDistributionChartConfig} className="h-[300px] w-full">
@@ -588,7 +588,7 @@ export default function AnalyticsPage() {
                                     </div>
                                     System Cloud Info
                                 </h3>
-                                <p className="text-[10px] font-normal text-primary/40 uppercase tracking-widest">System Health & Cloud Data</p>
+                                <p className="text-[10px] font-normal text-primary/40 tracking-widest">System Health & Cloud Data</p>
                             </div>
                             <div className="grid gap-4">
                                 <Alert className="rounded-[28px] border-primary/10 bg-white/60 p-6 shadow-sm group hover:shadow-xl transition-all duration-500">
@@ -596,7 +596,7 @@ export default function AnalyticsPage() {
                                     <AlertTitle className="text-sm font-black text-primary tracking-tight">Cloud Access Required</AlertTitle>
                                     <AlertDescription className="text-xs font-normal text-primary/60 leading-relaxed mt-2">
                                         For granular neural metrics on IO operations, network latency, and physical storage clusters, please interface directly with the root cloud console.
-                                        <Button asChild variant="link" className="p-0 h-auto block mt-4 text-primary font-black uppercase tracking-widest text-[9px] group-hover:translate-x-1 transition-transform">
+                                        <Button asChild variant="link" className="p-0 h-auto block mt-4 text-primary font-black tracking-widest text-[9px] group-hover:translate-x-1 transition-transform">
                                             <a href={`https://console.firebase.google.com/project/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/firestore/usage`} target="_blank" rel="noopener noreferrer">
                                                 Open Cloud Console <ExternalLink className="ml-2 h-3.5 w-3.5 opacity-40" />
                                             </a>

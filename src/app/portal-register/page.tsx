@@ -75,7 +75,7 @@ export default function PortalRegisterPage() {
                     <CardContent>
                         <form onSubmit={handleRegister} className="space-y-4">
                             <div className="space-y-2">
-                                <Label className="text-xs font-bold uppercase tracking-wider text-slate-500">I am joining as a</Label>
+                                <Label className="text-xs font-bold tracking-wider text-slate-500">I am joining as a</Label>
                                 <Select value={role} onValueChange={(v: any) => setRole(v)} disabled={isLoading}>
                                     <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-slate-50/50 font-bold">
                                         <SelectValue />
@@ -88,7 +88,7 @@ export default function PortalRegisterPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider text-slate-500">Full Legal Name</Label>
+                                <Label htmlFor="name" className="text-xs font-bold tracking-wider text-slate-500">Full Legal Name</Label>
                                 <div className="relative group">
                                     <User className="absolute left-3 top-3 h-4 w-4 text-slate-400 group-focus-within:text-primary" />
                                     <Input 
@@ -105,7 +105,7 @@ export default function PortalRegisterPage() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="gender" className="text-xs font-bold uppercase tracking-wider text-slate-500">Gender</Label>
+                                    <Label htmlFor="gender" className="text-xs font-bold tracking-wider text-slate-500">Gender</Label>
                                     <div className="relative group">
                                         <Users className="absolute left-3 top-3.5 h-4 w-4 text-slate-400 z-10" />
                                         <Select value={gender} onValueChange={setGender} disabled={isLoading}>
@@ -122,7 +122,7 @@ export default function PortalRegisterPage() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="email" className="text-xs font-bold uppercase tracking-wider text-slate-500">Email (Optional)</Label>
+                                    <Label htmlFor="email" className="text-xs font-bold tracking-wider text-slate-500">Email (Optional)</Label>
                                     <div className="relative group">
                                         <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400 group-focus-within:text-primary" />
                                         <Input 
@@ -139,7 +139,7 @@ export default function PortalRegisterPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="aadhaar" className="text-xs font-bold uppercase tracking-wider text-slate-500">Aadhaar Number (Optional)</Label>
+                                <Label htmlFor="aadhaar" className="text-xs font-bold tracking-wider text-slate-500">Aadhaar Number (Optional)</Label>
                                 <div className="relative group">
                                     <Fingerprint className="absolute left-3 top-3 h-4 w-4 text-slate-400 group-focus-within:text-primary" />
                                     <Input 
@@ -156,7 +156,7 @@ export default function PortalRegisterPage() {
 
 
                             <div className="space-y-2">
-                                <Label htmlFor="phone" className="text-xs font-bold uppercase tracking-wider text-slate-500">Mobile Number</Label>
+                                <Label htmlFor="phone" className="text-xs font-bold tracking-wider text-slate-500">Mobile Number</Label>
                                 <div className="flex gap-2">
                                     <div className="w-24 shrink-0">
                                         <Select defaultValue="+91" disabled={isLoading}>
@@ -186,7 +186,7 @@ export default function PortalRegisterPage() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="password" className="text-xs font-bold uppercase tracking-wider text-slate-500">Create Password</Label>
+                                <Label htmlFor="password" className="text-xs font-bold tracking-wider text-slate-500">Create Password</Label>
                                 <div className="relative group">
                                     <KeyRound className="absolute left-3 top-3 h-4 w-4 text-slate-400 group-focus-within:text-primary" />
                                     <Input 

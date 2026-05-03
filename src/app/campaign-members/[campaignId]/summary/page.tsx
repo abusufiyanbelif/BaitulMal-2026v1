@@ -115,7 +115,8 @@ import { recordAuditLogAction } from '@/app/audit/actions';
 import { generateChanges, getImageSrc, serializeForAction } from '@/lib/utils';
 import { notifyCampaignAction } from '@/app/messages/actions';
 import { AuditHistory } from '@/components/audit-history';
-import { getDefaultImage, defaultInstitutionalAssets } from '@/lib/default-images';
+import { getDefaultImage, defaultRegistryAssets } from '@/lib/default-images';
+import { PurposePlaceholder } from '@/components/purpose-placeholder';
 import type { PendingVerification } from '@/lib/types';
 
 const donationCategoryChartConfig = {
@@ -205,7 +206,7 @@ export default function CampaignSummaryPage() {
 
     const galleryImages = useMemo(() => {
         const urls = new Set<string>();
-        defaultInstitutionalAssets.forEach(a => urls.add(a.url));
+        defaultRegistryAssets.forEach(a => urls.add(a.url));
         if (globalCampaigns) globalCampaigns.forEach(c => { if (c.imageUrl && !c.imageUrl.startsWith('data:')) urls.add(c.imageUrl); });
         if (globalLeads) globalLeads.forEach(l => { if (l.imageUrl && !l.imageUrl.startsWith('data:')) urls.add(l.imageUrl); });
         return Array.from(urls);
@@ -417,6 +418,7 @@ export default function CampaignSummaryPage() {
                 shopAddress: campaign.shopAddress || '',
                 priceDate: campaign.priceDate || '',
                 itemCategories: campaign.itemCategories || [],
+                showCustomImage: campaign.showCustomImage ?? true,
             });
             if (campaign.shopContact && campaign.shopContact.startsWith('+')) {
                 const match = campaign.shopContact.match(/^(\+\d+)/);
@@ -440,12 +442,12 @@ export default function CampaignSummaryPage() {
 
     // Handle default image suggestions when purpose changes
     useEffect(() => {
-        // Only suggest a default image if there's no existing image and we're in edit mode
-        if (editMode && purpose && !editableCampaign.imageUrl && !imagePreview) {
+        // Only suggest a default image if there's no existing image, we're in edit mode, and the user hasn't explicitly deleted the current image
+        if (editMode && purpose && !editableCampaign.imageUrl && !imagePreview && !isImageDeleted) {
             const suggested = getDefaultImage(purpose);
             setSelectedDefaultImageUrl(suggested);
         }
-    }, [purpose, editMode, editableCampaign.imageUrl, imagePreview]);
+    }, [purpose, editMode, editableCampaign.imageUrl, imagePreview, isImageDeleted]);
 
     const isLoadingPage = isCampaignLoading || isProfileLoading || areBeneficiariesLoading || isBrandingLoading || isPaymentLoading;
 
@@ -527,15 +529,15 @@ export default function CampaignSummaryPage() {
                 return;
             }
         } 
-        // Priority 2: Explicit Deletion (User clicked "Remove")
+        // Priority 2: Gallery Selection (User picked an existing image)
+        else if (selectedDefaultImageUrl) {
+            imageUrl = selectedDefaultImageUrl;
+            imageUrlFilename = 'registry_default.png';
+        }
+        // Priority 3: Explicit Deletion (User clicked "Remove")
         else if (isImageDeleted) {
             imageUrl = '';
             imageUrlFilename = '';
-        }
-        // Priority 3: Gallery Selection (User picked an existing image)
-        else if (selectedDefaultImageUrl) {
-            imageUrl = selectedDefaultImageUrl;
-            imageUrlFilename = 'institutional_default.png';
         }
         // Priority 4: Keep Existing (Handled by the initial let assignments)
         const documentUploadPromises = newDocuments.map(async (file) => {
@@ -556,6 +558,7 @@ export default function CampaignSummaryPage() {
             updatedAt: serverTimestamp(),
             updatedById: userProfile.id,
             updatedByName: userProfile.name,
+            showCustomImage: editableCampaign.showCustomImage,
         };
         setPendingSaveData(saveData);
 
@@ -719,10 +722,21 @@ export default function CampaignSummaryPage() {
                         {editMode ? (
                             <div className="space-y-6 font-normal animate-fade-in-zoom">
                                 <div className="space-y-2">
-                                    <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize opacity-60">Upload Image</Label>
+                                    <div className="flex items-center justify-between">
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize opacity-60">Upload Image</Label>
+                                        <div className="flex items-center gap-2">
+                                            <Label htmlFor="showCustomImage" className="text-[10px] font-bold text-muted-foreground">Show Custom Image</Label>
+                                            <Switch 
+                                                id="showCustomImage" 
+                                                checked={editableCampaign.showCustomImage} 
+                                                onCheckedChange={(val) => handleFieldChange('showCustomImage', val)} 
+                                                className="scale-75"
+                                            />
+                                        </div>
+                                    </div>
                                     <Input id="imageFile" type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
                                     <label htmlFor="imageFile" className="relative flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-lg cursor-pointer bg-card hover:bg-secondary transition-all duration-300 group border-primary/20 overflow-hidden">
-                                        {imagePreview || selectedDefaultImageUrl ? ( 
+                                        { (imagePreview || selectedDefaultImageUrl) && editableCampaign.showCustomImage ? ( 
                                             <>
                                                 <Image src={getImageSrc(imagePreview || selectedDefaultImageUrl!)} alt="Preview" fill sizes="100vw" className="object-cover rounded-lg transition-transform duration-700 group-hover:scale-105" />
                                                 <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
@@ -736,9 +750,12 @@ export default function CampaignSummaryPage() {
                                                 </div>
                                             </> 
                                         ) : ( 
-                                            <div className="flex flex-col items-center justify-center pt-5 pb-6 transition-transform group-hover:scale-105">
-                                                <UploadCloud className="w-8 h-8 mb-2 text-muted-foreground group-hover:text-primary" />
-                                                <p className="mb-2 text-sm text-center text-muted-foreground font-bold"><span className="text-primary">Click To Upload</span></p>
+                                            <div className="w-full h-full relative group">
+                                                <PurposePlaceholder purpose={editableCampaign.category} className="rounded-lg" />
+                                                <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <UploadCloud className="w-8 h-8 mb-2 text-primary" />
+                                                    <p className="text-sm font-bold text-primary">Click To Upload</p>
+                                                </div>
                                             </div> 
                                         )}
                                     </label>
@@ -753,6 +770,7 @@ export default function CampaignSummaryPage() {
                                                     type="button"
                                                     onClick={() => {
                                                         handleRemoveImage();
+                                                        setIsImageDeleted(false); // Reset deletion state as we are selecting a new one
                                                         setSelectedDefaultImageUrl(url);
                                                     }}
                                                     className={cn(
@@ -898,8 +916,12 @@ export default function CampaignSummaryPage() {
                             </div>
                         ) : (
                             <>
-                                <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer transition-all duration-500 hover:shadow-lg group" onClick={() => { if(campaign?.imageUrl || getDefaultImage(campaign?.category)) handleViewImage(campaign?.imageUrl || getDefaultImage(campaign?.category), campaign?.name || 'Campaign Image'); }}>
-                                    <Image src={getImageSrc(campaign?.imageUrl || getDefaultImage(campaign?.category))} alt={campaign?.name || 'Campaign Image'} fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                                <div className="relative w-full h-40 rounded-lg overflow-hidden mb-4 bg-secondary flex items-center justify-center cursor-pointer transition-all duration-500 hover:shadow-lg group" onClick={() => { if((campaign?.showCustomImage !== false && campaign?.imageUrl) || getDefaultImage(campaign?.category)) handleViewImage((campaign?.showCustomImage !== false && campaign?.imageUrl) ? campaign.imageUrl : getDefaultImage(campaign?.category), campaign?.name || 'Campaign Image'); }}>
+                                    {campaign?.showCustomImage !== false && campaign?.imageUrl ? (
+                                        <Image src={getImageSrc(campaign.imageUrl)} alt={campaign?.name || 'Campaign Image'} fill sizes="(max-width: 768px) 100vw, 800px" className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                                    ) : (
+                                        <PurposePlaceholder purpose={campaign?.category} className="rounded-lg" />
+                                    )}
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                 </div>
                                 <div className="space-y-2 font-normal text-foreground">
