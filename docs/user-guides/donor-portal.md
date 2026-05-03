@@ -1,7 +1,7 @@
 # 📘 User Guide: /donor-portal
     
-**Build Version:** `2026.05.02.18`
-**Last Updated:** 3/5/2026, 1:55:56 am
+**Build Version:** `2026.05.03.3`
+**Last Updated:** 3/5/2026, 5:43:50 am
 **Internal Route:** `/donor-portal`
 
 ---
@@ -25,7 +25,7 @@ Application Module
 ## ⚡ Interactive Action Items
 - **Return to Login**: Interactive button to initiate return to login operation.
 - **Discover**: Interactive button to initiate discover operation.
-- **Contribute**: Interactive button to initiate contribute operation.
+- **Donate Now**: Interactive button to initiate donate now operation.
 - **Registry**: Interactive button to initiate registry operation.
 - **Discover More Causes**: Interactive button to initiate discover more causes operation.
 

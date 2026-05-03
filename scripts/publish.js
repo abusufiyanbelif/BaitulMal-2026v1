@@ -25,68 +25,18 @@ function getGitInfo() {
     }
 }
 
-function updateVersion() {
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const datePrefix = `${year}.${month}.${day}`;
+const { updateVersion: performVersionUpdate } = require('./version-utils');
 
+function updateVersion() {
     if (!fs.existsSync(RELEASES_DIR)) {
         fs.mkdirSync(RELEASES_DIR, { recursive: true });
     }
+    const previousVersion = fs.existsSync(VERSION_FILE) 
+        ? JSON.parse(fs.readFileSync(VERSION_FILE, 'utf8')).version 
+        : 'n/a';
 
-    let versionData = {
-        version: `${datePrefix}.1`,
-        buildDate: now.toISOString(),
-        history: []
-    };
-
-    let previousVersion = 'n/a';
-
-    if (fs.existsSync(VERSION_FILE)) {
-        try {
-            versionData = JSON.parse(fs.readFileSync(VERSION_FILE, 'utf8'));
-            previousVersion = versionData.version;
-            const parts = versionData.version.split('.');
-            const currentPrefix = parts.slice(0, 3).join('.');
-            let buildNum = parseInt(parts[3]) || 0;
-
-            if (currentPrefix === datePrefix) {
-                buildNum += 1;
-            } else {
-                buildNum = 1;
-            }
-            versionData.version = `${datePrefix}.${buildNum}`;
-        } catch (e) {
-            console.error('Error parsing version file, resetting...');
-        }
-    }
-
-    versionData.buildDate = now.toISOString();
-    const gitInfo = getGitInfo();
-    
-    // Add to history
-    const entry = {
-        version: versionData.version,
-        date: now.toISOString(),
-        commit: gitInfo.hash,
-        branch: gitInfo.branch,
-        repo: gitInfo.repo,
-        reference: reference,
-        steps: steps,
-        type: type.charAt(0).toUpperCase() + type.slice(1).toLowerCase(),
-        message: message
-    };
-    
-    if (!versionData.history) versionData.history = [];
-    versionData.history.unshift(entry);
-
-    // Keep only last 50 history entries in JSON
-    versionData.history = versionData.history.slice(0, 50);
-
-    fs.writeFileSync(VERSION_FILE, JSON.stringify(versionData, null, 2));
-    console.log(`✅ Version updated to: ${versionData.version}`);
+    const newVersion = performVersionUpdate(type, message, reference, steps);
+    const entry = JSON.parse(fs.readFileSync(VERSION_FILE, 'utf8')).history[0];
 
     // Create Separate Release Doc
     createReleaseDoc(entry);

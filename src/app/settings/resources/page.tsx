@@ -217,20 +217,20 @@ export default function ResourceSettingsPage() {
                 <div className="space-y-1">
                     <h2 className="text-2xl font-bold tracking-tight text-primary flex items-center gap-2">
                         <Terminal className="h-6 w-6 text-primary/40" />
-                        Resource Configuration
+                        Technical Settings
                     </h2>
-                    <p className="text-sm text-muted-foreground font-normal">Manage API Gateways, AI Credentials, and System Infrastructure.</p>
+                    <p className="text-sm text-muted-foreground font-normal">Manage messaging, AI tools, and website systems.</p>
                 </div>
                 {!isEditMode ? (
                     <Button onClick={() => setIsEditMode(true)} className="font-bold shadow-md transition-transform active:scale-95">
-                        <Edit className="mr-2 h-4 w-4"/>Modify Config
+                        <Edit className="mr-2 h-4 w-4"/>Change Settings
                     </Button>
                 ) : (
                     <div className="flex gap-2">
                         <Button variant="outline" onClick={() => setIsEditMode(false)} disabled={isSubmitting} className="font-bold border-primary/20 text-primary transition-transform active:scale-95"><X className="mr-2 h-4 w-4" /> Cancel</Button>
                         <Button onClick={handleSave} disabled={isSubmitting} className="font-bold shadow-md active:scale-95 transition-transform">
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-                            Secure Config
+                            Secure Settings
                         </Button>
                     </div>
                 )}
@@ -246,8 +246,8 @@ export default function ResourceSettingsPage() {
                                         <Smartphone className="h-5 w-5" />
                                     </div>
                                     <div>
-                                        <CardTitle className="text-lg font-bold text-primary tracking-tight">WhatsApp Provider</CardTitle>
-                                        <CardDescription className="text-xs font-normal text-primary/60">Choose your primary WhatsApp gateway.</CardDescription>
+                                        <CardTitle className="text-lg font-bold text-primary tracking-tight">WhatsApp Service</CardTitle>
+                                        <CardDescription className="text-xs font-normal text-primary/60">Choose how to send WhatsApp messages.</CardDescription>
                                     </div>
                                 </div>
                                 <Badge variant={resourceSettings?.waPlanDetails?.status === 'Active' ? 'success' : 'destructive'} className="font-mono text-[9px]">
@@ -261,7 +261,7 @@ export default function ResourceSettingsPage() {
                                 <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 space-y-3 animate-in fade-in zoom-in duration-500">
                                     <div className="flex items-center gap-2 text-amber-800">
                                         <AlertCircle className="h-5 w-5" />
-                                        <p className="text-sm font-black uppercase tracking-tight">Service Interrupt Alert</p>
+                                        <p className="text-sm font-black uppercase tracking-tight">Service Stopped</p>
                                     </div>
                                     <p className="text-xs text-amber-700 leading-relaxed font-medium">
                                         The WhatsApp notification service is currently <strong>{resourceSettings?.waPlanDetails?.status || 'Offline'}</strong>. 
@@ -274,7 +274,7 @@ export default function ResourceSettingsPage() {
                                             </Button>
                                         </Link>
                                         <Button variant="outline" className="flex-1 h-8 text-[10px] font-black uppercase border-amber-300 text-amber-800 hover:bg-amber-100">
-                                            View Resource Ledger
+                                            See Payment History
                                         </Button>
                                     </div>
                                 </div>
@@ -381,7 +381,7 @@ export default function ResourceSettingsPage() {
 
                             <div className="flex items-center justify-between p-3 rounded-xl border border-primary/10 bg-primary/5">
                                 <div className="space-y-0.5">
-                                    <Label className="text-xs font-bold text-primary">Automated WhatsApp Alerts</Label>
+                                    <Label className="text-xs font-bold text-primary">Auto WhatsApp Messages</Label>
                                     <p className="text-[10px] text-muted-foreground font-normal">Enable instant notifications via {editableData?.activeWhatsAppProvider === 'meta' ? 'Meta Cloud' : 'Whapi'}.</p>
                                 </div>
                                 <Switch 
@@ -467,16 +467,16 @@ export default function ResourceSettingsPage() {
                                     <Send className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-lg font-bold text-primary tracking-tight">Telegram Alerts (Free)</CardTitle>
-                                    <CardDescription className="text-xs font-normal text-primary/60">Institutional group notifications.</CardDescription>
+                                    <CardTitle className="text-lg font-bold text-primary tracking-tight">Telegram Messages (Free)</CardTitle>
+                                    <CardDescription className="text-xs font-normal text-primary/60">Group message notifications.</CardDescription>
                                 </div>
                             </div>
                         </CardHeader>
                         <CardContent className="pt-6 space-y-4">
                             <div className="flex items-center justify-between p-3 rounded-xl border border-primary/10 bg-primary/5">
                                 <div className="space-y-0.5">
-                                    <Label className="text-xs font-bold text-primary">Enable Telegram Alerts</Label>
-                                    <p className="text-[10px] text-muted-foreground font-normal">Send free alerts to your admin Telegram group.</p>
+                                    <Label className="text-xs font-bold text-primary">Enable Telegram Messages</Label>
+                                    <p className="text-[10px] text-muted-foreground font-normal">Send free messages to your admin Telegram group.</p>
                                 </div>
                                 <Switch 
                                     checked={editableData?.isTelegramEnabled ?? true} 
@@ -522,7 +522,7 @@ export default function ResourceSettingsPage() {
                                 className="w-full font-bold h-9 border-sky-500/20 text-sky-700 hover:bg-sky-50"
                             >
                                 {isTestingTelegram ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
-                                Verify Telegram Connection
+                                Check Telegram Connection
                             </Button>
                         </CardContent>
                     </Card>
@@ -534,8 +534,8 @@ export default function ResourceSettingsPage() {
                                     <Globe className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-lg font-bold text-primary tracking-tight">System URLs</CardTitle>
-                                    <CardDescription className="text-xs font-normal text-primary/60">Public base addresses for notification links.</CardDescription>
+                                    <CardTitle className="text-lg font-bold text-primary tracking-tight">Website Links</CardTitle>
+                                    <CardDescription className="text-xs font-normal text-primary/60">Public addresses for message links.</CardDescription>
                                 </div>
                             </div>
                         </CardHeader>
@@ -563,8 +563,8 @@ export default function ResourceSettingsPage() {
                                     <Sparkles className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-lg font-bold text-primary tracking-tight">AI & Vision (Gemini)</CardTitle>
-                                    <CardDescription className="text-xs font-normal text-primary/60">Large language model and OCR credentials.</CardDescription>
+                                    <CardTitle className="text-lg font-bold text-primary tracking-tight">AI Image Scanning (Gemini)</CardTitle>
+                                    <CardDescription className="text-xs font-normal text-primary/60">AI tools for reading images and documents.</CardDescription>
                                 </div>
                             </div>
                         </CardHeader>
@@ -635,8 +635,8 @@ export default function ResourceSettingsPage() {
                                     <Database className="h-5 w-5" />
                                 </div>
                                 <div>
-                                    <CardTitle className="text-lg font-bold text-primary tracking-tight">Firebase Infrastructure</CardTitle>
-                                    <CardDescription className="text-xs font-normal text-primary/60">Core database and storage identifiers.</CardDescription>
+                                    <CardTitle className="text-lg font-bold text-primary tracking-tight">Database & Storage</CardTitle>
+                                    <CardDescription className="text-xs font-normal text-primary/60">Main database and file storage systems.</CardDescription>
                                 </div>
                             </div>
                         </CardHeader>
@@ -708,7 +708,7 @@ export default function ResourceSettingsPage() {
                         <Lock className="h-4 w-4" />
                     </div>
                     <div className="space-y-1">
-                        <p className="text-sm font-bold text-amber-900">Resource Governance</p>
+                        <p className="text-sm font-bold text-amber-900">Security Rules</p>
                         <p className="text-xs text-amber-800 leading-relaxed font-normal">
                             Credentials stored here are synchronized across all institutional modules. 
                             Unauthorized modification of these resources may disrupt automated alerts and financial tracking.

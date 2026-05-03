@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { extractAndCorrectText } from '@/ai/flows/extract-and-correct-text';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {

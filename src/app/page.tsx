@@ -135,14 +135,14 @@ export default function Home() {
                 <section className="relative text-center py-16 sm:py-24 lg:py-32 space-y-10">
                     <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary/5 text-primary rounded-full border border-primary/10 mb-2 shadow-sm animate-fade-in-up">
                         <Sparkles className="h-4 w-4 animate-pulse" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">{brandingSettings?.name || 'Baitulmal'} Official Portal</span>
+                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">{brandingSettings?.name || 'Baitulmal'} Official Website</span>
                     </div>
 
                     <h1 className="text-3xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-primary max-w-[1200px] mx-auto leading-[1.1] sm:leading-[0.95] drop-shadow-sm px-4 animate-fade-in-up animate-hero-text-glow">
                         {heroTitle}
                     </h1>
 
-                    <p className="mt-8 max-w-2xl mx-auto text-lg sm:text-xl text-muted-foreground font-bold leading-relaxed px-4 opacity-70 animate-stagger-reveal" style={{ animationDelay: '400ms' }}>
+                    <p className="mt-8 max-w-2xl mx-auto text-lg sm:text-xl text-muted-foreground font-normal leading-relaxed px-4 opacity-70 animate-stagger-reveal" style={{ animationDelay: '400ms' }}>
                         {heroDescription}
                     </p>
 
@@ -184,7 +184,7 @@ export default function Home() {
                                     Download Mobile App (APK)
                                 </a>
                             </Button>
-                            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest opacity-60">Install directly on Android devices</p>
+                            <p className="text-[9px] font-normal text-slate-400 uppercase tracking-widest opacity-60">Install directly on Android devices</p>
                         </div>
                     </div>
                     
@@ -197,9 +197,9 @@ export default function Home() {
             {showTickers && (
                 <div className="space-y-4 animate-fade-in-up relative z-10" style={{ animationDelay: '200ms' }}>
                     <div className="max-w-6xl mx-auto space-y-3">
-                        {activeTickerItems.length > 0 && <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />}
-                        {recentDonationsFormatted.length > 0 && <NewsTicker items={recentDonationsFormatted} label="Donation Updates" variant="donation" />}
-                        {completedTickerItems.length > 0 && <NewsTicker items={completedTickerItems} label="Impact Archive" variant="completed" />}
+                        {activeTickerItems.length > 0 && <NewsTicker items={activeTickerItems} label="Ongoing Help" variant="active" />}
+                        {recentDonationsFormatted.length > 0 && <NewsTicker items={recentDonationsFormatted} label="Latest Donations" variant="donation" />}
+                        {completedTickerItems.length > 0 && <NewsTicker items={completedTickerItems} label="Success Stories" variant="completed" />}
                     </div>
                 </div>
             )}
@@ -244,8 +244,8 @@ export default function Home() {
                                     <TrendingUp className="h-8 w-8" />
                                 </div>
                                 <div>
-                                    <h2 className="text-3xl font-black tracking-tighter">Initiative Summaries</h2>
-                                    <p className="text-sm font-bold opacity-40 uppercase tracking-widest">Live Vetting & Progress Analytics</p>
+                                    <h2 className="text-3xl font-black tracking-tighter">Our Work & Cases</h2>
+                                    <p className="text-sm font-normal opacity-40 uppercase tracking-widest">Live Updates & Progress</p>
                                 </div>
                             </div>
                             <Suspense fallback={<Skeleton className="h-[400px] w-full rounded-[48px]" />}>
@@ -261,10 +261,10 @@ export default function Home() {
                                     <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center animate-pulse">
                                         <ShieldCheck className="h-6 w-6" />
                                     </div>
-                                    <h3 className="text-2xl font-black tracking-tighter">Verified Contribution Stream</h3>
+                                    <h3 className="text-2xl font-black tracking-tighter">Verified Donations</h3>
                                 </div>
-                                <div className="hidden sm:flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary/40">
-                                    <Activity className="h-4 w-4" /> Real-time Ledger
+                                <div className="hidden sm:flex items-center gap-2 text-[10px] font-normal uppercase tracking-widest text-primary/40">
+                                    <Activity className="h-4 w-4" /> Live List
                                 </div>
                             </div>
                             <RecentVerificationTicker items={recentDonationsFormatted} />
@@ -278,11 +278,11 @@ export default function Home() {
                 <div className="flex flex-col sm:flex-row items-center gap-2 bg-white/80 backdrop-blur-2xl p-2 rounded-[24px] sm:rounded-full border border-primary/10 shadow-[0_20px_50px_rgba(0,0,0,0.1)] w-full sm:w-auto">
                     <div className="flex w-full sm:w-auto items-center">
                         <Button asChild variant="ghost" className="flex-1 sm:flex-none h-10 sm:h-12 px-4 sm:px-6 rounded-full font-black text-[9px] sm:text-[10px] uppercase tracking-widest text-primary hover:bg-primary/5">
-                            <Link href="/login">Team Access</Link>
+                            <Link href="/login">Admin Login</Link>
                         </Button>
                         <div className="w-px h-6 bg-primary/10 mx-1" />
                         <Button asChild className="flex-[2] sm:flex-none h-10 sm:h-12 px-6 sm:px-8 rounded-full bg-primary text-white font-black text-[9px] sm:text-[10px] uppercase tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all">
-                            <Link href="/portal-login">Donor Portal <ChevronRight className="ml-1 sm:ml-2 h-3 sm:h-4 w-3 sm:h-4" /></Link>
+                            <Link href="/portal-login">Donor Login <ChevronRight className="ml-1 sm:ml-2 h-3 sm:h-4 w-3 sm:h-4" /></Link>
                         </Button>
                     </div>
                 </div>

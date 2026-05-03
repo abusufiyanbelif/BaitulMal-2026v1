@@ -2,12 +2,12 @@
   "pages": [
     {
       "id": 1,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\analytics\\page.tsx",
+      "path": "src/app/analytics/page.tsx",
       "route": "/analytics",
       "name": "analytics",
       "purpose": "Application Module",
       "createdAt": "2026-03-14T10:29:30.000Z",
-      "updatedAt": "2026-04-27T23:07:58.778Z",
+      "updatedAt": "2026-05-02T22:15:18.071Z",
       "collections": [],
       "actions": [
         "Dashboard",
@@ -16,15 +16,15 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-members",
-          "name": "campaign-members"
+          "route": "/donor-portal/donations",
+          "name": "donations"
         },
         {
-          "route": "/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/seed",
+          "name": "seed"
         },
         {
-          "route": "/donor-portal/profile",
+          "route": "/profile",
           "name": "profile"
         }
       ],
@@ -33,7 +33,7 @@
     },
     {
       "id": 2,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\beneficiaries\\create\\page.tsx",
+      "path": "src/app/beneficiaries/create/page.tsx",
       "route": "/beneficiaries/create",
       "name": "create",
       "purpose": "Application Module",
@@ -46,16 +46,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/beneficiaries/[beneficiaryId]",
-          "name": "[beneficiaryId]"
+          "route": "/leads-members/[leadId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/beneficiaries",
-          "name": "beneficiaries"
+          "route": "/beneficiary-portal/settings",
+          "name": "settings"
         }
       ],
       "prev": "/analytics",
@@ -63,7 +63,7 @@
     },
     {
       "id": 3,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\beneficiaries\\page.tsx",
+      "path": "src/app/beneficiaries/page.tsx",
       "route": "/beneficiaries",
       "name": "beneficiaries",
       "purpose": "Application Module",
@@ -83,16 +83,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/donor-portal",
-          "name": "donor-portal"
+          "route": "/campaign-public/[campaignId]",
+          "name": "[campaignId]"
         },
         {
-          "route": "/donor-portal/receipt/[donationId]",
-          "name": "[donationId]"
+          "route": "/settings/viewport",
+          "name": "viewport"
         },
         {
-          "route": "/leads-members/create",
-          "name": "create"
+          "route": "/leads-members/[leadId]/beneficiaries",
+          "name": "beneficiaries"
         }
       ],
       "prev": "/beneficiaries/create",
@@ -100,7 +100,7 @@
     },
     {
       "id": 4,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\beneficiaries\\summary\\page.tsx",
+      "path": "src/app/beneficiaries/summary/page.tsx",
       "route": "/beneficiaries/summary",
       "name": "summary",
       "purpose": "Application Module",
@@ -113,16 +113,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/login",
-          "name": "login"
+          "route": "/public-summary",
+          "name": "public-summary"
         },
         {
-          "route": "/dashboard",
-          "name": "dashboard"
+          "route": "/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/donors",
-          "name": "donors"
+          "route": "/campaign-public/[campaignId]",
+          "name": "[campaignId]"
         }
       ],
       "prev": "/beneficiaries",
@@ -130,7 +130,7 @@
     },
     {
       "id": 5,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\beneficiaries\\[beneficiaryId]\\page.tsx",
+      "path": "src/app/beneficiaries/[beneficiaryId]/page.tsx",
       "route": "/beneficiaries/[beneficiaryId]",
       "name": "[beneficiaryId]",
       "purpose": "Application Module",
@@ -143,16 +143,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/",
-          "name": "Home"
+          "route": "/settings/lead",
+          "name": "lead"
         },
         {
-          "route": "/leads-members/[leadId]/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/info/organization",
+          "name": "organization"
         },
         {
-          "route": "/leads-members/[leadId]/donations/summary",
-          "name": "summary"
+          "route": "/_offline",
+          "name": "_offline"
         }
       ],
       "prev": "/beneficiaries/summary",
@@ -160,12 +160,12 @@
     },
     {
       "id": 6,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\beneficiary-portal\\page.tsx",
+      "path": "src/app/beneficiary-portal/page.tsx",
       "route": "/beneficiary-portal",
       "name": "beneficiary-portal",
       "purpose": "Application Module",
       "createdAt": "2026-04-30T22:41:07.992Z",
-      "updatedAt": "2026-05-02T12:27:07.735Z",
+      "updatedAt": "2026-05-02T22:09:34.159Z",
       "collections": [],
       "actions": [
         "Return to Login",
@@ -178,16 +178,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/donor-portal/causes",
-          "name": "causes"
+          "route": "/registry-index",
+          "name": "registry-index"
         },
         {
-          "route": "/settings/lead",
-          "name": "lead"
+          "route": "/campaign-members/[campaignId]",
+          "name": "[campaignId]"
         },
         {
-          "route": "/settings/resources",
-          "name": "resources"
+          "route": "/donor-portal/donations",
+          "name": "donations"
         }
       ],
       "prev": "/beneficiaries/[beneficiaryId]",
@@ -195,7 +195,7 @@
     },
     {
       "id": 7,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\beneficiary-portal\\profile\\page.tsx",
+      "path": "src/app/beneficiary-portal/profile/page.tsx",
       "route": "/beneficiary-portal/profile",
       "name": "profile",
       "purpose": "Application Module",
@@ -227,16 +227,16 @@
       ],
       "suggested": [
         {
-          "route": "/public-summary",
-          "name": "public-summary"
-        },
-        {
-          "route": "/settings/donor",
-          "name": "donor"
-        },
-        {
-          "route": "/leads-members/[leadId]/donations/[donationId]",
+          "route": "/donor-portal/receipt/[donationId]",
           "name": "[donationId]"
+        },
+        {
+          "route": "/campaign-members/[campaignId]/donations/summary",
+          "name": "summary"
+        },
+        {
+          "route": "/info/members",
+          "name": "members"
         }
       ],
       "prev": "/beneficiary-portal",
@@ -244,7 +244,7 @@
     },
     {
       "id": 8,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\beneficiary-portal\\settings\\page.tsx",
+      "path": "src/app/beneficiary-portal/settings/page.tsx",
       "route": "/beneficiary-portal/settings",
       "name": "settings",
       "purpose": "Application Module",
@@ -261,16 +261,16 @@
       ],
       "suggested": [
         {
-          "route": "/portal-register",
-          "name": "portal-register"
+          "route": "/leads-members/[leadId]",
+          "name": "[leadId]"
         },
         {
-          "route": "/donor-portal/causes",
-          "name": "causes"
+          "route": "/extractor",
+          "name": "extractor"
         },
         {
-          "route": "/campaign-members/[campaignId]/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/settings/viewport",
+          "name": "viewport"
         }
       ],
       "prev": "/beneficiary-portal/profile",
@@ -278,7 +278,7 @@
     },
     {
       "id": 9,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\campaign-members\\create\\page.tsx",
+      "path": "src/app/campaign-members/create/page.tsx",
       "route": "/campaign-members/create",
       "name": "create",
       "purpose": "Application Module",
@@ -295,16 +295,16 @@
       ],
       "suggested": [
         {
-          "route": "/env-check",
-          "name": "env-check"
+          "route": "/portal-login",
+          "name": "portal-login"
         },
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/settings/info",
+          "name": "info"
         },
         {
-          "route": "/settings/app",
-          "name": "app"
+          "route": "/donations/summary",
+          "name": "summary"
         }
       ],
       "prev": "/beneficiary-portal/settings",
@@ -312,12 +312,12 @@
     },
     {
       "id": 10,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\campaign-members\\page.tsx",
+      "path": "src/app/campaign-members/page.tsx",
       "route": "/campaign-members",
       "name": "campaign-members",
       "purpose": "Application Module",
       "createdAt": "2026-03-25T14:34:06.000Z",
-      "updatedAt": "2026-04-27T22:08:04.760Z",
+      "updatedAt": "2026-05-02T22:09:52.788Z",
       "collections": [],
       "actions": [
         "e.stopPropagation()}>",
@@ -330,16 +330,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/portal-login",
-          "name": "portal-login"
+          "route": "/campaign-members/[campaignId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/campaign-public/[campaignId]/summary",
-          "name": "summary"
+          "route": "/campaign-public",
+          "name": "campaign-public"
         },
         {
-          "route": "/_offline",
-          "name": "_offline"
+          "route": "/leads-members/create",
+          "name": "create"
         }
       ],
       "prev": "/campaign-members/create",
@@ -347,7 +347,7 @@
     },
     {
       "id": 11,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\campaign-members\\[campaignId]\\audit\\page.tsx",
+      "path": "src/app/campaign-members/[campaignId]/audit/page.tsx",
       "route": "/campaign-members/[campaignId]/audit",
       "name": "audit",
       "purpose": "Application Module",
@@ -360,16 +360,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/summary",
-          "name": "summary"
+          "route": "/users",
+          "name": "users"
         },
         {
-          "route": "/settings/guidance",
-          "name": "guidance"
+          "route": "/settings/user",
+          "name": "user"
         },
         {
-          "route": "/donor-portal/causes",
-          "name": "causes"
+          "route": "/leads-public",
+          "name": "leads-public"
         }
       ],
       "prev": "/campaign-members",
@@ -377,7 +377,7 @@
     },
     {
       "id": 12,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\campaign-members\\[campaignId]\\beneficiaries\\page.tsx",
+      "path": "src/app/campaign-members/[campaignId]/beneficiaries/page.tsx",
       "route": "/campaign-members/[campaignId]/beneficiaries",
       "name": "beneficiaries",
       "purpose": "Application Module",
@@ -395,16 +395,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/settings/donor",
-          "name": "donor"
+          "route": "/donor-portal/receipt/[donationId]",
+          "name": "[donationId]"
+        },
+        {
+          "route": "/leads-members/[leadId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
           "route": "/settings/members",
           "name": "members"
-        },
-        {
-          "route": "/donor-portal",
-          "name": "donor-portal"
         }
       ],
       "prev": "/campaign-members/[campaignId]/audit",
@@ -412,7 +412,7 @@
     },
     {
       "id": 13,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\campaign-members\\[campaignId]\\donations\\page.tsx",
+      "path": "src/app/campaign-members/[campaignId]/donations/page.tsx",
       "route": "/campaign-members/[campaignId]/donations",
       "name": "donations",
       "purpose": "Application Module",
@@ -429,16 +429,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/donations/summary",
-          "name": "summary"
+          "route": "/leads-public/[leadId]",
+          "name": "[leadId]"
         },
         {
-          "route": "/settings",
-          "name": "settings"
+          "route": "/donor-portal/donations",
+          "name": "donations"
         },
         {
-          "route": "/campaign-public/[campaignId]/summary",
-          "name": "summary"
+          "route": "/donor-portal/causes",
+          "name": "causes"
         }
       ],
       "prev": "/campaign-members/[campaignId]/beneficiaries",
@@ -446,7 +446,7 @@
     },
     {
       "id": 14,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\campaign-members\\[campaignId]\\donations\\summary\\page.tsx",
+      "path": "src/app/campaign-members/[campaignId]/donations/summary/page.tsx",
       "route": "/campaign-members/[campaignId]/donations/summary",
       "name": "summary",
       "purpose": "Application Module",
@@ -459,16 +459,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/registry-index",
-          "name": "registry-index"
+          "route": "/campaign-members/[campaignId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/leads-members/[leadId]/summary",
-          "name": "summary"
+          "route": "/settings/beneficiary",
+          "name": "beneficiary"
         },
         {
-          "route": "/beneficiaries/create",
-          "name": "create"
+          "route": "/settings/app",
+          "name": "app"
         }
       ],
       "prev": "/campaign-members/[campaignId]/donations",
@@ -476,7 +476,7 @@
     },
     {
       "id": 15,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\campaign-members\\[campaignId]\\donations\\[donationId]\\page.tsx",
+      "path": "src/app/campaign-members/[campaignId]/donations/[donationId]/page.tsx",
       "route": "/campaign-members/[campaignId]/donations/[donationId]",
       "name": "[donationId]",
       "purpose": "Application Module",
@@ -493,16 +493,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-members",
-          "name": "leads-members"
-        },
-        {
-          "route": "/seed",
-          "name": "seed"
-        },
-        {
           "route": "/leads-members/[leadId]/beneficiaries",
           "name": "beneficiaries"
+        },
+        {
+          "route": "/donations/[donationId]",
+          "name": "[donationId]"
+        },
+        {
+          "route": "/analytics",
+          "name": "analytics"
         }
       ],
       "prev": "/campaign-members/[campaignId]/donations/summary",
@@ -510,7 +510,7 @@
     },
     {
       "id": 16,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\campaign-members\\[campaignId]\\page.tsx",
+      "path": "src/app/campaign-members/[campaignId]/page.tsx",
       "route": "/campaign-members/[campaignId]",
       "name": "[campaignId]",
       "purpose": "Application Module",
@@ -543,16 +543,16 @@
       ],
       "suggested": [
         {
-          "route": "/beneficiaries",
-          "name": "beneficiaries"
+          "route": "/messages",
+          "name": "messages"
         },
         {
-          "route": "/beneficiaries/summary",
-          "name": "summary"
+          "route": "/leads-members/[leadId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/info/guiding-principles",
-          "name": "guiding-principles"
+          "route": "/_offline",
+          "name": "_offline"
         }
       ],
       "prev": "/campaign-members/[campaignId]/donations/[donationId]",
@@ -560,12 +560,12 @@
     },
     {
       "id": 17,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\campaign-members\\[campaignId]\\summary\\page.tsx",
+      "path": "src/app/campaign-members/[campaignId]/summary/page.tsx",
       "route": "/campaign-members/[campaignId]/summary",
       "name": "summary",
       "purpose": "Application Module",
       "createdAt": "2026-04-04T03:14:10.000Z",
-      "updatedAt": "2026-04-27T23:39:43.428Z",
+      "updatedAt": "2026-05-02T23:52:37.230Z",
       "collections": [],
       "actions": [
         "All Campaigns",
@@ -579,10 +579,10 @@
         "Global Image Gallery",
         "Category",
         "Priority",
-        "Operational Status",
-        "Verification Level",
-        "Public Visibility",
-        "Target Amount (₹)",
+        "Campaign Status",
+        "Check Status",
+        "Show on Website",
+        "Target Goal (₹)",
         "Description",
         "Start Date",
         "End Date",
@@ -592,23 +592,23 @@
         "Price Quoted Date",
         "Donation Types Included In Goal",
         "{type}",
-        "Mission Description",
+        "What we're doing",
         "Upload New Files",
         "Manage Saved Documents",
         "Public"
       ],
       "suggested": [
         {
-          "route": "/donor-portal/causes",
-          "name": "causes"
+          "route": "/settings/viewport",
+          "name": "viewport"
         },
         {
-          "route": "/beneficiary-portal/settings",
-          "name": "settings"
+          "route": "/beneficiaries/summary",
+          "name": "summary"
         },
         {
-          "route": "/donors/[donorId]",
-          "name": "[donorId]"
+          "route": "/campaign-members",
+          "name": "campaign-members"
         }
       ],
       "prev": "/campaign-members/[campaignId]",
@@ -616,7 +616,7 @@
     },
     {
       "id": 18,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\campaign-public\\page.tsx",
+      "path": "src/app/campaign-public/page.tsx",
       "route": "/campaign-public",
       "name": "campaign-public",
       "purpose": "Application Module",
@@ -629,16 +629,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/donations/summary",
+          "route": "/leads-members/[leadId]/beneficiaries",
+          "name": "beneficiaries"
+        },
+        {
+          "route": "/extractor",
+          "name": "extractor"
+        },
+        {
+          "route": "/leads-public/[leadId]/summary",
           "name": "summary"
-        },
-        {
-          "route": "/donor-portal/settings",
-          "name": "settings"
-        },
-        {
-          "route": "/leads-members/[leadId]/donations/[donationId]",
-          "name": "[donationId]"
         }
       ],
       "prev": "/campaign-members/[campaignId]/summary",
@@ -646,7 +646,7 @@
     },
     {
       "id": 19,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\campaign-public\\[campaignId]\\page.tsx",
+      "path": "src/app/campaign-public/[campaignId]/page.tsx",
       "route": "/campaign-public/[campaignId]",
       "name": "[campaignId]",
       "purpose": "Application Module",
@@ -657,16 +657,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/settings/campaign",
-          "name": "campaign"
+          "route": "/messages",
+          "name": "messages"
         },
         {
-          "route": "/diagnostics",
-          "name": "diagnostics"
+          "route": "/donor-portal/causes",
+          "name": "causes"
         },
         {
-          "route": "/donor-portal/settings",
-          "name": "settings"
+          "route": "/campaign-public",
+          "name": "campaign-public"
         }
       ],
       "prev": "/campaign-public",
@@ -674,7 +674,7 @@
     },
     {
       "id": 20,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\campaign-public\\[campaignId]\\summary\\page.tsx",
+      "path": "src/app/campaign-public/[campaignId]/summary/page.tsx",
       "route": "/campaign-public/[campaignId]/summary",
       "name": "summary",
       "purpose": "Application Module",
@@ -692,16 +692,16 @@
       ],
       "suggested": [
         {
-          "route": "/donor-portal/settings",
-          "name": "settings"
-        },
-        {
-          "route": "/campaign-members/[campaignId]/donations/[donationId]",
+          "route": "/donor-portal/receipt/[donationId]",
           "name": "[donationId]"
         },
         {
-          "route": "/donations",
-          "name": "donations"
+          "route": "/leads-members/[leadId]",
+          "name": "[leadId]"
+        },
+        {
+          "route": "/info/guidance",
+          "name": "guidance"
         }
       ],
       "prev": "/campaign-public/[campaignId]",
@@ -709,12 +709,12 @@
     },
     {
       "id": 21,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\dashboard\\page.tsx",
+      "path": "src/app/dashboard/page.tsx",
       "route": "/dashboard",
       "name": "dashboard",
       "purpose": "Application Module",
       "createdAt": "2026-03-25T14:20:12.000Z",
-      "updatedAt": "2026-05-02T10:12:45.179Z",
+      "updatedAt": "2026-05-02T22:08:49.988Z",
       "collections": [],
       "actions": [
         "Raise Fund",
@@ -724,16 +724,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/beneficiaries/summary",
-          "name": "summary"
-        },
-        {
-          "route": "/leads-members/[leadId]/audit",
-          "name": "audit"
+          "route": "/leads-members/[leadId]/beneficiaries",
+          "name": "beneficiaries"
         },
         {
           "route": "/portal-register",
           "name": "portal-register"
+        },
+        {
+          "route": "/leads-members/[leadId]/summary",
+          "name": "summary"
         }
       ],
       "prev": "/campaign-public/[campaignId]/summary",
@@ -741,7 +741,7 @@
     },
     {
       "id": 22,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\diagnostics\\page.tsx",
+      "path": "src/app/diagnostics/page.tsx",
       "route": "/diagnostics",
       "name": "diagnostics",
       "purpose": "Application Module",
@@ -754,16 +754,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/donor-portal/receipt/[donationId]",
-          "name": "[donationId]"
+          "route": "/leads-public",
+          "name": "leads-public"
         },
         {
-          "route": "/beneficiary-portal",
-          "name": "beneficiary-portal"
-        },
-        {
-          "route": "/profile",
+          "route": "/donor-portal/profile",
           "name": "profile"
+        },
+        {
+          "route": "/campaign-members/[campaignId]",
+          "name": "[campaignId]"
         }
       ],
       "prev": "/dashboard",
@@ -771,12 +771,12 @@
     },
     {
       "id": 23,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\donate\\page.tsx",
+      "path": "src/app/donate/page.tsx",
       "route": "/donate",
       "name": "donate",
       "purpose": "Application Module",
       "createdAt": "2026-04-05T01:19:56.758Z",
-      "updatedAt": "2026-05-02T15:49:54.495Z",
+      "updatedAt": "2026-05-02T22:14:59.084Z",
       "collections": [],
       "actions": [
         "View Guiding Principles"
@@ -784,16 +784,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/settings/donation",
-          "name": "donation"
+          "route": "/settings/donor",
+          "name": "donor"
         },
         {
-          "route": "/dashboard",
-          "name": "dashboard"
+          "route": "/donors/[donorId]",
+          "name": "[donorId]"
         },
         {
-          "route": "/beneficiary-portal",
-          "name": "beneficiary-portal"
+          "route": "/leads-members/[leadId]/donations",
+          "name": "donations"
         }
       ],
       "prev": "/diagnostics",
@@ -801,7 +801,7 @@
     },
     {
       "id": 24,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\donations\\page.tsx",
+      "path": "src/app/donations/page.tsx",
       "route": "/donations",
       "name": "donations",
       "purpose": "Application Module",
@@ -824,12 +824,12 @@
           "name": "info"
         },
         {
-          "route": "/settings/donor",
-          "name": "donor"
+          "route": "/beneficiaries/[beneficiaryId]",
+          "name": "[beneficiaryId]"
         },
         {
-          "route": "/",
-          "name": "Home"
+          "route": "/campaign-members/[campaignId]",
+          "name": "[campaignId]"
         }
       ],
       "prev": "/donate",
@@ -837,7 +837,7 @@
     },
     {
       "id": 25,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\donations\\summary\\page.tsx",
+      "path": "src/app/donations/summary/page.tsx",
       "route": "/donations/summary",
       "name": "summary",
       "purpose": "Application Module",
@@ -850,16 +850,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/donations",
-          "name": "donations"
+          "route": "/settings/logs",
+          "name": "logs"
         },
         {
-          "route": "/settings/data-health",
-          "name": "data-health"
+          "route": "/campaign-members/[campaignId]/donations/summary",
+          "name": "summary"
         },
         {
-          "route": "/leads-members/[leadId]/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/leads-members/[leadId]/beneficiaries",
+          "name": "beneficiaries"
         }
       ],
       "prev": "/donations",
@@ -867,7 +867,7 @@
     },
     {
       "id": 26,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\donations\\[donationId]\\page.tsx",
+      "path": "src/app/donations/[donationId]/page.tsx",
       "route": "/donations/[donationId]",
       "name": "[donationId]",
       "purpose": "Application Module",
@@ -882,16 +882,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/info/organization",
-          "name": "organization"
+          "route": "/donor-portal/receipt/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/messages/templateconfig",
-          "name": "templateconfig"
+          "route": "/story-creator",
+          "name": "story-creator"
         },
         {
-          "route": "/beneficiary-portal/profile",
-          "name": "profile"
+          "route": "/settings/guidance",
+          "name": "guidance"
         }
       ],
       "prev": "/donations/summary",
@@ -899,7 +899,7 @@
     },
     {
       "id": 27,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\donor-portal\\causes\\page.tsx",
+      "path": "src/app/donor-portal/causes/page.tsx",
       "route": "/donor-portal/causes",
       "name": "causes",
       "purpose": "Application Module",
@@ -913,16 +913,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/portal-login",
-          "name": "portal-login"
+          "route": "/profile",
+          "name": "profile"
         },
         {
-          "route": "/donations",
-          "name": "donations"
+          "route": "/analytics",
+          "name": "analytics"
         },
         {
-          "route": "/campaign-members/create",
-          "name": "create"
+          "route": "/donations/summary",
+          "name": "summary"
         }
       ],
       "prev": "/donations/[donationId]",
@@ -930,7 +930,7 @@
     },
     {
       "id": 28,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\donor-portal\\donations\\page.tsx",
+      "path": "src/app/donor-portal/donations/page.tsx",
       "route": "/donor-portal/donations",
       "name": "donations",
       "purpose": "Application Module",
@@ -944,16 +944,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/donors/[donorId]",
+          "name": "[donorId]"
         },
         {
-          "route": "/settings/beneficiary",
-          "name": "beneficiary"
+          "route": "/settings/data-health",
+          "name": "data-health"
         },
         {
-          "route": "/verifications",
-          "name": "verifications"
+          "route": "/info/guiding-principles",
+          "name": "guiding-principles"
         }
       ],
       "prev": "/donor-portal/causes",
@@ -961,33 +961,33 @@
     },
     {
       "id": 29,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\donor-portal\\page.tsx",
+      "path": "src/app/donor-portal/page.tsx",
       "route": "/donor-portal",
       "name": "donor-portal",
       "purpose": "Application Module",
       "createdAt": "2026-04-30T22:40:50.372Z",
-      "updatedAt": "2026-05-02T12:26:49.448Z",
+      "updatedAt": "2026-05-02T22:09:08.074Z",
       "collections": [],
       "actions": [
         "Return to Login",
         "Discover",
-        "Contribute",
+        "Donate Now",
         "Registry",
         "Discover More Causes"
       ],
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]",
-          "name": "[leadId]"
+          "route": "/beneficiaries",
+          "name": "beneficiaries"
         },
         {
-          "route": "/campaign-members",
-          "name": "campaign-members"
+          "route": "/beneficiaries/summary",
+          "name": "summary"
         },
         {
-          "route": "/settings/lead",
-          "name": "lead"
+          "route": "/donors",
+          "name": "donors"
         }
       ],
       "prev": "/donor-portal/donations",
@@ -995,7 +995,7 @@
     },
     {
       "id": 30,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\donor-portal\\profile\\page.tsx",
+      "path": "src/app/donor-portal/profile/page.tsx",
       "route": "/donor-portal/profile",
       "name": "profile",
       "purpose": "Application Module",
@@ -1026,16 +1026,16 @@
       ],
       "suggested": [
         {
-          "route": "/info/guiding-principles",
-          "name": "guiding-principles"
+          "route": "/campaign-members/[campaignId]/donations/summary",
+          "name": "summary"
         },
         {
-          "route": "/users",
-          "name": "users"
+          "route": "/leads-public",
+          "name": "leads-public"
         },
         {
-          "route": "/leads-members/[leadId]/audit",
-          "name": "audit"
+          "route": "/leads-members/[leadId]/beneficiaries",
+          "name": "beneficiaries"
         }
       ],
       "prev": "/donor-portal",
@@ -1043,7 +1043,7 @@
     },
     {
       "id": 31,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\donor-portal\\receipt\\[donationId]\\page.tsx",
+      "path": "src/app/donor-portal/receipt/[donationId]/page.tsx",
       "route": "/donor-portal/receipt/[donationId]",
       "name": "[donationId]",
       "purpose": "Application Module",
@@ -1058,16 +1058,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/beneficiaries/create",
-          "name": "create"
+          "route": "/campaign-members/[campaignId]/donations/summary",
+          "name": "summary"
         },
         {
-          "route": "/settings/guidance",
-          "name": "guidance"
+          "route": "/donor-portal/profile",
+          "name": "profile"
         },
         {
-          "route": "/leads-members/create",
-          "name": "create"
+          "route": "/settings/user",
+          "name": "user"
         }
       ],
       "prev": "/donor-portal/profile",
@@ -1075,7 +1075,7 @@
     },
     {
       "id": 32,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\donor-portal\\settings\\page.tsx",
+      "path": "src/app/donor-portal/settings/page.tsx",
       "route": "/donor-portal/settings",
       "name": "settings",
       "purpose": "Application Module",
@@ -1092,16 +1092,16 @@
       ],
       "suggested": [
         {
-          "route": "/beneficiary-portal",
-          "name": "beneficiary-portal"
+          "route": "/settings/beneficiary",
+          "name": "beneficiary"
         },
         {
-          "route": "/settings/resources/fundraising",
-          "name": "fundraising"
+          "route": "/leads-members/create",
+          "name": "create"
         },
         {
-          "route": "/portal-login",
-          "name": "portal-login"
+          "route": "/campaign-members/[campaignId]",
+          "name": "[campaignId]"
         }
       ],
       "prev": "/donor-portal/receipt/[donationId]",
@@ -1109,7 +1109,7 @@
     },
     {
       "id": 33,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\donors\\page.tsx",
+      "path": "src/app/donors/page.tsx",
       "route": "/donors",
       "name": "donors",
       "purpose": "Application Module",
@@ -1143,16 +1143,16 @@
       ],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]",
+          "route": "/leads-public/[leadId]",
           "name": "[leadId]"
         },
         {
-          "route": "/campaign-public/[campaignId]",
-          "name": "[campaignId]"
+          "route": "/settings/campaign",
+          "name": "campaign"
         },
         {
-          "route": "/info/organization",
-          "name": "organization"
+          "route": "/settings/lead",
+          "name": "lead"
         }
       ],
       "prev": "/donor-portal/settings",
@@ -1160,7 +1160,7 @@
     },
     {
       "id": 34,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\donors\\summary\\page.tsx",
+      "path": "src/app/donors/summary/page.tsx",
       "route": "/donors/summary",
       "name": "summary",
       "purpose": "Application Module",
@@ -1174,16 +1174,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/settings/logs",
-          "name": "logs"
+          "route": "/beneficiaries/create",
+          "name": "create"
         },
         {
-          "route": "/campaign-members",
-          "name": "campaign-members"
+          "route": "/beneficiaries/[beneficiaryId]",
+          "name": "[beneficiaryId]"
         },
         {
-          "route": "/guidance",
-          "name": "guidance"
+          "route": "/leads-members/create",
+          "name": "create"
         }
       ],
       "prev": "/donors",
@@ -1191,7 +1191,7 @@
     },
     {
       "id": 35,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\donors\\[donorId]\\page.tsx",
+      "path": "src/app/donors/[donorId]/page.tsx",
       "route": "/donors/[donorId]",
       "name": "[donorId]",
       "purpose": "Application Module",
@@ -1229,16 +1229,16 @@
       ],
       "suggested": [
         {
-          "route": "/info/organization",
-          "name": "organization"
+          "route": "/guidance",
+          "name": "guidance"
         },
         {
-          "route": "/login",
-          "name": "login"
+          "route": "/beneficiary-portal/settings",
+          "name": "settings"
         },
         {
-          "route": "/settings/migration",
-          "name": "migration"
+          "route": "/donor-portal/profile",
+          "name": "profile"
         }
       ],
       "prev": "/donors/summary",
@@ -1246,7 +1246,7 @@
     },
     {
       "id": 36,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\env-check\\page.tsx",
+      "path": "src/app/env-check/page.tsx",
       "route": "/env-check",
       "name": "env-check",
       "purpose": "Application Module",
@@ -1257,16 +1257,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/settings/guidance",
-          "name": "guidance"
+          "route": "/info/donation-info",
+          "name": "donation-info"
         },
         {
-          "route": "/users",
-          "name": "users"
+          "route": "/donors/[donorId]",
+          "name": "[donorId]"
         },
         {
-          "route": "/settings/viewport",
-          "name": "viewport"
+          "route": "/donations",
+          "name": "donations"
         }
       ],
       "prev": "/donors/[donorId]",
@@ -1274,7 +1274,7 @@
     },
     {
       "id": 37,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\extractor\\page.tsx",
+      "path": "src/app/extractor/page.tsx",
       "route": "/extractor",
       "name": "extractor",
       "purpose": "Application Module",
@@ -1287,16 +1287,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/",
-          "name": "Home"
+          "route": "/donor-portal/receipt/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/leads-public/[leadId]",
-          "name": "[leadId]"
+          "route": "/settings/beneficiary",
+          "name": "beneficiary"
         },
         {
-          "route": "/leads-members/[leadId]/donations/summary",
-          "name": "summary"
+          "route": "/donor-portal/donations",
+          "name": "donations"
         }
       ],
       "prev": "/env-check",
@@ -1304,7 +1304,7 @@
     },
     {
       "id": 38,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\guidance\\page.tsx",
+      "path": "src/app/guidance/page.tsx",
       "route": "/guidance",
       "name": "guidance",
       "purpose": "Application Module",
@@ -1330,16 +1330,16 @@
       ],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/beneficiaries",
-          "name": "beneficiaries"
+          "route": "/donor-portal/receipt/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/info/members",
-          "name": "members"
+          "route": "/beneficiaries/[beneficiaryId]",
+          "name": "[beneficiaryId]"
         },
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/donors/[donorId]",
+          "name": "[donorId]"
         }
       ],
       "prev": "/extractor",
@@ -1347,7 +1347,7 @@
     },
     {
       "id": 39,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\info\\donation-info\\page.tsx",
+      "path": "src/app/info/donation-info/page.tsx",
       "route": "/info/donation-info",
       "name": "donation-info",
       "purpose": "Application Module",
@@ -1361,16 +1361,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-public/[campaignId]/summary",
-          "name": "summary"
+          "route": "/settings/user",
+          "name": "user"
         },
         {
-          "route": "/settings/donation",
-          "name": "donation"
+          "route": "/settings/viewport",
+          "name": "viewport"
         },
         {
-          "route": "/campaign-members/[campaignId]/summary",
-          "name": "summary"
+          "route": "/leads-members/[leadId]/donations/[donationId]",
+          "name": "[donationId]"
         }
       ],
       "prev": "/guidance",
@@ -1378,7 +1378,7 @@
     },
     {
       "id": 40,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\info\\guidance\\page.tsx",
+      "path": "src/app/info/guidance/page.tsx",
       "route": "/info/guidance",
       "name": "guidance",
       "purpose": "Application Module",
@@ -1394,16 +1394,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/settings/user",
-          "name": "user"
+          "route": "/donors/[donorId]",
+          "name": "[donorId]"
         },
         {
-          "route": "/leads-members/[leadId]/summary",
-          "name": "summary"
+          "route": "/campaign-members/[campaignId]",
+          "name": "[campaignId]"
         },
         {
-          "route": "/beneficiaries/[beneficiaryId]",
-          "name": "[beneficiaryId]"
+          "route": "/donor-portal",
+          "name": "donor-portal"
         }
       ],
       "prev": "/info/donation-info",
@@ -1411,7 +1411,7 @@
     },
     {
       "id": 41,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\info\\guiding-principles\\page.tsx",
+      "path": "src/app/info/guiding-principles/page.tsx",
       "route": "/info/guiding-principles",
       "name": "guiding-principles",
       "purpose": "Application Module",
@@ -1427,16 +1427,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/beneficiaries/create",
-          "name": "create"
+          "route": "/users/[userId]",
+          "name": "[userId]"
         },
         {
-          "route": "/public",
-          "name": "public"
-        },
-        {
-          "route": "/leads-members/[leadId]/beneficiaries",
+          "route": "/campaign-members/[campaignId]/beneficiaries",
           "name": "beneficiaries"
+        },
+        {
+          "route": "/leads-members",
+          "name": "leads-members"
         }
       ],
       "prev": "/info/guidance",
@@ -1444,7 +1444,7 @@
     },
     {
       "id": 42,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\info\\members\\page.tsx",
+      "path": "src/app/info/members/page.tsx",
       "route": "/info/members",
       "name": "members",
       "purpose": "Application Module",
@@ -1457,16 +1457,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/beneficiary-portal",
-          "name": "beneficiary-portal"
+          "route": "/settings/donation",
+          "name": "donation"
         },
         {
-          "route": "/leads-members/[leadId]/summary",
-          "name": "summary"
+          "route": "/login",
+          "name": "login"
         },
         {
-          "route": "/campaign-public/[campaignId]",
-          "name": "[campaignId]"
+          "route": "/settings/logs",
+          "name": "logs"
         }
       ],
       "prev": "/info/guiding-principles",
@@ -1474,7 +1474,7 @@
     },
     {
       "id": 43,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\info\\organization\\page.tsx",
+      "path": "src/app/info/organization/page.tsx",
       "route": "/info/organization",
       "name": "organization",
       "purpose": "Application Module",
@@ -1487,16 +1487,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/settings/donation",
+          "name": "donation"
         },
         {
-          "route": "/leads-members/[leadId]/summary",
-          "name": "summary"
+          "route": "/leads-members/[leadId]/audit",
+          "name": "audit"
         },
         {
-          "route": "/settings/app",
-          "name": "app"
+          "route": "/public",
+          "name": "public"
         }
       ],
       "prev": "/info/members",
@@ -1504,7 +1504,7 @@
     },
     {
       "id": 44,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\leads-members\\create\\page.tsx",
+      "path": "src/app/leads-members/create/page.tsx",
       "route": "/leads-members/create",
       "name": "create",
       "purpose": "Application Module",
@@ -1521,16 +1521,16 @@
       ],
       "suggested": [
         {
-          "route": "/settings/app",
-          "name": "app"
+          "route": "/leads-public",
+          "name": "leads-public"
         },
         {
-          "route": "/info/guiding-principles",
-          "name": "guiding-principles"
+          "route": "/leads-members/[leadId]/beneficiaries",
+          "name": "beneficiaries"
         },
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/story-creator",
+          "name": "story-creator"
         }
       ],
       "prev": "/info/organization",
@@ -1538,12 +1538,12 @@
     },
     {
       "id": 45,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\leads-members\\page.tsx",
+      "path": "src/app/leads-members/page.tsx",
       "route": "/leads-members",
       "name": "leads-members",
       "purpose": "Application Module",
       "createdAt": "2026-03-25T14:34:06.000Z",
-      "updatedAt": "2026-04-27T22:06:57.442Z",
+      "updatedAt": "2026-05-02T22:10:05.551Z",
       "collections": [],
       "actions": [
         "e.stopPropagation()}>",
@@ -1556,16 +1556,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/portal-register",
-          "name": "portal-register"
+          "route": "/beneficiaries/[beneficiaryId]",
+          "name": "[beneficiaryId]"
         },
         {
-          "route": "/registry-index",
-          "name": "registry-index"
+          "route": "/beneficiaries/summary",
+          "name": "summary"
         },
         {
-          "route": "/settings/user",
-          "name": "user"
+          "route": "/settings/members",
+          "name": "members"
         }
       ],
       "prev": "/leads-members/create",
@@ -1573,7 +1573,7 @@
     },
     {
       "id": 46,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\leads-members\\[leadId]\\audit\\page.tsx",
+      "path": "src/app/leads-members/[leadId]/audit/page.tsx",
       "route": "/leads-members/[leadId]/audit",
       "name": "audit",
       "purpose": "Application Module",
@@ -1586,16 +1586,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/users",
-          "name": "users"
+          "route": "/diagnostics",
+          "name": "diagnostics"
         },
         {
-          "route": "/_offline",
-          "name": "_offline"
+          "route": "/campaign-members/[campaignId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/public-summary",
-          "name": "public-summary"
+          "route": "/campaign-members/[campaignId]/beneficiaries",
+          "name": "beneficiaries"
         }
       ],
       "prev": "/leads-members",
@@ -1603,7 +1603,7 @@
     },
     {
       "id": 47,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\leads-members\\[leadId]\\beneficiaries\\page.tsx",
+      "path": "src/app/leads-members/[leadId]/beneficiaries/page.tsx",
       "route": "/leads-members/[leadId]/beneficiaries",
       "name": "beneficiaries",
       "purpose": "Application Module",
@@ -1621,16 +1621,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-public",
-          "name": "campaign-public"
+          "route": "/leads-public/[leadId]",
+          "name": "[leadId]"
         },
         {
-          "route": "/messages",
-          "name": "messages"
+          "route": "/beneficiary-portal/profile",
+          "name": "profile"
         },
         {
-          "route": "/campaign-public/[campaignId]",
-          "name": "[campaignId]"
+          "route": "/info/members",
+          "name": "members"
         }
       ],
       "prev": "/leads-members/[leadId]/audit",
@@ -1638,7 +1638,7 @@
     },
     {
       "id": 48,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\leads-members\\[leadId]\\donations\\page.tsx",
+      "path": "src/app/leads-members/[leadId]/donations/page.tsx",
       "route": "/leads-members/[leadId]/donations",
       "name": "donations",
       "purpose": "Application Module",
@@ -1657,16 +1657,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/audit",
-          "name": "audit"
+          "route": "/donor-portal/settings",
+          "name": "settings"
         },
         {
-          "route": "/leads-public",
-          "name": "leads-public"
+          "route": "/messages",
+          "name": "messages"
         },
         {
-          "route": "/settings/logs",
-          "name": "logs"
+          "route": "/seed",
+          "name": "seed"
         }
       ],
       "prev": "/leads-members/[leadId]/beneficiaries",
@@ -1674,7 +1674,7 @@
     },
     {
       "id": 49,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\leads-members\\[leadId]\\donations\\summary\\page.tsx",
+      "path": "src/app/leads-members/[leadId]/donations/summary/page.tsx",
       "route": "/leads-members/[leadId]/donations/summary",
       "name": "summary",
       "purpose": "Application Module",
@@ -1685,16 +1685,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/settings/lead",
+          "name": "lead"
         },
         {
-          "route": "/leads-members/[leadId]/beneficiaries",
-          "name": "beneficiaries"
+          "route": "/settings/guidance",
+          "name": "guidance"
         },
         {
-          "route": "/donor-portal/donations",
-          "name": "donations"
+          "route": "/leads-public/[leadId]",
+          "name": "[leadId]"
         }
       ],
       "prev": "/leads-members/[leadId]/donations",
@@ -1702,7 +1702,7 @@
     },
     {
       "id": 50,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\leads-members\\[leadId]\\donations\\[donationId]\\page.tsx",
+      "path": "src/app/leads-members/[leadId]/donations/[donationId]/page.tsx",
       "route": "/leads-members/[leadId]/donations/[donationId]",
       "name": "[donationId]",
       "purpose": "Application Module",
@@ -1719,16 +1719,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/portal-login",
-          "name": "portal-login"
+          "route": "/beneficiary-portal/profile",
+          "name": "profile"
         },
         {
-          "route": "/beneficiaries/[beneficiaryId]",
-          "name": "[beneficiaryId]"
+          "route": "/settings/data-health",
+          "name": "data-health"
         },
         {
-          "route": "/leads-public",
-          "name": "leads-public"
+          "route": "/campaign-members/[campaignId]/beneficiaries",
+          "name": "beneficiaries"
         }
       ],
       "prev": "/leads-members/[leadId]/donations/summary",
@@ -1736,7 +1736,7 @@
     },
     {
       "id": 51,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\leads-members\\[leadId]\\page.tsx",
+      "path": "src/app/leads-members/[leadId]/page.tsx",
       "route": "/leads-members/[leadId]",
       "name": "[leadId]",
       "purpose": "Application Module",
@@ -1754,16 +1754,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/beneficiary-portal/settings",
-          "name": "settings"
+          "route": "/leads-members/[leadId]/audit",
+          "name": "audit"
         },
         {
-          "route": "/settings/logs",
-          "name": "logs"
+          "route": "/leads-members/[leadId]/beneficiaries",
+          "name": "beneficiaries"
         },
         {
-          "route": "/campaign-members/[campaignId]",
-          "name": "[campaignId]"
+          "route": "/_offline",
+          "name": "_offline"
         }
       ],
       "prev": "/leads-members/[leadId]/donations/[donationId]",
@@ -1771,15 +1771,15 @@
     },
     {
       "id": 52,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\leads-members\\[leadId]\\summary\\page.tsx",
+      "path": "src/app/leads-members/[leadId]/summary/page.tsx",
       "route": "/leads-members/[leadId]/summary",
       "name": "summary",
       "purpose": "Application Module",
       "createdAt": "2026-03-26T00:38:38.000Z",
-      "updatedAt": "2026-04-27T23:39:45.561Z",
+      "updatedAt": "2026-05-02T23:53:08.479Z",
       "collections": [],
       "actions": [
-        "All Appeals",
+        "All Help Requests",
         "Download",
         "Secure Changes",
         "{ e.preventDefault(); handleRemoveImage(); }}>",
@@ -1788,11 +1788,11 @@
       "fields": [
         "Upload Image",
         "Global Image Gallery",
-        "Purpose Type",
+        "Type of Help",
         "Priority Level",
-        "Operational Status",
-        "Verification Level",
-        "Public Visibility",
+        "Request Status",
+        "Check Status",
+        "Show on Website",
         "Degree",
         "Year",
         "Semester",
@@ -1800,16 +1800,16 @@
         "Stage",
         "Seriousness",
         "Description",
-        "Required Amount (₹)",
-        "Target Amount (₹)",
+        "Money Needed (₹)",
+        "Target Goal (₹)",
         "Start Date",
         "End Date",
         "Shop Name",
         "Shop Contact",
         "Shop Address",
         "Price Quoted Date",
-        "Institutional Notes (Private)",
-        "Allowed Donation Types For Goal",
+        "Internal Notes (Private)",
+        "Donation Types for this Goal",
         "{type}",
         "Upload New Files",
         "Manage Saved Documents",
@@ -1817,16 +1817,16 @@
       ],
       "suggested": [
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/beneficiaries/summary",
+          "name": "summary"
         },
         {
-          "route": "/donor-portal/receipt/[donationId]",
-          "name": "[donationId]"
+          "route": "/leads-members/[leadId]",
+          "name": "[leadId]"
         },
         {
-          "route": "/info/organization",
-          "name": "organization"
+          "route": "/settings/lead",
+          "name": "lead"
         }
       ],
       "prev": "/leads-members/[leadId]",
@@ -1834,7 +1834,7 @@
     },
     {
       "id": 53,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\leads-public\\page.tsx",
+      "path": "src/app/leads-public/page.tsx",
       "route": "/leads-public",
       "name": "leads-public",
       "purpose": "Application Module",
@@ -1847,16 +1847,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/summary",
-          "name": "summary"
+          "route": "/portal-login",
+          "name": "portal-login"
         },
         {
-          "route": "/campaign-public/[campaignId]/summary",
-          "name": "summary"
+          "route": "/beneficiaries/[beneficiaryId]",
+          "name": "[beneficiaryId]"
         },
         {
-          "route": "/settings/app",
-          "name": "app"
+          "route": "/donor-portal/receipt/[donationId]",
+          "name": "[donationId]"
         }
       ],
       "prev": "/leads-members/[leadId]/summary",
@@ -1864,7 +1864,7 @@
     },
     {
       "id": 54,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\leads-public\\[leadId]\\page.tsx",
+      "path": "src/app/leads-public/[leadId]/page.tsx",
       "route": "/leads-public/[leadId]",
       "name": "[leadId]",
       "purpose": "Application Module",
@@ -1875,15 +1875,15 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-public",
-          "name": "leads-public"
+          "route": "/leads-members/[leadId]/audit",
+          "name": "audit"
+        },
+        {
+          "route": "/leads-members/[leadId]",
+          "name": "[leadId]"
         },
         {
           "route": "/beneficiaries/summary",
-          "name": "summary"
-        },
-        {
-          "route": "/leads-members/[leadId]/summary",
           "name": "summary"
         }
       ],
@@ -1892,7 +1892,7 @@
     },
     {
       "id": 55,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\leads-public\\[leadId]\\summary\\page.tsx",
+      "path": "src/app/leads-public/[leadId]/summary/page.tsx",
       "route": "/leads-public/[leadId]/summary",
       "name": "summary",
       "purpose": "Application Module",
@@ -1909,16 +1909,16 @@
       ],
       "suggested": [
         {
-          "route": "/settings",
-          "name": "settings"
+          "route": "/leads-members/[leadId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/donate",
-          "name": "donate"
+          "route": "/donations",
+          "name": "donations"
         },
         {
-          "route": "/leads-members/[leadId]/donations/summary",
-          "name": "summary"
+          "route": "/beneficiaries/[beneficiaryId]",
+          "name": "[beneficiaryId]"
         }
       ],
       "prev": "/leads-public/[leadId]",
@@ -1926,7 +1926,7 @@
     },
     {
       "id": 56,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\login\\page.tsx",
+      "path": "src/app/login/page.tsx",
       "route": "/login",
       "name": "login",
       "purpose": "Application Module",
@@ -1945,16 +1945,16 @@
       ],
       "suggested": [
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/donations",
+          "name": "donations"
         },
         {
-          "route": "/settings/logs",
-          "name": "logs"
+          "route": "/settings/resources/fundraising",
+          "name": "fundraising"
         },
         {
-          "route": "/donate",
-          "name": "donate"
+          "route": "/campaign-members/[campaignId]/summary",
+          "name": "summary"
         }
       ],
       "prev": "/leads-public/[leadId]/summary",
@@ -1962,7 +1962,7 @@
     },
     {
       "id": 57,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\messages\\page.tsx",
+      "path": "src/app/messages/page.tsx",
       "route": "/messages",
       "name": "messages",
       "purpose": "Application Module",
@@ -1979,16 +1979,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/beneficiaries/[beneficiaryId]",
-          "name": "[beneficiaryId]"
+          "route": "/campaign-members/create",
+          "name": "create"
         },
         {
-          "route": "/users/[userId]",
-          "name": "[userId]"
+          "route": "/campaign-members/[campaignId]/beneficiaries",
+          "name": "beneficiaries"
         },
         {
-          "route": "/settings/resources/fundraising",
-          "name": "fundraising"
+          "route": "/beneficiary-portal/settings",
+          "name": "settings"
         }
       ],
       "prev": "/login",
@@ -1996,7 +1996,7 @@
     },
     {
       "id": 58,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\messages\\templateconfig\\page.tsx",
+      "path": "src/app/messages/templateconfig/page.tsx",
       "route": "/messages/templateconfig",
       "name": "templateconfig",
       "purpose": "Application Module",
@@ -2019,16 +2019,16 @@
       ],
       "suggested": [
         {
-          "route": "/users/create",
-          "name": "create"
+          "route": "/messages",
+          "name": "messages"
         },
         {
-          "route": "/public",
-          "name": "public"
+          "route": "/leads-members/[leadId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/users/[userId]",
-          "name": "[userId]"
+          "route": "/settings/donor",
+          "name": "donor"
         }
       ],
       "prev": "/messages",
@@ -2036,34 +2036,34 @@
     },
     {
       "id": 59,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\page.tsx",
+      "path": "src/app/page.tsx",
       "route": "/",
       "name": "Home",
       "purpose": "Application Module",
       "createdAt": "2026-03-26T00:12:02.000Z",
-      "updatedAt": "2026-05-02T19:51:06.718Z",
+      "updatedAt": "2026-05-02T22:13:54.890Z",
       "collections": [],
       "actions": [
         "Donate Now",
         "Campaigns",
         "Appeals",
         "Download Mobile App (APK)",
-        "Team Access",
-        "Donor Portal"
+        "Admin Login",
+        "Donor Login"
       ],
       "fields": [],
       "suggested": [
         {
-          "route": "/beneficiaries/create",
-          "name": "create"
+          "route": "/messages",
+          "name": "messages"
         },
         {
-          "route": "/info/members",
-          "name": "members"
+          "route": "/beneficiary-portal/settings",
+          "name": "settings"
         },
         {
-          "route": "/env-check",
-          "name": "env-check"
+          "route": "/leads-members/[leadId]/donations/summary",
+          "name": "summary"
         }
       ],
       "prev": "/messages/templateconfig",
@@ -2071,7 +2071,7 @@
     },
     {
       "id": 60,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\portal-login\\page.tsx",
+      "path": "src/app/portal-login/page.tsx",
       "route": "/portal-login",
       "name": "portal-login",
       "purpose": "Application Module",
@@ -2089,16 +2089,16 @@
       ],
       "suggested": [
         {
-          "route": "/settings/campaign",
-          "name": "campaign"
+          "route": "/leads-members/[leadId]/donations/summary",
+          "name": "summary"
         },
         {
-          "route": "/leads-members/create",
-          "name": "create"
+          "route": "/campaign-members/[campaignId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/leads-members",
-          "name": "leads-members"
+          "route": "/beneficiaries",
+          "name": "beneficiaries"
         }
       ],
       "prev": "/",
@@ -2106,7 +2106,7 @@
     },
     {
       "id": 61,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\portal-register\\page.tsx",
+      "path": "src/app/portal-register/page.tsx",
       "route": "/portal-register",
       "name": "portal-register",
       "purpose": "Application Module",
@@ -2125,16 +2125,16 @@
       ],
       "suggested": [
         {
-          "route": "/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/donor-portal/causes",
+          "name": "causes"
         },
         {
-          "route": "/beneficiary-portal/settings",
-          "name": "settings"
+          "route": "/env-check",
+          "name": "env-check"
         },
         {
-          "route": "/guidance",
-          "name": "guidance"
+          "route": "/settings/lead",
+          "name": "lead"
         }
       ],
       "prev": "/portal-login",
@@ -2142,7 +2142,7 @@
     },
     {
       "id": 62,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\profile\\page.tsx",
+      "path": "src/app/profile/page.tsx",
       "route": "/profile",
       "name": "profile",
       "purpose": "Application Module",
@@ -2171,16 +2171,16 @@
       ],
       "suggested": [
         {
-          "route": "/settings/viewport",
-          "name": "viewport"
+          "route": "/settings/donation",
+          "name": "donation"
         },
         {
-          "route": "/donors/summary",
-          "name": "summary"
+          "route": "/seed",
+          "name": "seed"
         },
         {
-          "route": "/donor-portal/receipt/[donationId]",
-          "name": "[donationId]"
+          "route": "/dashboard",
+          "name": "dashboard"
         }
       ],
       "prev": "/portal-register",
@@ -2188,7 +2188,7 @@
     },
     {
       "id": 63,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\public\\page.tsx",
+      "path": "src/app/public/page.tsx",
       "route": "/public",
       "name": "public",
       "purpose": "Application Module",
@@ -2199,16 +2199,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/beneficiaries",
-          "name": "beneficiaries"
+          "route": "/dashboard",
+          "name": "dashboard"
         },
         {
-          "route": "/beneficiaries/summary",
-          "name": "summary"
+          "route": "/settings/lead",
+          "name": "lead"
         },
         {
-          "route": "/beneficiary-portal/settings",
-          "name": "settings"
+          "route": "/analytics",
+          "name": "analytics"
         }
       ],
       "prev": "/profile",
@@ -2216,7 +2216,7 @@
     },
     {
       "id": 64,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\public-initiatives\\page.tsx",
+      "path": "src/app/public-initiatives/page.tsx",
       "route": "/public-initiatives",
       "name": "public-initiatives",
       "purpose": "Application Module",
@@ -2229,16 +2229,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/beneficiaries/[beneficiaryId]",
-          "name": "[beneficiaryId]"
+          "route": "/analytics",
+          "name": "analytics"
         },
         {
-          "route": "/extractor",
-          "name": "extractor"
+          "route": "/portal-login",
+          "name": "portal-login"
         },
         {
-          "route": "/info/guidance",
-          "name": "guidance"
+          "route": "/leads-members/[leadId]/donations",
+          "name": "donations"
         }
       ],
       "prev": "/public",
@@ -2246,7 +2246,7 @@
     },
     {
       "id": 65,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\public-summary\\page.tsx",
+      "path": "src/app/public-summary/page.tsx",
       "route": "/public-summary",
       "name": "public-summary",
       "purpose": "Application Module",
@@ -2259,16 +2259,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/messages/templateconfig",
-          "name": "templateconfig"
+          "route": "/campaign-public",
+          "name": "campaign-public"
         },
         {
-          "route": "/registry-index",
-          "name": "registry-index"
+          "route": "/beneficiaries",
+          "name": "beneficiaries"
         },
         {
-          "route": "/users/create",
-          "name": "create"
+          "route": "/env-check",
+          "name": "env-check"
         }
       ],
       "prev": "/public-initiatives",
@@ -2276,16 +2276,18 @@
     },
     {
       "id": 66,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\registry-index\\page.tsx",
+      "path": "src/app/registry-index/page.tsx",
       "route": "/registry-index",
       "name": "registry-index",
       "purpose": "Administrative Registry Index and Navigational Map",
       "createdAt": "2026-05-02T09:23:49.136Z",
-      "updatedAt": "2026-05-02T13:29:38.996Z",
+      "updatedAt": "2026-05-02T22:14:41.049Z",
       "collections": [],
       "actions": [
+        "Return to Home",
         "Home",
         "Open Spec",
+        "Dynamic Route",
         "Go to Live View",
         "Prev",
         "Next"
@@ -2293,15 +2295,15 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-members/create",
+          "route": "/settings/migration",
+          "name": "migration"
+        },
+        {
+          "route": "/users/create",
           "name": "create"
         },
         {
-          "route": "/campaign-members/[campaignId]/beneficiaries",
-          "name": "beneficiaries"
-        },
-        {
-          "route": "/settings/guidance",
+          "route": "/guidance",
           "name": "guidance"
         }
       ],
@@ -2310,7 +2312,7 @@
     },
     {
       "id": 67,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\seed\\page.tsx",
+      "path": "src/app/seed/page.tsx",
       "route": "/seed",
       "name": "seed",
       "purpose": "Application Module",
@@ -2323,16 +2325,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/guidance",
-          "name": "guidance"
+          "route": "/leads-members/[leadId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/_offline",
-          "name": "_offline"
+          "route": "/settings/notifications",
+          "name": "notifications"
         },
         {
-          "route": "/leads-public/[leadId]",
-          "name": "[leadId]"
+          "route": "/campaign-members",
+          "name": "campaign-members"
         }
       ],
       "prev": "/registry-index",
@@ -2340,12 +2342,12 @@
     },
     {
       "id": 68,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\app\\page.tsx",
+      "path": "src/app/settings/app/page.tsx",
       "route": "/settings/app",
       "name": "app",
       "purpose": "Application Module",
       "createdAt": "2026-04-04T04:28:24.000Z",
-      "updatedAt": "2026-04-27T23:06:57.455Z",
+      "updatedAt": "2026-05-02T22:13:43.888Z",
       "collections": [],
       "actions": [
         "Discard",
@@ -2353,17 +2355,17 @@
       ],
       "fields": [
         "Visible",
-        "Neural Hero Headline",
-        "Subtext Context",
+        "Big Title / Headline",
+        "Short Description",
         "{ticker.label}",
         "Max Feed Items",
         "Archive Depth",
         "Update Vector",
-        "Primary UPI Handle",
-        "Mobile Vector",
+        "Your UPI ID",
+        "Mobile Number for Payment",
         "Account Holder Name",
         "Account Number",
-        "IFSC Vector",
+        "Bank IFSC Code",
         "Inbound Portal (Donors)",
         "Outbound Portal (Recipients)",
         "Primary Auth Method",
@@ -2376,16 +2378,16 @@
       ],
       "suggested": [
         {
-          "route": "/leads-members",
-          "name": "leads-members"
-        },
-        {
-          "route": "/beneficiaries/summary",
+          "route": "/campaign-members/[campaignId]/summary",
           "name": "summary"
         },
         {
-          "route": "/settings/viewport",
-          "name": "viewport"
+          "route": "/leads-members/[leadId]/donations",
+          "name": "donations"
+        },
+        {
+          "route": "/donors/[donorId]",
+          "name": "[donorId]"
         }
       ],
       "prev": "/seed",
@@ -2393,7 +2395,7 @@
     },
     {
       "id": 69,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\beneficiary\\page.tsx",
+      "path": "src/app/settings/beneficiary/page.tsx",
       "route": "/settings/beneficiary",
       "name": "beneficiary",
       "purpose": "Application Module",
@@ -2413,16 +2415,16 @@
       ],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/donations",
-          "name": "donations"
-        },
-        {
-          "route": "/settings/info",
-          "name": "info"
-        },
-        {
           "route": "/beneficiary-portal",
           "name": "beneficiary-portal"
+        },
+        {
+          "route": "/campaign-members/[campaignId]/donations/summary",
+          "name": "summary"
+        },
+        {
+          "route": "/settings/logs",
+          "name": "logs"
         }
       ],
       "prev": "/settings/app",
@@ -2430,7 +2432,7 @@
     },
     {
       "id": 70,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\campaign\\page.tsx",
+      "path": "src/app/settings/campaign/page.tsx",
       "route": "/settings/campaign",
       "name": "campaign",
       "purpose": "Application Module",
@@ -2453,15 +2455,15 @@
       ],
       "suggested": [
         {
-          "route": "/beneficiary-portal/settings",
-          "name": "settings"
+          "route": "/campaign-members/[campaignId]/beneficiaries",
+          "name": "beneficiaries"
         },
         {
-          "route": "/registry-index",
-          "name": "registry-index"
+          "route": "/settings/beneficiary",
+          "name": "beneficiary"
         },
         {
-          "route": "/campaign-members/[campaignId]/donations",
+          "route": "/donor-portal/donations",
           "name": "donations"
         }
       ],
@@ -2470,7 +2472,7 @@
     },
     {
       "id": 71,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\data-health\\page.tsx",
+      "path": "src/app/settings/data-health/page.tsx",
       "route": "/settings/data-health",
       "name": "data-health",
       "purpose": "Application Module",
@@ -2483,16 +2485,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/beneficiary-portal/settings",
-          "name": "settings"
+          "route": "/settings/logs",
+          "name": "logs"
         },
         {
-          "route": "/leads-members/[leadId]",
-          "name": "[leadId]"
+          "route": "/portal-register",
+          "name": "portal-register"
         },
         {
-          "route": "/beneficiaries/summary",
-          "name": "summary"
+          "route": "/beneficiary-portal/profile",
+          "name": "profile"
         }
       ],
       "prev": "/settings/campaign",
@@ -2500,7 +2502,7 @@
     },
     {
       "id": 72,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\donation\\page.tsx",
+      "path": "src/app/settings/donation/page.tsx",
       "route": "/settings/donation",
       "name": "donation",
       "purpose": "Application Module",
@@ -2522,16 +2524,16 @@
       ],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/donations/[donationId]",
+          "route": "/settings/user",
+          "name": "user"
+        },
+        {
+          "route": "/leads-members/[leadId]/donations/summary",
+          "name": "summary"
+        },
+        {
+          "route": "/donor-portal/receipt/[donationId]",
           "name": "[donationId]"
-        },
-        {
-          "route": "/leads-public",
-          "name": "leads-public"
-        },
-        {
-          "route": "/settings/logs",
-          "name": "logs"
         }
       ],
       "prev": "/settings/data-health",
@@ -2539,7 +2541,7 @@
     },
     {
       "id": 73,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\donor\\page.tsx",
+      "path": "src/app/settings/donor/page.tsx",
       "route": "/settings/donor",
       "name": "donor",
       "purpose": "Application Module",
@@ -2559,16 +2561,16 @@
       ],
       "suggested": [
         {
-          "route": "/analytics",
-          "name": "analytics"
-        },
-        {
           "route": "/campaign-members/[campaignId]/donations/[donationId]",
           "name": "[donationId]"
         },
         {
-          "route": "/settings/beneficiary",
-          "name": "beneficiary"
+          "route": "/env-check",
+          "name": "env-check"
+        },
+        {
+          "route": "/campaign-members/[campaignId]/donations/summary",
+          "name": "summary"
         }
       ],
       "prev": "/settings/donation",
@@ -2576,7 +2578,7 @@
     },
     {
       "id": 74,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\guidance\\page.tsx",
+      "path": "src/app/settings/guidance/page.tsx",
       "route": "/settings/guidance",
       "name": "guidance",
       "purpose": "Application Module",
@@ -2594,16 +2596,16 @@
       ],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/summary",
+          "route": "/leads-public/[leadId]/summary",
           "name": "summary"
         },
         {
-          "route": "/public-summary",
-          "name": "public-summary"
+          "route": "/campaign-public",
+          "name": "campaign-public"
         },
         {
-          "route": "/campaign-members/[campaignId]/donations/summary",
-          "name": "summary"
+          "route": "/messages",
+          "name": "messages"
         }
       ],
       "prev": "/settings/donor",
@@ -2611,7 +2613,7 @@
     },
     {
       "id": 75,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\info\\page.tsx",
+      "path": "src/app/settings/info/page.tsx",
       "route": "/settings/info",
       "name": "info",
       "purpose": "Application Module",
@@ -2627,16 +2629,16 @@
       ],
       "suggested": [
         {
-          "route": "/settings/donation",
-          "name": "donation"
+          "route": "/guidance",
+          "name": "guidance"
         },
         {
-          "route": "/campaign-public/[campaignId]/summary",
-          "name": "summary"
+          "route": "/campaign-members/[campaignId]/beneficiaries",
+          "name": "beneficiaries"
         },
         {
-          "route": "/settings/campaign",
-          "name": "campaign"
+          "route": "/beneficiaries/[beneficiaryId]",
+          "name": "[beneficiaryId]"
         }
       ],
       "prev": "/settings/guidance",
@@ -2644,7 +2646,7 @@
     },
     {
       "id": 76,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\lead\\page.tsx",
+      "path": "src/app/settings/lead/page.tsx",
       "route": "/settings/lead",
       "name": "lead",
       "purpose": "Application Module",
@@ -2667,16 +2669,16 @@
       ],
       "suggested": [
         {
-          "route": "/verifications",
-          "name": "verifications"
-        },
-        {
           "route": "/beneficiaries/summary",
           "name": "summary"
         },
         {
-          "route": "/leads-members/[leadId]/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/settings/notifications",
+          "name": "notifications"
+        },
+        {
+          "route": "/settings/beneficiary",
+          "name": "beneficiary"
         }
       ],
       "prev": "/settings/info",
@@ -2684,7 +2686,7 @@
     },
     {
       "id": 77,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\logs\\page.tsx",
+      "path": "src/app/settings/logs/page.tsx",
       "route": "/settings/logs",
       "name": "logs",
       "purpose": "Application Module",
@@ -2695,16 +2697,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-public/[campaignId]/summary",
-          "name": "summary"
+          "route": "/settings/lead",
+          "name": "lead"
         },
         {
-          "route": "/diagnostics",
-          "name": "diagnostics"
+          "route": "/dashboard",
+          "name": "dashboard"
         },
         {
-          "route": "/donor-portal/receipt/[donationId]",
-          "name": "[donationId]"
+          "route": "/campaign-members/create",
+          "name": "create"
         }
       ],
       "prev": "/settings/lead",
@@ -2712,7 +2714,7 @@
     },
     {
       "id": 78,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\members\\page.tsx",
+      "path": "src/app/settings/members/page.tsx",
       "route": "/settings/members",
       "name": "members",
       "purpose": "Application Module",
@@ -2725,16 +2727,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/donor-portal/profile",
-          "name": "profile"
+          "route": "/campaign-public",
+          "name": "campaign-public"
         },
         {
-          "route": "/settings/donor",
-          "name": "donor"
+          "route": "/beneficiaries/create",
+          "name": "create"
         },
         {
-          "route": "/donors",
-          "name": "donors"
+          "route": "/portal-register",
+          "name": "portal-register"
         }
       ],
       "prev": "/settings/logs",
@@ -2742,7 +2744,7 @@
     },
     {
       "id": 79,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\migration\\page.tsx",
+      "path": "src/app/settings/migration/page.tsx",
       "route": "/settings/migration",
       "name": "migration",
       "purpose": "Application Module",
@@ -2755,16 +2757,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/donations/summary",
-          "name": "summary"
+          "route": "/campaign-members/[campaignId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/leads-members/[leadId]/donations",
-          "name": "donations"
+          "route": "/guidance",
+          "name": "guidance"
         },
         {
-          "route": "/users/create",
-          "name": "create"
+          "route": "/campaign-members",
+          "name": "campaign-members"
         }
       ],
       "prev": "/settings/members",
@@ -2772,7 +2774,7 @@
     },
     {
       "id": 80,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\notifications\\page.tsx",
+      "path": "src/app/settings/notifications/page.tsx",
       "route": "/settings/notifications",
       "name": "notifications",
       "purpose": "Application Module",
@@ -2794,16 +2796,16 @@
       ],
       "suggested": [
         {
-          "route": "/leads-members/create",
+          "route": "/beneficiaries",
+          "name": "beneficiaries"
+        },
+        {
+          "route": "/portal-login",
+          "name": "portal-login"
+        },
+        {
+          "route": "/users/create",
           "name": "create"
-        },
-        {
-          "route": "/registry-index",
-          "name": "registry-index"
-        },
-        {
-          "route": "/settings",
-          "name": "settings"
         }
       ],
       "prev": "/settings/migration",
@@ -2811,7 +2813,7 @@
     },
     {
       "id": 81,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\page.tsx",
+      "path": "src/app/settings/page.tsx",
       "route": "/settings",
       "name": "settings",
       "purpose": "Application Module",
@@ -2822,16 +2824,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-public",
-          "name": "leads-public"
-        },
-        {
-          "route": "/seed",
-          "name": "seed"
-        },
-        {
-          "route": "/leads-members/[leadId]/summary",
+          "route": "/beneficiaries/summary",
           "name": "summary"
+        },
+        {
+          "route": "/donor-portal/settings",
+          "name": "settings"
+        },
+        {
+          "route": "/public",
+          "name": "public"
         }
       ],
       "prev": "/settings/notifications",
@@ -2839,7 +2841,7 @@
     },
     {
       "id": 82,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\resources\\fundraising\\page.tsx",
+      "path": "src/app/settings/resources/fundraising/page.tsx",
       "route": "/settings/resources/fundraising",
       "name": "fundraising",
       "purpose": "Application Module",
@@ -2861,16 +2863,16 @@
       ],
       "suggested": [
         {
-          "route": "/settings/campaign",
-          "name": "campaign"
+          "route": "/_offline",
+          "name": "_offline"
         },
         {
-          "route": "/donors",
-          "name": "donors"
+          "route": "/analytics",
+          "name": "analytics"
         },
         {
-          "route": "/settings/data-health",
-          "name": "data-health"
+          "route": "/beneficiaries/create",
+          "name": "create"
         }
       ],
       "prev": "/settings",
@@ -2878,16 +2880,16 @@
     },
     {
       "id": 83,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\resources\\page.tsx",
+      "path": "src/app/settings/resources/page.tsx",
       "route": "/settings/resources",
       "name": "resources",
       "purpose": "Application Module",
       "createdAt": "2026-04-25T22:25:17.957Z",
-      "updatedAt": "2026-05-02T11:07:46.630Z",
+      "updatedAt": "2026-05-02T22:11:19.652Z",
       "collections": [],
       "actions": [
         "Raise Internal Fund",
-        "View Resource Ledger",
+        "See Payment History",
         "Send Test"
       ],
       "fields": [
@@ -2896,14 +2898,14 @@
         "Meta Permanent Access Token",
         "Phone Number ID",
         "WABA ID",
-        "Automated WhatsApp Alerts",
+        "Auto WhatsApp Messages",
         "WhatsApp Subscription Detail",
         "Plan Name",
         "Price & Currency",
         "Expiry Date",
         "Subscription Status",
         "Test WhatsApp Connection",
-        "Enable Telegram Alerts",
+        "Enable Telegram Messages",
         "Bot API Token",
         "Target Chat ID",
         "Public Base URL",
@@ -2919,16 +2921,16 @@
       ],
       "suggested": [
         {
-          "route": "/beneficiary-portal",
-          "name": "beneficiary-portal"
+          "route": "/portal-register",
+          "name": "portal-register"
         },
         {
-          "route": "/campaign-members/[campaignId]/summary",
-          "name": "summary"
+          "route": "/settings",
+          "name": "settings"
         },
         {
-          "route": "/settings/app",
-          "name": "app"
+          "route": "/leads-members/[leadId]/audit",
+          "name": "audit"
         }
       ],
       "prev": "/settings/resources/fundraising",
@@ -2936,7 +2938,7 @@
     },
     {
       "id": 84,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\user\\page.tsx",
+      "path": "src/app/settings/user/page.tsx",
       "route": "/settings/user",
       "name": "user",
       "purpose": "Application Module",
@@ -2954,16 +2956,16 @@
       ],
       "suggested": [
         {
-          "route": "/beneficiary-portal",
-          "name": "beneficiary-portal"
+          "route": "/leads-public/[leadId]/summary",
+          "name": "summary"
+        },
+        {
+          "route": "/verifications",
+          "name": "verifications"
         },
         {
           "route": "/beneficiaries",
           "name": "beneficiaries"
-        },
-        {
-          "route": "/leads-members/create",
-          "name": "create"
         }
       ],
       "prev": "/settings/resources",
@@ -2971,7 +2973,7 @@
     },
     {
       "id": 85,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\settings\\viewport\\page.tsx",
+      "path": "src/app/settings/viewport/page.tsx",
       "route": "/settings/viewport",
       "name": "viewport",
       "purpose": "Application Module",
@@ -2993,16 +2995,16 @@
       ],
       "suggested": [
         {
-          "route": "/dashboard",
-          "name": "dashboard"
+          "route": "/leads-members/[leadId]/donations",
+          "name": "donations"
         },
         {
-          "route": "/settings/notifications",
-          "name": "notifications"
-        },
-        {
-          "route": "/campaign-members/create",
+          "route": "/users/create",
           "name": "create"
+        },
+        {
+          "route": "/info/members",
+          "name": "members"
         }
       ],
       "prev": "/settings/user",
@@ -3010,7 +3012,7 @@
     },
     {
       "id": 86,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\story-creator\\page.tsx",
+      "path": "src/app/story-creator/page.tsx",
       "route": "/story-creator",
       "name": "story-creator",
       "purpose": "Application Module",
@@ -3023,16 +3025,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/audit",
-          "name": "audit"
+          "route": "/users/[userId]",
+          "name": "[userId]"
         },
         {
-          "route": "/",
-          "name": "Home"
+          "route": "/beneficiaries/summary",
+          "name": "summary"
         },
         {
-          "route": "/messages/templateconfig",
-          "name": "templateconfig"
+          "route": "/env-check",
+          "name": "env-check"
         }
       ],
       "prev": "/settings/viewport",
@@ -3040,7 +3042,7 @@
     },
     {
       "id": 87,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\users\\create\\page.tsx",
+      "path": "src/app/users/create/page.tsx",
       "route": "/users/create",
       "name": "create",
       "purpose": "Application Module",
@@ -3053,16 +3055,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-public/[leadId]/summary",
-          "name": "summary"
+          "route": "/",
+          "name": "Home"
         },
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/campaign-members",
+          "name": "campaign-members"
         },
         {
-          "route": "/portal-register",
-          "name": "portal-register"
+          "route": "/info/guidance",
+          "name": "guidance"
         }
       ],
       "prev": "/story-creator",
@@ -3070,7 +3072,7 @@
     },
     {
       "id": 88,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\users\\page.tsx",
+      "path": "src/app/users/page.tsx",
       "route": "/users",
       "name": "users",
       "purpose": "Application Module",
@@ -3089,16 +3091,16 @@
       ],
       "suggested": [
         {
-          "route": "/env-check",
-          "name": "env-check"
+          "route": "/",
+          "name": "Home"
         },
         {
-          "route": "/campaign-members/[campaignId]/beneficiaries",
-          "name": "beneficiaries"
+          "route": "/leads-members/[leadId]/audit",
+          "name": "audit"
         },
         {
-          "route": "/settings/members",
-          "name": "members"
+          "route": "/login",
+          "name": "login"
         }
       ],
       "prev": "/users/create",
@@ -3106,12 +3108,12 @@
     },
     {
       "id": 89,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\users\\[userId]\\page.tsx",
+      "path": "src/app/users/[userId]/page.tsx",
       "route": "/users/[userId]",
       "name": "[userId]",
       "purpose": "Application Module",
       "createdAt": "2026-03-14T06:17:12.000Z",
-      "updatedAt": "2026-05-01T01:29:19.082Z",
+      "updatedAt": "2026-05-03T00:07:26.268Z",
       "collections": [],
       "actions": [
         "Back to Users",
@@ -3123,16 +3125,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/settings/data-health",
-          "name": "data-health"
+          "route": "/settings/members",
+          "name": "members"
         },
         {
-          "route": "/settings/donation",
-          "name": "donation"
+          "route": "/campaign-members/[campaignId]",
+          "name": "[campaignId]"
         },
         {
-          "route": "/portal-login",
-          "name": "portal-login"
+          "route": "/donations",
+          "name": "donations"
         }
       ],
       "prev": "/users",
@@ -3140,7 +3142,7 @@
     },
     {
       "id": 90,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\verifications\\page.tsx",
+      "path": "src/app/verifications/page.tsx",
       "route": "/verifications",
       "name": "verifications",
       "purpose": "Application Module",
@@ -3157,16 +3159,16 @@
       ],
       "suggested": [
         {
-          "route": "/profile",
-          "name": "profile"
-        },
-        {
           "route": "/users",
           "name": "users"
         },
         {
-          "route": "/settings/guidance",
-          "name": "guidance"
+          "route": "/users/[userId]",
+          "name": "[userId]"
+        },
+        {
+          "route": "/profile",
+          "name": "profile"
         }
       ],
       "prev": "/users/[userId]",
@@ -3174,7 +3176,7 @@
     },
     {
       "id": 91,
-      "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src\\app\\_offline\\page.tsx",
+      "path": "src/app/_offline/page.tsx",
       "route": "/_offline",
       "name": "_offline",
       "purpose": "Application Module",
@@ -3187,16 +3189,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/messages",
-          "name": "messages"
+          "route": "/donor-portal/receipt/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/donors/summary",
-          "name": "summary"
+          "route": "/settings/app",
+          "name": "app"
         },
         {
-          "route": "/leads-members",
-          "name": "leads-members"
+          "route": "/settings/data-health",
+          "name": "data-health"
         }
       ],
       "prev": "/verifications",
@@ -3207,552 +3209,552 @@
     "releases": [
       {
         "name": "release-v2026.05.02.10.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\releases\\release-v2026.05.02.10.md",
+        "path": "docs/releases/release-v2026.05.02.10.md",
         "updatedAt": "2026-05-02T09:41:35.552Z"
       },
       {
         "name": "release-v2026.05.02.11.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\releases\\release-v2026.05.02.11.md",
+        "path": "docs/releases/release-v2026.05.02.11.md",
         "updatedAt": "2026-05-02T09:43:31.607Z"
       },
       {
         "name": "release-v2026.05.02.12.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\releases\\release-v2026.05.02.12.md",
+        "path": "docs/releases/release-v2026.05.02.12.md",
         "updatedAt": "2026-05-02T09:54:21.977Z"
       },
       {
         "name": "release-v2026.05.02.13.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\releases\\release-v2026.05.02.13.md",
+        "path": "docs/releases/release-v2026.05.02.13.md",
         "updatedAt": "2026-05-02T10:24:02.214Z"
       },
       {
         "name": "release-v2026.05.02.14.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\releases\\release-v2026.05.02.14.md",
+        "path": "docs/releases/release-v2026.05.02.14.md",
         "updatedAt": "2026-05-02T10:31:13.075Z"
       },
       {
         "name": "release-v2026.05.02.15.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\releases\\release-v2026.05.02.15.md",
+        "path": "docs/releases/release-v2026.05.02.15.md",
         "updatedAt": "2026-05-02T10:33:18.399Z"
       },
       {
         "name": "release-v2026.05.02.16.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\releases\\release-v2026.05.02.16.md",
+        "path": "docs/releases/release-v2026.05.02.16.md",
         "updatedAt": "2026-05-02T11:31:23.096Z"
       },
       {
         "name": "release-v2026.05.02.17.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\releases\\release-v2026.05.02.17.md",
+        "path": "docs/releases/release-v2026.05.02.17.md",
         "updatedAt": "2026-05-02T12:01:06.994Z"
       },
       {
         "name": "release-v2026.05.02.18.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\releases\\release-v2026.05.02.18.md",
+        "path": "docs/releases/release-v2026.05.02.18.md",
         "updatedAt": "2026-05-02T13:20:55.723Z"
       },
       {
         "name": "release-v2026.05.02.3.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\releases\\release-v2026.05.02.3.md",
+        "path": "docs/releases/release-v2026.05.02.3.md",
         "updatedAt": "2026-05-02T09:09:58.300Z"
       },
       {
         "name": "release-v2026.05.02.4.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\releases\\release-v2026.05.02.4.md",
+        "path": "docs/releases/release-v2026.05.02.4.md",
         "updatedAt": "2026-05-02T09:12:18.350Z"
       },
       {
         "name": "release-v2026.05.02.5.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\releases\\release-v2026.05.02.5.md",
+        "path": "docs/releases/release-v2026.05.02.5.md",
         "updatedAt": "2026-05-02T09:16:01.103Z"
       },
       {
         "name": "release-v2026.05.02.6.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\releases\\release-v2026.05.02.6.md",
+        "path": "docs/releases/release-v2026.05.02.6.md",
         "updatedAt": "2026-05-02T09:19:26.703Z"
       },
       {
         "name": "release-v2026.05.02.7.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\releases\\release-v2026.05.02.7.md",
+        "path": "docs/releases/release-v2026.05.02.7.md",
         "updatedAt": "2026-05-02T09:19:49.024Z"
       },
       {
         "name": "release-v2026.05.02.8.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\releases\\release-v2026.05.02.8.md",
+        "path": "docs/releases/release-v2026.05.02.8.md",
         "updatedAt": "2026-05-02T09:24:30.719Z"
       },
       {
         "name": "release-v2026.05.02.9.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\releases\\release-v2026.05.02.9.md",
+        "path": "docs/releases/release-v2026.05.02.9.md",
         "updatedAt": "2026-05-02T09:40:25.997Z"
       }
     ],
     "userGuides": [
       {
         "name": "analytics.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\analytics.md",
-        "updatedAt": "2026-05-02T20:23:39.978Z"
+        "path": "docs/user-guides/analytics.md",
+        "updatedAt": "2026-05-02T23:45:15.583Z"
       },
       {
         "name": "beneficiaries-create.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\beneficiaries-create.md",
-        "updatedAt": "2026-05-02T20:23:39.989Z"
+        "path": "docs/user-guides/beneficiaries-create.md",
+        "updatedAt": "2026-05-02T23:45:15.592Z"
       },
       {
         "name": "beneficiaries-summary.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\beneficiaries-summary.md",
-        "updatedAt": "2026-05-02T20:23:39.996Z"
+        "path": "docs/user-guides/beneficiaries-summary.md",
+        "updatedAt": "2026-05-02T23:45:15.600Z"
       },
       {
         "name": "beneficiaries-[beneficiaryId].md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\beneficiaries-[beneficiaryId].md",
-        "updatedAt": "2026-05-02T20:23:39.999Z"
+        "path": "docs/user-guides/beneficiaries-[beneficiaryId].md",
+        "updatedAt": "2026-05-02T23:45:15.603Z"
       },
       {
         "name": "beneficiaries.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\beneficiaries.md",
-        "updatedAt": "2026-05-02T20:23:39.993Z"
+        "path": "docs/user-guides/beneficiaries.md",
+        "updatedAt": "2026-05-02T23:45:15.596Z"
       },
       {
         "name": "beneficiary-portal-profile.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\beneficiary-portal-profile.md",
-        "updatedAt": "2026-05-02T20:23:40.005Z"
+        "path": "docs/user-guides/beneficiary-portal-profile.md",
+        "updatedAt": "2026-05-02T23:45:15.608Z"
       },
       {
         "name": "beneficiary-portal-settings.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\beneficiary-portal-settings.md",
-        "updatedAt": "2026-05-02T20:23:40.008Z"
+        "path": "docs/user-guides/beneficiary-portal-settings.md",
+        "updatedAt": "2026-05-02T23:45:15.614Z"
       },
       {
         "name": "beneficiary-portal.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\beneficiary-portal.md",
-        "updatedAt": "2026-05-02T20:23:40.002Z"
+        "path": "docs/user-guides/beneficiary-portal.md",
+        "updatedAt": "2026-05-02T23:45:15.605Z"
       },
       {
         "name": "campaign-members-create.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\campaign-members-create.md",
-        "updatedAt": "2026-05-02T20:23:40.010Z"
+        "path": "docs/user-guides/campaign-members-create.md",
+        "updatedAt": "2026-05-02T23:45:15.621Z"
       },
       {
         "name": "campaign-members-[campaignId]-audit.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\campaign-members-[campaignId]-audit.md",
-        "updatedAt": "2026-05-02T20:23:40.015Z"
+        "path": "docs/user-guides/campaign-members-[campaignId]-audit.md",
+        "updatedAt": "2026-05-02T23:45:15.627Z"
       },
       {
         "name": "campaign-members-[campaignId]-beneficiaries.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\campaign-members-[campaignId]-beneficiaries.md",
-        "updatedAt": "2026-05-02T20:23:40.018Z"
+        "path": "docs/user-guides/campaign-members-[campaignId]-beneficiaries.md",
+        "updatedAt": "2026-05-02T23:45:15.632Z"
       },
       {
         "name": "campaign-members-[campaignId]-donations-summary.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\campaign-members-[campaignId]-donations-summary.md",
-        "updatedAt": "2026-05-02T20:23:40.023Z"
+        "path": "docs/user-guides/campaign-members-[campaignId]-donations-summary.md",
+        "updatedAt": "2026-05-02T23:45:15.638Z"
       },
       {
         "name": "campaign-members-[campaignId]-donations-[donationId].md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\campaign-members-[campaignId]-donations-[donationId].md",
-        "updatedAt": "2026-05-02T20:23:40.026Z"
+        "path": "docs/user-guides/campaign-members-[campaignId]-donations-[donationId].md",
+        "updatedAt": "2026-05-02T23:45:15.640Z"
       },
       {
         "name": "campaign-members-[campaignId]-donations.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\campaign-members-[campaignId]-donations.md",
-        "updatedAt": "2026-05-02T20:23:40.020Z"
+        "path": "docs/user-guides/campaign-members-[campaignId]-donations.md",
+        "updatedAt": "2026-05-02T23:45:15.636Z"
       },
       {
         "name": "campaign-members-[campaignId]-summary.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\campaign-members-[campaignId]-summary.md",
-        "updatedAt": "2026-05-02T20:23:40.032Z"
+        "path": "docs/user-guides/campaign-members-[campaignId]-summary.md",
+        "updatedAt": "2026-05-02T23:45:15.647Z"
       },
       {
         "name": "campaign-members-[campaignId].md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\campaign-members-[campaignId].md",
-        "updatedAt": "2026-05-02T20:23:40.030Z"
+        "path": "docs/user-guides/campaign-members-[campaignId].md",
+        "updatedAt": "2026-05-02T23:45:15.643Z"
       },
       {
         "name": "campaign-members.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\campaign-members.md",
-        "updatedAt": "2026-05-02T20:23:40.013Z"
+        "path": "docs/user-guides/campaign-members.md",
+        "updatedAt": "2026-05-02T23:45:15.625Z"
       },
       {
         "name": "campaign-public-[campaignId]-summary.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\campaign-public-[campaignId]-summary.md",
-        "updatedAt": "2026-05-02T20:23:40.042Z"
+        "path": "docs/user-guides/campaign-public-[campaignId]-summary.md",
+        "updatedAt": "2026-05-02T23:45:15.655Z"
       },
       {
         "name": "campaign-public-[campaignId].md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\campaign-public-[campaignId].md",
-        "updatedAt": "2026-05-02T20:23:40.038Z"
+        "path": "docs/user-guides/campaign-public-[campaignId].md",
+        "updatedAt": "2026-05-02T23:45:15.653Z"
       },
       {
         "name": "campaign-public.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\campaign-public.md",
-        "updatedAt": "2026-05-02T20:23:40.034Z"
+        "path": "docs/user-guides/campaign-public.md",
+        "updatedAt": "2026-05-02T23:45:15.651Z"
       },
       {
         "name": "dashboard.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\dashboard.md",
-        "updatedAt": "2026-05-02T20:23:40.044Z"
+        "path": "docs/user-guides/dashboard.md",
+        "updatedAt": "2026-05-02T23:45:15.657Z"
       },
       {
         "name": "diagnostics.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\diagnostics.md",
-        "updatedAt": "2026-05-02T20:23:40.046Z"
+        "path": "docs/user-guides/diagnostics.md",
+        "updatedAt": "2026-05-02T23:45:15.660Z"
       },
       {
         "name": "donate.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\donate.md",
-        "updatedAt": "2026-05-02T20:23:40.047Z"
+        "path": "docs/user-guides/donate.md",
+        "updatedAt": "2026-05-02T23:45:15.664Z"
       },
       {
         "name": "donations-summary.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\donations-summary.md",
-        "updatedAt": "2026-05-02T20:23:40.050Z"
+        "path": "docs/user-guides/donations-summary.md",
+        "updatedAt": "2026-05-02T23:45:15.670Z"
       },
       {
         "name": "donations-[donationId].md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\donations-[donationId].md",
-        "updatedAt": "2026-05-02T20:23:40.058Z"
+        "path": "docs/user-guides/donations-[donationId].md",
+        "updatedAt": "2026-05-02T23:45:15.673Z"
       },
       {
         "name": "donations.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\donations.md",
-        "updatedAt": "2026-05-02T20:23:40.050Z"
+        "path": "docs/user-guides/donations.md",
+        "updatedAt": "2026-05-02T23:45:15.668Z"
       },
       {
         "name": "donor-portal-causes.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\donor-portal-causes.md",
-        "updatedAt": "2026-05-02T20:23:40.060Z"
+        "path": "docs/user-guides/donor-portal-causes.md",
+        "updatedAt": "2026-05-02T23:45:15.675Z"
       },
       {
         "name": "donor-portal-donations.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\donor-portal-donations.md",
-        "updatedAt": "2026-05-02T20:23:40.062Z"
+        "path": "docs/user-guides/donor-portal-donations.md",
+        "updatedAt": "2026-05-02T23:45:15.676Z"
       },
       {
         "name": "donor-portal-profile.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\donor-portal-profile.md",
-        "updatedAt": "2026-05-02T20:23:40.067Z"
+        "path": "docs/user-guides/donor-portal-profile.md",
+        "updatedAt": "2026-05-02T23:45:15.684Z"
       },
       {
         "name": "donor-portal-receipt-[donationId].md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\donor-portal-receipt-[donationId].md",
-        "updatedAt": "2026-05-02T20:23:40.069Z"
+        "path": "docs/user-guides/donor-portal-receipt-[donationId].md",
+        "updatedAt": "2026-05-02T23:45:15.686Z"
       },
       {
         "name": "donor-portal-settings.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\donor-portal-settings.md",
-        "updatedAt": "2026-05-02T20:23:40.072Z"
+        "path": "docs/user-guides/donor-portal-settings.md",
+        "updatedAt": "2026-05-02T23:45:15.689Z"
       },
       {
         "name": "donor-portal.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\donor-portal.md",
-        "updatedAt": "2026-05-02T20:23:40.064Z"
+        "path": "docs/user-guides/donor-portal.md",
+        "updatedAt": "2026-05-02T23:45:15.681Z"
       },
       {
         "name": "donors-summary.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\donors-summary.md",
-        "updatedAt": "2026-05-02T20:23:40.077Z"
+        "path": "docs/user-guides/donors-summary.md",
+        "updatedAt": "2026-05-02T23:45:15.698Z"
       },
       {
         "name": "donors-[donorId].md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\donors-[donorId].md",
-        "updatedAt": "2026-05-02T20:23:40.079Z"
+        "path": "docs/user-guides/donors-[donorId].md",
+        "updatedAt": "2026-05-02T23:45:15.702Z"
       },
       {
         "name": "donors.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\donors.md",
-        "updatedAt": "2026-05-02T20:23:40.074Z"
+        "path": "docs/user-guides/donors.md",
+        "updatedAt": "2026-05-02T23:45:15.693Z"
       },
       {
         "name": "env-check.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\env-check.md",
-        "updatedAt": "2026-05-02T20:23:40.081Z"
+        "path": "docs/user-guides/env-check.md",
+        "updatedAt": "2026-05-02T23:45:15.705Z"
       },
       {
         "name": "extractor.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\extractor.md",
-        "updatedAt": "2026-05-02T20:23:40.083Z"
+        "path": "docs/user-guides/extractor.md",
+        "updatedAt": "2026-05-02T23:45:15.707Z"
       },
       {
         "name": "guidance.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\guidance.md",
-        "updatedAt": "2026-05-02T20:23:40.085Z"
+        "path": "docs/user-guides/guidance.md",
+        "updatedAt": "2026-05-02T23:45:15.709Z"
       },
       {
         "name": "home.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\home.md",
-        "updatedAt": "2026-05-02T20:23:40.133Z"
+        "path": "docs/user-guides/home.md",
+        "updatedAt": "2026-05-02T23:45:15.764Z"
       },
       {
         "name": "info-donation-info.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\info-donation-info.md",
-        "updatedAt": "2026-05-02T20:23:40.087Z"
+        "path": "docs/user-guides/info-donation-info.md",
+        "updatedAt": "2026-05-02T23:45:15.711Z"
       },
       {
         "name": "info-guidance.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\info-guidance.md",
-        "updatedAt": "2026-05-02T20:23:40.090Z"
+        "path": "docs/user-guides/info-guidance.md",
+        "updatedAt": "2026-05-02T23:45:15.715Z"
       },
       {
         "name": "info-guiding-principles.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\info-guiding-principles.md",
-        "updatedAt": "2026-05-02T20:23:40.093Z"
+        "path": "docs/user-guides/info-guiding-principles.md",
+        "updatedAt": "2026-05-02T23:45:15.718Z"
       },
       {
         "name": "info-members.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\info-members.md",
-        "updatedAt": "2026-05-02T20:23:40.096Z"
+        "path": "docs/user-guides/info-members.md",
+        "updatedAt": "2026-05-02T23:45:15.720Z"
       },
       {
         "name": "info-organization.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\info-organization.md",
-        "updatedAt": "2026-05-02T20:23:40.097Z"
+        "path": "docs/user-guides/info-organization.md",
+        "updatedAt": "2026-05-02T23:45:15.722Z"
       },
       {
         "name": "leads-members-create.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\leads-members-create.md",
-        "updatedAt": "2026-05-02T20:23:40.097Z"
+        "path": "docs/user-guides/leads-members-create.md",
+        "updatedAt": "2026-05-02T23:45:15.724Z"
       },
       {
         "name": "leads-members-[leadId]-audit.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\leads-members-[leadId]-audit.md",
-        "updatedAt": "2026-05-02T20:23:40.103Z"
+        "path": "docs/user-guides/leads-members-[leadId]-audit.md",
+        "updatedAt": "2026-05-02T23:45:15.728Z"
       },
       {
         "name": "leads-members-[leadId]-beneficiaries.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\leads-members-[leadId]-beneficiaries.md",
-        "updatedAt": "2026-05-02T20:23:40.105Z"
+        "path": "docs/user-guides/leads-members-[leadId]-beneficiaries.md",
+        "updatedAt": "2026-05-02T23:45:15.731Z"
       },
       {
         "name": "leads-members-[leadId]-donations-summary.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\leads-members-[leadId]-donations-summary.md",
-        "updatedAt": "2026-05-02T20:23:40.109Z"
+        "path": "docs/user-guides/leads-members-[leadId]-donations-summary.md",
+        "updatedAt": "2026-05-02T23:45:15.737Z"
       },
       {
         "name": "leads-members-[leadId]-donations-[donationId].md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\leads-members-[leadId]-donations-[donationId].md",
-        "updatedAt": "2026-05-02T20:23:40.113Z"
+        "path": "docs/user-guides/leads-members-[leadId]-donations-[donationId].md",
+        "updatedAt": "2026-05-02T23:45:15.740Z"
       },
       {
         "name": "leads-members-[leadId]-donations.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\leads-members-[leadId]-donations.md",
-        "updatedAt": "2026-05-02T20:23:40.109Z"
+        "path": "docs/user-guides/leads-members-[leadId]-donations.md",
+        "updatedAt": "2026-05-02T23:45:15.735Z"
       },
       {
         "name": "leads-members-[leadId]-summary.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\leads-members-[leadId]-summary.md",
-        "updatedAt": "2026-05-02T20:23:40.118Z"
+        "path": "docs/user-guides/leads-members-[leadId]-summary.md",
+        "updatedAt": "2026-05-02T23:45:15.745Z"
       },
       {
         "name": "leads-members-[leadId].md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\leads-members-[leadId].md",
-        "updatedAt": "2026-05-02T20:23:40.115Z"
+        "path": "docs/user-guides/leads-members-[leadId].md",
+        "updatedAt": "2026-05-02T23:45:15.742Z"
       },
       {
         "name": "leads-members.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\leads-members.md",
-        "updatedAt": "2026-05-02T20:23:40.101Z"
+        "path": "docs/user-guides/leads-members.md",
+        "updatedAt": "2026-05-02T23:45:15.726Z"
       },
       {
         "name": "leads-public-[leadId]-summary.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\leads-public-[leadId]-summary.md",
-        "updatedAt": "2026-05-02T20:23:40.124Z"
+        "path": "docs/user-guides/leads-public-[leadId]-summary.md",
+        "updatedAt": "2026-05-02T23:45:15.752Z"
       },
       {
         "name": "leads-public-[leadId].md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\leads-public-[leadId].md",
-        "updatedAt": "2026-05-02T20:23:40.123Z"
+        "path": "docs/user-guides/leads-public-[leadId].md",
+        "updatedAt": "2026-05-02T23:45:15.750Z"
       },
       {
         "name": "leads-public.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\leads-public.md",
-        "updatedAt": "2026-05-02T20:23:40.120Z"
+        "path": "docs/user-guides/leads-public.md",
+        "updatedAt": "2026-05-02T23:45:15.746Z"
       },
       {
         "name": "login.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\login.md",
-        "updatedAt": "2026-05-02T20:23:40.126Z"
+        "path": "docs/user-guides/login.md",
+        "updatedAt": "2026-05-02T23:45:15.756Z"
       },
       {
         "name": "messages-templateconfig.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\messages-templateconfig.md",
-        "updatedAt": "2026-05-02T20:23:40.131Z"
+        "path": "docs/user-guides/messages-templateconfig.md",
+        "updatedAt": "2026-05-02T23:45:15.761Z"
       },
       {
         "name": "messages.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\messages.md",
-        "updatedAt": "2026-05-02T20:23:40.128Z"
+        "path": "docs/user-guides/messages.md",
+        "updatedAt": "2026-05-02T23:45:15.759Z"
       },
       {
         "name": "mobile-installation.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\mobile-installation.md",
+        "path": "docs/user-guides/mobile-installation.md",
         "updatedAt": "2026-05-02T09:42:47.699Z"
       },
       {
         "name": "portal-login.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\portal-login.md",
-        "updatedAt": "2026-05-02T20:23:40.135Z"
+        "path": "docs/user-guides/portal-login.md",
+        "updatedAt": "2026-05-02T23:45:15.767Z"
       },
       {
         "name": "portal-register.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\portal-register.md",
-        "updatedAt": "2026-05-02T20:23:40.138Z"
+        "path": "docs/user-guides/portal-register.md",
+        "updatedAt": "2026-05-02T23:45:15.770Z"
       },
       {
         "name": "profile.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\profile.md",
-        "updatedAt": "2026-05-02T20:23:40.141Z"
+        "path": "docs/user-guides/profile.md",
+        "updatedAt": "2026-05-02T23:45:15.772Z"
       },
       {
         "name": "public-initiatives.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\public-initiatives.md",
-        "updatedAt": "2026-05-02T20:23:40.151Z"
+        "path": "docs/user-guides/public-initiatives.md",
+        "updatedAt": "2026-05-02T23:45:15.776Z"
       },
       {
         "name": "public-summary.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\public-summary.md",
-        "updatedAt": "2026-05-02T20:23:40.156Z"
+        "path": "docs/user-guides/public-summary.md",
+        "updatedAt": "2026-05-02T23:45:15.778Z"
       },
       {
         "name": "public.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\public.md",
-        "updatedAt": "2026-05-02T20:23:40.149Z"
+        "path": "docs/user-guides/public.md",
+        "updatedAt": "2026-05-02T23:45:15.775Z"
       },
       {
         "name": "registry-index.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\registry-index.md",
-        "updatedAt": "2026-05-02T20:23:40.159Z"
+        "path": "docs/user-guides/registry-index.md",
+        "updatedAt": "2026-05-02T23:45:15.784Z"
       },
       {
         "name": "seed.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\seed.md",
-        "updatedAt": "2026-05-02T20:23:40.161Z"
+        "path": "docs/user-guides/seed.md",
+        "updatedAt": "2026-05-02T23:45:15.787Z"
       },
       {
         "name": "settings-app.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings-app.md",
-        "updatedAt": "2026-05-02T20:23:40.164Z"
+        "path": "docs/user-guides/settings-app.md",
+        "updatedAt": "2026-05-02T23:45:15.789Z"
       },
       {
         "name": "settings-beneficiary.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings-beneficiary.md",
-        "updatedAt": "2026-05-02T20:23:40.167Z"
+        "path": "docs/user-guides/settings-beneficiary.md",
+        "updatedAt": "2026-05-02T23:45:15.791Z"
       },
       {
         "name": "settings-campaign.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings-campaign.md",
-        "updatedAt": "2026-05-02T20:23:40.169Z"
+        "path": "docs/user-guides/settings-campaign.md",
+        "updatedAt": "2026-05-02T23:45:15.794Z"
       },
       {
         "name": "settings-data-health.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings-data-health.md",
-        "updatedAt": "2026-05-02T20:23:40.173Z"
+        "path": "docs/user-guides/settings-data-health.md",
+        "updatedAt": "2026-05-02T23:45:15.800Z"
       },
       {
         "name": "settings-donation.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings-donation.md",
-        "updatedAt": "2026-05-02T20:23:40.175Z"
+        "path": "docs/user-guides/settings-donation.md",
+        "updatedAt": "2026-05-02T23:45:15.804Z"
       },
       {
         "name": "settings-donor.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings-donor.md",
-        "updatedAt": "2026-05-02T20:23:40.177Z"
+        "path": "docs/user-guides/settings-donor.md",
+        "updatedAt": "2026-05-02T23:45:15.806Z"
       },
       {
         "name": "settings-guidance.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings-guidance.md",
-        "updatedAt": "2026-05-02T20:23:40.179Z"
+        "path": "docs/user-guides/settings-guidance.md",
+        "updatedAt": "2026-05-02T23:45:15.809Z"
       },
       {
         "name": "settings-info.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings-info.md",
-        "updatedAt": "2026-05-02T20:23:40.182Z"
+        "path": "docs/user-guides/settings-info.md",
+        "updatedAt": "2026-05-02T23:45:15.811Z"
       },
       {
         "name": "settings-lead.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings-lead.md",
-        "updatedAt": "2026-05-02T20:23:40.184Z"
+        "path": "docs/user-guides/settings-lead.md",
+        "updatedAt": "2026-05-02T23:45:15.814Z"
       },
       {
         "name": "settings-logs.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings-logs.md",
-        "updatedAt": "2026-05-02T20:23:40.186Z"
+        "path": "docs/user-guides/settings-logs.md",
+        "updatedAt": "2026-05-02T23:45:15.818Z"
       },
       {
         "name": "settings-members.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings-members.md",
-        "updatedAt": "2026-05-02T20:23:40.189Z"
+        "path": "docs/user-guides/settings-members.md",
+        "updatedAt": "2026-05-02T23:45:15.819Z"
       },
       {
         "name": "settings-migration.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings-migration.md",
-        "updatedAt": "2026-05-02T20:23:40.191Z"
+        "path": "docs/user-guides/settings-migration.md",
+        "updatedAt": "2026-05-02T23:45:15.821Z"
       },
       {
         "name": "settings-notifications.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings-notifications.md",
-        "updatedAt": "2026-05-02T20:23:40.193Z"
+        "path": "docs/user-guides/settings-notifications.md",
+        "updatedAt": "2026-05-02T23:45:15.822Z"
       },
       {
         "name": "settings-resources-fundraising.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings-resources-fundraising.md",
-        "updatedAt": "2026-05-02T20:23:40.198Z"
+        "path": "docs/user-guides/settings-resources-fundraising.md",
+        "updatedAt": "2026-05-02T23:45:15.826Z"
       },
       {
         "name": "settings-resources.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings-resources.md",
-        "updatedAt": "2026-05-02T20:23:40.201Z"
+        "path": "docs/user-guides/settings-resources.md",
+        "updatedAt": "2026-05-02T23:45:15.831Z"
       },
       {
         "name": "settings-user.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings-user.md",
-        "updatedAt": "2026-05-02T20:23:40.203Z"
+        "path": "docs/user-guides/settings-user.md",
+        "updatedAt": "2026-05-02T23:45:15.834Z"
       },
       {
         "name": "settings-viewport.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings-viewport.md",
-        "updatedAt": "2026-05-02T20:23:40.206Z"
+        "path": "docs/user-guides/settings-viewport.md",
+        "updatedAt": "2026-05-02T23:45:15.836Z"
       },
       {
         "name": "settings.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\settings.md",
-        "updatedAt": "2026-05-02T20:23:40.196Z"
+        "path": "docs/user-guides/settings.md",
+        "updatedAt": "2026-05-02T23:45:15.824Z"
       },
       {
         "name": "story-creator.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\story-creator.md",
-        "updatedAt": "2026-05-02T20:23:40.208Z"
+        "path": "docs/user-guides/story-creator.md",
+        "updatedAt": "2026-05-02T23:45:15.838Z"
       },
       {
         "name": "users-create.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\users-create.md",
-        "updatedAt": "2026-05-02T20:23:40.210Z"
+        "path": "docs/user-guides/users-create.md",
+        "updatedAt": "2026-05-02T23:45:15.840Z"
       },
       {
         "name": "users-[userId].md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\users-[userId].md",
-        "updatedAt": "2026-05-02T20:23:40.215Z"
+        "path": "docs/user-guides/users-[userId].md",
+        "updatedAt": "2026-05-02T23:45:15.844Z"
       },
       {
         "name": "users.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\users.md",
-        "updatedAt": "2026-05-02T20:23:40.213Z"
+        "path": "docs/user-guides/users.md",
+        "updatedAt": "2026-05-02T23:45:15.843Z"
       },
       {
         "name": "verifications.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\verifications.md",
-        "updatedAt": "2026-05-02T20:23:40.218Z"
+        "path": "docs/user-guides/verifications.md",
+        "updatedAt": "2026-05-02T23:45:15.850Z"
       },
       {
         "name": "_offline.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\user-guides\\_offline.md",
-        "updatedAt": "2026-05-02T20:23:40.221Z"
+        "path": "docs/user-guides/_offline.md",
+        "updatedAt": "2026-05-02T23:45:15.852Z"
       }
     ],
     "architecture": [
       {
         "name": "collection-map.md",
-        "path": "C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\docs\\architecture\\collection-map.md",
-        "updatedAt": "2026-05-02T20:23:40.479Z"
+        "path": "docs/architecture/collection-map.md",
+        "updatedAt": "2026-05-02T23:45:16.048Z"
       }
     ]
   }

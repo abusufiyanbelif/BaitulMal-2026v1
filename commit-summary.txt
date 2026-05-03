@@ -1,13 +1,13 @@
-release: v2026.05.02.18
+release: v2026.05.03.3
 
-Type: Hardening
-Message: Optimized institutional portals for mobile responsiveness, fixed public access logic, and upgraded documentation engine with reproduction steps and versioned history.
-Reference: src/app/donor-portal/page.tsx, src/app/beneficiary-portal/page.tsx, src/app/auth-provider.tsx
+Type: Build
+Message: Automated build initiated via npm run build
+Reference: n/a
 Branch: test_bmss_26
-Commit: 37d6d205
+Commit: a40c9f8a
 
 Verification Steps:
-1. Navigate to /campaign-public as guest. 2. Verify mobile charts on Donor Dashboard. 3. Check docs/history for versioning.
+Manual verification required.
 
 ---
-*Build Summary Updated: 3/5/2026, 1:55:57 am*
+*Build Summary Updated: 3/5/2026, 5:43:50 am*

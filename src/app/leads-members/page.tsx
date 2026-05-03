@@ -120,7 +120,7 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
                         {canUpdate && (
                             <>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Operational Status</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Appeal Status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={lead.status} onValueChange={(value) => handleStatusUpdate(lead, 'status', value)}>
@@ -132,7 +132,7 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Verification Status</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Check Status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={lead.authenticityStatus} onValueChange={(value) => handleStatusUpdate(lead, 'authenticityStatus', value as string)}>
@@ -146,7 +146,7 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Public Visibility</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Show on Website</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={lead.publicVisibility} onValueChange={(value) => handleStatusUpdate(lead, 'publicVisibility', value as string)}>
@@ -223,8 +223,8 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
         <CardContent className="flex-grow space-y-3 p-4 pt-0 font-normal text-primary">
             <div className="space-y-2 border-t border-primary/5 pt-3">
                 <div className="flex justify-between items-baseline text-[11px] font-bold text-primary tracking-tight">
-                    <span className="opacity-60">Raised: ₹{lead.collected.toLocaleString('en-IN')}</span>
-                    <span className="text-sm">Goal: ₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</span>
+                    <span className="opacity-60">Collected: ₹{lead.collected.toLocaleString('en-IN')}</span>
+                    <span className="text-sm">Target: ₹{(lead.targetAmount || 0).toLocaleString('en-IN')}</span>
                 </div>
                 <div className="relative">
                     <Progress 
@@ -450,9 +450,9 @@ export default function LeadPage() {
     const sortByPriority = (list: any[]) => [...list].sort((a, b) => (priorityWeight[b.priority || 'Medium'] || 0) - (priorityWeight[a.priority || 'Medium'] || 0));
 
     return [
-      { id: 'published', title: 'Open Published Initiatives', icon: Globe, items: sortByPriority(ongoingPublished), color: 'text-primary' },
-      { id: 'internal', title: 'Internal Hub & Drafts', icon: FileLock, items: sortByPriority(ongoingInternal), color: 'text-amber-600' },
-      { id: 'completed', title: 'Completed & Archive', icon: CheckCircle2, items: sortByPriority(completed), color: 'text-muted-foreground' }
+      { id: 'published', title: 'Live on Website', icon: Globe, items: sortByPriority(ongoingPublished), color: 'text-primary' },
+      { id: 'internal', title: 'Working / Not Live', icon: FileLock, items: sortByPriority(ongoingInternal), color: 'text-amber-600' },
+      { id: 'completed', title: 'Finished Appeals', icon: CheckCircle2, items: sortByPriority(completed), color: 'text-muted-foreground' }
     ].filter(s => s.items.length > 0);
   }, [filteredLeads]);
 
@@ -486,8 +486,8 @@ export default function LeadPage() {
         </div>
 
         <div className="space-y-1.5">
-          <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter text-primary">Lead Management</h1>
-          <p className="text-sm font-bold opacity-70 leading-relaxed max-w-2xl">Review individual support appeals, authenticate evidence, and manage archives.</p>
+          <h1 className="text-3xl sm:text-4xl font-bold tracking-tighter text-primary">Manage Help Requests</h1>
+          <p className="text-sm font-bold opacity-70 leading-relaxed max-w-2xl">Review community help requests, check details, and manage archives.</p>
         </div>
 
         <Card className="animate-fade-in-zoom shadow-none border-primary/5 bg-white/30 overflow-hidden rounded-[24px]">

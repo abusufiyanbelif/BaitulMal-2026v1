@@ -1,7 +1,6 @@
-
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -47,6 +46,11 @@ export function AppFooter() {
   const pathname = usePathname();
   const { toast } = useToast();
   const [isDonationDialogOpen, setIsDonationDialogOpen] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   if (pathname === '/login') return null;
 
@@ -132,32 +136,32 @@ export function AppFooter() {
           </div>
 
           <div className="space-y-6 md:pl-10">
-            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight capitalize">
-              Resources And Information
+            <h3 className="text-[10px] font-black text-primary/40 tracking-tight capitalize">
+              Quick Links
             </h3>
             <nav className="flex flex-col gap-4">
               <Link href="/info/organization" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal">
                 <Users className="h-4 w-4 opacity-30" />
-                About Our Organization
+                About Us
               </Link>
               <Link href="/info/donation-info" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal">
                 <HeartHandshake className="h-4 w-4 opacity-30" />
-                Donation Types Explained
+                Donation Info
               </Link>
               <Link href="/info/guidance" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal">
                 <BookOpen className="h-4 w-4 opacity-30" />
-                Guidance Directory
+                Common Questions
               </Link>
               <Link href="/registry-index" className="text-sm text-emerald-600 hover:text-emerald-700 transition-colors flex items-center gap-3 font-bold bg-emerald-50/50 p-2 rounded-lg border border-emerald-100/50">
                 <Navigation2 className="h-4 w-4 opacity-80" />
-                Registry Index Map
+                Full Site Map
               </Link>
             </nav>
           </div>
 
           <div className="flex flex-col md:items-end gap-6">
-            <h3 className="text-[10px] font-bold text-primary/40 tracking-tight capitalize">
-              Support Our Mission
+            <h3 className="text-[10px] font-black text-primary/40 tracking-tight capitalize">
+              Support Us
             </h3>
             <div className="w-full sm:w-auto">
                 <Button 
@@ -166,10 +170,10 @@ export function AppFooter() {
                     className="font-bold border-primary/20 text-primary h-12 px-10 rounded-xl hover:bg-primary hover:text-white transition-all active:scale-95 shadow-md group w-full"
                 >
                     <HeartHandshake className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                    Donation Channel Details
+                    How to Donate
                 </Button>
                 <p className="text-[9px] text-muted-foreground mt-3 font-normal italic md:text-right tracking-tight opacity-60">
-                    Scan Quick Codes Or Use Direct Bank Transfer.
+                    Use QR Code or Bank Transfer.
                 </p>
             </div>
           </div>
@@ -180,7 +184,7 @@ export function AppFooter() {
             {paymentSettings?.regNo && (
               <span className="flex items-center gap-2">
                 <ShieldCheck className="h-3.5 w-3.5 text-primary/60" />
-                Registration No: {paymentSettings.regNo}
+                Reg No: {paymentSettings.regNo}
               </span>
             )}
             {paymentSettings?.pan && (
@@ -192,12 +196,12 @@ export function AppFooter() {
           </div>
           <div className="flex flex-col items-center sm:items-end gap-1.5">
             <p className="text-center sm:text-right font-normal text-muted-foreground opacity-80">
-              {paymentSettings?.copyright || `© ${new Date().getFullYear()} ${brandingSettings?.name || 'Organization Name'}. All Rights Reserved.`}
+              {paymentSettings?.copyright || `© 2026 ${brandingSettings?.name || 'Organization Name'}. All Rights Reserved.`}
             </p>
             <div className="flex items-center gap-2 font-mono text-[8px] opacity-30 hover:opacity-100 transition-all cursor-default">
                 <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-black uppercase tracking-widest">Build</span>
                 <span>{versionData.version}</span>
-                <span className="opacity-40">({new Date(versionData.buildDate).toLocaleDateString()})</span>
+                <span className="opacity-40">({versionData.buildDate || '2026-05-02'})</span>
             </div>
           </div>
         </div>

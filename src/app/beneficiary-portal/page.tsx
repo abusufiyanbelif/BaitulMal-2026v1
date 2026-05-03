@@ -117,14 +117,14 @@ export default function BeneficiaryPortalPage() {
     }, [fetchInitiatives]);
 
     if (isSessionLoading || isDataLoading) {
-         return <BrandedLoader message="Accessing Your Support Dashboard..." />;
+         return <BrandedLoader message="Loading Your Information..." />;
     }
 
     if (!userProfile || userProfile.role !== 'Beneficiary') {
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-4">
                 <HandHelping className="h-12 w-12 text-slate-300" />
-                <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Access Restricted to Beneficiaries</p>
+                <p className="text-slate-500 font-bold uppercase tracking-widest text-xs">Only for people receiving help</p>
                 <Button asChild variant="outline"><Link href="/portal-login">Return to Login</Link></Button>
             </div>
         );
@@ -142,9 +142,9 @@ export default function BeneficiaryPortalPage() {
                         <HandHelping className="h-6 w-6 sm:h-8 sm:w-8" />
                     </div>
                     <div>
-                        <h1 className="text-xl sm:text-3xl font-black tracking-tight text-slate-900">Support Dashboard</h1>
+                        <h1 className="text-xl sm:text-3xl font-black tracking-tight text-slate-900">Your Help Dashboard</h1>
                         <p className="text-slate-500 font-bold uppercase tracking-widest text-[9px] sm:text-[10px] flex items-center gap-2">
-                            <ShieldCheck className="h-3 w-3 text-green-500" /> Registry: {userProfile.name}
+                            <ShieldCheck className="h-3 w-3 text-green-500" /> Name: {userProfile.name}
                         </p>
                     </div>
                 </div>
@@ -174,7 +174,7 @@ export default function BeneficiaryPortalPage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 <Card className="border-none shadow-xl shadow-slate-200/40 bg-white group">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Support Received</CardTitle>
+                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Help Received</CardTitle>
                         <Gift className="h-4 w-4 sm:h-5 sm:w-5 text-primary opacity-60" />
                     </CardHeader>
                     <CardContent>
@@ -182,14 +182,14 @@ export default function BeneficiaryPortalPage() {
                             {formatCurrency(totalDisbursed)}
                         </div>
                         <div className="mt-2 flex items-center gap-2 text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                            Allocated support
+                            Total help amount
                         </div>
                     </CardContent>
                 </Card>
 
                 <Card className="border-none shadow-xl shadow-slate-200/40 bg-white group">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Linked Programs</CardTitle>
+                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Programs</CardTitle>
                         <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                     </CardHeader>
                     <CardContent>
@@ -197,14 +197,14 @@ export default function BeneficiaryPortalPage() {
                             {activeCount}
                         </div>
                         <div className="mt-2 text-[9px] sm:text-[10px] font-bold text-green-600 uppercase tracking-widest">
-                            Verified participation
+                            Programs you joined
                         </div>
                     </CardContent>
                 </Card>
 
                 <Card className="border-none shadow-xl shadow-slate-200/40 bg-slate-900 text-white group">
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-white/40 uppercase tracking-widest">Application State</CardTitle>
+                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-white/40 uppercase tracking-widest">Your Status</CardTitle>
                         <Activity className="h-4 w-4 sm:h-5 sm:w-5 text-white/40" />
                     </CardHeader>
                     <CardContent>
@@ -225,9 +225,9 @@ export default function BeneficiaryPortalPage() {
                         <Alert className="bg-red-50 border-red-200 rounded-[32px] p-6 shadow-sm border-2 animate-pulse">
                             <ShieldCheck className="h-5 w-5 text-red-600" />
                             <div className="ml-2">
-                                <AlertTitle className="text-red-900 font-black text-xs uppercase tracking-[0.2em]">KYC Verification Pending</AlertTitle>
+                                <AlertTitle className="text-red-900 font-black text-xs uppercase tracking-[0.2em]">Identity Check Needed</AlertTitle>
                                 <AlertDescription className="text-red-700/80 text-[11px] font-bold mt-1 leading-relaxed">
-                                    Identity records are incomplete. Please link your Aadhaar details to maintain verified status.
+                                    Your records are not complete. Please add your Aadhaar details to stay verified.
                                 </AlertDescription>
                                 <Button asChild variant="link" className="p-0 h-auto text-red-600 font-black text-[10px] uppercase tracking-widest mt-3 hover:text-red-700">
                                     <Link href="/beneficiary-portal/profile">Update Identity Records <Sparkles className="ml-1 h-3 w-3" /></Link>
@@ -239,9 +239,9 @@ export default function BeneficiaryPortalPage() {
                         <Alert className="bg-blue-50 border-blue-200 rounded-[32px] p-6 shadow-sm border-2 animate-pulse">
                             <Landmark className="h-5 w-5 text-blue-600" />
                             <div className="ml-2">
-                                <AlertTitle className="text-blue-900 font-black text-xs uppercase tracking-[0.2em]">Settlement Record Required</AlertTitle>
+                                <AlertTitle className="text-blue-900 font-black text-xs uppercase tracking-[0.2em]">Bank Details Needed</AlertTitle>
                                 <AlertDescription className="text-blue-700/80 text-[11px] font-bold mt-1 leading-relaxed">
-                                    No bank details found. Please add an account to receive institutional disbursements.
+                                    No bank details found. Please add your account to receive help money.
                                 </AlertDescription>
                                 <Button asChild variant="link" className="p-0 h-auto text-blue-600 font-black text-[10px] uppercase tracking-widest mt-3 hover:text-blue-700">
                                     <Link href="/beneficiary-portal/profile">Link Bank Account <Sparkles className="ml-1 h-3 w-3" /></Link>
@@ -253,9 +253,9 @@ export default function BeneficiaryPortalPage() {
                         <Alert className="bg-amber-50 border-amber-200 rounded-[32px] p-6 shadow-sm border-2 animate-pulse">
                             <Smartphone className="h-5 w-5 text-amber-600" />
                             <div className="ml-2">
-                                <AlertTitle className="text-amber-900 font-black text-xs uppercase tracking-[0.2em]">UPI Identity Missing</AlertTitle>
+                                <AlertTitle className="text-amber-900 font-black text-xs uppercase tracking-[0.2em]">UPI ID Needed</AlertTitle>
                                 <AlertDescription className="text-amber-700/80 text-[11px] font-bold mt-1 leading-relaxed">
-                                    No UPI handles linked. Adding a UPI ID allows for faster digital settlements and mobile-first support.
+                                    No UPI ID found. Adding a UPI ID (like Google Pay or PhonePe) helps us send help faster.
                                 </AlertDescription>
                                 <Button asChild variant="link" className="p-0 h-auto text-amber-600 font-black text-[10px] uppercase tracking-widest mt-3 hover:text-amber-700">
                                     <Link href="/beneficiary-portal/profile">Link UPI Handle <Sparkles className="ml-1 h-3 w-3" /></Link>
@@ -270,11 +270,11 @@ export default function BeneficiaryPortalPage() {
             <Card className="border-none shadow-2xl shadow-slate-200/50 bg-white rounded-3xl overflow-hidden">
                 <CardHeader className="bg-slate-50/50 px-6 sm:px-8 py-5 sm:py-6 border-b border-slate-100">
                     <div>
-                        <CardTitle className="text-lg sm:text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                        <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight flex items-center gap-2">
                             <CheckCircle2 className="h-5 w-5 text-primary/60" />
-                            Allocated Support
-                        </CardTitle>
-                        <p className="text-slate-500 text-[10px] sm:text-xs font-normal">Institutional support linked to your profile.</p>
+                            Help History
+                        </h1>
+                        <p className="text-slate-500 text-[10px] sm:text-xs font-normal">List of help you received from us.</p>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -282,9 +282,9 @@ export default function BeneficiaryPortalPage() {
                         <Table>
                             <TableHeader className="bg-slate-50/30">
                                 <TableRow className="border-slate-100 hover:bg-transparent">
-                                    <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400 pl-8 py-4">Linked Program</TableHead>
-                                    <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400">Support Type</TableHead>
-                                    <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400">Allocation Value</TableHead>
+                                    <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400 pl-8 py-4">Program Name</TableHead>
+                                    <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400">Type of Help</TableHead>
+                                    <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400">Value / Amount</TableHead>
                                     <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400 text-right pr-8">Status</TableHead>
                                 </TableRow>
                             </TableHeader>

@@ -152,7 +152,7 @@ function VisibilityToggle({ id, label, description, icon: Icon, checked, onChang
                 </div>
                 <div className="space-y-0.5">
                     <h3 className="font-black text-primary text-sm tracking-tight">{label}</h3>
-                    <p className="text-[10px] text-muted-foreground font-bold opacity-60 leading-tight">{description}</p>
+                    <p className="text-[10px] text-muted-foreground font-normal opacity-60 leading-tight">{description}</p>
                 </div>
             </div>
             <div className="flex items-center space-x-3 bg-white/50 px-3 py-1.5 rounded-full border border-primary/5">
@@ -547,15 +547,15 @@ export default function AppSettingsPage() {
                             <div className="h-10 w-10 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
                                 <Settings2 className="h-5 w-5" />
                             </div>
-                            <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-primary">Institutional Core</h1>
+                            <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-primary">Main Settings</h1>
                         </div>
-                        <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">System-wide configuration, branding protocols, and financial gateway orchestration.</p>
+                        <p className="text-sm font-normal opacity-70 max-w-2xl leading-relaxed">Manage your website info, bank details, and other basic options.</p>
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-3">
                         {!isEditMode ? (
                             <Button onClick={() => setIsEditMode(true)} className="bg-primary hover:bg-primary/90 text-white font-black h-11 rounded-2xl px-6 shadow-xl shadow-primary/20 active:scale-95 transition-all">
-                                <Edit className="mr-2 h-4 w-4"/>Modify Protocol
+                                <Edit className="mr-2 h-4 w-4"/>Edit Settings
                             </Button>
                         ) : (
                             <div className="flex bg-white/50 backdrop-blur-md p-1 rounded-2xl border border-primary/5 shadow-sm">
@@ -576,15 +576,15 @@ export default function AppSettingsPage() {
             <div className="grid grid-cols-1 gap-10">
                 
                 <SettingsSection 
-                    title="Landing Interface Control" 
-                    description="Orchestrate the public face of the institution. Manage hero messaging and component visibility."
+                    title="Website Display" 
+                    description="Change how your website looks and what people can see."
                     icon={Layout}
                     defaultOpen={true}
                 >
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                         <div className="space-y-6">
                             <div className="space-y-4">
-                                <Label htmlFor="heroTitle" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40">Neural Hero Headline</Label>
+                                <Label htmlFor="heroTitle" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40">Big Title / Headline</Label>
                                 <div className="relative">
                                     <Textarea 
                                         id="heroTitle"
@@ -597,14 +597,14 @@ export default function AppSettingsPage() {
                                 </div>
                             </div>
                             <div className="space-y-4">
-                                <Label htmlFor="heroDescription" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40">Subtext Context</Label>
+                                <Label htmlFor="heroDescription" className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40">Short Description</Label>
                                 <Textarea 
                                     id="heroDescription"
                                     rows={4}
                                     value={displayData.heroDescription}
                                     onChange={(e) => handleFieldChange('heroDescription', e.target.value)}
                                     disabled={isFormDisabled}
-                                    className="font-bold text-sm leading-relaxed min-h-[100px] bg-white/50 border-primary/5 rounded-3xl p-6 shadow-sm focus:ring-primary disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0 disabled:text-primary/60"
+                                    className="font-normal text-sm leading-relaxed min-h-[100px] bg-white/50 border-primary/5 rounded-3xl p-6 shadow-sm focus:ring-primary disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0 disabled:text-primary/60"
                                 />
                             </div>
                         </div>
@@ -613,14 +613,14 @@ export default function AppSettingsPage() {
                             <div className="p-8 rounded-[40px] bg-primary/[0.02] border border-primary/5 space-y-6">
                                 <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
                                     <Activity className="h-5 w-5 text-primary opacity-40" />
-                                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Operational Pulse (Ticker)</h4>
+                                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Latest Updates Bar</h4>
                                 </div>
                                 
                                 <div className="grid grid-cols-2 gap-4">
                                     {[
-                                        { id: 'ticker-active', label: 'Active Initiatives', field: 'isTickerActiveVisible' },
-                                        { id: 'ticker-donations', label: 'Verified Inbound', field: 'isTickerDonationVisible' },
-                                        { id: 'ticker-completed', label: 'Archived Success', field: 'isTickerCompletedVisible' },
+                                        { id: 'ticker-active', label: 'Current Help Requests', field: 'isTickerActiveVisible' },
+                                        { id: 'ticker-donations', label: 'Recent Donations', field: 'isTickerDonationVisible' },
+                                        { id: 'ticker-completed', label: 'Completed Help', field: 'isTickerCompletedVisible' },
                                     ].map(ticker => (
                                         <div key={ticker.id} className="flex items-center justify-between p-4 rounded-2xl bg-white border border-primary/5 shadow-sm">
                                             <Label htmlFor={ticker.id} className="text-[10px] font-black uppercase tracking-widest">{ticker.label}</Label>
@@ -646,8 +646,8 @@ export default function AppSettingsPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
                         <VisibilityToggle 
                             id="hero-visibility"
-                            label="Hero Matrix"
-                            description="Primary welcome message."
+                            label="Main Banner"
+                            description="Shows the top welcome section."
                             icon={Monitor}
                             checked={displayData.isHeroVisible}
                             onChange={(val) => handleFieldChange('isHeroVisible', val)}
@@ -655,8 +655,8 @@ export default function AppSettingsPage() {
                         />
                         <VisibilityToggle 
                             id="news-ticker-visibility"
-                            label="Neural Ticker"
-                            description="Real-time rolling updates."
+                            label="Moving Updates"
+                            description="Shows moving text with updates."
                             icon={Megaphone}
                             checked={displayData.isNewsTickerVisible}
                             onChange={(val) => handleFieldChange('isNewsTickerVisible', val)}
@@ -664,8 +664,8 @@ export default function AppSettingsPage() {
                         />
                         <VisibilityToggle 
                             id="wisdom-visibility"
-                            label="Wisdom Feed"
-                            description="Religious guidance reflections."
+                            label="Daily Quotes"
+                            description="Shows religious and good quotes."
                             icon={Quote}
                             checked={displayData.isWisdomVisible}
                             onChange={(val) => handleFieldChange('isWisdomVisible', val)}
@@ -673,8 +673,8 @@ export default function AppSettingsPage() {
                         />
                         <VisibilityToggle 
                             id="overall-summary-visibility"
-                            label="Funding Pulse"
-                            description="Aggregate organizational progress."
+                            label="Total Money Collected"
+                            description="Shows how much money is gathered."
                             icon={Target}
                             checked={displayData.isOverallSummaryVisible}
                             onChange={(val) => handleFieldChange('isOverallSummaryVisible', val)}
@@ -682,8 +682,8 @@ export default function AppSettingsPage() {
                         />
                         <VisibilityToggle 
                             id="donation-summary-visibility"
-                            label="Analytics Charts"
-                            description="Distribution & trend visuals."
+                            label="Donation Charts"
+                            description="Shows charts of donations."
                             icon={PieChart}
                             checked={displayData.isDonationSummaryVisible}
                             onChange={(val) => handleFieldChange('isDonationSummaryVisible', val)}
@@ -691,8 +691,8 @@ export default function AppSettingsPage() {
                         />
                         <VisibilityToggle 
                             id="purpose-summary-visibility"
-                            label="Impact Matrix"
-                            description="Fund utilization by category."
+                            label="How Money is Used"
+                            description="Shows categories of spending."
                             icon={HeartHandshake}
                             checked={displayData.isPurposeSummaryVisible}
                             onChange={(val) => handleFieldChange('isPurposeSummaryVisible', val)}
@@ -702,8 +702,8 @@ export default function AppSettingsPage() {
                 </SettingsSection>
 
                 <SettingsSection 
-                    title="Financial Gateway Protocols" 
-                    description="Secure the institutional inbound vectors. Manage payment handles and bank credentials."
+                    title="Bank & Payment Details" 
+                    description="Set up your UPI and bank account information for donations."
                     icon={CreditCard}
                 >
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
@@ -711,7 +711,7 @@ export default function AppSettingsPage() {
                             <div className="space-y-6">
                                 <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
                                     <QrCode className="h-5 w-5 text-primary opacity-40" />
-                                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">QR Vector Control</h4>
+                                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">QR Code Settings</h4>
                                 </div>
                                 <div className="flex items-start gap-8">
                                     <div className="relative group">
@@ -733,7 +733,7 @@ export default function AppSettingsPage() {
                                     </div>
                                     <div className="space-y-6 flex-1 pt-4">
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Primary UPI Handle</Label>
+                                            <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Your UPI ID</Label>
                                             <Input 
                                                 value={displayData.upiId} 
                                                 onChange={e => handleFieldChange('upiId', e.target.value)} 
@@ -743,7 +743,7 @@ export default function AppSettingsPage() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Mobile Vector</Label>
+                                            <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Mobile Number for Payment</Label>
                                             <Input 
                                                 value={displayData.paymentMobileNumber} 
                                                 onChange={e => handleFieldChange('paymentMobileNumber', e.target.value)} 
@@ -761,7 +761,7 @@ export default function AppSettingsPage() {
                             <div className="p-8 rounded-[40px] bg-primary/[0.02] border border-primary/5 space-y-8">
                                 <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
                                     <Landmark className="h-5 w-5 text-primary opacity-40" />
-                                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Institutional Clearing Account</h4>
+                                    <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Bank Account Details</h4>
                                 </div>
                                 <div className="space-y-6">
                                     <div className="space-y-2">
@@ -774,7 +774,7 @@ export default function AppSettingsPage() {
                                             <Input value={displayData.bankAccountNumber} onChange={e => handleFieldChange('bankAccountNumber', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" />
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">IFSC Vector</Label>
+                                            <Label className="text-[9px] font-black uppercase tracking-widest opacity-40 pl-1">Bank IFSC Code</Label>
                                             <Input value={displayData.bankIfsc} onChange={e => handleFieldChange('bankIfsc', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0 uppercase" />
                                         </div>
                                     </div>
@@ -785,15 +785,15 @@ export default function AppSettingsPage() {
                 </SettingsSection>
 
                 <SettingsSection 
-                    title="Access & Identity Sovereignty" 
-                    description="Configure the authentication protocols for the Donor and Beneficiary portals."
+                    title="Login Options" 
+                    description="Manage how donors and members can log in."
                     icon={Shield}
                 >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div className="p-8 rounded-[40px] bg-primary/[0.02] border border-primary/5 space-y-6">
                             <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
                                 <Lock className="h-5 w-5 text-primary opacity-40" />
-                                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Authentication Matrix</h4>
+                                <h4 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em]">Login Security</h4>
                             </div>
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between p-5 rounded-3xl bg-white border border-primary/5 shadow-sm">

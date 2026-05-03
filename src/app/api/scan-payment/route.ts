@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { scanPaymentScreenshot } from '@/ai/flows/scan-payment';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {

@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { extractEducationFindings } from '@/ai/flows/extract-education-findings';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {

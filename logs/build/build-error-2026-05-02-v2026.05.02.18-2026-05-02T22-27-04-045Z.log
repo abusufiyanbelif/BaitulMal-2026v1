@@ -1,0 +1,65 @@
+BUILD FAILURE LOG - 3/5/2026, 3:57:58 am
+Version: 2026.05.02.18
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+
+
+STDERR:
+Failed to compile.
+
+./src/components/public-donation-form.tsx
+Error: 
+  [31mx[0m Unexpected token `Form`. Expected jsx identifier
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\components\public-donation-form.tsx[0m:324:1]
+ [2m324[0m |     }
+ [2m325[0m | 
+ [2m326[0m |     return (
+ [2m327[0m |         <Form {...form}>
+     : [31;1m         ^^^^[0m
+ [2m328[0m |             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 animate-fade-in-up">
+ [2m329[0m |                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+ [2m330[0m |                     {/* Step 1: Donor & Amount */}
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/public-donation-form.tsx
+./src/app/donate/page.tsx
+
+
+> Build failed because of webpack errors
+
+
+ERROR MESSAGE:
+Command failed: next build
+Failed to compile.
+
+./src/components/public-donation-form.tsx
+Error: 
+  [31mx[0m Unexpected token `Form`. Expected jsx identifier
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\components\public-donation-form.tsx[0m:324:1]
+ [2m324[0m |     }
+ [2m325[0m | 
+ [2m326[0m |     return (
+ [2m327[0m |         <Form {...form}>
+     : [31;1m         ^^^^[0m
+ [2m328[0m |             <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 animate-fade-in-up">
+ [2m329[0m |                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+ [2m330[0m |                     {/* Step 1: Donor & Amount */}
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/components/public-donation-form.tsx
+./src/app/donate/page.tsx
+
+
+> Build failed because of webpack errors

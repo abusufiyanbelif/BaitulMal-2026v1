@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createLeadStory } from '@/ai/flows/create-lead-story';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {

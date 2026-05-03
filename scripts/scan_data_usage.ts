@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-const srcDir = 'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\src';
+const srcDir = path.join(__dirname, '../src');
 
 function scanDir(dir: string, results: string[] = []) {
     const files = fs.readdirSync(dir);

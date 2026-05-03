@@ -1,7 +1,7 @@
 # 📘 User Guide: /
     
-**Build Version:** `2026.05.02.18`
-**Last Updated:** 3/5/2026, 1:55:57 am
+**Build Version:** `2026.05.03.3`
+**Last Updated:** 3/5/2026, 5:43:50 am
 **Internal Route:** `/`
 
 ---
@@ -27,8 +27,8 @@ Application Module
 - **Campaigns**: Interactive button to initiate campaigns operation.
 - **Appeals**: Interactive button to initiate appeals operation.
 - **Download Mobile App (APK)**: Interactive button to initiate download mobile app (apk) operation.
-- **Team Access**: Interactive button to initiate team access operation.
-- **Donor Portal**: Interactive button to initiate donor portal operation.
+- **Admin Login**: Interactive button to initiate admin login operation.
+- **Donor Login**: Interactive button to initiate donor login operation.
 
 ## 🛡️ Security & Access
 Access to this module is restricted based on institutional roles (Admin, Staff, or Portal User). Ensure you have the necessary clearance before attempting modifications.

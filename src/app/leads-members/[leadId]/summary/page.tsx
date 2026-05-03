@@ -73,7 +73,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
 import { Label } from '@/components/ui/label';
-import { cn, getNestedValue, getImageSrc } from '@/lib/utils';
+import { cn, getNestedValue, getImageSrc, serializeForAction, generateChanges } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters, priorityLevels } from '@/lib/modules';
@@ -112,9 +112,8 @@ import type { ChartConfig } from '@/components/ui/chart';
 import { recalculateLeadGoalAction } from '../../actions';
 import { PendingUpdateWarning } from '@/components/pending-update-warning';
 import { VerificationRequestDialog } from '@/components/verification-request-dialog';
-import { checkPendingVerificationAction } from '@/app/verifications/actions';
+import { checkPendingVerificationAction, cleanupPendingVerificationsAction } from '@/app/verifications/actions';
 import { recordAuditLogAction } from '@/app/audit/actions';
-import { generateChanges } from '@/lib/utils';
 import { notifyLeadAction } from '@/app/messages/actions';
 import { AuditHistory } from '@/components/audit-history';
 import { getDefaultImage, defaultInstitutionalAssets } from '@/lib/default-images';
@@ -368,6 +367,7 @@ export default function LeadSummaryPage() {
                 publicVisibility: lead.publicVisibility || 'Hold',
                 allowedDonationTypes: lead.allowedDonationTypes || [...donationCategories],
                 imageUrl: lead.imageUrl || '',
+                imageUrlFilename: lead.imageUrlFilename || '',
                 purposeDetails: lead.purposeDetails || '',
                 categoryDetails: lead.categoryDetails || '',
                 notes: lead.notes || '',
@@ -399,12 +399,14 @@ export default function LeadSummaryPage() {
     }, [lead, editMode]);
 
     const purpose = editableLead.purpose;
+    // Handle default image suggestions when purpose changes
     useEffect(() => {
-        if (editMode && purpose) {
+        // Only suggest a default image if there's no existing image and we're in edit mode
+        if (editMode && purpose && !editableLead.imageUrl && !imagePreview) {
             const suggested = getDefaultImage(purpose);
             setSelectedDefaultImageUrl(suggested);
         }
-    }, [purpose, editMode]);
+    }, [purpose, editMode, editableLead.imageUrl, imagePreview]);
 
     const handleFieldChange = (field: keyof Lead, value: any) => {
         setEditableLead(p => (p ? { ...p, [field]: value } : null));
@@ -460,6 +462,9 @@ export default function LeadSummaryPage() {
         }
         setIsSubmitting(true);
         let imageUrl = editableLead.imageUrl || '';
+        let imageUrlFilename = editableLead.imageUrlFilename || '';
+
+        // Priority 1: New File Upload
         if (imageFile) {
             try {
                 const resizedBlob = await new Promise<Blob>((resolve) => {
@@ -469,16 +474,25 @@ export default function LeadSummaryPage() {
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);
                 imageUrl = await getDownloadURL(fileRef);
+                const dateStr = new Date().toISOString().split('T')[0];
+                imageUrlFilename = `lead_${editableLead.name?.replace(/\s+/g, '_')}_${dateStr}.png`;
             } catch (uploadError) {
                 toast({ title: 'Image Upload Failed', variant: 'destructive'});
                 setIsSubmitting(false);
                 return;
             }
-        } else if (selectedDefaultImageUrl) {
-            imageUrl = selectedDefaultImageUrl;
-        } else if (isImageDeleted) {
+        } 
+        // Priority 2: Explicit Deletion (User clicked "Remove")
+        else if (isImageDeleted) {
             imageUrl = '';
+            imageUrlFilename = '';
         }
+        // Priority 3: Gallery Selection (User picked an existing image)
+        else if (selectedDefaultImageUrl) {
+            imageUrl = selectedDefaultImageUrl;
+            imageUrlFilename = 'institutional_default.png';
+        }
+        // Priority 4: Keep Existing (Handled by the initial let assignments)
         const documentUploadPromises = newDocuments.map(async (file) => {
             const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
             const fileRef = storageRef(storage, `leads/${leadId}/documents/${safeFileName}`);
@@ -493,8 +507,11 @@ export default function LeadSummaryPage() {
             requiredAmount: Number(editableLead.requiredAmount) || 0,
             targetAmount: Number(editableLead.targetAmount) || 0,
             imageUrl: imageUrl,
+            imageUrlFilename: imageUrlFilename,
             documents: finalDocuments,
             updatedAt: serverTimestamp(),
+            updatedById: userProfile.id,
+            updatedByName: userProfile.name,
         };
         setPendingSaveData(saveData);
 
@@ -544,7 +561,7 @@ export default function LeadSummaryPage() {
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal overflow-hidden">
              {isSubmitting && <BrandedLoader message="Securing Appeal Changes..." />}
              <div className="mb-4 transition-all duration-300 hover:-translate-x-1"><Button variant="outline" asChild className="font-bold border-primary/20 transition-transform active:scale-95 text-primary">
-                <Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> All Appeals</Link></Button>
+                <Link href="/leads-members"><ArrowLeft className="mr-2 h-4 w-4" /> All Help Requests</Link></Button>
             </div>
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2 animate-fade-in-up">
                  <div className="space-y-1">
@@ -626,14 +643,14 @@ export default function LeadSummaryPage() {
                             { !editMode ? ( 
                                 <Button 
                                     onClick={() => setEditMode(true)} 
-                                    disabled={!!existingPendingRequest}
+                                    disabled={!!existingPendingRequest && userProfile?.role !== 'Admin'}
                                     className={cn(
                                         "font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl",
-                                        existingPendingRequest ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-white"
+                                        (existingPendingRequest && userProfile?.role !== 'Admin') ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-white"
                                     )}
                                 >
                                     <Edit className="mr-2 h-4 w-4" /> 
-                                    {existingPendingRequest ? "Approval Pending" : "Edit Summary"}
+                                    {existingPendingRequest ? "Approval Pending" : "Edit Details"}
                                 </Button> 
                             ) : ( 
                                 <div className="flex gap-2">
@@ -667,7 +684,7 @@ export default function LeadSummaryPage() {
 
             <div className="space-y-6" ref={summaryRef}>
                 <Card className="animate-fade-in-up shadow-md border-primary/10 bg-white transition-all duration-300 hover:shadow-xl">
-                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary tracking-tight capitalize">Appeal Objectives</CardTitle></CardHeader>
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary tracking-tight capitalize">About This Request</CardTitle></CardHeader>
                         <CardContent className="space-y-4 pt-6 text-foreground font-normal">
                             {editMode ? (
                                 <div className="space-y-6 font-normal animate-fade-in-zoom">
@@ -727,7 +744,7 @@ export default function LeadSummaryPage() {
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                                         <div className="space-y-1">
-                                            <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Purpose Type</Label>
+                                            <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Type of Help</Label>
                                             <Select value={editableLead.purpose} onValueChange={(val) => handleFieldChange('purpose', val)}>
                                                 <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                                 <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">{leadPurposesConfig.map(p => <SelectItem key={p.id} value={p.id} className="font-normal">{p.name}</SelectItem>)}</SelectContent>
@@ -743,7 +760,7 @@ export default function LeadSummaryPage() {
                                             </Select>
                                         </div>
                                         <div className="space-y-1">
-                                            <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Operational Status</Label>
+                                            <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Request Status</Label>
                                             <Select value={editableLead.status} onValueChange={(value) => handleFieldChange('status', value)}>
                                                 <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                                 <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
@@ -754,7 +771,7 @@ export default function LeadSummaryPage() {
                                             </Select>
                                         </div>
                                         <div className="space-y-1">
-                                            <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Verification Level</Label>
+                                            <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Check Status</Label>
                                             <Select value={editableLead.authenticityStatus} onValueChange={(value) => handleFieldChange('authenticityStatus', value)}>
                                                 <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                                 <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
@@ -769,7 +786,7 @@ export default function LeadSummaryPage() {
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1">
-                                            <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Public Visibility</Label>
+                                            <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Show on Website</Label>
                                             <Select value={editableLead.publicVisibility} onValueChange={(value) => handleFieldChange('publicVisibility', value)}>
                                                 <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                                 <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
@@ -799,8 +816,8 @@ export default function LeadSummaryPage() {
 
                                     <div><Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Description</Label><Textarea id="description" value={editableLead.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} rows={4} className="text-primary font-normal transition-all duration-300 focus:shadow-md border-primary/10" /></div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Required Amount (₹)</Label><Input type="number" value={editableLead.requiredAmount || 0} onChange={(e) => handleFieldChange('requiredAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md border-primary/10" /></div>
-                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Target Amount (₹)</Label><Input type="number" value={editableLead.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md border-primary/10" /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Money Needed (₹)</Label><Input type="number" value={editableLead.requiredAmount || 0} onChange={(e) => handleFieldChange('requiredAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md border-primary/10" /></div>
+                                        <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Target Goal (₹)</Label><Input type="number" value={editableLead.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md border-primary/10" /></div>
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Start Date</Label><Input id="startDate" type="date" value={editableLead.startDate || ''} onChange={(e) => handleFieldChange('startDate', e.target.value)} className="font-bold text-primary border-primary/10" /></div>
@@ -848,12 +865,12 @@ export default function LeadSummaryPage() {
                                     </div>
 
                                     <div className="space-y-1">
-                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Institutional Notes (Private)</Label>
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Internal Notes (Private)</Label>
                                         <Textarea value={editableLead.notes || ''} onChange={(e) => handleFieldChange('notes', e.target.value)} rows={3} className="text-primary font-normal transition-all duration-300 focus:shadow-md border-primary/10" />
                                     </div>
                                     
                                     <div className="space-y-2">
-                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Allowed Donation Types For Goal</Label>
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Donation Types for this Goal</Label>
                                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 border rounded-xl p-3 bg-white border-primary/10">
                                             {donationCategories.map(type => (
                                                 <div key={type} className="flex items-center space-x-2 transition-all duration-300 hover:translate-x-1">
@@ -922,7 +939,7 @@ export default function LeadSummaryPage() {
 
                                     {lead?.notes && (
                                         <div className="mt-4 p-4 rounded-xl border border-primary/10 bg-amber-50/30 animate-fade-in-up">
-                                            <Label className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Institutional Notes (Private)</Label>
+                                            <Label className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize opacity-60">Internal Notes (Private)</Label>
                                             <p className="mt-1 text-sm font-normal text-muted-foreground leading-relaxed italic">{lead.notes}</p>
                                         </div>
                                     )}
@@ -936,8 +953,8 @@ export default function LeadSummaryPage() {
                         {isVisible('funding_progress') && (
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
                                 <CardHeader className="bg-primary/5 border-b">
-                                    <CardTitle className="flex items-center gap-2 font-bold text-primary capitalize"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
-                                    <CardDescription className="font-normal text-primary/70">Verified Donations For This Individual Case.</CardDescription>
+                                    <CardTitle className="flex items-center gap-2 font-bold text-primary capitalize"><Target className="h-6 w-6 text-primary" /> How much we've collected</CardTitle>
+                                    <CardDescription className="font-normal text-primary/70">Verified donations for this case.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="pt-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
@@ -957,7 +974,7 @@ export default function LeadSummaryPage() {
                                                 className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
                                                 onClick={() => router.push(`/leads-members/${leadId}/donations?status=Verified`)}
                                             >
-                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize group-hover:text-primary transition-colors opacity-60">Raised For Goal (Synced)</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize group-hover:text-primary transition-colors opacity-60">Money for this Target</p>
                                                 <p className="text-3xl font-bold text-primary font-mono flex items-center justify-center md:justify-start gap-2">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
                                             </div>
                                             <div className="transition-transform hover:translate-x-1 duration-300 relative group/target">
@@ -991,7 +1008,7 @@ export default function LeadSummaryPage() {
                                                 className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
                                                 onClick={() => router.push(`/leads-members/${leadId}/donations?status=Verified`)}
                                             >
-                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize group-hover:text-primary transition-colors opacity-60">Grand Total Received</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight capitalize group-hover:text-primary transition-colors opacity-60">Total Money Collected</p>
                                                 <p className="text-2xl font-bold text-primary font-mono flex items-center justify-center md:justify-start gap-2">₹{(fundingData.grandTotal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
                                             </div>
                                         </div>
@@ -1045,10 +1062,10 @@ export default function LeadSummaryPage() {
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col">
                                 <CardHeader className="bg-primary/5 border-b shrink-0">
                                     <CardTitle className="font-bold text-primary tracking-tight capitalize">
-                                        Allocation Breakdown
+                                        How help is shared
                                     </CardTitle>
                                     <CardDescription className="font-normal text-primary/70">
-                                        Resource Allocation Details For This Individual Case.
+                                        Details of help for this person.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="p-0 flex-1 overflow-hidden">
@@ -1078,7 +1095,7 @@ export default function LeadSummaryPage() {
                                                         {beneficiaryGroups.length > 0 && (
                                                             <TableFooter className="bg-primary/5 border-t font-bold">
                                                                 <TableRow>
-                                                                    <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight capitalize">Total Requirement</TableCell>
+                                                                    <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight capitalize">Total Help Needed</TableCell>
                                                                     <TableCell className="text-right font-mono font-bold text-primary text-base">₹{calculatedRequirementTotal.toLocaleString('en-IN')}</TableCell>
                                                                 </TableRow>
                                                             </TableFooter>
@@ -1106,7 +1123,7 @@ export default function LeadSummaryPage() {
                                                         </TableBody>
                                                         <TableFooter className="bg-primary/5 border-t font-bold">
                                                             <TableRow>
-                                                                <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight capitalize">Single Recipient Total</TableCell>
+                                                                <TableCell colSpan={3} className="text-right font-bold text-primary text-[10px] tracking-tight capitalize">Help for one Person</TableCell>
                                                                 <TableCell className="text-right font-mono font-bold text-primary text-lg">
                                                                     ₹{calculatedRequirementTotal.toLocaleString('en-IN')}
                                                                 </TableCell>
@@ -1125,7 +1142,7 @@ export default function LeadSummaryPage() {
                         <div className="grid gap-6 lg:grid-cols-2 font-normal">
                             {isVisible('fund_totals') && (
                                 <Card className="shadow-sm border-primary/5 bg-white transition-all duration-300 hover:shadow-lg">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight capitalize">Funds Received By Category</CardTitle></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight capitalize">Money Collected by Type</CardTitle></CardHeader>
                                     <CardContent className="space-y-2 pt-6 font-normal text-foreground">
                                         {donationCategories.map(cat => (
                                             <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded">
@@ -1141,7 +1158,7 @@ export default function LeadSummaryPage() {
 
                             {isVisible('zakat_utilization') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-lg">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight capitalize">Zakat Fund Tracking</CardTitle><CardDescription className="font-normal text-primary/70">Verified Allocation Of Zakat Resources.</CardDescription></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight capitalize">Zakat Progress</CardTitle><CardDescription className="font-normal text-primary/70">How we used the Zakat money.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 pt-6 font-normal text-foreground">
                                         <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded">
                                             <span className="text-muted-foreground tracking-tight font-normal capitalize text-[10px]">Total Zakat Received</span>
@@ -1165,7 +1182,7 @@ export default function LeadSummaryPage() {
                                         <Separator className="bg-primary/10" />
                                         <div className="space-y-2">
                                             <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded">
-                                                <span className="text-muted-foreground tracking-tight font-normal capitalize text-[10px]">Net Zakat Balance</span>
+                                                <span className="text-muted-foreground tracking-tight font-normal capitalize text-[10px]">Money Left to Use</span>
                                                 <span className="font-bold text-primary font-mono">₹{fundingData.totalZakatBalance.toLocaleString('en-IN')}</span>
                                             </div>
                                         </div>
@@ -1230,7 +1247,7 @@ export default function LeadSummaryPage() {
 
                 {isVisible('documents') && (
                     <Card className="animate-fade-in-up bg-white shadow-sm border-primary/10 transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '400ms' }}>
-                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight capitalize">Case Documents & Evidence</CardTitle></CardHeader>
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight capitalize">Proof Documents</CardTitle></CardHeader>
                         <CardContent className="font-normal text-primary pt-6">
                         {editMode ? (
                                 <div className="space-y-4 animate-fade-in-zoom">
@@ -1315,13 +1332,23 @@ export default function LeadSummaryPage() {
                     isOpen={isVerificationDialogOpen}
                     onOpenChange={setIsVerificationDialogOpen}
                     user={{ id: userProfile.id, name: userProfile.name }}
-                    isOptional={effectiveVerificationMode.toLowerCase() === 'optional'}
+                    isOptional={effectiveVerificationMode.toLowerCase() === 'optional' || userProfile.role === 'Admin'}
                     minApprovals={configSettings?.minApprovalsRequired || 1}
                     authorizedVerifiers={configSettings?.authorizedVerifiers}
                     onBypass={async () => {
                         setIsVerificationDialogOpen(false);
                         if (leadId && firestore) {
-                            await updateDoc(doc(firestore, 'leads', leadId), pendingSaveData);
+                            // Automatically clean up any existing pending requests when Admin bypasses
+                            if (userProfile.role === 'Admin') {
+                                await cleanupPendingVerificationsAction(leadId);
+                            }
+
+                            await updateDoc(doc(firestore, 'leads', leadId), {
+                                ...pendingSaveData,
+                                updatedById: userProfile.id,
+                                updatedByName: userProfile.name,
+                                updatedAt: serverTimestamp()
+                            });
                             
                             // Log direct update
                             await recordAuditLogAction({
@@ -1331,9 +1358,9 @@ export default function LeadSummaryPage() {
                                 action: 'UPDATE',
                                 description: `Summary updated directly (Bypassed Verification)`,
                                 performedBy: { id: userProfile.id, name: userProfile.name },
-                                changes: generateChanges(lead, pendingSaveData),
-                                originalValue: lead,
-                                newValue: pendingSaveData
+                                changes: serializeForAction(generateChanges(lead, pendingSaveData)),
+                                originalValue: serializeForAction(lead),
+                                newValue: serializeForAction(pendingSaveData)
                             });
 
                             toast({ title: 'Summary Updated', description: 'Changes applied directly.', variant: 'success' });
@@ -1365,7 +1392,7 @@ function HistorySection({ lead }: { lead: Lead | null }) {
     return (
         <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
             <CardHeader className="bg-primary/5 border-b pb-3">
-                <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight capitalize"><History className="h-4 w-4 opacity-40"/> Institutional Audit Log</CardTitle>
+                <CardTitle className="text-sm font-bold flex items-center gap-2 tracking-tight capitalize"><History className="h-4 w-4 opacity-40"/> Staff Record Log</CardTitle>
             </CardHeader>
             <CardContent className="pt-6 space-y-4">
                 <div className="flex items-start gap-3">

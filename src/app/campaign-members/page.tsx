@@ -141,7 +141,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                         {canUpdate && (
                             <>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Operational Status</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Campaign Status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={campaign.status} onValueChange={(value) => handleStatusUpdate(campaign, 'status', value)}>
@@ -153,7 +153,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Verification Status</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Check Status</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={campaign.authenticityStatus} onValueChange={(value) => handleStatusUpdate(campaign, 'authenticityStatus', value as string)}>
@@ -167,7 +167,7 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
                                     </DropdownMenuPortal>
                                 </DropdownMenuSub>
                                 <DropdownMenuSub>
-                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Public Visibility</span></DropdownMenuSubTrigger>
+                                    <DropdownMenuSubTrigger className="text-primary font-normal"><span>Show on Website</span></DropdownMenuSubTrigger>
                                     <DropdownMenuPortal>
                                         <DropdownMenuSubContent className="rounded-[12px] shadow-dropdown">
                                             <DropdownMenuRadioGroup value={campaign.publicVisibility} onValueChange={(value) => handleStatusUpdate(campaign, 'publicVisibility', value as string)}>
@@ -244,8 +244,8 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
           <CardContent className="flex-grow space-y-3 p-4 pt-0 font-normal text-primary">
             <div className="space-y-2 border-t border-primary/5 pt-3">
                 <div className="flex justify-between items-baseline text-[11px] font-bold text-primary tracking-tight">
-                    <span className="opacity-60">Raised: ₹{campaign.collected.toLocaleString('en-IN')}</span>
-                    <span className="text-sm">Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</span>
+                    <span className="opacity-60">Collected: ₹{campaign.collected.toLocaleString('en-IN')}</span>
+                    <span className="text-sm">Target: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</span>
                 </div>
                 <div className="relative">
                     <Progress 
@@ -472,9 +472,9 @@ export default function CampaignPage() {
     const sortByPriority = (list: any[]) => [...list].sort((a, b) => (priorityWeight[b.priority || 'Medium'] || 0) - (priorityWeight[a.priority || 'Medium'] || 0));
 
     return [
-      { id: 'published', title: 'Open Published Initiatives', icon: Globe, items: sortByPriority(ongoingPublished), color: 'text-primary' },
-      { id: 'internal', title: 'Internal Hub & Drafts', icon: FileLock, items: sortByPriority(ongoingInternal), color: 'text-amber-600' },
-      { id: 'completed', title: 'Completed & Archive', icon: CheckCircle2, items: sortByPriority(completed), color: 'text-muted-foreground' }
+      { id: 'published', title: 'Live on Website', icon: Globe, items: sortByPriority(ongoingPublished), color: 'text-primary' },
+      { id: 'internal', title: 'Working / Not Live', icon: FileLock, items: sortByPriority(ongoingInternal), color: 'text-amber-600' },
+      { id: 'completed', title: 'Finished Campaigns', icon: CheckCircle2, items: sortByPriority(completed), color: 'text-muted-foreground' }
     ].filter(s => s.items.length > 0);
   }, [filteredCampaigns]);
 
@@ -509,8 +509,8 @@ export default function CampaignPage() {
         </div>
 
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight text-primary">Campaign Management</h1>
-          <p className="text-sm max-w-2xl font-bold leading-relaxed opacity-70">Monitor fundraising goals, authenticity verification, and project archives.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-primary">Manage Campaigns</h1>
+          <p className="text-sm max-w-2xl font-bold leading-relaxed opacity-70">See how much we've collected and manage our charity projects.</p>
         </div>
 
         <Card className="animate-fade-in-zoom shadow-none border-primary/10 bg-white/30 overflow-hidden">

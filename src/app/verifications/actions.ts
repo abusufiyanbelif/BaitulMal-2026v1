@@ -191,6 +191,36 @@ import { generateChanges } from '@/lib/utils';
         return { success: false, message: `Dispatch Failed: ${error.message}` };
     }
 }
+
+/**
+ * Removes any pending verification requests for a specific target.
+ * Useful when an Admin bypasses verification and applies changes directly.
+ */
+export async function cleanupPendingVerificationsAction(targetId: string) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const verificationsRef = adminDb.collection('pending_verifications');
+        const existingSnap = await verificationsRef
+            .where('targetId', '==', targetId)
+            .where('status', 'in', ['Pending', 'Partially Approved'])
+            .get();
+
+        if (existingSnap.empty) return { success: true, count: 0 };
+
+        const batch = adminDb.batch();
+        existingSnap.docs.forEach(doc => {
+            batch.delete(doc.ref);
+        });
+        await batch.commit();
+
+        revalidatePath('/verifications');
+        return { success: true, count: existingSnap.size };
+    } catch (error: any) {
+        return { success: false, message: error.message || 'Failed to cleanup pending verifications.' };
+    }
+}
  
  export async function approveVerificationAction(
      requestId: string,

@@ -110,9 +110,9 @@ import type { ChartConfig } from '@/components/ui/chart';
 import { recalculateCampaignGoalAction } from '../../actions';
 import { PendingUpdateWarning } from '@/components/pending-update-warning';
 import { VerificationRequestDialog } from '@/components/verification-request-dialog';
-import { checkPendingVerificationAction } from '@/app/verifications/actions';
+import { checkPendingVerificationAction, cleanupPendingVerificationsAction } from '@/app/verifications/actions';
 import { recordAuditLogAction } from '@/app/audit/actions';
-import { generateChanges, getImageSrc } from '@/lib/utils';
+import { generateChanges, getImageSrc, serializeForAction } from '@/lib/utils';
 import { notifyCampaignAction } from '@/app/messages/actions';
 import { AuditHistory } from '@/components/audit-history';
 import { getDefaultImage, defaultInstitutionalAssets } from '@/lib/default-images';
@@ -438,12 +438,14 @@ export default function CampaignSummaryPage() {
         return 'Charity';
     }, [editableCampaign.category]);
 
+    // Handle default image suggestions when purpose changes
     useEffect(() => {
-        if (editMode && purpose) {
+        // Only suggest a default image if there's no existing image and we're in edit mode
+        if (editMode && purpose && !editableCampaign.imageUrl && !imagePreview) {
             const suggested = getDefaultImage(purpose);
             setSelectedDefaultImageUrl(suggested);
         }
-    }, [purpose, editMode]);
+    }, [purpose, editMode, editableCampaign.imageUrl, imagePreview]);
 
     const isLoadingPage = isCampaignLoading || isProfileLoading || areBeneficiariesLoading || isBrandingLoading || isPaymentLoading;
 
@@ -506,28 +508,36 @@ export default function CampaignSummaryPage() {
         setIsSubmitting(true);
         let imageUrl = editableCampaign.imageUrl || '';
         let imageUrlFilename = editableCampaign.imageUrlFilename || '';
+
+        // Priority 1: New File Upload
         if (imageFile) {
             try {
                 const resizedBlob = await new Promise<Blob>((resolve) => {
                     (Resizer as any).imageFileResizer(imageFile, 1024, 1024, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
+                const dateStr = new Date().toISOString().split('T')[0];
                 const filePath = `campaigns/${campaignId}/background.png`;
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);
                 imageUrl = await getDownloadURL(fileRef);
-                const dateStr = new Date().toISOString().split('T')[0];
                 imageUrlFilename = `campaign_${editableCampaign.name?.replace(/\s+/g, '_')}_${dateStr}.png`;
             } catch (uploadError) {
                 toast({ title: 'Image Upload Failed', variant: 'destructive'});
                 setIsSubmitting(false);
                 return;
             }
-        } else if (selectedDefaultImageUrl) {
-            imageUrl = selectedDefaultImageUrl;
-        } else if (isImageDeleted) {
+        } 
+        // Priority 2: Explicit Deletion (User clicked "Remove")
+        else if (isImageDeleted) {
             imageUrl = '';
             imageUrlFilename = '';
         }
+        // Priority 3: Gallery Selection (User picked an existing image)
+        else if (selectedDefaultImageUrl) {
+            imageUrl = selectedDefaultImageUrl;
+            imageUrlFilename = 'institutional_default.png';
+        }
+        // Priority 4: Keep Existing (Handled by the initial let assignments)
         const documentUploadPromises = newDocuments.map(async (file) => {
             const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
             const fileRef = storageRef(storage, `campaigns/${campaignId}/documents/${safeFileName}`);
@@ -544,6 +554,8 @@ export default function CampaignSummaryPage() {
             imageUrlFilename: imageUrlFilename,
             documents: finalDocuments,
             updatedAt: serverTimestamp(),
+            updatedById: userProfile.id,
+            updatedByName: userProfile.name,
         };
         setPendingSaveData(saveData);
 
@@ -661,14 +673,14 @@ export default function CampaignSummaryPage() {
                             { !editMode ? ( 
                                 <Button 
                                     onClick={() => setEditMode(true)} 
-                                    disabled={isLegacyData || !!existingPendingRequest} 
+                                    disabled={isLegacyData || (!!existingPendingRequest && userProfile?.role !== 'Admin')} 
                                     className={cn(
                                         "font-bold shadow-md active:scale-95 transition-all duration-300 hover:shadow-xl",
-                                        (isLegacyData || existingPendingRequest) ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-white"
+                                        (isLegacyData || (existingPendingRequest && userProfile?.role !== 'Admin')) ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-white"
                                     )}
                                 >
                                     <Edit className="mr-2 h-4 w-4" /> 
-                                    {existingPendingRequest ? "Approval Pending" : "Edit Summary"}
+                                    {existingPendingRequest ? "Approval Pending" : "Edit Details"}
                                 </Button> 
                             ) : ( 
                                 <div className="flex gap-2">
@@ -701,7 +713,7 @@ export default function CampaignSummaryPage() {
             <div className="space-y-6" ref={summaryRef}>
                 <Card className="animate-fade-in-up shadow-md border-primary/10 bg-white transition-all duration-300 hover:shadow-xl">
                     <CardHeader className="bg-primary/5 border-b">
-                        <CardTitle className="font-bold text-primary tracking-tight">Campaign Objectives</CardTitle>
+                        <CardTitle className="font-bold text-primary tracking-tight">About This Campaign</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4 pt-6 text-foreground font-normal">
                         {editMode ? (
@@ -781,7 +793,7 @@ export default function CampaignSummaryPage() {
                                         </Select>
                                     </div>
                                     <div className="space-y-1">
-                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Operational Status</Label>
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Campaign Status</Label>
                                         <Select value={editableCampaign.status} onValueChange={(value) => handleFieldChange('status', value)}>
                                             <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
@@ -792,7 +804,7 @@ export default function CampaignSummaryPage() {
                                         </Select>
                                     </div>
                                     <div className="space-y-1">
-                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Verification Level</Label>
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Check Status</Label>
                                         <Select value={editableCampaign.authenticityStatus} onValueChange={(value) => handleFieldChange('authenticityStatus', value)}>
                                             <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
@@ -807,7 +819,7 @@ export default function CampaignSummaryPage() {
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="space-y-1">
-                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Public Visibility</Label>
+                                        <Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Show on Website</Label>
                                         <Select value={editableCampaign.publicVisibility} onValueChange={(value) => handleFieldChange('publicVisibility', value)}>
                                             <SelectTrigger className="font-bold border-primary/10"><SelectValue/></SelectTrigger>
                                             <SelectContent className="animate-fade-in-zoom border-primary/10 shadow-dropdown">
@@ -817,7 +829,7 @@ export default function CampaignSummaryPage() {
                                             </SelectContent>
                                         </Select>
                                     </div>
-                                    <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Target Amount (₹)</Label><Input type="number" value={editableCampaign.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md border-primary/10" /></div>
+                                    <div className="space-y-1"><Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Target Goal (₹)</Label><Input type="number" value={editableCampaign.targetAmount || 0} onChange={(e) => handleFieldChange('targetAmount', e.target.value)} className="text-primary font-bold transition-all duration-300 focus:shadow-md border-primary/10" /></div>
                                 </div>
                                 <div><Label className="font-bold text-xs text-muted-foreground tracking-tight capitalize">Description</Label><Textarea id="description" value={editableCampaign.description || ''} onChange={(e: any) => handleFieldChange('description', e.target.value)} className="mt-1 text-foreground font-normal transition-all duration-300 focus:shadow-md border-primary/10" rows={4} /></div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -891,7 +903,7 @@ export default function CampaignSummaryPage() {
                                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
                                 </div>
                                 <div className="space-y-2 font-normal text-foreground">
-                                    <Label className="text-muted-foreground text-[10px] font-bold tracking-tight capitalize">Mission Description</Label>
+                                    <Label className="text-muted-foreground text-[10px] font-bold tracking-tight capitalize">What we're doing</Label>
                                     <p className="mt-1 text-sm font-normal whitespace-pre-wrap leading-relaxed text-muted-foreground">{campaign?.description || 'No detailed description available.'}</p>
                                 </div>
                                 
@@ -913,8 +925,8 @@ export default function CampaignSummaryPage() {
                         {isVisible('funding_progress') && (
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl">
                                 <CardHeader className="bg-primary/5 border-b">
-                                    <CardTitle className="flex items-center gap-2 font-bold text-primary"><Target className="h-6 w-6 text-primary" /> Fundraising Progress</CardTitle>
-                                    <CardDescription className="font-normal text-primary/70">Verified Donations For This Campaign.</CardDescription>
+                                    <CardTitle className="flex items-center gap-2 font-bold text-primary"><Target className="h-6 w-6 text-primary" /> How much we've collected</CardTitle>
+                                    <CardDescription className="font-normal text-primary/70">Verified donations for this campaign.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="pt-6">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center font-normal">
@@ -936,7 +948,7 @@ export default function CampaignSummaryPage() {
                                                 className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
                                                 onClick={() => router.push(`/campaign-members/${campaignId}/donations?status=Verified`)}
                                             >
-                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight group-hover:text-primary transition-colors opacity-60">Raised For Goal (Synced)</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight group-hover:text-primary transition-colors opacity-60">Money for this Target</p>
                                                 <p className="text-3xl font-bold text-primary font-mono flex items-center justify-center md:justify-start gap-2">₹{(fundingData.totalCollectedForGoal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
                                             </div>
                                             <div className="transition-transform hover:translate-x-1 duration-300 relative group/target">
@@ -970,7 +982,7 @@ export default function CampaignSummaryPage() {
                                                 className="transition-transform hover:translate-x-1 cursor-pointer group duration-300"
                                                 onClick={() => router.push(`/campaign-members/${campaignId}/donations?status=Verified`)}
                                             >
-                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight group-hover:text-primary transition-colors opacity-60">Grand Total Received</p>
+                                                <p className="text-[10px] font-bold text-muted-foreground tracking-tight group-hover:text-primary transition-colors opacity-60">Total Money Collected</p>
                                                 <p className="text-2xl font-bold text-primary font-mono flex items-center justify-center md:justify-start gap-2">₹{(fundingData?.grandTotal || 0).toLocaleString('en-IN')} <ChevronRight className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-all"/></p>
                                             </div>
                                         </div>
@@ -1024,10 +1036,10 @@ export default function CampaignSummaryPage() {
                             <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-xl flex flex-col">
                                 <CardHeader className="bg-primary/5 border-b shrink-0">
                                     <CardTitle className="font-bold text-primary tracking-tight">
-                                        Beneficiary Groups
+                                        People Getting Help
                                     </CardTitle>
                                     <CardDescription className="font-normal text-primary/70">
-                                        Allocation Breakdown Based On Requirements.
+                                        How help is shared among different groups.
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent className="p-0 flex-1 overflow-hidden">
@@ -1073,7 +1085,7 @@ export default function CampaignSummaryPage() {
                         <div className="grid gap-6 lg:grid-cols-2 font-normal">
                             {isVisible('fund_totals') && (
                                 <Card className="shadow-sm border-primary/5 bg-white transition-all duration-300 hover:shadow-lg">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight capitalize">Funds Received By Type</CardTitle></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight capitalize">Money Collected by Type</CardTitle></CardHeader>
                                     <CardContent className="space-y-2 pt-6 font-normal text-foreground">
                                         {donationCategories.map(cat => (
                                             <div key={cat} className="flex justify-between items-center text-sm font-bold text-primary transition-all hover:bg-primary/5 px-2 py-1 rounded">
@@ -1089,7 +1101,7 @@ export default function CampaignSummaryPage() {
 
                             {isVisible('zakat_utilization') && (
                                 <Card className="shadow-sm border-primary/5 bg-white overflow-hidden transition-all duration-300 hover:shadow-lg">
-                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Zakat Fund Tracking</CardTitle><CardDescription className="font-normal text-primary/70">Verified Allocation Of Zakat Resources.</CardDescription></CardHeader>
+                                    <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Zakat Progress</CardTitle><CardDescription className="font-normal text-primary/70">How we used the Zakat money.</CardDescription></CardHeader>
                                     <CardContent className="space-y-3 pt-6 font-normal text-foreground">
                                         <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded">
                                             <span className="text-muted-foreground tracking-tight font-normal">Total Zakat Received</span>
@@ -1113,7 +1125,7 @@ export default function CampaignSummaryPage() {
                                         <Separator className="bg-primary/10" />
                                         <div className="space-y-2">
                                             <div className="flex justify-between items-center text-sm font-bold text-primary px-2 transition-all hover:bg-primary/5 rounded">
-                                                <span className="text-muted-foreground tracking-tight font-normal">Net Registry Balance</span>
+                                                <span className="text-muted-foreground tracking-tight font-normal">Money Left to Use</span>
                                                 <span className="font-bold font-mono">₹{fundingData.totalZakatBalance.toLocaleString('en-IN')}</span>
                                             </div>
                                         </div>
@@ -1178,7 +1190,7 @@ export default function CampaignSummaryPage() {
 
                 {isVisible('documents') && (
                     <Card className="animate-fade-in-up bg-white shadow-sm border-primary/10 transition-all duration-300 hover:shadow-xl" style={{ animationDelay: '400ms' }}>
-                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Case Verification Documents</CardTitle></CardHeader>
+                        <CardHeader className="bg-primary/5 border-b"><CardTitle className="font-bold text-primary text-sm tracking-tight">Proof Documents</CardTitle></CardHeader>
                         <CardContent className="font-normal text-primary pt-6">
                         {editMode ? (
                                 <div className="space-y-4 animate-fade-in-zoom">
@@ -1252,13 +1264,23 @@ export default function CampaignSummaryPage() {
                     isOpen={isVerificationDialogOpen}
                     onOpenChange={setIsVerificationDialogOpen}
                     user={{ id: userProfile.id, name: userProfile.name }}
-                    isOptional={effectiveVerificationMode.toLowerCase() === 'optional'}
+                    isOptional={effectiveVerificationMode.toLowerCase() === 'optional' || userProfile.role === 'Admin'}
                     minApprovals={configSettings?.minApprovalsRequired || 1}
                     authorizedVerifiers={configSettings?.authorizedVerifiers}
                     onBypass={async () => {
                         setIsVerificationDialogOpen(false);
                         if (campaignId && firestore) {
-                            await updateDoc(doc(firestore, 'campaigns', campaignId), pendingSaveData);
+                            // Automatically clean up any existing pending requests when Admin bypasses
+                            if (userProfile.role === 'Admin') {
+                                await cleanupPendingVerificationsAction(campaignId);
+                            }
+
+                            await updateDoc(doc(firestore, 'campaigns', campaignId), {
+                                ...pendingSaveData,
+                                updatedById: userProfile.id,
+                                updatedByName: userProfile.name,
+                                updatedAt: serverTimestamp()
+                            });
                             
                             // Log direct update
                             await recordAuditLogAction({
@@ -1268,9 +1290,9 @@ export default function CampaignSummaryPage() {
                                 action: 'UPDATE',
                                 description: `Summary updated directly (Bypassed Verification)`,
                                 performedBy: { id: userProfile.id, name: userProfile.name },
-                                changes: generateChanges(campaign, pendingSaveData),
-                                originalValue: campaign,
-                                newValue: pendingSaveData
+                                changes: serializeForAction(generateChanges(campaign, pendingSaveData)),
+                                originalValue: serializeForAction(campaign),
+                                newValue: serializeForAction(pendingSaveData)
                             });
 
                             toast({ title: 'Summary Updated', description: 'Changes applied directly.', variant: 'success' });

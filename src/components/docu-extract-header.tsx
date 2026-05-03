@@ -127,7 +127,7 @@ export function DocuExtractHeader() {
                       <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
                         <Link href="/dashboard" className="flex items-center w-full">
                           <LayoutDashboard className="mr-3 h-4 w-4 opacity-60" />
-                          <span>Member Dashboard</span>
+                          <span>Admin Dashboard</span>
                         </Link>
                       </DropdownMenuItem>
                      )}
@@ -136,7 +136,7 @@ export function DocuExtractHeader() {
                       <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
                         <Link href="/donor-portal" className="flex items-center w-full">
                           <Heart className="mr-3 h-4 w-4 opacity-60" />
-                          <span>My Donor Portal</span>
+                          <span>My Donor Account</span>
                         </Link>
                       </DropdownMenuItem>
                      )}
@@ -145,7 +145,7 @@ export function DocuExtractHeader() {
                       <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
                         <Link href="/beneficiary-portal" className="flex items-center w-full">
                           <HandHelping className="mr-3 h-4 w-4 opacity-60" />
-                          <span>Beneficiary Portal</span>
+                          <span>My Help History</span>
                         </Link>
                       </DropdownMenuItem>
                      )}
@@ -153,7 +153,7 @@ export function DocuExtractHeader() {
                     <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
                       <Link href={userProfile.role === 'Donor' ? "/donor-portal/profile" : "/profile"} className="flex items-center w-full">
                         <User className="mr-3 h-4 w-4 opacity-60" />
-                        <span>Profile Settings</span>
+                        <span>My Profile</span>
                       </Link>
                     </DropdownMenuItem>
 
@@ -162,13 +162,13 @@ export function DocuExtractHeader() {
                         <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-emerald-600 hover:bg-emerald-50">
                           <Link href="/registry-index" className="flex items-center w-full">
                             <Compass className="mr-3 h-4 w-4 opacity-60" />
-                            <span className="font-bold">Registry Index Map</span>
+                            <span className="font-bold">All Website Pages</span>
                           </Link>
                         </DropdownMenuItem>
                         <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
                           <Link href="/settings" className="flex items-center w-full">
                             <Settings className="mr-3 h-4 w-4 opacity-60" />
-                            <span>System Administration</span>
+                            <span>System Settings</span>
                           </Link>
                         </DropdownMenuItem>
                       </>
@@ -179,7 +179,7 @@ export function DocuExtractHeader() {
                       className="text-destructive focus:bg-destructive/10 focus:text-destructive cursor-pointer h-11 font-normal"
                     >
                       <LogOut className="mr-3 h-4 w-4" />
-                      <span>Sign Out</span>
+                      <span>Logout</span>
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

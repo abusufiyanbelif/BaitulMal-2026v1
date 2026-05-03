@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { extractDynamicFormFromImage } from '@/ai/flows/extract-dynamic-form';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {

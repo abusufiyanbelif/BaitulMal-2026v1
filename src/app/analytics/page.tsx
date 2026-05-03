@@ -70,7 +70,7 @@ function StatCard({ title, value, description, icon: Icon, delay, colorClass }: 
                 </div>
             </div>
             <div className="relative z-10 mt-auto">
-                <p className="text-[10px] font-bold text-muted-foreground opacity-60 leading-tight">{description}</p>
+                <p className="text-[10px] font-normal text-muted-foreground opacity-60 leading-tight">{description}</p>
             </div>
         </Card>
     );
@@ -271,21 +271,21 @@ export default function AnalyticsPage() {
     
     const activityChartConfig = {
       count: {
-        label: "Record Frequency",
+        label: "Number of Entries",
         color: "hsl(var(--chart-1))",
       },
       amount: {
-        label: "Liquidity Volume (₹)",
+        label: "Money Amount (₹)",
         color: "hsl(var(--chart-2))",
       },
     } satisfies ChartConfig;
     
     const documentDistributionChartConfig = {
-        Users: { label: "Member Base", color: "hsl(var(--chart-5))" },
-        Campaigns: { label: "Institutional Initiatives", color: "hsl(var(--chart-2))" },
-        Leads: { label: "Pending Appeals", color: "hsl(var(--chart-3))" },
-        Beneficiaries: { label: "Aid Recipients", color: "hsl(var(--chart-4))" },
-        Donations: { label: "Verified Contributions", color: "hsl(var(--chart-1))" },
+        Users: { label: "Staff", color: "hsl(var(--chart-5))" },
+        Campaigns: { label: "Campaigns", color: "hsl(var(--chart-2))" },
+        Leads: { label: "Help Requests", color: "hsl(var(--chart-3))" },
+        Beneficiaries: { label: "People Helped", color: "hsl(var(--chart-4))" },
+        Donations: { label: "Donations", color: "hsl(var(--chart-1))" },
     } satisfies ChartConfig;
 
     const documentDistributionData = useMemo(() => {
@@ -299,7 +299,7 @@ export default function AnalyticsPage() {
         ].filter(item => item.value > 0);
     }, [isLoading, users, campaigns, leads, beneficiaries, donations]);
 
-    if (isLoading) return <SectionLoader label="Aggregating Institutional Intelligence..." description="Syncing multi-collection data points for analytics." />;
+    if (isLoading) return <SectionLoader label="Preparing Reports..." description="Loading all data for analytics." />;
 
     return (
         <main className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-8 text-primary font-normal relative min-h-screen">
@@ -316,9 +316,9 @@ export default function AnalyticsPage() {
                             <div className="h-10 w-10 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
                                 <BarChart className="h-5 w-5" />
                             </div>
-                            <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-primary">Intelligence Hub</h1>
+                            <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-primary">Reports & Analytics</h1>
                         </div>
-                        <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">Comprehensive institutional analytics suite for data-driven community impact and financial transparency.</p>
+                        <p className="text-sm font-normal opacity-70 max-w-2xl leading-relaxed">See all data about donations, people helped, and website activity.</p>
                     </div>
                 </div>
             </div>
@@ -330,7 +330,7 @@ export default function AnalyticsPage() {
                             <Activity className="h-3.5 w-3.5" /> General Stats
                         </TabsTrigger>
                         <TabsTrigger value="database" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
-                            <Database className="h-3.5 w-3.5" /> Database Trends
+                            <Database className="h-3.5 w-3.5" /> Activity Trends
                         </TabsTrigger>
                         <TabsTrigger value="storage" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
                             <LayoutGrid className="h-3.5 w-3.5" /> Storage Matrix
@@ -340,21 +340,21 @@ export default function AnalyticsPage() {
 
                 <TabsContent value="general" className="animate-fade-in-up mt-0 space-y-10">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <StatCard title="Member Base" value={users?.length || 0} description="Verified Institutional Members" icon={Users} delay="100ms" />
-                        <StatCard title="Aid Network" value={beneficiaries?.length || 0} description="Master Recipient Registry" icon={HandHelping} delay="150ms" />
-                        <StatCard title="Financial Flow" value={`₹${totalDonationAmount.toLocaleString('en-IN')}`} description="Verified Inbound Volume" icon={IndianRupee} delay="200ms" colorClass="bg-emerald-500/[0.02] border-emerald-500/10" />
-                        <StatCard title="Initiative Count" value={campaigns?.length || 0} description="Active Public Campaigns" icon={FolderKanban} delay="250ms" />
-                        <StatCard title="Pending Appeals" value={leads?.length || 0} description="Active Humanitarian Leads" icon={Lightbulb} delay="300ms" />
-                        <StatCard title="Impact Records" value={donations?.length || 0} description="Total Contribution Logs" icon={CheckCircle2} delay="350ms" />
+                        <StatCard title="Staff" value={users?.length || 0} description="Verified Institutional Members" icon={Users} delay="100ms" />
+                        <StatCard title="People Helped" value={beneficiaries?.length || 0} description="List of people getting help" icon={HandHelping} delay="150ms" />
+                        <StatCard title="Total Money" value={`₹${totalDonationAmount.toLocaleString('en-IN')}`} description="Total money from donations" icon={IndianRupee} delay="200ms" colorClass="bg-emerald-500/[0.02] border-emerald-500/10" />
+                        <StatCard title="Total Campaigns" value={campaigns?.length || 0} description="Total active campaigns" icon={FolderKanban} delay="250ms" />
+                        <StatCard title="Total Help Requests" value={leads?.length || 0} description="Total active requests" icon={Lightbulb} delay="300ms" />
+                        <StatCard title="Total Donations" value={donations?.length || 0} description="Total verified donations" icon={CheckCircle2} delay="350ms" />
                     </div>
 
                     <div className="grid gap-8 lg:grid-cols-3">
                         <Card className="lg:col-span-1 rounded-[40px] border border-primary/5 bg-white/40 backdrop-blur-md p-10 space-y-8 animate-fade-in-up shadow-none hover:shadow-2xl transition-all duration-500">
                             <div className="space-y-1">
                                 <h3 className="text-xl font-black text-primary tracking-tighter flex items-center gap-3">
-                                    <PieChartIcon className="h-5 w-5 text-primary opacity-40" /> Donation Vector Split
+                                    <PieChartIcon className="h-5 w-5 text-primary opacity-40" /> Donations by Type
                                 </h3>
-                                <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Categorical Inbound Distribution</p>
+                                <p className="text-[10px] font-normal text-primary/40 uppercase tracking-widest">Where donations come from</p>
                             </div>
                             {isClient ? (
                                 <ChartContainer config={donationCategoryChartConfig} className="h-[350px] w-full">
@@ -374,16 +374,16 @@ export default function AnalyticsPage() {
                         <Card className="lg:col-span-1 rounded-[40px] border border-primary/5 bg-white/40 backdrop-blur-md p-0 space-y-8 animate-fade-in-up shadow-none hover:shadow-2xl transition-all duration-500 overflow-hidden">
                             <div className="p-10 pb-2 space-y-1">
                                 <h3 className="text-xl font-black text-primary tracking-tighter flex items-center gap-3">
-                                    <Target className="h-5 w-5 text-primary opacity-40" /> Top Funding Vectors
+                                    <Target className="h-5 w-5 text-primary opacity-40" /> Top Campaigns
                                 </h3>
-                                <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">High-Impact Initiatives</p>
+                                <p className="text-[10px] font-normal text-primary/40 uppercase tracking-widest">Campaigns with most donations</p>
                             </div>
                             <ScrollArea className="h-[400px]">
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-primary/5 border-b border-primary/5 h-12">
-                                            <TableHead className="pl-10 text-[10px] font-black uppercase tracking-widest">Identity</TableHead>
-                                            <TableHead className="text-right pr-10 text-[10px] font-black uppercase tracking-widest">Liquidity</TableHead>
+                                            <TableHead className="pl-10 text-[10px] font-black uppercase tracking-widest">Campaign Name</TableHead>
+                                            <TableHead className="text-right pr-10 text-[10px] font-black uppercase tracking-widest">Collected</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -404,16 +404,16 @@ export default function AnalyticsPage() {
                         <Card className="lg:col-span-1 rounded-[40px] border border-primary/5 bg-white/40 backdrop-blur-md p-0 space-y-8 animate-fade-in-up shadow-none hover:shadow-2xl transition-all duration-500 overflow-hidden">
                             <div className="p-10 pb-2 space-y-1">
                                 <h3 className="text-xl font-black text-primary tracking-tighter flex items-center gap-3">
-                                    <Eye className="h-5 w-5 text-primary opacity-40" /> Public Portal Traffic
+                                    <Eye className="h-5 w-5 text-primary opacity-40" /> Website Visitors
                                 </h3>
-                                <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Neurometric Page Engagement</p>
+                                <p className="text-[10px] font-normal text-primary/40 uppercase tracking-widest">Page View Engagement</p>
                             </div>
                             <ScrollArea className="h-[400px]">
                                 <Table>
                                     <TableHeader>
                                         <TableRow className="bg-primary/5 border-b border-primary/5 h-12">
-                                            <TableHead className="pl-10 text-[10px] font-black uppercase tracking-widest">Vector</TableHead>
-                                            <TableHead className="text-right pr-10 text-[10px] font-black uppercase tracking-widest">Engagement</TableHead>
+                                            <TableHead className="pl-10 text-[10px] font-black uppercase tracking-widest">Page Name</TableHead>
+                                            <TableHead className="text-right pr-10 text-[10px] font-black uppercase tracking-widest">Views</TableHead>
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
@@ -441,9 +441,9 @@ export default function AnalyticsPage() {
                                     <div className="p-3 rounded-2xl bg-primary/10 text-primary shadow-inner">
                                         <Activity className="h-6 w-6" />
                                     </div>
-                                    Temporal Activity Matrix
+                                    Activity Over Time
                                 </h3>
-                                <p className="text-sm font-bold opacity-40 text-primary max-w-xl">Deep chronological analysis of institutional data velocity and record frequency.</p>
+                                <p className="text-sm font-normal opacity-40 text-primary max-w-xl">See how activity changes over weeks and months.</p>
                             </div>
                             
                             <div className="flex flex-wrap items-center gap-4 bg-white/50 backdrop-blur-md p-2 rounded-[28px] border border-primary/5 shadow-sm">
@@ -451,7 +451,7 @@ export default function AnalyticsPage() {
                                     <PopoverTrigger asChild>
                                         <Button id="date" variant="outline" className={cn("h-11 px-6 justify-start text-left font-bold border-primary/10 text-primary rounded-2xl bg-white shadow-sm", !date && "text-muted-foreground")}>
                                             <CalendarIcon className="mr-3 h-4 w-4 opacity-40" />
-                                            {date?.from ? (date.to ? (<>{format(date.from, "LLL dd")} - {format(date.to, "LLL dd, y")}</>) : (format(date.from, "LLL dd, y"))) : (<span>Neural Range</span>)}
+                                            {date?.from ? (date.to ? (<>{format(date.from, "LLL dd")} - {format(date.to, "LLL dd, y")}</>) : (format(date.from, "LLL dd, y"))) : (<span>Pick Dates</span>)}
                                         </Button>
                                     </PopoverTrigger>
                                     <PopoverContent className="w-auto p-0 rounded-[32px] border-primary/10 shadow-dropdown overflow-hidden" align="end">
@@ -471,10 +471,10 @@ export default function AnalyticsPage() {
                                         <SelectValue placeholder="Preset Range" />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-2xl border-primary/10 shadow-dropdown p-1.5">
-                                        <SelectItem value="all_time" className="font-bold text-xs p-3 rounded-xl">Neural Archive</SelectItem>
-                                        <SelectItem value="this_month" className="font-bold text-xs p-3 rounded-xl">Current Cycle</SelectItem>
-                                        <SelectItem value="this_year" className="font-bold text-xs p-3 rounded-xl">Full Fiscal</SelectItem>
-                                        <SelectItem value="last_3_months" className="font-bold text-xs p-3 rounded-xl">Recent Quarter</SelectItem>
+                                        <SelectItem value="all_time" className="font-bold text-xs p-3 rounded-xl">All Time</SelectItem>
+                                        <SelectItem value="this_month" className="font-bold text-xs p-3 rounded-xl">This Month</SelectItem>
+                                        <SelectItem value="this_year" className="font-bold text-xs p-3 rounded-xl">This Year</SelectItem>
+                                        <SelectItem value="last_3_months" className="font-bold text-xs p-3 rounded-xl">Last 3 Months</SelectItem>
                                     </SelectContent>
                                 </UiSelect>
 
@@ -496,9 +496,9 @@ export default function AnalyticsPage() {
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent className="rounded-2xl border-primary/10 shadow-dropdown p-1.5">
-                                        <SelectItem value="daily" className="font-bold text-xs p-3 rounded-xl">Daily Pulse</SelectItem>
-                                        <SelectItem value="weekly" className="font-bold text-xs p-3 rounded-xl">Weekly Trend</SelectItem>
-                                        <SelectItem value="monthly" className="font-bold text-xs p-3 rounded-xl">Monthly Drift</SelectItem>
+                                        <SelectItem value="daily" className="font-bold text-xs p-3 rounded-xl">Daily</SelectItem>
+                                        <SelectItem value="weekly" className="font-bold text-xs p-3 rounded-xl">Weekly</SelectItem>
+                                        <SelectItem value="monthly" className="font-bold text-xs p-3 rounded-xl">Monthly</SelectItem>
                                     </SelectContent>
                                 </UiSelect>
                             </div>
@@ -561,9 +561,9 @@ export default function AnalyticsPage() {
                         <Card className="rounded-[40px] border border-primary/5 bg-white/40 backdrop-blur-md p-10 space-y-8 animate-fade-in-up shadow-none">
                             <div className="space-y-1">
                                 <h3 className="text-xl font-black text-primary tracking-tighter flex items-center gap-3">
-                                    <PieChartIcon className="h-5 w-5 text-primary opacity-40" /> Collection Balance
+                                    <PieChartIcon className="h-5 w-5 text-primary opacity-40" /> Data Overview
                                 </h3>
-                                <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Document Density Map</p>
+                                <p className="text-[10px] font-normal text-primary/40 uppercase tracking-widest">Record Distribution</p>
                             </div>
                             {isClient ? (
                                 <ChartContainer config={documentDistributionChartConfig} className="h-[300px] w-full">
@@ -586,15 +586,15 @@ export default function AnalyticsPage() {
                                     <div className="p-2 rounded-xl bg-primary/10">
                                         <Zap className="h-5 w-5 text-primary" />
                                     </div>
-                                    Neural Metrics Console
+                                    System Cloud Info
                                 </h3>
-                                <p className="text-[10px] font-bold text-primary/40 uppercase tracking-widest">Advanced Operational Insights</p>
+                                <p className="text-[10px] font-normal text-primary/40 uppercase tracking-widest">System Health & Cloud Data</p>
                             </div>
                             <div className="grid gap-4">
                                 <Alert className="rounded-[28px] border-primary/10 bg-white/60 p-6 shadow-sm group hover:shadow-xl transition-all duration-500">
                                     <Database className="h-5 w-5 text-primary opacity-40" />
-                                    <AlertTitle className="text-sm font-black text-primary tracking-tight">Root Cloud Access Required</AlertTitle>
-                                    <AlertDescription className="text-xs font-bold text-primary/60 leading-relaxed mt-2">
+                                    <AlertTitle className="text-sm font-black text-primary tracking-tight">Cloud Access Required</AlertTitle>
+                                    <AlertDescription className="text-xs font-normal text-primary/60 leading-relaxed mt-2">
                                         For granular neural metrics on IO operations, network latency, and physical storage clusters, please interface directly with the root cloud console.
                                         <Button asChild variant="link" className="p-0 h-auto block mt-4 text-primary font-black uppercase tracking-widest text-[9px] group-hover:translate-x-1 transition-transform">
                                             <a href={`https://console.firebase.google.com/project/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/firestore/usage`} target="_blank" rel="noopener noreferrer">

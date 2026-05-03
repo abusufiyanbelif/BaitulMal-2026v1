@@ -5,14 +5,13 @@ const path = require('path');
 const LOGS_DIR = path.join(__dirname, '../logs/build');
 const VERSION_FILE = path.join(__dirname, '../src/lib/version.json');
 
+const { updateVersion } = require('./version-utils');
+
 function runBuild() {
     if (!fs.existsSync(LOGS_DIR)) fs.mkdirSync(LOGS_DIR, { recursive: true });
 
-    let version = 'unknown';
-    try {
-        const versionData = JSON.parse(fs.readFileSync(VERSION_FILE, 'utf8'));
-        version = versionData.version;
-    } catch (e) {}
+    // Auto-increment version before build
+    const version = updateVersion('Build', 'Automated build initiated via npm run build');
 
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const date = new Date().toISOString().split('T')[0];

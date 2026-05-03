@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { scanAadhaarCard } from '@/ai/flows/scan-aadhaar';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {

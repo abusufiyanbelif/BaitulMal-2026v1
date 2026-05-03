@@ -59,9 +59,11 @@ function generateIndex() {
 
         const stats = fs.statSync(fullPath);
 
+        const projectRelativePath = path.relative(path.join(__dirname, '..'), fullPath).replace(/\\/g, '/');
+
         return {
             id: index + 1,
-            path: fullPath,
+            path: projectRelativePath,
             route: route || '/',
             name: route.split('/').pop() || 'Home',
             purpose: purposeMatch ? purposeMatch[1] : 'Application Module',
@@ -120,11 +122,14 @@ function scanDir(dir) {
     if (!fs.existsSync(dir)) return [];
     return fs.readdirSync(dir)
         .filter(f => f.endsWith('.md'))
-        .map(f => ({
-            name: f,
-            path: path.join(dir, f),
-            updatedAt: fs.statSync(path.join(dir, f)).mtime.toISOString()
-        }));
+        .map(f => {
+            const fullFilePath = path.join(dir, f);
+            return {
+                name: f,
+                path: path.relative(path.join(__dirname, '..'), fullFilePath).replace(/\\/g, '/'),
+                updatedAt: fs.statSync(fullFilePath).mtime.toISOString()
+            };
+        });
 }
 
 generateIndex();

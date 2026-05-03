@@ -77,6 +77,9 @@ const donationSchema = z.object({
   paymentMethod: z.enum(['UPI', 'Bank Transfer']),
   paymentProvider: z.string().min(1, "Please select a payment provider."),
   transactionId: z.string().min(4, "Transaction Reference ID is required."),
+  donationDate: z.string().min(1, "Donation Date is required."),
+  referral: z.string().optional(),
+  suggestions: z.string().optional(),
   notes: z.string().optional(),
   isTypeSplit: z.boolean().default(false),
   typeSplit: z.array(z.object({
@@ -104,6 +107,8 @@ interface PublicDonationFormProps {
 
 import { useFieldArray } from 'react-hook-form';
 import { storageRef, uploadBytes, getDownloadURL, useStorage } from '@/firebase';
+import { useSession } from '@/hooks/use-session';
+import type { Donor } from '@/lib/types';
 
 export function PublicDonationForm({ 
     initialCampaignId, 
@@ -125,6 +130,8 @@ export function PublicDonationForm({
     const [isViewerOpen, setIsViewerOpen] = useState(false);
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0);
+    const { userProfile, isContributor } = useSession();
+    const [scanMatchInfo, setScanMatchInfo] = useState<{ match: boolean; message: string } | null>(null);
 
     const form = useForm<DonationFormValues>({
         resolver: zodResolver(donationSchema),
@@ -136,6 +143,9 @@ export function PublicDonationForm({
             paymentMethod: 'UPI',
             paymentProvider: '',
             transactionId: '',
+            donationDate: '', // Empty initially to avoid hydration mismatch
+            referral: '',
+            suggestions: '',
             notes: '',
             isTypeSplit: false,
             typeSplit: [{ category: 'Sadaqah', amount: 0, forFundraising: false }],
@@ -147,6 +157,17 @@ export function PublicDonationForm({
     const { control, watch, setValue, getValues, register, handleSubmit } = form;
     const { fields: typeSplitFields, append: appendTypeSplit, remove: removeTypeSplit, replace: replaceTypeSplit } = useFieldArray({ control, name: "typeSplit" });
     const { fields: linkSplitFields, append: appendLinkSplit, remove: removeLinkSplit, replace: replaceLinkSplit } = useFieldArray({ control, name: "linkSplit" });
+
+    // Auto-fill donor details if logged in
+    useEffect(() => {
+        if (userProfile && isContributor) {
+            setValue('donorName', userProfile.name || '', { shouldValidate: true });
+            setValue('donorPhone', (userProfile as any).phone || '', { shouldValidate: true });
+            setValue('donorEmail', (userProfile as any).email || '', { shouldValidate: true });
+        }
+        // Set date after mount to avoid hydration mismatch
+        setValue('donationDate', new Date().toISOString().split('T')[0]);
+    }, [userProfile, isContributor, setValue]);
 
     const paymentMethod = watch('paymentMethod');
     const totalAmount = watch('amount');
@@ -217,9 +238,25 @@ export function PublicDonationForm({
             if (response.amount) setValue('amount', response.amount, { shouldDirty: true, shouldValidate: true });
             if (response.transactionId) setValue('transactionId', response.transactionId, { shouldDirty: true, shouldValidate: true });
             if (response.upiId) setValue('paymentProvider', response.upiId, { shouldDirty: true, shouldValidate: true });
+            if (response.date) setValue('donationDate', response.date, { shouldDirty: true, shouldValidate: true });
             if (response.onlineProvider) setValue('paymentMethod', 'UPI');
             
-            toast({ title: 'AI Scan Successful', description: 'Transaction details extracted automatically.', variant: "success"});
+            // Cross-verify with donor profile
+            if (userProfile && isContributor) {
+                const donor = userProfile as unknown as Donor;
+                const scannedUpi = response.upiId?.toLowerCase().trim();
+                const knownUpis = (donor.upiIds || []).map(u => u.toLowerCase().trim());
+                
+                if (scannedUpi && knownUpis.includes(scannedUpi)) {
+                    setScanMatchInfo({ match: true, message: "Verified: This UPI ID matches your profile records." });
+                } else if (response.senderName && donor.name.toLowerCase().includes(response.senderName.toLowerCase())) {
+                    setScanMatchInfo({ match: true, message: "Likely Match: The sender name matches your profile." });
+                } else if (scannedUpi) {
+                    setScanMatchInfo({ match: false, message: "Note: This UPI ID is not in your saved records. We will link it to your profile upon submission." });
+                }
+            }
+
+            toast({ title: 'AI Scan Successful', description: 'Transaction details extracted and date synced.', variant: "success"});
         } catch (error: any) {
             toast({ title: 'Scan Failed', description: error.message || 'Error occurred while scanning.', variant: 'destructive'});
         } finally { 
@@ -274,7 +311,7 @@ export function PublicDonationForm({
                         <p className="text-muted-foreground font-normal">Your contribution of <span className="font-bold text-primary">₹{form.getValues('amount')}</span> has been received and is waiting for internal verification.</p>
                     </div>
                     <div className="p-4 bg-primary/[0.02] border border-primary/10 rounded-xl space-y-2">
-                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Donation Reference</p>
+                        <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Your Donation ID</p>
                         <p className="font-mono text-lg font-bold text-primary">{donationId}</p>
                     </div>
                     <div className="flex flex-col gap-2 pt-4">
@@ -295,9 +332,9 @@ export function PublicDonationForm({
                         <Card className="border-primary/10 shadow-lg bg-white overflow-hidden">
                             <CardHeader className="bg-primary/5 border-b">
                                 <CardTitle className="flex items-center gap-2 text-lg font-bold text-primary">
-                                    <HeartHandshake className="h-5 w-5" /> 1. Contribution Details
+                                    <HeartHandshake className="h-5 w-5" /> 1. Personal Details
                                 </CardTitle>
-                                <CardDescription className="font-normal">Tell us who you are and how much you'd like to share.</CardDescription>
+                                <CardDescription className="font-normal">Enter your details and the amount you want to donate.</CardDescription>
                             </CardHeader>
                             <CardContent className="pt-6 space-y-4">
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -330,24 +367,73 @@ export function PublicDonationForm({
                                     />
                                 </div>
 
-                                <FormField
-                                    control={control}
-                                    name="donorPhone"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">Phone Number (WhatsApp)</FormLabel>
-                                            <FormControl>
-                                                <Input placeholder="+91 0000000000" {...field} className="h-11 rounded-xl border-primary/10 transition-all font-normal" />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <FormField
+                                        control={control}
+                                        name="donorPhone"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">Phone (WhatsApp)</FormLabel>
+                                                <FormControl>
+                                                    <Input placeholder="+91 0000000000" {...field} className="h-11 rounded-xl border-primary/10 transition-all font-normal" />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                    <FormField
+                                        control={control}
+                                        name="paymentMethod"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">How did you pay?</FormLabel>
+                                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger className="h-11 rounded-xl border-primary/10">
+                                                            <SelectValue placeholder="Method" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent className="rounded-xl border-primary/10">
+                                                        <SelectItem value="UPI">Online / UPI App</SelectItem>
+                                                        <SelectItem value="Bank Transfer">Bank Transfer (NEFT/IMPS)</SelectItem>
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="paymentProvider"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">Using Which App/Bank?</FormLabel>
+                                                <Select onValueChange={field.onChange} value={field.value}>
+                                                    <FormControl>
+                                                        <SelectTrigger className="h-11 rounded-xl border-primary/10">
+                                                            <SelectValue placeholder="Select App/Bank" />
+                                                        </SelectTrigger>
+                                                    </FormControl>
+                                                    <SelectContent className="rounded-xl border-primary/10">
+                                                        {paymentMethod === 'UPI' ? (
+                                                            upiProviders.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)
+                                                        ) : (
+                                                            supportedBanks.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)
+                                                        )}
+                                                    </SelectContent>
+                                                </Select>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
 
                                 <div className="space-y-4 pt-4">
                                     <div className="flex items-center space-x-2">
                                         <Checkbox id="isTypeSplit" checked={isTypeSplit} onCheckedChange={(checked) => setValue('isTypeSplit', checked === true)} />
-                                        <Label htmlFor="isTypeSplit" className="text-xs font-bold text-primary cursor-pointer uppercase tracking-wider">Split By Designation (Category)</Label>
+                                        <Label htmlFor="isTypeSplit" className="text-xs font-bold text-primary cursor-pointer uppercase tracking-wider">Divide donation into multiple types</Label>
                                     </div>
 
                                     {isTypeSplit ? (
@@ -387,7 +473,7 @@ export function PublicDonationForm({
                                                 </div>
                                             ))}
                                             <Button type="button" variant="outline" size="sm" onClick={() => appendTypeSplit({ category: 'Sadaqah', amount: 0, forFundraising: false })} className="w-full text-[10px] font-bold uppercase tracking-widest h-8 rounded-lg border-dashed">
-                                                <Plus className="mr-2 h-3 w-3" /> Add Category
+                                                <Plus className="mr-2 h-3 w-3" /> Add More Types
                                             </Button>
                                         </div>
                                     ) : (
@@ -396,7 +482,7 @@ export function PublicDonationForm({
                                             name="typeSplit.0.category"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="font-bold text-[10px] uppercase tracking-widest opacity-60">Designation / Category</FormLabel>
+                                                    <FormLabel className="font-bold text-[10px] uppercase tracking-widest opacity-60">Donation Type (Category)</FormLabel>
                                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                         <FormControl>
                                                             <SelectTrigger className="h-11 rounded-xl border-primary/10">
@@ -416,7 +502,7 @@ export function PublicDonationForm({
                                 <div className="space-y-4 pt-4">
                                     <div className="flex items-center space-x-2">
                                         <Checkbox id="isSplit" checked={isLinkSplit} onCheckedChange={(checked) => setValue('isSplit', checked === true)} />
-                                        <Label htmlFor="isSplit" className="text-xs font-bold text-primary cursor-pointer uppercase tracking-wider">Allocate to Multiple Initiatives</Label>
+                                        <Label htmlFor="isSplit" className="text-xs font-bold text-primary cursor-pointer uppercase tracking-wider">Divide between different causes</Label>
                                     </div>
 
                                     {isLinkSplit ? (
@@ -468,11 +554,11 @@ export function PublicDonationForm({
                                             name="linkSplit.0.linkId"
                                             render={({ field }) => (
                                                 <FormItem>
-                                                    <FormLabel className="font-bold text-[10px] uppercase tracking-widest opacity-60">Target Initiative</FormLabel>
+                                                    <FormLabel className="font-bold text-[10px] uppercase tracking-widest opacity-60">Support a Specific Cause</FormLabel>
                                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                                         <FormControl>
                                                             <SelectTrigger className="h-11 rounded-xl border-primary/10">
-                                                                <SelectValue placeholder="Select Target..." />
+                                                                 <SelectValue placeholder="Select Target..." />
                                                             </SelectTrigger>
                                                         </FormControl>
                                                         <SelectContent className="rounded-xl border-primary/10">
@@ -487,15 +573,40 @@ export function PublicDonationForm({
                                         />
                                     )}
                                 </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-dashed">
+                                    <FormField
+                                        control={control}
+                                        name="donationDate"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="font-bold text-[10px] uppercase tracking-widest opacity-60">Donation Date</FormLabel>
+                                                <FormControl><Input type="date" {...field} className="h-11 rounded-xl border-primary/10 font-bold" /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="referral"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="font-bold text-[10px] uppercase tracking-widest opacity-60">How did you hear about us?</FormLabel>
+                                                <FormControl><Input placeholder="Who told you?" {...field} className="h-11 rounded-xl border-primary/10 font-normal" /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
                             </CardContent>
                         </Card>
 
                         <Card className="border-primary/10 shadow-lg bg-white overflow-hidden">
                             <CardHeader className="bg-primary/5 border-b">
                                 <CardTitle className="flex items-center gap-2 text-lg font-bold text-primary">
-                                    <Smartphone className="h-5 w-5" /> 2. Evidence Verification
+                                    <Smartphone className="h-5 w-5" /> 2. Upload Receipt
                                 </CardTitle>
-                                <CardDescription className="font-normal">Upload your payment screenshot for AI-powered verification.</CardDescription>
+                                <CardDescription className="font-normal">Upload your payment photo for quick checking.</CardDescription>
                             </CardHeader>
                             <CardContent className="pt-6 space-y-6">
                                 <FormField
@@ -503,7 +614,7 @@ export function PublicDonationForm({
                                     name="screenshotFile"
                                     render={({ field: { value, onChange, ...field } }) => (
                                         <FormItem>
-                                            <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">Payment Evidence (Screenshot)</FormLabel>
+                                            <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">Receipt Screenshot</FormLabel>
                                             <FormControl>
                                                 <Input 
                                                     type="file" 
@@ -518,14 +629,23 @@ export function PublicDonationForm({
                                 />
 
                                 {preview && (
-                                    <div className="relative group w-full h-48 rounded-2xl border border-primary/10 bg-slate-50 shadow-inner overflow-hidden">
-                                        <Image src={preview} alt="Evidence Preview" fill className="object-contain p-2" />
-                                        <div className="absolute inset-0 bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                                            <Button type="button" size="sm" onClick={handleScanScreenshot} disabled={isScanning} className="font-bold bg-white text-primary hover:bg-white/90">
-                                                {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />}
-                                                Auto-Fill With AI
-                                            </Button>
+                                    <div className="space-y-3">
+                                        <div className="relative w-full h-48 rounded-2xl border border-primary/10 bg-slate-50 shadow-inner overflow-hidden">
+                                            <Image src={preview} alt="Evidence Preview" fill className="object-contain p-2" />
                                         </div>
+                                        {scanMatchInfo && (
+                                            <div className={cn(
+                                                "p-3 rounded-xl text-xs font-bold flex items-start gap-2 animate-in fade-in slide-in-from-left-2",
+                                                scanMatchInfo.match ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "bg-amber-50 text-amber-700 border border-amber-100"
+                                            )}>
+                                                {scanMatchInfo.match ? <ShieldCheck className="h-4 w-4 shrink-0" /> : <AlertCircle className="h-4 w-4 shrink-0" />}
+                                                {scanMatchInfo.message}
+                                            </div>
+                                        )}
+                                        <Button type="button" onClick={handleScanScreenshot} disabled={isScanning} className="w-full h-10 font-bold bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100 transition-all">
+                                            {isScanning ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ScanLine className="mr-2 h-4 w-4" />}
+                                            Auto-Fill Details From Photo
+                                        </Button>
                                     </div>
                                 )}
 
@@ -549,9 +669,9 @@ export function PublicDonationForm({
                         <Card className="border-primary/10 shadow-lg bg-white overflow-hidden">
                             <CardHeader className="bg-primary/5 border-b">
                                 <CardTitle className="flex items-center gap-2 text-lg font-bold text-primary">
-                                    <QrCode className="h-5 w-5" /> Official Payment Details
+                                    <QrCode className="h-5 w-5" /> Payment Details
                                 </CardTitle>
-                                <CardDescription className="font-normal">Scan the QR or use the details below to transfer funds.</CardDescription>
+                                <CardDescription className="font-normal">Scan the code or use bank details to send money.</CardDescription>
                             </CardHeader>
                             <CardContent className="pt-6 space-y-8">
                                 {isPaymentLoading ? (
@@ -595,17 +715,30 @@ export function PublicDonationForm({
                                     </div>
                                 )}
 
-                                <FormField
-                                    control={control}
-                                    name="notes"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">Personal Message or Notes</FormLabel>
-                                            <FormControl><Textarea placeholder="Any specific requirements or message..." {...field} className="min-h-[100px] rounded-xl border-primary/10 font-normal resize-none" /></FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
+                                <div className="grid grid-cols-1 gap-4">
+                                    <FormField
+                                        control={control}
+                                        name="suggestions"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">Any Suggestions / Feedback?</FormLabel>
+                                                <FormControl><Input placeholder="How can we improve?" {...field} className="h-11 rounded-xl border-primary/10 font-normal" /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                    <FormField
+                                        control={control}
+                                        name="notes"
+                                        render={({ field }) => (
+                                            <FormItem>
+                                                <FormLabel className="font-bold text-xs uppercase tracking-widest opacity-60">Additional Notes</FormLabel>
+                                                <FormControl><Textarea placeholder="Any specific requirements or message..." {...field} className="min-h-[100px] rounded-xl border-primary/10 font-normal resize-none" /></FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
                             </CardContent>
                             <CardFooter className="bg-primary/5 border-t px-6 py-8 flex flex-col gap-4">
                                 <Button type="submit" disabled={isSubmitting} className="w-full h-14 rounded-2xl text-lg font-bold shadow-xl active:scale-95 transition-transform group">

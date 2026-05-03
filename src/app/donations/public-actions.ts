@@ -14,6 +14,9 @@ export interface PublicDonationSubmission {
     paymentMethod: 'UPI' | 'Bank Transfer';
     paymentProvider: string;
     transactionId: string;
+    referral?: string;
+    suggestions?: string;
+    donationDate?: string;
     notes?: string;
     isTypeSplit?: boolean;
     typeSplit?: { category: string; amount: number; forFundraising?: boolean }[];
@@ -41,6 +44,9 @@ export async function processPublicDonationAction(
             paymentMethod, 
             paymentProvider, 
             transactionId, 
+            referral,
+            suggestions,
+            donationDate,
             notes,
             isTypeSplit,
             typeSplit,
@@ -82,7 +88,7 @@ export async function processPublicDonationAction(
             id: `tx_${Date.now()}`,
             amount: amount,
             transactionId: transactionId,
-            date: new Date().toISOString().split('T')[0],
+            date: donationDate || new Date().toISOString().split('T')[0],
             upiId: paymentMethod === 'UPI' ? paymentProvider : undefined,
             screenshotUrl: screenshotUrl || '',
         };
@@ -154,17 +160,18 @@ export async function processPublicDonationAction(
             donorPhone,
             donorId,
             amount,
-            donationDate: new Date().toISOString().split('T')[0],
+            donationDate: donationDate || new Date().toISOString().split('T')[0],
             donationType: 'Online Payment',
             status: 'Pending',
             transactions: [transaction],
             linkSplit: finalLinkSplit,
             typeSplit: (isTypeSplit && typeSplit) ? typeSplit.map(s => ({ ...s, category: s.category as any })) : (typeSplit?.[0] ? [{ category: typeSplit[0].category as any, amount: amount, forFundraising: typeSplit[0].forFundraising }] : []),
             comments: notes,
+            suggestions: suggestions || '',
             uploadedBy: 'Public Gateway',
             uploadedById: 'public_gateway',
             createdAt: FieldValue.serverTimestamp(),
-            referral: 'Public Website'
+            referral: referral || 'Public Website'
         };
 
         await donationRef.set(donationRecord);

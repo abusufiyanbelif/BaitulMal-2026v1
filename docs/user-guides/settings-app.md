@@ -1,7 +1,7 @@
 # 📘 User Guide: /settings/app
     
-**Build Version:** `2026.05.02.18`
-**Last Updated:** 3/5/2026, 1:55:57 am
+**Build Version:** `2026.05.03.3`
+**Last Updated:** 3/5/2026, 5:43:50 am
 **Internal Route:** `/settings/app`
 
 ---
@@ -24,17 +24,17 @@ Application Module
 ## ⌨️ Fields & Data Mapping
 The following fields are mapped within this interface:
 - Visible
-- Neural Hero Headline
-- Subtext Context
+- Big Title / Headline
+- Short Description
 - {ticker.label}
 - Max Feed Items
 - Archive Depth
 - Update Vector
-- Primary UPI Handle
-- Mobile Vector
+- Your UPI ID
+- Mobile Number for Payment
 - Account Holder Name
 - Account Number
-- IFSC Vector
+- Bank IFSC Code
 - Inbound Portal (Donors)
 - Outbound Portal (Recipients)
 - Primary Auth Method

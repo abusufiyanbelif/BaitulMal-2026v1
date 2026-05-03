@@ -1,7 +1,7 @@
 # 📘 User Guide: /registry-index
     
-**Build Version:** `2026.05.02.18`
-**Last Updated:** 3/5/2026, 1:55:57 am
+**Build Version:** `2026.05.03.3`
+**Last Updated:** 3/5/2026, 5:43:50 am
 **Internal Route:** `/registry-index`
 
 ---
@@ -24,8 +24,10 @@ The following fields are mapped within this interface:
 - Input: Search by route, collection, field, or purpose...
 
 ## ⚡ Interactive Action Items
+- **Return to Home**: Interactive button to initiate return to home operation.
 - **Home**: Interactive button to initiate home operation.
 - **Open Spec**: Interactive button to initiate open spec operation.
+- **Dynamic Route**: Interactive button to initiate dynamic route operation.
 - **Go to Live View**: Interactive button to initiate go to live view operation.
 - **Prev**: Interactive button to initiate prev operation.
 - **Next**: Interactive button to initiate next operation.

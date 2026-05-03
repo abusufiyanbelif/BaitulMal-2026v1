@@ -36,7 +36,7 @@ import { updateUserAuthAction, mirrorIndividualUserToDonorAction, mirrorIndividu
 import { sendWhatsAppAction } from '@/app/messages/actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { recordAuditLogAction } from '@/app/audit/actions';
-import { generateChanges } from '@/lib/utils';
+import { generateChanges, serializeForAction } from '@/lib/utils';
 import { AuditHistory } from '@/components/audit-history';
 
 export default function UserDetailsPage() {
@@ -260,6 +260,8 @@ export default function UserDetailsPage() {
         organizationGroup: (data.organizationGroup === 'none' ? null : data.organizationGroup) as any,
         organizationRole: data.organizationRole,
         updatedAt: serverTimestamp(),
+        updatedById: currentUserProfile.id,
+        updatedByName: currentUserProfile.name,
     };
 
     if (data.password) {
@@ -322,9 +324,9 @@ export default function UserDetailsPage() {
             action: 'UPDATE',
             description: `User profile and permissions updated`,
             performedBy: { id: currentUserProfile.id, name: currentUserProfile.name },
-            changes: generateChanges(user, updateData),
-            originalValue: user,
-            newValue: updateData
+            changes: serializeForAction(generateChanges(user, updateData)),
+            originalValue: serializeForAction(user),
+            newValue: serializeForAction(updateData)
         });
 
         // --- TRIGGER SECURITY NOTIFICATION ---

@@ -40,7 +40,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useSession } from '@/hooks/use-session';
 import { updateDonorAction, deleteDonorAction } from '../actions';
-import { checkPendingVerificationAction } from '@/app/verifications/actions';
+import { checkPendingVerificationAction, cleanupPendingVerificationsAction } from '@/app/verifications/actions';
 import type { PendingVerification } from '@/lib/types';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -425,6 +425,8 @@ export default function DonorProfilePage() {
                 idNumber: formData.get('idNumber') as string || '',
                 idProofUrl: finalIdProofUrl,
                 panNumber: formData.get('panNumber') as string || '',
+                updatedById: userProfile.id,
+                updatedByName: userProfile.name,
             };
             const isApprovalRequired = configSettings?.verificationMode 
                 ? (configSettings.verificationMode !== 'Disabled' && configSettings.verificationMode !== 'disabled')
@@ -491,14 +493,14 @@ export default function DonorProfilePage() {
                         {canUpdate && !isEditMode && (
                             <Button 
                                 onClick={() => setIsEditMode(true)} 
-                                disabled={!!existingPendingRequest}
+                                disabled={!!existingPendingRequest && userProfile.role !== 'Admin'}
                                 className={cn(
                                     "font-bold shadow-sm active:scale-95 transition-transform h-9 px-4",
-                                    existingPendingRequest ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-white"
+                                    (existingPendingRequest && userProfile.role !== 'Admin') ? "bg-muted text-muted-foreground" : "bg-primary hover:bg-primary/90 text-white"
                                 )}
                             >
                                 <Edit className="mr-2 h-4 w-4"/> 
-                                {existingPendingRequest ? "Approval Pending" : "Edit Profile"}
+                                {existingPendingRequest ? (userProfile.role === 'Admin' ? "Admin Override" : "Approval Pending") : "Edit Profile"}
                             </Button>
                         )}
                         {canUpdate && (
@@ -1048,6 +1050,9 @@ export default function DonorProfilePage() {
                      isOptional={configSettings?.verificationMode === 'Optional' || configSettings?.verificationMode === 'optional'}
                      onBypass={async () => {
                          setIsVerificationDialogOpen(false);
+                         // Auto-cleanup stale verifications during administrative bypass
+                         await cleanupPendingVerificationsAction(donorId);
+                         
                          const res = await updateDonorAction(donorId, pendingUpdates, { id: userProfile.id, name: userProfile.name });
                          if (res.success) {
                              toast({ title: 'Profile Updated', description: 'Changes applied directly.', variant: 'success' });

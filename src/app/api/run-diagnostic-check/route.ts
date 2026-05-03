@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { runDiagnosticCheck } from '@/ai/flows/run-diagnostic-check';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {

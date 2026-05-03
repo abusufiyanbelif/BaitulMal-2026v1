@@ -43,57 +43,57 @@ export default function Home() {
 
     const allCards = [
         {
-            title: "Organization Campaigns",
-            description: "Manage Team Projects, Relief Efforts, And Charity Programs.",
+            title: "Our Campaigns",
+            description: "Manage projects, relief efforts, and charity programs.",
             href: "/campaign-members",
             icon: FolderKanban,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.campaigns.read', false),
         },
         {
-            title: "Public Appeals Hub",
-            description: "Track And Manage Individual Aid Cases And Community Requests.",
+            title: "Help Requests (Appeals)",
+            description: "Track and manage help requests from the community.",
             href: "/leads-members",
             icon: Lightbulb,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.read', false),
         },
         {
-            title: "Beneficiary Registry",
-            description: "Maintain The Master List Of All Deserving Families And Recipients.",
+            title: "People Receiving Help",
+            description: "See the list of families and recipients we support.",
             href: "/beneficiaries",
             icon: Users,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.beneficiaries.read', false),
         },
         {
             title: "Donor Profiles",
-            description: "Manage Donor Identity, History, And Community Relationships.",
+            description: "See details and history of people who donate.",
             href: "/donors",
             icon: HeartHandshake,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donors.read', false),
         },
         {
-            title: "Donation Records",
-            description: "Secure Access To All Verified Contributions And Payment Vouchers.",
+            title: "Donation List",
+            description: "See all donations and payment slips received.",
             href: "/donations",
             icon: IndianRupee,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations.read', false),
         },
         {
-            title: "Verification Pipeline",
-            description: "Audit And Approve Institutional Record Modifications.",
+            title: "Approve & Check",
+            description: "Check and approve new entries or changes in the system.",
             href: "/verifications",
             icon: ShieldCheck,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.read', false),
         },
         {
-            title: "Guidance Center",
-            description: "Manage Help Documents, Local Schemes, And Support Resources.",
+            title: "Help Guides",
+            description: "See help documents and government schemes info.",
             href: "/guidance",
             icon: BookOpen,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.guidance.read', false),
         },
         {
-            title: "Smart Document Scanner",
-            description: "AI Tools For Scanning Forms, Bills, And Identity Proofs.",
+            title: "AI File Scanner",
+            description: "Scan identity cards, bills, and forms automatically.",
             href: "/extractor",
             icon: ScanSearch,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.extractor.read', false),
@@ -113,22 +113,22 @@ export default function Home() {
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.read', false),
         },
         {
-            title: "Impact Analytics",
-            description: "Explore Visual Reports On Growth And Data Usage Trends.",
+            title: "Charts & Reports",
+            description: "See reports and charts of our progress.",
             href: "/analytics",
             icon: BarChart,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.analytics.read', false),
         },
         {
-            title: "Messaging Module",
-            description: "Monitor All Notifications, WhatsApp Alerts, And Message Templates.",
+            title: "Messages & Alerts",
+            description: "Check WhatsApp messages and other notifications.",
             href: "/messages",
             icon: MessageSquare,
             isVisible: userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.messages.read', false),
         },
         {
-            title: "My Donor Portal",
-            description: "Switch To Personal View To See Your Own Contributions And Receipts.",
+            title: "My Donor Profile",
+            description: "See your own donations and slips.",
             href: "/donor-portal",
             icon: HeartHandshake,
             isVisible: isContributor,
@@ -156,7 +156,7 @@ export default function Home() {
                                 <Activity className="h-6 w-6" />
                             </div>
                             <div>
-                                <p className="text-sm font-black text-red-900 uppercase tracking-tight">Critical Infrastructure Alert</p>
+                                <p className="text-sm font-black text-red-900 uppercase tracking-tight">WhatsApp System Problem</p>
                                 <p className="text-xs text-red-700 font-medium leading-relaxed">
                                     WhatsApp Notification System is <strong>{resourceSettings?.waPlanDetails?.status || 'OFFLINE'}</strong>. 
                                     Automated tray alerts for donors and members are currently suspended.
@@ -226,7 +226,7 @@ export default function Home() {
                     <Card className="glass-card border-primary/10 overflow-hidden group hover:border-primary/20 transition-all duration-500">
                         <CardHeader className="bg-primary/5 py-4">
                             <CardTitle className="text-md font-bold text-primary flex items-center gap-2 tracking-tight">
-                                <Database className="h-5 w-5 opacity-40 group-hover:rotate-12 transition-transform"/> Mobile App Connectivity
+                                <Database className="h-5 w-5 opacity-40 group-hover:rotate-12 transition-transform"/> Mobile App Settings
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-6">
@@ -257,7 +257,7 @@ export default function Home() {
                     <Card className="glass-card border-primary/10 overflow-hidden group hover:border-primary/20 transition-all duration-500">
                         <CardHeader className="bg-primary/5 py-4">
                             <CardTitle className="text-md font-bold text-primary flex items-center gap-2 tracking-tight">
-                                <FlaskConical className="h-5 w-5 opacity-40 group-hover:rotate-12 transition-transform"/> Real-time Sync Status
+                                <FlaskConical className="h-5 w-5 opacity-40 group-hover:rotate-12 transition-transform"/> Live Sync Status
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="p-6 flex items-center justify-center min-h-[160px]">
@@ -269,8 +269,8 @@ export default function Home() {
                                     <span className="absolute top-0 right-0 h-4 w-4 bg-green-500 border-2 border-white rounded-full shadow-sm"></span>
                                 </div>
                                 <div className="space-y-1">
-                                    <h4 className="text-sm font-bold text-primary">Bi-Directional Sync Active</h4>
-                                    <p className="text-[10px] text-muted-foreground font-normal tracking-tight">Cloud verification latency: <span className="text-green-600 font-bold">14ms</span></p>
+                                    <h4 className="text-sm font-bold text-primary">Everything is Up to Date</h4>
+                                    <p className="text-[10px] text-muted-foreground font-normal tracking-tight">System is working correctly</p>
                                 </div>
                             </div>
                         </CardContent>

@@ -173,3 +173,13 @@ export function getImageSrc(url: string | null | undefined): string {
     return url;
 }
 
+/**
+ * Converts any object into a plain object safe for Next.js Server Actions.
+ * This removes non-serializable properties like class instances (e.g. Firestore Timestamps).
+ */
+export function serializeForAction<T>(data: T): T {
+    if (data === null || data === undefined) return data;
+    return JSON.parse(JSON.stringify(data, (key, value) => 
+        value === undefined ? null : value
+    ));
+}

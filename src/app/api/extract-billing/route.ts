@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { extractBillingDataFromImage } from '@/ai/flows/extract-billing-data';
+export const dynamic = 'force-dynamic';
 
 export async function POST(req: Request) {
   try {

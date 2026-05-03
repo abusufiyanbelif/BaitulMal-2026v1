@@ -1,7 +1,7 @@
 # 📘 User Guide: /settings/resources
     
-**Build Version:** `2026.05.02.18`
-**Last Updated:** 3/5/2026, 1:55:57 am
+**Build Version:** `2026.05.03.3`
+**Last Updated:** 3/5/2026, 5:43:50 am
 **Internal Route:** `/settings/resources`
 
 ---
@@ -28,14 +28,14 @@ The following fields are mapped within this interface:
 - Meta Permanent Access Token
 - Phone Number ID
 - WABA ID
-- Automated WhatsApp Alerts
+- Auto WhatsApp Messages
 - WhatsApp Subscription Detail
 - Plan Name
 - Price & Currency
 - Expiry Date
 - Subscription Status
 - Test WhatsApp Connection
-- Enable Telegram Alerts
+- Enable Telegram Messages
 - Bot API Token
 - Target Chat ID
 - Public Base URL
@@ -61,7 +61,7 @@ The following fields are mapped within this interface:
 
 ## ⚡ Interactive Action Items
 - **Raise Internal Fund**: Interactive button to initiate raise internal fund operation.
-- **View Resource Ledger**: Interactive button to initiate view resource ledger operation.
+- **See Payment History**: Interactive button to initiate see payment history operation.
 - **Send Test**: Interactive button to initiate send test operation (Triggers handleSendTest).
 - **handleSendTest**: Internal logic handler for SendTest workflow.
 - **handleTestTelegram**: Internal logic handler for TestTelegram workflow.

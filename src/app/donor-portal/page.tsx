@@ -57,7 +57,7 @@ export default function DonorPortalPage() {
     const { data: donations, isLoading: isDonationsLoading } = useCollection<Donation>(donationsRef);
 
     if (isSessionLoading || isDonationsLoading) {
-         return <BrandedLoader message="Syncing Your Impact Records..." />;
+         return <BrandedLoader message="Loading Your Donations..." />;
     }
 
     if (!userProfile || userProfile.role !== 'Donor') {
@@ -134,7 +134,7 @@ export default function DonorPortalPage() {
                     <div>
                         <h1 className="text-xl sm:text-3xl font-black tracking-tight text-slate-900">Assalam-o-Alaikum, {userProfile.name?.split(' ')[0]}</h1>
                         <p className="text-slate-500 font-bold uppercase tracking-widest text-[9px] sm:text-[10px] flex items-center gap-2 mt-1">
-                            <ShieldCheck className="h-3 w-3 text-primary" /> Verified Institutional Donor Profile
+                            <ShieldCheck className="h-3 w-3 text-primary" /> Verified Donor Profile
                         </p>
                     </div>
                 </div>
@@ -148,7 +148,7 @@ export default function DonorPortalPage() {
                     <Button asChild className="flex-1 lg:flex-none font-bold shadow-lg shadow-primary/20 rounded-xl h-10 sm:h-12 px-4 sm:px-6 text-xs sm:text-sm">
                         <Link href="/donate">
                             <CreditCard className="mr-2 h-4 w-4" />
-                            Contribute
+                            Donate Now
                         </Link>
                     </Button>
                 </div>
@@ -159,7 +159,7 @@ export default function DonorPortalPage() {
                 <Card className="border-none shadow-xl shadow-slate-200/40 bg-white group hover:scale-[1.02] transition-transform cursor-pointer overflow-hidden" onClick={() => router.push('/donor-portal/donations')}>
                     <div className="absolute top-0 left-0 w-1 h-full bg-green-500" />
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Lifetime Impact</CardTitle>
+                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Donated</CardTitle>
                         <HeartHandshake className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                     </CardHeader>
                     <CardContent>
@@ -167,7 +167,7 @@ export default function DonorPortalPage() {
                             {formatCurrency(totalImpact)}
                         </div>
                         <div className="mt-2 flex items-center gap-2 text-[9px] sm:text-[10px] font-bold text-green-600 uppercase tracking-widest">
-                            <Activity className="h-3 w-3" /> {verifiedDonations.length} Verified Contributions
+                            <Activity className="h-3 w-3" /> {verifiedDonations.length} Approved Donations
                         </div>
                     </CardContent>
                 </Card>
@@ -175,7 +175,7 @@ export default function DonorPortalPage() {
                 <Card className="border-none shadow-xl shadow-slate-200/40 bg-white group hover:scale-[1.02] transition-transform cursor-pointer overflow-hidden" onClick={() => router.push('/donor-portal/donations')}>
                     <div className="absolute top-0 left-0 w-1 h-full bg-orange-500" />
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Processing Audits</CardTitle>
+                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest">Waiting for Check</CardTitle>
                         <WalletCards className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
                     </CardHeader>
                     <CardContent>
@@ -183,14 +183,14 @@ export default function DonorPortalPage() {
                             {pendingCount}
                         </div>
                         <div className="mt-2 text-[9px] sm:text-[10px] font-bold text-orange-600 uppercase tracking-widest flex items-center gap-2">
-                            <Activity className="h-3 w-3" /> Institutional Clearance
+                            <Activity className="h-3 w-3" /> Pending Approval
                         </div>
                     </CardContent>
                 </Card>
 
                 <Card className="border-none shadow-xl shadow-slate-200/40 bg-slate-900 text-white group hover:scale-[1.02] transition-transform cursor-pointer overflow-hidden" onClick={() => router.push('/donor-portal/profile')}>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-white/40 uppercase tracking-widest">Loyalty Status</CardTitle>
+                        <CardTitle className="text-[9px] sm:text-[10px] font-bold text-white/40 uppercase tracking-widest">Donor Level</CardTitle>
                         <ShieldCheck className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                     </CardHeader>
                     <CardContent>
@@ -210,7 +210,7 @@ export default function DonorPortalPage() {
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
                             <CardTitle className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-                                <PieChartIcon className="h-5 w-5 text-primary" /> Contribution Mix
+                                <PieChartIcon className="h-5 w-5 text-primary" /> Where you donated
                             </CardTitle>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Allocation by Purpose</p>
                         </div>
@@ -249,7 +249,7 @@ export default function DonorPortalPage() {
                     <CardHeader className="flex flex-row items-center justify-between">
                         <div>
                             <CardTitle className="text-lg font-black text-slate-900 tracking-tight flex items-center gap-2">
-                                <TrendingUp className="h-5 w-5 text-primary" /> Monthly Impact
+                                <TrendingUp className="h-5 w-5 text-primary" /> Monthly Progress
                             </CardTitle>
                             <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Contribution Trend (6m)</p>
                         </div>
@@ -289,11 +289,11 @@ export default function DonorPortalPage() {
                             <Table>
                                 <TableHeader className="bg-slate-50/30">
                                     <TableRow className="border-slate-100 hover:bg-transparent">
-                                        <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400 pl-8 py-4">Timeline</TableHead>
-                                        <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400">Impact</TableHead>
-                                        <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400">Allocation</TableHead>
+                                        <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400 pl-8 py-4">Date</TableHead>
+                                        <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400">Amount</TableHead>
+                                        <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400">Used For</TableHead>
                                         <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400">Status</TableHead>
-                                        <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400 text-right pr-8">Audit</TableHead>
+                                        <TableHead className="font-bold text-[10px] uppercase tracking-widest text-slate-400 text-right pr-8">Receipt</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
@@ -352,8 +352,8 @@ export default function DonorPortalPage() {
                 {/* Impact by Cause List */}
                 <Card className="border-none shadow-2xl shadow-slate-200/50 bg-white rounded-3xl overflow-hidden">
                     <CardHeader className="bg-slate-900 px-8 py-6 border-b border-white/10">
-                        <CardTitle className="text-lg font-black text-white tracking-tight">Cause Allocation</CardTitle>
-                        <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Top Impact Areas</p>
+                        <CardTitle className="text-lg font-black text-white tracking-tight">Donation Categories</CardTitle>
+                        <p className="text-white/40 text-[10px] font-bold uppercase tracking-widest">Main Help Areas</p>
                     </CardHeader>
                     <CardContent className="p-0">
                         <div className="divide-y divide-slate-100">

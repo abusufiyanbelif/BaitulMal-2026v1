@@ -1,7 +1,7 @@
 # 🏗️ Institutional Data Architecture
 
-**Build Version:** `2026.05.02.18`
-**Last Updated:** 3/5/2026, 1:55:57 am
+**Build Version:** `2026.05.03.3`
+**Last Updated:** 3/5/2026, 5:43:50 am
 
 Mapping between Application Modules and Firestore Collections.
 

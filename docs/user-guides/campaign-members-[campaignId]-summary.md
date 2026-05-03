@@ -1,7 +1,7 @@
 # 📘 User Guide: /campaign-members/[campaignId]/summary
     
-**Build Version:** `2026.05.02.18`
-**Last Updated:** 3/5/2026, 1:55:56 am
+**Build Version:** `2026.05.03.3`
+**Last Updated:** 3/5/2026, 5:43:50 am
 **Internal Route:** `/campaign-members/[campaignId]/summary`
 
 ---
@@ -26,10 +26,10 @@ The following fields are mapped within this interface:
 - Global Image Gallery
 - Category
 - Priority
-- Operational Status
-- Verification Level
-- Public Visibility
-- Target Amount (₹)
+- Campaign Status
+- Check Status
+- Show on Website
+- Target Goal (₹)
 - Description
 - Start Date
 - End Date
@@ -39,7 +39,7 @@ The following fields are mapped within this interface:
 - Price Quoted Date
 - Donation Types Included In Goal
 - {type}
-- Mission Description
+- What we're doing
 - Upload New Files
 - Manage Saved Documents
 - Public

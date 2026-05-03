@@ -334,6 +334,8 @@ export interface Campaign extends DocumentData {
   updatedAt?: Timestamp | FieldValue;
   createdById?: string;
   createdByName?: string;
+  updatedById?: string;
+  updatedByName?: string;
 }
 
 export interface Lead extends DocumentData {
@@ -373,6 +375,8 @@ export interface Lead extends DocumentData {
   updatedAt?: Timestamp | FieldValue;
   createdById?: string;
   createdByName?: string;
+  updatedById?: string;
+  updatedByName?: string;
   // Education fields
   degree?: string;
   year?: string;
@@ -465,6 +469,8 @@ export interface Donor extends DocumentData {
   updatedAt?: Timestamp | FieldValue;
   createdById?: string;
   createdByName?: string;
+  updatedById?: string;
+  updatedByName?: string;
   panNumber?: string;
 }
 
@@ -513,6 +519,9 @@ export interface Donation extends DocumentData {
   campaignName?: string;
   contributionFromDate?: string;
   contributionToDate?: string;
+  updatedById?: string;
+  updatedByName?: string;
+  updatedAt?: Timestamp | FieldValue;
 }
 
 export interface UserProfile extends DocumentData {
@@ -548,6 +557,8 @@ export interface UserProfile extends DocumentData {
   bankDetails?: BankDetail[];
   upiIds?: string[];
   updatedAt?: Timestamp | FieldValue;
+  updatedById?: string;
+  updatedByName?: string;
 }
  
 export interface PendingVerification extends DocumentData {

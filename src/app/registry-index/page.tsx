@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 
 import { 
@@ -30,6 +30,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useSession } from '@/hooks/use-session';
+import { BrandedLoader } from '@/components/branded-loader';
+import { AlertCircle } from 'lucide-react';
 import registryData from '@/lib/registry-index.json';
 import versionData from '@/lib/version.json';
 import { cn } from '@/lib/utils';
@@ -37,6 +40,12 @@ import { cn } from '@/lib/utils';
 // Purpose: Administrative Registry Index and Navigational Map
 
 export default function RegistryIndexPage() {
+    const { userProfile, isLoading: isSessionLoading } = useSession();
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
     const [searchQuery, setSearchQuery] = useState('');
     
     const pages = (registryData.pages || []) as any[];
@@ -58,6 +67,25 @@ export default function RegistryIndexPage() {
         doc.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    if (isSessionLoading) return <BrandedLoader />;
+
+    if (userProfile?.role !== 'Admin') {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-6 text-center">
+                <div className="p-4 bg-red-50 rounded-full mb-6">
+                    <AlertCircle className="h-16 w-16 text-destructive" />
+                </div>
+                <h1 className="text-3xl font-black text-primary tracking-tight">Access Restricted</h1>
+                <p className="text-slate-500 font-bold max-w-md mt-2">
+                    This Website Page List is for Admin use only.
+                </p>
+                <Link href="/" className="mt-8">
+                    <Button className="h-12 px-8 rounded-xl font-bold">Return to Home</Button>
+                </Link>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen bg-[#f8fafc] p-6 md:p-12 font-sans selection:bg-emerald-100">
             <div className="max-w-7xl mx-auto space-y-16 animate-in fade-in slide-in-from-bottom-4 duration-1000">
@@ -75,15 +103,15 @@ export default function RegistryIndexPage() {
                                     <Compass className="h-8 w-8 text-white" />
                                 </div>
                                 <div>
-                                    <h1 className="text-4xl font-black tracking-tight text-slate-900 uppercase">Registry Index Map</h1>
+                                    <h1 className="text-4xl font-black tracking-tight text-slate-900 uppercase">Site Map</h1>
                                     <div className="flex items-center gap-2 mt-1">
-                                        <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100 text-[10px] font-black uppercase">Deep Scan Active</Badge>
-                                        <span className="text-slate-400 text-xs font-bold">• Institutional Technical Hub</span>
+                                        <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-100 text-[10px] font-black uppercase">Live List</Badge>
+                                        <span className="text-slate-400 text-xs font-normal">• All Pages & Help Guides</span>
                                     </div>
                                 </div>
                             </div>
                             <p className="text-slate-500 font-medium max-w-2xl text-lg leading-relaxed">
-                                A comprehensive multi-dimensional map of the BaitulMal 2026v1 platform, integrating architecture, operational guides, and real-time interface metadata.
+                                A full list of all pages, tools, and guides available on the BaitulMal 2026v1 website.
                             </p>
                         </div>
                         
@@ -151,7 +179,7 @@ export default function RegistryIndexPage() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="h-10 w-1.5 bg-sky-500 rounded-full" />
-                            <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">🏗️ System Architecture & Data Maps</h2>
+                            <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">🏗️ System Info & Data Maps</h2>
                         </div>
                         <Badge variant="outline" className="rounded-full border-sky-100 bg-sky-50 text-sky-700 font-bold px-4">Core Infrastructure</Badge>
                     </div>
@@ -171,10 +199,10 @@ export default function RegistryIndexPage() {
                                     </div>
                                     <div className="flex-1 space-y-2">
                                         <h3 className="text-xl font-black text-slate-900 group-hover:text-sky-700 transition-colors">{doc.name}</h3>
-                                        <p className="text-sm font-medium text-slate-500 leading-relaxed">Integrated technical mapping for institutional data integrity and scale.</p>
+                                        <p className="text-sm font-normal text-slate-500 leading-relaxed">Details about how our system handles data and records.</p>
                                     </div>
                                     <div className="mt-8 pt-6 border-t border-slate-100 flex items-center justify-between">
-                                        <span className="text-[10px] font-bold text-slate-400">v2026.1.0</span>
+                                        <span className="text-[10px] font-normal text-slate-400">v2026.1.0</span>
                                         <Button variant="ghost" size="sm" className="rounded-full text-sky-600 font-bold hover:bg-sky-100">
                                             Open Spec <ExternalLink className="ml-2 h-3 w-3" />
                                         </Button>
@@ -190,7 +218,7 @@ export default function RegistryIndexPage() {
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div className="h-10 w-1.5 bg-emerald-500 rounded-full" />
-                            <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">📱 Application Modules & Deep Metadata</h2>
+                            <h2 className="text-2xl font-black text-slate-800 uppercase tracking-tight">📱 All Website Pages</h2>
                         </div>
                         <Badge variant="outline" className="rounded-full border-emerald-100 bg-emerald-50 text-emerald-700 font-bold px-4">Interactive Registry</Badge>
                     </div>
@@ -206,25 +234,34 @@ export default function RegistryIndexPage() {
                                         </Badge>
                                         <div className="space-y-1">
                                             <h3 className="text-2xl font-black text-slate-900 tracking-tight leading-none uppercase group-hover:text-emerald-700 transition-colors">{page.name}</h3>
-                                            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em]">{page.purpose}</p>
+                                            <p className="text-[10px] font-normal text-slate-400 uppercase tracking-[0.2em]">{page.purpose}</p>
                                         </div>
                                     </div>
 
                                     <div className="space-y-4 pt-8">
-                                        <Link href={page.route} className="block">
-                                            <Button className="w-full h-12 rounded-[1.2rem] bg-white border border-slate-200 text-slate-900 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 shadow-sm transition-all duration-300 font-black text-xs uppercase tracking-wider">
-                                                Go to Live View
-                                            </Button>
-                                        </Link>
+                                        {page.route.includes('[') ? (
+                                            <div className="space-y-2">
+                                                <Button disabled className="w-full h-12 rounded-[1.2rem] bg-slate-100 border border-slate-200 text-slate-400 font-black text-xs uppercase tracking-wider cursor-not-allowed">
+                                                    Dynamic Route
+                                                </Button>
+                                                <p className="text-[9px] font-normal text-amber-600 text-center uppercase tracking-tighter">Requires ID</p>
+                                            </div>
+                                        ) : (
+                                            <Link href={page.route} className="block">
+                                                <Button className="w-full h-12 rounded-[1.2rem] bg-white border border-slate-200 text-slate-900 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 shadow-sm transition-all duration-300 font-black text-xs uppercase tracking-wider">
+                                                    Go to Live View
+                                                </Button>
+                                            </Link>
+                                        )}
                                         <div className="flex gap-2">
-                                            {page.prev && (
+                                            {page.prev && !page.prev.includes('[') && (
                                                 <Link href={page.prev} className="flex-1">
                                                     <Button variant="ghost" size="sm" className="w-full rounded-xl text-[9px] font-black uppercase text-slate-400 hover:text-emerald-600 hover:bg-emerald-50">
                                                         <ArrowLeft className="mr-1 h-3 w-3" /> Prev
                                                     </Button>
                                                 </Link>
                                             )}
-                                            {page.next && (
+                                            {page.next && !page.next.includes('[') && (
                                                 <Link href={page.next} className="flex-1">
                                                     <Button variant="ghost" size="sm" className="w-full rounded-xl text-[9px] font-black uppercase text-slate-400 hover:text-emerald-600 hover:bg-emerald-50">
                                                         Next <ArrowRight className="ml-1 h-3 w-3" />
@@ -240,7 +277,7 @@ export default function RegistryIndexPage() {
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-3 text-slate-300">
                                             <Clock className="h-4 w-4" />
-                                            <span className="text-[10px] font-bold uppercase tracking-widest">Last Sync: {new Date(page.updatedAt).toLocaleDateString()}</span>
+                                            <span className="text-[10px] font-normal uppercase tracking-widest">Last Sync: {isMounted ? new Date(page.updatedAt).toLocaleDateString() : '2026-05-01'}</span>
                                         </div>
                                         <Badge variant="outline" className="rounded-lg text-[9px] font-black border-slate-100 text-slate-400">{page.route}</Badge>
                                     </div>
@@ -357,8 +394,8 @@ export default function RegistryIndexPage() {
                         </div>
                         
                         <div className="text-center space-y-2">
-                            <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.5em]">Institutional Intelligence Ledger</p>
-                            <p className="text-xs font-bold text-slate-300 tracking-wide">BaitulMal 2026v1 Infrastructure • Secure Operational Environment</p>
+                            <p className="text-[11px] font-black text-slate-400 uppercase tracking-[0.5em]">Website System Map</p>
+                            <p className="text-xs font-bold text-slate-300 tracking-wide">BaitulMal 2026v1 System • Secure Website Area</p>
                         </div>
                         
                         <div className="flex items-center gap-6">

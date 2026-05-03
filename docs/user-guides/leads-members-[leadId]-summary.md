@@ -1,7 +1,7 @@
 # 📘 User Guide: /leads-members/[leadId]/summary
     
-**Build Version:** `2026.05.02.18`
-**Last Updated:** 3/5/2026, 1:55:57 am
+**Build Version:** `2026.05.03.3`
+**Last Updated:** 3/5/2026, 5:43:50 am
 **Internal Route:** `/leads-members/[leadId]/summary`
 
 ---
@@ -25,11 +25,11 @@ Application Module
 The following fields are mapped within this interface:
 - Upload Image
 - Global Image Gallery
-- Purpose Type
+- Type of Help
 - Priority Level
-- Operational Status
-- Verification Level
-- Public Visibility
+- Request Status
+- Check Status
+- Show on Website
 - Degree
 - Year
 - Semester
@@ -37,23 +37,23 @@ The following fields are mapped within this interface:
 - Stage
 - Seriousness
 - Description
-- Required Amount (₹)
-- Target Amount (₹)
+- Money Needed (₹)
+- Target Goal (₹)
 - Start Date
 - End Date
 - Shop Name
 - Shop Contact
 - Shop Address
 - Price Quoted Date
-- Institutional Notes (Private)
-- Allowed Donation Types For Goal
+- Internal Notes (Private)
+- Donation Types for this Goal
 - {type}
 - Upload New Files
 - Manage Saved Documents
 - Public
 
 ## ⚡ Interactive Action Items
-- **All Appeals**: Interactive button to initiate all appeals operation.
+- **All Help Requests**: Interactive button to initiate all help requests operation.
 - **Download**: Interactive button to initiate download operation.
 - **Secure Changes**: Interactive button to initiate secure changes operation (Triggers handleSave).
 - **{ e.preventDefault(); handleRemoveImage(); }}>**: Interactive button to initiate { e.preventdefault(); handleremoveimage(); }}> operation (Triggers (e) => { e.preventDefault(); handleRemoveImage(); ).
