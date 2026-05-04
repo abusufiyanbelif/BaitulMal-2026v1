@@ -11,6 +11,9 @@ function getGitInfo() {
         const remote = execSync('git remote get-url origin').toString().trim();
         const repo = remote.split('/').pop().replace('.git', '');
         
+        // Check for uncommitted changes
+        const isDirty = execSync('git status --porcelain').toString().trim().length > 0;
+        
         // Get the last commit that is NOT a release commit
         const lastNonRelease = execSync('git log --grep="^release: " --invert-grep -1 --pretty=%B').toString().trim();
         const lines = lastNonRelease.split('\n');
@@ -18,9 +21,9 @@ function getGitInfo() {
         
         // Try to parse structured fields if they exist in the commit message
         let type = 'Build';
-        let message = subject;
+        let message = isDirty ? `${subject} (with local changes)` : subject;
         let reference = 'n/a';
-        let steps = 'Manual verification required.';
+        let steps = isDirty ? 'Uncommitted changes detected. Manual verification required.' : 'Manual verification required.';
 
         lines.forEach(line => {
             if (line.toLowerCase().startsWith('type:')) {
@@ -29,7 +32,7 @@ function getGitInfo() {
             }
             if (line.toLowerCase().startsWith('message:')) {
                 const parts = line.split(':');
-                if (parts.length > 1) message = parts.slice(1).join(':').trim();
+                if (parts.length > 1) message = isDirty ? `${parts.slice(1).join(':').trim()} (local)` : parts.slice(1).join(':').trim();
             }
             if (line.toLowerCase().startsWith('reference:')) {
                 const parts = line.split(':');
@@ -41,20 +44,17 @@ function getGitInfo() {
             }
         });
 
-        // Use the commit hash of the ACTUAL last commit (which might be the release commit)
-        // or should we use the hash of the last NON-release commit?
-        // Usually, the release hash is what's being built.
-        
-        return { hash, branch, repo, type, message, reference, steps };
+        return { hash, branch, repo, type, message, reference, steps, isDirty };
     } catch (e) {
         return { 
             hash: 'n/a', 
             branch: 'n/a', 
             repo: 'BaitulMal-2026v1', 
             type: 'Build', 
-            message: 'Automated build update', 
+            message: 'Manual Build (Git Error)', 
             reference: 'n/a', 
-            steps: 'Manual verification required.' 
+            steps: 'Manual verification required.',
+            isDirty: true
         };
     }
 }

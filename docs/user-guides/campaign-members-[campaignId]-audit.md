@@ -1,7 +1,7 @@
 # 📘 User Guide: /campaign-members/[campaignId]/audit
     
-**Build Version:** `2026.05.05.7`
-**Last Updated:** 5/5/2026, 2:51:35 am
+**Build Version:** `2026.05.05.10`
+**Last Updated:** 5/5/2026, 3:55:56 am
 **Internal Route:** `/campaign-members/[campaignId]/audit`
 
 ---
