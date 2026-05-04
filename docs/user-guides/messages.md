@@ -1,7 +1,7 @@
 # 📘 User Guide: /messages
     
-**Build Version:** `2026.05.05.4`
-**Last Updated:** 5/5/2026, 1:59:41 am
+**Build Version:** `2026.05.05.7`
+**Last Updated:** 5/5/2026, 2:51:35 am
 **Internal Route:** `/messages`
 
 ---
@@ -31,6 +31,7 @@ The following fields are mapped within this interface:
 - **Delete ({selectedIds.length})**: Interactive button to initiate delete ({selectedids.length}) operation (Triggers handleDeleteSelected).
 - **handleDeleteSelected**: Internal logic handler for DeleteSelected workflow.
 - **handleClearAll**: Internal logic handler for ClearAll workflow.
+- **handleRetry**: Internal logic handler for Retry workflow.
 
 ## 🛡️ Security & Access
 Access to this module is restricted based on organization roles (Admin, Staff, or Portal User). Ensure you have the necessary clearance before attempting modifications.
