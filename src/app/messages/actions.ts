@@ -742,21 +742,14 @@ export async function notifyDonorDirectAction(donorId: string, params: {
 
         // Send Telegram
         if (telegramChatId) {
-            let message = params.customMessage || '';
-            if (params.templateId) {
-                const templateSnap = await adminDb.collection('settings').doc('message_templates').collection('templates').doc(params.templateId).get();
-                if (templateSnap.exists) {
-                    message = (templateSnap.data() as any).body;
-                    if (params.variables) {
-                        Object.entries(params.variables).forEach(([key, value]) => {
-                            message = message.split(`{{${key}}}`).join(value || '');
-                        });
-                    }
-                }
-            }
-            if (message) {
-                telegramResult = await sendTelegramAction({ message, chatId: telegramChatId, bypassAutoCheck: true });
-            }
+            telegramResult = await sendTelegramAction({ 
+                templateId: params.templateId,
+                variables: params.variables,
+                message: params.customMessage, 
+                chatId: telegramChatId, 
+                bypassAutoCheck: true,
+                metadata: params.metadata
+            });
         }
 
         // Write in-app notification
@@ -964,6 +957,8 @@ export async function getWhatsAppAccountInfoAction(configOverride?: Partial<Reso
 export async function sendTelegramAction(params: {
     message?: string;
     chatId?: string;
+    templateId?: string;
+    variables?: Record<string, string>;
     configOverride?: Partial<ResourceSettings>;
     bypassAutoCheck?: boolean;
     moduleId?: 'campaign' | 'lead' | 'donation' | 'beneficiary' | 'donor' | 'user';
@@ -976,6 +971,7 @@ export async function sendTelegramAction(params: {
         newData?: any;
         actionUrl?: string;
     }
+    metadata?: any;
 }) {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: 'DB Unavailable' };
@@ -1002,10 +998,28 @@ export async function sendTelegramAction(params: {
         }
 
         let finalMessage = params.message || '';
+
+        // Handle Rich Data if provided (Highest Priority)
         if (params.richData) {
             finalMessage = generateDetailedPayload({
                 ...params.richData
             });
+        }
+        // Handle Template if provided (Secondary Priority)
+        else if (params.templateId) {
+            const templateSnap = await adminDb.collection('settings').doc('message_templates').collection('templates').doc(params.templateId).get();
+            if (templateSnap.exists) {
+                const template = templateSnap.data() as MessageTemplate;
+                finalMessage = template.body;
+                
+                // Interpolate variables
+                if (params.variables) {
+                    Object.entries(params.variables).forEach(([key, value]) => {
+                        // Safe replacement for all occurrences
+                        finalMessage = finalMessage.split(`{{${key}}}`).join(value || '');
+                    });
+                }
+            }
         }
 
         if (!TOKEN || !CHAT_ID) {
@@ -1028,9 +1042,40 @@ export async function sendTelegramAction(params: {
             })
         });
 
+        let status: 'Sent' | 'Failed' = 'Sent';
+        let error: string | undefined;
+
         if (!response.ok) {
             const errData = await response.json().catch(() => ({}));
-            throw new Error(`Telegram API Error: ${errData.description || response.statusText}`);
+            status = 'Failed';
+            error = `Telegram API Error: ${errData.description || response.statusText}`;
+        }
+
+        // --- Persistent Logging ---
+        try {
+            const logRef = adminDb.collection('message_logs').doc();
+            const cleanMetadata = params.metadata ? JSON.parse(JSON.stringify(params.metadata)) : {};
+            
+            const log: MessageLog = {
+                id: logRef.id,
+                recipient: CHAT_ID,
+                content: finalMessage,
+                type: 'Telegram',
+                status,
+                error: error || undefined,
+                timestamp: Timestamp.now(),
+                metadata: {
+                    ...cleanMetadata,
+                    moduleId: params.moduleId || cleanMetadata.moduleId || 'system'
+                }
+            };
+            await logRef.set(log);
+        } catch (logErr) {
+            console.error('Failed to log Telegram message:', logErr);
+        }
+
+        if (status === 'Failed') {
+            throw new Error(error);
         }
 
         return { success: true };
@@ -1412,6 +1457,42 @@ export async function deleteMessageLogsAction(logIds: string[]) {
 }
 
 /**
+ * Retry a failed message
+ */
+export async function retryMessageAction(logId: string) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: 'DB Unavailable' };
+
+    const auth = await checkAuth('messages', 'update');
+    if (!auth.isAuthorized) return { success: false, message: 'Unauthorized' };
+
+    try {
+        const logSnap = await adminDb.collection('message_logs').doc(logId).get();
+        if (!logSnap.exists) return { success: false, message: 'Log record not found.' };
+
+        const log = logSnap.data() as MessageLog;
+        
+        if (log.type === 'WhatsApp') {
+            return await sendWhatsAppAction({
+                to: log.recipient,
+                customMessage: log.content,
+                metadata: { ...log.metadata, retriedFrom: logId },
+                bypassAutoCheck: true
+            });
+        } else {
+            return await sendTelegramAction({
+                chatId: log.recipient,
+                message: log.content,
+                metadata: { ...log.metadata, retriedFrom: logId },
+                bypassAutoCheck: true
+            });
+        }
+    } catch (e: any) {
+        return { success: false, message: `Retry failed: ${e.message}` };
+    }
+}
+
+/**
  * Clear all message logs (Bulk Cleanup)
  */
 export async function clearAllMessageLogsAction() {
@@ -1733,7 +1814,7 @@ export async function notifyVerificationUpdateAction(params: {
         const baseUrl = resourceSnap.data()?.baseUrl || 'https://baitulamalsolapur.com';
 
         // 1. Format Approver Board
-        const approverBoard = request.assignedVerifiers.map(v => {
+        const approverBoard = (request.assignedVerifiers || []).map(v => {
             let icon = '⏳';
             if (v.status === 'Approved') icon = '✅';
             if (v.status === 'Rejected') icon = '❌';
@@ -1804,7 +1885,7 @@ export async function notifyVerificationUpdateAction(params: {
             (params.reason ? `*Reason:* ${params.reason}\n` : '') +
             `${changeSummary}\n` +
             `${statsInfo}\n\n` +
-            `⚖️ *Approval Board:* (Total ${request.assignedVerifiers.length})\n${approverBoard}\n\n` +
+            `⚖️ *Approval Board:* (Total ${(request.assignedVerifiers || []).length})\n${approverBoard}\n\n` +
             `👤 *Action By:* ${performedBy.name}\n` +
             `🔗 Review: ${baseUrl}/verifications?requestId=${request.id}`;
 

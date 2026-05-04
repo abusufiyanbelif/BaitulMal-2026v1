@@ -1134,7 +1134,7 @@ export default function LeadSummaryPage() {
                                                             </TableRow>
                                                         </TableHeader>
                                                         <TableBody>
-                                                            {lead?.itemCategories?.[0]?.items.map((item, idx) => (
+                                                            {(lead?.itemCategories?.[0]?.items || []).map((item, idx) => (
                                                                 <TableRow key={idx} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors group bg-white border-b border-primary/5 last:border-none">
                                                                     <TableCell className="font-medium text-xs transition-transform group-hover:translate-x-1">{item.name}</TableCell>
                                                                     <TableCell className="text-right text-xs">{item.quantity} {item.quantityType}</TableCell>

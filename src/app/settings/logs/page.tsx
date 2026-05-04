@@ -391,7 +391,7 @@ export default function LogManagementPage() {
                                         <Server className="h-4 w-4 text-emerald-600" />
                                     </CardHeader>
                                     <CardContent className="pt-6 space-y-4">
-                                        {healthData?.services.map((service: any) => (
+                                        {healthData?.services?.map((service: any) => (
                                             <div key={service.id} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
                                                 <div className="flex items-center gap-3">
                                                     <div className={`h-2 w-2 rounded-full ${service.status === 'Online' ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
@@ -436,7 +436,7 @@ export default function LogManagementPage() {
                                             </div>
                                             <div className="p-3 rounded-xl bg-slate-50 border border-slate-100">
                                                 <p className="text-[9px] font-black text-slate-400 tracking-widest mb-1">Cpu Load (1m)</p>
-                                                <p className="text-sm font-black text-primary">{healthData?.system.loadAvg[0].toFixed(2) || '0.00'}</p>
+                                                <p className="text-sm font-black text-primary">{healthData?.system.loadAvg?.[0]?.toFixed(2) || '0.00'}</p>
                                             </div>
                                         </div>
                                     </CardContent>

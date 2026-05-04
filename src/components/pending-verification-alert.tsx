@@ -98,7 +98,7 @@ export function PendingVerificationAlert({ targetId, onUpdate }: PendingVerifica
       {/* Verifier Progress Bar */}
       <div className="mt-3 pt-3 border-t border-amber-200/50 flex items-center gap-2 flex-wrap">
         <span className="text-[9px] font-bold text-amber-700/60 uppercase tracking-widest">Verifier Status:</span>
-        {pending.assignedVerifiers.map((v) => (
+        {pending.assignedVerifiers?.map((v) => (
           <div key={v.id} className="flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border border-amber-100 text-[10px]">
             {v.status === 'Approved' ? (
               <CheckCircle2 className="h-3 w-3 text-green-500" />

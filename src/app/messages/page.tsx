@@ -29,7 +29,8 @@ import {
     Trash2,
     Eraser,
     CheckSquare,
-    Square
+    Square,
+    RefreshCcw
 } from 'lucide-react';
 import { 
     DropdownMenu, 
@@ -44,7 +45,7 @@ import { BrandedLoader } from '@/components/branded-loader';
 import type { MessageLog } from '@/lib/types';
 import { cn, getNestedValue } from '@/lib/utils';
 import { format } from 'date-fns';
-import { deleteMessageLogsAction, clearAllMessageLogsAction } from './actions';
+import { deleteMessageLogsAction, clearAllMessageLogsAction, retryMessageAction } from './actions';
 
 export default function MessageModulePage() {
     const { userProfile, isLoading: isSessionLoading } = useSession();
@@ -56,6 +57,7 @@ export default function MessageModulePage() {
     const [statusFilter, setStatusFilter] = useState<'All' | 'Sent' | 'Failed'>('All');
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [isDeleting, setIsDeleting] = useState(false);
+    const [retryingId, setRetryingId] = useState<string | null>(null);
 
     const logsRef = useMemoFirebase(() => 
         firestore ? query(collection(firestore, 'message_logs'), orderBy('timestamp', 'desc'), limit(100)) : null, 
@@ -130,6 +132,20 @@ export default function MessageModulePage() {
             }
         } finally {
             setIsDeleting(false);
+        }
+    };
+
+    const handleRetry = async (logId: string) => {
+        setRetryingId(logId);
+        try {
+            const res = await retryMessageAction(logId);
+            if (res.success) {
+                toast({ title: "Message Retried", description: "The notification has been re-dispatched.", variant: "success" });
+            } else {
+                toast({ title: "Retry Failed", description: res.message, variant: "destructive" });
+            }
+        } finally {
+            setRetryingId(null);
         }
     };
 
@@ -320,9 +336,23 @@ export default function MessageModulePage() {
                                             <p className="text-xs text-primary/80 line-clamp-2 leading-relaxed whitespace-pre-wrap">{log.content}</p>
                                             
                                             {log.status === 'Failed' && (
-                                                <div className="mt-2 p-2 bg-red-50 rounded-lg border border-red-100 flex items-center gap-2 text-red-600 text-[10px] font-bold">
-                                                    <XCircle className="h-3 w-3" />
-                                                    {log.error || 'Unknown gateway failure'}
+                                                <div className="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2 bg-red-50 rounded-lg border border-red-100">
+                                                    <div className="flex items-center gap-2 text-red-600 text-[10px] font-bold">
+                                                        <XCircle className="h-3 w-3" />
+                                                        {log.error || 'Unknown gateway failure'}
+                                                    </div>
+                                                    {canManageMessages && (
+                                                        <Button 
+                                                            variant="outline" 
+                                                            size="sm" 
+                                                            onClick={() => handleRetry(log.id)}
+                                                            disabled={retryingId === log.id}
+                                                            className="h-7 text-[9px] font-bold border-red-200 text-red-600 hover:bg-red-100 transition-colors shadow-none"
+                                                        >
+                                                            {retryingId === log.id ? <Loader2 className="h-3 w-3 animate-spin mr-1" /> : <RefreshCcw className="h-3 w-3 mr-1" />}
+                                                            Retry Message
+                                                        </Button>
+                                                    )}
                                                 </div>
                                             )}
 

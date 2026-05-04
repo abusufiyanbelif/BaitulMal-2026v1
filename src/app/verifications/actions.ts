@@ -255,7 +255,7 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
          
          // Update this specific verifier's status
          let verifierFound = false;
-         const updatedVerifiers = request.assignedVerifiers.map(v => {
+         const updatedVerifiers = (request.assignedVerifiers || []).map(v => {
              if (v.id === verifierId) {
                  verifierFound = true;
                  return { ...v, status: 'Approved' as const, updatedAt: Timestamp.now() };
@@ -532,7 +532,7 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
               ...(request.approverComments || []),
               {
                   verifierId,
-                  verifierName: request.assignedVerifiers.find(v => v.id === verifierId)?.name || 'Verifier',
+                  verifierName: (request.assignedVerifiers || []).find(v => v.id === verifierId)?.name || 'Verifier',
                   comment: reason,
                   status: 'Rejected' as const,
                   updatedAt: Timestamp.now()
@@ -552,7 +552,7 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
              module: request.module,
              action: 'REJECT',
              description: reason ? `Modification rejected: ${reason}` : 'Modification rejected by verifier.',
-             performedBy: { id: verifierId, name: request.assignedVerifiers.find(v => v.id === verifierId)?.name || 'Verifier' },
+             performedBy: { id: verifierId, name: (request.assignedVerifiers || []).find(v => v.id === verifierId)?.name || 'Verifier' },
              changes: generateChanges(request.originalValue, request.newValue),
              originalValue: request.originalValue,
              newValue: request.newValue,
@@ -604,7 +604,7 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
             await notifyVerificationUpdateAction({
                 request: { ...request, status: 'Rejected' },
                 action: 'REJECT',
-                performedBy: { id: verifierId, name: request.assignedVerifiers.find(v => v.id === verifierId)?.name || 'Verifier' },
+                performedBy: { id: verifierId, name: (request.assignedVerifiers || []).find(v => v.id === verifierId)?.name || 'Verifier' },
                 reason
             });
         } catch (e) {}
@@ -790,7 +790,7 @@ export async function remindVerifiersAction(requestId: string) {
         const request = snap.data() as PendingVerification;
         
         let sentCount = 0;
-        for (const verifier of request.assignedVerifiers) {
+        for (const verifier of (request.assignedVerifiers || [])) {
             if (verifier.status === 'Pending') {
                 const vSnap = await adminDb.collection('users').doc(verifier.id).get();
                 const vTelegram = vSnap.data()?.telegramChatId;

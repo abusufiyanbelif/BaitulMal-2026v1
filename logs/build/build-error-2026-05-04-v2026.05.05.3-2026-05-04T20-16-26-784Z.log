@@ -1,0 +1,15 @@
+BUILD FAILURE LOG - 5/5/2026, 1:46:26 am
+Version: 2026.05.05.3
+
+STDOUT:
+
+
+STDERR:
+'next' is not recognized as an internal or external command,
+operable program or batch file.
+
+
+ERROR MESSAGE:
+Command failed: next build
+'next' is not recognized as an internal or external command,
+operable program or batch file.

@@ -197,7 +197,7 @@ export default function VerificationsPage() {
 
     const myPendingRequests = (verifications || []).filter(v => 
         v.status !== 'Approved' && v.status !== 'Rejected' && 
-        v.assignedVerifiers.some(av => av.id === userProfile?.id && av.status === 'Pending')
+        v.assignedVerifiers?.some(av => av.id === userProfile?.id && av.status === 'Pending')
     );
 
     const globalActiveRequests = (verifications || []).filter(v => 
@@ -538,7 +538,7 @@ export default function VerificationsPage() {
                                     Authorization Quorum
                                 </h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {selectedRequest?.assignedVerifiers.map((av, idx) => (
+                                    {selectedRequest?.assignedVerifiers?.map((av, idx) => (
                                         <div key={idx} className={cn(
                                             "flex items-center justify-between p-4 rounded-2xl border transition-all",
                                             av.status === 'Approved' ? "bg-emerald-50 border-emerald-100" : 
@@ -576,7 +576,7 @@ export default function VerificationsPage() {
                         
                         {selectedRequest?.status !== 'Approved' && selectedRequest?.status !== 'Rejected' && 
                          selectedRequest?.requestedBy.id !== userProfile?.id &&
-                         selectedRequest?.assignedVerifiers.some(av => av.id === userProfile?.id && av.status === 'Pending') && (
+                         selectedRequest?.assignedVerifiers?.some(av => av.id === userProfile?.id && av.status === 'Pending') && (
                             <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto items-end">
                                 <div className="w-full sm:w-64 space-y-1.5">
                                     <Label className="text-[9px] font-black text-primary/40 tracking-widest ml-1">Approval Feedback (Optional)</Label>
@@ -663,8 +663,8 @@ function VerificationCard({ request, index, onView, onWithdraw }: { request: Pen
     }[request.module] || Info;
 
     const Icon = moduleIcon;
-    const approvedCount = request.assignedVerifiers.filter(v => v.status === 'Approved').length;
-    const totalCount = request.assignedVerifiers.length;
+    const approvedCount = request.assignedVerifiers?.filter(v => v.status === 'Approved').length || 0;
+    const totalCount = request.assignedVerifiers?.length || 0;
 
     return (
         <Card 
@@ -714,7 +714,7 @@ function VerificationCard({ request, index, onView, onWithdraw }: { request: Pen
                         <span className="text-primary">{approvedCount} / {totalCount} Verified</span>
                     </div>
                     <div className="h-1.5 w-full bg-primary/5 rounded-full overflow-hidden flex gap-0.5">
-                        {request.assignedVerifiers.map((av, i) => (
+                        {request.assignedVerifiers?.map((av, i) => (
                             <div 
                                 key={i} 
                                 className={cn(

@@ -334,10 +334,10 @@ export function NotificationBell() {
                                                     </div>
                                                 </AccordionTrigger>
                                                 <AccordionContent className="px-1 pb-2">
-                                                    {pendingCampaigns?.slice(0, 3).map(c => (
+                                                    {pendingCampaigns?.slice(0, 3)?.map(c => (
                                                         <NotificationItem key={`pending_camp_${c.id}`} icon={FolderKanban} title={c.name} subtitle="Awaiting Verification" href={`/campaign-members/${c.id}/summary`} variant="warning" />
                                                     ))}
-                                                    {pendingLeads?.slice(0, 3).map(l => (
+                                                    {pendingLeads?.slice(0, 3)?.map(l => (
                                                         <NotificationItem key={`pending_lead_${l.id}`} icon={Lightbulb} title={l.name} subtitle="Awaiting Verification" href={`/leads-members/${l.id}/summary`} variant="warning" />
                                                     ))}
                                                 </AccordionContent>
@@ -353,10 +353,10 @@ export function NotificationBell() {
                                                     </div>
                                                 </AccordionTrigger>
                                                 <AccordionContent className="px-1 pb-2">
-                                                    {privateCampaigns?.slice(0, 3).map(c => (
+                                                    {privateCampaigns?.slice(0, 3)?.map(c => (
                                                         <NotificationItem key={`hold_camp_${c.id}`} icon={FolderKanban} title={c.name} subtitle="Internal Draft" href={`/campaign-members/${c.id}/summary`} variant="info" />
                                                     ))}
-                                                    {privateLeads?.slice(0, 3).map(l => (
+                                                    {privateLeads?.slice(0, 3)?.map(l => (
                                                         <NotificationItem key={`hold_lead_${l.id}`} icon={Lightbulb} title={l.name} subtitle="Internal Draft" href={`/leads-members/${l.id}/summary`} variant="info" />
                                                     ))}
                                                 </AccordionContent>

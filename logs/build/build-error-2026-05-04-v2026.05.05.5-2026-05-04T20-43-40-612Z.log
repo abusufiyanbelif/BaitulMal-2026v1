@@ -1,0 +1,91 @@
+BUILD FAILURE LOG - 5/5/2026, 2:16:53 am
+Version: 2026.05.05.5
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverExternalPackages' at "experimental"
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-education-story.ts
+./src/app/api/create-education-story/route.ts
+
+Failed to compile.
+
+./src/app/messages/actions.ts:1063:17
+Type error: Type '"Telegram"' is not assignable to type '"WhatsApp" | "Email" | "SMS"'.
+
+[0m [90m 1061 |[39m                 recipient[33m:[39m [33mCHAT_ID[39m[33m,[39m[0m
+[0m [90m 1062 |[39m                 content[33m:[39m finalMessage[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 1063 |[39m                 type[33m:[39m [32m'Telegram'[39m[33m,[39m[0m
+[0m [90m      |[39m                 [31m[1m^[22m[39m[0m
+[0m [90m 1064 |[39m                 status[33m,[39m[0m
+[0m [90m 1065 |[39m                 error[33m:[39m error [33m||[39m undefined[33m,[39m[0m
+[0m [90m 1066 |[39m                 timestamp[33m:[39m [33mTimestamp[39m[33m.[39mnow()[33m,[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: npx next build
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverExternalPackages' at "experimental"
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-education-story.ts
+./src/app/api/create-education-story/route.ts
+
+Failed to compile.
+
+./src/app/messages/actions.ts:1063:17
+Type error: Type '"Telegram"' is not assignable to type '"WhatsApp" | "Email" | "SMS"'.
+
+[0m [90m 1061 |[39m                 recipient[33m:[39m [33mCHAT_ID[39m[33m,[39m[0m
+[0m [90m 1062 |[39m                 content[33m:[39m finalMessage[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 1063 |[39m                 type[33m:[39m [32m'Telegram'[39m[33m,[39m[0m
+[0m [90m      |[39m                 [31m[1m^[22m[39m[0m
+[0m [90m 1064 |[39m                 status[33m,[39m[0m
+[0m [90m 1065 |[39m                 error[33m:[39m error [33m||[39m undefined[33m,[39m[0m
+[0m [90m 1066 |[39m                 timestamp[33m:[39m [33mTimestamp[39m[33m.[39mnow()[33m,[39m[0m
+Next.js build worker exited with code: 1 and signal: null

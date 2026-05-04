@@ -166,7 +166,7 @@ export interface MessageTemplate extends DocumentData {
   name: string;
   subject: string;
   body: string;
-  type: 'WhatsApp' | 'Email' | 'SMS';
+  type: 'WhatsApp' | 'Email' | 'SMS' | 'Telegram';
   category: 'Verification' | 'Alert' | 'Update' | 'Marketing';
   variables: string[]; // e.g. ["name", "recordId", "module", "url"]
   isActive: boolean;
@@ -177,7 +177,7 @@ export interface MessageLog extends DocumentData {
   id: string;
   recipient: string;
   content: string;
-  type: 'WhatsApp' | 'Email' | 'SMS';
+  type: 'WhatsApp' | 'Email' | 'SMS' | 'Telegram';
   status: 'Sent' | 'Failed' | 'Pending';
   error?: string;
   timestamp: Timestamp | FieldValue;
@@ -187,6 +187,7 @@ export interface MessageLog extends DocumentData {
     userId?: string;
     templateId?: string;
     type?: string;
+    [key: string]: any;
   };
 }
 

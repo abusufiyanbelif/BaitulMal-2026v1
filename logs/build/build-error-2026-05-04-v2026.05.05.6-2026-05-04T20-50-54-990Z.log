@@ -1,0 +1,91 @@
+BUILD FAILURE LOG - 5/5/2026, 2:24:08 am
+Version: 2026.05.05.6
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverExternalPackages' at "experimental"
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-lead-story.ts
+./src/app/api/create-lead-story/route.ts
+
+Failed to compile.
+
+./src/app/messages/actions.ts:1479:46
+Type error: Object literal may only specify known properties, and 'retriedFrom' does not exist in type '{ moduleId?: string | undefined; recordId?: string | undefined; userId?: string | undefined; templateId?: string | undefined; type?: string | undefined; }'.
+
+[0m [90m 1477 |[39m                 to[33m:[39m log[33m.[39mrecipient[33m,[39m[0m
+[0m [90m 1478 |[39m                 customMessage[33m:[39m log[33m.[39mcontent[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 1479 |[39m                 metadata[33m:[39m { [33m...[39mlog[33m.[39mmetadata[33m,[39m retriedFrom[33m:[39m logId }[33m,[39m[0m
+[0m [90m      |[39m                                              [31m[1m^[22m[39m[0m
+[0m [90m 1480 |[39m                 bypassAutoCheck[33m:[39m [36mtrue[39m[0m
+[0m [90m 1481 |[39m             })[33m;[39m[0m
+[0m [90m 1482 |[39m         } [36melse[39m {[0m
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: npx next build
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverExternalPackages' at "experimental"
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-lead-story.ts
+./src/app/api/create-lead-story/route.ts
+
+Failed to compile.
+
+./src/app/messages/actions.ts:1479:46
+Type error: Object literal may only specify known properties, and 'retriedFrom' does not exist in type '{ moduleId?: string | undefined; recordId?: string | undefined; userId?: string | undefined; templateId?: string | undefined; type?: string | undefined; }'.
+
+[0m [90m 1477 |[39m                 to[33m:[39m log[33m.[39mrecipient[33m,[39m[0m
+[0m [90m 1478 |[39m                 customMessage[33m:[39m log[33m.[39mcontent[33m,[39m[0m
+[0m[31m[1m>[22m[39m[90m 1479 |[39m                 metadata[33m:[39m { [33m...[39mlog[33m.[39mmetadata[33m,[39m retriedFrom[33m:[39m logId }[33m,[39m[0m
+[0m [90m      |[39m                                              [31m[1m^[22m[39m[0m
+[0m [90m 1480 |[39m                 bypassAutoCheck[33m:[39m [36mtrue[39m[0m
+[0m [90m 1481 |[39m             })[33m;[39m[0m
+[0m [90m 1482 |[39m         } [36melse[39m {[0m
+Next.js build worker exited with code: 1 and signal: null
