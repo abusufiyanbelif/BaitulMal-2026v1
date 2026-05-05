@@ -22,7 +22,8 @@ service cloud.firestore {
         request.auth.uid in [
           'cyMl1lQME0Yur1YS3VCms1AvrOJ2',
           'S5efNV5jpTPoxYNv6SnAlv3jNPO2',
-          '3gKwUE2JrBT8wngoUxTTN6tLJk03'
+          '3gKwUE2JrBT8wngoUxTTN6tLJk03',
+          '3gKwUE2JrBT8wngoUxTTN6tLJk0'
         ] ||
         (request.auth.token.email != null && request.auth.token.email in [
           'baitulmalss.solapur@gmail.com',
@@ -31,38 +32,28 @@ service cloud.firestore {
           'admin@example.com'
         ]) ||
         (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'Admin')
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'Admin')
       );
     }
 
-    /**
-     * Staff = Admin OR registered User-role members.
-     * Used for internal pages (members area, management views).
-     */
     function isStaff() {
       return isAdmin() || (
         isSignedIn() &&
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'User' &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'Active'
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', '') == 'User' &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('status', '') == 'Active'
       );
     }
 
-    /**
-     * Granular permission check for non-admin staff.
-     * Admins always pass. Non-admins must have the explicit permission flag.
-     * Supports cross-module aliases (leads <-> leads-members).
-     */
     function hasPermission(module, perm) {
       return isAdmin() || (
         isSignedIn() &&
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.status == 'Active' &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('status', '') == 'Active' &&
         (
-          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions[module][perm] == true ||
-          // leads <-> leads-members alias
-          (module == 'leads' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions['leads-members'][perm] == true) ||
-          (module == 'leads-members' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.permissions['leads'][perm] == true)
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('permissions', {}).get(module, {}).get(perm, false) == true ||
+          (module == 'leads' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('permissions', {}).get('leads-members', {}).get(perm, false) == true) ||
+          (module == 'leads-members' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('permissions', {}).get('leads', {}).get(perm, false) == true)
         )
       );
     }
@@ -353,16 +344,15 @@ service cloud.firestore {
     // =========================================================================
 
     match /pending_verifications/{reqId} {
-      // Staff sees all; requester sees own; assigned verifiers see their requests
       allow read: if isStaff() ||
-                   (isSignedIn() && resource != null && request.auth.uid == resource.data.requestedBy.id) ||
-                   (isSignedIn() && resource != null && request.auth.uid in resource.data.assignedVerifierIds);
-      // Staff/signed-in users can create verification requests
+                   (isSignedIn() && resource != null && (
+                     request.auth.uid == resource.data.get('requestedBy', {}).get('id', '') ||
+                     request.auth.uid in resource.data.get('assignedVerifierIds', [])
+                   ));
       allow create: if isStaff();
-      // Staff and assigned verifiers can update (approve/reject)
       allow update: if isAdmin() ||
                      (isStaff() && resource != null) ||
-                     (isSignedIn() && resource != null && request.auth.uid in resource.data.assignedVerifierIds);
+                     (isSignedIn() && resource != null && request.auth.uid in resource.data.get('assignedVerifierIds', []));
       allow delete: if isAdmin();
     }
 

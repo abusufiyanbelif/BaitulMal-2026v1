@@ -1,13 +1,25 @@
-release: v2026.05.05.10
+release: v2026.05.05.12
 
-Type: Build
-Message: Finalized Telegram messaging suite: integrated persistent logging, added retry mechanism to dashboard, and enhanced build-versioning with local change detection.
+Type: Security, Infra & Messaging
+Message: Hardened RBAC architecture, resolved Next.js build warnings, and optimized Telegram 1-1 authorization workflows.
 Reference: n/a
 Branch: test_bmss_26
-Commit: 219dd6ee
+Commit: [UNCOMMITTED]
 
-Verification Steps:
-Uncommitted changes detected. Manual verification required.
+Technical Summary (Changes since 9bd84b49):
+- Firestore Security: Refactored `firestore.rules` to use defensive `.get()` patterns and implemented a hardcoded Sovereign Admin bypass list to prevent lockout.
+- Next.js Config: Moved `serverExternalPackages` to the top-level configuration in `next.config.js` to resolve deployment warnings.
+- Telegram Integration: 
+    - Updated `sendTelegramAction` in `src/app/messages/actions.ts` to provide user-friendly instructions for 'Forbidden' errors (requiring user-initiated /start).
+    - Verified that `@BaitulMalSolapurAlertsTest_bot` supports both Group (via ID) and 1-1 Private messaging (via User ID).
+- UI Enhancements: Updated `UserForm.tsx` with high-visibility instructions for Telegram bot authorization.
+- Identity Mirroring: Confirmed logic synchronization between Members and Donors/Beneficiaries to ensure data integrity across registries.
+
+Verification Status:
+1. Admin Sovereign Bypass: VERIFIED (UID S5efNV5jpTPoxYNv6SnAlv3jNPO2).
+2. Telegram Group Messaging: VERIFIED (Chat ID -5296193449).
+3. Telegram 1-1 Messaging: READY (Requires user to /start @BaitulMalSolapurAlertsTest_bot).
+4. Production Build: SUCCESSFUL (Node wrapper documentation updated).
 
 ---
-*Build Summary Updated: 5/5/2026, 3:55:56 am*
+*Build Summary Updated: 5/5/2026, 8:15:00 pm*

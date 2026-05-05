@@ -621,9 +621,12 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                                      <li>The bot will instantly reply with your <span className="font-bold text-blue-800">Id</span> (a numeric string like <span className="font-mono">87452695</span>).</li>
                                                      <li><span className="font-bold">Copy</span> that number and paste it below.</li>
                                                  </ol>
-                                                 <div className="bg-amber-50 border border-amber-200/50 p-2 rounded-lg text-[11px] text-amber-800 font-medium flex items-start gap-2">
-                                                     <Info className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
-                                                     <span><strong>IMPORTANT:</strong> You MUST click <strong>START</strong> on our system notification bot before testing or receiving live updates.</span>
+                                                 <div className="bg-amber-50 border border-amber-200/50 p-3 rounded-lg text-[11px] text-amber-800 font-medium flex items-start gap-2 shadow-sm">
+                                                     <Info className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                                                     <div className="space-y-1">
+                                                        <p><strong>CRITICAL STEP:</strong> Getting your ID is only half the process.</p>
+                                                        <p>You MUST search for your organization's specific bot (the one sending these alerts) and click <strong>START</strong>. If you don't, the bot is blocked from sending you messages by Telegram's security policy.</p>
+                                                     </div>
                                                  </div>
                                              </div>
                                             <FormControl>

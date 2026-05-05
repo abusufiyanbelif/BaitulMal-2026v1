@@ -1075,6 +1075,13 @@ export async function sendTelegramAction(params: {
         }
 
         if (status === 'Failed') {
+            // Handle the specific 'Forbidden' error with a user-friendly instruction
+            if (error?.includes('Forbidden') || error?.includes('bot can\'t initiate conversation')) {
+                return { 
+                    success: false, 
+                    message: "Telegram Authorization Required: Please open your organization's Telegram bot and click 'START' to enable notifications for this Chat ID." 
+                };
+            }
             throw new Error(error);
         }
 
