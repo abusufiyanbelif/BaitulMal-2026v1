@@ -1,9 +1,31 @@
 {
-  "version": "2026.05.06.7",
-  "buildDate": "2026-05-05T21:23:40.608Z",
+  "version": "2026.05.06.9",
+  "buildDate": "2026-05-05T21:47:55.145Z",
   "commitHash": "initial",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.05.06.9",
+      "date": "2026-05-05T21:47:55.145Z",
+      "commit": "1b9f3901",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "TB-15774",
+      "steps": "Manual verification required.",
+      "type": "Configuration & ui security",
+      "message": "Resolved Next.js configuration warnings and restricted 'Full Site Map' visibility to administrators."
+    },
+    {
+      "version": "2026.05.06.8",
+      "date": "2026-05-05T21:43:23.692Z",
+      "commit": "1b9f3901",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "TB-15774",
+      "steps": "Manual verification required.",
+      "type": "Security & ui",
+      "message": "Restricted 'Full Site Map' visibility to administrators and optimized multi-tab Firestore stability."
+    },
     {
       "version": "2026.05.06.7",
       "date": "2026-05-05T21:23:40.608Z",

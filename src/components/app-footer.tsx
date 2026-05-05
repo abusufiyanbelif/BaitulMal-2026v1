@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useSession } from '@/hooks/use-session';
 import { useBranding } from '@/hooks/use-branding';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
 import { 
@@ -43,6 +44,7 @@ import versionData from '@/lib/version.json';
 export function AppFooter() {
   const { brandingSettings } = useBranding();
   const { paymentSettings } = usePaymentSettings();
+  const { userProfile: currentUser } = useSession();
   const pathname = usePathname();
   const { toast } = useToast();
   const [isDonationDialogOpen, setIsDonationDialogOpen] = useState(false);
@@ -152,10 +154,12 @@ export function AppFooter() {
                 <BookOpen className="h-4 w-4 opacity-30" />
                 Common Questions
               </Link>
-              <Link href="/registry-index" className="text-sm text-emerald-600 hover:text-emerald-700 transition-colors flex items-center gap-3 font-bold bg-emerald-50/50 p-2 rounded-lg border border-emerald-100/50">
-                <Navigation2 className="h-4 w-4 opacity-80" />
-                Full Site Map
-              </Link>
+              {currentUser?.role === 'Admin' && (
+                <Link href="/registry-index" className="text-sm text-emerald-600 hover:text-emerald-700 transition-colors flex items-center gap-3 font-bold bg-emerald-50/50 p-2 rounded-lg border border-emerald-100/50">
+                  <Navigation2 className="h-4 w-4 opacity-80" />
+                  Full Site Map
+                </Link>
+              )}
             </nav>
           </div>
 

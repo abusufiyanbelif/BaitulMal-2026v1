@@ -1,13 +1,13 @@
-release: v2026.05.06.7
+release: v2026.05.06.9
 
-Type: Infrastructure & fixes
-Message: Enabled multi-tab Firestore support and optimized the automated build script to preserve manual commit summaries.
+Type: Configuration & ui security
+Message: Resolved Next.js configuration warnings and restricted 'Full Site Map' visibility to administrators.
 Reference: TB-15774
 Branch: test_bmss_26
-Commit: 281bde53
+Commit: 1b9f3901
 
 Verification Steps:
 Manual verification required.
 
 ---
-*Build Summary Updated: 6/5/2026, 2:58:33 am*
+*Build Summary Updated: 6/5/2026, 3:21:23 am*
