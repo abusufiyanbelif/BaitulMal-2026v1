@@ -1,0 +1,91 @@
+BUILD FAILURE LOG - 6/5/2026, 2:35:30 am
+Version: 2026.05.06.4
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverExternalPackages'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-education-story.ts
+./src/app/api/create-education-story/route.ts
+
+Failed to compile.
+
+./src/firebase/init.ts:31:54
+Type error: Expected 0 arguments, but got 1.
+
+[0m [90m 29 |[39m         firestoreInstance [33m=[39m initializeFirestore(app[33m,[39m {[0m
+[0m [90m 30 |[39m           localCache[33m:[39m persistentLocalCache({[0m
+[0m[31m[1m>[22m[39m[90m 31 |[39m             tabManager[33m:[39m persistentMultipleTabManager({})[0m
+[0m [90m    |[39m                                                      [31m[1m^[22m[39m[0m
+[0m [90m 32 |[39m           })[0m
+[0m [90m 33 |[39m         })[33m;[39m[0m
+[0m [90m 34 |[39m         console[33m.[39mlog([32m'Firestore Persistence Initialized (v10)'[39m)[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: npx next build
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverExternalPackages'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/create-education-story.ts
+./src/app/api/create-education-story/route.ts
+
+Failed to compile.
+
+./src/firebase/init.ts:31:54
+Type error: Expected 0 arguments, but got 1.
+
+[0m [90m 29 |[39m         firestoreInstance [33m=[39m initializeFirestore(app[33m,[39m {[0m
+[0m [90m 30 |[39m           localCache[33m:[39m persistentLocalCache({[0m
+[0m[31m[1m>[22m[39m[90m 31 |[39m             tabManager[33m:[39m persistentMultipleTabManager({})[0m
+[0m [90m    |[39m                                                      [31m[1m^[22m[39m[0m
+[0m [90m 32 |[39m           })[0m
+[0m [90m 33 |[39m         })[33m;[39m[0m
+[0m [90m 34 |[39m         console[33m.[39mlog([32m'Firestore Persistence Initialized (v10)'[39m)[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null

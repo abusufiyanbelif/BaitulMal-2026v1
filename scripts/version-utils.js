@@ -14,6 +14,39 @@ function getGitInfo() {
         // Check for uncommitted changes
         const isDirty = execSync('git status --porcelain').toString().trim().length > 0;
         
+        // 0. Check for manual summary in commit-summary.txt first
+        const COMMIT_SUMMARY_FILE = path.join(__dirname, '../commit-summary.txt');
+        let manualType = null;
+        let manualMessage = null;
+        let manualReference = null;
+
+        if (fs.existsSync(COMMIT_SUMMARY_FILE)) {
+            const content = fs.readFileSync(COMMIT_SUMMARY_FILE, 'utf8');
+            const lines = content.split('\n');
+            
+            // If the message is NOT "doc auto" or a generic release message, treat as manual
+            let isAuto = false;
+            lines.forEach(line => {
+                if (line.toLowerCase().includes('message: doc auto') || 
+                    line.toLowerCase().includes('message: release: v')) isAuto = true;
+                
+                if (line.toLowerCase().startsWith('type:')) manualType = line.split(':').slice(1).join(':').trim();
+                if (line.toLowerCase().startsWith('message:')) manualMessage = line.split(':').slice(1).join(':').trim();
+                if (line.toLowerCase().startsWith('reference:')) manualReference = line.split(':').slice(1).join(':').trim();
+            });
+
+            if (!isAuto && manualMessage) {
+                return { 
+                    hash, branch, repo, 
+                    type: manualType || 'Build', 
+                    message: manualMessage, 
+                    reference: manualReference || 'n/a', 
+                    steps: 'Manual verification required.', 
+                    isDirty 
+                };
+            }
+        }
+
         // 1. Find the hash of the last release commit
         let lastReleaseHash = '';
         try {

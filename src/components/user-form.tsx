@@ -37,7 +37,7 @@ import { useSession as useCurrentUserSession } from '@/hooks/use-session';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-import { sendTelegramAction, sendWhatsAppAction, writeInAppNotificationAction } from '@/app/messages/actions';
+import { sendTelegramAction, sendWhatsAppAction, writeInAppNotificationAction, getTelegramBotInfoAction } from '@/app/messages/actions';
 import { BellRing } from 'lucide-react';
 interface UserFormProps {
   user?: UserProfile | null;

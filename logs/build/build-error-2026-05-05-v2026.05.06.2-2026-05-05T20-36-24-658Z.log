@@ -1,0 +1,91 @@
+BUILD FAILURE LOG - 6/5/2026, 2:08:00 am
+Version: 2026.05.06.2
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverExternalPackages'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/extract-billing-data.ts
+./src/app/api/extract-billing/route.ts
+
+Failed to compile.
+
+./src/components/user-form.tsx:461:27
+Type error: Cannot find name 'getTelegramBotInfoAction'.
+
+[0m [90m 459 |[39m     setIsVerifyingBot([36mtrue[39m)[33m;[39m[0m
+[0m [90m 460 |[39m     [36mtry[39m {[0m
+[0m[31m[1m>[22m[39m[90m 461 |[39m         [36mconst[39m res [33m=[39m [36mawait[39m getTelegramBotInfoAction({ telegramBotToken[33m:[39m token })[33m;[39m[0m
+[0m [90m     |[39m                           [31m[1m^[22m[39m[0m
+[0m [90m 462 |[39m         [36mif[39m (res[33m.[39msuccess [33m&&[39m res[33m.[39mdata) {[0m
+[0m [90m 463 |[39m             form[33m.[39msetValue([32m'customTelegramBotUsername'[39m[33m,[39m res[33m.[39mdata[33m.[39musername)[33m;[39m[0m
+[0m [90m 464 |[39m             toast({ title[33m:[39m [32m'Bot Verified'[39m[33m,[39m description[33m:[39m [32m`Successfully connected to @${res.data.username}`[39m[33m,[39m variant[33m:[39m [32m'success'[39m })[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: npx next build
+ ⚠ Invalid next.config.js options detected: 
+ ⚠     Unrecognized key(s) in object: 'serverExternalPackages'
+ ⚠ See more info here: https://nextjs.org/docs/messages/invalid-next-config
+ ⚠ Compiled with warnings
+
+./node_modules/require-in-the-middle/index.js
+Critical dependency: require function is used in a way in which dependencies cannot be statically extracted
+
+Import trace for requested module:
+./node_modules/require-in-the-middle/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/instrumentation.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/node/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/platform/index.js
+./node_modules/@opentelemetry/instrumentation/build/esm/index.js
+./node_modules/@opentelemetry/sdk-node/build/src/sdk.js
+./node_modules/@opentelemetry/sdk-node/build/src/index.js
+./node_modules/@genkit-ai/core/lib/tracing/node-telemetry-provider.js
+./node_modules/@genkit-ai/core/lib/node.js
+./node_modules/genkit/lib/common.js
+./node_modules/genkit/lib/index.mjs
+./src/ai/genkit.ts
+./src/ai/flows/extract-billing-data.ts
+./src/app/api/extract-billing/route.ts
+
+Failed to compile.
+
+./src/components/user-form.tsx:461:27
+Type error: Cannot find name 'getTelegramBotInfoAction'.
+
+[0m [90m 459 |[39m     setIsVerifyingBot([36mtrue[39m)[33m;[39m[0m
+[0m [90m 460 |[39m     [36mtry[39m {[0m
+[0m[31m[1m>[22m[39m[90m 461 |[39m         [36mconst[39m res [33m=[39m [36mawait[39m getTelegramBotInfoAction({ telegramBotToken[33m:[39m token })[33m;[39m[0m
+[0m [90m     |[39m                           [31m[1m^[22m[39m[0m
+[0m [90m 462 |[39m         [36mif[39m (res[33m.[39msuccess [33m&&[39m res[33m.[39mdata) {[0m
+[0m [90m 463 |[39m             form[33m.[39msetValue([32m'customTelegramBotUsername'[39m[33m,[39m res[33m.[39mdata[33m.[39musername)[33m;[39m[0m
+[0m [90m 464 |[39m             toast({ title[33m:[39m [32m'Bot Verified'[39m[33m,[39m description[33m:[39m [32m`Successfully connected to @${res.data.username}`[39m[33m,[39m variant[33m:[39m [32m'success'[39m })[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null

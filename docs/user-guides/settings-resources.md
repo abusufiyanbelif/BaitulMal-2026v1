@@ -1,7 +1,7 @@
 # 📘 User Guide: /settings/resources
     
-**Build Version:** `2026.05.06.1`
-**Last Updated:** 6/5/2026, 1:49:22 am
+**Build Version:** `2026.05.06.7`
+**Last Updated:** 6/5/2026, 2:58:32 am
 **Internal Route:** `/settings/resources`
 
 ---
@@ -37,7 +37,9 @@ The following fields are mapped within this interface:
 - Test WhatsApp Connection
 - Enable Telegram Messages
 - Bot Api Token
-- Target Chat Id
+- Bot Username
+- Bot ID
+- Target Group Chat Id
 - Public Base Url
 - Gemini Api Key
 - Vision/Google Api Key
@@ -54,6 +56,7 @@ The following fields are mapped within this interface:
 - Input: Standard Monthly
 - Input: +919999999999
 - Input: bot123456:ABC-DEF...
+- Input: Testing to fetch...
 - Input: e.g. -100123456789
 - Input: https://yourdomain.com
 - Input: Enter Google AI API Key

@@ -1,9 +1,64 @@
 {
-  "version": "2026.05.06.2",
-  "buildDate": "2026-05-05T20:36:23.730Z",
+  "version": "2026.05.06.7",
+  "buildDate": "2026-05-05T21:23:40.608Z",
   "commitHash": "initial",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.05.06.7",
+      "date": "2026-05-05T21:23:40.608Z",
+      "commit": "281bde53",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "TB-15774",
+      "steps": "Manual verification required.",
+      "type": "Infrastructure & fixes",
+      "message": "Enabled multi-tab Firestore support and optimized the automated build script to preserve manual commit summaries."
+    },
+    {
+      "version": "2026.05.06.6",
+      "date": "2026-05-05T21:14:51.380Z",
+      "commit": "281bde53",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "Uncommitted changes detected. Manual verification required.",
+      "type": "Build",
+      "message": "release: v2026.05.06.2 (with local changes)"
+    },
+    {
+      "version": "2026.05.06.5",
+      "date": "2026-05-05T21:06:25.603Z",
+      "commit": "281bde53",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "Uncommitted changes detected. Manual verification required.",
+      "type": "Build",
+      "message": "release: v2026.05.06.2 (with local changes)"
+    },
+    {
+      "version": "2026.05.06.4",
+      "date": "2026-05-05T21:02:27.930Z",
+      "commit": "281bde53",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "Uncommitted changes detected. Manual verification required.",
+      "type": "Build",
+      "message": "release: v2026.05.06.2 (with local changes)"
+    },
+    {
+      "version": "2026.05.06.3",
+      "date": "2026-05-05T20:39:52.930Z",
+      "commit": "281bde53",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "Uncommitted changes detected. Manual verification required.",
+      "type": "Build",
+      "message": "release: v2026.05.06.2 (with local changes)"
+    },
     {
       "version": "2026.05.06.2",
       "date": "2026-05-05T20:36:23.730Z",
