@@ -1,25 +1,22 @@
-release: v2026.05.05.12
+release: v2026.05.06.2
 
-Type: Security, Infra & Messaging
-Message: Hardened RBAC architecture, resolved Next.js build warnings, and optimized Telegram 1-1 authorization workflows.
-Reference: n/a
+Type: Messaging & UI
+Message: Implemented Telegram Bot discovery for Group settings and a dedicated 'Bot Creation Wizard' for individual user profiles.
+Reference: TB-15774
 Branch: test_bmss_26
 Commit: [UNCOMMITTED]
 
-Technical Summary (Changes since 9bd84b49):
-- Firestore Security: Refactored `firestore.rules` to use defensive `.get()` patterns and implemented a hardcoded Sovereign Admin bypass list to prevent lockout.
-- Next.js Config: Moved `serverExternalPackages` to the top-level configuration in `next.config.js` to resolve deployment warnings.
-- Telegram Integration: 
-    - Updated `sendTelegramAction` in `src/app/messages/actions.ts` to provide user-friendly instructions for 'Forbidden' errors (requiring user-initiated /start).
-    - Verified that `@BaitulMalSolapurAlertsTest_bot` supports both Group (via ID) and 1-1 Private messaging (via User ID).
-- UI Enhancements: Updated `UserForm.tsx` with high-visibility instructions for Telegram bot authorization.
-- Identity Mirroring: Confirmed logic synchronization between Members and Donors/Beneficiaries to ensure data integrity across registries.
+Key Changes:
+- Telegram Group Config: Added automatic bot info fetching (Username/ID) in Technical Settings to verify the configured organization bot.
+- Dedicated User Bots: Implemented a Step-by-Step Bot Creation Wizard in User Profiles, allowing users to register their own @BaitulMalSS_<phone>_bot for private alerts.
+- Bot Verification: Added `getTelegramBotInfoAction` to validate bot tokens and auto-populate usernames in both Admin and User contexts.
+- Schema Update: Expanded `UserFormData` and `ResourceSettings` types to support custom bot metadata.
+- Messaging Logic: Updated `sendTelegramAction` and connectivity tests to prioritize custom bot tokens when available in user profiles.
 
-Verification Status:
-1. Admin Sovereign Bypass: VERIFIED (UID S5efNV5jpTPoxYNv6SnAlv3jNPO2).
-2. Telegram Group Messaging: VERIFIED (Chat ID -5296193449).
-3. Telegram 1-1 Messaging: READY (Requires user to /start @BaitulMalSolapurAlertsTest_bot).
-4. Production Build: SUCCESSFUL (Node wrapper documentation updated).
+Verification Steps:
+1. Test Group Bot Connection: VERIFIED (Username and ID fetched successfully).
+2. Register Custom Bot: VERIFIED (Used Register button to fetch bot info from token).
+3. Send 1-1 Test: VERIFIED (Custom bot token used for private test message).
 
 ---
-*Build Summary Updated: 5/5/2026, 8:15:00 pm*
+*Build Summary Updated: 6/5/2026, 2:10:00 am*

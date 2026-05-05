@@ -67,6 +67,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
   const [isSendingTelegramTest, setIsSendingTelegramTest] = useState(false);
   const [isSendingWhatsAppTest, setIsSendingWhatsAppTest] = useState(false);
   const [isSendingPushTest, setIsSendingPushTest] = useState(false);
+  const [isVerifyingBot, setIsVerifyingBot] = useState(false);
   
   const form = useForm<z.infer<typeof userFormSchema>>({
     resolver: zodResolver(userFormSchema),
@@ -102,6 +103,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
       },
       bankDetails: user?.bankDetails || [{ bankName: '', accountNumber: '', ifscCode: '' }],
       upiIds: user?.upiIds || [''],
+      customTelegramBotToken: user?.customTelegramBotToken || '',
+      customTelegramBotUsername: user?.customTelegramBotUsername || '',
       _isEditing: isEditing,
       idProofDeleted: false,
     },
@@ -148,6 +151,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
             female: 0,
             occupation: '',
         },
+        customTelegramBotToken: user.customTelegramBotToken || '',
+        customTelegramBotUsername: user.customTelegramBotUsername || '',
         bankDetails: user.bankDetails || [{ bankName: '', accountNumber: '', ifscCode: '' }],
         upiIds: user.upiIds || [''],
         _isEditing: isEditing,
@@ -228,7 +233,10 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
           const res = await sendTelegramAction({ 
               message: `🔔 Test Notification from BaitulMal Admin Panel.\nYour Telegram alerts are now active for Chat ID: ${chatId}.`, 
               chatId, 
-              bypassAutoCheck: true 
+              bypassAutoCheck: true,
+              configOverride: {
+                  telegramBotToken: form.getValues('customTelegramBotToken') || undefined
+              }
           });
           if (res.success) {
               toast({ title: "Telegram Test Sent", description: "The message was successfully transmitted.", variant: "success" });
@@ -444,6 +452,24 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
   const isFormDisabled = isSubmitting || isLoading || isReadOnly;
   const isSaveDisabled = isSubmitting || (isEditing && !isDirty && !permissionsChanged);
   
+  const handleVerifyCustomBot = async () => {
+    const token = form.getValues('customTelegramBotToken');
+    if (!token) return;
+
+    setIsVerifyingBot(true);
+    try {
+        const res = await getTelegramBotInfoAction({ telegramBotToken: token });
+        if (res.success && res.data) {
+            form.setValue('customTelegramBotUsername', res.data.username);
+            toast({ title: 'Bot Verified', description: `Successfully connected to @${res.data.username}`, variant: 'success' });
+        } else {
+            toast({ title: 'Verification Failed', description: res.message, variant: 'destructive' });
+        }
+    } finally {
+        setIsVerifyingBot(false);
+    }
+  };
+
   return (
     <Form {...form}>
         <form onSubmit={handleSubmit(onFormSubmit as any)} className="flex flex-col h-full overflow-hidden bg-white">
@@ -625,9 +651,80 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                                      <Info className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
                                                      <div className="space-y-1">
                                                         <p><strong>CRITICAL STEP:</strong> Getting your ID is only half the process.</p>
-                                                        <p>You MUST search for your organization's specific bot (the one sending these alerts) and click <strong>START</strong>. If you don't, the bot is blocked from sending you messages by Telegram's security policy.</p>
+                                                        <p>You MUST search for the bot (either the system bot or your custom bot below) and click <strong>START</strong>.</p>
                                                      </div>
                                                  </div>
+                                             </div>
+                                             
+                                             <div className="mt-4 p-4 rounded-xl border border-blue-200 bg-blue-50/30 space-y-4">
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-2">
+                                                        <BellRing className="h-4 w-4 text-blue-600" />
+                                                        <h4 className="text-xs font-bold text-blue-900">Advanced: Dedicated User Bot</h4>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="text-[10px] space-y-2 text-blue-800 leading-relaxed font-normal">
+                                                    <p>Want separate, private alerts? Follow these steps to create your own bot:</p>
+                                                    <ol className="list-decimal list-inside space-y-1 opacity-80">
+                                                        <li>Open <span className="font-bold">@BotFather</span> on Telegram.</li>
+                                                        <li>Send <code className="bg-blue-100 px-1 rounded">/newbot</code>.</li>
+                                                        <li>Name it: <span className="font-bold">BaitulMal Alerts ({form.getValues('phone') || 'My Bot'})</span>.</li>
+                                                        <li>Username: <span className="font-bold">BaitulMalSS_{form.getValues('phone') || 'User'}_bot</span>.</li>
+                                                        <li>Copy the <span className="font-bold text-blue-900">API Token</span> and paste it below.</li>
+                                                    </ol>
+                                                </div>
+
+                                                <div className="space-y-3">
+                                                    <FormField 
+                                                        control={control as any} 
+                                                        name="customTelegramBotToken" 
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormLabel className="text-[10px] font-bold opacity-60">Custom Bot API Token</FormLabel>
+                                                                <div className="flex gap-2">
+                                                                    <FormControl>
+                                                                        <Input 
+                                                                            placeholder="123456789:ABCDEF..." 
+                                                                            {...field} 
+                                                                            value={field.value || ''} 
+                                                                            className="font-mono text-[11px] h-8" 
+                                                                        />
+                                                                    </FormControl>
+                                                                    <Button 
+                                                                        type="button" 
+                                                                        size="sm" 
+                                                                        variant="secondary" 
+                                                                        className="h-8 text-[10px] font-bold"
+                                                                        onClick={handleVerifyCustomBot}
+                                                                        disabled={!field.value || isVerifyingBot}
+                                                                    >
+                                                                        {isVerifyingBot ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Register Bot'}
+                                                                    </Button>
+                                                                </div>
+                                                            </FormItem>
+                                                        )}
+                                                    />
+
+                                                    <FormField 
+                                                        control={control as any} 
+                                                        name="customTelegramBotUsername" 
+                                                        render={({ field }) => (
+                                                            <FormItem>
+                                                                <FormLabel className="text-[10px] font-bold opacity-60">Registered Bot Username</FormLabel>
+                                                                <FormControl>
+                                                                    <Input 
+                                                                        {...field} 
+                                                                        value={field.value || ''} 
+                                                                        readOnly 
+                                                                        placeholder="Not Registered" 
+                                                                        className="font-mono text-[10px] h-8 bg-muted/20" 
+                                                                    />
+                                                                </FormControl>
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                </div>
                                              </div>
                                             <FormControl>
                                                 <div className="flex gap-2">

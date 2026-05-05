@@ -78,6 +78,8 @@ export interface ResourceSettings extends DocumentData {
 
   // Telegram Configuration
   telegramBotToken?: string;
+  telegramBotUsername?: string;
+  telegramBotId?: string;
   telegramChatId?: string; // Default chat ID for alerts
   isTelegramEnabled?: boolean;
 

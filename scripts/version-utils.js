@@ -14,35 +14,55 @@ function getGitInfo() {
         // Check for uncommitted changes
         const isDirty = execSync('git status --porcelain').toString().trim().length > 0;
         
-        // Get the last commit that is NOT a release commit
-        const lastNonRelease = execSync('git log --grep="^release: " --invert-grep -1 --pretty=%B').toString().trim();
-        const lines = lastNonRelease.split('\n');
-        const subject = lines[0] || 'Manual Build Update';
+        // 1. Find the hash of the last release commit
+        let lastReleaseHash = '';
+        try {
+            lastReleaseHash = execSync('git log --grep="^release: " -1 --pretty=%H').toString().trim();
+        } catch (e) {}
+
+        // 2. Get all commits since the last release (excluding the release commit itself)
+        const logRange = lastReleaseHash ? `${lastReleaseHash}..HEAD` : 'HEAD';
+        const rawCommits = execSync(`git log ${logRange} --pretty=format:"%B%n---COMMIT-END---"`).toString().trim();
         
-        // Try to parse structured fields if they exist in the commit message
         let type = 'Build';
-        let message = isDirty ? `${subject} (with local changes)` : subject;
+        let message = '';
         let reference = 'n/a';
         let steps = isDirty ? 'Uncommitted changes detected. Manual verification required.' : 'Manual verification required.';
 
-        lines.forEach(line => {
-            if (line.toLowerCase().startsWith('type:')) {
-                const parts = line.split(':');
-                if (parts.length > 1) type = parts.slice(1).join(':').trim();
-            }
-            if (line.toLowerCase().startsWith('message:')) {
-                const parts = line.split(':');
-                if (parts.length > 1) message = isDirty ? `${parts.slice(1).join(':').trim()} (local)` : parts.slice(1).join(':').trim();
-            }
-            if (line.toLowerCase().startsWith('reference:')) {
-                const parts = line.split(':');
-                if (parts.length > 1) reference = parts.slice(1).join(':').trim();
-            }
-            if (line.toLowerCase().startsWith('verification steps:')) {
-                const parts = line.split(':');
-                if (parts.length > 1) steps = parts.slice(1).join(':').trim();
-            }
-        });
+        if (rawCommits) {
+            const commitBlocks = rawCommits.split('---COMMIT-END---').filter(b => b.trim());
+            const subjects = [];
+            const refs = new Set();
+
+            commitBlocks.forEach(block => {
+                const lines = block.trim().split('\n');
+                if (lines[0]) subjects.push(lines[0]);
+
+                lines.forEach(line => {
+                    const l = line.toLowerCase();
+                    if (l.startsWith('type:')) {
+                        const t = line.split(':').slice(1).join(':').trim();
+                        if (t) type = t;
+                    }
+                    if (l.startsWith('reference:')) {
+                        const r = line.split(':').slice(1).join(':').trim();
+                        if (r && r !== 'n/a') refs.add(r);
+                    }
+                });
+            });
+
+            message = subjects.join('; ');
+            if (refs.size > 0) reference = Array.from(refs).join(', ');
+        } else {
+            // No new commits since last release, use last commit but mark as local
+            const lastCommit = execSync('git log -1 --pretty=%B').toString().trim();
+            const lines = lastCommit.split('\n');
+            message = lines[0] || 'Manual Build Update';
+        }
+
+        if (isDirty) {
+            message = message ? `${message} (with local changes)` : 'Local modifications only';
+        }
 
         return { hash, branch, repo, type, message, reference, steps, isDirty };
     } catch (e) {

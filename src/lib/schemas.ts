@@ -22,6 +22,8 @@ export const userFormSchema = z.object({
   idProofDeleted: z.boolean().optional(),
   password: z.string().optional(),
   telegramChatId: z.string().optional(),
+  customTelegramBotToken: z.string().optional(),
+  customTelegramBotUsername: z.string().optional(),
   notificationsEnabled: z.boolean().optional(),
   whatsappNotificationsEnabled: z.boolean().optional(),
   organizationGroup: z.string().optional().or(z.literal('none')),

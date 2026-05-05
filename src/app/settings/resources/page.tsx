@@ -40,7 +40,7 @@ import { Switch } from '@/components/ui/switch';
 import { BrandedLoader } from '@/components/branded-loader';
 import { getNestedValue } from '@/lib/utils';
 import type { ResourceSettings } from '@/lib/types';
-import { getWhatsAppAccountInfoAction, sendTestWhatsAppAction, sendTelegramAction } from '@/app/messages/actions';
+import { getWhatsAppAccountInfoAction, sendTestWhatsAppAction, sendTelegramAction, getTelegramBotInfoAction } from '@/app/messages/actions';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Send } from 'lucide-react';
 
@@ -143,12 +143,22 @@ export default function ResourceSettingsPage() {
         setIsTestingTelegram(true);
         try {
             const config = editableData || undefined;
+            
+            // 1. Fetch Bot Info first
+            const botInfo = await getTelegramBotInfoAction(config);
+            if (botInfo.success && botInfo.data) {
+                handleFieldChange('telegramBotUsername', botInfo.data.username);
+                handleFieldChange('telegramBotId', botInfo.data.id.toString());
+            }
+
+            // 2. Send the test message
             const result = await sendTelegramAction({
-                message: '🧪 *BaitulMal Telegram Test*\n\nYour bot is now successfully connected to the BaitulMal Registry system.\n\n*Status:* Online ✅',
+                message: `🧪 *BaitulMal Telegram Test*\n\nYour bot (@${botInfo.data?.username || 'unknown'}) is now successfully connected.\n\n*Status:* Online ✅`,
                 configOverride: config
             });
+
             if (result.success) {
-                toast({ title: 'Telegram Success', description: 'Check your Telegram group for the test message.', variant: 'success' });
+                toast({ title: 'Telegram Success', description: `Check @${botInfo.data?.username || 'the bot'} for the test message.`, variant: 'success' });
             } else {
                 toast({ title: 'Telegram Failed', description: result.message, variant: 'destructive' });
             }
@@ -504,8 +514,29 @@ export default function ResourceSettingsPage() {
                                 </div>
                             </div>
 
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">Bot Username</Label>
+                                    <Input 
+                                        value={editableData?.telegramBotUsername || ''} 
+                                        readOnly
+                                        placeholder="Testing to fetch..."
+                                        className="font-mono text-[10px] bg-muted/20"
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">Bot ID</Label>
+                                    <Input 
+                                        value={editableData?.telegramBotId || ''} 
+                                        readOnly
+                                        placeholder="Testing to fetch..."
+                                        className="font-mono text-[10px] bg-muted/20"
+                                    />
+                                </div>
+                            </div>
+
                             <div className="space-y-2">
-                                <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">Target Chat Id</Label>
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">Target Group Chat Id</Label>
                                 <Input 
                                     value={editableData?.telegramChatId || ''} 
                                     onChange={(e) => handleFieldChange('telegramChatId', e.target.value)}

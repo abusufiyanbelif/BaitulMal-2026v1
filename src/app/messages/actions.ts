@@ -1097,6 +1097,42 @@ export async function sendTelegramAction(params: {
 }
 
 /**
+ * Fetch basic info about the Telegram Bot using the provided token.
+ */
+export async function getTelegramBotInfoAction(configOverride?: Partial<ResourceSettings>) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: 'DB Unavailable' };
+
+    try {
+        const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+        const resources = resourceSnap.data() as ResourceSettings;
+
+        let TOKEN = (configOverride?.telegramBotToken || resources?.telegramBotToken || '').trim();
+        if (!TOKEN) return { success: false, message: 'Bot Token missing.' };
+
+        if (TOKEN.toLowerCase().startsWith('bot')) TOKEN = TOKEN.substring(3);
+
+        const response = await fetch(`https://api.telegram.org/bot${TOKEN}/getMe`);
+        const data = await response.json();
+
+        if (data.ok) {
+            return { 
+                success: true, 
+                data: {
+                    id: data.result.id,
+                    username: data.result.username,
+                    name: data.result.first_name
+                }
+            };
+        } else {
+            return { success: false, message: data.description || 'Failed to fetch bot info' };
+        }
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+
+/**
  * Send a Test WhatsApp Message
  */
 export async function sendTestWhatsAppAction(to: string, configOverride?: Partial<ResourceSettings>) {
@@ -1196,7 +1232,10 @@ export async function sendUserTelegramTestAction() {
         return await sendTelegramAction({
             message: `🧪 *BaitulMal Telegram Connectivity Test*\n\nHello *${userData.name || 'User'}*,\n\nYour Telegram integration is verified.\n\n*Status:* Active ✅\n*Chat ID:* \`${userData.telegramChatId}\``,
             chatId: userData.telegramChatId,
-            bypassAutoCheck: true
+            bypassAutoCheck: true,
+            configOverride: {
+                telegramBotToken: userData.customTelegramBotToken || undefined
+            }
         });
 
     } catch (error: any) {

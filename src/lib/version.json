@@ -1,9 +1,42 @@
 {
-  "version": "2026.05.05.11",
-  "buildDate": "2026-05-05T13:48:17.362Z",
+  "version": "2026.05.06.2",
+  "buildDate": "2026-05-05T20:36:23.730Z",
   "commitHash": "initial",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.05.06.2",
+      "date": "2026-05-05T20:36:23.730Z",
+      "commit": "1c231cb4",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "Uncommitted changes detected. Manual verification required.",
+      "type": "Build",
+      "message": "release: v2026.05.05.12 (with local changes)"
+    },
+    {
+      "version": "2026.05.06.1",
+      "date": "2026-05-05T20:17:04.595Z",
+      "commit": "1c231cb4",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "Uncommitted changes detected. Manual verification required.",
+      "type": "Build",
+      "message": "release: v2026.05.05.12 (with local changes)"
+    },
+    {
+      "version": "2026.05.05.12",
+      "date": "2026-05-05T16:50:23.825Z",
+      "commit": "1c231cb4",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "Manual verification required.",
+      "type": "Build",
+      "message": "doc auto"
+    },
     {
       "version": "2026.05.05.11",
       "date": "2026-05-05T13:48:17.362Z",
