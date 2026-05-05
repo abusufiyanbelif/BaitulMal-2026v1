@@ -665,13 +665,15 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                                 </div>
                                                 
                                                 <div className="text-[10px] space-y-2 text-blue-800 leading-relaxed font-normal">
-                                                    <p>Want separate, private alerts? Follow these steps to create your own bot:</p>
-                                                    <ol className="list-decimal list-inside space-y-1 opacity-80">
+                                                    <p className="font-bold">Want separate, private alerts? Follow these steps to create your own dedicated bot:</p>
+                                                    <ol className="list-decimal list-inside space-y-2 opacity-90">
                                                         <li>Open <span className="font-bold">@BotFather</span> on Telegram.</li>
-                                                        <li>Send <code className="bg-blue-100 px-1 rounded">/newbot</code>.</li>
-                                                        <li>Name it: <span className="font-bold">BaitulMal Alerts ({form.getValues('phone') || 'My Bot'})</span>.</li>
-                                                        <li>Username: <span className="font-bold">BaitulMalSS_{form.getValues('phone') || 'User'}_bot</span>.</li>
-                                                        <li>Copy the <span className="font-bold text-blue-900">API Token</span> and paste it below.</li>
+                                                        <li>Send <code className="bg-blue-100 px-1 rounded">/newbot</code> and follow the prompts.</li>
+                                                        <li><strong>Name:</strong> <span className="font-bold">BaitulMal Alerts ({form.getValues('phone') || 'My Bot'})</span></li>
+                                                        <li><strong>Username:</strong> <span className="font-bold">BaitulMalSS_{form.getValues('phone') || 'User'}_bot</span></li>
+                                                        <li><strong>Copy the API Token</strong> provided by BotFather and paste it below.</li>
+                                                        <li><span className="text-blue-900 font-bold underline">CRITICAL:</span> Search for your <strong>NEW bot</strong> on Telegram and click <strong>START</strong>.</li>
+                                                        <li><span className="font-bold italic text-blue-700">Group Usage:</span> Add bot to group, send <code>/id</code> or <code>/getgroupid</code>, and paste that ID into the 'Chat ID' field below.</li>
                                                     </ol>
                                                 </div>
 

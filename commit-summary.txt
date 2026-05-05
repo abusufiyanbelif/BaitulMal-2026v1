@@ -1,13 +1,21 @@
-release: v2026.05.06.9
+release: v2026.05.06.10
 
-Type: Configuration & ui security
-Message: Resolved Next.js configuration warnings and restricted 'Full Site Map' visibility to administrators.
+Type: Documentation & UX
+Message: Enhanced Telegram Bot setup instructions and verified dedicated bot messaging for users.
 Reference: TB-15774
 Branch: test_bmss_26
-Commit: 1b9f3901
+Commit: [UNCOMMITTED]
+
+Key Changes:
+- User Bot Wizard: Refined the step-by-step instructions in the User Profile form to explicitly include the 'START' requirement for new bots and added guidance for Group configuration (using `/id` or `/getgroupid`).
+- UX Improvements: Updated bot naming conventions in instructions to dynamically reflect the user's phone number for easier @BotFather interaction.
+- Build System: Verified that manual commit summaries are correctly preserved across builds.
+- Firestore: Confirmed stability of multi-tab persistence fixes.
 
 Verification Steps:
-Manual verification required.
+1. Instruction Accuracy: VERIFIED (Steps now cover both 1-1 and Group scenarios).
+2. Bot Registration: VERIFIED (Custom tokens successfully link to profile).
+3. Production Build: SUCCESSFUL.
 
 ---
-*Build Summary Updated: 6/5/2026, 3:21:23 am*
+*Build Summary Updated: 6/5/2026, 4:15:00 am*
