@@ -255,6 +255,8 @@ export default function UserDetailsPage() {
         bankDetails: data.bankDetails,
         upiIds: data.upiIds,
         telegramChatId: data.telegramChatId || '',
+        customTelegramBotToken: data.customTelegramBotToken || '',
+        customTelegramBotUsername: data.customTelegramBotUsername || '',
         notificationsEnabled: data.notificationsEnabled ?? true,
         whatsappNotificationsEnabled: data.whatsappNotificationsEnabled ?? true,
         organizationGroup: (data.organizationGroup === 'none' ? null : data.organizationGroup) as any,

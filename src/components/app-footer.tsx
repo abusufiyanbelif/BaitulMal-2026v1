@@ -54,8 +54,6 @@ export function AppFooter() {
     setIsMounted(true);
   }, []);
 
-  if (pathname === '/login') return null;
-
   const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
   const validQrUrl = paymentSettings?.qrCodeUrl?.trim() ? paymentSettings.qrCodeUrl : null;
 
@@ -138,7 +136,7 @@ export function AppFooter() {
           </div>
 
           <div className="space-y-6 md:pl-10">
-            <h3 className="text-[10px] font-black text-primary/40 tracking-tight capitalize">
+            <h3 className="text-xs font-black text-primary/60 tracking-tight capitalize">
               Quick Links
             </h3>
             <nav className="flex flex-col gap-4">
@@ -164,7 +162,7 @@ export function AppFooter() {
           </div>
 
           <div className="flex flex-col md:items-end gap-6">
-            <h3 className="text-[10px] font-black text-primary/40 tracking-tight capitalize">
+            <h3 className="text-xs font-black text-primary/60 tracking-tight capitalize">
               Support Us
             </h3>
             <div className="w-full sm:w-auto">
@@ -176,14 +174,14 @@ export function AppFooter() {
                     <HeartHandshake className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
                     How to Donate
                 </Button>
-                <p className="text-[9px] text-muted-foreground mt-3 font-normal italic md:text-right tracking-tight opacity-60">
+                <p className="text-[11px] text-muted-foreground mt-3 font-normal italic md:text-right tracking-tight opacity-80">
                     Use QR Code or Bank Transfer.
                 </p>
             </div>
           </div>
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-6 text-[10px] text-muted-foreground font-semibold">
+        <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-muted-foreground font-semibold">
           <div className="flex items-center justify-center gap-x-8 gap-y-2 flex-wrap">
             {paymentSettings?.regNo && (
               <span className="flex items-center gap-2">
@@ -202,7 +200,7 @@ export function AppFooter() {
             <p className="text-center sm:text-right font-normal text-muted-foreground opacity-80">
               {paymentSettings?.copyright || `© 2026 ${brandingSettings?.name || 'Organization Name'}. All Rights Reserved.`}
             </p>
-            <div className="flex items-center gap-2 font-mono text-[8px] opacity-30 hover:opacity-100 transition-all cursor-default">
+            <div className="flex items-center gap-2 font-mono text-[11px] opacity-60 hover:opacity-100 transition-all cursor-default">
                 <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-black uppercase tracking-widest">Build</span>
                 <span>{versionData.version}</span>
                 <span className="opacity-40">({versionData.buildDate || '2026-05-02'})</span>

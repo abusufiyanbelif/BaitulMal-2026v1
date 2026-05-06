@@ -82,6 +82,16 @@ export interface ResourceSettings extends DocumentData {
   telegramBotId?: string;
   telegramChatId?: string; // Default chat ID for alerts
   isTelegramEnabled?: boolean;
+  portalOtpValidityMinutes?: number;
+  
+  // Email Configuration
+  isEmailEnabled?: boolean;
+  smtpHost?: string;
+  smtpPort?: number;
+  smtpUser?: string;
+  smtpPass?: string;
+  fromEmail?: string;
+  fromName?: string;
 
   // Base URLs
   baseUrl?: string;
@@ -168,8 +178,9 @@ export interface MessageTemplate extends DocumentData {
   name: string;
   subject: string;
   body: string;
-  type: 'WhatsApp' | 'Email' | 'SMS' | 'Telegram';
-  category: 'Verification' | 'Alert' | 'Update' | 'Marketing';
+  type: 'WhatsApp' | 'Email' | 'SMS' | 'Telegram' | 'MultiChannel';
+  category: string;
+  profileType?: 'Member' | 'Donor' | 'Beneficiary' | 'All';
   variables: string[]; // e.g. ["name", "recordId", "module", "url"]
   isActive: boolean;
   updatedAt?: Timestamp | FieldValue;

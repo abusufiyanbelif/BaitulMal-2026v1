@@ -40,7 +40,7 @@ import { Switch } from '@/components/ui/switch';
 import { BrandedLoader } from '@/components/branded-loader';
 import { getNestedValue } from '@/lib/utils';
 import type { ResourceSettings } from '@/lib/types';
-import { getWhatsAppAccountInfoAction, sendTestWhatsAppAction, sendTelegramAction, getTelegramBotInfoAction } from '@/app/messages/actions';
+import { getWhatsAppAccountInfoAction, sendTestWhatsAppAction, sendTelegramAction, getTelegramBotInfoAction, sendTestEmailAction } from '@/app/messages/actions';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Send } from 'lucide-react';
 
@@ -60,6 +60,8 @@ export default function ResourceSettingsPage() {
     const [showFbApiKey, setShowFbApiKey] = useState(false);
     const [isTestingGemini, setIsTestingGemini] = useState(false);
     const [isTestingTelegram, setIsTestingTelegram] = useState(false);
+    const [isTestingEmail, setIsTestingEmail] = useState(false);
+    const [showSmtpPass, setShowSmtpPass] = useState(false);
     
     const [editableData, setEditableData] = useState<ResourceSettings | null>(null);
     const [waStatus, setWaStatus] = useState<any>(null);
@@ -167,6 +169,27 @@ export default function ResourceSettingsPage() {
         }
     };
 
+    const handleTestEmail = async () => {
+        if (!testPhone || !testPhone.includes('@')) {
+            toast({ title: 'Email Required', description: 'Enter a valid email in the test field.', variant: 'destructive' });
+            return;
+        }
+        setIsTestingEmail(true);
+        try {
+            const config = editableData || undefined;
+            const result = await sendTestEmailAction(testPhone, config);
+            if (result.success) {
+                toast({ title: 'Email Test Success', description: 'Diagnostic message dispatched to your inbox.', variant: 'success' });
+            } else {
+                toast({ title: 'Email Test Failed', description: result.message, variant: 'destructive' });
+            }
+        } catch (err: any) {
+            toast({ title: 'System Error', description: err.message, variant: 'destructive' });
+        } finally {
+            setIsTestingEmail(false);
+        }
+    };
+
     const handleTestGemini = async () => {
         setIsTestingGemini(true);
         try {
@@ -204,7 +227,10 @@ export default function ResourceSettingsPage() {
                 whatsappApiKey: editableData.whatsappApiKey?.trim() || '',
                 metaAccessToken: editableData.metaAccessToken?.trim() || '',
                 telegramBotToken: editableData.telegramBotToken?.trim() || '',
-                telegramChatId: editableData.telegramChatId?.toString().trim() || ''
+                telegramChatId: editableData.telegramChatId?.toString().trim() || '',
+                smtpHost: editableData.smtpHost?.trim() || '',
+                smtpUser: editableData.smtpUser?.trim() || '',
+                fromEmail: editableData.fromEmail?.trim() || ''
             };
             await setDoc(doc(firestore, 'settings', 'resources'), cleanedData, { merge: true });
             toast({ title: 'Success', description: 'Resource Configuration secured.', variant: 'success' });
@@ -467,6 +493,119 @@ export default function ResourceSettingsPage() {
                                     </Button>
                                 </div>
                             </div>
+                        </CardContent>
+                    </Card>
+
+                    <Card className="border-primary/10 shadow-sm overflow-hidden bg-white mb-6">
+                        <CardHeader className="bg-primary/5 border-b">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-600">
+                                    <Mail className="h-5 w-5" />
+                                </div>
+                                <div>
+                                    <CardTitle className="text-lg font-bold text-primary tracking-tight">Email Service (SMTP)</CardTitle>
+                                    <CardDescription className="text-xs font-normal text-primary/60">Manage automated email alerts.</CardDescription>
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent className="pt-6 space-y-4">
+                            <div className="flex items-center justify-between p-3 rounded-xl border border-primary/10 bg-primary/5">
+                                <div className="space-y-0.5">
+                                    <Label className="text-xs font-bold text-primary">Enable Email Alerts</Label>
+                                    <p className="text-[10px] text-muted-foreground font-normal">Dispatch notifications via organizational email.</p>
+                                </div>
+                                <Switch 
+                                    checked={editableData?.isEmailEnabled ?? true} 
+                                    onCheckedChange={(checked) => isEditMode && handleFieldChange('isEmailEnabled', checked.toString())}
+                                    disabled={!isEditMode}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">SMTP Host</Label>
+                                    <Input 
+                                        value={editableData?.smtpHost || ''} 
+                                        onChange={(e) => handleFieldChange('smtpHost', e.target.value)}
+                                        placeholder="smtp.gmail.com"
+                                        className="font-mono text-xs"
+                                        readOnly={!isEditMode}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">SMTP Port</Label>
+                                    <Input 
+                                        type="number"
+                                        value={editableData?.smtpPort || 587} 
+                                        onChange={(e) => handleFieldChange('smtpPort', e.target.value)}
+                                        placeholder="587"
+                                        className="font-mono text-xs"
+                                        readOnly={!isEditMode}
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">SMTP Username</Label>
+                                <Input 
+                                    value={editableData?.smtpUser || ''} 
+                                    onChange={(e) => handleFieldChange('smtpUser', e.target.value)}
+                                    placeholder="user@example.com"
+                                    className="font-mono text-xs"
+                                    readOnly={!isEditMode}
+                                />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">SMTP Password</Label>
+                                <div className="relative">
+                                    <Input 
+                                        type={showSmtpPass || isEditMode ? "text" : "password"}
+                                        value={editableData?.smtpPass || ''} 
+                                        onChange={(e) => handleFieldChange('smtpPass', e.target.value)}
+                                        className="font-mono text-xs pr-10"
+                                        readOnly={!isEditMode}
+                                    />
+                                    {!isEditMode && (
+                                        <Button type="button" variant="ghost" size="icon" className="absolute right-0 top-0 h-full w-10" onClick={() => setShowSmtpPass(!showSmtpPass)}>
+                                            {showSmtpPass ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                                        </Button>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">From Email</Label>
+                                    <Input 
+                                        value={editableData?.fromEmail || ''} 
+                                        onChange={(e) => handleFieldChange('fromEmail', e.target.value)}
+                                        placeholder="no-reply@organization.com"
+                                        className="font-mono text-xs"
+                                        readOnly={!isEditMode}
+                                    />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">From Name</Label>
+                                    <Input 
+                                        value={editableData?.fromName || ''} 
+                                        onChange={(e) => handleFieldChange('fromName', e.target.value)}
+                                        placeholder="BaitulMal Alerts"
+                                        className="font-mono text-xs"
+                                        readOnly={!isEditMode}
+                                    />
+                                </div>
+                            </div>
+
+                            <Button 
+                                onClick={handleTestEmail} 
+                                disabled={isTestingEmail || !editableData?.smtpHost} 
+                                variant="outline" 
+                                className="w-full font-bold h-9 border-indigo-500/20 text-indigo-700 hover:bg-indigo-50"
+                            >
+                                {isTestingEmail ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Mail className="h-4 w-4 mr-2" />}
+                                Check Email Connection
+                            </Button>
                         </CardContent>
                     </Card>
 

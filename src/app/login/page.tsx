@@ -25,7 +25,8 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Loader2, AlertTriangle, ExternalLink, ArrowLeft, HeartHandshake, HandHelping } from 'lucide-react';
+import { Loader2, AlertTriangle, ExternalLink, ArrowLeft, HeartHandshake, HandHelping, Mail, MessageSquare, Key, Lock, CheckCircle2 } from 'lucide-react';
+import { sendPortalOTPAction, resetPasswordWithOTPAction } from '@/app/portal-login/actions';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import Link from 'next/link';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -54,6 +55,11 @@ function LoginContent() {
 
   const [isResetDialogOpen, setIsResetDialogOpen] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
+  const [resetLoginId, setResetLoginId] = useState('');
+  const [resetOtp, setResetOtp] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [resetStep, setResetStep] = useState<'request' | 'verify' | 'success'>('request');
+  const [resetMethod, setResetMethod] = useState<'email' | 'telegram'>('email');
   const [isSendingReset, setIsSendingReset] = useState(false);
 
   const form = useForm<LoginFormValues>({
@@ -123,36 +129,65 @@ function LoginContent() {
         toast({ title: "Error", description: "Authentication service is not available.", variant: "destructive"});
         return;
     }
-    if (!resetEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resetEmail)) {
-        toast({ title: "Invalid email", description: "Please enter a valid email address.", variant: "destructive"});
-        return;
-    }
+    
+    if (resetMethod === 'email') {
+        if (!resetEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(resetEmail)) {
+            toast({ title: "Invalid email", description: "Please enter a valid email address.", variant: "destructive"});
+            return;
+        }
 
-    setIsSendingReset(true);
-    const actionCodeSettings = {
-        url: `${window.location.origin}/login`,
-        handleCodeInApp: false,
-    };
-    try {
-        await sendPasswordResetEmail(auth, resetEmail, actionCodeSettings);
-        toast({
-            title: "Password reset email sent",
-            description: `If an account exists for ${resetEmail}, you will receive an email with instructions to reset your password.`,
-            variant: "success",
-            duration: 9000,
-        });
-    } catch (error: any) {
-        console.error("Password reset error:", error);
-        toast({
-            title: "Password reset email sent",
-            description: `If an account exists for ${resetEmail}, you will receive an email with instructions to reset your password.`,
-            variant: "success",
-            duration: 9000,
-        });
-    } finally {
-        setIsSendingReset(false);
-        setIsResetDialogOpen(false);
-        setResetEmail('');
+        setIsSendingReset(true);
+        try {
+            await sendPasswordResetEmail(auth, resetEmail, { url: `${window.location.origin}/login`, handleCodeInApp: false });
+            toast({ title: "Reset email sent", description: `Instructions have been dispatched to ${resetEmail}.`, variant: "success" });
+            setIsResetDialogOpen(false);
+        } catch (error: any) {
+            toast({ title: "Error", description: error.message, variant: "destructive" });
+        } finally {
+            setIsSendingReset(false);
+        }
+    } else {
+        // Telegram OTP flow
+        if (resetStep === 'request') {
+            if (!resetLoginId) {
+                toast({ title: "Identification Required", description: "Please enter your Login ID or Phone Number.", variant: "destructive"});
+                return;
+            }
+            setIsSendingReset(true);
+            try {
+                const res = await sendPortalOTPAction(resetLoginId);
+                if (res.success) {
+                    toast({ title: "OTP Dispatched", description: "Check your Telegram for the verification code.", variant: "success" });
+                    setResetStep('verify');
+                } else {
+                    toast({ title: "Dispatch Failed", description: res.message, variant: "destructive" });
+                }
+            } finally {
+                setIsSendingReset(false);
+            }
+        } else {
+            // Verify & Reset
+            if (!resetOtp || resetOtp.length !== 6) {
+                toast({ title: "Invalid OTP", description: "Please enter the 6-digit code from Telegram.", variant: "destructive"});
+                return;
+            }
+            if (!newPassword || newPassword.length < 6) {
+                toast({ title: "Invalid Password", description: "New password must be at least 6 characters.", variant: "destructive"});
+                return;
+            }
+            setIsSendingReset(true);
+            try {
+                const res = await resetPasswordWithOTPAction(resetLoginId, resetOtp, newPassword);
+                if (res.success) {
+                    setResetStep('success');
+                    toast({ title: "Password Updated", description: res.message, variant: "success" });
+                } else {
+                    toast({ title: "Reset Failed", description: res.message, variant: "destructive" });
+                }
+            } finally {
+                setIsSendingReset(false);
+            }
+        }
     }
   };
 
@@ -238,36 +273,139 @@ function LoginContent() {
           </Form>
           </CardContent>
           <CardFooter className="justify-center pt-4">
-              <Dialog open={isResetDialogOpen} onOpenChange={setIsResetDialogOpen}>
+              <Dialog open={isResetDialogOpen} onOpenChange={(open) => {
+                  setIsResetDialogOpen(open);
+                  if (!open) { setResetStep('request'); setResetOtp(''); setNewPassword(''); }
+              }}>
                   <DialogTrigger asChild>
                       <Button variant="link" className="p-0 h-auto text-sm font-bold text-primary">Forgot password?</Button>
                   </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px] animate-fade-in-zoom">
-                      <DialogHeader>
-                          <DialogTitle className="font-bold text-primary">Reset password</DialogTitle>
-                          <DialogDescription className="font-normal">
-                              Enter your email address and we'll send you a link to reset your password.
+                  <DialogContent className="sm:max-w-[450px] animate-fade-in-zoom p-0 overflow-hidden border-none shadow-2xl">
+                      <div className="bg-primary p-6 text-white">
+                          <DialogTitle className="text-2xl font-bold flex items-center gap-2">
+                              <Key className="h-6 w-6" /> Recovery Portal
+                          </DialogTitle>
+                          <DialogDescription className="text-white/80 mt-1">
+                              {resetStep === 'success' ? 'Password successfully updated' : 'Restore access to your organization account.'}
                           </DialogDescription>
-                      </DialogHeader>
-                      <div className="py-4 space-y-2">
-                          <Label htmlFor="reset-email" className="font-bold">Email address</Label>
-                          <Input
-                              id="reset-email"
-                              type="email"
-                              placeholder="user@example.com"
-                              value={resetEmail}
-                              onChange={(e) => setResetEmail(e.target.value)}
-                              disabled={isSendingReset}
-                              className="font-normal"
-                          />
                       </div>
-                      <DialogFooter>
-                          <Button type="button" variant="outline" onClick={() => setIsResetDialogOpen(false)} disabled={isSendingReset} className="font-bold">Cancel</Button>
-                          <Button type="submit" onClick={handlePasswordReset} disabled={isSendingReset} className="transition-transform active:scale-95 font-bold">
-                              {isSendingReset && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                              Send reset link
-                          </Button>
-                      </DialogFooter>
+                      
+                      <div className="p-6 space-y-6 bg-white">
+                          {resetStep === 'success' ? (
+                              <div className="flex flex-col items-center justify-center py-8 text-center space-y-4 animate-fade-in-up">
+                                  <div className="h-20 w-20 bg-green-100 rounded-full flex items-center justify-center">
+                                      <CheckCircle2 className="h-10 w-10 text-green-600" />
+                                  </div>
+                                  <h3 className="text-xl font-bold text-primary">Identity Restored</h3>
+                                  <p className="text-sm text-muted-foreground max-w-xs">Your password has been securely updated. You can now login with your new credentials.</p>
+                                  <Button className="w-full font-bold h-12" onClick={() => setIsResetDialogOpen(false)}>Close Recovery Portal</Button>
+                              </div>
+                          ) : (
+                              <>
+                                  <div className="grid grid-cols-2 gap-2 bg-primary/5 p-1 rounded-xl">
+                                      <Button 
+                                          variant={resetMethod === 'email' ? 'default' : 'ghost'} 
+                                          className={`font-bold rounded-lg h-10 ${resetMethod === 'email' ? 'shadow-md' : 'text-primary/60'}`}
+                                          onClick={() => { setResetMethod('email'); setResetStep('request'); }}
+                                          disabled={resetStep === 'verify'}
+                                      >
+                                          <Mail className="mr-2 h-4 w-4" /> Email
+                                      </Button>
+                                      <Button 
+                                          variant={resetMethod === 'telegram' ? 'default' : 'ghost'} 
+                                          className={`font-bold rounded-lg h-10 ${resetMethod === 'telegram' ? 'shadow-md' : 'text-primary/60'}`}
+                                          onClick={() => setResetMethod('telegram')}
+                                          disabled={resetStep === 'verify'}
+                                      >
+                                          <MessageSquare className="mr-2 h-4 w-4" /> Telegram
+                                      </Button>
+                                  </div>
+
+                                  {resetMethod === 'email' ? (
+                                      <div className="space-y-4 animate-fade-in-up">
+                                          <div className="space-y-2">
+                                              <Label htmlFor="reset-email" className="font-bold text-primary">Email Address</Label>
+                                              <Input
+                                                  id="reset-email"
+                                                  type="email"
+                                                  placeholder="your.email@organization.com"
+                                                  value={resetEmail}
+                                                  onChange={(e) => setResetEmail(e.target.value)}
+                                                  disabled={isSendingReset}
+                                                  className="h-12 border-primary/10 rounded-xl"
+                                              />
+                                          </div>
+                                          <Button onClick={handlePasswordReset} disabled={isSendingReset} className="w-full h-12 font-bold text-lg shadow-lg active:scale-95 transition-transform">
+                                              {isSendingReset ? <Loader2 className="h-5 w-5 animate-spin" /> : "Send Reset Link"}
+                                          </Button>
+                                      </div>
+                                  ) : (
+                                      <div className="space-y-6 animate-fade-in-up">
+                                          {resetStep === 'request' ? (
+                                              <div className="space-y-4">
+                                                  <div className="space-y-2">
+                                                      <Label htmlFor="reset-loginid" className="font-bold text-primary">Login ID or Phone Number</Label>
+                                                      <Input
+                                                          id="reset-loginid"
+                                                          placeholder="e.g. abusufiyan.belif"
+                                                          value={resetLoginId}
+                                                          onChange={(e) => setResetLoginId(e.target.value)}
+                                                          disabled={isSendingReset}
+                                                          className="h-12 border-primary/10 rounded-xl font-mono"
+                                                      />
+                                                      <p className="text-[10px] text-primary/60 italic">We will dispatch an OTP to your linked Telegram account.</p>
+                                                  </div>
+                                                  <Button onClick={handlePasswordReset} disabled={isSendingReset} className="w-full h-12 font-bold text-lg shadow-lg active:scale-95 transition-transform">
+                                                      {isSendingReset ? <Loader2 className="h-5 w-5 animate-spin" /> : "Dispatch Telegram OTP"}
+                                                  </Button>
+                                              </div>
+                                          ) : (
+                                              <div className="space-y-4">
+                                                  <div className="p-4 bg-primary/5 rounded-xl border border-primary/10 flex items-start gap-3">
+                                                      <Lock className="h-5 w-5 text-primary mt-0.5" />
+                                                      <div className="space-y-1">
+                                                          <p className="text-xs font-bold text-primary">Verification Code Sent</p>
+                                                          <p className="text-[10px] text-muted-foreground">Check your Telegram for a 6-digit OTP code.</p>
+                                                      </div>
+                                                  </div>
+                                                  
+                                                  <div className="space-y-2">
+                                                      <Label htmlFor="reset-otp" className="font-bold text-primary">Enter 6-Digit OTP</Label>
+                                                      <Input
+                                                          id="reset-otp"
+                                                          maxLength={6}
+                                                          placeholder="000000"
+                                                          value={resetOtp}
+                                                          onChange={(e) => setResetOtp(e.target.value.replace(/\D/g, ''))}
+                                                          className="h-12 border-primary/10 rounded-xl text-center text-2xl font-bold tracking-[0.5em]"
+                                                      />
+                                                  </div>
+
+                                                  <div className="space-y-2">
+                                                      <Label htmlFor="new-password" className="font-bold text-primary">New Password</Label>
+                                                      <Input
+                                                          id="new-password"
+                                                          type="password"
+                                                          placeholder="At least 6 characters"
+                                                          value={newPassword}
+                                                          onChange={(e) => setNewPassword(e.target.value)}
+                                                          className="h-12 border-primary/10 rounded-xl"
+                                                      />
+                                                  </div>
+
+                                                  <div className="flex gap-2">
+                                                      <Button variant="outline" className="flex-1 h-12 font-bold" onClick={() => setResetStep('request')}>Back</Button>
+                                                      <Button onClick={handlePasswordReset} disabled={isSendingReset} className="flex-[2] h-12 font-bold text-lg shadow-lg active:scale-95 transition-transform bg-green-600 hover:bg-green-700">
+                                                          {isSendingReset ? <Loader2 className="h-5 w-5 animate-spin" /> : "Verify & Reset"}
+                                                      </Button>
+                                                  </div>
+                                              </div>
+                                          )}
+                                      </div>
+                                  )}
+                              </>
+                          )}
+                      </div>
                   </DialogContent>
               </Dialog>
           </CardFooter>

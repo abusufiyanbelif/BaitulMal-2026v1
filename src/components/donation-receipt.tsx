@@ -19,7 +19,7 @@ interface DonationReceiptProps {
 
 const ReceiptRow = ({ label, value, isMono = false, isSmall = false }: { label: string; value: React.ReactNode, isMono?: boolean, isSmall?: boolean }) => (
     <div className="flex justify-between items-baseline gap-4 py-2 border-b border-slate-50/50 last:border-0">
-        <p className={cn("font-black text-muted-foreground uppercase tracking-widest whitespace-nowrap", isSmall ? "text-[8px]" : "text-[10px]")}>{label}</p>
+        <p className={cn("font-black text-muted-foreground uppercase tracking-widest whitespace-nowrap", isSmall ? "text-[11px]" : "text-xs")}>{label}</p>
         <p className={cn("font-bold text-right text-slate-900", isSmall ? "text-xs" : "text-sm", isMono ? 'font-mono' : '')}>{value}</p>
     </div>
 );
@@ -50,7 +50,7 @@ export const DonationReceipt = React.forwardRef<HTMLDivElement, DonationReceiptP
                     <div className="relative z-10">
                         <h2 className="text-2xl font-black tracking-tighter uppercase leading-none">{brandingSettings?.name || 'Organization Registry'}</h2>
                         <div className="h-px w-12 bg-primary/40 mx-auto mt-4 mb-2" />
-                        <p className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em]">Official Contribution Certificate</p>
+                        <p className="text-xs font-black text-white/40 uppercase tracking-[0.4em]">Official Contribution Certificate</p>
                     </div>
                 </div>
 
@@ -106,13 +106,13 @@ export const DonationReceipt = React.forwardRef<HTMLDivElement, DonationReceiptP
 
                         {donation.linkSplit && donation.linkSplit.length > 0 && (
                             <div className="space-y-4">
-                                <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-slate-100 pb-2">Target Initiatives</h3>
+                                <h3 className="text-xs font-black text-primary uppercase tracking-[0.2em] border-b border-slate-100 pb-2">Target Initiatives</h3>
                                 <div className="rounded-xl border border-slate-100 overflow-hidden">
                                     <Table>
                                         <TableHeader className="bg-slate-50">
                                             <TableRow className="hover:bg-transparent border-slate-100">
-                                                <TableHead className="text-[9px] font-black uppercase tracking-widest h-10">Target Area</TableHead>
-                                                <TableHead className="text-right text-[9px] font-black uppercase tracking-widest h-10">Allocation</TableHead>
+                                                <TableHead className="text-xs font-black uppercase tracking-widest h-10">Target Area</TableHead>
+                                                <TableHead className="text-right text-xs font-black uppercase tracking-widest h-10">Allocation</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -175,7 +175,7 @@ export const DonationReceipt = React.forwardRef<HTMLDivElement, DonationReceiptP
                     <CardFooter className="flex-col items-center justify-center text-center p-8 bg-slate-900 text-white rounded-b-[32px] mt-8">
                         <p className="font-black text-xl tracking-tight">JazakAllah Khair!</p>
                         <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest mt-2">May Allah accept your donation and bless you abundantly.</p>
-                        <p className="text-[8px] font-medium text-white/20 mt-4">{paymentSettings?.copyright || '© 2026 Organization Registry. All Rights Reserved.'}</p>
+                        <p className="text-[11px] font-medium text-white/20 mt-4">{paymentSettings?.copyright || '© 2026 Organization Registry. All Rights Reserved.'}</p>
                     </CardFooter>
                 </div>
             </Card>

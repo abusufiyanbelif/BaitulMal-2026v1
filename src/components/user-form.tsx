@@ -38,7 +38,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { sendTelegramAction, sendWhatsAppAction, writeInAppNotificationAction, getTelegramBotInfoAction } from '@/app/messages/actions';
-import { BellRing } from 'lucide-react';
+import { BellRing, Wand2 } from 'lucide-react';
 interface UserFormProps {
   user?: UserProfile | null;
   onSubmit: (data: UserFormData) => Promise<void>;
@@ -113,6 +113,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
   const { control, watch, setValue, register, handleSubmit, getValues, formState: { isDirty }, reset } = form;
   const nameValue = watch('name');
   const roleValue = watch('role');
+  const phoneValue = watch('phone');
   const idProofFile = watch('idProofFile');
 
   const [preview, setPreview] = useState<string | null>(user?.idProofUrl || null);
@@ -662,6 +663,23 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                                         <BellRing className="h-4 w-4 text-blue-600" />
                                                         <h4 className="text-xs font-bold text-blue-900">Advanced: Dedicated User Bot</h4>
                                                     </div>
+                                                    <Button 
+                                                        type="button" 
+                                                        variant="ghost" 
+                                                        size="sm" 
+                                                        onClick={() => {
+                                                            const phone = form.getValues('phone');
+                                                            if (!phone || phone.length < 10) {
+                                                                toast({ title: 'Phone Required', description: 'Enter a valid mobile number first.', variant: 'destructive' });
+                                                                return;
+                                                            }
+                                                            form.setValue('customTelegramBotUsername', `BaitulMalSS_${phone}_bot`, { shouldDirty: true });
+                                                            toast({ title: 'Bot Labels Generated', description: `Suggested Username: BaitulMalSS_${phone}_bot` });
+                                                        }}
+                                                        className="h-7 text-[9px] font-black uppercase text-blue-600 hover:bg-blue-100/50 rounded-full border border-blue-200"
+                                                    >
+                                                        <Wand2 className="h-3 w-3 mr-1" /> Suggest Defaults
+                                                    </Button>
                                                 </div>
                                                 
                                                 <div className="text-[10px] space-y-2 text-blue-800 leading-relaxed font-normal">
@@ -669,8 +687,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                                     <ol className="list-decimal list-inside space-y-2 opacity-90">
                                                         <li>Open <span className="font-bold">@BotFather</span> on Telegram.</li>
                                                         <li>Send <code className="bg-blue-100 px-1 rounded">/newbot</code> and follow the prompts.</li>
-                                                        <li><strong>Name:</strong> <span className="font-bold">BaitulMal Alerts ({form.getValues('phone') || 'My Bot'})</span></li>
-                                                        <li><strong>Username:</strong> <span className="font-bold">BaitulMalSS_{form.getValues('phone') || 'User'}_bot</span></li>
+                                                        <li><strong>Name:</strong> <span className="font-bold">BaitulMal Alerts ({phoneValue || 'My Bot'})</span></li>
+                                                        <li><strong>Username:</strong> <span className="font-bold">BaitulMalSS_{phoneValue || 'User'}_bot</span></li>
                                                         <li><strong>Copy the API Token</strong> provided by BotFather and paste it below.</li>
                                                         <li><span className="text-blue-900 font-bold underline">CRITICAL:</span> Search for your <strong>NEW bot</strong> on Telegram and click <strong>START</strong>.</li>
                                                         <li><span className="font-bold italic text-blue-700">Group Usage:</span> Add bot to group, send <code>/id</code> or <code>/getgroupid</code>, and paste that ID into the 'Chat ID' field below.</li>
@@ -699,7 +717,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                                                         variant="secondary" 
                                                                         className="h-8 text-[10px] font-bold"
                                                                         onClick={handleVerifyCustomBot}
-                                                                        disabled={!field.value || isVerifyingBot}
+                                                                        disabled={!field.value || isVerifyingBot || isSubmitting}
                                                                     >
                                                                         {isVerifyingBot ? <Loader2 className="h-3 w-3 animate-spin" /> : 'Register Bot'}
                                                                     </Button>
@@ -741,7 +759,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                                         type="button"
                                                         variant="outline"
                                                         size="default"
-                                                        disabled={isFormDisabled || !field.value || isSendingTelegramTest}
+                                                        disabled={isSubmitting || isLoading || !field.value || isSendingTelegramTest}
                                                         onClick={() => handleTestTelegram(field.value)}
                                                         className="font-bold text-xs shrink-0 border-blue-200 text-blue-600 hover:bg-blue-50"
                                                     >
@@ -879,7 +897,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                                             type="button" 
                                                             variant="outline" 
                                                             size="sm" 
-                                                            disabled={isFormDisabled || isSendingPushTest}
+                                                            disabled={isSubmitting || isLoading || isSendingPushTest}
                                                             onClick={handleTestPushNotification}
                                                             className="font-bold text-xs shrink-0 h-8 border-primary/10 text-primary"
                                                         >

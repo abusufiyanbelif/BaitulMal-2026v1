@@ -26,18 +26,20 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
         const lookupRef = adminDb.collection('user_lookups').doc(cleanPhone);
         const lookupSnap = await lookupRef.get();
         
+        let profileId = '';
+        let isExisting = false;
+        let existingRoles: string[] = [];
+
         if (lookupSnap.exists) {
             const lookupData = lookupSnap.data();
-            return { 
-                success: false, 
-                message: `An identity for '${lookupData?.name || 'User'}' already exists with this phone number.`,
-                id: lookupData?.userKey
-            };
+            profileId = lookupData?.userKey;
+            isExisting = true;
+            existingRoles = lookupData?.roles || [lookupData?.role];
         }
 
         const batch = adminDb.batch();
-        const docRef = adminDb.collection('beneficiaries').doc();
-        const profileId = docRef.id;
+        const docRef = isExisting ? adminDb.collection('beneficiaries').doc(profileId) : adminDb.collection('beneficiaries').doc();
+        if (!isExisting) profileId = docRef.id;
 
         const beneficiaryData = {
             ...data,
@@ -48,33 +50,49 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
             createdAt: FieldValue.serverTimestamp(),
             createdById: createdBy.id,
             createdByName: createdBy.name,
-            password: data.password || 'password', // Default password as requested
-            beneficiaryKey: `BEN-${profileId.slice(0, 5).toUpperCase()}`,
+            password: data.password || 'password', 
+            beneficiaryKey: data.beneficiaryKey || `BEN-${profileId.slice(0, 5).toUpperCase()}`,
         };
 
-        batch.set(docRef, beneficiaryData);
+        if (isExisting) {
+            batch.set(docRef, beneficiaryData, { merge: true });
+        } else {
+            batch.set(docRef, beneficiaryData);
+        }
 
         // Mirror to 'users' collection for session management
-        batch.set(adminDb.collection('users').doc(profileId), {
+        const userRef = adminDb.collection('users').doc(profileId);
+        const userUpdate: any = {
             ...beneficiaryData,
-            role: 'Beneficiary',
             loginId: cleanPhone,
             userKey: profileId,
-            permissions: {},
-        });
+            linkedBeneficiaryId: profileId,
+        };
+        // Ensure we don't overwrite role if it's already Admin/User/Donor
+        if (!isExisting) userUpdate.role = 'Beneficiary';
+        
+        batch.set(userRef, userUpdate, { merge: true });
 
-        // Register in 'user_lookups'
-        batch.set(lookupRef, {
+        // Register/Update in 'user_lookups'
+        const roles = Array.from(new Set([...existingRoles, 'Beneficiary']));
+        const lookupData = {
             userKey: profileId,
-            role: 'Beneficiary',
+            role: roles[0], 
+            roles: roles,
             phone: cleanPhone,
-            name: data.name
-        });
+            name: data.name,
+            email: data.email || ''
+        };
+        batch.set(lookupRef, lookupData, { merge: true });
 
         await batch.commit();
 
         revalidatePath('/beneficiaries');
-        return { success: true, message: 'Beneficiary Record Registered & Identity Synchronized.', id: profileId };
+        return { 
+            success: true, 
+            message: isExisting ? `Linked to existing identity '${data.name}'.` : 'Beneficiary Record Registered & Identity Synchronized.', 
+            id: profileId 
+        };
     } catch (error: any) {
         console.error("Error Creating Beneficiary:", error);
         return { success: false, message: `Registration Failed: ${error.message}` };
@@ -117,27 +135,30 @@ export async function updateMasterBeneficiaryAction(
         batch.set(adminDb.collection('users').doc(beneficiaryId), {
             ...updatePayload,
             loginId: cleanPhone || oldPhone,
-            role: 'Beneficiary'
+            role: 'Beneficiary',
+            telegramChatId: data.telegramChatId || oldData?.telegramChatId || '',
+            email: data.email || oldData?.email || ''
         }, { merge: true });
 
         // Handle Lookup Synchronization
+        const lookupUpdate: any = {
+            userKey: beneficiaryId,
+            role: 'Beneficiary',
+            phone: cleanPhone || oldPhone,
+            name: data.name || oldData?.name,
+            email: data.email || oldData?.email || ''
+        };
+
         if (cleanPhone && cleanPhone !== oldPhone) {
             // Delete old lookup if it exists
             if (oldPhone) batch.delete(adminDb.collection('user_lookups').doc(oldPhone));
             // Create new lookup
-            batch.set(adminDb.collection('user_lookups').doc(cleanPhone), {
-                userKey: beneficiaryId,
-                role: 'Beneficiary',
-                phone: cleanPhone,
-                name: data.name || oldData?.name
-            });
+            batch.set(adminDb.collection('user_lookups').doc(cleanPhone), lookupUpdate);
         } else if (cleanPhone && !oldPhone) {
-             batch.set(adminDb.collection('user_lookups').doc(cleanPhone), {
-                userKey: beneficiaryId,
-                role: 'Beneficiary',
-                phone: cleanPhone,
-                name: data.name || oldData?.name
-            });
+             batch.set(adminDb.collection('user_lookups').doc(cleanPhone), lookupUpdate);
+        } else {
+            // Update name/email in current lookup
+            batch.set(adminDb.collection('user_lookups').doc(oldPhone || cleanPhone), lookupUpdate, { merge: true });
         }
 
         await batch.commit();

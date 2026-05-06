@@ -211,7 +211,7 @@ function PortalLoginContent() {
                                             className="pl-12 h-12 border-slate-200 bg-slate-50/50 focus:bg-white focus:ring-primary/20 transition-all rounded-2xl font-medium"
                                             value={identifier}
                                             onChange={(e) => { 
-                                                const val = e.target.value.replace(/\D/g, '').slice(-10);
+                                                const val = e.target.value;
                                                 setIdentifier(val); 
                                                 setOtpSent(false); 
                                             }}

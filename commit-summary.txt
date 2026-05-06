@@ -1,13 +1,23 @@
-release: v2026.05.06.13
+release: v2026.05.07.01
 
-Type: Hardening, security & infrastructure
-Message: Hardened Telegram messaging infrastructure with advanced error diagnostics and multi-tenant isolation; Resolved Next.js configuration warnings and restricted administrative page visibility.
-Reference: TB-15776
+Type: Feature, Infrastructure & Automation
+Message: Standardized Multi-Channel Notification Dispatch (Email, WhatsApp, Telegram) with Profile-Aware Identity Resolution and Live Template Test Center.
+Reference: MB-2026-05-07 (Multi-Channel Bridge)
 Branch: test_bmss_26
-Commit: 02838685
+Commit: [PENDING_COMMIT] (Latest Hash: f7010997)
+
+Key Changes:
+- Integrated Nodemailer for SMTP Email service with administrative configuration dashboard.
+- Implemented Multi-Channel Orchestrator for automated dispatch across TG, WA, and Email.
+- Created 'Template Test Center' for real-time diagnostic testing with live user profiles.
+- Standardized Profile-Aware OTP dispatch for Staff, Donors, and Beneficiaries.
+- Added 'Suggest Defaults' automation for dedicated user bot identifiers in UserForm.
+- Synchronized messaging metadata across mirrored identity collections.
 
 Verification Steps:
-Manual verification required.
+1. Verify SMTP Connection in Settings > Resources.
+2. Search and Test User Notifications in Messages > Template Config > Test Center.
+3. Validate role-specific OTP delivery during portal login.
 
 ---
-*Build Summary Updated: 6/5/2026, 5:30:46 am*
+*Build Summary Updated: 7/5/2026, 4:40:00 am*

@@ -94,7 +94,7 @@ export function BrandedLoader({ message = "Updating Your Organization Records...
             <p className="text-sm font-bold text-primary tracking-tight animate-pulse">
               {progress === undefined ? stages[stage] : message}
             </p>
-            <p className="text-[10px] font-black text-primary/40 tracking-widest uppercase">
+            <p className="text-xs font-black text-primary/60 tracking-widest uppercase">
               {Math.round(progress ?? simulatedProgress)}% Secure
             </p>
           </div>

@@ -244,7 +244,7 @@ export default function RegistryIndexPage() {
                                                 <Button disabled className="w-full h-12 rounded-[1.2rem] bg-slate-100 border border-slate-200 text-slate-400 font-black text-xs tracking-wider cursor-not-allowed">
                                                     Dynamic Route
                                                 </Button>
-                                                <p className="text-[9px] font-normal text-amber-600 text-center tracking-tighter">Requires ID</p>
+                                                <p className="text-xs font-normal text-amber-600 text-center tracking-tighter">Requires ID</p>
                                             </div>
                                         ) : (
                                             <Link href={page.route} className="block">
@@ -256,14 +256,14 @@ export default function RegistryIndexPage() {
                                         <div className="flex gap-2">
                                             {page.prev && !page.prev.includes('[') && (
                                                 <Link href={page.prev} className="flex-1">
-                                                    <Button variant="ghost" size="sm" className="w-full rounded-xl text-[9px] font-black text-slate-400 hover:text-emerald-600 hover:bg-emerald-50">
+                                                    <Button variant="ghost" size="sm" className="w-full rounded-xl text-xs font-black text-slate-400 hover:text-emerald-600 hover:bg-emerald-50">
                                                         <ArrowLeft className="mr-1 h-3 w-3" /> Prev
                                                     </Button>
                                                 </Link>
                                             )}
                                             {page.next && !page.next.includes('[') && (
                                                 <Link href={page.next} className="flex-1">
-                                                    <Button variant="ghost" size="sm" className="w-full rounded-xl text-[9px] font-black text-slate-400 hover:text-emerald-600 hover:bg-emerald-50">
+                                                    <Button variant="ghost" size="sm" className="w-full rounded-xl text-xs font-black text-slate-400 hover:text-emerald-600 hover:bg-emerald-50">
                                                         Next <ArrowRight className="ml-1 h-3 w-3" />
                                                     </Button>
                                                 </Link>
@@ -277,9 +277,9 @@ export default function RegistryIndexPage() {
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-3 text-slate-300">
                                             <Clock className="h-4 w-4" />
-                                            <span className="text-[10px] font-normal tracking-widest">Last Sync: {isMounted ? new Date(page.updatedAt).toLocaleDateString() : '2026-05-01'}</span>
+                                            <span className="text-xs font-normal tracking-widest">Last Sync: {isMounted ? new Date(page.updatedAt).toLocaleDateString() : '2026-05-01'}</span>
                                         </div>
-                                        <Badge variant="outline" className="rounded-lg text-[9px] font-black border-slate-100 text-slate-400">{page.route}</Badge>
+                                        <Badge variant="outline" className="rounded-lg text-xs font-black border-slate-100 text-slate-400">{page.route}</Badge>
                                     </div>
 
                                     <Separator className="bg-slate-50" />
@@ -314,7 +314,7 @@ export default function RegistryIndexPage() {
                                                 <div className="flex flex-wrap gap-1.5">
                                                     {page.fields && page.fields.length > 0 ? (
                                                         page.fields.map((f: string) => (
-                                                            <Badge key={f} variant="outline" className="text-[8px] font-bold text-slate-400 border-slate-100 rounded-md">
+                                                            <Badge key={f} variant="outline" className="text-[11px] font-bold text-slate-400 border-slate-100 rounded-md">
                                                                 {f}
                                                             </Badge>
                                                         ))

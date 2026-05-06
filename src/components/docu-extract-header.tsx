@@ -77,10 +77,13 @@ export function DocuExtractHeader() {
                 )
             )}
             </div>
-          <h1 className="text-lg sm:text-2xl font-bold text-primary tracking-tight leading-tight transition-colors group-hover:opacity-80 line-clamp-1 sm:line-clamp-none">
-            {isBrandingLoading ? <Skeleton className="h-6 w-32 sm:w-48" /> : (brandingSettings?.name || "Community Support Organization")}
-          </h1>
+          <div className="flex flex-col">
+            <h1 className="text-lg sm:text-2xl font-bold text-primary tracking-tight leading-tight transition-colors group-hover:opacity-80 line-clamp-1 sm:line-clamp-none">
+              {isBrandingLoading ? <Skeleton className="h-6 w-32 sm:w-48" /> : (brandingSettings?.name || "Community Support Organization")}
+            </h1>
+          </div>
         </Link>
+
 
         <nav className="flex items-center gap-2 sm:gap-3">
             {isLoading ? (

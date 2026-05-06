@@ -34,7 +34,7 @@ export async function saveUserAction(uid: string, data: Partial<UserProfile>, ad
 
     try {
         const cleanPhone = data.phone?.trim().replace(/\D/g, '').slice(-10) || '';
-        const cleanLoginId = data.loginId?.trim().replace(/\D/g, '').slice(-10) || '';
+        const cleanLoginId = data.loginId?.trim() || '';
         const userKey = data.userKey?.trim() || uid;
 
         const batch = adminDb.batch();
@@ -75,6 +75,23 @@ export async function saveUserAction(uid: string, data: Partial<UserProfile>, ad
                 phone: cleanPhone,
                 name: data.name
             });
+        }
+
+        // 3. Telegram Registration Alert (If newly linked or explicitly requested)
+        if (data.telegramChatId) {
+            try {
+                const { sendTelegramAction } = await import('@/app/messages/actions');
+                const roleName = data.role || 'Member';
+                const welcomeMessage = `🛡️ *Organization Registration Finalized*\n\nHello ${data.name},\n\nYour account has been provisioned as *${roleName}* in the official BaitulMal Registry.\n\n*Next Steps:*\n1. Login at: ${process.env.NEXT_PUBLIC_BASE_URL || ''}/login\n2. Use your ID: *${cleanLoginId || cleanPhone}*\n3. Complete your onboarding tasks.\n\nJazakallah Khair!`;
+                
+                await sendTelegramAction({ 
+                    message: welcomeMessage, 
+                    chatId: data.telegramChatId, 
+                    bypassAutoCheck: true 
+                });
+            } catch (telErr) {
+                console.error("Failed to dispatch staff welcome:", telErr);
+            }
         }
 
         await batch.commit();
@@ -334,8 +351,9 @@ export async function syncAllUsersToDonorsAction(adminUserId: string, adminUserN
                     upiIds: user.upiIds || [],
                     status: user.status === 'Active' ? 'Active' : 'Inactive',
                     createdAt: FieldValue.serverTimestamp(),
-                    createdById: adminUserId,
                     createdByName: adminUserName,
+                    telegramChatId: user.telegramChatId || '',
+                    loginId: user.loginId || user.phone || '',
                 });
                 count++;
             }
@@ -377,6 +395,10 @@ export async function mirrorIndividualUserToDonorAction(uid: string, admin: { id
             updatedAt: FieldValue.serverTimestamp(),
             createdById: admin.id,
             createdByName: admin.name,
+            telegramChatId: user.telegramChatId || '',
+            customTelegramBotToken: user.customTelegramBotToken || '',
+            customTelegramBotUsername: user.customTelegramBotUsername || '',
+            loginId: user.loginId || user.phone || '',
         }, { merge: true });
 
         await recordAuditLogAction({
@@ -428,6 +450,10 @@ export async function mirrorIndividualUserToBeneficiaryAction(uid: string, admin
             createdById: admin.id,
             createdByName: admin.name,
             beneficiaryKey: user.userKey || `BEN-${uid.slice(0, 5).toUpperCase()}`,
+            telegramChatId: user.telegramChatId || '',
+            customTelegramBotToken: user.customTelegramBotToken || '',
+            customTelegramBotUsername: user.customTelegramBotUsername || '',
+            loginId: user.loginId || user.phone || '',
         }, { merge: true });
 
         await recordAuditLogAction({

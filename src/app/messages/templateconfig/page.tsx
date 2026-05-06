@@ -28,7 +28,12 @@ import {
     RefreshCw,
     Search,
     Filter,
-    ArrowLeft
+    ArrowLeft,
+    CheckCircle2,
+    AlertCircle,
+    Send,
+    Mail,
+    User as UserIcon
 } from 'lucide-react';
 import { 
     DropdownMenu, 
@@ -39,7 +44,14 @@ import {
     DropdownMenuSeparator
 } from '@/components/ui/dropdown-menu';
 import { BrandedLoader } from '@/components/branded-loader';
-import { seedDefaultTemplatesAction, deleteTemplateAction } from '@/app/messages/actions';
+import { 
+    seedDefaultTemplatesAction, 
+    deleteTemplateAction,
+    sendWhatsAppAction,
+    sendTelegramAction,
+    sendEmailAction,
+    searchMessagingUsersAction
+} from '@/app/messages/actions';
 import type { MessageTemplate } from '@/lib/types';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
@@ -52,6 +64,7 @@ export default function MessageTemplatesPage() {
     // Filtering State
     const [searchTerm, setSearchTerm] = useState('');
     const [categoryFilter, setCategoryFilter] = useState<string>('All');
+    const [profileFilter, setProfileFilter] = useState<string>('All');
 
     const templatesRef = useMemoFirebase(() => 
         firestore ? query(collection(firestore, 'settings', 'message_templates', 'templates'), orderBy('name')) : null, 
@@ -65,14 +78,24 @@ export default function MessageTemplatesPage() {
     const [isSeeding, setIsSeeding] = useState(false);
     const [hasAutoSeeded, setHasAutoSeeded] = useState(false);
 
+    // Test Center State
+    const [testSearchQuery, setTestSearchQuery] = useState('');
+    const [testUsers, setTestUsers] = useState<any[]>([]);
+    const [selectedTestUser, setSelectedTestUser] = useState<any | null>(null);
+    const [isSearchingUsers, setIsSearchingUsers] = useState(false);
+    const [isTestingChannel, setIsTestingChannel] = useState<string | null>(null); // 'WhatsApp', 'Telegram', 'Email'
+    const [testTab, setTestTab] = useState<'Telegram' | 'WhatsApp' | 'Email'>('Telegram');
+
     const canManageTemplates = userProfile?.role === 'Admin';
 
     // Categories for filter
     const categories = useMemo(() => {
         if (!rawTemplates) return ['All'];
-        const cats = Array.from(new Set(rawTemplates.map(t => t.category)));
+        const cats = Array.from(new Set(rawTemplates.map(t => t.category).filter(Boolean)));
         return ['All', ...cats];
     }, [rawTemplates]);
+
+    const profiles = ['All', 'Member', 'Donor', 'Beneficiary'];
 
     // Clientside Filtering
     const filteredTemplates = useMemo(() => {
@@ -84,10 +107,11 @@ export default function MessageTemplatesPage() {
                 t.body.toLowerCase().includes(searchTerm.toLowerCase());
             
             const matchesCategory = categoryFilter === 'All' || t.category === categoryFilter;
+            const matchesProfile = profileFilter === 'All' || t.profileType === profileFilter;
             
-            return matchesSearch && matchesCategory;
+            return matchesSearch && matchesCategory && matchesProfile;
         });
-    }, [rawTemplates, searchTerm, categoryFilter]);
+    }, [rawTemplates, searchTerm, categoryFilter, profileFilter]);
 
     // Auto-seed if empty and admin
     useEffect(() => {
@@ -96,6 +120,82 @@ export default function MessageTemplatesPage() {
             handleSeed();
         }
     }, [rawTemplates, isTemplatesLoading, canManageTemplates, hasAutoSeeded, isSeeding]);
+
+    useEffect(() => {
+        const delaySearch = setTimeout(async () => {
+            if (testSearchQuery.length >= 2) {
+                setIsSearchingUsers(true);
+                const results = await searchMessagingUsersAction(testSearchQuery);
+                setTestUsers(results);
+                setIsSearchingUsers(false);
+            } else {
+                setTestUsers([]);
+            }
+        }, 500);
+        return () => clearTimeout(delaySearch);
+    }, [testSearchQuery]);
+
+    const handleChannelTest = async (channel: 'WhatsApp' | 'Telegram' | 'Email') => {
+        if (!selectedTestUser || !editData) {
+            toast({ title: 'Missing Context', description: 'Select a user and a template first.', variant: 'destructive' });
+            return;
+        }
+
+        const variables: Record<string, string> = {};
+        editData.variables?.forEach(v => {
+            if (v === 'name') variables[v] = selectedTestUser.name;
+            else if (v === 'otp') variables[v] = Math.floor(100000 + Math.random() * 900000).toString();
+            else if (v === 'validity') variables[v] = '5';
+            else if (v === 'amount') variables[v] = '500';
+            else if (v === 'donorName') variables[v] = selectedTestUser.name;
+            else if (v === 'beneficiaryName') variables[v] = selectedTestUser.name;
+            else if (v === 'causeName') variables[v] = 'Emergency Medical Fund';
+            else if (v === 'percent') variables[v] = '75';
+            else if (v === 'url') variables[v] = 'https://baitulamalsolapur.com';
+            else variables[v] = `[${v}]`;
+        });
+
+        setIsTestingChannel(channel);
+        try {
+            let res: any;
+            if (channel === 'WhatsApp') {
+                if (!selectedTestUser.phone) throw new Error('User has no phone number.');
+                res = await sendWhatsAppAction({
+                    to: selectedTestUser.phone,
+                    templateId: editData.id,
+                    variables,
+                    bypassAutoCheck: true
+                });
+            } else if (channel === 'Telegram') {
+                if (!selectedTestUser.telegramChatId) throw new Error('User has no Telegram Chat ID.');
+                res = await sendTelegramAction({
+                    templateId: editData.id,
+                    variables,
+                    chatId: selectedTestUser.telegramChatId,
+                    configOverride: selectedTestUser.customTelegramBotToken ? { telegramBotToken: selectedTestUser.customTelegramBotToken } : undefined,
+                    bypassAutoCheck: true
+                });
+            } else if (channel === 'Email') {
+                if (!selectedTestUser.email || selectedTestUser.email.includes('@donor.demo.local')) throw new Error('User has no valid email.');
+                res = await sendEmailAction({
+                    to: selectedTestUser.email,
+                    templateId: editData.id,
+                    variables,
+                    bypassAutoCheck: true
+                });
+            }
+
+            if (res?.success) {
+                toast({ title: `${channel} Test Dispatched`, description: 'Verification message sent successfully.', variant: 'success' });
+            } else {
+                toast({ title: 'Dispatch Failed', description: res?.message || 'Unknown provider error.', variant: 'destructive' });
+            }
+        } catch (e: any) {
+            toast({ title: 'Test Failed', description: e.message, variant: 'destructive' });
+        } finally {
+            setIsTestingChannel(null);
+        }
+    };
 
     const handleEdit = (template: MessageTemplate) => {
         setEditingId(template.id);
@@ -110,8 +210,9 @@ export default function MessageTemplatesPage() {
             name: 'New Template',
             subject: '',
             body: '',
-            type: 'WhatsApp',
+            type: 'MultiChannel',
             category: 'Alert',
+            profileType: 'All',
             variables: [],
             isActive: true
         });
@@ -204,7 +305,6 @@ export default function MessageTemplatesPage() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in-up">
-                {/* Templates List & Search */}
                 <div className="lg:col-span-1 space-y-4">
                     <Card className="border-primary/10 shadow-sm bg-white p-3 space-y-3">
                         <div className="relative">
@@ -216,16 +316,16 @@ export default function MessageTemplatesPage() {
                                 className="h-9 pl-9 text-xs border-primary/5 bg-primary/[0.01]"
                             />
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="sm" className="h-8 text-[10px] font-bold text-muted-foreground hover:text-primary">
+                                    <Button variant="ghost" size="sm" className="h-8 text-[10px] font-bold text-muted-foreground hover:text-primary border border-primary/5">
                                         <Filter className="mr-1.5 h-3 w-3" />
-                                        Category: {categoryFilter}
+                                        Cat: {categoryFilter}
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="start" className="w-48 rounded-xl">
-                                    <DropdownMenuLabel className="text-[10px] uppercase opacity-40">Filter by Category</DropdownMenuLabel>
+                                    <DropdownMenuLabel className="text-[10px] uppercase opacity-40">Filter Category</DropdownMenuLabel>
                                     <DropdownMenuSeparator />
                                     {categories.map(cat => (
                                         <DropdownMenuCheckboxItem 
@@ -238,7 +338,29 @@ export default function MessageTemplatesPage() {
                                     ))}
                                 </DropdownMenuContent>
                             </DropdownMenu>
-                            <span className="text-[10px] text-muted-foreground ml-auto">{filteredTemplates.length} matches</span>
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="sm" className="h-8 text-[10px] font-bold text-muted-foreground hover:text-primary border border-primary/5">
+                                        <ShieldCheck className="mr-1.5 h-3 w-3" />
+                                        Profile: {profileFilter}
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="start" className="w-48 rounded-xl">
+                                    <DropdownMenuLabel className="text-[10px] uppercase opacity-40">Target Profile</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    {profiles.map(p => (
+                                        <DropdownMenuCheckboxItem 
+                                            key={p} 
+                                            checked={profileFilter === p} 
+                                            onCheckedChange={() => setProfileFilter(p)}
+                                        >
+                                            {p}
+                                        </DropdownMenuCheckboxItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                            <span className="text-[9px] text-muted-foreground ml-auto whitespace-nowrap">{filteredTemplates.length} matches</span>
                         </div>
                     </Card>
 
@@ -256,7 +378,11 @@ export default function MessageTemplatesPage() {
                                     <CardHeader className="p-4 flex flex-row items-center justify-between space-y-0">
                                         <div className="min-w-0 pr-2">
                                             <p className="font-bold text-sm text-primary truncate">{t.name}</p>
-                                            <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold opacity-40">{t.category}</p>
+                                            <div className="flex items-center gap-1.5 mt-0.5">
+                                                <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-bold opacity-40">{t.category}</p>
+                                                <span className="text-primary/20 text-[10px]">•</span>
+                                                <p className="text-[9px] text-primary/60 font-bold">{t.profileType || 'All'}</p>
+                                            </div>
                                         </div>
                                         <Badge variant={t.isActive ? "eligible" : "secondary"} className="text-[8px] h-4 px-1 shrink-0">
                                             {t.isActive ? 'ACTIVE' : 'OFF'}
@@ -274,9 +400,9 @@ export default function MessageTemplatesPage() {
                     </ScrollArea>
                 </div>
 
-                {/* Editor */}
                 <div className="lg:col-span-2">
                     {editingId ? (
+                        <>
                         <Card className="border-primary/10 shadow-lg bg-white sticky top-4 overflow-hidden">
                             <CardHeader className="bg-primary/5 border-b flex flex-row items-center justify-between p-6">
                                 <div className="flex items-center gap-4">
@@ -348,6 +474,32 @@ export default function MessageTemplatesPage() {
                                     </div>
                                 </div>
 
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Target Profile Type</Label>
+                                        <select 
+                                            value={editData?.profileType || 'All'} 
+                                            onChange={e => setEditData(prev => ({ ...prev, profileType: e.target.value as any }))}
+                                            className="w-full h-10 px-3 rounded-lg border border-primary/5 bg-primary/[0.02] text-xs font-bold focus:ring-1 focus:ring-primary/20 outline-none"
+                                        >
+                                            {profiles.map(p => <option key={p} value={p}>{p}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Supported Channels</Label>
+                                        <select 
+                                            value={editData?.type || 'MultiChannel'} 
+                                            onChange={e => setEditData(prev => ({ ...prev, type: e.target.value as any }))}
+                                            className="w-full h-10 px-3 rounded-lg border border-primary/5 bg-primary/[0.02] text-xs font-bold focus:ring-1 focus:ring-primary/20 outline-none"
+                                        >
+                                            <option value="MultiChannel">MultiChannel (WA, TG, Mail)</option>
+                                            <option value="WhatsApp">WhatsApp Only</option>
+                                            <option value="Telegram">Telegram Only</option>
+                                            <option value="Email">Email Only</option>
+                                        </select>
+                                    </div>
+                                </div>
+
                                 <div className="space-y-2">
                                     <Label className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest opacity-60">Subject (Email/Internal)</Label>
                                     <Input 
@@ -364,7 +516,6 @@ export default function MessageTemplatesPage() {
                                             <Badge variant="outline" className="text-[9px] bg-primary/5 border-primary/10 text-primary">Live Context</Badge>
                                         </div>
                                         
-                                        {/* Premium Variable Dock */}
                                         <div className="p-4 rounded-2xl bg-primary/[0.03] border border-primary/5 space-y-3">
                                             <div className="flex items-center gap-2 text-[10px] font-bold text-primary opacity-60 uppercase tracking-tighter">
                                                 <Variable className="h-3 w-3" /> Insert Dynamic Variable
@@ -420,9 +571,137 @@ export default function MessageTemplatesPage() {
                                         className="text-xs font-mono h-10 bg-white border-primary/10 shadow-inner"
                                     />
                                     <p className="text-[10px] text-muted-foreground leading-relaxed">Adding variables here makes them available as quick-insert badges in the editor above.</p>
+                        </Card>
+
+                        {/* Test Center */}
+                        <Card className="border-primary/10 shadow-lg bg-white mt-6 overflow-hidden">
+                            <CardHeader className="bg-indigo-500/5 border-b flex flex-row items-center justify-between p-6">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 rounded-xl bg-indigo-500/10 text-indigo-600">
+                                        <ShieldCheck className="h-6 w-6" />
+                                    </div>
+                                    <div>
+                                        <CardTitle className="text-xl font-bold tracking-tight">Test Center</CardTitle>
+                                        <CardDescription className="text-xs font-normal">Validate templates with live user accounts.</CardDescription>
+                                    </div>
+                                </div>
+                                <div className="flex bg-primary/5 p-1 rounded-lg">
+                                    {(['Telegram', 'WhatsApp', 'Email'] as const).map(t => (
+                                        <button 
+                                            key={t}
+                                            onClick={() => setTestTab(t)}
+                                            className={`px-3 py-1.5 rounded-md text-[10px] font-bold transition-all ${testTab === t ? 'bg-white shadow-sm text-primary' : 'text-primary/40 hover:text-primary/60'}`}
+                                        >
+                                            {t}
+                                        </button>
+                                    ))}
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-8 space-y-6">
+                                <div className="space-y-4">
+                                    <div className="relative">
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                        <Input 
+                                            placeholder="Search test user by name, phone or email..."
+                                            value={testSearchQuery}
+                                            onChange={e => setTestSearchQuery(e.target.value)}
+                                            className="pl-10 h-11 rounded-xl border-primary/10 bg-primary/[0.01]"
+                                        />
+                                        {isSearchingUsers && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-primary" />}
+                                    </div>
+
+                                    {testUsers.length > 0 && !selectedTestUser && (
+                                        <div className="p-2 rounded-xl border border-primary/5 bg-white shadow-xl max-h-48 overflow-y-auto animate-in fade-in slide-in-from-top-2">
+                                            {testUsers.map(user => (
+                                                <button 
+                                                    key={user.id}
+                                                    onClick={() => {
+                                                        setSelectedTestUser(user);
+                                                        setTestSearchQuery('');
+                                                        setTestUsers([]);
+                                                    }}
+                                                    className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-primary/5 text-left transition-colors"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                                                            <UserIcon className="h-4 w-4 text-primary" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="text-xs font-bold text-primary">{user.name}</p>
+                                                            <p className="text-[9px] text-muted-foreground">{user.role} • {user.phone || user.email || 'No contact'}</p>
+                                                        </div>
+                                                    </div>
+                                                    <Badge variant="outline" className="text-[8px] font-bold uppercase">{user.id.slice(0, 4)}</Badge>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {selectedTestUser && (
+                                        <div className="p-5 rounded-2xl border-2 border-indigo-500/20 bg-indigo-50/30 animate-in zoom-in-95">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="h-10 w-10 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-700">
+                                                        <UserIcon className="h-5 w-5" />
+                                                    </div>
+                                                    <div>
+                                                        <h4 className="text-sm font-bold text-primary">{selectedTestUser.name}</h4>
+                                                        <Badge className="bg-indigo-500 text-white text-[9px] h-4">{selectedTestUser.role}</Badge>
+                                                    </div>
+                                                </div>
+                                                <Button variant="ghost" size="sm" onClick={() => setSelectedTestUser(null)} className="h-8 text-[10px] font-bold text-indigo-700 hover:bg-indigo-100">Change User</Button>
+                                            </div>
+
+                                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                                <div className={`p-3 rounded-xl border ${testTab === 'Telegram' ? 'border-indigo-500/30 bg-white' : 'border-primary/5 bg-primary/[0.02] opacity-50'} transition-all`}>
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <Send className="h-3.5 w-3.5 text-sky-500" />
+                                                        <span className="text-[10px] font-bold text-primary uppercase tracking-tighter">Telegram</span>
+                                                    </div>
+                                                    <p className="text-[11px] font-mono truncate">{selectedTestUser.telegramChatId ? `ID: ${selectedTestUser.telegramChatId}` : 'Not Linked'}</p>
+                                                    {selectedTestUser.telegramChatId ? <CheckCircle2 className="h-3 w-3 text-green-500 mt-1" /> : <AlertCircle className="h-3 w-3 text-amber-500 mt-1" />}
+                                                </div>
+
+                                                <div className={`p-3 rounded-xl border ${testTab === 'WhatsApp' ? 'border-indigo-500/30 bg-white' : 'border-primary/5 bg-primary/[0.02] opacity-50'} transition-all`}>
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <Smartphone className="h-3.5 w-3.5 text-green-500" />
+                                                        <span className="text-[10px] font-bold text-primary uppercase tracking-tighter">WhatsApp</span>
+                                                    </div>
+                                                    <p className="text-[11px] font-mono truncate">{selectedTestUser.phone ? `+91 ${selectedTestUser.phone}` : 'No Phone'}</p>
+                                                    {selectedTestUser.phone ? <CheckCircle2 className="h-3 w-3 text-green-500 mt-1" /> : <AlertCircle className="h-3 w-3 text-amber-500 mt-1" />}
+                                                </div>
+
+                                                <div className={`p-3 rounded-xl border ${testTab === 'Email' ? 'border-indigo-500/30 bg-white' : 'border-primary/5 bg-primary/[0.02] opacity-50'} transition-all`}>
+                                                    <div className="flex items-center gap-2 mb-2">
+                                                        <Mail className="h-3.5 w-3.5 text-indigo-500" />
+                                                        <span className="text-[10px] font-bold text-primary uppercase tracking-tighter">Email</span>
+                                                    </div>
+                                                    <p className="text-[11px] font-mono truncate">{selectedTestUser.email && !selectedTestUser.email.includes('@donor.demo.local') ? selectedTestUser.email : 'No Email'}</p>
+                                                    {selectedTestUser.email && !selectedTestUser.email.includes('@donor.demo.local') ? <CheckCircle2 className="h-3 w-3 text-green-500 mt-1" /> : <AlertCircle className="h-3 w-3 text-amber-500 mt-1" />}
+                                                </div>
+                                            </div>
+
+                                            <Button 
+                                                className="w-full mt-6 font-bold shadow-lg h-11 bg-indigo-600 hover:bg-indigo-700 transition-all"
+                                                onClick={() => handleChannelTest(testTab)}
+                                                disabled={isTestingChannel !== null}
+                                            >
+                                                {isTestingChannel ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Send className="h-4 w-4 mr-2" />}
+                                                Dispatch Live {testTab} Test
+                                            </Button>
+                                        </div>
+                                    )}
+
+                                    {!selectedTestUser && (
+                                        <div className="h-40 border-2 border-dashed border-primary/10 rounded-2xl flex flex-col items-center justify-center text-primary/40">
+                                            <UserIcon className="h-8 w-8 mb-2 opacity-20" />
+                                            <p className="text-[11px] font-bold">Search and select a user to begin diagnostic testing.</p>
+                                        </div>
+                                    )}
                                 </div>
                             </CardContent>
                         </Card>
+                        </>
                     ) : (
                         <div className="h-full flex flex-col items-center justify-center py-20 bg-muted/5 border-2 border-dashed rounded-[32px] border-primary/5 opacity-60">
                             <div className="p-6 rounded-full bg-white shadow-sm mb-6 animate-pulse">

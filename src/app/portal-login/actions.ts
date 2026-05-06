@@ -16,17 +16,30 @@ export async function authenticatePortalUserAction(identifier: string, password:
     if (!adminDb || !adminAuth) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        const cleanIdentifier = identifier.trim().replace(/\D/g, '').slice(-10);
+        // Unified Identity Resolution
+        const inputIdentifier = identifier.trim();
+        const isPhone = /^\d{10}$/.test(inputIdentifier);
+        const cleanPhone = isPhone ? inputIdentifier : '';
+        const loginId = inputIdentifier;
+
         let targetDoc: any = null;
         let role: 'Donor' | 'Beneficiary' | 'User' | 'Admin' = requestedRole || 'Donor';
 
         // 1. Parallel identity lookup
         // We fetch the lookup doc and the specific donor/beneficiary docs in parallel
-        const [userLookupSnap, donorSnap, benSnap] = await Promise.all([
-            adminDb.collection('user_lookups').doc(cleanIdentifier).get(),
-            adminDb.collection('donors').where('phone', '==', cleanIdentifier).limit(1).get(),
-            adminDb.collection('beneficiaries').where('phone', '==', cleanIdentifier).limit(1).get()
-        ]);
+        const queries = [
+            adminDb.collection('user_lookups').doc(loginId).get(),
+        ];
+
+        if (isPhone) {
+            queries.push(adminDb.collection('donors').where('phone', '==', cleanPhone).limit(1).get());
+            queries.push(adminDb.collection('beneficiaries').where('phone', '==', cleanPhone).limit(1).get());
+        } else {
+            queries.push(adminDb.collection('donors').where('loginId', '==', loginId).limit(1).get());
+            queries.push(adminDb.collection('beneficiaries').where('loginId', '==', loginId).limit(1).get());
+        }
+
+        const [userLookupSnap, donorSnap, benSnap] = await Promise.all(queries);
 
         // 2. Identity Resolution with Role Priority
         // Priority 1: Requested Role
@@ -43,7 +56,7 @@ export async function authenticatePortalUserAction(identifier: string, password:
         // Priority 2: Staff Profile (if no specific role requested or requested role not found)
         if (!targetDoc && userLookupSnap.exists) {
             const lookupData = userLookupSnap.data();
-            const userSnap = await adminDb.collection('users').doc(lookupData?.userKey || cleanIdentifier).get();
+            const userSnap = await adminDb.collection('users').doc(lookupData?.userKey || loginId).get();
             if (userSnap.exists) {
                 targetDoc = userSnap.data();
                 targetDoc.id = userSnap.id;
@@ -77,7 +90,7 @@ export async function authenticatePortalUserAction(identifier: string, password:
         }
 
         // 5. Generate Custom Token with Role Claim
-        const targetId = targetDoc.id || targetDoc.userKey || cleanIdentifier;
+        const targetId = targetDoc.id || targetDoc.userKey || loginId;
         const customToken = await adminAuth.createCustomToken(targetId, { role });
 
         // 6. Record Session in Firestore (Non-blocking)
@@ -166,72 +179,111 @@ export async function sendPortalOTPAction(identifier: string) {
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        const cleanIdentifier = identifier.trim().replace(/\D/g, '').slice(-10);
+        const inputIdentifier = identifier.trim();
+        const isPhone = /^\d{10}$/.test(inputIdentifier);
+        const cleanPhone = isPhone ? inputIdentifier : '';
+        const loginId = inputIdentifier;
+
         let targetDoc: any = null;
         let telegramChatId: string = '';
         let customBotToken: string = '';
 
         // 1. Resolve Identity and find Telegram ID
-        // Check Users
-        const userLookups = await adminDb.collection('user_lookups').doc(cleanIdentifier).get();
+        let resolvedUserId = '';
+        
+        // Check User Lookups (Staff/Centralized)
+        const userLookups = await adminDb.collection('user_lookups').doc(loginId).get();
         if (userLookups.exists) {
-            const lookupData = userLookups.data();
-            const userSnap = await adminDb.collection('users').doc(lookupData?.userKey || cleanIdentifier).get();
-            if (userSnap.exists) {
-                targetDoc = userSnap.data();
-                telegramChatId = targetDoc.telegramChatId || '';
-                customBotToken = targetDoc.customTelegramBotToken || '';
-            }
+            resolvedUserId = userLookups.data()?.userKey || loginId;
         }
 
-        // Check Donors
-        if (!targetDoc) {
-            const donorSnap = await adminDb.collection('donors').where('phone', '==', cleanIdentifier).limit(1).get();
+        // Check Donors/Beneficiaries if not resolved yet
+        if (!resolvedUserId) {
+            const donorQuery = isPhone 
+                ? adminDb.collection('donors').where('phone', '==', cleanPhone).limit(1)
+                : adminDb.collection('donors').where('loginId', '==', loginId).limit(1);
+            const donorSnap = await donorQuery.get();
             if (!donorSnap.empty) {
-                targetDoc = donorSnap.docs[0].data();
-                telegramChatId = targetDoc.telegramChatId || '';
-                customBotToken = targetDoc.customTelegramBotToken || '';
+                resolvedUserId = donorSnap.docs[0].id;
             }
         }
 
-        // Check Beneficiaries
-        if (!targetDoc) {
-            const benSnap = await adminDb.collection('beneficiaries').where('phone', '==', cleanIdentifier).limit(1).get();
+        if (!resolvedUserId) {
+            const benQuery = isPhone 
+                ? adminDb.collection('beneficiaries').where('phone', '==', cleanPhone).limit(1)
+                : adminDb.collection('beneficiaries').where('loginId', '==', loginId).limit(1);
+            const benSnap = await benQuery.get();
             if (!benSnap.empty) {
-                targetDoc = benSnap.docs[0].data();
-                telegramChatId = targetDoc.telegramChatId || '';
-                customBotToken = targetDoc.customTelegramBotToken || '';
+                resolvedUserId = benSnap.docs[0].id;
             }
         }
 
-        if (!targetDoc) return { success: false, message: "Identification failed. Please verify your ID or Mobile Number." };
+        if (!resolvedUserId) return { success: false, message: "Identification failed. Please verify your ID or Mobile Number." };
+
+        // 2. Fetch Primary User Record for Messaging Config and determine Profile Type
+        const userSnap = await adminDb.collection('users').doc(resolvedUserId).get();
+        const donorSnap = await adminDb.collection('donors').doc(resolvedUserId).get();
+        const benSnap = await adminDb.collection('beneficiaries').doc(resolvedUserId).get();
+        
+        let profileType: 'Member' | 'Donor' | 'Beneficiary' = 'Donor';
+        if (userSnap.exists) {
+            targetDoc = userSnap.data();
+            profileType = 'Member';
+        } else if (donorSnap.exists) {
+            targetDoc = donorSnap.data();
+            profileType = 'Donor';
+        } else if (benSnap.exists) {
+            targetDoc = benSnap.data();
+            profileType = 'Beneficiary';
+        }
+
+        telegramChatId = targetDoc?.telegramChatId || '';
+        customBotToken = targetDoc?.customTelegramBotToken || '';
+
         if (!telegramChatId) return { success: false, message: "Telegram account not linked. Please use password login or contact support." };
 
-        // 2. Generate OTP
+        // 3. Generate OTP
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
+        
+        // Fetch validity from settings or default to 5
+        const resourcesDoc = await adminDb.collection('settings').doc('resources').get();
+        const validityMinutes = resourcesDoc.data()?.portalOtpValidityMinutes || 5;
+        const expiresAt = new Date(Date.now() + validityMinutes * 60 * 1000);
 
-        // 3. Store OTP in secure collection
-        await adminDb.collection('portal_otps').doc(cleanIdentifier).set({
+        // 4. Store OTP in secure collection (using consistent loginId as key)
+        await adminDb.collection('portal_otps').doc(loginId).set({
             otp,
             expiresAt,
-            createdAt: new Date()
+            createdAt: new Date(),
+            userId: resolvedUserId,
+            profileType
         });
 
-        // 4. Dispatch via Telegram (Calling the existing action from messages)
+        // 5. Dispatch via Telegram using Profile-Specific Template
         const { sendTelegramAction } = await import('@/app/messages/actions');
-        const message = `🔐 *Organization Portal Access*\n\nYour One-Time Password (OTP) is: *${otp}*\n\nThis code expires in 5 minutes. If you did not request this, please ignore this message.`;
+        const templateId = profileType === 'Member' ? 'otp_staff' : (profileType === 'Donor' ? 'otp_donor' : 'otp_beneficiary');
         
         const telRes = await sendTelegramAction({ 
-            message, 
+            templateId,
+            variables: {
+                name: targetDoc?.name || 'User',
+                otp,
+                validity: validityMinutes.toString()
+            },
             chatId: telegramChatId, 
             bypassAutoCheck: true,
             configOverride: customBotToken ? { telegramBotToken: customBotToken } : undefined
         });
 
-        if (!telRes.success) return { success: false, message: telRes.message || "Failed to dispatch OTP. Please try again later." };
+        if (!telRes.success) {
+            let errorMsg = telRes.message || "Failed to dispatch OTP. Please try again later.";
+            if (errorMsg.includes("Target Chat ID not found")) {
+                errorMsg = "Telegram Connectivity Issue: The bot cannot find your chat. Please open Telegram and click 'START' in your bot to link your account.";
+            }
+            return { success: false, message: errorMsg };
+        }
 
-        return { success: true, message: "Secure OTP has been dispatched to your linked Telegram account." };
+        return { success: true, message: `Secure OTP has been dispatched to your linked Telegram account (${profileType} profile).` };
 
     } catch (error: any) {
         console.error("OTP Dispatch Error:", error);
@@ -247,10 +299,13 @@ export async function verifyPortalOTPAction(identifier: string, otp: string, req
     if (!adminDb || !adminAuth) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
 
     try {
-        const cleanIdentifier = identifier.trim().replace(/\D/g, '').slice(-10);
+        const loginId = identifier.trim();
+        let targetDoc: any = null;
+        let targetId: string = '';
+        let role: string = '';
         
         // 1. Fetch and Verify OTP
-        const otpDoc = await adminDb.collection('portal_otps').doc(cleanIdentifier).get();
+        const otpDoc = await adminDb.collection('portal_otps').doc(loginId).get();
         if (!otpDoc.exists) return { success: false, message: "No active OTP session found. Please request a new one." };
         
         const data = otpDoc.data();
@@ -261,16 +316,24 @@ export async function verifyPortalOTPAction(identifier: string, otp: string, req
         if (now > expiresAt) return { success: false, message: "OTP has expired. Please request a new one." };
 
         // 2. Identity Resolution with Role Priority
-        let targetDoc: any = null;
-        let role: any = requestedRole || 'Donor';
-        let targetId = '';
+        const inputIdentifier = identifier.trim();
+        const isPhone = /^\d{10}$/.test(inputIdentifier);
+        const cleanPhone = isPhone ? inputIdentifier : '';
 
         // 3. Parallel identity lookup
-        const [userLookupSnap, donorSnap, benSnap] = await Promise.all([
-            adminDb.collection('user_lookups').doc(cleanIdentifier).get(),
-            adminDb.collection('donors').where('phone', '==', cleanIdentifier).limit(1).get(),
-            adminDb.collection('beneficiaries').where('phone', '==', cleanIdentifier).limit(1).get()
-        ]);
+        const queries = [
+            adminDb.collection('user_lookups').doc(loginId).get(),
+        ];
+
+        if (isPhone) {
+            queries.push(adminDb.collection('donors').where('phone', '==', cleanPhone).limit(1).get());
+            queries.push(adminDb.collection('beneficiaries').where('phone', '==', cleanPhone).limit(1).get());
+        } else {
+            queries.push(adminDb.collection('donors').where('loginId', '==', loginId).limit(1).get());
+            queries.push(adminDb.collection('beneficiaries').where('loginId', '==', loginId).limit(1).get());
+        }
+
+        const [userLookupSnap, donorSnap, benSnap] = await Promise.all(queries);
 
         // 4. Resolve Identity
         // Priority 1: Requested Role
@@ -287,7 +350,7 @@ export async function verifyPortalOTPAction(identifier: string, otp: string, req
         // Priority 2: Staff Profile
         if (!targetDoc && userLookupSnap.exists) {
             const lookupData = userLookupSnap.data();
-            const userSnap = await adminDb.collection('users').doc(lookupData?.userKey || cleanIdentifier).get();
+            const userSnap = await adminDb.collection('users').doc(lookupData?.userKey || loginId).get();
             if (userSnap.exists) {
                 targetDoc = userSnap.data();
                 role = targetDoc.role;
@@ -310,7 +373,7 @@ export async function verifyPortalOTPAction(identifier: string, otp: string, req
         if (!targetDoc) return { success: false, message: "Identity resolution failed after verification." };
 
         // 3. Clear OTP session
-        await adminDb.collection('portal_otps').doc(cleanIdentifier).delete().catch(() => {});
+        await adminDb.collection('portal_otps').doc(loginId).delete().catch(() => {});
 
         // 4. Generate Custom Token
         const customToken = await adminAuth.createCustomToken(targetId, { role });
@@ -350,5 +413,62 @@ export async function verifyPortalOTPAction(identifier: string, otp: string, req
     } catch (error: any) {
         console.error("OTP Verification Error:", error);
         return { success: false, message: error.message };
+    }
+}
+
+/**
+ * Reset password after verifying Telegram OTP.
+ */
+export async function resetPasswordWithOTPAction(identifier: string, otp: string, newPassword: string) {
+    const { adminDb, adminAuth } = getAdminServices();
+    if (!adminDb || !adminAuth) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const loginId = identifier.trim();
+        
+        // 1. Verify OTP
+        const otpDoc = await adminDb.collection('portal_otps').doc(loginId).get();
+        if (!otpDoc.exists) return { success: false, message: "No active OTP session found. Please request a new one." };
+        
+        const otpData = otpDoc.data();
+        if (otpData?.otp !== otp) return { success: false, message: "Invalid verification code." };
+        
+        const expiresAt = otpData.expiresAt.toDate ? otpData.expiresAt.toDate() : new Date(otpData.expiresAt);
+        if (new Date() > expiresAt) return { success: false, message: "OTP has expired." };
+
+        // 2. Resolve User Key
+        let userKey = '';
+        const lookup = await adminDb.collection('user_lookups').doc(loginId).get();
+        if (lookup.exists) {
+            userKey = lookup.data()?.userKey || loginId;
+        } else {
+             const isPhone = /^\d{10}$/.test(loginId);
+             const cleanPhone = isPhone ? loginId : '';
+             const donorSnap = await adminDb.collection('donors').where(isPhone ? 'phone' : 'loginId', '==', isPhone ? cleanPhone : loginId).limit(1).get();
+             if (!donorSnap.empty) {
+                 userKey = donorSnap.docs[0].id;
+             } else {
+                 const benSnap = await adminDb.collection('beneficiaries').where(isPhone ? 'phone' : 'loginId', '==', isPhone ? cleanPhone : loginId).limit(1).get();
+                 if (!benSnap.empty) userKey = benSnap.docs[0].id;
+             }
+        }
+
+        if (!userKey) return { success: false, message: "Could not identify organizational profile for password reset." };
+
+        // 3. Update Firebase Auth Credentials
+        await adminAuth.updateUser(userKey, { password: newPassword });
+
+        // 4. Mirror to Firestore Profile
+        const userRef = adminDb.collection('users').doc(userKey);
+        await userRef.update({ password: newPassword, updatedAt: new Date() }).catch(() => {});
+
+        // 5. Clear OTP Session
+        await adminDb.collection('portal_otps').doc(loginId).delete().catch(() => {});
+
+        return { success: true, message: "Password reset successful. You can now login with your new credentials." };
+
+    } catch (error: any) {
+        console.error("Password reset via Telegram failed:", error);
+        return { success: false, message: `Reset Failed: ${error.message}` };
     }
 }

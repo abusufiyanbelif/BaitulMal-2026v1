@@ -135,7 +135,7 @@ export default function Home() {
                 <section className="relative text-center py-16 sm:py-24 lg:py-32 space-y-10">
                     <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary/5 text-primary rounded-full border border-primary/10 mb-2 shadow-sm animate-fade-in-up">
                         <Sparkles className="h-4 w-4 animate-pulse" />
-                        <span className="text-[10px] font-black tracking-[0.2em]">{brandingSettings?.name || 'Baitulmal'} Official Website</span>
+                        <span className="text-xs font-black tracking-[0.2em]">{brandingSettings?.name || 'Baitulmal'} Official Website</span>
                     </div>
 
                     <h1 className="text-3xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-primary max-w-[1200px] mx-auto leading-[1.1] sm:leading-[0.95] drop-shadow-sm px-4 animate-fade-in-up animate-hero-text-glow">
@@ -172,7 +172,7 @@ export default function Home() {
                         
                         {/* APK Download Button */}
                         <div className="pt-4 flex flex-col items-center gap-2">
-                            <Button asChild variant="outline" size="lg" className="h-14 px-10 rounded-[20px] border-emerald-500/20 bg-emerald-500/5 text-emerald-700 font-black text-[10px] tracking-widest transition-all hover:bg-emerald-500 hover:text-white hover:shadow-xl active:scale-95 group">
+                            <Button asChild variant="outline" size="lg" className="h-14 px-10 rounded-[20px] border-emerald-500/20 bg-emerald-500/5 text-emerald-700 font-black text-xs tracking-widest transition-all hover:bg-emerald-500 hover:text-white hover:shadow-xl active:scale-95 group">
                                 <a 
                                     href="/app-release.apk" 
                                     download="baitulamal-solapur.apk" 
@@ -184,7 +184,7 @@ export default function Home() {
                                     Download Mobile App (APK)
                                 </a>
                             </Button>
-                            <p className="text-[9px] font-normal text-slate-400 tracking-widest opacity-60">Install directly on Android devices</p>
+                            <p className="text-[11px] font-normal text-slate-400 tracking-widest opacity-80">Install directly on Android devices</p>
                         </div>
                     </div>
                     
@@ -277,11 +277,11 @@ export default function Home() {
             <div className="fixed bottom-6 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 z-50 animate-fade-in-up" style={{ animationDelay: '1s' }}>
                 <div className="flex flex-col sm:flex-row items-center gap-2 bg-white/80 backdrop-blur-2xl p-2 rounded-[24px] sm:rounded-full border border-primary/10 shadow-[0_20px_50px_rgba(0,0,0,0.1)] w-full sm:w-auto">
                     <div className="flex w-full sm:w-auto items-center">
-                        <Button asChild variant="ghost" className="flex-1 sm:flex-none h-10 sm:h-12 px-4 sm:px-6 rounded-full font-black text-[9px] sm:text-[10px] tracking-widest text-primary hover:bg-primary/5">
+                        <Button asChild variant="ghost" className="flex-1 sm:flex-none h-10 sm:h-12 px-4 sm:px-6 rounded-full font-black text-[11px] sm:text-xs tracking-widest text-primary hover:bg-primary/5">
                             <Link href="/login">Admin Login</Link>
                         </Button>
                         <div className="w-px h-6 bg-primary/10 mx-1" />
-                        <Button asChild className="flex-[2] sm:flex-none h-10 sm:h-12 px-6 sm:px-8 rounded-full bg-primary text-white font-black text-[9px] sm:text-[10px] tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all">
+                        <Button asChild className="flex-[2] sm:flex-none h-10 sm:h-12 px-6 sm:px-8 rounded-full bg-primary text-white font-black text-[11px] sm:text-xs tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all">
                             <Link href="/portal-login">Donor Login <ChevronRight className="ml-1 sm:ml-2 h-3 sm:h-4 w-3 sm:h-4" /></Link>
                         </Button>
                     </div>

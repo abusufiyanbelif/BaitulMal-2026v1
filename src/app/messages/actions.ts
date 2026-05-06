@@ -5,6 +5,8 @@ import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { MessageTemplate, MessageLog, ResourceSettings, PendingVerification, NotificationGroup, UserProfile } from '@/lib/types';
 import { cookies } from 'next/headers';
 import { generateChanges } from '@/lib/utils';
+import { checkAuth } from '@/lib/auth-utils';
+import nodemailer from 'nodemailer';
 
 /**
  * Sovereign Admin UIDs — mirrors Firestore isAdmin() rules.
@@ -348,333 +350,89 @@ export async function seedDefaultTemplatesAction() {
     const auth = await checkAuth('settings', 'update');
     if (!auth.isAuthorized) throw new Error('Unauthorized');
 
-    const templates = [
-        // --- LEAD MODULE ---
+    const templates: MessageTemplate[] = [
+        // --- AUTH & OTP (MultiChannel) ---
         {
-            id: 'lead_created',
-            name: 'Lead Created',
-            subject: 'New Service Request Entry',
-            body: '📍 *New Lead Entry (Registry)*\n\n*ID:* {{id}}\n*Name:* {{name}}\n*Purpose:* {{purpose}}\n*Category:* {{category}} / {{subCategory}}\n\n*Financial Requirement:*\n- Target: ₹{{targetAmount}}\n- Required: ₹{{requiredAmount}}\n\n*Contact:* {{phone}}\n*Status:* {{status}}\n\nManage Lead: {{url}}',
-            type: 'WhatsApp',
-            category: 'Leads',
-            variables: ['id', 'name', 'purpose', 'category', 'subCategory', 'targetAmount', 'requiredAmount', 'phone', 'status', 'url'],
-            isActive: true
-        },
-        {
-            id: 'lead_updated',
-            name: 'Lead Modified',
-            subject: 'Lead Record Updated',
-            body: '🔄 *Lead Record Update*\n\nThe record for *{{name}}* ({{id}}) has been modified.\n\n*Action:* {{actionType}}\n*Change Summary:* {{summary}}\n\n*Updated Metrics:*\n- Required: ₹{{requiredAmount}}\n- Received: ₹{{receivedAmount}}\n\nReview History: {{url}}',
-            type: 'WhatsApp',
-            category: 'Leads',
-            variables: ['id', 'name', 'actionType', 'summary', 'requiredAmount', 'receivedAmount', 'url'],
-            isActive: true
-        },
-        {
-            id: 'lead_status_changed',
-            name: 'Lead Status Update',
-            subject: 'Appeal Status Transition',
-            body: '🔄 *Appeal Status Update*\n\nThe status for *{{name}}* ({{id}}) has been transitioned.\n\n*New Status:* {{status}}\n*Previous Status:* {{oldStatus}}\n\n*Reason/Note:* {{note}}\n\nFollow Progress: {{url}}',
-            type: 'WhatsApp',
-            category: 'Leads',
-            variables: ['id', 'name', 'status', 'oldStatus', 'note', 'url'],
-            isActive: true
-        },
-        {
-            id: 'lead_goal_met',
-            name: 'Lead: Goal Achieved',
-            subject: 'Financial Target Reached',
-            body: '🎉 *Financial Goal Achieved!*\n\nThe appeal for *{{name}}* ({{id}}) has reached its target of ₹{{targetAmount}}!\n\n*Total Collected:* ₹{{receivedAmount}}\n\nNext Step: Final verification and fund disbursement.',
-            type: 'WhatsApp',
-            category: 'Leads',
-            variables: ['id', 'name', 'targetAmount', 'receivedAmount'],
-            isActive: true
-        },
-        {
-            id: 'lead_disbursed',
-            name: 'Lead: Funds Disbursed',
-            subject: 'Payment Release Alert',
-            body: '💸 *Funds Disbursed*\n\nPayments for *{{name}}* ({{id}}) have been successfully released.\n\n*Amount:* ₹{{amount}}\n*Payment Method:* {{method}}\n*Transaction ID:* {{txId}}\n\nRegistry Status: Closed/Completed.',
-            type: 'WhatsApp',
-            category: 'Leads',
-            variables: ['id', 'name', 'amount', 'method', 'txId'],
-            isActive: true
-        },
-        // --- CAMPAIGN MODULE ---
-        {
-            id: 'campaign_created',
-            name: 'Campaign Created',
-            subject: 'New Community Initiative',
-            body: '🚀 *New Campaign Launched*\n\n*Campaign:* {{name}}\n*ID:* {{id}}\n*Category:* {{category}}\n\n*Financial Goal:*\n- Target: ₹{{targetAmount}}\n- Date Range: {{startDate}} to {{endDate}}\n\n*Strategy:* {{purpose}}\n\nInitiative Portal: {{url}}',
-            type: 'WhatsApp',
-            category: 'Campaign',
-            variables: ['id', 'name', 'category', 'targetAmount', 'startDate', 'endDate', 'purpose', 'url'],
-            isActive: true
-        },
-        {
-            id: 'campaign_milestone',
-            name: 'Campaign Milestone',
-            subject: 'Goal Progress Alert',
-            body: '📈 *Campaign Milestone Alert*\n\nThe campaign *{{campaignName}}* has reached *{{percent}}%* of its goal!\n\n*Current Status:*\n- Target: ₹{{targetAmount}}\n- Received: ₹{{amount}}\n- Remaining: ₹{{remainingAmount}}\n\nView Progress Ticker: {{url}}',
-            type: 'WhatsApp',
-            category: 'Campaign',
-            variables: ['campaignName', 'percent', 'targetAmount', 'amount', 'remainingAmount', 'url'],
-            isActive: true
-        },
-        {
-            id: 'campaign_urgent',
-            name: 'Campaign: Urgent Appeal',
-            subject: 'Immediate Support Required',
-            body: '⚠️ *Urgent Support Required*\n\nOur initiative *{{name}}* ({{id}}) needs immediate attention.\n\n*Target:* ₹{{targetAmount}}\n*Remaining:* ₹{{remainingAmount}}\n*Closing Date:* {{endDate}}\n\n*Message:* {{urgentMessage}}\n\nYour contribution can save lives: {{url}}',
-            type: 'WhatsApp',
-            category: 'Campaign',
-            variables: ['name', 'id', 'targetAmount', 'remainingAmount', 'endDate', 'urgentMessage', 'url'],
-            isActive: true
-        },
-        {
-            id: 'campaign_completed',
-            name: 'Campaign: Mission Accomplished',
-            subject: 'Initiative Successfully Finalized',
-            body: '✅ *Mission Accomplished*\n\nThe campaign *{{name}}* ({{id}}) has been successfully completed.\n\n*Total Impact:* {{impactCount}} Beneficiaries\n*Total Raised:* ₹{{amount}}\n\nThank you for your unwavering support! View the completion report here: {{url}}',
-            type: 'WhatsApp',
-            category: 'Campaign',
-            variables: ['name', 'id', 'impactCount', 'amount', 'url'],
-            isActive: true
-        },
-        // --- DONATION MODULE ---
-        {
-            id: 'donation_receipt',
-            name: 'Donation Receipt (Donor)',
-            subject: 'Thank You For Your Support',
-            body: '🙏 *Official Donation Receipt*\n\nHello {{donorName}},\n\nWe have successfully recorded your contribution of *{{amount}}*.\n\n*Receipt ID:* {{donationId}}\n*Type:* {{donationType}}\n*Linked To:* {{linkName}}\n\nDownload Receipt: {{url}}\n\nJazakallah Khair!',
-            type: 'WhatsApp',
-            category: 'Donation',
-            variables: ['donorName', 'amount', 'donationId', 'donationType', 'linkName', 'url'],
-            isActive: true
-        },
-        {
-            id: 'donation_verified_internal',
-            name: 'Donation Verified (Internal)',
-            subject: 'Financial Record Verified',
-            body: '✅ *Donation Verification Finalized*\n\n*ID:* {{donationId}}\n*Amount:* ₹{{amount}}\n*Donor:* {{donorName}}\n*Allocated To:* {{linkName}} ({{linkId}})\n\n*Registry Update:* Funds have been officially applied to the initiative target.',
-            type: 'WhatsApp',
-            category: 'Donation',
-            variables: ['donationId', 'amount', 'donorName', 'linkName', 'linkId'],
-            isActive: true
-        },
-        {
-            id: 'donation_refunded',
-            name: 'Donation: Refunded',
-            subject: 'Financial Reversal Alert',
-            body: '🔄 *Donation Refund Processed*\n\nHello {{donorName}},\n\nA refund of *{{amount}}* has been processed for your contribution (ID: {{donationId}}).\n\n*Reason:* {{reason}}\n\nThe amount should reflect in your source account within 5-7 business days. Jazakallah.',
-            type: 'WhatsApp',
-            category: 'Donation',
-            variables: ['donorName', 'amount', 'donationId', 'reason'],
-            isActive: true
-        },
-        {
-            id: 'donation_pledge_reminder',
-            name: 'Donation: Pledge Reminder',
-            subject: 'Pending Support Commitment',
-            body: '⏳ *Contribution Reminder*\n\nHello {{donorName}},\n\nThis is a gentle reminder regarding your promised support for *{{linkName}}*.\n\n*Pledged Amount:* {{amount}}\n\nYou can fulfill your pledge here: {{url}}\n\nYour support helps us reach our targets faster. Jazakallah Khair!',
-            type: 'WhatsApp',
-            category: 'Donation',
-            variables: ['donorName', 'amount', 'linkName', 'url'],
-            isActive: true
-        },
-        // --- BENEFICIARY MODULE ---
-        {
-            id: 'beneficiary_status_changed',
-            name: 'Beneficiary Status Update',
-            subject: 'Distribution Registry Update',
-            body: '👤 *Beneficiary Distribution Alert*\n\n*Beneficiary:* {{beneficiaryName}}\n*Initiative:* {{initiativeName}}\n*New Status:* {{status}}\n\n*Allotment Details:*\n- Item: {{itemName}}\n- Category: {{itemCategory}}\n\nVerify Distribution: {{url}}',
-            type: 'WhatsApp',
-            category: 'Beneficiary',
-            variables: ['beneficiaryName', 'initiativeName', 'status', 'itemName', 'itemCategory', 'url'],
-            isActive: true
-        },
-        // --- APPROVAL SYSTEM ---
-        {
-            id: 'verification_request',
-            name: 'Approval Required',
-            subject: 'New Organization Approval Request',
-            body: '📋 *Organization Action Required*\n\nHello {{verifierName}},\n\nA new *{{module}}* request ({{recordId}}) is pending your approval.\n\n*Purpose:* {{purpose}}\n*Requested By:* {{requesterName}}\n\nReview & Finalize: {{url}}',
-            type: 'WhatsApp',
-            category: 'Approval',
-            variables: ['verifierName', 'module', 'recordId', 'purpose', 'requesterName', 'url'],
-            isActive: true
-        },
-        {
-            id: 'verification_approved',
-            name: 'Approval Finalized',
-            subject: 'Request Approved',
-            body: '✅ *Registry Update Approved*\n\nHello {{requesterName}},\n\nYour request for *{{module}}* ({{recordId}}) has been approved.\n\n*Purpose:* {{purpose}}\n\nThe record is now active in the production registry.',
-            type: 'WhatsApp',
-            category: 'Approval',
-            variables: ['requesterName', 'module', 'recordId', 'purpose'],
-            isActive: true
-        },
-        // --- USER & SECURITY ---
-        {
-            id: 'user_role_updated',
-            name: 'Security: Role Change',
-            subject: 'Account Privilege Update',
-            body: '🛡️ *Security Alert: Privilege Escalation*\n\n*User:* {{userName}}\n*Account ID:* {{id}}\n*New Role:* {{newRole}}\n*Old Role:* {{oldRole}}\n\nIf you did not authorize this change, please contact system administrator immediately.',
-            type: 'WhatsApp',
+            id: 'otp_staff',
+            name: 'Staff: Portal Login OTP',
+            subject: 'Organization Access Code',
+            body: '🔐 *Staff Portal Access*\n\nHello {{name}},\n\nYour One-Time Password (OTP) for BaitulMal Staff Dashboard is: *{{otp}}*\n\nThis code expires in {{validity}} minutes. If you did not request this, please secure your account immediately.',
+            type: 'MultiChannel',
             category: 'Security',
-            variables: ['userName', 'id', 'newRole', 'oldRole'],
+            profileType: 'Member',
+            variables: ['name', 'otp', 'validity'],
             isActive: true
         },
         {
-            id: 'user_welcome',
-            name: 'User: Welcome/Onboarding',
-            subject: 'BaitulMal Account Created',
-            body: '👋 *Welcome to BaitulMal Registry*\n\nHello {{userName}},\n\nYour organizational account has been successfully created.\n\n*ID:* {{id}}\n*Role:* {{role}}\n\nPlease login to complete your profile and view your assigned duties: {{url}}',
-            type: 'WhatsApp',
+            id: 'otp_donor',
+            name: 'Donor: Portal Login OTP',
+            subject: 'Donor Portal Access',
+            body: '🔐 *Donor Portal Access*\n\nAssalamualaikum {{name}},\n\nYour verification code is: *{{otp}}*\n\nUse this to access your donation history and tax receipts. Valid for {{validity}} minutes.',
+            type: 'MultiChannel',
             category: 'Security',
-            variables: ['userName', 'id', 'role', 'url'],
+            profileType: 'Donor',
+            variables: ['name', 'otp', 'validity'],
             isActive: true
         },
         {
-            id: 'user_status_changed',
-            name: 'User: Status Update',
-            subject: 'Account Status Modification',
-            body: '🛡️ *Account Status Update*\n\nThe status of your BaitulMal account has been updated to *{{status}}*.\n\n*Note:* {{note}}\n\nIf you believe this is an error, please contact the organization head immediately.',
-            type: 'WhatsApp',
+            id: 'otp_beneficiary',
+            name: 'Beneficiary: Portal Login OTP',
+            subject: 'Beneficiary Portal Access',
+            body: '🔐 *Beneficiary Portal Access*\n\nHello {{name}},\n\nYour verification code is: *{{otp}}*\n\nUse this to check your assistance request status. Valid for {{validity}} minutes.',
+            type: 'MultiChannel',
             category: 'Security',
-            variables: ['status', 'note'],
+            profileType: 'Beneficiary',
+            variables: ['name', 'otp', 'validity'],
             isActive: true
         },
+
+        // --- DONOR ACTIONS ---
         {
-            id: 'user_kyc_verified',
-            name: 'User: KYC/ID Verified',
-            subject: 'Identification Verified',
-            body: '🆔 *Identity Verification Approved*\n\nHello {{userName}},\n\nYour identification documents (ID Proof) have been successfully verified by the board.\n\nYou now have full access to authorized administrative modules.',
-            type: 'WhatsApp',
-            category: 'Security',
-            variables: ['userName'],
-            isActive: true
-        },
-        {
-            id: 'security_password_reset',
-            name: 'Portal: Password Reset Alert',
-            subject: 'Security Alert',
-            body: '🛡️ *Portal Access Updated*\n\nHello {{name}},\n\nYour portal access password for *{{orgName}}* has been updated by the administration.\n\nIf you did not request this change, please contact us immediately for assistance.\n\n*Login URL:* {{url}}',
-            type: 'WhatsApp',
-            category: 'Security',
-            variables: ['name', 'orgName', 'url'],
-            isActive: true
-        },
-        {
-            id: 'security_access_credential',
-            name: 'Portal: New Access Credentials',
-            subject: 'Portal Access Provisioned',
-            body: '🔐 *Registry Portal Access*\n\nYour secure portal access is now active. You can log in using your registered mobile and the credentials provided below.\n\n*ID/Mobile:* {{identifier}}\n*Temp Password:* {{password}}\n\n*Login Here:* {{url}}\n\n_Please change your password after your first successful login._',
-            type: 'WhatsApp',
-            category: 'Security',
-            variables: ['identifier', 'password', 'url'],
-            isActive: true
-        },
-        // --- DONOR-FACING NOTIFICATIONS ---
-        {
-            id: 'donor_donation_recorded',
-            name: 'Donor: Donation Recorded',
-            subject: 'Your Contribution Has Been Received',
-            body: '🎉 *Donation Received — Thank You!*\n\nAssalamualaikum {{donorName}},\n\nYour generous contribution of *₹{{amount}}* has been recorded successfully.\n\n*Receipt ID:* {{donationId}}\n*Type:* {{donationType}}\n*Date:* {{date}}\n\nJazakallah Khair for your continued support!\n\nView Receipt: {{url}}',
-            type: 'WhatsApp',
-            category: 'Donation',
-            variables: ['donorName', 'amount', 'donationId', 'donationType', 'date', 'url'],
-            isActive: true
-        },
-        {
-            id: 'donor_donation_mapped',
+            id: 'donor_donation_linked',
             name: 'Donor: Donation Linked to Cause',
             subject: 'Your Donation Has Been Allocated',
-            body: '📌 *Donation Allocation Update*\n\nHello {{donorName}},\n\nYour donation of *₹{{amount}}* (ID: {{donationId}}) has been allocated to:\n\n*Cause:* {{causeName}}\n*Cause Type:* {{causeType}}\n*Progress:* {{raisedAmount}} / {{targetAmount}} ({{percent}}%)\n*Remaining:* ₹{{remainingAmount}}\n\nYour support is making a real difference! 🤲',
-            type: 'WhatsApp',
+            body: '📌 *Donation Allocation Update*\n\nAssalamualaikum {{donorName}},\n\nYour contribution of *₹{{amount}}* has been officially linked to:\n\n*Cause:* {{causeName}}\n*Purpose:* {{purpose}}\n\n*Live Progress:* {{percent}}% reached.\n\nThank you for fueling this mission! 🤲',
+            type: 'MultiChannel',
             category: 'Donation',
-            variables: ['donorName', 'amount', 'donationId', 'causeName', 'causeType', 'raisedAmount', 'targetAmount', 'percent', 'remainingAmount'],
+            profileType: 'Donor',
+            variables: ['donorName', 'amount', 'causeName', 'purpose', 'percent'],
             isActive: true
         },
         {
-            id: 'donor_cause_update',
-            name: 'Donor: Cause Progress Update',
-            subject: 'Initiative Progress Report',
-            body: '📊 *Initiative Progress Update*\n\nHello {{donorName}},\n\nHere is a progress update on a cause you contributed to:\n\n*{{causeName}}*\n*Progress:* {{percent}}% of ₹{{targetAmount}}\n*Raised:* ₹{{raisedAmount}}\n*Remaining:* ₹{{remainingAmount}}\n*Beneficiaries Served:* {{beneficiaryCount}}\n\nThank you for being part of this mission! 🌟',
-            type: 'WhatsApp',
-            category: 'Donation',
-            variables: ['donorName', 'causeName', 'percent', 'targetAmount', 'raisedAmount', 'remainingAmount', 'beneficiaryCount'],
+            id: 'donor_cause_closed',
+            name: 'Donor: Cause Successfully Completed',
+            subject: 'Mission Accomplished Update',
+            body: '🎉 *Mission Accomplished!*\n\nAssalamualaikum {{donorName}},\n\nThe cause you supported, *{{causeName}}*, has been successfully finalized.\n\n*Total Impact:* {{impactCount}} lives touched\n*Total Raised:* ₹{{totalAmount}}\n\nYour generosity made this possible. Jazakallah Khair! 🌟',
+            type: 'MultiChannel',
+            category: 'Update',
+            profileType: 'Donor',
+            variables: ['donorName', 'causeName', 'impactCount', 'totalAmount'],
             isActive: true
         },
+
+        // --- BENEFICIARY ACTIONS ---
         {
-            id: 'donor_initiative_created',
-            name: 'Donor: New Initiative Launched',
-            subject: 'New Community Initiative Available',
-            body: '🆕 *New Initiative Launched!*\n\nHello {{donorName}},\n\nA new {{initiativeType}} has been launched by BaitulMal:\n\n*{{initiativeName}}*\n*Goal:* ₹{{targetAmount}}\n*Duration:* {{startDate}} to {{endDate}}\n*Description:* {{description}}\n\nContribute here: {{url}}\n\nEvery contribution counts! 🤲',
-            type: 'WhatsApp',
-            category: 'Campaign',
-            variables: ['donorName', 'initiativeType', 'initiativeName', 'targetAmount', 'startDate', 'endDate', 'description', 'url'],
+            id: 'beneficiary_disbursement',
+            name: 'Beneficiary: Funds Released',
+            subject: 'Assistance Disbursement Alert',
+            body: '💸 *Assistance Disbursement Notification*\n\nHello {{beneficiaryName}},\n\nAssistance funds for your request ({{id}}) have been released.\n\n*Amount:* ₹{{amount}}\n*Method:* {{method}}\n\nPlease verify receipt at your end. 🤝',
+            type: 'MultiChannel',
+            category: 'Update',
+            profileType: 'Beneficiary',
+            variables: ['beneficiaryName', 'id', 'amount', 'method'],
             isActive: true
         },
-        // --- ADMIN/INTERNAL NOTIFICATIONS ---
+
+        // --- UPDATING EXISTING (Example) ---
         {
-            id: 'admin_donation_received',
-            name: 'Admin: New Donation Entry',
-            subject: 'New Donation Recorded',
-            body: '💰 *New Donation Entry*\n\n*Donor:* {{donorName}}\n*Amount:* ₹{{amount}}\n*Type:* {{donationType}}\n*Date:* {{date}}\n*Recorded By:* {{uploadedBy}}\n\n*Linked To:* {{linkName}}\n\nManage: {{url}}',
-            type: 'WhatsApp',
-            category: 'Donation',
-            variables: ['donorName', 'amount', 'donationType', 'date', 'uploadedBy', 'linkName', 'url'],
-            isActive: true
-        },
-        {
-            id: 'admin_user_created',
-            name: 'Admin: New User Account',
-            subject: 'New Team Member Registered',
-            body: '👤 *New Team Member Registered*\n\n*Name:* {{userName}}\n*Role:* {{role}}\n*Phone:* {{phone}}\n*Created By:* {{createdBy}}\n\n*Login ID:* {{loginId}}\n\nManage: {{url}}',
-            type: 'WhatsApp',
-            category: 'Security',
-            variables: ['userName', 'role', 'phone', 'createdBy', 'loginId', 'url'],
-            isActive: true
-        },
-        {
-            id: 'admin_beneficiary_added',
-            name: 'Admin: Beneficiary Registered',
-            subject: 'New Beneficiary Entry',
-            body: '👤 *New Beneficiary Registered*\n\n*Name:* {{beneficiaryName}}\n*Phone:* {{phone}}\n*Status:* {{status}}\n*Created By:* {{createdBy}}\n\nManage: {{url}}',
-            type: 'WhatsApp',
-            category: 'Beneficiary',
-            variables: ['beneficiaryName', 'phone', 'status', 'createdBy', 'url'],
-            isActive: true
-        },
-        {
-            id: 'admin_high_value_donation',
-            name: 'Admin: High-Value Donation Alert',
-            subject: 'Significant Contribution Alert',
-            body: '🌟 *HIGH-VALUE DONATION ALERT*\n\n*Donor:* {{donorName}}\n*Amount:* ₹{{amount}}\n*Type:* {{donationType}}\n\nThis contribution exceeds the notification threshold.\n\n*Linked To:* {{linkName}}\n*Recorded By:* {{uploadedBy}}\n\nImmediate Review: {{url}}',
-            type: 'WhatsApp',
-            category: 'Donation',
-            variables: ['donorName', 'amount', 'donationType', 'linkName', 'uploadedBy', 'url'],
-            isActive: true
-        },
-        {
-            id: 'admin_password_reset',
-            name: 'Admin: Password Reset Alert',
-            subject: 'Security: Password Reset Performed',
-            body: '🔐 *Password Reset Performed*\n\n*User:* {{userName}} ({{userId}})\n*Reset By:* {{resetBy}}\n*Timestamp:* {{timestamp}}\n\nIf unauthorized, investigate immediately.',
-            type: 'WhatsApp',
-            category: 'Security',
-            variables: ['userName', 'userId', 'resetBy', 'timestamp'],
-            isActive: true
-        },
-        {
-            id: 'donor_onboarding',
-            name: 'Donor: Welcome Onboarding',
-            subject: 'Welcome To BaitulMal',
-            body: '🤝 *Welcome to BaitulMal Family!*\n\nAssalamualaikum {{donorName}},\n\nYou have been registered as a donor in our system. Your contributions will be tracked, receipts generated, and you will receive regular updates about the causes you support.\n\nJazakallah Khair for choosing to make a difference! 🌟',
-            type: 'WhatsApp',
-            category: 'Donation',
-            variables: ['donorName'],
+            id: 'lead_created',
+            name: 'Internal: New Lead Entry',
+            subject: 'New Service Request',
+            body: '📍 *New Lead Entry*\n\n*ID:* {{id}}\n*Name:* {{name}}\n*Category:* {{category}}\n\nReview: {{url}}',
+            type: 'MultiChannel',
+            category: 'Leads',
+            profileType: 'Member',
+            variables: ['id', 'name', 'category', 'url'],
             isActive: true
         }
     ];
@@ -1996,5 +1754,287 @@ export async function notifyVerificationUpdateAction(params: {
     } catch (e: any) {
         console.error('Failed to notify verification update:', e);
         return { success: false, message: e.message };
+    }
+}
+
+/**
+ * Core function to send an email using SMTP
+ */
+async function sendEmailCore(params: {
+    to: string;
+    subject: string;
+    body: string;
+    html?: string;
+    configOverride?: Partial<ResourceSettings>;
+    metadata?: any;
+    bypassAutoCheck?: boolean;
+}) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: 'DB Unavailable' };
+
+    try {
+        // Fetch configuration
+        const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+        const config = { ...(resourceSnap.data() as ResourceSettings), ...params.configOverride };
+
+        if (!params.bypassAutoCheck && !config.isEmailEnabled) {
+            return { success: false, message: 'Email Service is globally disabled.' };
+        }
+
+        if (!config.smtpHost || !config.smtpUser || !config.smtpPass) {
+            return { success: false, message: 'SMTP configuration is incomplete.' };
+        }
+
+        const transporter = nodemailer.createTransport({
+            host: config.smtpHost,
+            port: Number(config.smtpPort) || 587,
+            secure: Number(config.smtpPort) === 465,
+            auth: {
+                user: config.smtpUser,
+                pass: config.smtpPass
+            }
+        });
+
+        const info = await transporter.sendMail({
+            from: `"${config.fromName || 'BaitulMal Alerts'}" <${config.fromEmail || config.smtpUser}>`,
+            to: params.to,
+            subject: params.subject,
+            text: params.body,
+            html: params.html || params.body.replace(/\n/g, '<br>')
+        });
+
+        // Log the message
+        await adminDb.collection('message_logs').add({
+            recipient: params.to,
+            content: `Subject: ${params.subject}\n\n${params.body}`,
+            type: 'Email',
+            status: 'Sent',
+            timestamp: FieldValue.serverTimestamp(),
+            metadata: params.metadata || {}
+        } as MessageLog);
+
+        return { success: true, messageId: info.messageId };
+    } catch (e: any) {
+        console.error('Email dispatch failed:', e);
+        
+        // Log failure
+        await adminDb.collection('message_logs').add({
+            recipient: params.to,
+            content: `Subject: ${params.subject}\n\n${params.body}`,
+            type: 'Email',
+            status: 'Failed',
+            error: e.message,
+            timestamp: FieldValue.serverTimestamp(),
+            metadata: params.metadata || {}
+        } as MessageLog);
+
+        return { success: false, message: e.message };
+    }
+}
+
+/**
+ * Public action for sending email via templates or direct message
+ */
+export async function sendEmailAction(params: {
+    to: string;
+    subject?: string;
+    body?: string;
+    templateId?: string;
+    variables?: Record<string, string>;
+    metadata?: any;
+    configOverride?: Partial<ResourceSettings>;
+    bypassAutoCheck?: boolean;
+}) {
+    let finalSubject = params.subject || '';
+    let finalBody = params.body || '';
+
+    if (params.templateId) {
+        const { adminDb } = getAdminServices();
+        if (adminDb) {
+            const templateSnap = await adminDb.collection('message_templates').doc(params.templateId).get();
+            if (templateSnap.exists) {
+                const template = templateSnap.data() as MessageTemplate;
+                finalSubject = template.subject || 'Notification';
+                finalBody = template.body;
+                
+                // Process variables
+                if (params.variables) {
+                    Object.entries(params.variables).forEach(([key, val]) => {
+                        const regex = new RegExp(`{{${key}}}`, 'g');
+                        finalSubject = finalSubject.replace(regex, val);
+                        finalBody = finalBody.replace(regex, val);
+                    });
+                }
+            }
+        }
+    }
+
+    if (!finalBody) return { success: false, message: 'Message content is empty.' };
+
+    return await sendEmailCore({
+        to: params.to,
+        subject: finalSubject || 'Organization Alert',
+        body: finalBody,
+        configOverride: params.configOverride,
+        metadata: params.metadata,
+        bypassAutoCheck: params.bypassAutoCheck
+    });
+}
+
+/**
+ * Dispatcher for Multi-Channel notifications
+ */
+export async function sendMultiChannelNotificationAction(params: {
+    userId: string;
+    templateId: string;
+    variables?: Record<string, string>;
+    metadata?: any;
+    bypassAutoCheck?: boolean;
+}) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: 'DB Unavailable' };
+
+    try {
+        // 1. Fetch User Profile
+        let userSnap = await adminDb.collection('users').doc(params.userId).get();
+        if (!userSnap.exists) {
+            userSnap = await adminDb.collection('donors').doc(params.userId).get();
+        }
+        if (!userSnap.exists) {
+            userSnap = await adminDb.collection('beneficiaries').doc(params.userId).get();
+        }
+
+        if (!userSnap.exists) return { success: false, message: 'Target user profile not found.' };
+        const user = userSnap.data() as UserProfile;
+
+        // 2. Fetch Template to check channel support
+        const templateSnap = await adminDb.collection('message_templates').doc(params.templateId).get();
+        if (!templateSnap.exists) return { success: false, message: 'Template not found.' };
+        const template = templateSnap.data() as MessageTemplate;
+
+        const results: any[] = [];
+
+        // 3. Dispatch via WhatsApp if enabled
+        if (user.phone && (user.whatsappNotificationsEnabled !== false)) {
+            results.push(await sendWhatsAppAction({
+                to: user.phone,
+                templateId: params.templateId,
+                variables: params.variables,
+                metadata: { ...params.metadata, channel: 'WhatsApp' },
+                bypassAutoCheck: params.bypassAutoCheck
+            }));
+        }
+
+        // 4. Dispatch via Telegram if enabled
+        if (user.telegramChatId && (user.notificationsEnabled !== false)) {
+            results.push(await sendTelegramAction({
+                templateId: params.templateId,
+                variables: params.variables,
+                chatId: user.telegramChatId,
+                configOverride: user.customTelegramBotToken ? { telegramBotToken: user.customTelegramBotToken } : undefined,
+                metadata: { ...params.metadata, channel: 'Telegram' },
+                bypassAutoCheck: params.bypassAutoCheck
+            }));
+        }
+
+        // 5. Dispatch via Email if enabled
+        if (user.email && !user.email.includes('@donor.demo.local')) {
+            results.push(await sendEmailAction({
+                to: user.email,
+                templateId: params.templateId,
+                variables: params.variables,
+                metadata: { ...params.metadata, channel: 'Email' },
+                bypassAutoCheck: params.bypassAutoCheck
+            }));
+        }
+
+        const successCount = results.filter(r => r.success).length;
+        return { 
+            success: successCount > 0, 
+            message: `Dispatched via ${successCount}/${results.length} active channels.`,
+            details: results 
+        };
+
+    } catch (e: any) {
+        console.error('Multi-channel dispatch failed:', e);
+        return { success: false, message: e.message };
+    }
+}
+
+/**
+ * Diagnostic Email Test
+ */
+export async function sendTestEmailAction(to: string, configOverride?: Partial<ResourceSettings>) {
+    const auth = await checkAuth('settings', 'update');
+    if (!auth.isAuthorized) return { success: false, message: 'Unauthorized' };
+
+    return await sendEmailCore({
+        to,
+        subject: '🧪 BaitulMal SMTP Diagnostic',
+        body: `This is a test message to verify your SMTP configuration.\n\nStatus: Online ✅\nTimestamp: ${new Date().toLocaleString()}\n\nIf you received this, your email service is correctly configured.`,
+        configOverride,
+        metadata: {
+            moduleId: 'settings',
+            userId: auth.user?.id || 'system',
+            type: 'diagnostic_test'
+        },
+        bypassAutoCheck: true
+    });
+}
+
+/**
+ * Search users for messaging tests across all collections
+ */
+export async function searchMessagingUsersAction(query: string) {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return [];
+
+    try {
+        const q = query.trim().toLowerCase();
+        if (q.length < 2) return [];
+
+        // Fetch from all 3 main identity collections
+        const [usersSnap, donorsSnap, benSnap] = await Promise.all([
+            adminDb.collection('users').limit(20).get(),
+            adminDb.collection('donors').limit(20).get(),
+            adminDb.collection('beneficiaries').limit(20).get()
+        ]);
+
+        const allUsers: any[] = [];
+        const seenIds = new Set();
+
+        const processSnap = (snap: any, role: string) => {
+            snap.forEach((doc: any) => {
+                const data = doc.data();
+                const id = doc.id;
+                if (seenIds.has(id)) return;
+
+                const name = (data.name || '').toLowerCase();
+                const phone = (data.phone || '').toLowerCase();
+                const email = (data.email || '').toLowerCase();
+
+                if (name.includes(q) || phone.includes(q) || email.includes(q)) {
+                    allUsers.push({
+                        id,
+                        name: data.name,
+                        phone: data.phone,
+                        email: data.email,
+                        telegramChatId: data.telegramChatId,
+                        role: data.role || role,
+                        customTelegramBotToken: data.customTelegramBotToken
+                    });
+                    seenIds.add(id);
+                }
+            });
+        };
+
+        processSnap(usersSnap, 'Member');
+        processSnap(donorsSnap, 'Donor');
+        processSnap(benSnap, 'Beneficiary');
+
+        return allUsers.slice(0, 10);
+    } catch (e) {
+        console.error('User search failed:', e);
+        return [];
     }
 }

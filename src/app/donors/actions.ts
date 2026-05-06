@@ -27,54 +27,77 @@ export async function createDonorAction(data: Partial<Donor>, createdBy: {id: st
         const lookupRef = adminDb.collection('user_lookups').doc(cleanPhone);
         const lookupSnap = await lookupRef.get();
         
+        let profileId = '';
+        let isExisting = false;
+        let existingRoles: string[] = [];
+
         if (lookupSnap.exists) {
             const lookupData = lookupSnap.data();
-            return { 
-                success: false, 
-                message: `An identity for '${lookupData?.name || 'User'}' already exists with this phone number.`,
-                id: lookupData?.userKey
-            };
+            profileId = lookupData?.userKey;
+            isExisting = true;
+            existingRoles = lookupData?.roles || [lookupData?.role];
         }
 
         const batch = adminDb.batch();
-        const docRef = adminDb.collection('donors').doc();
-        const profileId = docRef.id;
+        const docRef = isExisting ? adminDb.collection('donors').doc(profileId) : adminDb.collection('donors').doc();
+        if (!isExisting) profileId = docRef.id;
 
         const donorData = {
             ...data,
             id: profileId,
             phone: cleanPhone,
             status: data.status || 'Active',
-            createdAt: FieldValue.serverTimestamp(),
+            createdAt: isExisting ? FieldValue.serverTimestamp() : FieldValue.serverTimestamp(), // Simplified for now
+            updatedAt: FieldValue.serverTimestamp(),
             createdById: createdBy.id,
             createdByName: createdBy.name,
-            password: data.password || 'password', // Default password as requested
+            password: data.password || 'password', 
         };
 
-        batch.set(docRef, donorData);
+        if (isExisting) {
+            batch.set(docRef, donorData, { merge: true });
+        } else {
+            batch.set(docRef, donorData);
+        }
 
         // Mirror to 'users' collection for session management
-        batch.set(adminDb.collection('users').doc(profileId), {
+        const userRef = adminDb.collection('users').doc(profileId);
+        const userUpdate: any = {
             ...donorData,
-            role: 'Donor',
-            loginId: cleanPhone,
+            loginId: data.loginId || cleanPhone,
             userKey: profileId,
-            permissions: {},
-        });
+            linkedDonorId: profileId,
+        };
+        // Ensure we don't overwrite role if it's already Admin/User
+        if (!isExisting) userUpdate.role = 'Donor';
+        
+        batch.set(userRef, userUpdate, { merge: true });
 
-        // Register in 'user_lookups'
-        batch.set(lookupRef, {
+        // Register/Update in 'user_lookups'
+        const roles = Array.from(new Set([...existingRoles, 'Donor']));
+        const lookupData = {
             userKey: profileId,
-            role: 'Donor',
+            role: roles[0], // Primary role
+            roles: roles,   // All associated roles
             phone: cleanPhone,
-            name: data.name
-        });
+            name: data.name,
+            email: data.email || '',
+            loginId: data.loginId || cleanPhone
+        };
+        batch.set(lookupRef, lookupData, { merge: true });
+        if (data.loginId && data.loginId !== cleanPhone) {
+            batch.set(adminDb.collection('user_lookups').doc(data.loginId), lookupData, { merge: true });
+        }
 
         await batch.commit();
 
         revalidatePath('/donors');
         revalidatePath('/donations');
-        return { success: true, message: 'Donor Profile Registered & Identity Synchronized.', id: profileId };
+        return { 
+            success: true, 
+            message: isExisting ? `Linked to existing identity '${data.name}'.` : 'Donor Profile Registered & Identity Synchronized.', 
+            id: profileId 
+        };
     } catch (error: any) {
         console.error("Error Creating Donor:", error);
         return { success: false, message: `Registration Failed: ${error.message}` };
@@ -109,26 +132,33 @@ export async function updateDonorAction(donorId: string, data: Partial<Donor>, u
         // Update Mirrored User
         batch.set(adminDb.collection('users').doc(donorId), {
             ...updatePayload,
-            loginId: cleanPhone || oldPhone,
-            role: 'Donor'
+            loginId: data.loginId || cleanPhone || oldPhone,
+            role: 'Donor',
+            telegramChatId: data.telegramChatId || oldData.telegramChatId || '',
+            email: data.email || oldData.email || ''
         }, { merge: true });
 
         // Handle Lookup Synchronization
+        const lookupData: any = {
+            userKey: donorId,
+            role: 'Donor',
+            phone: cleanPhone || oldPhone,
+            name: data.name || oldData.name,
+            email: data.email || oldData.email || '',
+            loginId: data.loginId || oldData.loginId || cleanPhone || oldPhone
+        };
+
         if (cleanPhone && cleanPhone !== oldPhone) {
             if (oldPhone) batch.delete(adminDb.collection('user_lookups').doc(oldPhone));
-            batch.set(adminDb.collection('user_lookups').doc(cleanPhone), {
-                userKey: donorId,
-                role: 'Donor',
-                phone: cleanPhone,
-                name: data.name || oldData.name
-            });
-        } else if (cleanPhone && !oldPhone) {
-             batch.set(adminDb.collection('user_lookups').doc(cleanPhone), {
-                userKey: donorId,
-                role: 'Donor',
-                phone: cleanPhone,
-                name: data.name || oldData.name
-            });
+            batch.set(adminDb.collection('user_lookups').doc(cleanPhone), lookupData);
+        }
+        
+        if (data.loginId && data.loginId !== oldData.loginId) {
+            if (oldData.loginId) batch.delete(adminDb.collection('user_lookups').doc(oldData.loginId));
+            batch.set(adminDb.collection('user_lookups').doc(data.loginId), lookupData);
+        } else if (!data.loginId && cleanPhone && cleanPhone !== (data.loginId || oldData.loginId)) {
+            // Ensure phone lookup exists if no custom loginId
+            batch.set(adminDb.collection('user_lookups').doc(cleanPhone), lookupData);
         }
 
         await batch.commit();
