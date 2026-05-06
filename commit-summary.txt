@@ -1,21 +1,13 @@
-release: v2026.05.06.10
+release: v2026.05.06.13
 
-Type: Documentation & UX
-Message: Enhanced Telegram Bot setup instructions and verified dedicated bot messaging for users.
-Reference: TB-15774
+Type: Hardening, security & infrastructure
+Message: Hardened Telegram messaging infrastructure with advanced error diagnostics and multi-tenant isolation; Resolved Next.js configuration warnings and restricted administrative page visibility.
+Reference: TB-15776
 Branch: test_bmss_26
-Commit: [UNCOMMITTED]
-
-Key Changes:
-- User Bot Wizard: Refined the step-by-step instructions in the User Profile form to explicitly include the 'START' requirement for new bots and added guidance for Group configuration (using `/id` or `/getgroupid`).
-- UX Improvements: Updated bot naming conventions in instructions to dynamically reflect the user's phone number for easier @BotFather interaction.
-- Build System: Verified that manual commit summaries are correctly preserved across builds.
-- Firestore: Confirmed stability of multi-tab persistence fixes.
+Commit: 02838685
 
 Verification Steps:
-1. Instruction Accuracy: VERIFIED (Steps now cover both 1-1 and Group scenarios).
-2. Bot Registration: VERIFIED (Custom tokens successfully link to profile).
-3. Production Build: SUCCESSFUL.
+Manual verification required.
 
 ---
-*Build Summary Updated: 6/5/2026, 4:15:00 am*
+*Build Summary Updated: 6/5/2026, 5:30:46 am*

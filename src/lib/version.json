@@ -1,9 +1,53 @@
 {
-  "version": "2026.05.06.9",
-  "buildDate": "2026-05-05T21:47:55.145Z",
+  "version": "2026.05.06.13",
+  "buildDate": "2026-05-05T23:59:15.023Z",
   "commitHash": "initial",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.05.06.13",
+      "date": "2026-05-05T23:59:15.023Z",
+      "commit": "02838685",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "TB-15776",
+      "steps": "Manual verification required.",
+      "type": "Hardening, security & infrastructure",
+      "message": "Hardened Telegram messaging infrastructure with advanced error diagnostics and multi-tenant isolation; Resolved Next.js configuration warnings and restricted administrative page visibility."
+    },
+    {
+      "version": "2026.05.06.12",
+      "date": "2026-05-05T23:52:51.559Z",
+      "commit": "02838685",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "TB-15776",
+      "steps": "Manual verification required.",
+      "type": "Hardening & infrastructure stability",
+      "message": "Hardened Telegram messaging pipeline with advanced error diagnostics, multi-tenant isolation, and improved beneficiary notification reliability."
+    },
+    {
+      "version": "2026.05.06.11",
+      "date": "2026-05-05T23:49:06.511Z",
+      "commit": "02838685",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "TB-15776",
+      "steps": "Manual verification required.",
+      "type": "Hardening & infrastructure stability",
+      "message": "Hardened Telegram messaging pipeline with advanced error diagnostics, multi-tenant isolation, and improved beneficiary notification reliability."
+    },
+    {
+      "version": "2026.05.06.10",
+      "date": "2026-05-05T23:21:45.750Z",
+      "commit": "02838685",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "TB-15775",
+      "steps": "Manual verification required.",
+      "type": "Feature expansion & security",
+      "message": "Synchronized Telegram Multi-Tenant Infrastructure across all messaging channels (OTP, Verification, and Notifications)."
+    },
     {
       "version": "2026.05.06.9",
       "date": "2026-05-05T21:47:55.145Z",

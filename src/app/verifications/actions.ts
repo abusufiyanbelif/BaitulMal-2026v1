@@ -152,7 +152,10 @@ import { generateChanges } from '@/lib/utils';
                     else failCount++;
                 }
                 
-                const verifierTelegramId = verifierSnap.data()?.telegramChatId;
+                const verifierData = verifierSnap.data();
+                const verifierTelegramId = verifierData?.telegramChatId;
+                const verifierBotToken = verifierData?.customTelegramBotToken;
+                
                 if (verifierTelegramId) {
                     let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
                     try {
@@ -165,7 +168,8 @@ import { generateChanges } from '@/lib/utils';
                     await sendTelegramAction({
                         message: `🔔 *New Verification Request*\n\n*Module:* ${payload.module.toUpperCase()}\n*Requested By:* ${payload.requestedBy.name}\n*Purpose:* ${payload.description || 'Data Update'}\n\n🔗 Review: ${baseUrl}/verifications?requestId=${payload.id}`,
                         chatId: verifierTelegramId,
-                        moduleId: payload.module.replace(/s$/, '') as any
+                        moduleId: payload.module.replace(/s$/, '') as any,
+                        configOverride: verifierBotToken ? { telegramBotToken: verifierBotToken } : undefined
                     });
                 }
 
@@ -468,12 +472,16 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
                     });
                 }
                 
-                const requesterTelegramId = requesterSnap.data()?.telegramChatId;
+                const requesterData = requesterSnap.data();
+                const requesterTelegramId = requesterData?.telegramChatId;
+                const requesterBotToken = requesterData?.customTelegramBotToken;
+
                 if (requesterTelegramId) {
                     await sendTelegramAction({
                         message: `✅ *Verification Approved*\n\n*Module:* ${request.module.toUpperCase()}\n*Requested By:* ${request.requestedBy.name}\n*Purpose:* ${request.description || 'Data Update'}`,
                         chatId: requesterTelegramId,
-                        moduleId: request.module.replace(/s$/, '') as any
+                        moduleId: request.module.replace(/s$/, '') as any,
+                        configOverride: requesterBotToken ? { telegramBotToken: requesterBotToken } : undefined
                     });
                 }
 
@@ -586,12 +594,16 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
                     moduleId: request.module.replace(/s$/, '') as any
                 });
                 
-                const requesterTelegramId = requesterSnap.data()?.telegramChatId;
+                const requesterData = requesterSnap.data();
+                const requesterTelegramId = requesterData?.telegramChatId;
+                const requesterBotToken = requesterData?.customTelegramBotToken;
+
                 if (requesterTelegramId) {
                     await sendTelegramAction({
                         message: `❌ *Verification Rejected*\n\n*Module:* ${request.module.toUpperCase()}\n*Requested By:* ${request.requestedBy.name}\n*Reason:* ${reason || 'Criteria not met or data discrepancy found.'}`,
                         chatId: requesterTelegramId,
-                        moduleId: request.module.replace(/s$/, '') as any
+                        moduleId: request.module.replace(/s$/, '') as any,
+                        configOverride: requesterBotToken ? { telegramBotToken: requesterBotToken } : undefined
                     });
                 }
             }
@@ -701,12 +713,16 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
                         moduleId: 'user'
                     });
                     
-                    const verifierTelegramId = verifierSnap.data()?.telegramChatId;
+                    const verifierData = verifierSnap.data();
+                    const verifierTelegramId = verifierData?.telegramChatId;
+                    const verifierBotToken = verifierData?.customTelegramBotToken;
+                    
                     if (verifierTelegramId) {
                         await sendTelegramAction({
                             message: `🔔 *New Portal Profile Update Request*\n\n*Requested By:* ${userName}\n\n🔗 Review: ${baseUrl}/verifications?requestId=${payload.id}`,
                             chatId: verifierTelegramId,
-                            moduleId: 'user'
+                            moduleId: 'user',
+                            configOverride: verifierBotToken ? { telegramBotToken: verifierBotToken } : undefined
                         });
                     }
                     
@@ -793,13 +809,16 @@ export async function remindVerifiersAction(requestId: string) {
         for (const verifier of (request.assignedVerifiers || [])) {
             if (verifier.status === 'Pending') {
                 const vSnap = await adminDb.collection('users').doc(verifier.id).get();
-                const vTelegram = vSnap.data()?.telegramChatId;
+                const vData = vSnap.data();
+                const vTelegram = vData?.telegramChatId;
+                const vBotToken = vData?.customTelegramBotToken;
                 
                 if (vTelegram) {
                     await sendTelegramAction({
                         message: `⏳ *Reminder: Pending Approval Required*\n\n*Requested By:* ${request.requestedBy.name}\n*Purpose:* ${request.description || 'Data Update'}`,
                         chatId: vTelegram,
-                        moduleId: request.module.replace(/s$/, '') as any
+                        moduleId: request.module.replace(/s$/, '') as any,
+                        configOverride: vBotToken ? { telegramBotToken: vBotToken } : undefined
                     });
                     sentCount++;
                 }

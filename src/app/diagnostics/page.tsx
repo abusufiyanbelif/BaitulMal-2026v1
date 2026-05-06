@@ -10,6 +10,7 @@ import { ArrowLeft, CheckCircle2, XCircle, Loader2, PlayCircle, ExternalLink, Br
 import Link from 'next/link';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { getNestedValue } from '@/lib/utils';
+import { MessageSquare } from 'lucide-react';
 
 type TestResult = 'success' | 'failure' | 'pending' | 'skipped';
 type TestStatus = TestResult | 'running';
@@ -152,6 +153,25 @@ export default function DiagnosticsPage() {
                     }
                 } catch (error: any) {
                     return { status: 'failure', details: `The AI check failed. Error: ${error.message}` };
+                }
+            },
+        },
+        {
+            id: 'telegram-connectivity',
+            name: 'Telegram Bot Connectivity',
+            description: 'Verifies the global platform bot token and connectivity.',
+            icon: <MessageSquare className="h-6 w-6 text-primary" />,
+            run: async () => {
+                try {
+                    const { getTelegramBotInfoAction } = await import('@/app/messages/actions');
+                    const res = await getTelegramBotInfoAction();
+                    if (res.success && res.data) {
+                        return { status: 'success', details: `Bot Online: @${res.data.username} (${res.data.id})` };
+                    } else {
+                        return { status: 'failure', details: res.message || 'Could not connect to Telegram API.' };
+                    }
+                } catch (error: any) {
+                    return { status: 'failure', details: `Telegram check failed: ${error.message}` };
                 }
             },
         }

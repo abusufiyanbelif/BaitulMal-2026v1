@@ -704,6 +704,7 @@ export async function notifyDonorDirectAction(donorId: string, params: {
         // Try donors collection first, then users
         let phone = '';
         let telegramChatId = '';
+        let customBotToken = '';
         let donorName = '';
 
         const donorSnap = await adminDb.collection('donors').doc(donorId).get();
@@ -711,6 +712,7 @@ export async function notifyDonorDirectAction(donorId: string, params: {
             const d = donorSnap.data() as any;
             phone = d.phone || '';
             telegramChatId = d.telegramChatId || '';
+            customBotToken = d.customTelegramBotToken || '';
             donorName = d.name || '';
         }
 
@@ -721,6 +723,7 @@ export async function notifyDonorDirectAction(donorId: string, params: {
                 const u = userSnap.data() as UserProfile;
                 if (!phone) phone = u.phone || '';
                 if (!telegramChatId) telegramChatId = u.telegramChatId || '';
+                if (!customBotToken) customBotToken = u.customTelegramBotToken || '';
                 if (!donorName) donorName = u.name || '';
             }
         }
@@ -748,6 +751,7 @@ export async function notifyDonorDirectAction(donorId: string, params: {
                 message: params.customMessage, 
                 chatId: telegramChatId, 
                 bypassAutoCheck: true,
+                configOverride: customBotToken ? { telegramBotToken: customBotToken } : undefined,
                 metadata: params.metadata
             });
         }
@@ -1048,7 +1052,17 @@ export async function sendTelegramAction(params: {
         if (!response.ok) {
             const errData = await response.json().catch(() => ({}));
             status = 'Failed';
-            error = `Telegram API Error: ${errData.description || response.statusText}`;
+            
+            const telegramDesc = errData.description || response.statusText;
+            if (telegramDesc.includes('chat not found')) {
+                error = "Target Chat ID not found. Ensure the user has started a conversation with the bot.";
+            } else if (telegramDesc.includes('Unauthorized')) {
+                error = "Telegram Bot Token is invalid or revoked. Please check your Resource Settings.";
+            } else if (telegramDesc.includes('Forbidden')) {
+                error = "Bot is blocked or has not been started by the user. Please click 'START' on the bot.";
+            } else {
+                error = `Telegram API Error: ${telegramDesc}`;
+            }
         }
 
         // --- Persistent Logging ---
@@ -1076,10 +1090,10 @@ export async function sendTelegramAction(params: {
 
         if (status === 'Failed') {
             // Handle the specific 'Forbidden' error with a user-friendly instruction
-            if (error?.includes('Forbidden') || error?.includes('bot can\'t initiate conversation')) {
+            if (error?.includes('Forbidden') || error?.includes('bot can\'t initiate conversation') || error?.includes('blocked')) {
                 return { 
                     success: false, 
-                    message: "Telegram Authorization Required: Please open your organization's Telegram bot and click 'START' to enable notifications for this Chat ID." 
+                    message: "Telegram Authorization Required: Please open the bot on Telegram and click 'START' to enable notifications." 
                 };
             }
             throw new Error(error);
@@ -1415,7 +1429,7 @@ export async function dispatchNotificationToGroups(params: {
 
                     const { FieldPath } = require('firebase-admin/firestore');
                     
-                    const memberTelegramIds: string[] = [];
+                    const memberConfigs: Array<{ chatId: string; token?: string }> = [];
                     const chunkSize = 10;
                     for (let i = 0; i < filteredMemberIds.length; i += chunkSize) {
                         const chunk = filteredMemberIds.slice(i, i + chunkSize);
@@ -1424,13 +1438,24 @@ export async function dispatchNotificationToGroups(params: {
                             .get();
                         
                         membersSnap.docs.forEach((doc: any) => {
-                            const tid = (doc.data() as UserProfile).telegramChatId;
-                            if (tid) memberTelegramIds.push(tid);
+                            const data = doc.data() as UserProfile;
+                            if (data.telegramChatId) {
+                                memberConfigs.push({ 
+                                    chatId: data.telegramChatId, 
+                                    token: data.customTelegramBotToken 
+                                });
+                            }
                         });
                     }
 
-                    for (const tId of memberTelegramIds) {
-                        await sendTelegramAction({ message: params.message, chatId: tId, bypassAutoCheck: true, richData: params.richData });
+                    for (const config of memberConfigs) {
+                        await sendTelegramAction({ 
+                            message: params.message, 
+                            chatId: config.chatId, 
+                            bypassAutoCheck: true, 
+                            richData: params.richData,
+                            configOverride: config.token ? { telegramBotToken: config.token } : undefined
+                        });
                         sentCount++;
                     }
                 }
@@ -1742,14 +1767,36 @@ export async function notifyBeneficiaryStatusAction(beneficiaryId: string, statu
             url: `${baseUrl}/beneficiaries`
         };
 
-        return await sendWhatsAppAction({
-            to: '917887646583',
-            templateId: 'beneficiary_status_changed',
-            variables,
-            metadata: { moduleId: 'beneficiaries', recordId: beneficiaryId, templateId: 'beneficiary_status_changed' },
-            bypassAutoCheck: false,
-            moduleId: 'beneficiary'
-        });
+        const phone = data.phone;
+        const telegramId = data.telegramChatId;
+        const customBotToken = data.customTelegramBotToken;
+
+        let whatsappRes = null;
+        if (phone && phone.length >= 10) {
+            whatsappRes = await sendWhatsAppAction({
+                to: phone,
+                templateId: 'beneficiary_status_changed',
+                variables,
+                metadata: { moduleId: 'beneficiaries', recordId: beneficiaryId, templateId: 'beneficiary_status_changed' },
+                bypassAutoCheck: false,
+                moduleId: 'beneficiary'
+            });
+        }
+
+        let telegramRes = null;
+        if (telegramId) {
+            telegramRes = await sendTelegramAction({
+                chatId: telegramId,
+                templateId: 'beneficiary_status_changed',
+                variables,
+                metadata: { moduleId: 'beneficiaries', recordId: beneficiaryId },
+                bypassAutoCheck: false,
+                moduleId: 'beneficiary',
+                configOverride: customBotToken ? { telegramBotToken: customBotToken } : undefined
+            });
+        }
+
+        return whatsappRes || telegramRes || { success: false, message: 'No valid contact method found for beneficiary.' };
     } catch (e: any) {
         return { success: false, message: e.message };
     }

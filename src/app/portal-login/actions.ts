@@ -169,6 +169,7 @@ export async function sendPortalOTPAction(identifier: string) {
         const cleanIdentifier = identifier.trim().replace(/\D/g, '').slice(-10);
         let targetDoc: any = null;
         let telegramChatId: string = '';
+        let customBotToken: string = '';
 
         // 1. Resolve Identity and find Telegram ID
         // Check Users
@@ -179,6 +180,7 @@ export async function sendPortalOTPAction(identifier: string) {
             if (userSnap.exists) {
                 targetDoc = userSnap.data();
                 telegramChatId = targetDoc.telegramChatId || '';
+                customBotToken = targetDoc.customTelegramBotToken || '';
             }
         }
 
@@ -188,6 +190,7 @@ export async function sendPortalOTPAction(identifier: string) {
             if (!donorSnap.empty) {
                 targetDoc = donorSnap.docs[0].data();
                 telegramChatId = targetDoc.telegramChatId || '';
+                customBotToken = targetDoc.customTelegramBotToken || '';
             }
         }
 
@@ -197,6 +200,7 @@ export async function sendPortalOTPAction(identifier: string) {
             if (!benSnap.empty) {
                 targetDoc = benSnap.docs[0].data();
                 telegramChatId = targetDoc.telegramChatId || '';
+                customBotToken = targetDoc.customTelegramBotToken || '';
             }
         }
 
@@ -221,10 +225,11 @@ export async function sendPortalOTPAction(identifier: string) {
         const telRes = await sendTelegramAction({ 
             message, 
             chatId: telegramChatId, 
-            bypassAutoCheck: true 
+            bypassAutoCheck: true,
+            configOverride: customBotToken ? { telegramBotToken: customBotToken } : undefined
         });
 
-        if (!telRes.success) return { success: false, message: "Failed to dispatch OTP. Please try again later." };
+        if (!telRes.success) return { success: false, message: telRes.message || "Failed to dispatch OTP. Please try again later." };
 
         return { success: true, message: "Secure OTP has been dispatched to your linked Telegram account." };
 
