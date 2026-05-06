@@ -1,7 +1,7 @@
 # 📘 User Guide: /leads-members/[leadId]/summary
     
-**Build Version:** `2026.05.07.10`
-**Last Updated:** 7/5/2026, 4:59:30 am
+**Build Version:** `2026.05.07.11`
+**Last Updated:** 7/5/2026, 5:02:09 am
 **Internal Route:** `/leads-members/[leadId]/summary`
 
 ---

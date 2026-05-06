@@ -1,13 +1,13 @@
-release: v2026.05.07.10
+release: v2026.05.07.11
 
 Type: Feature, infrastructure & automation
 Message: Standardized Multi-Channel Notification Dispatch (Email, WhatsApp, Telegram) with Profile-Aware Identity Resolution and Live Template Test Center.
 Reference: MB-2026-05-07 (Multi-Channel Bridge)
 Branch: test_bmss_26
-Commit: 7cec6909
+Commit: 03bc24ce
 
 Verification Steps:
 Manual verification required.
 
 ---
-*Build Summary Updated: 7/5/2026, 4:59:31 am*
+*Build Summary Updated: 7/5/2026, 5:02:10 am*

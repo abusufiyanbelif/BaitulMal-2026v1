@@ -1,7 +1,7 @@
 # 📘 User Guide: /users/[userId]
     
-**Build Version:** `2026.05.07.10`
-**Last Updated:** 7/5/2026, 4:59:31 am
+**Build Version:** `2026.05.07.11`
+**Last Updated:** 7/5/2026, 5:02:09 am
 **Internal Route:** `/users/[userId]`
 
 ---

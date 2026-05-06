@@ -1,0 +1,139 @@
+BUILD SUCCESS LOG - 7/5/2026, 5:02:07 am
+Version: 2026.05.07.11
+
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/76) ...
+   Generating static pages (19/76) 
+   Generating static pages (38/76) 
+   Generating static pages (57/76) 
+ ✓ Generating static pages (76/76)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+Route (app)                                                Size     First Load JS
+┌ ○ /                                                      20.2 kB         385 kB
+├ ○ /_not-found                                            292 B            88 kB
+├ ○ /analytics                                             21.6 kB         435 kB
+├ ƒ /api/admin/health                                      0 B                0 B
+├ ƒ /api/admin/logs                                        0 B                0 B
+├ ƒ /api/create-education-story                            0 B                0 B
+├ ƒ /api/create-lead-story                                 0 B                0 B
+├ ƒ /api/extract-billing                                   0 B                0 B
+├ ƒ /api/extract-dynamic-form                              0 B                0 B
+├ ƒ /api/extract-education                                 0 B                0 B
+├ ƒ /api/extract-medical                                   0 B                0 B
+├ ƒ /api/extract-text                                      0 B                0 B
+├ ƒ /api/image-proxy                                       0 B                0 B
+├ ƒ /api/logs                                              0 B                0 B
+├ ƒ /api/run-diagnostic-check                              0 B                0 B
+├ ƒ /api/scan-aadhaar                                      0 B                0 B
+├ ƒ /api/scan-id                                           0 B                0 B
+├ ƒ /api/scan-payment                                      0 B                0 B
+├ ƒ /apple-icon                                            0 B                0 B
+├ ○ /beneficiaries                                         21 kB           341 kB
+├ ƒ /beneficiaries/[beneficiaryId]                         9.45 kB         365 kB
+├ ○ /beneficiaries/create                                  5.19 kB         344 kB
+├ ○ /beneficiaries/summary                                 4.03 kB         404 kB
+├ ○ /beneficiary-portal                                    8.95 kB         269 kB
+├ ○ /beneficiary-portal/profile                            9.72 kB         311 kB
+├ ○ /beneficiary-portal/settings                           8.76 kB         272 kB
+├ ○ /campaign-members                                      16 kB           368 kB
+├ ƒ /campaign-members/[campaignId]                         18 kB           324 kB
+├ ƒ /campaign-members/[campaignId]/audit                   8.57 kB         273 kB
+├ ƒ /campaign-members/[campaignId]/beneficiaries           8.47 kB         401 kB
+├ ƒ /campaign-members/[campaignId]/donations               12 kB           389 kB
+├ ƒ /campaign-members/[campaignId]/donations/[donationId]  15.6 kB         413 kB
+├ ƒ /campaign-members/[campaignId]/donations/summary       5.66 kB         265 kB
+├ ƒ /campaign-members/[campaignId]/summary                 31.8 kB         502 kB
+├ ○ /campaign-members/create                               5.81 kB         335 kB
+├ ○ /campaign-public                                       1.1 kB          338 kB
+├ ƒ /campaign-public/[campaignId]                          292 B            88 kB
+├ ƒ /campaign-public/[campaignId]/summary                  29.5 kB         405 kB
+├ ○ /dashboard                                             8.78 kB         264 kB
+├ ○ /diagnostics                                           5.11 kB         260 kB
+├ ○ /donate                                                18.7 kB         331 kB
+├ ○ /donations                                             14.5 kB         399 kB
+├ ƒ /donations/[donationId]                                20 kB           421 kB
+├ ○ /donations/summary                                     8.18 kB         429 kB
+├ ○ /donor-portal                                          4.43 kB         373 kB
+├ ○ /donor-portal/causes                                   11 kB           271 kB
+├ ○ /donor-portal/donations                                4.08 kB         368 kB
+├ ○ /donor-portal/profile                                  11 kB           312 kB
+├ ƒ /donor-portal/receipt/[donationId]                     12.9 kB         347 kB
+├ ○ /donor-portal/settings                                 8.73 kB         272 kB
+├ ○ /donors                                                21.4 kB         344 kB
+├ ƒ /donors/[donorId]                                      17.9 kB         443 kB
+├ ○ /donors/summary                                        8.4 kB          358 kB
+├ ○ /env-check                                             386 B          88.1 kB
+├ ○ /extractor                                             10.5 kB         290 kB
+├ ○ /guidance                                              13.2 kB         268 kB
+├ ƒ /icon                                                  0 B                0 B
+├ ƒ /icon-192.png                                          0 B                0 B
+├ ƒ /icon-512.png                                          0 B                0 B
+├ ○ /info/donation-info                                    9.13 kB         276 kB
+├ ○ /info/guidance                                         9.41 kB         266 kB
+├ ○ /info/guiding-principles                               6.31 kB         258 kB
+├ ○ /info/members                                          11.3 kB         275 kB
+├ ○ /info/organization                                     11.2 kB         275 kB
+├ ○ /leads-members                                         16.5 kB         369 kB
+├ ƒ /leads-members/[leadId]                                12.1 kB         318 kB
+├ ƒ /leads-members/[leadId]/audit                          8.57 kB         273 kB
+├ ƒ /leads-members/[leadId]/beneficiaries                  8.16 kB         401 kB
+├ ƒ /leads-members/[leadId]/donations                      10.1 kB         406 kB
+├ ƒ /leads-members/[leadId]/donations/[donationId]         15.2 kB         413 kB
+├ ƒ /leads-members/[leadId]/donations/summary              2.61 kB         248 kB
+├ ƒ /leads-members/[leadId]/summary                        32.9 kB         503 kB
+├ ○ /leads-members/create                                  6.41 kB         336 kB
+├ ○ /leads-public                                          3.08 kB         338 kB
+├ ƒ /leads-public/[leadId]                                 292 B            88 kB
+├ ƒ /leads-public/[leadId]/summary                         29.6 kB         405 kB
+├ ○ /login                                                 18.7 kB         310 kB
+├ ○ /manifest.webmanifest                                  0 B                0 B
+├ ○ /messages                                              13.5 kB         303 kB
+├ ○ /messages/templateconfig                               15.7 kB         308 kB
+├ ○ /portal-login                                          15.6 kB         283 kB
+├ ○ /portal-register                                       7.96 kB         140 kB
+├ ○ /profile                                               13.2 kB         296 kB
+├ ○ /public                                                1.11 kB        88.8 kB
+├ ○ /public-initiatives                                    3.61 kB         345 kB
+├ ○ /public-summary                                        3.44 kB         345 kB
+├ ○ /registry-index                                        20.6 kB         287 kB
+├ ○ /seed                                                  6.74 kB         111 kB
+├ ○ /settings                                              377 B          88.1 kB
+├ ○ /settings/app                                          15.2 kB         293 kB
+├ ○ /settings/beneficiary                                  13.7 kB         289 kB
+├ ○ /settings/campaign                                     13.9 kB         294 kB
+├ ○ /settings/data-health                                  13.1 kB         296 kB
+├ ○ /settings/donation                                     15 kB           295 kB
+├ ○ /settings/donor                                        13.8 kB         289 kB
+├ ○ /settings/guidance                                     10.4 kB         271 kB
+├ ○ /settings/info                                         17 kB           312 kB
+├ ○ /settings/lead                                         14 kB           294 kB
+├ ○ /settings/logs                                         13.1 kB         263 kB
+├ ○ /settings/members                                      11.6 kB         293 kB
+├ ○ /settings/migration                                    5.56 kB         100 kB
+├ ○ /settings/notifications                                16.5 kB         295 kB
+├ ○ /settings/resources                                    18.1 kB         281 kB
+├ ○ /settings/resources/fundraising                        10.3 kB         261 kB
+├ ○ /settings/user                                         13.4 kB         264 kB
+├ ○ /settings/viewport                                     13.2 kB         116 kB
+├ ○ /story-creator                                         5.07 kB         133 kB
+├ ○ /users                                                 22 kB           317 kB
+├ ƒ /users/[userId]                                        7.63 kB         349 kB
+├ ○ /users/create                                          9.86 kB         347 kB
+└ ○ /verifications                                         13.1 kB         282 kB
++ First Load JS shared by all                              87.7 kB
+  ├ chunks/2117-512cb29321b770d4.js                        31.9 kB
+  ├ chunks/fd9d1056-f1906dc3b7d56113.js                    53.6 kB
+  └ other shared chunks (total)                            2.19 kB
+
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+

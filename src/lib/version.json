@@ -1,9 +1,20 @@
 {
-  "version": "2026.05.07.10",
-  "buildDate": "2026-05-06T23:27:20.955Z",
+  "version": "2026.05.07.11",
+  "buildDate": "2026-05-06T23:30:08.105Z",
   "commitHash": "h9i0j1k2",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.05.07.11",
+      "date": "2026-05-06T23:30:08.105Z",
+      "commit": "03bc24ce",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-2026-05-07 (Multi-Channel Bridge)",
+      "steps": "Manual verification required.",
+      "type": "Feature, infrastructure & automation",
+      "message": "Standardized Multi-Channel Notification Dispatch (Email, WhatsApp, Telegram) with Profile-Aware Identity Resolution and Live Template Test Center."
+    },
     {
       "version": "2026.05.07.10",
       "date": "2026-05-06T23:27:20.955Z",
@@ -535,17 +546,6 @@
     {
       "version": "2026.05.03.10",
       "date": "2026-05-03T09:55:39.702Z",
-      "commit": "ee070d6d",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "",
-      "steps": "",
-      "type": "Build",
-      "message": "Automated build initiated via npm run build"
-    },
-    {
-      "version": "2026.05.03.9",
-      "date": "2026-05-03T09:52:00.102Z",
       "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
