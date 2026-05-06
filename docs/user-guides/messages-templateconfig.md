@@ -1,7 +1,7 @@
 # 📘 User Guide: /messages/templateconfig
     
-**Build Version:** `2026.05.06.13`
-**Last Updated:** 6/5/2026, 5:30:45 am
+**Build Version:** `2026.05.07.10`
+**Last Updated:** 7/5/2026, 4:59:31 am
 **Internal Route:** `/messages/templateconfig`
 
 ---
@@ -25,17 +25,22 @@ The following fields are mapped within this interface:
 - Status
 - Display Name
 - Category
+- Target Profile Type
+- Supported Channels
 - Subject (Email/Internal)
 - Message Body (WhatsApp)
 - Input: Search templates...
 - Input: Use {{variable}} for dynamic content...
 - Input: e.g. name, id, amount, date, url
+- Input: Search test user by name, phone or email...
 
 ## ⚡ Interactive Action Items
 - **Back to Dashboard**: Interactive button to initiate back to dashboard operation.
 - **New Template**: Interactive button to initiate new template operation (Triggers handleNew).
-- **Category: {categoryFilter}**: Interactive button to initiate category: {categoryfilter} operation.
+- **Cat: {categoryFilter}**: Interactive button to initiate cat: {categoryfilter} operation.
+- **Profile: {profileFilter}**: Interactive button to initiate profile: {profilefilter} operation.
 - **Confirm Delete**: Interactive button to initiate confirm delete operation (Triggers handleDelete).
+- **handleChannelTest**: Internal logic handler for ChannelTest workflow.
 - **handleEdit**: Internal logic handler for Edit workflow.
 - **handleNew**: Internal logic handler for New workflow.
 - **handleSave**: Internal logic handler for Save workflow.

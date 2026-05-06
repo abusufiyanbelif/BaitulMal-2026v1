@@ -1,0 +1,57 @@
+BUILD FAILURE LOG - 7/5/2026, 4:50:55 am
+Version: 2026.05.07.7
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+request to https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap failed, reason: 
+
+Retrying 1/3...
+request to https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap failed, reason: 
+
+Retrying 1/3...
+Failed to compile.
+
+./src/app/portal-login/actions.ts:35:26
+Type error: Argument of type 'Promise<QuerySnapshot<DocumentData, DocumentData>>' is not assignable to parameter of type 'Promise<DocumentSnapshot<DocumentData, DocumentData>>'.
+  Type 'QuerySnapshot<DocumentData, DocumentData>' is missing the following properties from type 'DocumentSnapshot<DocumentData, DocumentData>': exists, ref, id, data, get
+
+[0m [90m 33 |[39m[0m
+[0m [90m 34 |[39m         [36mif[39m (isPhone) {[0m
+[0m[31m[1m>[22m[39m[90m 35 |[39m             queries[33m.[39mpush(adminDb[33m.[39mcollection([32m'donors'[39m)[33m.[39mwhere([32m'phone'[39m[33m,[39m [32m'=='[39m[33m,[39m cleanPhone)[33m.[39mlimit([35m1[39m)[33m.[39m[36mget[39m())[33m;[39m[0m
+[0m [90m    |[39m                          [31m[1m^[22m[39m[0m
+[0m [90m 36 |[39m             queries[33m.[39mpush(adminDb[33m.[39mcollection([32m'beneficiaries'[39m)[33m.[39mwhere([32m'phone'[39m[33m,[39m [32m'=='[39m[33m,[39m cleanPhone)[33m.[39mlimit([35m1[39m)[33m.[39m[36mget[39m())[33m;[39m[0m
+[0m [90m 37 |[39m         } [36melse[39m {[0m
+[0m [90m 38 |[39m             queries[33m.[39mpush(adminDb[33m.[39mcollection([32m'donors'[39m)[33m.[39mwhere([32m'loginId'[39m[33m,[39m [32m'=='[39m[33m,[39m loginId)[33m.[39mlimit([35m1[39m)[33m.[39m[36mget[39m())[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: npx next build
+request to https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap failed, reason: 
+
+Retrying 1/3...
+request to https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap failed, reason: 
+
+Retrying 1/3...
+Failed to compile.
+
+./src/app/portal-login/actions.ts:35:26
+Type error: Argument of type 'Promise<QuerySnapshot<DocumentData, DocumentData>>' is not assignable to parameter of type 'Promise<DocumentSnapshot<DocumentData, DocumentData>>'.
+  Type 'QuerySnapshot<DocumentData, DocumentData>' is missing the following properties from type 'DocumentSnapshot<DocumentData, DocumentData>': exists, ref, id, data, get
+
+[0m [90m 33 |[39m[0m
+[0m [90m 34 |[39m         [36mif[39m (isPhone) {[0m
+[0m[31m[1m>[22m[39m[90m 35 |[39m             queries[33m.[39mpush(adminDb[33m.[39mcollection([32m'donors'[39m)[33m.[39mwhere([32m'phone'[39m[33m,[39m [32m'=='[39m[33m,[39m cleanPhone)[33m.[39mlimit([35m1[39m)[33m.[39m[36mget[39m())[33m;[39m[0m
+[0m [90m    |[39m                          [31m[1m^[22m[39m[0m
+[0m [90m 36 |[39m             queries[33m.[39mpush(adminDb[33m.[39mcollection([32m'beneficiaries'[39m)[33m.[39mwhere([32m'phone'[39m[33m,[39m [32m'=='[39m[33m,[39m cleanPhone)[33m.[39mlimit([35m1[39m)[33m.[39m[36mget[39m())[33m;[39m[0m
+[0m [90m 37 |[39m         } [36melse[39m {[0m
+[0m [90m 38 |[39m             queries[33m.[39mpush(adminDb[33m.[39mcollection([32m'donors'[39m)[33m.[39mwhere([32m'loginId'[39m[33m,[39m [32m'=='[39m[33m,[39m loginId)[33m.[39mlimit([35m1[39m)[33m.[39m[36mget[39m())[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null

@@ -1,0 +1,63 @@
+BUILD FAILURE LOG - 7/5/2026, 4:48:00 am
+Version: 2026.05.07.6
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+
+
+STDERR:
+Failed to compile.
+
+./src/app/messages/templateconfig/page.tsx
+Error: 
+  [31mx[0m Unexpected token `div`. Expected jsx identifier
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\messages\templateconfig\page.tsx[0m:282:1]
+ [2m282[0m |     }
+ [2m283[0m | 
+ [2m284[0m |     return (
+ [2m285[0m |         <div className="space-y-6 text-primary font-normal pb-20">
+     : [31;1m         ^^^[0m
+ [2m286[0m |             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+ [2m287[0m |                 <div className="flex items-center gap-4">
+ [2m288[0m |                     <Button variant="ghost" size="icon" asChild className="h-8 w-8 text-primary/40 hover:text-primary">
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/messages/templateconfig/page.tsx
+
+
+> Build failed because of webpack errors
+
+
+ERROR MESSAGE:
+Command failed: npx next build
+Failed to compile.
+
+./src/app/messages/templateconfig/page.tsx
+Error: 
+  [31mx[0m Unexpected token `div`. Expected jsx identifier
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\messages\templateconfig\page.tsx[0m:282:1]
+ [2m282[0m |     }
+ [2m283[0m | 
+ [2m284[0m |     return (
+ [2m285[0m |         <div className="space-y-6 text-primary font-normal pb-20">
+     : [31;1m         ^^^[0m
+ [2m286[0m |             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+ [2m287[0m |                 <div className="flex items-center gap-4">
+ [2m288[0m |                     <Button variant="ghost" size="icon" asChild className="h-8 w-8 text-primary/40 hover:text-primary">
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/messages/templateconfig/page.tsx
+
+
+> Build failed because of webpack errors

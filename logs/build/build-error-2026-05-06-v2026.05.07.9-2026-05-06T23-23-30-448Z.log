@@ -1,0 +1,43 @@
+BUILD FAILURE LOG - 7/5/2026, 4:54:40 am
+Version: 2026.05.07.9
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+Failed to compile.
+
+./src/app/settings/resources/page.tsx:503:38
+Type error: Cannot find name 'Mail'.
+
+[0m [90m 501 |[39m                             [33m<[39m[33mdiv[39m className[33m=[39m[32m"flex items-center gap-3"[39m[33m>[39m[0m
+[0m [90m 502 |[39m                                 [33m<[39m[33mdiv[39m className[33m=[39m[32m"p-2 rounded-lg bg-indigo-500/10 text-indigo-600"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 503 |[39m                                     [33m<[39m[33mMail[39m className[33m=[39m[32m"h-5 w-5"[39m [33m/[39m[33m>[39m[0m
+[0m [90m     |[39m                                      [31m[1m^[22m[39m[0m
+[0m [90m 504 |[39m                                 [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m[0m
+[0m [90m 505 |[39m                                 [33m<[39m[33mdiv[39m[33m>[39m[0m
+[0m [90m 506 |[39m                                     [33m<[39m[33mCardTitle[39m className[33m=[39m[32m"text-lg font-bold text-primary tracking-tight"[39m[33m>[39m[33mEmail[39m [33mService[39m ([33mSMTP[39m)[33m<[39m[33m/[39m[33mCardTitle[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: npx next build
+Failed to compile.
+
+./src/app/settings/resources/page.tsx:503:38
+Type error: Cannot find name 'Mail'.
+
+[0m [90m 501 |[39m                             [33m<[39m[33mdiv[39m className[33m=[39m[32m"flex items-center gap-3"[39m[33m>[39m[0m
+[0m [90m 502 |[39m                                 [33m<[39m[33mdiv[39m className[33m=[39m[32m"p-2 rounded-lg bg-indigo-500/10 text-indigo-600"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 503 |[39m                                     [33m<[39m[33mMail[39m className[33m=[39m[32m"h-5 w-5"[39m [33m/[39m[33m>[39m[0m
+[0m [90m     |[39m                                      [31m[1m^[22m[39m[0m
+[0m [90m 504 |[39m                                 [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m[0m
+[0m [90m 505 |[39m                                 [33m<[39m[33mdiv[39m[33m>[39m[0m
+[0m [90m 506 |[39m                                     [33m<[39m[33mCardTitle[39m className[33m=[39m[32m"text-lg font-bold text-primary tracking-tight"[39m[33m>[39m[33mEmail[39m [33mService[39m ([33mSMTP[39m)[33m<[39m[33m/[39m[33mCardTitle[39m[33m>[39m[0m
+Next.js build worker exited with code: 1 and signal: null

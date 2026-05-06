@@ -1,7 +1,7 @@
 # 📘 User Guide: /login
     
-**Build Version:** `2026.05.06.13`
-**Last Updated:** 6/5/2026, 5:30:45 am
+**Build Version:** `2026.05.07.10`
+**Last Updated:** 7/5/2026, 4:59:31 am
 **Internal Route:** `/login`
 
 ---
@@ -11,6 +11,7 @@ Application Module
 
 ## 📋 Primary Use Cases
 - Generate and download data reports for external audit.
+- Perform administrative verification of submitted data.
 
 ## 🧪 Reproducible Steps
 - Navigate to `/login` through the organization dashboard.
@@ -21,10 +22,16 @@ Application Module
 
 ## ⌨️ Fields & Data Mapping
 The following fields are mapped within this interface:
-- Email address
+- Email Address
+- Login ID or Phone Number
+- Enter 6-Digit OTP
+- New Password
 - Input: e.g. your_id or 9876543210
 - Input: ••••••••
-- Input: user@example.com
+- Input: your.email@organization.com
+- Input: e.g. abusufiyan.belif
+- Input: 000000
+- Input: At least 6 characters
 
 ## ⚡ Interactive Action Items
 - **Back to home**: Interactive button to initiate back to home operation.
@@ -32,6 +39,10 @@ The following fields are mapped within this interface:
                   Sign in**: Interactive button to initiate {isloading && }
                   sign in operation.
 - **Forgot password?**: Interactive button to initiate forgot password? operation.
+- **{isSendingReset ?  : "Send Reset Link"}**: Interactive button to initiate {issendingreset ?  : "send reset link"} operation (Triggers handlePasswordReset).
+- **{isSendingReset ?  : "Dispatch Telegram OTP"}**: Interactive button to initiate {issendingreset ?  : "dispatch telegram otp"} operation (Triggers handlePasswordReset).
+- **setResetStep('request')}>Back**: Interactive button to initiate setresetstep('request')}>back operation (Triggers () => setResetStep('request')).
+- **{isSendingReset ?  : "Verify & Reset"}**: Interactive button to initiate {issendingreset ?  : "verify & reset"} operation (Triggers handlePasswordReset).
 - **Go to Firebase Console to enable**: Interactive button to initiate go to firebase console to enable operation.
 - **Continue via Mobile**: Interactive button to initiate continue via mobile operation.
 - **Continue via Mobile**: Interactive button to initiate continue via mobile operation.

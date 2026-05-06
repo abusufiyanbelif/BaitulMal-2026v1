@@ -1,23 +1,13 @@
-release: v2026.05.07.01
+release: v2026.05.07.10
 
-Type: Feature, Infrastructure & Automation
+Type: Feature, infrastructure & automation
 Message: Standardized Multi-Channel Notification Dispatch (Email, WhatsApp, Telegram) with Profile-Aware Identity Resolution and Live Template Test Center.
 Reference: MB-2026-05-07 (Multi-Channel Bridge)
 Branch: test_bmss_26
-Commit: [PENDING_COMMIT] (Latest Hash: f7010997)
-
-Key Changes:
-- Integrated Nodemailer for SMTP Email service with administrative configuration dashboard.
-- Implemented Multi-Channel Orchestrator for automated dispatch across TG, WA, and Email.
-- Created 'Template Test Center' for real-time diagnostic testing with live user profiles.
-- Standardized Profile-Aware OTP dispatch for Staff, Donors, and Beneficiaries.
-- Added 'Suggest Defaults' automation for dedicated user bot identifiers in UserForm.
-- Synchronized messaging metadata across mirrored identity collections.
+Commit: 7cec6909
 
 Verification Steps:
-1. Verify SMTP Connection in Settings > Resources.
-2. Search and Test User Notifications in Messages > Template Config > Test Center.
-3. Validate role-specific OTP delivery during portal login.
+Manual verification required.
 
 ---
-*Build Summary Updated: 7/5/2026, 4:40:00 am*
+*Build Summary Updated: 7/5/2026, 4:59:31 am*

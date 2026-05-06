@@ -27,7 +27,7 @@ export async function authenticatePortalUserAction(identifier: string, password:
 
         // 1. Parallel identity lookup
         // We fetch the lookup doc and the specific donor/beneficiary docs in parallel
-        const queries = [
+        const queries: Promise<any>[] = [
             adminDb.collection('user_lookups').doc(loginId).get(),
         ];
 
@@ -321,7 +321,7 @@ export async function verifyPortalOTPAction(identifier: string, otp: string, req
         const cleanPhone = isPhone ? inputIdentifier : '';
 
         // 3. Parallel identity lookup
-        const queries = [
+        const queries: Promise<any>[] = [
             adminDb.collection('user_lookups').doc(loginId).get(),
         ];
 

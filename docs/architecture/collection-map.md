@@ -1,7 +1,7 @@
 # 🏗️ Organization Data Architecture
 
-**Build Version:** `2026.05.06.13`
-**Last Updated:** 6/5/2026, 5:30:46 am
+**Build Version:** `2026.05.07.10`
+**Last Updated:** 7/5/2026, 4:59:31 am
 
 Mapping between Application Modules and Firestore Collections.
 
@@ -41,11 +41,13 @@ Mapping between Application Modules and Firestore Collections.
 | `app\messages\actions.ts` | `notification_groups` | Read/Write |
 | `app\messages\actions.ts` | `leads` | Read/Write |
 | `app\messages\actions.ts` | `campaigns` | Read/Write |
+| `app\messages\actions.ts` | `message_templates` | Read/Write |
 | `app\portal-login\actions.ts` | `user_lookups` | Read/Write |
 | `app\portal-login\actions.ts` | `donors` | Read/Write |
 | `app\portal-login\actions.ts` | `beneficiaries` | Read/Write |
 | `app\portal-login\actions.ts` | `users` | Read/Write |
 | `app\portal-login\actions.ts` | `user_sessions` | Read/Write |
+| `app\portal-login\actions.ts` | `settings` | Read/Write |
 | `app\portal-login\actions.ts` | `portal_otps` | Read/Write |
 | `app\portal-register\actions.ts` | `user_lookups` | Read/Write |
 | `app\portal-register\actions.ts` | `users` | Read/Write |

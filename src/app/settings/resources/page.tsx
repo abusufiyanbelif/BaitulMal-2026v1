@@ -34,7 +34,9 @@ import {
     Info,
     MessageSquare,
     Zap,
-    ZapOff
+    ZapOff,
+    Mail,
+    Send
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { BrandedLoader } from '@/components/branded-loader';
@@ -42,7 +44,6 @@ import { getNestedValue } from '@/lib/utils';
 import type { ResourceSettings } from '@/lib/types';
 import { getWhatsAppAccountInfoAction, sendTestWhatsAppAction, sendTelegramAction, getTelegramBotInfoAction, sendTestEmailAction } from '@/app/messages/actions';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Send } from 'lucide-react';
 
 export default function ResourceSettingsPage() {
     const { userProfile, isLoading: isSessionLoading } = useSession();

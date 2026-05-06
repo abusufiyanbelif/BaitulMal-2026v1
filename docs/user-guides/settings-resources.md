@@ -1,7 +1,7 @@
 # 📘 User Guide: /settings/resources
     
-**Build Version:** `2026.05.06.13`
-**Last Updated:** 6/5/2026, 5:30:45 am
+**Build Version:** `2026.05.07.10`
+**Last Updated:** 7/5/2026, 4:59:31 am
 **Internal Route:** `/settings/resources`
 
 ---
@@ -35,6 +35,13 @@ The following fields are mapped within this interface:
 - Expiry Date
 - Subscription Status
 - Test WhatsApp Connection
+- Enable Email Alerts
+- SMTP Host
+- SMTP Port
+- SMTP Username
+- SMTP Password
+- From Email
+- From Name
 - Enable Telegram Messages
 - Bot Api Token
 - Bot Username
@@ -55,6 +62,11 @@ The following fields are mapped within this interface:
 - Input: Business Account ID
 - Input: Standard Monthly
 - Input: +919999999999
+- Input: smtp.gmail.com
+- Input: 587
+- Input: user@example.com
+- Input: no-reply@organization.com
+- Input: BaitulMal Alerts
 - Input: bot123456:ABC-DEF...
 - Input: Testing to fetch...
 - Input: e.g. -100123456789
@@ -68,6 +80,7 @@ The following fields are mapped within this interface:
 - **Send Test**: Interactive button to initiate send test operation (Triggers handleSendTest).
 - **handleSendTest**: Internal logic handler for SendTest workflow.
 - **handleTestTelegram**: Internal logic handler for TestTelegram workflow.
+- **handleTestEmail**: Internal logic handler for TestEmail workflow.
 - **handleTestGemini**: Internal logic handler for TestGemini workflow.
 - **handleFieldChange**: Internal logic handler for FieldChange workflow.
 - **handleSave**: Internal logic handler for Save workflow.

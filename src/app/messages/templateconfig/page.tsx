@@ -571,6 +571,8 @@ export default function MessageTemplatesPage() {
                                         className="text-xs font-mono h-10 bg-white border-primary/10 shadow-inner"
                                     />
                                     <p className="text-[10px] text-muted-foreground leading-relaxed">Adding variables here makes them available as quick-insert badges in the editor above.</p>
+                                </div>
+                            </CardContent>
                         </Card>
 
                         {/* Test Center */}

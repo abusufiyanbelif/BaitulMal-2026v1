@@ -5,7 +5,6 @@ import { Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { MessageTemplate, MessageLog, ResourceSettings, PendingVerification, NotificationGroup, UserProfile } from '@/lib/types';
 import { cookies } from 'next/headers';
 import { generateChanges } from '@/lib/utils';
-import { checkAuth } from '@/lib/auth-utils';
 import nodemailer from 'nodemailer';
 
 /**
