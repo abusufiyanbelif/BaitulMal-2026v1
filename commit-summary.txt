@@ -1,13 +1,23 @@
-release: v2026.05.07.11
+release: v2026.05.07.12
 
-Type: Feature, infrastructure & automation
-Message: Standardized Multi-Channel Notification Dispatch (Email, WhatsApp, Telegram) with Profile-Aware Identity Resolution and Live Template Test Center.
-Reference: MB-2026-05-07 (Multi-Channel Bridge)
+Type: Feature, Infrastructure & DevOps
+Message: Finalized Firebase Studio Integration and Multi-Channel Messaging Engine. Resolved dependency synchronization conflicts for production build runners.
+Reference: MB-FS-2026 (Firebase Studio Bridge)
 Branch: test_bmss_26
-Commit: 03bc24ce
+Commit: f7010997 (Latest Identity: 03bc24ce)
+
+Key Changes:
+- **Firebase Studio Integration**: Implemented setup and verification scripts for Studio exports. Standardized environment alignment for Antigravity-ready projects.
+- **Multi-Channel Notification Engine**: Completed live dispatch infrastructure for Email (SMTP), WhatsApp, and Telegram.
+- **Template Test Center**: Integrated a real-time diagnostic dashboard in Template Configuration with live user search and channel verification.
+- **Build Stabilization**: Synchronized `package.json` and `package-lock.json` versions (Firebase/Genkit) to resolve remote build runner 'npm ci' failures.
+- **Identity Resolution**: Standardized profile-aware messaging across Staff, Donor, and Beneficiary registries.
 
 Verification Steps:
-Manual verification required.
+1. Run `npm install` locally to confirm lock file synchronization.
+2. Verify SMTP connection in Settings > Resources.
+3. Perform live template tests in Messages > Template Config > Test Center.
+4. Execute `scripts/verify-studio-setup.js` to validate Firebase Studio environment.
 
 ---
-*Build Summary Updated: 7/5/2026, 5:02:10 am*
+*Build Summary Updated: 7/5/2026, 5:15:00 am*
