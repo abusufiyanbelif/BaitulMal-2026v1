@@ -509,6 +509,82 @@ export async function seedDefaultTemplatesAction() {
             profileType: 'Member',
             variables: ['id', 'name', 'category', 'url'],
             isActive: true
+        },
+
+        // --- ADMIN PASSWORD CHANGE ---
+        {
+            id: 'password_changed_admin',
+            name: 'Admin: Password Reset Success',
+            subject: 'Security Alert: Admin Password Changed',
+            body: '🛡️ *Admin Security Alert*\n\nHello {{name}},\n\nYour administrator password has been successfully changed.\n\n*Time:* {{time}}\n\nIf you did not authorize this change, please contact the security team immediately and rotate all API keys.',
+            type: 'MultiChannel',
+            category: 'Security',
+            profileType: 'Admin',
+            variables: ['name', 'time'],
+            isActive: true
+        },
+
+        // --- DONOR ADDITIONAL ---
+        {
+            id: 'donor_receipt',
+            name: 'Donor: Donation Receipt',
+            subject: 'Official Donation Receipt',
+            body: '🧾 *Official Donation Receipt*\n\nAssalamualaikum {{donorName}},\n\nReceipt for your contribution:\n\n*Amount:* ₹{{amount}}\n*Receipt No:* {{receiptNo}}\n*Date:* {{date}}\n*Purpose:* {{purpose}}\n\nYou can download your receipt from the Donor Portal. Jazakallah Khair! 🤲',
+            type: 'MultiChannel',
+            category: 'Donation',
+            profileType: 'Donor',
+            variables: ['donorName', 'amount', 'receiptNo', 'date', 'purpose'],
+            isActive: true
+        },
+        {
+            id: 'donor_thank_you',
+            name: 'Donor: Thank You',
+            subject: 'Thank You for Your Generosity',
+            body: '💚 *Jazakallah Khair!*\n\nDear {{donorName}},\n\nThank you for your generous contribution of *₹{{amount}}*.\n\nYour support directly helps those in need in our community. May Allah reward you abundantly. 🤲\n\n— {{orgName}} Team',
+            type: 'MultiChannel',
+            category: 'Donation',
+            profileType: 'Donor',
+            variables: ['donorName', 'amount', 'orgName'],
+            isActive: true
+        },
+
+        // --- BENEFICIARY ADDITIONAL ---
+        {
+            id: 'beneficiary_status_update',
+            name: 'Beneficiary: Case Status Update',
+            subject: 'Application Status Changed',
+            body: '📋 *Case Status Update*\n\nHello {{beneficiaryName}},\n\nYour assistance request *{{caseId}}* has been updated:\n\n*New Status:* {{status}}\n*Updated By:* {{updatedBy}}\n*Notes:* {{notes}}\n\nPlease check your Beneficiary Portal for details.',
+            type: 'MultiChannel',
+            category: 'Update',
+            profileType: 'Beneficiary',
+            variables: ['beneficiaryName', 'caseId', 'status', 'updatedBy', 'notes'],
+            isActive: true
+        },
+
+        // --- MEMBER/STAFF ADDITIONAL ---
+        {
+            id: 'member_task_assigned',
+            name: 'Staff: New Task Assignment',
+            subject: 'You Have a New Task',
+            body: '📋 *Task Assignment*\n\nHello {{name}},\n\nA new task has been assigned to you:\n\n*Task:* {{taskName}}\n*Module:* {{module}}\n*Priority:* {{priority}}\n*Deadline:* {{deadline}}\n\nPlease review in the Dashboard.',
+            type: 'MultiChannel',
+            category: 'System',
+            profileType: 'Member',
+            variables: ['name', 'taskName', 'module', 'priority', 'deadline'],
+            isActive: true
+        },
+
+        // --- GENERAL ADDITIONAL ---
+        {
+            id: 'general_maintenance',
+            name: 'General: System Maintenance',
+            subject: 'Scheduled Maintenance Notice',
+            body: '🔧 *Maintenance Notice*\n\nAssalamualaikum,\n\nThe portal will be undergoing scheduled maintenance:\n\n*Start:* {{startTime}}\n*End:* {{endTime}}\n*Affected:* {{services}}\n\nWe apologize for any inconvenience. Services will be restored as soon as possible.',
+            type: 'MultiChannel',
+            category: 'System',
+            profileType: 'General',
+            variables: ['startTime', 'endTime', 'services'],
+            isActive: true
         }
     ];
 

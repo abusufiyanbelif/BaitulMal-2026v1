@@ -4,7 +4,7 @@ import React, { Suspense, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/firebase';
 import { signInWithCustomToken } from 'firebase/auth';
-import { authenticatePortalUserAction, sendPortalOTPAction, verifyPortalOTPAction } from './actions';
+import { authenticatePortalUserAction, sendPortalOTPAction, verifyPortalOTPAction, sendPortalOTPViaWhatsAppAction } from './actions';
 import { useToast } from '@/hooks/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -18,13 +18,14 @@ import {
     ArrowRight, 
     KeyRound, 
     MessageSquare,
-    ShieldQuestion
+    ShieldQuestion,
+    Smartphone
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useBranding } from '@/hooks/use-branding';
 import Link from 'next/link';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
-import { updatePortalPasswordAction } from './actions';
+import { updatePortalPasswordAction, resetPasswordWithOTPAction } from './actions';
 import { BrandedLoader } from '@/components/branded-loader';
 
 function PortalLoginContent() {
@@ -35,6 +36,7 @@ function PortalLoginContent() {
     const [otpSent, setOtpSent] = useState(false);
     const [authMethod, setAuthMethod] = useState<'Password' | 'OTP'>('Password');
     const [workspace, setWorkspace] = useState<'Donor' | 'Beneficiary'>('Donor');
+    const [otpChannel, setOtpChannel] = useState<'Telegram' | 'WhatsApp'>('Telegram');
 
     const auth = useAuth();
     const router = useRouter();
@@ -77,7 +79,12 @@ function PortalLoginContent() {
                 handleAuthResult(res);
             } else {
                 if (!otpSent) {
-                    const res = await sendPortalOTPAction(identifier);
+                    let res;
+                    if (otpChannel === 'WhatsApp') {
+                        res = await sendPortalOTPViaWhatsAppAction(identifier);
+                    } else {
+                        res = await sendPortalOTPAction(identifier);
+                    }
                     if (res.success) {
                         setOtpSent(true);
                         toast({ title: "OTP Dispatched", description: res.message, variant: "success" });
@@ -138,7 +145,7 @@ function PortalLoginContent() {
         } else if (forgotStep === 'RESET') {
             if (newPassword.length < 6) { toast({ title: "Too Short", description: "Min 6 characters", variant: "destructive" }); return; }
             setIsForgotLoading(true);
-            const res = await updatePortalPasswordAction(forgotIdentifier, 'Donor', newPassword);
+            const res = await resetPasswordWithOTPAction(forgotIdentifier, forgotOtp, newPassword);
             if (res.success) {
                 toast({ title: "Password Reset", description: "You can now log in with your new password.", variant: "success" });
                 setShowForgotDialog(false);
@@ -247,6 +254,42 @@ function PortalLoginContent() {
                                 </TabsContent>
 
                                 <TabsContent value="OTP" title="OTP Login" className="mt-0 space-y-6">
+                                    {!otpSent && (
+                                        <div className="space-y-4">
+                                            <Label className="text-[10px] font-black tracking-widest text-slate-400 pl-1">OTP Channel</Label>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setOtpChannel('Telegram')}
+                                                    className={cn(
+                                                        "flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all text-xs font-bold",
+                                                        otpChannel === 'Telegram' ? "border-primary bg-primary/5 text-primary" : "border-slate-200 text-slate-400 hover:border-slate-300"
+                                                    )}
+                                                >
+                                                    <MessageSquare className="h-4 w-4" /> Telegram
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setOtpChannel('WhatsApp')}
+                                                    className={cn(
+                                                        "flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all text-xs font-bold",
+                                                        otpChannel === 'WhatsApp' ? "border-green-500 bg-green-50 text-green-700" : "border-slate-200 text-slate-400 hover:border-slate-300"
+                                                    )}
+                                                >
+                                                    <Smartphone className="h-4 w-4" /> WhatsApp
+                                                </button>
+                                            </div>
+                                            <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-3">
+                                                <ShieldQuestion className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                                                <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
+                                                    {otpChannel === 'Telegram'
+                                                        ? 'We will send a secure verification code to your linked Telegram account. Ensure you have started a chat with our charity bot.'
+                                                        : 'We will send a secure verification code to your registered WhatsApp number. Standard messaging applies.'
+                                                    }
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
                                     {otpSent && (
                                         <div className="space-y-2 animate-fade-in-up">
                                             <Label className="text-[10px] font-black tracking-widest text-slate-400 pl-1">Verification Code</Label>
@@ -262,15 +305,7 @@ function PortalLoginContent() {
                                                 />
                                             </div>
                                             <p className="text-[10px] text-center text-slate-400 font-bold tracking-widest">
-                                                Code sent to Telegram. <button type="button" onClick={() => setOtpSent(false)} className="text-primary hover:underline">Change Number</button>
-                                            </p>
-                                        </div>
-                                    )}
-                                    {!otpSent && (
-                                        <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10 flex items-start gap-3">
-                                            <ShieldQuestion className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                                            <p className="text-[11px] text-slate-600 font-medium leading-relaxed">
-                                                We will send a secure verification code to your linked **Telegram** account. Ensure you have started a chat with our charity bot.
+                                                Code sent via {otpChannel}. <button type="button" onClick={() => setOtpSent(false)} className="text-primary hover:underline">Change Method</button>
                                             </p>
                                         </div>
                                     )}

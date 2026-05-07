@@ -4,7 +4,7 @@ import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { randomUUID } from 'crypto';
-import { sendTelegramAction } from '@/app/messages/actions';
+import { sendTelegramAction, sendWhatsAppAction } from '@/app/messages/actions';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Authentication infrastructure is currently offline.";
 
@@ -290,6 +290,102 @@ export async function sendPortalOTPAction(identifier: string) {
 }
 
 /**
+ * Generate and send a secure OTP via WhatsApp for portal authentication.
+ */
+export async function sendPortalOTPViaWhatsAppAction(identifier: string) {
+    try {
+        const { adminDb } = getAdminServices();
+        if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+        // 1. Check if WhatsApp OTP is enabled
+        const resourcesDoc = await adminDb.collection('settings').doc('resources').get();
+        const resources = resourcesDoc.data();
+        if (!resources?.isWhatsAppOtpEnabled) {
+            return { success: false, message: 'WhatsApp OTP is not enabled. Please enable it in Settings > Resources or use Telegram OTP instead.' };
+        }
+
+        const inputIdentifier = identifier.trim();
+        const isPhone = /^\d{10}$/.test(inputIdentifier);
+        const cleanPhone = isPhone ? inputIdentifier : '';
+        const loginId = inputIdentifier;
+
+        let targetDoc: any = null;
+        let phone = '';
+
+        // 2. Resolve Identity
+        let resolvedUserId = '';
+        const userLookups = await adminDb.collection('user_lookups').doc(loginId).get();
+        if (userLookups.exists) {
+            resolvedUserId = userLookups.data()?.userKey || loginId;
+        }
+        if (!resolvedUserId) {
+            const donorQuery = isPhone
+                ? adminDb.collection('donors').where('phone', '==', cleanPhone).limit(1)
+                : adminDb.collection('donors').where('loginId', '==', loginId).limit(1);
+            const donorSnap = await donorQuery.get();
+            if (!donorSnap.empty) resolvedUserId = donorSnap.docs[0].id;
+        }
+        if (!resolvedUserId) {
+            const benQuery = isPhone
+                ? adminDb.collection('beneficiaries').where('phone', '==', cleanPhone).limit(1)
+                : adminDb.collection('beneficiaries').where('loginId', '==', loginId).limit(1);
+            const benSnap = await benQuery.get();
+            if (!benSnap.empty) resolvedUserId = benSnap.docs[0].id;
+        }
+        if (!resolvedUserId) return { success: false, message: 'Identification failed. Please verify your ID or Mobile Number.' };
+
+        // 3. Fetch Profile and phone number
+        const userSnap = await adminDb.collection('users').doc(resolvedUserId).get();
+        const donorSnap = await adminDb.collection('donors').doc(resolvedUserId).get();
+        const benSnap = await adminDb.collection('beneficiaries').doc(resolvedUserId).get();
+
+        let profileType: 'Member' | 'Donor' | 'Beneficiary' | 'Admin' = 'Donor';
+        if (userSnap.exists) {
+            targetDoc = userSnap.data();
+            profileType = targetDoc.role === 'Admin' ? 'Admin' : 'Member';
+        } else if (donorSnap.exists) {
+            targetDoc = donorSnap.data();
+            profileType = 'Donor';
+        } else if (benSnap.exists) {
+            targetDoc = benSnap.data();
+            profileType = 'Beneficiary';
+        }
+
+        phone = targetDoc?.phone || cleanPhone;
+        if (!phone) return { success: false, message: 'No phone number linked to this account. Please use Telegram OTP or password login.' };
+
+        // 4. Generate OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const validityMinutes = resources?.portalOtpValidityMinutes || 5;
+        const expiresAt = new Date(Date.now() + validityMinutes * 60 * 1000);
+
+        await adminDb.collection('portal_otps').doc(loginId).set({
+            otp, expiresAt, createdAt: new Date(), userId: resolvedUserId, profileType, channel: 'WhatsApp'
+        });
+
+        // 5. Dispatch via WhatsApp
+        const templateId = profileType === 'Admin' ? 'otp_admin' : (profileType === 'Member' ? 'otp_staff' : (profileType === 'Donor' ? 'otp_donor' : 'otp_beneficiary'));
+        const waRes = await sendWhatsAppAction({
+            to: phone,
+            templateId,
+            variables: { name: targetDoc?.name || 'User', otp, validity: validityMinutes.toString() },
+            bypassAutoCheck: true,
+            metadata: { type: 'otp', channel: 'WhatsApp', profileType }
+        });
+
+        if (!waRes.success) {
+            return { success: false, message: waRes.message || 'Failed to dispatch OTP via WhatsApp. Please try Telegram.' };
+        }
+
+        return { success: true, message: `Secure OTP dispatched to your WhatsApp (${profileType} profile). Check your messages.` };
+
+    } catch (error: any) {
+        console.error('WhatsApp OTP Error:', error);
+        return { success: false, message: `System error: ${error?.message || 'Unknown Error'}` };
+    }
+}
+
+/**
  * Verify OTP and generate Custom Token.
  */
 export async function verifyPortalOTPAction(identifier: string, otp: string, requestedRole?: 'Donor' | 'Beneficiary') {
@@ -475,7 +571,7 @@ export async function resetPasswordWithOTPAction(identifier: string, otp: string
         await adminDb.collection('portal_otps').doc(loginId).delete().catch(() => {});
 
         // 8. Send Security Notification (Non-blocking)
-        const templateId = profileType === 'Admin' ? 'password_changed_staff' : (profileType === 'Member' ? 'password_changed_staff' : (profileType === 'Donor' ? 'password_changed_donor' : 'password_changed_beneficiary'));
+        const templateId = profileType === 'Admin' ? 'password_changed_admin' : (profileType === 'Member' ? 'password_changed_staff' : (profileType === 'Donor' ? 'password_changed_donor' : 'password_changed_beneficiary'));
         const userDoc = await adminDb.collection(primaryCollection).doc(userKey).get();
         const userName = userDoc.data()?.name || 'User';
 

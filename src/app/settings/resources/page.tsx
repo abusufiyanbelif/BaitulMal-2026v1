@@ -437,6 +437,27 @@ export default function ResourceSettingsPage() {
                                 />
                             </div>
 
+                            <div className="flex items-center justify-between p-3 rounded-xl border border-green-200 bg-green-50">
+                                <div className="space-y-0.5">
+                                    <Label className="text-xs font-bold text-green-800">WhatsApp OTP for Portal Login</Label>
+                                    <p className="text-[10px] text-green-700/70 font-normal">Allow users to receive login OTP via WhatsApp (alongside Telegram).</p>
+                                </div>
+                                <Switch 
+                                    checked={editableData?.isWhatsAppOtpEnabled ?? false} 
+                                    onCheckedChange={(checked) => isEditMode && handleFieldChange('isWhatsAppOtpEnabled', checked.toString())}
+                                    disabled={!isEditMode}
+                                />
+                            </div>
+
+                            {editableData?.isWhatsAppOtpEnabled && (
+                                <div className="p-3 rounded-lg bg-green-50 border border-green-100 flex gap-3 animate-in fade-in slide-in-from-top-1">
+                                    <Info className="h-4 w-4 text-green-600 shrink-0 mt-0.5" />
+                                    <p className="text-[10px] text-green-800 leading-relaxed">
+                                        <strong>WhatsApp Business API (Free Tier):</strong> Using Meta Cloud API, you get <strong>1,000 free service conversations per month</strong>. OTP messages are classified as &quot;Authentication&quot; conversations. This is ideal for Donor & Beneficiary portals. No paid subscription needed for the Meta Official provider.
+                                    </p>
+                                </div>
+                            )}
+
                             <div className="pt-4 space-y-2">
                                 <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">WhatsApp Subscription Detail</Label>
                                 <div className="grid grid-cols-2 gap-4">

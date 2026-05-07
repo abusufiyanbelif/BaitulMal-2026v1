@@ -83,6 +83,9 @@ export interface ResourceSettings extends DocumentData {
   telegramChatId?: string; // Default chat ID for alerts
   isTelegramEnabled?: boolean;
   portalOtpValidityMinutes?: number;
+
+  // OTP Channel Configuration
+  isWhatsAppOtpEnabled?: boolean; // Allow OTP via WhatsApp (requires Meta/Whapi config)
   
   // Email Configuration
   isEmailEnabled?: boolean;

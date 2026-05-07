@@ -1,7 +1,7 @@
 # 📘 User Guide: /settings/resources
     
-**Build Version:** `2026.05.07.29`
-**Last Updated:** 7/5/2026, 11:19:43 pm
+**Build Version:** `2026.05.07.30`
+**Last Updated:** 7/5/2026, 11:28:12 pm
 **Internal Route:** `/settings/resources`
 
 ---
@@ -29,6 +29,7 @@ The following fields are mapped within this interface:
 - Phone Number Id
 - Waba Id
 - Auto WhatsApp Messages
+- WhatsApp OTP for Portal Login
 - WhatsApp Subscription Detail
 - Plan Name
 - Price & Currency
