@@ -1,13 +1,13 @@
-release: v2026.05.07.13
+release: v2026.05.07.15
 
-Type: Feature, infrastructure & devops
-Message: Hardened Telegram OTP dispatch and stabilized production messaging infrastructure. Resolved silent server-side failures by standardizing serializable error handling and optimizing Server Action imports.
-Reference: MB-MSG-2026 (Messaging Stability)
+Type: Feature, infrastructure & security
+Message: Finalized production hardening for Telegram OTP and Firebase Admin SDK. Implemented diagnostic transparency and environment variable support for hosted deployments.
+Reference: MB-MSG-HARDEN-2026 (Production Resilience)
 Branch: test_bmss_26
-Commit: 46199a64
+Commit: a99253a1
 
 Verification Steps:
 Manual verification required.
 
 ---
-*Build Summary Updated: 7/5/2026, 3:25:01 pm*
+*Build Summary Updated: 7/5/2026, 5:03:49 pm*
