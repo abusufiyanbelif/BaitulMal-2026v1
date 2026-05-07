@@ -1,0 +1,63 @@
+BUILD FAILURE LOG - 7/5/2026, 11:03:02 pm
+Version: 2026.05.07.22
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+
+
+STDERR:
+Failed to compile.
+
+./src/app/page.tsx
+Error: 
+  [31mx[0m Unexpected token `main`. Expected jsx identifier
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\page.tsx[0m:125:1]
+ [2m125[0m |     const showTickers = !!(isNewsTickerVisible && !isLoading && (activeTickerItems.length > 0 || recentDonationsFormatted.length > 0 || completedTickerItems.length > 0));
+ [2m126[0m | 
+ [2m127[0m |     return (
+ [2m128[0m |         <main className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-12 text-primary font-normal relative min-h-screen pb-32 overflow-hidden">
+     : [31;1m         ^^^^[0m
+ [2m129[0m |             {/* Premium Background Elements */}
+ [2m130[0m |             <div className="absolute -top-20 -left-20 w-[600px] h-[600px] bg-primary/[0.03] rounded-full blur-[120px] -z-10 animate-pulse" />
+ [2m131[0m |             <div className="absolute top-[40%] -right-40 w-[500px] h-[500px] bg-emerald-500/[0.03] rounded-full blur-[100px] -z-10 animate-pulse" style={{ animationDelay: '2s' }} />
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/page.tsx
+
+
+> Build failed because of webpack errors
+
+
+ERROR MESSAGE:
+Command failed: npx next build
+Failed to compile.
+
+./src/app/page.tsx
+Error: 
+  [31mx[0m Unexpected token `main`. Expected jsx identifier
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\page.tsx[0m:125:1]
+ [2m125[0m |     const showTickers = !!(isNewsTickerVisible && !isLoading && (activeTickerItems.length > 0 || recentDonationsFormatted.length > 0 || completedTickerItems.length > 0));
+ [2m126[0m | 
+ [2m127[0m |     return (
+ [2m128[0m |         <main className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-12 text-primary font-normal relative min-h-screen pb-32 overflow-hidden">
+     : [31;1m         ^^^^[0m
+ [2m129[0m |             {/* Premium Background Elements */}
+ [2m130[0m |             <div className="absolute -top-20 -left-20 w-[600px] h-[600px] bg-primary/[0.03] rounded-full blur-[120px] -z-10 animate-pulse" />
+ [2m131[0m |             <div className="absolute top-[40%] -right-40 w-[500px] h-[500px] bg-emerald-500/[0.03] rounded-full blur-[100px] -z-10 animate-pulse" style={{ animationDelay: '2s' }} />
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/page.tsx
+
+
+> Build failed because of webpack errors

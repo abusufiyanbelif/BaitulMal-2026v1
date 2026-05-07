@@ -1,22 +1,64 @@
-release: v2026.05.07.20
+release: v2026.05.07.29
 
-Type: Feature, Infrastructure & UI
-Message: Expanded messaging profile architecture to support Admin and General categories. Implemented Meta Cloud API free-tier guidance and optimized role-based template mappings for organizational scaling.
-Reference: MB-MSG-PROF-2026 (Granular Communication)
+Type: Bugfix, Infrastructure Hardening & Deep Scan
+Message: Critical messaging infrastructure fixes — corrected Firestore template path, hardened forgot-password flow across all profile collections, fixed landing page SWC parsing error, and improved error diagnostics across all notification channels.
+Reference: MB-MSG-DEEP-2026 (Deep Scan & Hardening)
 Branch: test_bmss_26
-Commit: f7a2d4e1 (Build Synchronized)
-
-Key Changes:
-- **Expanded Profile Mapping**: Added 'Admin' and 'General' categories to the messaging registry. Templates are now explicitly mapped to Staff, Donor, Beneficiary, Admin, and General profiles.
-- **OTP Logic Hardening**: Updated `sendPortalOTPAction` to distinguish between Admin and Staff roles, ensuring the correct security template (`otp_admin` vs `otp_staff`) is dispatched.
-- **Free Messaging Optimization**: Integrated detailed guidance on the Meta Official (Free Tier) within the Resource Config. Recommended a hybrid approach (Telegram for staff, WhatsApp for donors) to maximize cost-efficiency.
-- **UI Filter Fix**: Updated the Message Templates dashboard to support filtering by the new Admin and General profile categories.
-- **Core Seeding Upgrade**: Enhanced `seedDefaultTemplatesAction` with new templates for Admin login alerts, General announcements, and Registration welcomes.
-
-Verification Steps:
-1. Navigate to **Messaging Templates** and filter by "Profile: Admin" or "Profile: General".
-2. Click **"Restore Defaults"** to populate the new registry.
-3. Check **Resource Config** to see the new Meta Free Tier instruction block.
+Commit: Pending (Uncommitted — consolidates v2026.05.07.20 through v2026.05.07.29)
 
 ---
-*Build Summary Updated: 7/5/2026, 10:15:20 pm*
+Consolidated Changes Since Last Pushed Sync (ec94cebe / v2026.05.07.20):
+
+### 1. CRITICAL BUG FIXES
+
+| # | File | Issue | Fix |
+|---|------|-------|-----|
+| 1 | `messages/actions.ts` L1985 | `sendMultiChannelNotificationAction` used wrong Firestore path (`message_templates` root collection) | Fixed to `settings/message_templates/templates` subcollection |
+| 2 | `messages/actions.ts` L875 | Empty-message error hardcoded "otp_staff" regardless of actual templateId | Made dynamic — now shows actual missing template name |
+| 3 | `messages/actions.ts` L76-79 | Dead unreachable code in `checkAuth` after early return | Removed |
+| 4 | `portal-login/actions.ts` L452-476 | `resetPasswordWithOTPAction` only updated `users` collection, ignoring `donors`/`beneficiaries` | Now resolves correct collection from stored `profileType` |
+| 5 | `portal-login/actions.ts` L465 | Password-changed notification template mapping missing 'Admin' profile | Added Admin mapping |
+| 6 | `page.tsx` L128 | SWC parser crash — "Unexpected token `main`" on cloud build | Full file reset: removed invisible characters, cleaned imports, fixed NewsTicker prop interface |
+| 7 | `page.tsx` L170 | `NewsTicker` called with non-existent props (`activeItems`, `completedItems`, `recentDonations`) | Fixed to use correct `items`/`label`/`variant` interface per component definition |
+
+### 2. MESSAGING TEMPLATE ARCHITECTURE
+
+- **Profile Categories**: Admin, General, Member, Donor, Beneficiary — all seeded and filterable
+- **New Templates Added**: `otp_admin`, `admin_login_alert`, `general_announcement`, `registration_welcome`
+- **Template Config UI**: Filter dropdown includes all 5 profile categories
+- **Seed Logic**: `seedDefaultTemplatesAction` now contains 14 comprehensive templates covering Security, Update, Donation, and System categories
+
+### 3. FORGOT PASSWORD FLOW (Hardened)
+
+- Password reset now writes to the **correct primary collection** (donors/beneficiaries/users) based on stored `profileType`
+- Mirrors to secondary collections as needed
+- Firebase Auth sync wrapped in catch-guard (non-blocking)
+- Post-reset security notification uses profile-aware template mapping
+
+### 4. OTP DISPATCH (Role-Aware)
+
+- `sendPortalOTPAction` now detects Admin role from `users` collection and dispatches `otp_admin` template instead of `otp_staff`
+- Profile type stored in OTP session for downstream use by `resetPasswordWithOTPAction`
+
+### 5. WHATSAPP META FREE TIER
+
+- Resource Config UI now shows contextual guidance when "Meta Official" provider is selected
+- Recommends hybrid strategy: Telegram (free/internal) + WhatsApp (1000 free/month for donors)
+
+### 6. LANDING PAGE (Rebuilt)
+
+- Complete file rewrite to eliminate invisible characters causing SWC parser failure
+- Removed 5 unused imports (Card components, CheckCircle2, HandHelping, Search)
+- Fixed NewsTicker to use correct component interface (items/label/variant)
+
+---
+Verification Steps:
+1. Navigate to Messages > Template Config and click "Restore Defaults"
+2. Filter by Profile: Admin/General — verify new templates appear
+3. Test OTP dispatch for a user with role=Admin — verify "otp_admin" template is used
+4. Test forgot-password flow for a Donor — verify password updates in `donors` collection
+5. Run `npm run build` — verify Exit code 0
+
+---
+*Build Summary Updated: 8/5/2026, 12:17:00 am IST*
+*Build Status: SUCCESS (Exit Code 0)*

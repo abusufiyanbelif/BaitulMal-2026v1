@@ -451,19 +451,32 @@ export async function resetPasswordWithOTPAction(identifier: string, otp: string
 
         if (!userKey) return { success: false, message: "Could not identify organizational profile for password reset." };
 
-        // 3. Update Firebase Auth Credentials
-        await adminAuth.updateUser(userKey, { password: newPassword });
+        // 3. Determine correct collection based on profile type
+        const profileType = otpData.profileType || 'Member';
+        const primaryCollection = profileType === 'Donor' ? 'donors' : (profileType === 'Beneficiary' ? 'beneficiaries' : 'users');
 
-        // 4. Mirror to Firestore Profile
-        const userRef = adminDb.collection('users').doc(userKey);
-        await userRef.update({ password: newPassword, updatedAt: new Date() }).catch(() => {});
+        // 4. Update password in primary collection
+        await adminDb.collection(primaryCollection).doc(userKey).update({ 
+            password: newPassword, 
+            updatedAt: new Date() 
+        }).catch(() => {});
 
-        // 5. Clear OTP Session
+        // 5. Mirror to users collection if primary was a different collection
+        if (primaryCollection !== 'users') {
+            await adminDb.collection('users').doc(userKey).update({ password: newPassword, updatedAt: new Date() }).catch(() => {});
+        }
+
+        // 6. Sync with Firebase Auth if user exists there
+        if (adminAuth) {
+            await adminAuth.updateUser(userKey, { password: newPassword }).catch(() => {});
+        }
+
+        // 7. Clear OTP Session
         await adminDb.collection('portal_otps').doc(loginId).delete().catch(() => {});
 
-        // 6. Send Security Notification (Non-blocking)
-        const templateId = otpData.profileType === 'Member' ? 'password_changed_staff' : (otpData.profileType === 'Donor' ? 'password_changed_donor' : 'password_changed_beneficiary');
-        const userDoc = await (otpData.profileType === 'Member' ? adminDb.collection('users').doc(userKey).get() : (otpData.profileType === 'Donor' ? adminDb.collection('donors').doc(userKey).get() : adminDb.collection('beneficiaries').doc(userKey).get()));
+        // 8. Send Security Notification (Non-blocking)
+        const templateId = profileType === 'Admin' ? 'password_changed_staff' : (profileType === 'Member' ? 'password_changed_staff' : (profileType === 'Donor' ? 'password_changed_donor' : 'password_changed_beneficiary'));
+        const userDoc = await adminDb.collection(primaryCollection).doc(userKey).get();
         const userName = userDoc.data()?.name || 'User';
 
         import('@/app/messages/actions').then(m => {

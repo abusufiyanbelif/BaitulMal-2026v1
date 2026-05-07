@@ -1,0 +1,45 @@
+BUILD FAILURE LOG - 7/5/2026, 11:09:57 pm
+Version: 2026.05.07.27
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+Failed to compile.
+
+./src/app/page.tsx:170:33
+Type error: Type '{ activeItems: { id: string; text: string; href: string; priority: "Low" | "Medium" | "High" | "Urgent"; priorityIcon: Element | null; }[]; completedItems: { id: string; text: string; href: string; }[]; recentDonations: { ...; }[]; }' is not assignable to type 'IntrinsicAttributes & NewsTickerProps'.
+  Property 'activeItems' does not exist on type 'IntrinsicAttributes & NewsTickerProps'.
+
+[0m [90m 168 |[39m             {showTickers [33m&&[39m ([0m
+[0m [90m 169 |[39m                 [33m<[39m[33mdiv[39m className[33m=[39m[32m"space-y-6"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 170 |[39m                     [33m<[39m[33mNewsTicker[39m activeItems[33m=[39m{activeTickerItems} completedItems[33m=[39m{completedTickerItems} recentDonations[33m=[39m{recentDonationsFormatted} [33m/[39m[33m>[39m[0m
+[0m [90m     |[39m                                 [31m[1m^[22m[39m[0m
+[0m [90m 171 |[39m                 [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m[0m
+[0m [90m 172 |[39m             )}[0m
+[0m [90m 173 |[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: npx next build
+Failed to compile.
+
+./src/app/page.tsx:170:33
+Type error: Type '{ activeItems: { id: string; text: string; href: string; priority: "Low" | "Medium" | "High" | "Urgent"; priorityIcon: Element | null; }[]; completedItems: { id: string; text: string; href: string; }[]; recentDonations: { ...; }[]; }' is not assignable to type 'IntrinsicAttributes & NewsTickerProps'.
+  Property 'activeItems' does not exist on type 'IntrinsicAttributes & NewsTickerProps'.
+
+[0m [90m 168 |[39m             {showTickers [33m&&[39m ([0m
+[0m [90m 169 |[39m                 [33m<[39m[33mdiv[39m className[33m=[39m[32m"space-y-6"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 170 |[39m                     [33m<[39m[33mNewsTicker[39m activeItems[33m=[39m{activeTickerItems} completedItems[33m=[39m{completedTickerItems} recentDonations[33m=[39m{recentDonationsFormatted} [33m/[39m[33m>[39m[0m
+[0m [90m     |[39m                                 [31m[1m^[22m[39m[0m
+[0m [90m 171 |[39m                 [33m<[39m[33m/[39m[33mdiv[39m[33m>[39m[0m
+[0m [90m 172 |[39m             )}[0m
+[0m [90m 173 |[39m[0m
+Next.js build worker exited with code: 1 and signal: null

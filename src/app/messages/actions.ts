@@ -74,9 +74,6 @@ async function checkAuth(requiredModule?: string, requiredPerm?: string) {
         }
 
         return { isAuthorized: false };
-
-        console.warn(`checkAuth: User ${decodedToken.uid} is not an Admin and lacks ${requiredModule}:${requiredPerm} permissions.`);
-        return { isAuthorized: false };
     } catch (e: any) {
         console.error('checkAuth: Verification Failed:', e.message);
         return { isAuthorized: false };
@@ -873,7 +870,8 @@ export async function sendTelegramAction(params: {
         }
 
         if (!finalMessage) {
-            return { success: false, message: 'Telegram Message content is empty. Please verify that the "otp_staff" (or equivalent) template is seeded in Message Settings.' };
+            const missingId = params.templateId || 'unknown';
+            return { success: false, message: `Telegram Message content is empty. Template "${missingId}" was not found or has no body. Please go to Message Settings > Template Config and click "Restore Defaults" to seed templates.` };
         }
 
         const response = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
@@ -1982,8 +1980,8 @@ export async function sendMultiChannelNotificationAction(params: {
         const user = userSnap.data() as UserProfile;
 
         // 2. Fetch Template to check channel support
-        const templateSnap = await adminDb.collection('message_templates').doc(params.templateId).get();
-        if (!templateSnap.exists) return { success: false, message: 'Template not found.' };
+        const templateSnap = await adminDb.collection('settings').doc('message_templates').collection('templates').doc(params.templateId).get();
+        if (!templateSnap.exists) return { success: false, message: `Template "${params.templateId}" not found. Please seed defaults in Message Settings.` };
         const template = templateSnap.data() as MessageTemplate;
 
         const results: any[] = [];

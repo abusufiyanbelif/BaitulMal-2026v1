@@ -1,7 +1,7 @@
 # 📘 User Guide: /
     
-**Build Version:** `2026.05.07.18`
-**Last Updated:** 7/5/2026, 8:29:57 pm
+**Build Version:** `2026.05.07.29`
+**Last Updated:** 7/5/2026, 11:19:43 pm
 **Internal Route:** `/`
 
 ---
@@ -26,7 +26,6 @@ Application Module
 - **Donate Now**: Interactive button to initiate donate now operation.
 - **Campaigns**: Interactive button to initiate campaigns operation.
 - **Appeals**: Interactive button to initiate appeals operation.
-- **Download Mobile App (APK)**: Interactive button to initiate download mobile app (apk) operation.
 - **Admin Login**: Interactive button to initiate admin login operation.
 - **Donor Login**: Interactive button to initiate donor login operation.
 

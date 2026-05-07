@@ -1,6 +1,5 @@
 'use client';
 
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import React, { useMemo, Suspense } from 'react';
@@ -18,18 +17,15 @@ import { cn } from '@/lib/utils';
 import { 
     FolderKanban, 
     Lightbulb, 
-    CheckCircle2, 
     AlertTriangle, 
     ArrowUpCircle, 
     MinusCircle, 
     ArrowDownCircle, 
-    HandHelping, 
     HeartHandshake,
     Sparkles,
     ShieldCheck,
     TrendingUp,
     ChevronRight,
-    Search,
     Activity
 } from 'lucide-react';
 
@@ -61,16 +57,12 @@ export default function Home() {
             .filter(c => (c.status === 'Active' || c.status === 'Upcoming') && !skipIds.has(c.id))
             .map(c => {
                 const pending = Math.max(0, (c.targetAmount || 0) - c.collected);
-                const isUrgent = c.priority === 'Urgent';
-                const isHigh = c.priority === 'High';
                 return {
                     id: c.id,
                     text: `${c.status === 'Active' ? 'Active' : 'Upcoming'} Campaign: ${c.name} (Goal: ₹${(c.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
                     href: `/campaign-public/${c.id}/summary`,
                     priority: c.priority || 'Medium',
-                    priorityIcon: getPriorityIcon(c.priority),
-                    isUrgent,
-                    isHigh
+                    priorityIcon: getPriorityIcon(c.priority)
                 };
             });
         
@@ -78,16 +70,12 @@ export default function Home() {
             .filter(l => (l.status === 'Active' || l.status === 'Upcoming') && !skipIds.has(l.id))
             .map(l => {
                 const pending = Math.max(0, (l.targetAmount || 0) - l.collected);
-                const isUrgent = l.priority === 'Urgent';
-                const isHigh = l.priority === 'High';
                 return {
                     id: l.id,
                     text: `${l.status === 'Active' ? 'Active' : 'Upcoming'} Appeal: ${l.name} (Goal: ₹${(l.targetAmount || 0).toLocaleString('en-IN')} | Pending: ₹${pending.toLocaleString('en-IN')})`,
                     href: `/leads-public/${l.id}/summary`,
                     priority: l.priority || 'Medium',
-                    priorityIcon: getPriorityIcon(l.priority),
-                    isUrgent,
-                    isHigh
+                    priorityIcon: getPriorityIcon(l.priority)
                 };
             });
 
@@ -125,10 +113,10 @@ export default function Home() {
     const showTickers = isNewsTickerVisible && !isLoading && (activeTickerItems.length > 0 || recentDonationsFormatted.length > 0 || completedTickerItems.length > 0);
 
     return (
-        <main className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-12 text-primary font-normal relative min-h-screen pb-32 overflow-hidden">
-            {/* Premium Background Elements */}
+        <div className="container mx-auto p-4 sm:p-6 lg:p-8 space-y-12 text-primary font-normal relative min-h-screen pb-32 overflow-hidden">
+            {/* Background Elements */}
             <div className="absolute -top-20 -left-20 w-[600px] h-[600px] bg-primary/[0.03] rounded-full blur-[120px] -z-10 animate-pulse" />
-            <div className="absolute top-[40%] -right-40 w-[500px] h-[500px] bg-emerald-500/[0.03] rounded-full blur-[100px] -z-10 animate-pulse" style={{ animationDelay: '2s' }} />
+            <div className="absolute top-1/3 -right-40 w-[500px] h-[500px] bg-emerald-500/[0.03] rounded-full blur-[100px] -z-10 animate-pulse" style={{ animationDelay: '2s' }} />
             <div className="absolute bottom-0 left-0 w-full h-[800px] bg-gradient-to-t from-primary/[0.01] to-transparent -z-10" />
 
             {isHeroVisible && (
@@ -169,33 +157,28 @@ export default function Home() {
                                 </Link>
                             </Button>
                         </div>
-                        </div>
-                    </div>
-                    
-                    <div className="pt-16 animate-bounce">
-                        <div className="w-px h-16 bg-gradient-to-b from-primary/20 to-transparent mx-auto" />
                     </div>
                 </section>
             )}
 
             {showTickers && (
-                <div className="space-y-4 animate-fade-in-up relative z-10" style={{ animationDelay: '200ms' }}>
-                    <div className="max-w-6xl mx-auto space-y-3">
-                        {activeTickerItems.length > 0 && <NewsTicker items={activeTickerItems} label="Ongoing Help" variant="active" />}
-                        {recentDonationsFormatted.length > 0 && <NewsTicker items={recentDonationsFormatted} label="Latest Donations" variant="donation" />}
-                        {completedTickerItems.length > 0 && <NewsTicker items={completedTickerItems} label="Success Stories" variant="completed" />}
-                    </div>
+                <div className="space-y-4">
+                    {activeTickerItems.length > 0 && (
+                        <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
+                    )}
+                    {recentDonationsFormatted.length > 0 && (
+                        <NewsTicker items={recentDonationsFormatted} label="Donations" variant="donation" />
+                    )}
+                    {completedTickerItems.length > 0 && (
+                        <NewsTicker items={completedTickerItems} label="Success Stories" variant="completed" />
+                    )}
                 </div>
             )}
 
-            <div className="max-w-7xl mx-auto space-y-16 relative z-10">
-                {isWisdomVisible && (
-                    <div className="animate-fade-in-up" style={{ animationDelay: '400ms' }}>
-                        <WisdomAndReflection />
-                    </div>
-                )}
+            <div className="space-y-32 py-20 relative">
+                {isWisdomVisible && <WisdomAndReflection />}
 
-                <div className="space-y-16 animate-fade-in-up" style={{ animationDelay: '600ms' }}>
+                <div className="space-y-32">
                     {isOverallSummaryVisible && (
                         <div className="rounded-[48px] bg-white/30 backdrop-blur-2xl border border-primary/5 p-4 sm:p-8 shadow-none transition-all hover:shadow-2xl">
                             <Suspense fallback={<Skeleton className="h-[200px] w-full rounded-[48px]" />}>
@@ -271,6 +254,6 @@ export default function Home() {
                     </div>
                 </div>
             </div>
-        </main>
+        </div>
     );
 }

@@ -1,9 +1,108 @@
 {
-  "version": "2026.05.07.20",
-  "buildDate": "2026-05-07T16:47:12.965Z",
+  "version": "2026.05.07.29",
+  "buildDate": "2026-05-07T17:48:28.664Z",
   "commitHash": "h9i0j1k2",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.05.07.29",
+      "date": "2026-05-07T17:48:28.664Z",
+      "commit": "ec94cebe",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "Uncommitted changes detected. Manual verification required.",
+      "type": "Build",
+      "message": "release: v2026.05.07.20 (with local changes)"
+    },
+    {
+      "version": "2026.05.07.28",
+      "date": "2026-05-07T17:41:43.034Z",
+      "commit": "ec94cebe",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "Uncommitted changes detected. Manual verification required.",
+      "type": "Build",
+      "message": "release: v2026.05.07.20 (with local changes)"
+    },
+    {
+      "version": "2026.05.07.27",
+      "date": "2026-05-07T17:39:12.854Z",
+      "commit": "ec94cebe",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "Uncommitted changes detected. Manual verification required.",
+      "type": "Build",
+      "message": "release: v2026.05.07.20 (with local changes)"
+    },
+    {
+      "version": "2026.05.07.26",
+      "date": "2026-05-07T17:37:31.543Z",
+      "commit": "ec94cebe",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "Uncommitted changes detected. Manual verification required.",
+      "type": "Build",
+      "message": "release: v2026.05.07.20 (with local changes)"
+    },
+    {
+      "version": "2026.05.07.25",
+      "date": "2026-05-07T17:36:48.656Z",
+      "commit": "ec94cebe",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "Uncommitted changes detected. Manual verification required.",
+      "type": "Build",
+      "message": "release: v2026.05.07.20 (with local changes)"
+    },
+    {
+      "version": "2026.05.07.24",
+      "date": "2026-05-07T17:35:54.360Z",
+      "commit": "ec94cebe",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "Uncommitted changes detected. Manual verification required.",
+      "type": "Build",
+      "message": "release: v2026.05.07.20 (with local changes)"
+    },
+    {
+      "version": "2026.05.07.23",
+      "date": "2026-05-07T17:34:00.143Z",
+      "commit": "ec94cebe",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-MSG-PROF-2026 (Granular Communication)",
+      "steps": "Manual verification required.",
+      "type": "Feature, infrastructure & ui",
+      "message": "Expanded messaging profile architecture to support Admin and General categories. Implemented Meta Cloud API free-tier guidance and optimized role-based template mappings for organizational scaling."
+    },
+    {
+      "version": "2026.05.07.22",
+      "date": "2026-05-07T17:32:33.261Z",
+      "commit": "ec94cebe",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-MSG-PROF-2026 (Granular Communication)",
+      "steps": "Manual verification required.",
+      "type": "Feature, infrastructure & ui",
+      "message": "Expanded messaging profile architecture to support Admin and General categories. Implemented Meta Cloud API free-tier guidance and optimized role-based template mappings for organizational scaling."
+    },
+    {
+      "version": "2026.05.07.21",
+      "date": "2026-05-07T17:30:28.166Z",
+      "commit": "ec94cebe",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-MSG-PROF-2026 (Granular Communication)",
+      "steps": "Manual verification required.",
+      "type": "Feature, infrastructure & ui",
+      "message": "Expanded messaging profile architecture to support Admin and General categories. Implemented Meta Cloud API free-tier guidance and optimized role-based template mappings for organizational scaling."
+    },
     {
       "version": "2026.05.07.20",
       "date": "2026-05-07T16:47:12.965Z",
@@ -454,105 +553,6 @@
       "steps": "Manual verification required.",
       "type": "Build",
       "message": "Stabilized Telegram messaging infrastructure with persistent logging and retry capabilities."
-    },
-    {
-      "version": "2026.05.05.4",
-      "date": "2026-05-04T20:24:52.040Z",
-      "commit": "5fba3333",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Verified data mapping in components; confirmed optional chaining on Firestore collections; validated build stability",
-      "type": "Hardening",
-      "message": "Stabilized Verification Infrastructure and resolved Lead Summary runtime errors"
-    },
-    {
-      "version": "2026.05.05.3",
-      "date": "2026-05-04T20:16:26.140Z",
-      "commit": "5fba3333",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Verified data mapping in components; confirmed optional chaining on Firestore collections; validated build stability",
-      "type": "Hardening",
-      "message": "Stabilized Verification Infrastructure and resolved Lead Summary runtime errors"
-    },
-    {
-      "version": "2026.05.05.2",
-      "date": "2026-05-04T20:00:42.956Z",
-      "commit": "5fba3333",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Manual verification required.",
-      "type": "Build",
-      "message": "doc auto"
-    },
-    {
-      "version": "2026.05.05.1",
-      "date": "2026-05-04T19:46:45.936Z",
-      "commit": "5fba3333",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Manual verification required.",
-      "type": "Build",
-      "message": "doc auto"
-    },
-    {
-      "version": "2026.05.04.10",
-      "date": "2026-05-03T23:11:33.471Z",
-      "commit": "ee070d6d",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Manual verification required.",
-      "type": "Build",
-      "message": "doc auto"
-    },
-    {
-      "version": "2026.05.04.9",
-      "date": "2026-05-03T23:00:53.313Z",
-      "commit": "ee070d6d",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "",
-      "type": "Build",
-      "message": "Automated build initiated via npm run build"
-    },
-    {
-      "version": "2026.05.04.8",
-      "date": "2026-05-03T22:52:51.434Z",
-      "commit": "ee070d6d",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "",
-      "steps": "",
-      "type": "Build",
-      "message": "Automated build initiated via npm run build"
-    },
-    {
-      "version": "2026.05.04.7",
-      "date": "2026-05-03T22:48:04.661Z",
-      "commit": "ee070d6d",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "",
-      "steps": "",
-      "type": "Build",
-      "message": "Automated build initiated via npm run build"
-    },
-    {
-      "version": "2026.05.04.6",
-      "date": "2026-05-03T22:42:08.241Z",
-      "commit": "ee070d6d",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "",
-      "steps": "",
-      "type": "Build",
-      "message": "Automated build initiated via npm run build"
     }
   ]
 }

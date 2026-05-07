@@ -1,7 +1,7 @@
 # 📘 User Guide: /guidance
     
-**Build Version:** `2026.05.07.18`
-**Last Updated:** 7/5/2026, 8:29:57 pm
+**Build Version:** `2026.05.07.29`
+**Last Updated:** 7/5/2026, 11:19:43 pm
 **Internal Route:** `/guidance`
 
 ---
