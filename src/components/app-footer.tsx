@@ -152,6 +152,16 @@ export function AppFooter() {
                 <BookOpen className="h-4 w-4 opacity-30" />
                 Common Questions
               </Link>
+              <a 
+                href="/app-release.apk" 
+                download="baitulamal-solapur.apk" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal"
+              >
+                <Download className="h-4 w-4 opacity-30" />
+                Download Mobile App (APK)
+              </a>
               {currentUser?.role === 'Admin' && (
                 <Link href="/registry-index" className="text-sm text-emerald-600 hover:text-emerald-700 transition-colors flex items-center gap-3 font-bold bg-emerald-50/50 p-2 rounded-lg border border-emerald-100/50">
                   <Navigation2 className="h-4 w-4 opacity-80" />

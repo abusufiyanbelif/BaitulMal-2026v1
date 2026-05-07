@@ -384,6 +384,40 @@ export async function seedDefaultTemplatesAction() {
             variables: ['name', 'otp', 'validity'],
             isActive: true
         },
+        // --- PASSWORD ALERTS ---
+        {
+            id: 'password_changed_staff',
+            name: 'Staff: Password Reset Success',
+            subject: 'Security Alert: Password Updated',
+            body: '🔐 *Security Update: Staff Portal*\n\nHello {{name}},\n\nYour organization account password was recently changed. If this was not you, please contact the IT department immediately.',
+            type: 'MultiChannel',
+            category: 'Security',
+            profileType: 'Member',
+            variables: ['name'],
+            isActive: true
+        },
+        {
+            id: 'password_changed_donor',
+            name: 'Donor: Password Reset Success',
+            subject: 'Security Alert: Password Updated',
+            body: '🔐 *Security Update: Donor Portal*\n\nAssalamualaikum {{name}},\n\nYour portal password has been successfully updated. You can now login with your new credentials. Jazakallah Khair for keeping your account secure.',
+            type: 'MultiChannel',
+            category: 'Security',
+            profileType: 'Donor',
+            variables: ['name'],
+            isActive: true
+        },
+        {
+            id: 'password_changed_beneficiary',
+            name: 'Beneficiary: Password Reset Success',
+            subject: 'Security Alert: Password Updated',
+            body: '🔐 *Security Update: Beneficiary Portal*\n\nHello {{name}},\n\nYour password for the assistance portal has been successfully changed. If you did not authorize this change, please contact us.',
+            type: 'MultiChannel',
+            category: 'Security',
+            profileType: 'Beneficiary',
+            variables: ['name'],
+            isActive: true
+        },
 
         // --- DONOR ACTIONS ---
         {
@@ -1846,7 +1880,7 @@ export async function sendEmailAction(params: {
     if (params.templateId) {
         const { adminDb } = getAdminServices();
         if (adminDb) {
-            const templateSnap = await adminDb.collection('message_templates').doc(params.templateId).get();
+            const templateSnap = await adminDb.collection('settings').doc('message_templates').collection('templates').doc(params.templateId).get();
             if (templateSnap.exists) {
                 const template = templateSnap.data() as MessageTemplate;
                 finalSubject = template.subject || 'Notification';

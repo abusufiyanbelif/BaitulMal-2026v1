@@ -461,6 +461,20 @@ export async function resetPasswordWithOTPAction(identifier: string, otp: string
         // 5. Clear OTP Session
         await adminDb.collection('portal_otps').doc(loginId).delete().catch(() => {});
 
+        // 6. Send Security Notification (Non-blocking)
+        const templateId = otpData.profileType === 'Member' ? 'password_changed_staff' : (otpData.profileType === 'Donor' ? 'password_changed_donor' : 'password_changed_beneficiary');
+        const userDoc = await (otpData.profileType === 'Member' ? adminDb.collection('users').doc(userKey).get() : (otpData.profileType === 'Donor' ? adminDb.collection('donors').doc(userKey).get() : adminDb.collection('beneficiaries').doc(userKey).get()));
+        const userName = userDoc.data()?.name || 'User';
+
+        import('@/app/messages/actions').then(m => {
+            m.sendMultiChannelNotificationAction({
+                userId: userKey,
+                templateId,
+                variables: { name: userName },
+                metadata: { type: 'security_alert', action: 'password_reset' }
+            });
+        }).catch(err => console.error("Post-reset notification failed:", err));
+
         return { success: true, message: "Password reset successful. You can now login with your new credentials." };
 
     } catch (error: any) {

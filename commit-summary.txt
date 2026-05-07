@@ -1,13 +1,22 @@
-release: v2026.05.07.18
+release: v2026.05.07.19
 
-Type: Feature, infrastructure & security
-Message: Finalized production hardening for Telegram OTP and Firebase Admin SDK. Implemented diagnostic transparency and environment variable support for hosted deployments.
-Reference: MB-MSG-HARDEN-2026 (Production Resilience)
+Type: Feature, Infrastructure & Security
+Message: Implemented role-based message template mapping and corrected cross-channel dispatch paths. Enhanced security with automated notifications for password resets across all user profiles.
+Reference: MB-MSG-MAPPING-2026 (Role-Specific Resilience)
 Branch: test_bmss_26
-Commit: b13c807d
+Commit: b13c807d (Build Synchronized)
+
+Key Changes:
+- **Role-Based Template Mapping**: Expanded the template registry to include unique OTP and Security alerts for Member, Donor, and Beneficiary profiles.
+- **Critical Path Correction**: Fixed an invalid Firestore collection path in `sendEmailAction` that prevented template-based emails from sending.
+- **Security Triggers**: Integrated automated "Password Changed" notifications into the portal recovery flow to alert users across Telegram, WhatsApp, and Email.
+- **Layout Optimization**: Repositioned the "Download APK" link from the home hero to the global footer to improve landing page conversion focus.
+- **Production Readiness**: Successfully completed `npm run build` (v2026.05.07.19) with validated server-side logic for multi-channel dispatch.
 
 Verification Steps:
-Manual verification required.
+1. Go to "Message Templates" and click "Restore Defaults" to seed the new role-specific templates.
+2. Verify Telegram OTP for a Donor vs. a Staff member to see the tailored messaging styles.
+3. Test a Password Reset to confirm the post-action security alert is dispatched.
 
 ---
-*Build Summary Updated: 7/5/2026, 8:29:57 pm*
+*Build Summary Updated: 7/5/2026, 9:26:40 pm*

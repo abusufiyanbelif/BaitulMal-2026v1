@@ -1,9 +1,20 @@
 {
-  "version": "2026.05.07.18",
-  "buildDate": "2026-05-07T14:58:46.057Z",
+  "version": "2026.05.07.19",
+  "buildDate": "2026-05-07T16:26:24.167Z",
   "commitHash": "h9i0j1k2",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.05.07.19",
+      "date": "2026-05-07T16:26:24.167Z",
+      "commit": "ce39570a",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-MSG-HARDEN-2026 (Production Resilience)",
+      "steps": "Manual verification required.",
+      "type": "Feature, infrastructure & security",
+      "message": "Finalized production hardening for Telegram OTP and Firebase Admin SDK. Implemented diagnostic transparency and environment variable support for hosted deployments."
+    },
     {
       "version": "2026.05.07.18",
       "date": "2026-05-07T14:58:46.057Z",
@@ -535,17 +546,6 @@
     {
       "version": "2026.05.04.5",
       "date": "2026-05-03T22:33:16.114Z",
-      "commit": "ee070d6d",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "",
-      "steps": "",
-      "type": "Build",
-      "message": "Automated build initiated via npm run build"
-    },
-    {
-      "version": "2026.05.04.4",
-      "date": "2026-05-03T22:10:13.741Z",
       "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
