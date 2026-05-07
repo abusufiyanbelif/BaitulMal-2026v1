@@ -418,6 +418,51 @@ export async function seedDefaultTemplatesAction() {
             variables: ['name'],
             isActive: true
         },
+        // --- ADMIN & GENERAL ---
+        {
+            id: 'otp_admin',
+            name: 'Admin: Secure Access OTP',
+            subject: 'Admin Dashboard Code',
+            body: '🛡️ *Admin Security Alert*\n\nHello {{name}},\n\nYour Administrative Access Code is: *{{otp}}*\n\nThis code is valid for {{validity}} minutes. Do not share this with anyone.',
+            type: 'MultiChannel',
+            category: 'Security',
+            profileType: 'Admin',
+            variables: ['name', 'otp', 'validity'],
+            isActive: true
+        },
+        {
+            id: 'admin_login_alert',
+            name: 'Admin: New Dashboard Login',
+            subject: 'Security: Admin Login Detected',
+            body: '🛡️ *Admin Access Alert*\n\nHello {{name}},\n\nA successful login to the Admin Dashboard was detected.\n\n*Time:* {{time}}\n*IP:* {{ip}}\n\nIf this was not you, please rotate your API keys and lock your account.',
+            type: 'MultiChannel',
+            category: 'Security',
+            profileType: 'Admin',
+            variables: ['name', 'time', 'ip'],
+            isActive: true
+        },
+        {
+            id: 'general_announcement',
+            name: 'General: Community Update',
+            subject: 'Organization Announcement',
+            body: '📢 *BaitulMal Announcement*\n\nAssalamualaikum,\n\n{{message}}\n\nStay connected for more updates. Jazakallah Khair. ✨',
+            type: 'MultiChannel',
+            category: 'Update',
+            profileType: 'General',
+            variables: ['message'],
+            isActive: true
+        },
+        {
+            id: 'registration_welcome',
+            name: 'General: Welcome Message',
+            subject: 'Welcome to BaitulMal Solapur',
+            body: '👋 *Marhaba & Welcome!*\n\nHello {{name}},\n\nThank you for registering with BaitulMal Samajik Sanstha Solapur.\n\n*Profile:* {{profileType}}\n*Next Steps:* {{steps}}\n\nWe are honored to have you in our community. 🤝',
+            type: 'MultiChannel',
+            category: 'System',
+            profileType: 'General',
+            variables: ['name', 'profileType', 'steps'],
+            isActive: true
+        },
 
         // --- DONOR ACTIONS ---
         {

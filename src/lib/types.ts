@@ -180,7 +180,7 @@ export interface MessageTemplate extends DocumentData {
   body: string;
   type: 'WhatsApp' | 'Email' | 'SMS' | 'Telegram' | 'MultiChannel';
   category: string;
-  profileType?: 'Member' | 'Donor' | 'Beneficiary' | 'All';
+  profileType?: 'Member' | 'Donor' | 'Beneficiary' | 'Admin' | 'General' | 'All';
   variables: string[]; // e.g. ["name", "recordId", "module", "url"]
   isActive: boolean;
   updatedAt?: Timestamp | FieldValue;

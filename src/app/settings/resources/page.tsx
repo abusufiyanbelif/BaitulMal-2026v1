@@ -342,6 +342,15 @@ export default function ResourceSettingsPage() {
                                 </Label>
                             </RadioGroup>
 
+                            {editableData?.activeWhatsAppProvider === 'meta' && (
+                                <div className="p-3 rounded-lg bg-blue-50 border border-blue-100 flex gap-3 animate-in fade-in slide-in-from-top-1">
+                                    <Info className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+                                    <p className="text-[10px] text-blue-800 leading-relaxed">
+                                        <strong>Meta Free Tier Benefit:</strong> The first 1,000 conversations each month are free of charge. This is ideal for donor outreach. For internal staff alerts, we recommend using <strong>Telegram</strong> (which is always 100% free) to preserve your WhatsApp quota for the community.
+                                    </p>
+                                </div>
+                            )}
+
                             {editableData?.activeWhatsAppProvider === 'whapi' ? (
                                 <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
                                     <div className="space-y-2">

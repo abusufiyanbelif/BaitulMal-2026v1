@@ -224,10 +224,10 @@ export async function sendPortalOTPAction(identifier: string) {
         const donorSnap = await adminDb.collection('donors').doc(resolvedUserId).get();
         const benSnap = await adminDb.collection('beneficiaries').doc(resolvedUserId).get();
         
-        let profileType: 'Member' | 'Donor' | 'Beneficiary' = 'Donor';
+        let profileType: 'Member' | 'Donor' | 'Beneficiary' | 'Admin' = 'Donor';
         if (userSnap.exists) {
             targetDoc = userSnap.data();
-            profileType = 'Member';
+            profileType = targetDoc.role === 'Admin' ? 'Admin' : 'Member';
         } else if (donorSnap.exists) {
             targetDoc = donorSnap.data();
             profileType = 'Donor';
@@ -259,7 +259,7 @@ export async function sendPortalOTPAction(identifier: string) {
         });
 
         // 5. Dispatch via Telegram using Profile-Specific Template
-        const templateId = profileType === 'Member' ? 'otp_staff' : (profileType === 'Donor' ? 'otp_donor' : 'otp_beneficiary');
+        const templateId = profileType === 'Admin' ? 'otp_admin' : (profileType === 'Member' ? 'otp_staff' : (profileType === 'Donor' ? 'otp_donor' : 'otp_beneficiary'));
         
         const telRes = await sendTelegramAction({ 
             templateId,

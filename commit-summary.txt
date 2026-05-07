@@ -1,22 +1,22 @@
-release: v2026.05.07.19
+release: v2026.05.07.20
 
-Type: Feature, Infrastructure & Security
-Message: Implemented role-based message template mapping and corrected cross-channel dispatch paths. Enhanced security with automated notifications for password resets across all user profiles.
-Reference: MB-MSG-MAPPING-2026 (Role-Specific Resilience)
+Type: Feature, Infrastructure & UI
+Message: Expanded messaging profile architecture to support Admin and General categories. Implemented Meta Cloud API free-tier guidance and optimized role-based template mappings for organizational scaling.
+Reference: MB-MSG-PROF-2026 (Granular Communication)
 Branch: test_bmss_26
-Commit: b13c807d (Build Synchronized)
+Commit: f7a2d4e1 (Build Synchronized)
 
 Key Changes:
-- **Role-Based Template Mapping**: Expanded the template registry to include unique OTP and Security alerts for Member, Donor, and Beneficiary profiles.
-- **Critical Path Correction**: Fixed an invalid Firestore collection path in `sendEmailAction` that prevented template-based emails from sending.
-- **Security Triggers**: Integrated automated "Password Changed" notifications into the portal recovery flow to alert users across Telegram, WhatsApp, and Email.
-- **Layout Optimization**: Repositioned the "Download APK" link from the home hero to the global footer to improve landing page conversion focus.
-- **Production Readiness**: Successfully completed `npm run build` (v2026.05.07.19) with validated server-side logic for multi-channel dispatch.
+- **Expanded Profile Mapping**: Added 'Admin' and 'General' categories to the messaging registry. Templates are now explicitly mapped to Staff, Donor, Beneficiary, Admin, and General profiles.
+- **OTP Logic Hardening**: Updated `sendPortalOTPAction` to distinguish between Admin and Staff roles, ensuring the correct security template (`otp_admin` vs `otp_staff`) is dispatched.
+- **Free Messaging Optimization**: Integrated detailed guidance on the Meta Official (Free Tier) within the Resource Config. Recommended a hybrid approach (Telegram for staff, WhatsApp for donors) to maximize cost-efficiency.
+- **UI Filter Fix**: Updated the Message Templates dashboard to support filtering by the new Admin and General profile categories.
+- **Core Seeding Upgrade**: Enhanced `seedDefaultTemplatesAction` with new templates for Admin login alerts, General announcements, and Registration welcomes.
 
 Verification Steps:
-1. Go to "Message Templates" and click "Restore Defaults" to seed the new role-specific templates.
-2. Verify Telegram OTP for a Donor vs. a Staff member to see the tailored messaging styles.
-3. Test a Password Reset to confirm the post-action security alert is dispatched.
+1. Navigate to **Messaging Templates** and filter by "Profile: Admin" or "Profile: General".
+2. Click **"Restore Defaults"** to populate the new registry.
+3. Check **Resource Config** to see the new Meta Free Tier instruction block.
 
 ---
-*Build Summary Updated: 7/5/2026, 9:26:40 pm*
+*Build Summary Updated: 7/5/2026, 10:15:20 pm*

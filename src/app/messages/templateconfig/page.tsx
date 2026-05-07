@@ -95,7 +95,7 @@ export default function MessageTemplatesPage() {
         return ['All', ...cats];
     }, [rawTemplates]);
 
-    const profiles = ['All', 'Member', 'Donor', 'Beneficiary'];
+    const profiles = ['All', 'Member', 'Donor', 'Beneficiary', 'Admin', 'General'];
 
     // Clientside Filtering
     const filteredTemplates = useMemo(() => {
