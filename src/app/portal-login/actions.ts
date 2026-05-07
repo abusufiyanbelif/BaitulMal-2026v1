@@ -13,10 +13,9 @@ const ADMIN_SDK_ERROR_MESSAGE = "Authentication infrastructure is currently offl
  * Verifies credentials against Firestore and generates a Custom Token.
  */
 export async function authenticatePortalUserAction(identifier: string, password: string, requestedRole?: 'Donor' | 'Beneficiary') {
-    const { adminDb, adminAuth } = getAdminServices();
-    if (!adminDb || !adminAuth) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
-
     try {
+        const { adminDb, adminAuth } = getAdminServices();
+        if (!adminDb || !adminAuth) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
         // Unified Identity Resolution
         const inputIdentifier = identifier.trim();
         const isPhone = /^\d{10}$/.test(inputIdentifier);
@@ -176,10 +175,9 @@ export async function setPortalPasswordAction(userId: string, collectionName: 'u
  * Generate and send a secure OTP via Telegram for portal authentication.
  */
 export async function sendPortalOTPAction(identifier: string) {
-    const { adminDb } = getAdminServices();
-    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
-
     try {
+        const { adminDb } = getAdminServices();
+        if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
         const inputIdentifier = identifier.trim();
         const isPhone = /^\d{10}$/.test(inputIdentifier);
         const cleanPhone = isPhone ? inputIdentifier : '';
@@ -295,10 +293,9 @@ export async function sendPortalOTPAction(identifier: string) {
  * Verify OTP and generate Custom Token.
  */
 export async function verifyPortalOTPAction(identifier: string, otp: string, requestedRole?: 'Donor' | 'Beneficiary') {
-    const { adminDb, adminAuth } = getAdminServices();
-    if (!adminDb || !adminAuth) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
-
     try {
+        const { adminDb, adminAuth } = getAdminServices();
+        if (!adminDb || !adminAuth) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
         const loginId = identifier.trim();
         let targetDoc: any = null;
         let targetId: string = '';
@@ -420,10 +417,9 @@ export async function verifyPortalOTPAction(identifier: string, otp: string, req
  * Reset password after verifying Telegram OTP.
  */
 export async function resetPasswordWithOTPAction(identifier: string, otp: string, newPassword: string) {
-    const { adminDb, adminAuth } = getAdminServices();
-    if (!adminDb || !adminAuth) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
-
     try {
+        const { adminDb, adminAuth } = getAdminServices();
+        if (!adminDb || !adminAuth) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
         const loginId = identifier.trim();
         
         // 1. Verify OTP

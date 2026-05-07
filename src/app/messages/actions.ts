@@ -734,10 +734,10 @@ export async function sendTelegramAction(params: {
     }
     metadata?: any;
 }) {
-    const { adminDb } = getAdminServices();
-    if (!adminDb) return { success: false, message: 'DB Unavailable' };
-
     try {
+        const { adminDb } = getAdminServices();
+        if (!adminDb) return { success: false, message: 'DB Unavailable' };
+
         const resourceSnap = await adminDb.collection('settings').doc('resources').get();
         const resources = resourceSnap.data() as ResourceSettings;
 
@@ -868,10 +868,10 @@ export async function sendTelegramAction(params: {
  * Fetch basic info about the Telegram Bot using the provided token.
  */
 export async function getTelegramBotInfoAction(configOverride?: Partial<ResourceSettings>) {
-    const { adminDb } = getAdminServices();
-    if (!adminDb) return { success: false, message: 'DB Unavailable' };
-
     try {
+        const { adminDb } = getAdminServices();
+        if (!adminDb) return { success: false, message: 'DB Unavailable' };
+
         const resourceSnap = await adminDb.collection('settings').doc('resources').get();
         const resources = resourceSnap.data() as ResourceSettings;
 
@@ -923,13 +923,13 @@ export async function sendTestWhatsAppAction(to: string, configOverride?: Partia
  * User-Specific Connectivity Test for WhatsApp
  */
 export async function sendUserWhatsAppTestAction() {
-    const { adminDb, adminAuth } = getAdminServices();
-    if (!adminDb || !adminAuth) return { success: false, message: 'DB Unavailable' };
-
-    const sessionCookie = cookies().get('__session')?.value;
-    if (!sessionCookie) return { success: false, message: 'Unauthorized' };
-
     try {
+        const { adminDb, adminAuth } = getAdminServices();
+        if (!adminDb || !adminAuth) return { success: false, message: 'DB Unavailable' };
+
+        const sessionCookie = cookies().get('__session')?.value;
+        if (!sessionCookie) return { success: false, message: 'Unauthorized' };
+
         const decodedToken = await adminAuth.verifySessionCookie(sessionCookie);
         const userSnap = await adminDb.collection('users').doc(decodedToken.uid).get();
         if (!userSnap.exists) return { success: false, message: 'User Record Not Found' };
@@ -956,10 +956,9 @@ export async function sendUserWhatsAppTestAction() {
  * User-Specific Connectivity Test for Telegram
  */
 export async function sendUserTelegramTestAction() {
-    const { adminAuth, adminDb } = getAdminServices();
-    if (!adminAuth || !adminDb) return { success: false, message: 'DB Unavailable' };
-
     try {
+        const { adminAuth, adminDb } = getAdminServices();
+        if (!adminAuth || !adminDb) return { success: false, message: 'DB Unavailable' };
         const sessionCookie = cookies().get('__session')?.value || cookies().get('auth-token')?.value;
         if (!sessionCookie) return { success: false, message: 'Unauthorized' };
 

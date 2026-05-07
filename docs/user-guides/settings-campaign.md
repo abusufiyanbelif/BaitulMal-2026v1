@@ -1,7 +1,7 @@
 # 📘 User Guide: /settings/campaign
     
-**Build Version:** `2026.05.07.12`
-**Last Updated:** 7/5/2026, 1:40:36 pm
+**Build Version:** `2026.05.07.13`
+**Last Updated:** 7/5/2026, 3:25:01 pm
 **Internal Route:** `/settings/campaign`
 
 ---

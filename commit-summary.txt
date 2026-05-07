@@ -1,22 +1,13 @@
-release: v2026.05.07.12
+release: v2026.05.07.13
 
-Type: Feature, Infrastructure & DevOps
+Type: Feature, infrastructure & devops
 Message: Hardened Telegram OTP dispatch and stabilized production messaging infrastructure. Resolved silent server-side failures by standardizing serializable error handling and optimizing Server Action imports.
 Reference: MB-MSG-2026 (Messaging Stability)
 Branch: test_bmss_26
-Commit: 439e8d5a (Latest Build)
-
-Key Changes:
-- **Telegram OTP Hardening**: Replaced throw-based error handling in `sendTelegramAction` and `sendPortalOTPAction` with serializable success/failure objects. This eliminates generic Next.js production error overlays ("System Error").
-- **Message Content Safeguards**: Integrated validation to detect empty message payloads before dispatch, preventing 400 Bad Request errors from Telegram API when templates (like `otp_staff`) are missing.
-- **Import Optimization**: Moved the messaging action import to the top level in the portal authentication layer to prevent potential dynamic import resolution issues in production bundles.
-- **Diagnostic Transparency**: Enhanced error categorization for Telegram connectivity issues (Unauthorized, Forbidden, Blocked) to provide actionable user-friendly instructions.
-- **Production Build Validation**: Successfully completed `npm run build` (Exit Code 0) confirming system stability and compatibility with Next.js 14.2 serialization requirements.
+Commit: 46199a64
 
 Verification Steps:
-1. Trigger Telegram OTP for a Member/Staff profile to verify readable error reporting vs. generic "System Error".
-2. Check `message_logs` collection for detailed status tracking of failed/empty dispatch attempts.
-3. Verify that the "Start" instruction is clearly displayed if the user has not initialized the Telegram bot.
+Manual verification required.
 
 ---
-*Build Summary Updated: 7/5/2026, 1:45:00 pm*
+*Build Summary Updated: 7/5/2026, 3:25:01 pm*
