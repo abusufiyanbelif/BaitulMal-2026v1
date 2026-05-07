@@ -1,9 +1,20 @@
 {
-  "version": "2026.05.07.11",
-  "buildDate": "2026-05-06T23:30:08.105Z",
+  "version": "2026.05.07.12",
+  "buildDate": "2026-05-07T08:05:14.563Z",
   "commitHash": "h9i0j1k2",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.05.07.12",
+      "date": "2026-05-07T08:05:14.563Z",
+      "commit": "439e8d5a",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-MSG-2026 (Messaging Stability)",
+      "steps": "Manual verification required.",
+      "type": "Feature, infrastructure & devops",
+      "message": "Hardened Telegram OTP dispatch and stabilized production messaging infrastructure. Resolved silent server-side failures by standardizing serializable error handling and optimizing Server Action imports."
+    },
     {
       "version": "2026.05.07.11",
       "date": "2026-05-06T23:30:08.105Z",
@@ -535,17 +546,6 @@
     {
       "version": "2026.05.03.11",
       "date": "2026-05-03T10:08:04.715Z",
-      "commit": "ee070d6d",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "",
-      "steps": "",
-      "type": "Build",
-      "message": "Automated build initiated via npm run build"
-    },
-    {
-      "version": "2026.05.03.10",
-      "date": "2026-05-03T09:55:39.702Z",
       "commit": "ee070d6d",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",

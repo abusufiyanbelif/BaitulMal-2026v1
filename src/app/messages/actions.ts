@@ -793,6 +793,10 @@ export async function sendTelegramAction(params: {
             TOKEN = TOKEN.substring(3);
         }
 
+        if (!finalMessage) {
+            return { success: false, message: 'Telegram Message content is empty. Please verify that the "otp_staff" (or equivalent) template is seeded in Message Settings.' };
+        }
+
         const response = await fetch(`https://api.telegram.org/bot${TOKEN}/sendMessage`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -815,8 +819,8 @@ export async function sendTelegramAction(params: {
                 error = "Target Chat ID not found. Ensure the user has started a conversation with the bot.";
             } else if (telegramDesc.includes('Unauthorized')) {
                 error = "Telegram Bot Token is invalid or revoked. Please check your Resource Settings.";
-            } else if (telegramDesc.includes('Forbidden')) {
-                error = "Bot is blocked or has not been started by the user. Please click 'START' on the bot.";
+            } else if (telegramDesc.includes('Forbidden') || telegramDesc.includes('bot can\'t initiate conversation')) {
+                error = "Telegram Authorization Required: Please open the bot on Telegram and click 'START' to enable notifications.";
             } else {
                 error = `Telegram API Error: ${telegramDesc}`;
             }
@@ -846,14 +850,7 @@ export async function sendTelegramAction(params: {
         }
 
         if (status === 'Failed') {
-            // Handle the specific 'Forbidden' error with a user-friendly instruction
-            if (error?.includes('Forbidden') || error?.includes('bot can\'t initiate conversation') || error?.includes('blocked')) {
-                return { 
-                    success: false, 
-                    message: "Telegram Authorization Required: Please open the bot on Telegram and click 'START' to enable notifications." 
-                };
-            }
-            throw new Error(error);
+            return { success: false, message: error || 'Failed to send Telegram message' };
         }
 
         return { success: true };

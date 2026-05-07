@@ -4,6 +4,7 @@ import { getAdminServices } from '@/lib/firebase-admin-sdk';
 import { revalidatePath } from 'next/cache';
 import { headers } from 'next/headers';
 import { randomUUID } from 'crypto';
+import { sendTelegramAction } from '@/app/messages/actions';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Authentication infrastructure is currently offline.";
 
@@ -127,7 +128,7 @@ export async function authenticatePortalUserAction(identifier: string, password:
 
     } catch (error: any) {
         console.error("Portal Auth Error:", error);
-        return { success: false, message: `System error during login: ${error.message}` };
+        return { success: false, message: `System error during login: ${error?.message || (typeof error === 'string' ? error : 'Unknown Error')}` };
     }
 }
 
@@ -260,7 +261,6 @@ export async function sendPortalOTPAction(identifier: string) {
         });
 
         // 5. Dispatch via Telegram using Profile-Specific Template
-        const { sendTelegramAction } = await import('@/app/messages/actions');
         const templateId = profileType === 'Member' ? 'otp_staff' : (profileType === 'Donor' ? 'otp_donor' : 'otp_beneficiary');
         
         const telRes = await sendTelegramAction({ 
@@ -287,7 +287,7 @@ export async function sendPortalOTPAction(identifier: string) {
 
     } catch (error: any) {
         console.error("OTP Dispatch Error:", error);
-        return { success: false, message: `System error: ${error.message}` };
+        return { success: false, message: `System error: ${error?.message || (typeof error === 'string' ? error : 'Unknown Internal Error')}` };
     }
 }
 
@@ -412,7 +412,7 @@ export async function verifyPortalOTPAction(identifier: string, otp: string, req
 
     } catch (error: any) {
         console.error("OTP Verification Error:", error);
-        return { success: false, message: error.message };
+        return { success: false, message: error?.message || (typeof error === 'string' ? error : 'Unknown Verification Error') };
     }
 }
 

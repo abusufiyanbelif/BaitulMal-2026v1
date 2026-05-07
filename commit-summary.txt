@@ -1,23 +1,22 @@
 release: v2026.05.07.12
 
 Type: Feature, Infrastructure & DevOps
-Message: Finalized Firebase Studio Integration and Multi-Channel Messaging Engine. Resolved dependency synchronization conflicts for production build runners.
-Reference: MB-FS-2026 (Firebase Studio Bridge)
+Message: Hardened Telegram OTP dispatch and stabilized production messaging infrastructure. Resolved silent server-side failures by standardizing serializable error handling and optimizing Server Action imports.
+Reference: MB-MSG-2026 (Messaging Stability)
 Branch: test_bmss_26
-Commit: f7010997 (Latest Identity: 03bc24ce)
+Commit: 439e8d5a (Latest Build)
 
 Key Changes:
-- **Firebase Studio Integration**: Implemented setup and verification scripts for Studio exports. Standardized environment alignment for Antigravity-ready projects.
-- **Multi-Channel Notification Engine**: Completed live dispatch infrastructure for Email (SMTP), WhatsApp, and Telegram.
-- **Template Test Center**: Integrated a real-time diagnostic dashboard in Template Configuration with live user search and channel verification.
-- **Build Stabilization**: Synchronized `package.json` and `package-lock.json` versions (Firebase/Genkit) to resolve remote build runner 'npm ci' failures.
-- **Identity Resolution**: Standardized profile-aware messaging across Staff, Donor, and Beneficiary registries.
+- **Telegram OTP Hardening**: Replaced throw-based error handling in `sendTelegramAction` and `sendPortalOTPAction` with serializable success/failure objects. This eliminates generic Next.js production error overlays ("System Error").
+- **Message Content Safeguards**: Integrated validation to detect empty message payloads before dispatch, preventing 400 Bad Request errors from Telegram API when templates (like `otp_staff`) are missing.
+- **Import Optimization**: Moved the messaging action import to the top level in the portal authentication layer to prevent potential dynamic import resolution issues in production bundles.
+- **Diagnostic Transparency**: Enhanced error categorization for Telegram connectivity issues (Unauthorized, Forbidden, Blocked) to provide actionable user-friendly instructions.
+- **Production Build Validation**: Successfully completed `npm run build` (Exit Code 0) confirming system stability and compatibility with Next.js 14.2 serialization requirements.
 
 Verification Steps:
-1. Run `npm install` locally to confirm lock file synchronization.
-2. Verify SMTP connection in Settings > Resources.
-3. Perform live template tests in Messages > Template Config > Test Center.
-4. Execute `scripts/verify-studio-setup.js` to validate Firebase Studio environment.
+1. Trigger Telegram OTP for a Member/Staff profile to verify readable error reporting vs. generic "System Error".
+2. Check `message_logs` collection for detailed status tracking of failed/empty dispatch attempts.
+3. Verify that the "Start" instruction is clearly displayed if the user has not initialized the Telegram bot.
 
 ---
-*Build Summary Updated: 7/5/2026, 5:15:00 am*
+*Build Summary Updated: 7/5/2026, 1:45:00 pm*
