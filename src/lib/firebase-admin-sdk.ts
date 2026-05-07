@@ -28,6 +28,7 @@ function initializeAdmin(): AdminServices {
         try {
             const serviceAccountVar = process.env.FIREBASE_SERVICE_ACCOUNT;
             const serviceAccountPath = path.resolve(process.cwd(), 'serviceAccountKey.json');
+            const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID;
 
             if (serviceAccountVar) {
                 // Initialize using JSON string from environment variable
@@ -39,7 +40,7 @@ function initializeAdmin(): AdminServices {
                     });
                     console.log("Firebase Admin SDK initialized using FIREBASE_SERVICE_ACCOUNT environment variable.");
                 } catch (parseErr: any) {
-                    throw new Error(`Failed to parse FIREBASE_SERVICE_ACCOUNT JSON: ${parseErr.message}`);
+                    throw new Error(`Failed to parse FIREBASE_SERVICE_ACCOUNT JSON: ${parseErr.message}. Ensure the value is a valid JSON string starting with { and ending with }.`);
                 }
             } else if (fs.existsSync(serviceAccountPath)) {
                 // Initialize using local file
@@ -52,16 +53,22 @@ function initializeAdmin(): AdminServices {
                 // Initialize using Application Default Credentials (ADC)
                 // This will use ADC in a GCP environment (like Firebase App Hosting)
                 initializeApp({
+                    projectId: projectId, // Explicit project ID helps in some hosting environments
                     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
                 });
-                console.log("Firebase Admin SDK initialized with Application Default Credentials (production mode).");
+                console.log(`Firebase Admin SDK initialized with Application Default Credentials (Project: ${projectId || 'auto-detected'}).`);
             }
         } catch (e: any) {
              let errorMessage = 'Firebase Admin SDK initialization failed.';
             if (e.code === 'app/invalid-credential') {
                 errorMessage += " The service account credentials are not valid. Ensure your environment variables or 'serviceAccountKey.json' are correct.";
             } else if (e.message.includes('Could not load the default credentials')) {
-                errorMessage += " Production environment missing credentials. ACTION REQUIRED: Please add the 'FIREBASE_SERVICE_ACCOUNT' environment variable (containing your service account JSON) to your hosting provider settings (e.g. Firebase Console).";
+                const checked = [
+                    process.env.FIREBASE_SERVICE_ACCOUNT ? 'FIREBASE_SERVICE_ACCOUNT (Found)' : 'FIREBASE_SERVICE_ACCOUNT (Missing)',
+                    fs.existsSync(path.resolve(process.cwd(), 'serviceAccountKey.json')) ? 'serviceAccountKey.json (Found)' : 'serviceAccountKey.json (Missing)'
+                ].join(', ');
+                
+                errorMessage += ` Production environment missing credentials. (Checked: ${checked}). ACTION REQUIRED: Please add the 'FIREBASE_SERVICE_ACCOUNT' environment variable to your Firebase Hosting/App Hosting settings.`;
             } else if (e.message.includes('IAM')) {
                 errorMessage += " There might be an IAM permission issue. Please ensure your service account has the 'Firebase Admin' role in Google Cloud console.";
             } else {

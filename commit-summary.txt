@@ -1,13 +1,13 @@
-release: v2026.05.07.15
+release: v2026.05.07.18
 
 Type: Feature, infrastructure & security
 Message: Finalized production hardening for Telegram OTP and Firebase Admin SDK. Implemented diagnostic transparency and environment variable support for hosted deployments.
 Reference: MB-MSG-HARDEN-2026 (Production Resilience)
 Branch: test_bmss_26
-Commit: a99253a1
+Commit: b13c807d
 
 Verification Steps:
 Manual verification required.
 
 ---
-*Build Summary Updated: 7/5/2026, 5:03:49 pm*
+*Build Summary Updated: 7/5/2026, 8:29:57 pm*
