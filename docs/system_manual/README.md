@@ -20,6 +20,7 @@ Welcome to the central knowledge hub for the DocuExtract Organization platform.
 14. [**Identity Mirroring Logic**](./14-identity-mirroring-logic.md)
 15. [**Data Migration & Seeding Guide**](./15-data-migration-guide.md)
 16. [**Architecture, Flow & Use Cases**](./16-architecture-and-use-cases.md)
+17. [**📱 Messaging Setup Guide — Telegram, WhatsApp & Email**](./17-messaging-setup-guide.md)
 
 ## Core Technology Stack
 

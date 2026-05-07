@@ -1,94 +1,13 @@
-release: v2026.05.07.30
+release: v2026.05.08.6
 
-Type: Feature, Bugfix, Infrastructure Hardening & Deep Scan
-Message: WhatsApp OTP channel for portal login, profile-specific template expansion (21 templates), forgot-password multi-collection fix, Firestore template path correction, and comprehensive messaging error handling.
+Type: Feature, bugfix, infrastructure hardening & deep scan
+Message: Hardened OTP identity resolution logic for users with multiple profiles. Portal login now correctly routes profile-specific templates (otp_donor vs otp_admin) based on workspace. Fixed telegramChatId mapping across multi-collection identities. Fixed Template Config search filtering to include profileType and category. Implemented Superseded cleanup for ghost pending verifications. Updated detailed payload generation to include action screenshot attachments and Telegram Markdown V2 hyperlink support.
 Reference: MB-MSG-FULL-2026 (Full Messaging Hardening)
 Branch: test_bmss_26
-Commit: Pending (Uncommitted — consolidates v2026.05.07.20 through v2026.05.07.30)
+Commit: 1392db24
 
----
-Consolidated Changes Since Last Pushed Sync (ec94cebe / v2026.05.07.20):
-
-### 1. NEW FEATURES
-
-#### A. WhatsApp OTP for Portal Login
-- **New Action**: `sendPortalOTPViaWhatsAppAction` in `portal-login/actions.ts`
-- Portal login page now shows **Telegram / WhatsApp** channel selector before sending OTP
-- Checks `isWhatsAppOtpEnabled` resource setting — returns clear error if disabled
-- Resolves phone from user profile (donors/beneficiaries/users collections)
-- Uses profile-specific templates: otp_admin, otp_staff, otp_donor, otp_beneficiary
-
-#### B. WhatsApp OTP Enable/Disable Toggle
-- New field `isWhatsAppOtpEnabled` added to `ResourceSettings` type
-- New toggle in **Settings > Resources** page with green styling
-- Contextual info note explains: Meta Cloud API gives **1,000 free authentication conversations/month**
-- Defaults to `false` (admin must explicitly enable)
-
-#### C. Template Architecture Expansion (21 Templates)
-All templates separated by profile type and filterable in Template Config UI:
-
-| Profile | Templates |
-|---------|-----------|
-| **Admin** | otp_admin, admin_login_alert, password_changed_admin |
-| **Member** | otp_staff, password_changed_staff, lead_created, member_task_assigned |
-| **Donor** | otp_donor, password_changed_donor, donor_donation_linked, donor_cause_closed, donor_receipt, donor_thank_you |
-| **Beneficiary** | otp_beneficiary, password_changed_beneficiary, beneficiary_disbursement, beneficiary_status_update |
-| **General** | general_announcement, registration_welcome, general_maintenance |
-
-### 2. CRITICAL BUG FIXES
-
-| # | File | Issue | Fix |
-|---|------|-------|-----|
-| 1 | `messages/actions.ts` L1985 | `sendMultiChannelNotificationAction` used wrong Firestore path | Fixed to `settings/message_templates/templates` |
-| 2 | `messages/actions.ts` L875 | Empty-message error hardcoded "otp_staff" | Made dynamic with actual template name |
-| 3 | `portal-login/actions.ts` L452 | `resetPasswordWithOTPAction` only updated `users` collection | Now resolves correct collection from profileType |
-| 4 | `portal-login/actions.ts` L574 | Password-changed Admin used staff template | Now uses `password_changed_admin` |
-| 5 | `portal-login/page.tsx` L148 | Forgot-password used `updatePortalPasswordAction` with hardcoded 'Donor' role | Now uses `resetPasswordWithOTPAction` which resolves profile correctly |
-| 6 | `portal-login/page.tsx` L7 | Missing import for `sendPortalOTPViaWhatsAppAction` | Added |
-| 7 | `page.tsx` (landing) | SWC parser crash + wrong NewsTicker props | Full file reset, fixed component interface |
-| 8 | `messages/actions.ts` L76 | Dead unreachable code in `checkAuth` | Removed |
-
-### 3. MESSAGING CONFIGURATION
-
-#### Resource Settings (settings/resources)
-- **Auto WhatsApp Messages**: Toggle for automated WhatsApp dispatch
-- **WhatsApp OTP for Portal Login**: Toggle to allow OTP via WhatsApp
-- **Meta Free Tier Info**: Contextual guidance about 1000 free conversations/month
-- **Provider Selection**: Whapi.cloud (Paid) vs Meta Official (Free Tier)
-- **WhatsApp Business**: Meta Cloud API is free for first 1000 auth conversations/month. No paid subscription needed.
-
-#### Channel Support Matrix
-| Channel | Alerts | OTP | Test | Enable/Disable |
-|---------|--------|-----|------|----------------|
-| Telegram | ✅ | ✅ | ✅ | ✅ isTelegramEnabled |
-| WhatsApp | ✅ | ✅ (new) | ✅ | ✅ isAutoWhatsAppEnabled + isWhatsAppOtpEnabled |
-| Email | ✅ | ❌ | ✅ | ✅ isEmailEnabled |
-
-### 4. FORGOT PASSWORD FLOW (Hardened)
-- Uses `resetPasswordWithOTPAction` instead of `updatePortalPasswordAction`
-- Resolves profileType from OTP session (not hardcoded)
-- Updates correct collection (donors/beneficiaries/users)
-- Sends profile-specific security notification after reset
-
-### 5. FILES MODIFIED
-
-| File | Changes |
-|------|---------|
-| `src/lib/types.ts` | Added `isWhatsAppOtpEnabled` to ResourceSettings |
-| `src/app/portal-login/actions.ts` | Added `sendPortalOTPViaWhatsAppAction`, fixed password reset flow |
-| `src/app/portal-login/page.tsx` | Added WhatsApp OTP channel selector, fixed forgot-password action |
-| `src/app/messages/actions.ts` | Fixed Firestore path, dynamic errors, 7 new templates |
-| `src/app/settings/resources/page.tsx` | Added WhatsApp OTP toggle and free-tier info |
-| `src/app/page.tsx` | Full rebuild, fixed NewsTicker interface, cleaned imports |
-
----
 Verification Steps:
-1. Settings > Resources: Enable "WhatsApp OTP for Portal Login" toggle
-2. Portal Login: Switch to OTP tab — verify Telegram/WhatsApp channel selector appears
-3. Messages > Template Config: Click "Restore Defaults" then filter by Profile — verify all 5 profiles have templates
-4. Test forgot-password for Donor AND Beneficiary — verify correct collection updates
-5. `npm run build` — Exit code 0 ✅
+Manual verification required.
 
 ---
-*Build: v2026.05.07.30 — SUCCESS (Exit Code 0)*
-*Updated: 8/5/2026, 12:26:00 am IST*
+*Build Summary Updated: 8/5/2026, 4:07:16 am*

@@ -174,7 +174,7 @@ export async function setPortalPasswordAction(userId: string, collectionName: 'u
 /**
  * Generate and send a secure OTP via Telegram for portal authentication.
  */
-export async function sendPortalOTPAction(identifier: string) {
+export async function sendPortalOTPAction(identifier: string, requestedRole?: 'Donor' | 'Beneficiary' | 'Member' | 'Admin') {
     try {
         const { adminDb } = getAdminServices();
         if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
@@ -225,19 +225,32 @@ export async function sendPortalOTPAction(identifier: string) {
         const benSnap = await adminDb.collection('beneficiaries').doc(resolvedUserId).get();
         
         let profileType: 'Member' | 'Donor' | 'Beneficiary' | 'Admin' = 'Donor';
-        if (userSnap.exists) {
+        let mergedName = 'User';
+        
+        if (requestedRole === 'Donor' && donorSnap.exists) {
+            targetDoc = donorSnap.data();
+            profileType = 'Donor';
+            mergedName = targetDoc.name || mergedName;
+        } else if (requestedRole === 'Beneficiary' && benSnap.exists) {
+            targetDoc = benSnap.data();
+            profileType = 'Beneficiary';
+            mergedName = targetDoc.name || mergedName;
+        } else if (userSnap.exists) {
             targetDoc = userSnap.data();
             profileType = targetDoc.role === 'Admin' ? 'Admin' : 'Member';
+            mergedName = targetDoc.name || mergedName;
         } else if (donorSnap.exists) {
             targetDoc = donorSnap.data();
             profileType = 'Donor';
+            mergedName = targetDoc.name || mergedName;
         } else if (benSnap.exists) {
             targetDoc = benSnap.data();
             profileType = 'Beneficiary';
+            mergedName = targetDoc.name || mergedName;
         }
 
-        telegramChatId = targetDoc?.telegramChatId || '';
-        customBotToken = targetDoc?.customTelegramBotToken || '';
+        telegramChatId = userSnap.data()?.telegramChatId || donorSnap.data()?.telegramChatId || benSnap.data()?.telegramChatId || '';
+        customBotToken = userSnap.data()?.customTelegramBotToken || donorSnap.data()?.customTelegramBotToken || benSnap.data()?.customTelegramBotToken || '';
 
         if (!telegramChatId) return { success: false, message: "Telegram account not linked. Please use password login or contact support." };
 
@@ -292,7 +305,7 @@ export async function sendPortalOTPAction(identifier: string) {
 /**
  * Generate and send a secure OTP via WhatsApp for portal authentication.
  */
-export async function sendPortalOTPViaWhatsAppAction(identifier: string) {
+export async function sendPortalOTPViaWhatsAppAction(identifier: string, requestedRole?: 'Donor' | 'Beneficiary' | 'Member' | 'Admin') {
     try {
         const { adminDb } = getAdminServices();
         if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
@@ -340,18 +353,31 @@ export async function sendPortalOTPViaWhatsAppAction(identifier: string) {
         const benSnap = await adminDb.collection('beneficiaries').doc(resolvedUserId).get();
 
         let profileType: 'Member' | 'Donor' | 'Beneficiary' | 'Admin' = 'Donor';
-        if (userSnap.exists) {
+        let mergedName = 'User';
+        
+        if (requestedRole === 'Donor' && donorSnap.exists) {
+            targetDoc = donorSnap.data();
+            profileType = 'Donor';
+            mergedName = targetDoc.name || mergedName;
+        } else if (requestedRole === 'Beneficiary' && benSnap.exists) {
+            targetDoc = benSnap.data();
+            profileType = 'Beneficiary';
+            mergedName = targetDoc.name || mergedName;
+        } else if (userSnap.exists) {
             targetDoc = userSnap.data();
             profileType = targetDoc.role === 'Admin' ? 'Admin' : 'Member';
+            mergedName = targetDoc.name || mergedName;
         } else if (donorSnap.exists) {
             targetDoc = donorSnap.data();
             profileType = 'Donor';
+            mergedName = targetDoc.name || mergedName;
         } else if (benSnap.exists) {
             targetDoc = benSnap.data();
             profileType = 'Beneficiary';
+            mergedName = targetDoc.name || mergedName;
         }
 
-        phone = targetDoc?.phone || cleanPhone;
+        phone = userSnap.data()?.phone || donorSnap.data()?.phone || benSnap.data()?.phone || cleanPhone;
         if (!phone) return { success: false, message: 'No phone number linked to this account. Please use Telegram OTP or password login.' };
 
         // 4. Generate OTP

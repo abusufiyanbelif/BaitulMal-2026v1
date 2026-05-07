@@ -126,13 +126,17 @@ function generateDetailedPayload(params: {
     newData?: any;
     actionUrl?: string;
     userName?: string;
+    isTelegram?: boolean;
 }) {
     const changes = params.oldData && params.newData ? generateChanges(params.oldData, params.newData) : [];
     
     let message = `🔔 *${params.title}*\n\n`;
     message += `👤 *Performed by:* ${params.userName || 'System'}\n`;
     message += `🎯 *Purpose:* ${params.purpose}\n`;
-    message += `⚠️ *Cause:* ${params.cause}\n\n`;
+    message += `⚠️ *Details:* ${params.cause}\n\n`;
+    
+    message += `*Action Required:*\n`;
+    message += `Please review the proposed modifications below and approve or reject them to proceed.\n\n`;
 
     if (changes.length > 0) {
         message += `📝 *Data Changes:*\n`;
@@ -142,8 +146,21 @@ function generateDetailedPayload(params: {
         message += `\n`;
     }
 
+    const imageLink = params.newData?.image || params.newData?.imageUrl || params.newData?.proofUrl || params.newData?.documentUrl || params.newData?.photoUrl;
+    if (imageLink && typeof imageLink === 'string' && imageLink.startsWith('http')) {
+        if (params.isTelegram) {
+            message += `📸 [View Attached Image/Document](${imageLink})\n\n`;
+        } else {
+            message += `📸 *Attached Image/Document:* ${imageLink}\n\n`;
+        }
+    }
+
     if (params.actionUrl) {
-        message += `🔗 *Action Required:* ${params.actionUrl}\n\n`;
+        if (params.isTelegram) {
+            message += `🔗 [Click Here to Review & Verify](${params.actionUrl})\n\n`;
+        } else {
+            message += `🔗 *Review Link:* ${params.actionUrl}\n\n`;
+        }
     }
 
     message += `_This is an organization automated alert._`;
@@ -312,16 +329,16 @@ async function sendWhatsAppCore(params: {
         // Clean metadata to remove undefined values for Firestore
         const cleanMetadata = params.metadata ? JSON.parse(JSON.stringify(params.metadata)) : {};
 
-        const log: MessageLog = {
+        const log: any = {
             id: logRef.id,
             recipient: params.to,
             content: finalMessage,
             type: 'WhatsApp',
             status,
-            error: error || undefined,
             timestamp: Timestamp.now(),
             metadata: cleanMetadata
         };
+        if (error) log.error = error;
         await logRef.set(log);
 
         return { 
@@ -915,7 +932,8 @@ export async function sendTelegramAction(params: {
         // Handle Rich Data if provided (Highest Priority)
         if (params.richData) {
             finalMessage = generateDetailedPayload({
-                ...params.richData
+                ...params.richData,
+                isTelegram: true
             });
         }
         // Handle Template if provided (Secondary Priority)
@@ -984,19 +1002,19 @@ export async function sendTelegramAction(params: {
             const logRef = adminDb.collection('message_logs').doc();
             const cleanMetadata = params.metadata ? JSON.parse(JSON.stringify(params.metadata)) : {};
             
-            const log: MessageLog = {
+            const log: any = {
                 id: logRef.id,
                 recipient: CHAT_ID,
                 content: finalMessage,
                 type: 'Telegram',
                 status,
-                error: error || undefined,
                 timestamp: Timestamp.now(),
                 metadata: {
                     ...cleanMetadata,
                     moduleId: params.moduleId || cleanMetadata.moduleId || 'system'
                 }
             };
+            if (error) log.error = error;
             await logRef.set(log);
         } catch (logErr) {
             console.error('Failed to log Telegram message:', logErr);

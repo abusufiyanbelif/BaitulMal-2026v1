@@ -81,9 +81,9 @@ function PortalLoginContent() {
                 if (!otpSent) {
                     let res;
                     if (otpChannel === 'WhatsApp') {
-                        res = await sendPortalOTPViaWhatsAppAction(identifier);
+                        res = await sendPortalOTPViaWhatsAppAction(identifier, workspace);
                     } else {
-                        res = await sendPortalOTPAction(identifier);
+                        res = await sendPortalOTPAction(identifier, workspace);
                     }
                     if (res.success) {
                         setOtpSent(true);
@@ -131,7 +131,7 @@ function PortalLoginContent() {
         if (forgotStep === 'ID') {
             if (!forgotIdentifier) { toast({ title: "Identification Needed", variant: "destructive" }); return; }
             setIsForgotLoading(true);
-            const res = await sendPortalOTPAction(forgotIdentifier);
+            const res = await sendPortalOTPAction(forgotIdentifier, workspace);
             if (res.success) { setForgotStep('OTP'); toast({ title: "OTP Sent", description: res.message, variant: "success" }); }
             else { toast({ title: "Failed", description: res.message, variant: "destructive" }); }
             setIsForgotLoading(false);

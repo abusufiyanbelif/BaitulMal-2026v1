@@ -1,9 +1,75 @@
 {
-  "version": "2026.05.07.30",
-  "buildDate": "2026-05-07T17:56:54.802Z",
+  "version": "2026.05.08.6",
+  "buildDate": "2026-05-07T22:35:57.954Z",
   "commitHash": "h9i0j1k2",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.05.08.6",
+      "date": "2026-05-07T22:35:57.954Z",
+      "commit": "1392db24",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-MSG-FULL-2026 (Full Messaging Hardening)",
+      "steps": "Manual verification required.",
+      "type": "Feature, bugfix, infrastructure hardening & deep scan",
+      "message": "Hardened OTP identity resolution logic for users with multiple profiles. Portal login now correctly routes profile-specific templates (otp_donor vs otp_admin) based on workspace. Fixed telegramChatId mapping across multi-collection identities. Fixed Template Config search filtering to include profileType and category. Implemented Superseded cleanup for ghost pending verifications. Updated detailed payload generation to include action screenshot attachments and Telegram Markdown V2 hyperlink support."
+    },
+    {
+      "version": "2026.05.08.5",
+      "date": "2026-05-07T22:31:35.274Z",
+      "commit": "1392db24",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-MSG-FULL-2026 (Full Messaging Hardening)",
+      "steps": "Manual verification required.",
+      "type": "Feature, bugfix, infrastructure hardening & deep scan",
+      "message": "WhatsApp OTP channel for portal login, profile-specific template expansion (21 templates), forgot-password multi-collection fix, Firestore template path correction, and comprehensive messaging error handling."
+    },
+    {
+      "version": "2026.05.08.4",
+      "date": "2026-05-07T22:23:47.549Z",
+      "commit": "1392db24",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-MSG-FULL-2026 (Full Messaging Hardening)",
+      "steps": "Manual verification required.",
+      "type": "Feature, bugfix, infrastructure hardening & deep scan",
+      "message": "WhatsApp OTP channel for portal login, profile-specific template expansion (21 templates), forgot-password multi-collection fix, Firestore template path correction, and comprehensive messaging error handling."
+    },
+    {
+      "version": "2026.05.08.3",
+      "date": "2026-05-07T22:12:11.047Z",
+      "commit": "1392db24",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-MSG-FULL-2026 (Full Messaging Hardening)",
+      "steps": "Manual verification required.",
+      "type": "Feature, bugfix, infrastructure hardening & deep scan",
+      "message": "WhatsApp OTP channel for portal login, profile-specific template expansion (21 templates), forgot-password multi-collection fix, Firestore template path correction, and comprehensive messaging error handling."
+    },
+    {
+      "version": "2026.05.08.2",
+      "date": "2026-05-07T22:05:42.229Z",
+      "commit": "1392db24",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-MSG-FULL-2026 (Full Messaging Hardening)",
+      "steps": "Manual verification required.",
+      "type": "Feature, bugfix, infrastructure hardening & deep scan",
+      "message": "WhatsApp OTP channel for portal login, profile-specific template expansion (21 templates), forgot-password multi-collection fix, Firestore template path correction, and comprehensive messaging error handling."
+    },
+    {
+      "version": "2026.05.08.1",
+      "date": "2026-05-07T21:45:47.803Z",
+      "commit": "1392db24",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-MSG-FULL-2026 (Full Messaging Hardening)",
+      "steps": "Manual verification required.",
+      "type": "Feature, bugfix, infrastructure hardening & deep scan",
+      "message": "WhatsApp OTP channel for portal login, profile-specific template expansion (21 templates), forgot-password multi-collection fix, Firestore template path correction, and comprehensive messaging error handling."
+    },
     {
       "version": "2026.05.07.30",
       "date": "2026-05-07T17:56:54.802Z",
@@ -487,72 +553,6 @@
       "steps": "Manual verification required.",
       "type": "Build",
       "message": "doc auto"
-    },
-    {
-      "version": "2026.05.05.11",
-      "date": "2026-05-05T13:48:17.362Z",
-      "commit": "9bd84b49",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Uncommitted changes detected. Manual verification required.",
-      "type": "Build",
-      "message": "doc auto (with local changes)"
-    },
-    {
-      "version": "2026.05.05.10",
-      "date": "2026-05-04T22:23:03.280Z",
-      "commit": "219dd6ee",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Uncommitted changes detected. Manual verification required.",
-      "type": "Build",
-      "message": "Finalized Telegram messaging suite: integrated persistent logging, added retry mechanism to dashboard, and enhanced build-versioning with local change detection."
-    },
-    {
-      "version": "2026.05.05.9",
-      "date": "2026-05-04T21:55:14.186Z",
-      "commit": "219dd6ee",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Uncommitted changes detected. Manual verification required.",
-      "type": "Build",
-      "message": "Hardened Telegram messaging and added retry capability to Messaging Dashboard"
-    },
-    {
-      "version": "2026.05.05.8",
-      "date": "2026-05-04T21:26:57.579Z",
-      "commit": "219dd6ee",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Manual verification required.",
-      "type": "Build",
-      "message": "doc auto"
-    },
-    {
-      "version": "2026.05.05.7",
-      "date": "2026-05-04T21:17:56.516Z",
-      "commit": "5fba3333",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Manual verification required.",
-      "type": "Build",
-      "message": "Finalized Telegram integration with flexible metadata and type safety."
-    },
-    {
-      "version": "2026.05.05.6",
-      "date": "2026-05-04T20:50:54.355Z",
-      "commit": "5fba3333",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Manual verification required.",
-      "type": "Build",
-      "message": "Finalized Telegram messaging integration with type-safe logging."
     }
   ]
 }

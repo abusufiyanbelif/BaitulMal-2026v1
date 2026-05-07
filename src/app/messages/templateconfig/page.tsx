@@ -104,7 +104,9 @@ export default function MessageTemplatesPage() {
             const matchesSearch = 
                 t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                t.body.toLowerCase().includes(searchTerm.toLowerCase());
+                t.body.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                (t.profileType && t.profileType.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                (t.category && t.category.toLowerCase().includes(searchTerm.toLowerCase()));
             
             const matchesCategory = categoryFilter === 'All' || t.category === categoryFilter;
             const matchesProfile = profileFilter === 'All' || t.profileType === profileFilter;

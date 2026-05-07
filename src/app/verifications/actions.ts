@@ -447,6 +447,30 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
                 status: 'Approved',
                 updatedAt: Timestamp.now()
             });
+
+            // Clean up any other pending ghost requests for the same targetId
+            try {
+                const ghostSnap = await adminDb.collection('pending_verifications')
+                    .where('targetId', '==', request.targetId)
+                    .where('status', 'in', ['Pending', 'Partially Approved'])
+                    .get();
+                
+                if (!ghostSnap.empty) {
+                    const batch = adminDb.batch();
+                    ghostSnap.docs.forEach(doc => {
+                        if (doc.id !== requestId) {
+                            batch.update(doc.ref, { 
+                                status: 'Superseded',
+                                updatedAt: Timestamp.now(),
+                                description: `Superseded by approved request ${requestId}`
+                            });
+                        }
+                    });
+                    await batch.commit();
+                }
+            } catch (e) {
+                console.error('Failed to cleanup ghost pending verifications:', e);
+            }
             
             // Notify Requester
             try {
