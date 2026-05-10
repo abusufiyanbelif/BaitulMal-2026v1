@@ -550,7 +550,7 @@ export interface UserProfile extends DocumentData {
   phone?: string;
   loginId: string;
   userKey: string;
-  role: 'Admin' | 'User' | 'Donor' | 'Beneficiary';
+   role: 'Admin' | 'User' | 'Donor' | 'Beneficiary' | 'Member' | 'Staff' | 'Guest';
   status: 'Active' | 'Inactive';
   permissions: UserPermissions;
   createdAt?: Timestamp | FieldValue;

@@ -18,12 +18,18 @@ import { signOut } from 'firebase/auth';
  * Ensures Staff see the dashboard first, while Donors are routed to their portal.
  */
 function RouteGuard({ children }: { children: ReactNode }) {
-    const { user, userProfile, isLoading, isStaff } = useSession();
+    const { user, userProfile, isLoading } = useSession();
     const router = useRouter();
     const pathname = usePathname();
     const [isRedirecting, setIsRedirecting] = useState(false);
     const firestore = useFirestore();
     const auth = useAuth();
+
+    // Role definitions for global component scope
+    const role = userProfile?.role || 'Guest';
+    const isDonor = role === 'Donor';
+    const isBeneficiary = role === 'Beneficiary';
+    const isStaff = role === 'Admin' || role === 'User' || role === 'Staff' || role === 'Member';
 
     const donorConfigRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donor_config') : null, [firestore]);
     const beneficiaryConfigRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'beneficiary_config') : null, [firestore]);
@@ -56,36 +62,22 @@ function RouteGuard({ children }: { children: ReactNode }) {
         ].some(p => pathname.startsWith(p));
 
         // 1. Authenticated User at a Login/Root Page → redirect to their home
-        if (user && (pathname === '/login' || pathname === '/portal-login' || pathname === '/')) {
-            setIsRedirecting(true);
-            if (isStaff) {
-                router.push('/dashboard');
-            } else if (userProfile?.role === 'Beneficiary') {
-                router.push('/beneficiary-portal');
-            } else if (userProfile?.role === 'Donor') {
-                router.push('/donor-portal');
-            } else if (userProfile === null) {
-                // Profile not found in 'users' collection — may be a portal-only user
-                // (their profile lives in 'donors' or 'beneficiaries' collection).
-                // Use localStorage role as a tiebreaker to avoid spurious sign-outs.
-                const storedRole = typeof window !== 'undefined' ? localStorage.getItem('portal_role') : null;
-                if (storedRole === 'Donor') {
+        if (user) {
+            // If on login page but already logged in, redirect to dashboard or portal
+            if (pathname === '/login' || pathname === '/portal-login' || pathname === '/' || pathname === '/donor-portal' || pathname === '/beneficiary-portal') {
+                setIsRedirecting(true);
+                if (isStaff) {
+                    router.push('/dashboard');
+                } else if (isDonor) {
                     router.push('/donor-portal');
-                } else if (storedRole === 'Beneficiary') {
+                } else if (isBeneficiary) {
                     router.push('/beneficiary-portal');
                 } else {
-                    // Genuinely unidentified — clear stale session
-                    console.warn("RouteGuard: Authenticated user has no profile or identifiable role. Clearing session.");
-                    signOut(auth).then(() => {
-                        setIsRedirecting(false);
-                        router.push('/portal-login');
-                    });
+                    // Logged in with unknown role, allow them to see the page but stop loop
+                    setIsRedirecting(false);
                 }
-            } else {
-                // Profile exists but role is not Staff/Donor/Beneficiary (e.g. legacy data)
-                setIsRedirecting(false);
+                return;
             }
-            return;
         }
 
         // 2. Guest User trying to access Private Routes
@@ -107,11 +99,17 @@ function RouteGuard({ children }: { children: ReactNode }) {
             if (isStaffPath && !isStaff) {
                 setIsRedirecting(true);
                 // Portal users trying to access staff pages → redirect to their portal
-                const storedRole = typeof window !== 'undefined' ? localStorage.getItem('portal_role') : null;
-                if (storedRole === 'Beneficiary' || userProfile?.role === 'Beneficiary') {
+                if (isBeneficiary) {
                     router.push('/beneficiary-portal');
-                } else {
+                } else if (isDonor) {
                     router.push('/donor-portal');
+                } else {
+                    // Authenticated but not staff/donor/beneficiary (e.g. unknown role)
+                    // If they came from a portal login, redirect back there.
+                    const storedRole = typeof window !== 'undefined' ? localStorage.getItem('portal_role') : null;
+                    if (storedRole === 'Beneficiary') router.push('/beneficiary-portal');
+                    else if (storedRole === 'Donor') router.push('/donor-portal');
+                    else router.push('/portal-login');
                 }
                 return;
             }
@@ -121,7 +119,7 @@ function RouteGuard({ children }: { children: ReactNode }) {
         }
 
         setIsRedirecting(false);
-    }, [user, userProfile, isLoading, isPublicRoute, pathname, router, isStaff]);
+    }, [user, userProfile, isLoading, isPublicRoute, pathname, router, isStaff, isDonor, isBeneficiary]);
 
     // 4. Session Revocation Listener (Instant Logout)
     useEffect(() => {
@@ -131,8 +129,8 @@ function RouteGuard({ children }: { children: ReactNode }) {
         // If missing, we treat it as an 'old' session (pre-revocation tracking) and set to 0 to trigger revocation check
         const sessionStart = sessionStartStr ? parseInt(sessionStartStr) : 0;
         
-        const config = userProfile?.role === 'Donor' ? donorConfig : 
-                       (userProfile?.role === 'Beneficiary' ? beneficiaryConfig : 
+        const config = isDonor ? donorConfig : 
+                       (isBeneficiary ? beneficiaryConfig : 
                        (isStaff ? userConfig : null));
         
         const revokedAt = (config && typeof config.sessionRevokedAt === 'number') ? config.sessionRevokedAt : (config?.sessionRevokedAt?.toMillis ? config.sessionRevokedAt.toMillis() : 0);

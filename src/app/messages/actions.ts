@@ -369,7 +369,7 @@ export async function seedDefaultTemplatesAction() {
             id: 'otp_staff',
             name: 'Staff: Portal Login OTP',
             subject: 'Organization Access Code',
-            body: '🔐 *Staff Portal Access*\n\nHello {{name}},\n\nYour One-Time Password (OTP) for BaitulMal Staff Dashboard is: *{{otp}}*\n\nThis code expires in {{validity}} minutes. If you did not request this, please secure your account immediately.',
+            body: '🔐 *Staff Portal Access*\n\nHello {{name}},\n\nYour One-Time Password (OTP) for Staff Dashboard is: *{{otp}}*\n\nThis code expires in {{validity}} minutes. If you did not request this, please secure your account immediately.',
             type: 'MultiChannel',
             category: 'Security',
             profileType: 'Member',
@@ -520,11 +520,22 @@ export async function seedDefaultTemplatesAction() {
             id: 'lead_created',
             name: 'Internal: New Lead Entry',
             subject: 'New Service Request',
-            body: '📍 *New Lead Entry*\n\n*ID:* {{id}}\n*Name:* {{name}}\n*Category:* {{category}}\n\nReview: {{url}}',
+            body: '📍 *New Lead Entry*\n\n*ID:* {{id}}\n*Name:* {{name}}\n*Category:* {{category}}\n*Purpose:* {{purpose}}\n*Details:* {{description}}\n\nReview: {{url}}',
             type: 'MultiChannel',
             category: 'Leads',
             profileType: 'Member',
-            variables: ['id', 'name', 'category', 'url'],
+            variables: ['id', 'name', 'category', 'purpose', 'description', 'url'],
+            isActive: true
+        },
+        {
+            id: 'lead_updated',
+            name: 'Internal: Lead Modification',
+            subject: 'Lead Record Updated',
+            body: '🔄 *Lead Record Updated*\n\n*Name:* {{name}}\n*Action:* {{actionType}}\n*Summary:* {{summary}}\n*Details:* {{description}}\n\nReview: {{url}}',
+            type: 'MultiChannel',
+            category: 'Leads',
+            profileType: 'Member',
+            variables: ['name', 'actionType', 'summary', 'description', 'url'],
             isActive: true
         },
 
@@ -1283,6 +1294,13 @@ export async function notifyNewInitiativeAction(type: 'lead' | 'campaign', id: s
                 id: templateId,
                 variables
             },
+            richData: {
+                title: type === 'lead' ? 'New Registry Lead' : 'New Initiative Launched',
+                cause: data.description || 'Community Welfare Initiative',
+                purpose: type === 'lead' ? (data.purpose || 'General Assistance') : (data.category || 'Humanitarian Aid'),
+                newData: data,
+                actionUrl: variables.url
+            },
             metadata: { moduleId: type === 'lead' ? 'leads' : 'campaigns', recordId: id }
         });
 
@@ -1514,7 +1532,7 @@ export async function clearAllMessageLogsAction() {
 /**
  * Notify about Lead operations (Create, Update)
  */
-export async function notifyLeadAction(leadId: string, templateId: 'lead_created' | 'lead_updated', extra?: { actionType?: string, summary?: string }) {
+export async function notifyLeadAction(leadId: string, templateId: 'lead_created' | 'lead_updated', extra?: { actionType?: string, summary?: string, oldData?: any, newData?: any }) {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: 'DB Unavailable' };
 
@@ -1529,7 +1547,8 @@ export async function notifyLeadAction(leadId: string, templateId: 'lead_created
         const variables: Record<string, string> = {
             id: leadId,
             name: data.name,
-            purpose: data.purpose || '',
+            purpose: data.purpose || 'General Assistance',
+            purposeDetails: data.purposeDetails || 'Community Support',
             category: data.category || '',
             subCategory: data.subCategory || '',
             targetAmount: (data.targetAmount || 0).toString(),
@@ -1539,15 +1558,24 @@ export async function notifyLeadAction(leadId: string, templateId: 'lead_created
             status: data.status,
             url: `${baseUrl}/leads-members/${leadId}/summary`,
             actionType: extra?.actionType || 'Record Modification',
-            summary: extra?.summary || 'Data integrity update'
+            summary: extra?.summary || 'Data integrity update',
+            description: data.description || 'No description provided'
         };
 
         const res = await dispatchNotificationToGroups({
             module: 'leads',
-            message: `🔄 *Lead Update: ${variables.name}*\n*Action:* ${variables.actionType}\n*Status:* ${variables.status}\n\nReview: ${variables.url}`,
+            message: `🔄 *Lead Update: ${variables.name}*\n*Action:* ${variables.actionType}\n*Purpose:* ${variables.purpose}\n*Details:* ${variables.description}\n\nReview: ${variables.url}`,
             whatsappTemplate: {
                 id: templateId,
                 variables
+            },
+            richData: {
+                title: templateId === 'lead_created' ? 'New Lead Registered' : 'Lead Modification Alert',
+                cause: variables.description,
+                purpose: variables.purpose,
+                oldData: extra?.oldData,
+                newData: extra?.newData || data,
+                actionUrl: variables.url
             },
             metadata: { moduleId: 'leads', recordId: leadId, templateId }
         });
@@ -1561,7 +1589,7 @@ export async function notifyLeadAction(leadId: string, templateId: 'lead_created
 /**
  * Notify about Campaign operations
  */
-export async function notifyCampaignAction(campaignId: string, templateId: 'campaign_created' | 'campaign_milestone', extra?: { actionType?: string, summary?: string }) {
+export async function notifyCampaignAction(campaignId: string, templateId: 'campaign_created' | 'campaign_milestone', extra?: { actionType?: string, summary?: string, oldData?: any, newData?: any }) {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: 'DB Unavailable' };
 
@@ -1587,19 +1615,28 @@ export async function notifyCampaignAction(campaignId: string, templateId: 'camp
             remainingAmount: (target - collected).toString(),
             startDate: data.startDate || '',
             endDate: data.endDate || '',
-            purpose: data.description || '',
+            purpose: data.category || 'Humanitarian Aid',
             percent: percent.toString(),
             url: `${baseUrl}/campaign-members/${campaignId}/summary`,
             actionType: extra?.actionType || 'Initiative Update',
-            summary: extra?.summary || 'Record synchronization'
+            summary: extra?.summary || 'Record synchronization',
+            description: data.description || 'Organization Relief Campaign'
         };
 
         const res = await dispatchNotificationToGroups({
             module: 'campaigns',
-            message: `📈 *Campaign Update: ${variables.name}*\n*Progress:* ${variables.percent}%\n*Raised:* ₹${variables.amount}\n\nPortal: ${variables.url}`,
+            message: `📈 *Campaign Update: ${variables.name}*\n*Action:* ${variables.actionType}\n*Purpose:* ${variables.purpose}\n*Details:* ${variables.description}\n\nPortal: ${variables.url}`,
             whatsappTemplate: {
                 id: templateId,
                 variables
+            },
+            richData: {
+                title: templateId === 'campaign_created' ? 'New Campaign Launched' : 'Campaign Milestone Alert',
+                cause: variables.description,
+                purpose: variables.purpose,
+                oldData: extra?.oldData,
+                newData: extra?.newData || data,
+                actionUrl: variables.url
             },
             metadata: { moduleId: 'campaigns', recordId: campaignId, templateId }
         });
@@ -1658,6 +1695,13 @@ export async function notifyDonationVerifiedAction(donationId: string) {
                 id: 'donation_verified_internal',
                 variables
             },
+            richData: {
+                title: 'Donation Successfully Verified',
+                cause: `Contribution to ${variables.linkName}`,
+                purpose: 'Donation Fulfillment',
+                newData: data,
+                actionUrl: variables.url
+            },
             metadata: { moduleId: 'donations', recordId: donationId, templateId: 'donation_verified_internal' }
         });
 
@@ -1703,7 +1747,14 @@ export async function notifyBeneficiaryStatusAction(beneficiaryId: string, statu
                 variables,
                 metadata: { moduleId: 'beneficiaries', recordId: beneficiaryId, templateId: 'beneficiary_status_changed' },
                 bypassAutoCheck: false,
-                moduleId: 'beneficiary'
+                moduleId: 'beneficiary',
+                richData: {
+                    title: 'Assistance Case Update',
+                    cause: variables.itemName,
+                    purpose: variables.itemCategory,
+                    newData: data,
+                    actionUrl: variables.url
+                }
             });
         }
 
@@ -1716,7 +1767,14 @@ export async function notifyBeneficiaryStatusAction(beneficiaryId: string, statu
                 metadata: { moduleId: 'beneficiaries', recordId: beneficiaryId },
                 bypassAutoCheck: false,
                 moduleId: 'beneficiary',
-                configOverride: customBotToken ? { telegramBotToken: customBotToken } : undefined
+                configOverride: customBotToken ? { telegramBotToken: customBotToken } : undefined,
+                richData: {
+                    title: 'Assistance Case Update',
+                    cause: variables.itemName,
+                    purpose: variables.itemCategory,
+                    newData: data,
+                    actionUrl: variables.url
+                }
             });
         }
 

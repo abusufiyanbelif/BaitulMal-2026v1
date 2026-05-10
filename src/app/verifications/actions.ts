@@ -117,15 +117,16 @@ import { generateChanges } from '@/lib/utils';
                 const verifierSnap = await adminDb.collection('users').doc(verifier.id).get();
                 const verifierPhone = verifierSnap.data()?.phone;
                 
+                // Get Base URL
+                let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
+                try {
+                    const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+                    if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
+                        baseUrl = resourceSnap.data()?.baseUrl;
+                    }
+                } catch (e) {}
+
                 if (verifierPhone && verifierPhone !== 'Unknown') {
-                    // Get Base URL from Firestore if available
-                    let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
-                    try {
-                        const resourceSnap = await adminDb.collection('settings').doc('resources').get();
-                        if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
-                            baseUrl = resourceSnap.data()?.baseUrl;
-                        }
-                    } catch (e) {}
 
                     const notifyResult = await sendWhatsAppAction({
                         to: verifierPhone,
@@ -169,7 +170,15 @@ import { generateChanges } from '@/lib/utils';
                         message: `🔔 *New Verification Request*\n\n*Module:* ${payload.module.toUpperCase()}\n*Requested By:* ${payload.requestedBy.name}\n*Purpose:* ${payload.description || 'Data Update'}\n\n🔗 Review: ${baseUrl}/verifications?requestId=${payload.id}`,
                         chatId: verifierTelegramId,
                         moduleId: payload.module.replace(/s$/, '') as any,
-                        configOverride: verifierBotToken ? { telegramBotToken: verifierBotToken } : undefined
+                        configOverride: verifierBotToken ? { telegramBotToken: verifierBotToken } : undefined,
+                        richData: {
+                            title: 'Data Verification Request',
+                            cause: payload.description || 'System Data Update',
+                            purpose: payload.module.toUpperCase(),
+                            oldData: payload.originalValue,
+                            newData: payload.newValue,
+                            actionUrl: `${baseUrl}/verifications?requestId=${payload.id}`
+                        }
                     });
                 }
 
@@ -359,18 +368,25 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
  
              // --- TRIGGER MODULE-SPECIFIC NOTIFICATIONS ---
              try {
-                 if (request.module === 'leads') {
-                     await notifyLeadAction(request.targetId, 'lead_updated', {
-                         actionType: 'Approved Modification',
-                         summary: request.description || 'Verified via Approval Workflow'
-                     });
-                 } else if (request.module === 'campaigns') {
-                     await notifyCampaignAction(request.targetId, 'campaign_milestone');
-                 } else if (request.module === 'donations') {
-                     await notifyDonationVerifiedAction(request.targetId);
-                 } else if (request.module === 'beneficiaries') {
-                     await notifyBeneficiaryStatusAction(request.targetId, (request.newValue as any).status || 'Updated');
-                 }
+                if (request.module === 'leads') {
+                    await notifyLeadAction(request.targetId, 'lead_updated', {
+                        actionType: 'Approved Modification',
+                        summary: request.description || 'Verified via Approval Workflow',
+                        oldData: request.originalValue,
+                        newData: request.newValue
+                    });
+                } else if (request.module === 'campaigns') {
+                    await notifyCampaignAction(request.targetId, 'campaign_milestone', {
+                        actionType: 'Approved Modification',
+                        summary: request.description || 'Verified via Approval Workflow',
+                        oldData: request.originalValue,
+                        newData: request.newValue
+                    });
+                } else if (request.module === 'donations') {
+                    await notifyDonationVerifiedAction(request.targetId);
+                } else if (request.module === 'beneficiaries') {
+                    await notifyBeneficiaryStatusAction(request.targetId, (request.newValue as any).status || 'Updated');
+                }
              } catch (notifyError) {
                  console.error(`Approval notification failed for ${request.module}:`, notifyError);
              }
@@ -595,7 +611,16 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
              }
          });
  
-         // Notify Requester
+         // Get Base URL
+        let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
+        try {
+            const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+            if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
+                baseUrl = resourceSnap.data()?.baseUrl;
+            }
+        } catch (e) {}
+
+        // Notify Requester
         try {
             const requesterSnap = await adminDb.collection('users').doc(request.requestedBy.id).get();
             const requesterPhone = requesterSnap.data()?.phone;
@@ -627,7 +652,15 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
                         message: `❌ *Verification Rejected*\n\n*Module:* ${request.module.toUpperCase()}\n*Requested By:* ${request.requestedBy.name}\n*Reason:* ${reason || 'Criteria not met or data discrepancy found.'}`,
                         chatId: requesterTelegramId,
                         moduleId: request.module.replace(/s$/, '') as any,
-                        configOverride: requesterBotToken ? { telegramBotToken: requesterBotToken } : undefined
+                        configOverride: requesterBotToken ? { telegramBotToken: requesterBotToken } : undefined,
+                        richData: {
+                            title: 'Verification Request Rejected',
+                            cause: reason || 'Criteria not met or data discrepancy found.',
+                            purpose: request.module.toUpperCase(),
+                            oldData: request.originalValue,
+                            newData: request.newValue,
+                            actionUrl: `${baseUrl}/verifications?requestId=${request.id}`
+                        }
                     });
                 }
             }
@@ -709,15 +742,16 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
                 const verifierSnap = await adminDb.collection('users').doc(verifier.id).get();
                 const verifierPhone = verifierSnap.data()?.phone;
                 
+                // Get Base URL
+                let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
+                try {
+                    const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+                    if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
+                        baseUrl = resourceSnap.data()?.baseUrl;
+                    }
+                } catch (e) {}
+
                 if (verifierPhone && verifierPhone !== 'Unknown') {
-                    // Get Base URL from Firestore if available
-                    let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
-                    try {
-                        const resourceSnap = await adminDb.collection('settings').doc('resources').get();
-                        if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
-                            baseUrl = resourceSnap.data()?.baseUrl;
-                        }
-                    } catch (e) {}
 
                     const notifyResult = await sendWhatsAppAction({
                         to: verifierPhone,
@@ -746,7 +780,15 @@ export async function cleanupPendingVerificationsAction(targetId: string) {
                             message: `🔔 *New Portal Profile Update Request*\n\n*Requested By:* ${userName}\n\n🔗 Review: ${baseUrl}/verifications?requestId=${payload.id}`,
                             chatId: verifierTelegramId,
                             moduleId: 'user',
-                            configOverride: verifierBotToken ? { telegramBotToken: verifierBotToken } : undefined
+                            configOverride: verifierBotToken ? { telegramBotToken: verifierBotToken } : undefined,
+                            richData: {
+                                title: 'Portal Profile Update Request',
+                                cause: 'User requested profile modification via Supporter Portal.',
+                                purpose: 'USER PROFILE',
+                                oldData: payload.originalValue,
+                                newData: payload.newValue,
+                                actionUrl: `${baseUrl}/verifications?requestId=${payload.id}`
+                            }
                         });
                     }
                     
@@ -910,14 +952,16 @@ export async function processPortalDonorUpdateAction(
                 const verifierSnap = await adminDb.collection('users').doc(verifier.id).get();
                 const verifierPhone = verifierSnap.data()?.phone;
                 
+                // Get Base URL
+                let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
+                try {
+                    const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+                    if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
+                        baseUrl = resourceSnap.data()?.baseUrl;
+                    }
+                } catch (e) {}
+
                 if (verifierPhone && verifierPhone !== 'Unknown') {
-                    let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
-                    try {
-                        const resourceSnap = await adminDb.collection('settings').doc('resources').get();
-                        if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
-                            baseUrl = resourceSnap.data()?.baseUrl;
-                        }
-                    } catch (e) {}
 
                     await sendWhatsAppAction({
                         to: verifierPhone,
@@ -1019,14 +1063,16 @@ export async function processPortalDonorUpdateAction(
                 const verifierSnap = await adminDb.collection('users').doc(verifier.id).get();
                 const verifierPhone = verifierSnap.data()?.phone;
                 
+                // Get Base URL
+                let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
+                try {
+                    const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+                    if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
+                        baseUrl = resourceSnap.data()?.baseUrl;
+                    }
+                } catch (e) {}
+
                 if (verifierPhone && verifierPhone !== 'Unknown') {
-                    let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
-                    try {
-                        const resourceSnap = await adminDb.collection('settings').doc('resources').get();
-                        if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
-                            baseUrl = resourceSnap.data()?.baseUrl;
-                        }
-                    } catch (e) {}
 
                     await sendWhatsAppAction({
                         to: verifierPhone,

@@ -1,13 +1,13 @@
-release: v2026.05.11.2
+release: v2026.05.11.9
 
-Type: Critical bugfix
-Message: Fixed race condition in useDoc hook causing RouteGuard to prematurely log out non-static staff users. Initializing isLoading to true on docRef change to prevent false null-profile signouts.
+Type: Enhancement
+Message: Enriched all notification templates with rich data (old/new changes, purpose, cause summary). Fixed all scoping of baseUrl in verifications actions to support multi-channel alerts across all modules.
 Reference: MB-AUTH-DEEPFIX-2026 (Full Authentication Deep Scan)
 Branch: test_bmss_26
-Commit: 8b1e09f7
+Commit: d96c87fa
 
 Verification Steps:
 Manual verification required.
 
 ---
-*Build Summary Updated: 11/5/2026, 1:57:26 am*
+*Build Summary Updated: 11/5/2026, 4:30:18 am*

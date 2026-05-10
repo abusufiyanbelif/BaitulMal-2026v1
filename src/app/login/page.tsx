@@ -103,7 +103,7 @@ function LoginContent() {
       
       const userProfile = userDocSnap?.exists() ? userDocSnap.data() : null;
       const userRole = userProfile?.role as string | undefined;
-      const isStaff = userRole === 'Admin' || userRole === 'User';
+      const isStaff = userRole === 'Admin' || userRole === 'User' || userRole === 'Member' || userRole === 'Staff';
 
       // Set session metadata with correct role and timestamp
       if (typeof window !== 'undefined') {

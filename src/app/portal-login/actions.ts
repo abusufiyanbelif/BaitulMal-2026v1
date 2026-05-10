@@ -112,8 +112,7 @@ export async function authenticatePortalUserAction(identifier: string, password:
 
         // 7. Determine Final Redirect
         let redirect = '/donor-portal';
-        if (role === 'Beneficiary') redirect = '/beneficiary-portal';
-        if (role === 'Admin' || role === 'User') redirect = '/dashboard';
+        if ((role as any) === 'Admin' || (role as any) === 'User' || (role as any) === 'Member' || (role as any) === 'Staff') redirect = '/dashboard';
 
         return { 
             success: true, 
@@ -516,8 +515,7 @@ export async function verifyPortalOTPAction(identifier: string, otp: string, req
 
         // 7. Determine Final Redirect
         let redirect = '/donor-portal';
-        if (role === 'Beneficiary') redirect = '/beneficiary-portal';
-        if (role === 'Admin' || role === 'User') redirect = '/dashboard';
+        if ((role as any) === 'Admin' || (role as any) === 'User' || (role as any) === 'Member' || (role as any) === 'Staff') redirect = '/dashboard';
 
         return { 
             success: true, 

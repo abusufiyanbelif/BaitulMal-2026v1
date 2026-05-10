@@ -1,0 +1,43 @@
+BUILD FAILURE LOG - 11/5/2026, 4:10:21 am
+Version: 2026.05.11.7
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+Failed to compile.
+
+./src/app/auth-provider.tsx:32:60
+Type error: This comparison appears to be unintentional because the types '"Guest" | "Donor" | "Beneficiary"' and '"Staff"' have no overlap.
+
+[0m [90m 30 |[39m     [36mconst[39m isDonor [33m=[39m role [33m===[39m [32m'Donor'[39m[33m;[39m[0m
+[0m [90m 31 |[39m     [36mconst[39m isBeneficiary [33m=[39m role [33m===[39m [32m'Beneficiary'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 32 |[39m     [36mconst[39m isStaff [33m=[39m role [33m===[39m [32m'Admin'[39m [33m||[39m role [33m===[39m [32m'User'[39m [33m||[39m role [33m===[39m [32m'Staff'[39m [33m||[39m role [33m===[39m [32m'Member'[39m[33m;[39m[0m
+[0m [90m    |[39m                                                            [31m[1m^[22m[39m[0m
+[0m [90m 33 |[39m[0m
+[0m [90m 34 |[39m     [36mconst[39m donorConfigRef [33m=[39m useMemoFirebase(() [33m=>[39m (firestore) [33m?[39m doc(firestore[33m,[39m [32m'settings'[39m[33m,[39m [32m'donor_config'[39m) [33m:[39m [36mnull[39m[33m,[39m [firestore])[33m;[39m[0m
+[0m [90m 35 |[39m     [36mconst[39m beneficiaryConfigRef [33m=[39m useMemoFirebase(() [33m=>[39m (firestore) [33m?[39m doc(firestore[33m,[39m [32m'settings'[39m[33m,[39m [32m'beneficiary_config'[39m) [33m:[39m [36mnull[39m[33m,[39m [firestore])[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: npx next build
+Failed to compile.
+
+./src/app/auth-provider.tsx:32:60
+Type error: This comparison appears to be unintentional because the types '"Guest" | "Donor" | "Beneficiary"' and '"Staff"' have no overlap.
+
+[0m [90m 30 |[39m     [36mconst[39m isDonor [33m=[39m role [33m===[39m [32m'Donor'[39m[33m;[39m[0m
+[0m [90m 31 |[39m     [36mconst[39m isBeneficiary [33m=[39m role [33m===[39m [32m'Beneficiary'[39m[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 32 |[39m     [36mconst[39m isStaff [33m=[39m role [33m===[39m [32m'Admin'[39m [33m||[39m role [33m===[39m [32m'User'[39m [33m||[39m role [33m===[39m [32m'Staff'[39m [33m||[39m role [33m===[39m [32m'Member'[39m[33m;[39m[0m
+[0m [90m    |[39m                                                            [31m[1m^[22m[39m[0m
+[0m [90m 33 |[39m[0m
+[0m [90m 34 |[39m     [36mconst[39m donorConfigRef [33m=[39m useMemoFirebase(() [33m=>[39m (firestore) [33m?[39m doc(firestore[33m,[39m [32m'settings'[39m[33m,[39m [32m'donor_config'[39m) [33m:[39m [36mnull[39m[33m,[39m [firestore])[33m;[39m[0m
+[0m [90m 35 |[39m     [36mconst[39m beneficiaryConfigRef [33m=[39m useMemoFirebase(() [33m=>[39m (firestore) [33m?[39m doc(firestore[33m,[39m [32m'settings'[39m[33m,[39m [32m'beneficiary_config'[39m) [33m:[39m [36mnull[39m[33m,[39m [firestore])[33m;[39m[0m
+Next.js build worker exited with code: 1 and signal: null

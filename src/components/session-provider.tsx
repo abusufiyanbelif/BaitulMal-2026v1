@@ -86,27 +86,36 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
         '3gKwUE2JrBT8wngoUxTTN6tLJk03'  // Maaz Shaikh
     ];
 
-    const isAdmin = adminUids.includes(authUser.uid) || profileData?.role === 'Admin' || tokenRole === 'Admin';
+    const role = (tokenRole === 'None' || tokenRole === 'Error') ? (profileData?.role || 'Guest') : tokenRole;
+    const isAdmin = adminUids.includes(authUser.uid) || role === 'Admin' || tokenRole === 'Admin';
+    
+    // If profile document hasn't loaded yet but we are a known admin, 
+    // provide a skeleton profile to prevent RouteGuard from signing out.
+    if (!profileData && isAdmin) {
+        return {
+            id: authUser.uid,
+            name: authUser.displayName || authUser.email?.split('@')[0] || 'Admin',
+            role: 'Admin',
+            email: authUser.email || '',
+            status: 'Active',
+            permissions: createAdminPermissions(),
+        } as UserProfile;
+    }
 
     if (!profileData) {
-        // If profile document hasn't loaded yet but we are a known admin
-        if (isAdmin) {
-            return {
-                id: authUser.uid,
-                name: authUser.displayName || 'Administrator',
-                role: 'Admin',
-                status: 'Active',
-                permissions: createAdminPermissions(),
-            } as UserProfile;
+        // Log this as it usually indicates a UID/DocumentID mismatch
+        if (!isProfileLoading && authUser?.uid) {
+            console.error(`[SessionProvider] Profile document not found for UID: ${authUser.uid} in expected collection.`);
         }
         return null;
     }
 
     // Assemble profile based on role
     // We spread profileData first, then ensure role is set correctly from token if missing
+    const rawRole = (tokenRole === 'None' || tokenRole === 'Error') ? (profileData?.role || 'Guest') : tokenRole;
     const profile = { 
         ...profileData,
-        role: (tokenRole === 'None' || tokenRole === 'Error') ? (profileData?.role || 'Guest') : tokenRole,
+        role: (rawRole === 'Staff' || rawRole === 'Member') ? 'User' : rawRole,
     };
 
     if (isAdmin) {
@@ -123,8 +132,8 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
   const isLoading = isAuthenticating || (!!authUser && (isProfileLoading || tokenRole === null));
 
   const contextValue = useReactMemo(() => {
-      const role = resolvedProfile?.role;
-      const isStaff = role === 'Admin' || role === 'User';
+      const role = resolvedProfile?.role || 'Guest';
+      const isStaff = role === 'Admin' || role === 'User' || role === 'Staff' || role === 'Member';
       const isContributor = role === 'Donor' || role === 'Beneficiary';
 
       return {

@@ -1,9 +1,86 @@
 {
-  "version": "2026.05.11.2",
-  "buildDate": "2026-05-10T20:21:36.033Z",
+  "version": "2026.05.11.9",
+  "buildDate": "2026-05-10T22:58:02.176Z",
   "commitHash": "h9i0j1k2",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.05.11.9",
+      "date": "2026-05-10T22:58:02.176Z",
+      "commit": "d96c87fa",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-AUTH-DEEPFIX-2026 (Full Authentication Deep Scan)",
+      "steps": "Manual verification required.",
+      "type": "Enhancement",
+      "message": "Enriched all notification templates with rich data (old/new changes, purpose, cause summary). Fixed all scoping of baseUrl in verifications actions to support multi-channel alerts across all modules."
+    },
+    {
+      "version": "2026.05.11.8",
+      "date": "2026-05-10T22:42:51.129Z",
+      "commit": "d96c87fa",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-AUTH-DEEPFIX-2026 (Full Authentication Deep Scan)",
+      "steps": "Manual verification required.",
+      "type": "Enhancement",
+      "message": "Enriched all notification templates with rich data (old/new changes, purpose, cause summary). Fixed all scoping of baseUrl in verifications actions to support multi-channel alerts across all modules."
+    },
+    {
+      "version": "2026.05.11.7",
+      "date": "2026-05-10T22:39:03.310Z",
+      "commit": "d96c87fa",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-AUTH-DEEPFIX-2026 (Full Authentication Deep Scan)",
+      "steps": "Manual verification required.",
+      "type": "Enhancement",
+      "message": "Enriched all notification templates with rich data (old/new changes, purpose, cause summary). Fixed all scoping of baseUrl in verifications actions to support multi-channel alerts across all modules."
+    },
+    {
+      "version": "2026.05.11.6",
+      "date": "2026-05-10T22:33:28.469Z",
+      "commit": "d96c87fa",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-AUTH-DEEPFIX-2026 (Full Authentication Deep Scan)",
+      "steps": "Manual verification required.",
+      "type": "Enhancement",
+      "message": "Enriched all notification templates with rich data (old/new changes, purpose, cause summary). Fixed all scoping of baseUrl in verifications actions to support multi-channel alerts across all modules."
+    },
+    {
+      "version": "2026.05.11.5",
+      "date": "2026-05-10T22:17:14.783Z",
+      "commit": "d96c87fa",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-AUTH-DEEPFIX-2026 (Full Authentication Deep Scan)",
+      "steps": "Manual verification required.",
+      "type": "Enhancement",
+      "message": "Enriched all notification templates with rich data (old/new changes, purpose, cause summary). Fixed all scoping of baseUrl in verifications actions to support multi-channel alerts across all modules."
+    },
+    {
+      "version": "2026.05.11.4",
+      "date": "2026-05-10T22:12:07.969Z",
+      "commit": "d96c87fa",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-AUTH-DEEPFIX-2026 (Full Authentication Deep Scan)",
+      "steps": "Manual verification required.",
+      "type": "Enhancement",
+      "message": "Enriched all notification templates with rich data (old/new changes, purpose, cause summary). Fixed scoping of baseUrl in verifications actions to support multi-channel alerts."
+    },
+    {
+      "version": "2026.05.11.3",
+      "date": "2026-05-10T21:50:25.308Z",
+      "commit": "d96c87fa",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-AUTH-DEEPFIX-2026 (Full Authentication Deep Scan)",
+      "steps": "Manual verification required.",
+      "type": "Enhancement",
+      "message": "Enriched all notification templates with rich data (old/new changes, purpose, cause summary). Upgraded Lead, Campaign, and Verification alerts to provide full transparency in group notifications."
+    },
     {
       "version": "2026.05.11.2",
       "date": "2026-05-10T20:21:36.033Z",
@@ -476,83 +553,6 @@
       "steps": "Manual verification required.",
       "type": "Configuration & ui security",
       "message": "Resolved Next.js configuration warnings and restricted 'Full Site Map' visibility to administrators."
-    },
-    {
-      "version": "2026.05.06.8",
-      "date": "2026-05-05T21:43:23.692Z",
-      "commit": "1b9f3901",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "TB-15774",
-      "steps": "Manual verification required.",
-      "type": "Security & ui",
-      "message": "Restricted 'Full Site Map' visibility to administrators and optimized multi-tab Firestore stability."
-    },
-    {
-      "version": "2026.05.06.7",
-      "date": "2026-05-05T21:23:40.608Z",
-      "commit": "281bde53",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "TB-15774",
-      "steps": "Manual verification required.",
-      "type": "Infrastructure & fixes",
-      "message": "Enabled multi-tab Firestore support and optimized the automated build script to preserve manual commit summaries."
-    },
-    {
-      "version": "2026.05.06.6",
-      "date": "2026-05-05T21:14:51.380Z",
-      "commit": "281bde53",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Uncommitted changes detected. Manual verification required.",
-      "type": "Build",
-      "message": "release: v2026.05.06.2 (with local changes)"
-    },
-    {
-      "version": "2026.05.06.5",
-      "date": "2026-05-05T21:06:25.603Z",
-      "commit": "281bde53",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Uncommitted changes detected. Manual verification required.",
-      "type": "Build",
-      "message": "release: v2026.05.06.2 (with local changes)"
-    },
-    {
-      "version": "2026.05.06.4",
-      "date": "2026-05-05T21:02:27.930Z",
-      "commit": "281bde53",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Uncommitted changes detected. Manual verification required.",
-      "type": "Build",
-      "message": "release: v2026.05.06.2 (with local changes)"
-    },
-    {
-      "version": "2026.05.06.3",
-      "date": "2026-05-05T20:39:52.930Z",
-      "commit": "281bde53",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Uncommitted changes detected. Manual verification required.",
-      "type": "Build",
-      "message": "release: v2026.05.06.2 (with local changes)"
-    },
-    {
-      "version": "2026.05.06.2",
-      "date": "2026-05-05T20:36:23.730Z",
-      "commit": "1c231cb4",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Uncommitted changes detected. Manual verification required.",
-      "type": "Build",
-      "message": "release: v2026.05.05.12 (with local changes)"
     }
   ]
 }
