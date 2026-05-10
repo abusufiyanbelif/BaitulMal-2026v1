@@ -13,6 +13,7 @@ const INACTIVITY_TIMEOUT = 30 * 60 * 1000;
 /**
  * Inactivity Monitor - Automatically signs out users after a period of no interaction.
  * Protects administrative data in shared environments.
+ * Role-aware: Donors/Beneficiaries are redirected to /portal-login, Staff to /login.
  */
 export function InactivityMonitor() {
   const auth = useAuth();
@@ -24,16 +25,23 @@ export function InactivityMonitor() {
   const handleLogout = async () => {
     if (auth.currentUser) {
       try {
+        // Determine the correct re-login page based on stored portal_role
+        const storedRole = typeof window !== 'undefined' ? localStorage.getItem('portal_role') : null;
+        const isPortalUser = storedRole === 'Donor' || storedRole === 'Beneficiary';
+        const targetLoginPage = isPortalUser ? '/portal-login' : '/login';
+
         await signOut(auth);
         if (typeof window !== 'undefined') {
           localStorage.removeItem('portal_role');
+          localStorage.removeItem('portal_session_start');
+          localStorage.removeItem('portal_session_id');
         }
         toast({
           title: "Session Expired",
           description: "You have been signed out due to inactivity to protect organization data.",
           variant: "info",
         });
-        router.push('/login');
+        router.push(targetLoginPage);
       } catch (error) {
         console.error("Auto-logout failed:", error);
       }

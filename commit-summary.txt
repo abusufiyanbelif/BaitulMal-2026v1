@@ -1,13 +1,13 @@
-release: v2026.05.08.6
+release: v2026.05.11.2
 
-Type: Feature, bugfix, infrastructure hardening & deep scan
-Message: Hardened OTP identity resolution logic for users with multiple profiles. Portal login now correctly routes profile-specific templates (otp_donor vs otp_admin) based on workspace. Fixed telegramChatId mapping across multi-collection identities. Fixed Template Config search filtering to include profileType and category. Implemented Superseded cleanup for ghost pending verifications. Updated detailed payload generation to include action screenshot attachments and Telegram Markdown V2 hyperlink support.
-Reference: MB-MSG-FULL-2026 (Full Messaging Hardening)
+Type: Critical bugfix
+Message: Fixed race condition in useDoc hook causing RouteGuard to prematurely log out non-static staff users. Initializing isLoading to true on docRef change to prevent false null-profile signouts.
+Reference: MB-AUTH-DEEPFIX-2026 (Full Authentication Deep Scan)
 Branch: test_bmss_26
-Commit: 1392db24
+Commit: 8b1e09f7
 
 Verification Steps:
 Manual verification required.
 
 ---
-*Build Summary Updated: 8/5/2026, 4:07:16 am*
+*Build Summary Updated: 11/5/2026, 1:57:26 am*

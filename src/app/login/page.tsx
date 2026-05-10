@@ -82,11 +82,7 @@ function LoginContent() {
     }
     try {
        const userCredential = await signInWithLoginId(auth, firestore, data.loginId, data.password);
-       if (typeof window !== 'undefined') {
-           localStorage.setItem('portal_role', 'Staff');
-       }
-       toast({ title: 'Login successful', description: "Welcome back!", variant: 'success' });
-      
+       
       const userDocRef = doc(firestore, 'users', userCredential.user.uid);
       let userDocSnap = null;
       let attempts = 0;
@@ -106,12 +102,32 @@ function LoginContent() {
       }
       
       const userProfile = userDocSnap?.exists() ? userDocSnap.data() : null;
-      const isStaff = userProfile?.role === 'Admin' || userProfile?.role === 'User';
+      const userRole = userProfile?.role as string | undefined;
+      const isStaff = userRole === 'Admin' || userRole === 'User';
+
+      // Set session metadata with correct role and timestamp
+      if (typeof window !== 'undefined') {
+          localStorage.setItem('portal_role', isStaff ? 'Staff' : (userRole || 'Staff'));
+          localStorage.setItem('portal_session_start', Date.now().toString());
+      }
+
+      toast({ title: 'Login successful', description: "Welcome back!", variant: 'success' });
 
       if (callbackUrl) {
-          router.push(callbackUrl);
+          // Only honour callbackUrl for staff (staff-only pages are gated by RouteGuard)
+          if (isStaff) {
+              router.push(callbackUrl);
+          } else {
+              // Non-staff authenticated via staff form: redirect to their own portal
+              router.push(userRole === 'Donor' ? '/donor-portal' : (userRole === 'Beneficiary' ? '/beneficiary-portal' : '/portal-login'));
+          }
       } else {
-          router.push(isStaff ? '/dashboard' : '/donor-portal');
+          if (isStaff) {
+              router.push('/dashboard');
+          } else {
+              // Non-staff user – redirect to appropriate portal, not donor-portal blindly
+              router.push(userRole === 'Donor' ? '/donor-portal' : (userRole === 'Beneficiary' ? '/beneficiary-portal' : '/portal-login'));
+          }
       }
     } catch (error: any) {
       if (error.code === 'auth/configuration-not-found') {

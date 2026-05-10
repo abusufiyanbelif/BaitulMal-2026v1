@@ -48,9 +48,14 @@ function RouteGuard({ children }: { children: ReactNode }) {
         if (isLoading) return;
         
         const isPortalPath = pathname.startsWith('/donor-portal') || pathname.startsWith('/beneficiary-portal');
-        const isStaffPath = pathname.startsWith('/dashboard') || pathname.startsWith('/users') || pathname.startsWith('/settings');
+        const isStaffPath = [
+            '/dashboard', '/users', '/settings', '/analytics', '/messages',
+            '/audit', '/diagnostics', '/verifications', '/donors', '/donations',
+            '/beneficiaries', '/campaigns', '/leads-members', '/campaign-members',
+            '/extractor', '/story-creator'
+        ].some(p => pathname.startsWith(p));
 
-        // 1. Authenticated User at a Login/Root Page
+        // 1. Authenticated User at a Login/Root Page → redirect to their home
         if (user && (pathname === '/login' || pathname === '/portal-login' || pathname === '/')) {
             setIsRedirecting(true);
             if (isStaff) {
@@ -59,13 +64,26 @@ function RouteGuard({ children }: { children: ReactNode }) {
                 router.push('/beneficiary-portal');
             } else if (userProfile?.role === 'Donor') {
                 router.push('/donor-portal');
+            } else if (userProfile === null) {
+                // Profile not found in 'users' collection — may be a portal-only user
+                // (their profile lives in 'donors' or 'beneficiaries' collection).
+                // Use localStorage role as a tiebreaker to avoid spurious sign-outs.
+                const storedRole = typeof window !== 'undefined' ? localStorage.getItem('portal_role') : null;
+                if (storedRole === 'Donor') {
+                    router.push('/donor-portal');
+                } else if (storedRole === 'Beneficiary') {
+                    router.push('/beneficiary-portal');
+                } else {
+                    // Genuinely unidentified — clear stale session
+                    console.warn("RouteGuard: Authenticated user has no profile or identifiable role. Clearing session.");
+                    signOut(auth).then(() => {
+                        setIsRedirecting(false);
+                        router.push('/portal-login');
+                    });
+                }
             } else {
-                // Fallback for unidentified roles (Stale sessions or deleted profiles)
-                console.warn("RouteGuard: Authenticated user has no profile or unidentified role. Clearing session.");
-                signOut(auth).then(() => {
-                    setIsRedirecting(false);
-                    router.push('/portal-login');
-                });
+                // Profile exists but role is not Staff/Donor/Beneficiary (e.g. legacy data)
+                setIsRedirecting(false);
             }
             return;
         }
@@ -88,12 +106,17 @@ function RouteGuard({ children }: { children: ReactNode }) {
         if (user && !isLoading) {
             if (isStaffPath && !isStaff) {
                 setIsRedirecting(true);
-                router.push('/portal-login');
+                // Portal users trying to access staff pages → redirect to their portal
+                const storedRole = typeof window !== 'undefined' ? localStorage.getItem('portal_role') : null;
+                if (storedRole === 'Beneficiary' || userProfile?.role === 'Beneficiary') {
+                    router.push('/beneficiary-portal');
+                } else {
+                    router.push('/donor-portal');
+                }
                 return;
             }
             if (isPortalPath && isStaff) {
-                // Staff can view portals (usually for testing), but if they aren't meant to, we could redirect.
-                // For now, allow staff to see portals.
+                // Staff can view portals (usually for testing); allow access.
             }
         }
 

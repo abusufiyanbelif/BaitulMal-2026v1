@@ -1,9 +1,31 @@
 {
-  "version": "2026.05.08.6",
-  "buildDate": "2026-05-07T22:35:57.954Z",
+  "version": "2026.05.11.2",
+  "buildDate": "2026-05-10T20:21:36.033Z",
   "commitHash": "h9i0j1k2",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.05.11.2",
+      "date": "2026-05-10T20:21:36.033Z",
+      "commit": "8b1e09f7",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-AUTH-DEEPFIX-2026 (Full Authentication Deep Scan)",
+      "steps": "Manual verification required.",
+      "type": "Critical bugfix",
+      "message": "Fixed race condition in useDoc hook causing RouteGuard to prematurely log out non-static staff users. Initializing isLoading to true on docRef change to prevent false null-profile signouts."
+    },
+    {
+      "version": "2026.05.11.1",
+      "date": "2026-05-10T20:01:43.998Z",
+      "commit": "8b1e09f7",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-AUTH-DEEPFIX-2026 (Full Authentication Deep Scan)",
+      "steps": "Manual verification required.",
+      "type": "Critical bugfix — authentication & session management deep scan",
+      "message": "Deep scan and fix of the full login/authentication/redirection pipeline for all user types (Admin, User, Donor, Beneficiary)."
+    },
     {
       "version": "2026.05.08.6",
       "date": "2026-05-07T22:35:57.954Z",
@@ -531,28 +553,6 @@
       "steps": "Uncommitted changes detected. Manual verification required.",
       "type": "Build",
       "message": "release: v2026.05.05.12 (with local changes)"
-    },
-    {
-      "version": "2026.05.06.1",
-      "date": "2026-05-05T20:17:04.595Z",
-      "commit": "1c231cb4",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Uncommitted changes detected. Manual verification required.",
-      "type": "Build",
-      "message": "release: v2026.05.05.12 (with local changes)"
-    },
-    {
-      "version": "2026.05.05.12",
-      "date": "2026-05-05T16:50:23.825Z",
-      "commit": "1c231cb4",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Manual verification required.",
-      "type": "Build",
-      "message": "doc auto"
     }
   ]
 }

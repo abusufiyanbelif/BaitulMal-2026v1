@@ -32,24 +32,28 @@ export function useDoc<T = any>(
   memoizedDocRef: DocumentReference<DocumentData> | null | undefined,
 ): UseDocResult<T> {
   const [data, setData] = useState<WithId<T> | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  // Initialize to true if a ref is provided so it doesn't return false before the effect runs
+  const [isLoading, setIsLoading] = useState<boolean>(!!memoizedDocRef);
   const [error, setError] = useState<FirestoreError | Error | null>(null);
   const [nonce, setNonce] = useState(0);
+  const [loadedPath, setLoadedPath] = useState<string | null>(null);
 
   useEffect(() => {
     if (!memoizedDocRef) {
       setData(null);
       setIsLoading(false);
       setError(null);
+      setLoadedPath(null);
       return;
     }
 
     setIsLoading(true);
     setError(null);
+    const currentPath = memoizedDocRef.path;
 
     const timeoutId = setTimeout(() => {
       if (isLoading) {
-        console.warn(`[useDoc] Timeout reaching ${memoizedDocRef.path}. Stopping loading state.`);
+        console.warn(`[useDoc] Timeout reaching ${currentPath}. Stopping loading state.`);
         setIsLoading(false);
       }
     }, 10000);
@@ -64,6 +68,7 @@ export function useDoc<T = any>(
           setData(null);
         }
         setError(null);
+        setLoadedPath(currentPath);
         setIsLoading(false);
       },
       (err: FirestoreError) => {
@@ -71,7 +76,7 @@ export function useDoc<T = any>(
         if (err.code === 'permission-denied') {
           const contextualError = new FirestorePermissionError({
             operation: 'get',
-            path: memoizedDocRef.path,
+            path: currentPath,
           });
 
           setError(contextualError);
@@ -81,6 +86,7 @@ export function useDoc<T = any>(
           console.error('[useDoc Error]', err.code, err.message);
         }
         setData(null);
+        setLoadedPath(currentPath);
         setIsLoading(false);
       }
     );
@@ -91,9 +97,12 @@ export function useDoc<T = any>(
     };
   }, [memoizedDocRef, nonce]);
 
+  // Force loading state to true if the reference changed but the effect hasn't resolved yet
+  const effectiveIsLoading = isLoading || (memoizedDocRef ? memoizedDocRef.path !== loadedPath : false);
+
   return { 
     data, 
-    isLoading, 
+    isLoading: effectiveIsLoading, 
     error,
     forceRefetch: () => setNonce(n => n + 1)
   };

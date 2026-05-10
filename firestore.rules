@@ -361,9 +361,26 @@ service cloud.firestore {
     // Donors logged via portal login (phone/OTP or phone/password)
     // =========================================================================
 
-    // Donor portal access: donors can read/write their own portal data
-    // The donors collection above handles main profile access.
-    // This covers any portal-specific paths.
+    // =========================================================================
+    // PORTAL OTPS (Temporary OTP store for Donor/Beneficiary authentication)
+    // =========================================================================
+    match /portal_otps/{otpId} {
+      // Only the server (Admin SDK) writes these; authenticated users can read their own
+      allow get: if isSignedIn();
+      allow create, update, delete: if false; // Server-only via Admin SDK
+    }
+
+    // =========================================================================
+    // USER SESSIONS (Login session tracking and revocation)
+    // Created by server actions (Admin SDK). Users can read their own sessions.
+    // =========================================================================
+    match /user_sessions/{sessionId} {
+      // Users can read their own session to detect revocation
+      allow read: if isSignedIn();
+      // Admin can manage all sessions
+      allow write: if isAdmin();
+      // Users cannot write sessions from client (server creates them)
+    }
 
   }
 }

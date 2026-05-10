@@ -53,14 +53,23 @@ export function SessionProvider({ authUser, children, isAuthenticating }: { auth
 
   // 2. Resolve Profile Document Reference
   // We wait for tokenRole to ensure the auth state is fully established before fetching from Firestore.
+  // When tokenRole is 'None' (email/password login with no custom claims), we also check
+  // localStorage.portal_role set during login to fetch from the correct collection.
   const profileRef = useMemoFirebase(() => {
       if (!firestore || !authUser?.uid || !tokenRole) return null;
       
-      // If token says Donor/Beneficiary, we fetch from those collections directly
+      // If token says Donor/Beneficiary, fetch from those collections directly
       if (tokenRole === 'Donor') return doc(firestore, 'donors', authUser.uid) as any;
       if (tokenRole === 'Beneficiary') return doc(firestore, 'beneficiaries', authUser.uid) as any;
+
+      // For email/password login (tokenRole='None'), use localStorage hint to pick correct collection
+      if (tokenRole === 'None' || tokenRole === 'Error') {
+          const storedRole = typeof window !== 'undefined' ? localStorage.getItem('portal_role') : null;
+          if (storedRole === 'Donor') return doc(firestore, 'donors', authUser.uid) as any;
+          if (storedRole === 'Beneficiary') return doc(firestore, 'beneficiaries', authUser.uid) as any;
+      }
       
-      // Fallback to central users collection for Staff/Admin
+      // Default: central users collection for Staff/Admin
       return doc(firestore, 'users', authUser.uid) as DocumentReference<UserProfile>;
   }, [firestore, authUser?.uid, tokenRole]);
 

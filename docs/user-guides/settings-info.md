@@ -1,7 +1,7 @@
 # 📘 User Guide: /settings/info
     
-**Build Version:** `2026.05.08.6`
-**Last Updated:** 8/5/2026, 4:07:16 am
+**Build Version:** `2026.05.11.2`
+**Last Updated:** 11/5/2026, 1:57:25 am
 **Internal Route:** `/settings/info`
 
 ---
