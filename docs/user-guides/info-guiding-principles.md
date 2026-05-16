@@ -1,7 +1,7 @@
 # 📘 User Guide: /info/guiding-principles
     
-**Build Version:** `2026.05.17.5`
-**Last Updated:** 17/5/2026, 3:13:13 am
+**Build Version:** `2026.05.17.6`
+**Last Updated:** 17/5/2026, 3:33:08 am
 **Internal Route:** `/info/guiding-principles`
 
 ---

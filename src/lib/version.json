@@ -1,9 +1,20 @@
 {
-  "version": "2026.05.17.5",
-  "buildDate": "2026-05-16T21:37:42.578Z",
+  "version": "2026.05.17.6",
+  "buildDate": "2026-05-16T22:00:36.151Z",
   "commitHash": "h9i0j1k2",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.05.17.6",
+      "date": "2026-05-16T22:00:36.151Z",
+      "commit": "0f559b03",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-GOAL-VETTING-PORTAL-FIX-2026",
+      "steps": "Manual verification required.",
+      "type": "Enhancement & critical security fix",
+      "message": "Comprehensive multi-module audit and hardening. (1) Target Goal Preservation: Fully resolved Target Goal manual overwrite bug across server recalculation actions for leads/campaigns and client summary views. (2) Vetting Governance: Implemented lead creation approval popup enforcing Pending Verification status and Hold visibility on new submissions. (3) Dynamic Supporter Portal Control: Enforced real-time portal offline status in RouteGuard session revocation and login UI. Dynamically hidden disabled supporter portal login buttons from landing page quick access, portal switcher tabs, and account header navigation. Full lockout state rendered when both portals are offline. (4) UI Polish: Fixed Synchronize save button text color and styling in App Settings."
+    },
     {
       "version": "2026.05.17.5",
       "date": "2026-05-16T21:37:42.578Z",
@@ -542,17 +553,6 @@
       "steps": "Fixed customTelegramBotToken persistence; Enabled read-only testing for Telegram/WhatsApp; Unified multi-role identity synchronization.",
       "type": "Identity, Telegram & UI Hardening",
       "message": "Identity Persistence & Telegram UX: Resolved custom bot token vanishing bug in User Profile; Enabled Telegram/WhatsApp testing in read-only mode; Hardened multi-role identity synchronization across Donor and Beneficiary registries; Restored email lookups for failed portal logins."
-    },
-    {
-      "version": "2026.05.07.01",
-      "date": "2026-05-06T20:16:30.000Z",
-      "commit": "6f7e8d9c",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "TB-15777",
-      "steps": "Verified alphanumeric loginId 'abusufiyan.belif' and phone '7887646583' for OTP dispatch.",
-      "type": "Security, Auth & Telegram Infrastructure",
-      "message": "Unified Portal Identity Resolution: Enabled alphanumeric User ID login alongside phone numbers; Hardened Telegram OTP dispatch with cross-collection identity verification; Implemented automated Telegram welcome notifications for Members, Donors, and Beneficiaries; Standardized accessible typography (11px/text-xs) system-wide."
     }
   ]
 }

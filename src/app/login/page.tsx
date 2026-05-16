@@ -210,6 +210,10 @@ function LoginContent() {
   const firebaseProjectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
   const authUrl = `https://console.firebase.google.com/project/${firebaseProjectId}/authentication/sign-in-method`;
 
+  const isDonorActive = brandingSettings?.isDonorLoginEnabled !== false;
+  const isBeneficiaryActive = brandingSettings?.isBeneficiaryLoginEnabled !== false;
+  const activeTabCount = 1 + (isDonorActive ? 1 : 0) + (isBeneficiaryActive ? 1 : 0);
+
   return (
     <div className="w-full max-w-sm">
         <div className="mb-4 flex animate-slide-in-from-top" style={{ animationDelay: '200ms', animationFillMode: 'backwards' }}>
@@ -222,10 +226,18 @@ function LoginContent() {
         </div>
         
         <Tabs defaultValue="member" className="w-full animate-fade-in-up" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
-            <TabsList className="grid w-full grid-cols-3 mb-4 h-12 shadow-sm rounded-xl">
+            <TabsList 
+                className={`grid w-full mb-4 h-12 shadow-sm rounded-xl ${
+                    activeTabCount === 3 ? 'grid-cols-3' : activeTabCount === 2 ? 'grid-cols-2' : 'grid-cols-1'
+                }`}
+            >
                 <TabsTrigger value="member" className="font-bold">Staff</TabsTrigger>
-                <TabsTrigger value="donor" className="font-bold">Donor</TabsTrigger>
-                <TabsTrigger value="beneficiary" className="font-bold text-xs sm:text-sm">Beneficiary</TabsTrigger>
+                {isDonorActive && (
+                    <TabsTrigger value="donor" className="font-bold">Donor</TabsTrigger>
+                )}
+                {isBeneficiaryActive && (
+                    <TabsTrigger value="beneficiary" className="font-bold text-xs sm:text-sm">Beneficiary</TabsTrigger>
+                )}
             </TabsList>
 
             <TabsContent value="member" className="mt-0 outline-none">
@@ -454,39 +466,43 @@ function LoginContent() {
       )}
       </TabsContent>
 
-      <TabsContent value="donor" className="mt-0 outline-none">
-          <Card className="shadow-xl border-primary/10 bg-white">
-              <CardContent className="flex flex-col items-center justify-center p-8 text-center space-y-6">
-                  <div className="bg-primary/5 p-4 rounded-full">
-                      <HeartHandshake className="h-12 w-12 text-primary" />
-                  </div>
-                  <div className="space-y-2">
-                      <h3 className="font-bold text-xl text-primary">Donor Portal</h3>
-                      <p className="text-sm font-normal text-muted-foreground">Access your comprehensive donation summaries and secure tax receipts via Mobile OTP.</p>
-                  </div>
-                  <Button asChild className="w-full h-12 font-bold transition-transform active:scale-95 text-lg">
-                      <Link href="/portal-login">Continue via Mobile</Link>
-                  </Button>
-              </CardContent>
-          </Card>
-      </TabsContent>
+      {isDonorActive && (
+          <TabsContent value="donor" className="mt-0 outline-none">
+              <Card className="shadow-xl border-primary/10 bg-white">
+                  <CardContent className="flex flex-col items-center justify-center p-8 text-center space-y-6">
+                      <div className="bg-primary/5 p-4 rounded-full">
+                          <HeartHandshake className="h-12 w-12 text-primary" />
+                      </div>
+                      <div className="space-y-2">
+                          <h3 className="font-bold text-xl text-primary">Donor Portal</h3>
+                          <p className="text-sm font-normal text-muted-foreground">Access your comprehensive donation summaries and secure tax receipts via Mobile OTP.</p>
+                      </div>
+                      <Button asChild className="w-full h-12 font-bold transition-transform active:scale-95 text-lg">
+                          <Link href="/portal-login">Continue via Mobile</Link>
+                      </Button>
+                  </CardContent>
+              </Card>
+          </TabsContent>
+      )}
 
-      <TabsContent value="beneficiary" className="mt-0 outline-none">
-          <Card className="shadow-xl border-primary/10 bg-white">
-              <CardContent className="flex flex-col items-center justify-center p-8 text-center space-y-6">
-                  <div className="bg-primary/5 p-4 rounded-full">
-                      <HandHelping className="h-12 w-12 text-primary" />
-                  </div>
-                  <div className="space-y-2">
-                      <h3 className="font-bold text-xl text-primary">Beneficiary Portal</h3>
-                      <p className="text-sm font-normal text-muted-foreground">Check your assistance request status securely and submit real-time updates.</p>
-                  </div>
-                  <Button asChild className="w-full h-12 font-bold transition-transform active:scale-95 text-lg">
-                      <Link href="/portal-login">Continue via Mobile</Link>
-                  </Button>
-              </CardContent>
-          </Card>
-      </TabsContent>
+      {isBeneficiaryActive && (
+          <TabsContent value="beneficiary" className="mt-0 outline-none">
+              <Card className="shadow-xl border-primary/10 bg-white">
+                  <CardContent className="flex flex-col items-center justify-center p-8 text-center space-y-6">
+                      <div className="bg-primary/5 p-4 rounded-full">
+                          <HandHelping className="h-12 w-12 text-primary" />
+                      </div>
+                      <div className="space-y-2">
+                          <h3 className="font-bold text-xl text-primary">Beneficiary Portal</h3>
+                          <p className="text-sm font-normal text-muted-foreground">Check your assistance request status securely and submit real-time updates.</p>
+                      </div>
+                      <Button asChild className="w-full h-12 font-bold transition-transform active:scale-95 text-lg">
+                          <Link href="/portal-login">Continue via Mobile</Link>
+                      </Button>
+                  </CardContent>
+              </Card>
+          </TabsContent>
+      )}
       </Tabs>
     </div>
   );
