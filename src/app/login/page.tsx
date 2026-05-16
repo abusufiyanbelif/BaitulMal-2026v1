@@ -210,8 +210,8 @@ function LoginContent() {
   const firebaseProjectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
   const authUrl = `https://console.firebase.google.com/project/${firebaseProjectId}/authentication/sign-in-method`;
 
-  const isDonorActive = brandingSettings?.isDonorLoginEnabled !== false;
-  const isBeneficiaryActive = brandingSettings?.isBeneficiaryLoginEnabled !== false;
+  const isDonorActive = !isBrandingLoading && brandingSettings?.isDonorLoginEnabled !== false;
+  const isBeneficiaryActive = !isBrandingLoading && brandingSettings?.isBeneficiaryLoginEnabled !== false;
   const activeTabCount = 1 + (isDonorActive ? 1 : 0) + (isBeneficiaryActive ? 1 : 0);
 
   return (
@@ -225,7 +225,12 @@ function LoginContent() {
             </Button>
         </div>
         
-        <Tabs defaultValue="member" className="w-full animate-fade-in-up" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
+        {isBrandingLoading ? (
+            <div className="w-full mb-4 h-12">
+                <Skeleton className="h-12 w-full rounded-xl" />
+            </div>
+        ) : (
+            <Tabs defaultValue="member" className="w-full animate-fade-in-up" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
             <TabsList 
                 className={`grid w-full mb-4 h-12 shadow-sm rounded-xl ${
                     activeTabCount === 3 ? 'grid-cols-3' : activeTabCount === 2 ? 'grid-cols-2' : 'grid-cols-1'
@@ -504,6 +509,7 @@ function LoginContent() {
           </TabsContent>
       )}
       </Tabs>
+        )}
     </div>
   );
 }

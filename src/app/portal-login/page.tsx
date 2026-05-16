@@ -49,7 +49,7 @@ function PortalLoginContent() {
         router.prefetch('/dashboard');
     }, [router]);
     const { toast } = useToast();
-    const { brandingSettings } = useBranding();
+    const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
     const searchParams = useSearchParams();
     const isRevoked = searchParams.get('revoked') === 'true';
     const disabledParam = searchParams.get('disabled');
@@ -196,7 +196,11 @@ function PortalLoginContent() {
                     </div>
                 )}
 
-                {brandingSettings?.isDonorLoginEnabled === false && brandingSettings?.isBeneficiaryLoginEnabled === false ? (
+                {isBrandingLoading ? (
+                    <Card className="border-none shadow-2xl shadow-slate-200/50 bg-white rounded-3xl overflow-hidden p-12 flex justify-center items-center min-h-[350px]">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </Card>
+                ) : brandingSettings?.isDonorLoginEnabled === false && brandingSettings?.isBeneficiaryLoginEnabled === false ? (
                     <Card className="border-none shadow-2xl shadow-slate-200/50 bg-white rounded-3xl overflow-hidden p-8 text-center space-y-4">
                         <div className="h-16 w-16 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto mb-2">
                             <AlertTriangle className="h-8 w-8" />

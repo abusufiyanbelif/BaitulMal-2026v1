@@ -48,7 +48,7 @@ const priorityWeight: Record<string, number> = {
 
 export default function Home() {
     const { campaignsWithProgress, leadsWithProgress, recentDonationsFormatted, isLoading, isTickerActiveVisible, isTickerCompletedVisible, skipIds, maxCompleted } = usePublicData();
-    const { brandingSettings } = useBranding();
+    const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
 
     const activeTickerItems = useMemo(() => {
         if (!isTickerActiveVisible) return [];
@@ -247,7 +247,7 @@ export default function Home() {
                         <Button asChild variant="ghost" className="flex-1 sm:flex-none h-10 sm:h-12 px-4 sm:px-6 rounded-full font-black text-[11px] sm:text-xs tracking-widest text-primary hover:bg-primary/5">
                             <Link href="/login">Admin Login</Link>
                         </Button>
-                        {(brandingSettings?.isDonorLoginEnabled !== false || brandingSettings?.isBeneficiaryLoginEnabled !== false) && (
+                        {(!isBrandingLoading && (brandingSettings?.isDonorLoginEnabled !== false || brandingSettings?.isBeneficiaryLoginEnabled !== false)) && (
                             <>
                                 <div className="w-px h-6 bg-primary/10 mx-1" />
                                 <Button asChild className="flex-[2] sm:flex-none h-10 sm:h-12 px-6 sm:px-8 rounded-full bg-primary text-white font-black text-[11px] sm:text-xs tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all">

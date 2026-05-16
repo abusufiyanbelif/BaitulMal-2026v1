@@ -1,7 +1,7 @@
 # 📘 User Guide: /donations
     
-**Build Version:** `2026.05.17.6`
-**Last Updated:** 17/5/2026, 3:33:08 am
+**Build Version:** `2026.05.17.7`
+**Last Updated:** 17/5/2026, 3:52:16 am
 **Internal Route:** `/donations`
 
 ---
