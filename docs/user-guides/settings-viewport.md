@@ -1,7 +1,7 @@
 # 📘 User Guide: /settings/viewport
     
-**Build Version:** `2026.05.17.8`
-**Last Updated:** 17/5/2026, 4:20:02 am
+**Build Version:** `2026.05.17.9`
+**Last Updated:** 17/5/2026, 4:35:43 am
 **Internal Route:** `/settings/viewport`
 
 ---

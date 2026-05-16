@@ -24,8 +24,10 @@ function getGitInfo() {
             const content = fs.readFileSync(COMMIT_SUMMARY_FILE, 'utf8');
             const lines = content.split('\n');
             
-            // If the message is NOT "doc auto" or a generic release message, treat as manual
             let isAuto = false;
+            let inSteps = false;
+            let manualSteps = [];
+            
             lines.forEach(line => {
                 if (line.toLowerCase().includes('message: doc auto') || 
                     line.toLowerCase().includes('message: release: v')) isAuto = true;
@@ -33,6 +35,14 @@ function getGitInfo() {
                 if (line.toLowerCase().startsWith('type:')) manualType = line.split(':').slice(1).join(':').trim();
                 if (line.toLowerCase().startsWith('message:')) manualMessage = line.split(':').slice(1).join(':').trim();
                 if (line.toLowerCase().startsWith('reference:')) manualReference = line.split(':').slice(1).join(':').trim();
+                
+                if (line.startsWith('---')) {
+                    inSteps = false;
+                } else if (inSteps) {
+                    if (line.trim()) manualSteps.push(line.trim());
+                } else if (line.toLowerCase().startsWith('verification steps:')) {
+                    inSteps = true;
+                }
             });
 
             if (!isAuto && manualMessage) {
@@ -41,7 +51,7 @@ function getGitInfo() {
                     type: manualType || 'Build', 
                     message: manualMessage, 
                     reference: manualReference || 'n/a', 
-                    steps: 'Manual verification required.', 
+                    steps: manualSteps.length > 0 ? manualSteps.join('\n') : 'Manual verification required.', 
                     isDirty 
                 };
             }
