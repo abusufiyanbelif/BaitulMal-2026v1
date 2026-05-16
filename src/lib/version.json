@@ -1,9 +1,20 @@
 {
-  "version": "2026.05.17.7",
-  "buildDate": "2026-05-16T22:19:53.300Z",
+  "version": "2026.05.17.8",
+  "buildDate": "2026-05-16T22:47:37.138Z",
   "commitHash": "h9i0j1k2",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.05.17.8",
+      "date": "2026-05-16T22:47:37.138Z",
+      "commit": "eaf97126",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-GOAL-VETTING-PORTAL-FIX-2026",
+      "steps": "Manual verification required.",
+      "type": "Enhancement & critical security fix",
+      "message": "Comprehensive multi-module audit and hardening. (1) Target Goal Preservation: Fully resolved Target Goal manual overwrite bug across server recalculation actions for leads/campaigns and client summary views. (2) Vetting Governance: Implemented lead creation approval popup enforcing Pending Verification status and Hold visibility on new submissions. (3) Dynamic Supporter Portal Control: Enforced real-time portal offline status in RouteGuard session revocation and login UI. Eliminated initial mount UI flash by wrapping login tab lists and landing page quick access in skeleton loading states while branding settings fetch from Firestore. Dynamically hidden disabled supporter portal login buttons from landing page quick access, portal switcher tabs, staff login page tabs (/login), and account header navigation. Full lockout state rendered when both portals are offline. (4) UI Polish: Fixed Synchronize save button text color and styling in App Settings."
+    },
     {
       "version": "2026.05.17.7",
       "date": "2026-05-16T22:19:53.300Z",
@@ -542,17 +553,6 @@
       "steps": "Fixed ReferenceError in OTP verification; Implemented configurable OTP validity via ResourceSettings.",
       "type": "Auth Hardening & Config",
       "message": "Auth Stability: Resolved ReferenceError in portal OTP verification logic; Added 'portalOtpValidityMinutes' to ResourceSettings for customizable session expiry (defaults to 5 mins); Optimized OTP regeneration to ensure a fresh code is dispatched on every request."
-    },
-    {
-      "version": "2026.05.07.03",
-      "date": "2026-05-06T22:20:00.000Z",
-      "commit": "a1b2c3d4",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "TB-15779",
-      "steps": "Implemented reactive Telegram bot naming instructions based on watched phone field.",
-      "type": "UI UX & Reactivity Fix",
-      "message": "Dynamic Messaging UX: Enhanced Telegram bot creation instructions to be fully reactive; bot name and username now update in real-time as the user enters their phone number."
     }
   ]
 }

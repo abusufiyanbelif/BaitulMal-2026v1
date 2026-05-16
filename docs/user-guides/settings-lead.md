@@ -1,7 +1,7 @@
 # 📘 User Guide: /settings/lead
     
-**Build Version:** `2026.05.17.7`
-**Last Updated:** 17/5/2026, 3:52:16 am
+**Build Version:** `2026.05.17.8`
+**Last Updated:** 17/5/2026, 4:20:02 am
 **Internal Route:** `/settings/lead`
 
 ---

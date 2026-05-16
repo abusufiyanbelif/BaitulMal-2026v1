@@ -213,7 +213,9 @@ export function AppFooter() {
             <div className="flex items-center gap-2 font-mono text-[11px] opacity-60 hover:opacity-100 transition-all cursor-default">
                 <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-black uppercase tracking-widest">Build</span>
                 <span>{versionData.version}</span>
-                <span className="opacity-40">({versionData.buildDate || '2026-05-02'})</span>
+                <span className="opacity-40">
+                    ({isMounted && versionData.buildDate ? new Date(versionData.buildDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'May 2026'})
+                </span>
             </div>
           </div>
         </div>
