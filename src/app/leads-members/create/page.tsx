@@ -15,7 +15,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { ArrowLeft, Loader2, ShieldAlert, UploadCloud, Trash2, RotateCcw, Save } from 'lucide-react';
+import { ArrowLeft, Loader2, ShieldAlert, ShieldCheck, UploadCloud, Trash2, RotateCcw, Save } from 'lucide-react';
 import Link from 'next/link';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -89,6 +89,8 @@ export default function CreateLeadPage() {
   const mandatoryFields = useMemo(() => configSettings?.mandatoryFields || {}, [configSettings]);
   
   const [isDuplicateAlertOpen, setIsDuplicateAlertOpen] = useState(false);
+  const [isApprovalDialogOpen, setIsApprovalDialogOpen] = useState(false);
+  const [pendingCreateData, setPendingCreateData] = useState<LeadFormValues | null>(null);
   const [leadDataToCreate, setLeadDataToCreate] = useState<LeadFormValues | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [documentsToUpload, setDocumentsToUpload] = useState<File[]>([]);
@@ -306,7 +308,8 @@ export default function CreateLeadPage() {
         setLeadDataToCreate(data);
         setIsDuplicateAlertOpen(true);
     } else {
-        handleCreateLead(data);
+        setPendingCreateData(data);
+        setIsApprovalDialogOpen(true);
     }
   };
 
@@ -663,8 +666,59 @@ export default function CreateLeadPage() {
             </AlertDialogHeader>
             <AlertDialogFooter>
                 <AlertDialogCancel onClick={() => setLeadDataToCreate(null)} className="font-bold border-primary/20 text-primary">Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={() => { if (leadDataToCreate) { handleCreateLead(leadDataToCreate); } }} className="font-bold bg-primary text-white hover:bg-primary/90">
+                <AlertDialogAction onClick={() => { if (leadDataToCreate) { setIsDuplicateAlertOpen(false); setPendingCreateData(leadDataToCreate); setIsApprovalDialogOpen(true); } }} className="font-bold bg-primary text-white hover:bg-primary/90">
                     Confirm Creation
+                </AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={isApprovalDialogOpen} onOpenChange={setIsApprovalDialogOpen}>
+        <AlertDialogContent className="rounded-[20px] border-primary/10 shadow-2xl max-w-md">
+            <AlertDialogHeader className="space-y-3">
+                <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-amber-50 rounded-full border border-amber-200 text-amber-700">
+                        <ShieldCheck className="h-6 w-6" />
+                    </div>
+                    <AlertDialogTitle className="font-bold text-primary tracking-tight text-lg">Lead Appeal Vetting & Approval</AlertDialogTitle>
+                </div>
+                <AlertDialogDescription className="font-normal text-primary/80 space-y-3 text-sm leading-relaxed">
+                    <p>
+                        In accordance with organizational governance, newly registered lead appeals must undergo initial vetting before public dissemination.
+                    </p>
+                    <div className="bg-primary/5 p-4 rounded-xl border border-primary/10 space-y-2 text-xs text-primary font-medium">
+                        <div className="flex justify-between items-center">
+                            <span>Initial Verification Level:</span> 
+                            <span className="font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200/60">Pending Verification</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                            <span>Initial Public Visibility:</span> 
+                            <span className="font-bold text-muted-foreground bg-secondary/30 px-2.5 py-1 rounded-full">Hold (Private)</span>
+                        </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground italic">
+                        Upon submission, this appeal will be queued in the pending verification hub for review by authorized officers or administrators.
+                    </p>
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="pt-4 border-t border-primary/5">
+                <AlertDialogCancel onClick={() => setPendingCreateData(null)} className="font-bold border-primary/20 text-primary">Cancel</AlertDialogCancel>
+                <AlertDialogAction 
+                    onClick={() => { 
+                        if (pendingCreateData) { 
+                            const vettedData = {
+                                ...pendingCreateData,
+                                authenticityStatus: 'Pending Verification' as const,
+                                publicVisibility: 'Hold' as const,
+                                status: 'Upcoming' as const
+                            };
+                            setIsApprovalDialogOpen(false);
+                            handleCreateLead(vettedData); 
+                        } 
+                    }} 
+                    className="font-bold bg-primary text-white hover:bg-primary/90 shadow-md active:scale-95"
+                >
+                    Agree & Register Appeal
                 </AlertDialogAction>
             </AlertDialogFooter>
         </AlertDialogContent>

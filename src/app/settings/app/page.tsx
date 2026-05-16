@@ -563,8 +563,8 @@ export default function AppSettingsPage() {
                                     <X className="mr-2 h-4 w-4 opacity-40" /> Discard
                                 </Button>
                                 <div className="w-px h-6 bg-primary/10 my-2" />
-                                <Button onClick={handleSave} disabled={isSubmitting} className="font-black text-primary rounded-xl h-10 px-6 hover:bg-primary/5">
-                                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4 opacity-40"/>} 
+                                <Button onClick={handleSave} disabled={isSubmitting} className="font-black text-white bg-primary hover:bg-primary/90 rounded-xl h-10 px-6 shadow-md transition-all active:scale-95">
+                                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>} 
                                     Synchronize
                                 </Button>
                             </div>

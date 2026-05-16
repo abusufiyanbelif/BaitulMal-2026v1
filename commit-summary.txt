@@ -1,13 +1,17 @@
-release: v2026.05.11.9
+release: v2026.05.17.5
 
-Type: Enhancement
-Message: Enriched all notification templates with rich data (old/new changes, purpose, cause summary). Fixed all scoping of baseUrl in verifications actions to support multi-channel alerts across all modules.
-Reference: MB-AUTH-DEEPFIX-2026 (Full Authentication Deep Scan)
+Type: Enhancement & Critical Security Fix
+Message: Comprehensive multi-module audit and hardening. (1) Target Goal Preservation: Fully resolved Target Goal manual overwrite bug across server recalculation actions for leads/campaigns and client summary views. (2) Vetting Governance: Implemented lead creation approval popup enforcing Pending Verification status and Hold visibility on new submissions. (3) Dynamic Supporter Portal Control: Enforced real-time portal offline status in RouteGuard session revocation and login UI. Dynamically hidden disabled supporter portal login buttons from landing page quick access, portal switcher tabs, and account header navigation. Full lockout state rendered when both portals are offline. (4) UI Polish: Fixed Synchronize save button text color and styling in App Settings.
+Reference: MB-GOAL-VETTING-PORTAL-FIX-2026
 Branch: test_bmss_26
-Commit: d96c87fa
+Commit: 4d6aff3e
 
 Verification Steps:
-Manual verification required.
+1. Production Build: Verified npm run build completed flawlessly with exit code 0 across all static and dynamic pages.
+2. Supporter Portal Controls: Verified Supporter Portal login buttons and switcher tabs dynamically disappear when disabled in App Settings. Full lockout state rendered when both portals are offline.
+3. Target Goal Overwrite: Verified manual Target Goal values exceeding beneficiary kit totals are perfectly preserved on Sync across all member and public summary views.
+4. Lead Vetting Governance: Verified lead creation prompts vetting approval modal and sets authenticityStatus to Pending Verification.
+5. UI & Styling: Verified Synchronize save button renders in high contrast white text on emerald primary background across theme configurations.
 
 ---
-*Build Summary Updated: 11/5/2026, 4:30:18 am*
+*Build Summary Updated: 17/5/2026, 3:13:13 am*

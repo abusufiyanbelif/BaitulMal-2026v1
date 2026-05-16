@@ -1,9 +1,64 @@
 {
-  "version": "2026.05.11.9",
-  "buildDate": "2026-05-10T22:58:02.176Z",
+  "version": "2026.05.17.5",
+  "buildDate": "2026-05-16T21:37:42.578Z",
   "commitHash": "h9i0j1k2",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.05.17.5",
+      "date": "2026-05-16T21:37:42.578Z",
+      "commit": "4d6aff3e",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-GOAL-VETTING-PORTAL-FIX-2026",
+      "steps": "Manual verification required.",
+      "type": "Enhancement & critical security fix",
+      "message": "Comprehensive multi-module audit and hardening. (1) Target Goal Preservation: Fully resolved Target Goal manual overwrite bug across server recalculation actions for leads/campaigns and client summary views. (2) Vetting Governance: Implemented lead creation approval popup enforcing Pending Verification status and Hold visibility on new submissions. (3) Dynamic Supporter Portal Control: Enforced real-time portal offline status in RouteGuard session revocation and login UI. Dynamically hidden disabled supporter portal login buttons from landing page quick access, portal switcher tabs, and account header navigation. Full lockout state rendered when both portals are offline. (4) UI Polish: Fixed Synchronize save button text color and styling in App Settings."
+    },
+    {
+      "version": "2026.05.17.4",
+      "date": "2026-05-16T21:25:39.387Z",
+      "commit": "4d6aff3e",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-GOAL-VETTING-FIX-2026",
+      "steps": "Manual verification required.",
+      "type": "Enhancement & critical fix",
+      "message": "Fully resolved Target Goal manual overwrite bug across server recalculation actions (leads/campaigns) and client summary views. Implemented lead creation vetting confirmation popup enforcing pending verification status. Enforced portal offline status in RouteGuard and portal login UI. Fixed Synchronize button styling in app settings."
+    },
+    {
+      "version": "2026.05.17.3",
+      "date": "2026-05-16T20:58:08.666Z",
+      "commit": "4d6aff3e",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-AUTH-DEEPFIX-2026 (Full Authentication Deep Scan)",
+      "steps": "Manual verification required.",
+      "type": "Enhancement",
+      "message": "Enriched all notification templates with rich data (old/new changes, purpose, cause summary). Fixed all scoping of baseUrl in verifications actions to support multi-channel alerts across all modules."
+    },
+    {
+      "version": "2026.05.17.2",
+      "date": "2026-05-16T20:30:17.150Z",
+      "commit": "4d6aff3e",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-AUTH-DEEPFIX-2026 (Full Authentication Deep Scan)",
+      "steps": "Manual verification required.",
+      "type": "Enhancement",
+      "message": "Enriched all notification templates with rich data (old/new changes, purpose, cause summary). Fixed all scoping of baseUrl in verifications actions to support multi-channel alerts across all modules."
+    },
+    {
+      "version": "2026.05.17.1",
+      "date": "2026-05-16T20:23:38.478Z",
+      "commit": "4d6aff3e",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-AUTH-DEEPFIX-2026 (Full Authentication Deep Scan)",
+      "steps": "Manual verification required.",
+      "type": "Enhancement",
+      "message": "Enriched all notification templates with rich data (old/new changes, purpose, cause summary). Fixed all scoping of baseUrl in verifications actions to support multi-channel alerts across all modules."
+    },
     {
       "version": "2026.05.11.9",
       "date": "2026-05-10T22:58:02.176Z",
@@ -498,61 +553,6 @@
       "steps": "Verified alphanumeric loginId 'abusufiyan.belif' and phone '7887646583' for OTP dispatch.",
       "type": "Security, Auth & Telegram Infrastructure",
       "message": "Unified Portal Identity Resolution: Enabled alphanumeric User ID login alongside phone numbers; Hardened Telegram OTP dispatch with cross-collection identity verification; Implemented automated Telegram welcome notifications for Members, Donors, and Beneficiaries; Standardized accessible typography (11px/text-xs) system-wide."
-    },
-    {
-      "version": "2026.05.06.13",
-      "date": "2026-05-05T23:59:15.023Z",
-      "commit": "02838685",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "TB-15776",
-      "steps": "Manual verification required.",
-      "type": "Hardening, security & infrastructure",
-      "message": "Hardened Telegram messaging infrastructure with advanced error diagnostics and multi-tenant isolation; Resolved Next.js configuration warnings and restricted administrative page visibility."
-    },
-    {
-      "version": "2026.05.06.12",
-      "date": "2026-05-05T23:52:51.559Z",
-      "commit": "02838685",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "TB-15776",
-      "steps": "Manual verification required.",
-      "type": "Hardening & infrastructure stability",
-      "message": "Hardened Telegram messaging pipeline with advanced error diagnostics, multi-tenant isolation, and improved beneficiary notification reliability."
-    },
-    {
-      "version": "2026.05.06.11",
-      "date": "2026-05-05T23:49:06.511Z",
-      "commit": "02838685",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "TB-15776",
-      "steps": "Manual verification required.",
-      "type": "Hardening & infrastructure stability",
-      "message": "Hardened Telegram messaging pipeline with advanced error diagnostics, multi-tenant isolation, and improved beneficiary notification reliability."
-    },
-    {
-      "version": "2026.05.06.10",
-      "date": "2026-05-05T23:21:45.750Z",
-      "commit": "02838685",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "TB-15775",
-      "steps": "Manual verification required.",
-      "type": "Feature expansion & security",
-      "message": "Synchronized Telegram Multi-Tenant Infrastructure across all messaging channels (OTP, Verification, and Notifications)."
-    },
-    {
-      "version": "2026.05.06.9",
-      "date": "2026-05-05T21:47:55.145Z",
-      "commit": "1b9f3901",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "TB-15774",
-      "steps": "Manual verification required.",
-      "type": "Configuration & ui security",
-      "message": "Resolved Next.js configuration warnings and restricted 'Full Site Map' visibility to administrators."
     }
   ]
 }

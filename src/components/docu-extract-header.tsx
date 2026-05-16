@@ -135,7 +135,7 @@ export function DocuExtractHeader() {
                       </DropdownMenuItem>
                      )}
                      
-                     {(userProfile.linkedDonorId || userProfile.role === 'Donor' || userProfile.role === 'Admin') && (
+                     {(userProfile.linkedDonorId || userProfile.role === 'Donor' || userProfile.role === 'Admin') && brandingSettings?.isDonorLoginEnabled !== false && (
                       <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
                         <Link href="/donor-portal" className="flex items-center w-full">
                           <Heart className="mr-3 h-4 w-4 opacity-60" />
@@ -144,7 +144,7 @@ export function DocuExtractHeader() {
                       </DropdownMenuItem>
                      )}
 
-                     {(userProfile.linkedBeneficiaryId || userProfile.role === 'Beneficiary') && (
+                     {(userProfile.linkedBeneficiaryId || userProfile.role === 'Beneficiary') && brandingSettings?.isBeneficiaryLoginEnabled !== false && (
                       <DropdownMenuItem asChild className="cursor-pointer h-11 font-normal text-primary hover:bg-primary/5">
                         <Link href="/beneficiary-portal" className="flex items-center w-full">
                           <HandHelping className="mr-3 h-4 w-4 opacity-60" />

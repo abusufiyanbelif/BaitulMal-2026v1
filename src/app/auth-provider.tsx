@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { AlertTriangle, LogOut } from 'lucide-react';
 import { useFirestore, useMemoFirebase, useDoc, doc, useAuth } from '@/firebase';
 import { signOut } from 'firebase/auth';
+import { useBranding } from '@/hooks/use-branding';
 
 /**
  * RouteGuard - Optimized for multi-role identity navigation.
@@ -19,6 +20,7 @@ import { signOut } from 'firebase/auth';
  */
 function RouteGuard({ children }: { children: ReactNode }) {
     const { user, userProfile, isLoading } = useSession();
+    const { brandingSettings, isLoading: isBrandingLoading } = useBranding();
     const router = useRouter();
     const pathname = usePathname();
     const [isRedirecting, setIsRedirecting] = useState(false);
@@ -163,6 +165,23 @@ function RouteGuard({ children }: { children: ReactNode }) {
             });
         }
     }, [sessionData, auth, router, isStaff]);
+
+    // 7. Enforce Portal Login Toggles (Inbound/Outbound Portals)
+    useEffect(() => {
+        if (!user || isLoading || isBrandingLoading || !auth) return;
+        if (isDonor && brandingSettings?.isDonorLoginEnabled === false) {
+            console.warn("Inbound Portal (Donors) is currently disabled. Terminating session.");
+            localStorage.removeItem('portal_session_start');
+            localStorage.removeItem('portal_session_id');
+            signOut(auth).then(() => router.push('/portal-login?revoked=true&disabled=donor'));
+        }
+        if (isBeneficiary && brandingSettings?.isBeneficiaryLoginEnabled === false) {
+            console.warn("Outbound Portal (Recipients) is currently disabled. Terminating session.");
+            localStorage.removeItem('portal_session_start');
+            localStorage.removeItem('portal_session_id');
+            signOut(auth).then(() => router.push('/portal-login?revoked=true&disabled=beneficiary'));
+        }
+    }, [user, isLoading, isBrandingLoading, brandingSettings, auth, router, isDonor, isBeneficiary]);
 
     if (isPublicRoute && !isRedirecting) {
         return <>{children}</>;

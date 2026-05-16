@@ -119,8 +119,16 @@ export async function recalculateCampaignGoalAction(campaignId: string): Promise
             total += (Number(data.kitAmount) || 0);
         });
 
-        await adminDb.collection('campaigns').doc(campaignId).update({
-            targetAmount: total,
+        const campaignRef = adminDb.collection('campaigns').doc(campaignId);
+        const campaignSnap = await campaignRef.get();
+        if (!campaignSnap.exists) throw new Error("Campaign Not Found.");
+        const campaignData = campaignSnap.data() as Campaign;
+
+        const existingTargetAmount = Number(campaignData.targetAmount) || 0;
+        const newTargetAmount = existingTargetAmount > total ? existingTargetAmount : total;
+
+        await campaignRef.update({
+            targetAmount: newTargetAmount,
             updatedAt: FieldValue.serverTimestamp()
         });
 

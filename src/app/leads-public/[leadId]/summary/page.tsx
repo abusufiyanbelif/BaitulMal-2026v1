@@ -221,7 +221,7 @@ export default function PublicLeadSummaryPage() {
                 return sum + amount;
             }, 0);
 
-        const targetAmount = lead.targetAmount || 0;
+        const targetAmount = Math.max(lead.targetAmount || 0, calculatedRequirementTotal);
 
         return {
             totalCollectedForGoal,

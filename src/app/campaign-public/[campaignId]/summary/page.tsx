@@ -231,7 +231,7 @@ export default function PublicCampaignSummaryPage() {
                 return sum + amount;
             }, 0);
 
-        const targetAmount = calculatedRequirementTotal > 0 ? calculatedRequirementTotal : (campaign.targetAmount || 0);
+        const targetAmount = Math.max(campaign.targetAmount || 0, calculatedRequirementTotal);
 
         return { 
             totalCollectedForGoal, 

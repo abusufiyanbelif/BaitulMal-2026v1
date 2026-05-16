@@ -311,7 +311,7 @@ export default function LeadSummaryPage() {
                 return sum + amount;
             }, 0);
 
-        const targetAmount = calculatedRequirementTotal > 0 ? calculatedRequirementTotal : (lead.targetAmount || 0);
+        const targetAmount = Math.max(lead.targetAmount || 0, calculatedRequirementTotal);
 
         return {
             totalCollectedForGoal,

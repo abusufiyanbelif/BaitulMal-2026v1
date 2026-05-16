@@ -145,8 +145,11 @@ export async function recalculateLeadGoalAction(leadId: string): Promise<{ succe
             beneficiaryCount: categoryCounts[cat.id] || 0
         }));
 
+        const existingTargetAmount = Number(leadData.targetAmount) || 0;
+        const newTargetAmount = existingTargetAmount > total ? existingTargetAmount : total;
+
         await leadRef.update({
-            targetAmount: total,
+            targetAmount: newTargetAmount,
             requiredAmount: total,
             beneficiaryStats: stats,
             itemCategories: updatedItemCategories,
