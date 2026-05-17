@@ -214,7 +214,6 @@ function PortalLoginContent() {
                     <Card className="border-none shadow-2xl shadow-slate-200/50 bg-white rounded-3xl overflow-hidden">
                         {(brandingSettings?.isDonorLoginEnabled !== false && brandingSettings?.isBeneficiaryLoginEnabled !== false) && (
                             <div className="bg-slate-900 p-1 flex rounded-none">
-                            {brandingSettings?.isDonorLoginEnabled !== false && (
                                 <button 
                                     onClick={() => { setWorkspace('Donor'); setOtpSent(false); }}
                                     className={cn(
@@ -224,8 +223,6 @@ function PortalLoginContent() {
                                 >
                                     Donor Portal
                                 </button>
-                            )}
-                            {brandingSettings?.isBeneficiaryLoginEnabled !== false && (
                                 <button 
                                     onClick={() => { setWorkspace('Beneficiary'); setOtpSent(false); }}
                                     className={cn(
@@ -235,8 +232,7 @@ function PortalLoginContent() {
                                 >
                                     Beneficiary Portal
                                 </button>
-                            )}
-                        </div>
+                            </div>
                         )}
 
                         <Tabs defaultValue={authMethod} onValueChange={(v) => { setAuthMethod(v as any); setOtpSent(false); }} className="w-full">

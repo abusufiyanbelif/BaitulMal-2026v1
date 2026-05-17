@@ -1,7 +1,7 @@
 # 📘 User Guide: /profile
     
-**Build Version:** `2026.05.17.15`
-**Last Updated:** 17/5/2026, 4:13:34 pm
+**Build Version:** `2026.05.17.20`
+**Last Updated:** 17/5/2026, 7:02:57 pm
 **Internal Route:** `/profile`
 
 ---

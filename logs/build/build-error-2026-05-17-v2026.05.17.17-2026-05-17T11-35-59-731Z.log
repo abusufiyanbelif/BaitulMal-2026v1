@@ -1,0 +1,43 @@
+BUILD FAILURE LOG - 17/5/2026, 5:09:36 pm
+Version: 2026.05.17.17
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+Failed to compile.
+
+./src/app/portal-login/page.tsx:217:30
+Type error: This comparison appears to be unintentional because the types 'true | undefined' and 'false' have no overlap.
+
+[0m [90m 215 |[39m                         {(brandingSettings[33m?[39m[33m.[39misDonorLoginEnabled [33m!==[39m [36mfalse[39m [33m&&[39m brandingSettings[33m?[39m[33m.[39misBeneficiaryLoginEnabled [33m!==[39m [36mfalse[39m) [33m&&[39m ([0m
+[0m [90m 216 |[39m                             [33m<[39m[33mdiv[39m className[33m=[39m[32m"bg-slate-900 p-1 flex rounded-none"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 217 |[39m                             {brandingSettings[33m?[39m[33m.[39misDonorLoginEnabled [33m!==[39m [36mfalse[39m [33m&&[39m ([0m
+[0m [90m     |[39m                              [31m[1m^[22m[39m[0m
+[0m [90m 218 |[39m                                 [33m<[39m[33mbutton[39m [0m
+[0m [90m 219 |[39m                                     onClick[33m=[39m{() [33m=>[39m { setWorkspace([32m'Donor'[39m)[33m;[39m setOtpSent([36mfalse[39m)[33m;[39m }}[0m
+[0m [90m 220 |[39m                                     className[33m=[39m{cn([0m
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: npx next build
+Failed to compile.
+
+./src/app/portal-login/page.tsx:217:30
+Type error: This comparison appears to be unintentional because the types 'true | undefined' and 'false' have no overlap.
+
+[0m [90m 215 |[39m                         {(brandingSettings[33m?[39m[33m.[39misDonorLoginEnabled [33m!==[39m [36mfalse[39m [33m&&[39m brandingSettings[33m?[39m[33m.[39misBeneficiaryLoginEnabled [33m!==[39m [36mfalse[39m) [33m&&[39m ([0m
+[0m [90m 216 |[39m                             [33m<[39m[33mdiv[39m className[33m=[39m[32m"bg-slate-900 p-1 flex rounded-none"[39m[33m>[39m[0m
+[0m[31m[1m>[22m[39m[90m 217 |[39m                             {brandingSettings[33m?[39m[33m.[39misDonorLoginEnabled [33m!==[39m [36mfalse[39m [33m&&[39m ([0m
+[0m [90m     |[39m                              [31m[1m^[22m[39m[0m
+[0m [90m 218 |[39m                                 [33m<[39m[33mbutton[39m [0m
+[0m [90m 219 |[39m                                     onClick[33m=[39m{() [33m=>[39m { setWorkspace([32m'Donor'[39m)[33m;[39m setOtpSent([36mfalse[39m)[33m;[39m }}[0m
+[0m [90m 220 |[39m                                     className[33m=[39m{cn([0m
+Next.js build worker exited with code: 1 and signal: null
