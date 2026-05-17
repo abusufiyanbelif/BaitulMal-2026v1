@@ -30,6 +30,17 @@ function runBuild() {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const date = new Date().toISOString().split('T')[0];
     
+    // Force Webpack cache invalidation for app-footer client bundle
+    const appFooterPath = path.join(__dirname, '../src/components/app-footer.tsx');
+    if (fs.existsSync(appFooterPath)) {
+        let footerContent = fs.readFileSync(appFooterPath, 'utf8');
+        footerContent = footerContent.replace(/\/\/ Build Timestamp: .*/g, `// Build Timestamp: ${timestamp}`);
+        if (!footerContent.includes('// Build Timestamp:')) {
+            footerContent = `// Build Timestamp: ${timestamp}\n` + footerContent;
+        }
+        fs.writeFileSync(appFooterPath, footerContent);
+    }
+
     console.log(`🚀 Initiating Organization Build Sequence [v${version}]...`);
     
     try {
