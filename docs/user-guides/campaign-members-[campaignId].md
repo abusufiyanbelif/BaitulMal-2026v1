@@ -1,7 +1,7 @@
 # 📘 User Guide: /campaign-members/[campaignId]
     
 **Build Version:** `2026.05.17.15`
-**Last Updated:** 17/5/2026, 3:30:26 pm
+**Last Updated:** 17/5/2026, 4:13:34 pm
 **Internal Route:** `/campaign-members/[campaignId]`
 
 ---

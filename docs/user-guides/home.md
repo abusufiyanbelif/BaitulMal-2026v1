@@ -1,7 +1,7 @@
 # 📘 User Guide: /
     
 **Build Version:** `2026.05.17.15`
-**Last Updated:** 17/5/2026, 3:30:27 pm
+**Last Updated:** 17/5/2026, 4:13:34 pm
 **Internal Route:** `/`
 
 ---
@@ -27,7 +27,7 @@ Application Module
 - **Campaigns**: Interactive button to initiate campaigns operation.
 - **Appeals**: Interactive button to initiate appeals operation.
 - **Admin Login**: Interactive button to initiate admin login operation.
-- **Portal Login**: Interactive button to initiate portal login operation.
+- **{portalLoginText}**: Interactive button to initiate {portallogintext} operation.
 
 ## 🛡️ Security & Access
 Access to this module is restricted based on organization roles (Admin, Staff, or Portal User). Ensure you have the necessary clearance before attempting modifications.
