@@ -1,10 +1,10 @@
-release: v2026.05.17.11
+release: v2026.05.17.12
 
 Type: Enhancement & critical security fix
 Message: Comprehensive multi-module audit and hardening. (1) Target Goal Preservation: Fully resolved Target Goal manual overwrite bug across server recalculation actions for leads/campaigns and client summary views. (2) Vetting Governance: Implemented lead creation approval popup enforcing Pending Verification status and Hold visibility on new submissions. (3) Dynamic Supporter Portal Control: Enforced real-time portal offline status in RouteGuard session revocation and login UI. Eliminated initial mount UI flash by wrapping login tab lists and landing page quick access in skeleton loading states while branding settings fetch from Firestore. Dynamically hidden disabled supporter portal login buttons from landing page quick access, portal switcher tabs, staff login page tabs (/login), and account header navigation. Full lockout state rendered when both portals are offline. (4) UI Polish & Security: Fixed Synchronize save button text color and styling in App Settings. Formatted automated build date cleanly in App Footer. Granted secure Firestore security rule access to internal_fundraising collection and added robust error handling to prevent loader stalls.
 Reference: MB-GOAL-VETTING-PORTAL-FIX-2026
 Branch: test_bmss_26
-Commit: cab7ccaf
+Commit: f7c05437
 
 Verification Steps:
 1. Production Build: Verified npm run build completed flawlessly with exit code 0 across all static and dynamic pages.
@@ -18,4 +18,4 @@ Verification Steps:
 9. Infrastructure Fundraising (/settings/resources/fundraising): Verified Firestore security rules explicitly match /internal_fundraising collection, resolving the missing permission error that previously caused the loader to stall at 95%.
 
 ---
-*Build Summary Updated: 17/5/2026, 5:58:29 am*
+*Build Summary Updated: 17/5/2026, 6:13:57 am*

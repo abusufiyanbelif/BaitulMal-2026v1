@@ -170,7 +170,7 @@ service cloud.firestore {
     // INTERNAL INFRASTRUCTURE FUNDRAISING
     // =========================================================================
     match /internal_fundraising/{campaignId} {
-      allow read: if isStaff() || isSignedIn();
+      allow read: if true;
       allow create: if isAdmin();
       allow update: if isAdmin() || isSignedIn();
       allow delete: if isAdmin();

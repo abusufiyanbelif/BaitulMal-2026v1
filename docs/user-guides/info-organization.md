@@ -1,7 +1,7 @@
 # 📘 User Guide: /info/organization
     
-**Build Version:** `2026.05.17.11`
-**Last Updated:** 17/5/2026, 5:58:29 am
+**Build Version:** `2026.05.17.12`
+**Last Updated:** 17/5/2026, 6:13:57 am
 **Internal Route:** `/info/organization`
 
 ---
