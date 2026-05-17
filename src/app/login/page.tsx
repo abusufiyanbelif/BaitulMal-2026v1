@@ -210,8 +210,9 @@ function LoginContent() {
   const firebaseProjectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
   const authUrl = `https://console.firebase.google.com/project/${firebaseProjectId}/authentication/sign-in-method`;
 
-  const isDonorActive = !isBrandingLoading && brandingSettings?.isDonorLoginEnabled !== false;
-  const isBeneficiaryActive = !isBrandingLoading && brandingSettings?.isBeneficiaryLoginEnabled !== false;
+  const isStaffOnly = searchParams.get('type') === 'staff';
+  const isDonorActive = !isStaffOnly && !isBrandingLoading && brandingSettings?.isDonorLoginEnabled !== false;
+  const isBeneficiaryActive = !isStaffOnly && !isBrandingLoading && brandingSettings?.isBeneficiaryLoginEnabled !== false;
   const activeTabCount = 1 + (isDonorActive ? 1 : 0) + (isBeneficiaryActive ? 1 : 0);
 
   return (
@@ -231,19 +232,21 @@ function LoginContent() {
             </div>
         ) : (
             <Tabs defaultValue="member" className="w-full animate-fade-in-up" style={{ animationDelay: '300ms', animationFillMode: 'backwards' }}>
-            <TabsList 
-                className={`grid w-full mb-4 h-12 shadow-sm rounded-xl ${
-                    activeTabCount === 3 ? 'grid-cols-3' : activeTabCount === 2 ? 'grid-cols-2' : 'grid-cols-1'
-                }`}
-            >
-                <TabsTrigger value="member" className="font-bold">Staff</TabsTrigger>
-                {isDonorActive && (
-                    <TabsTrigger value="donor" className="font-bold">Donor</TabsTrigger>
-                )}
-                {isBeneficiaryActive && (
-                    <TabsTrigger value="beneficiary" className="font-bold text-xs sm:text-sm">Beneficiary</TabsTrigger>
-                )}
-            </TabsList>
+            {activeTabCount > 1 && (
+                <TabsList 
+                    className={`grid w-full mb-4 h-12 shadow-sm rounded-xl ${
+                        activeTabCount === 3 ? 'grid-cols-3' : 'grid-cols-2'
+                    }`}
+                >
+                    <TabsTrigger value="member" className="font-bold">Staff</TabsTrigger>
+                    {isDonorActive && (
+                        <TabsTrigger value="donor" className="font-bold">Donor</TabsTrigger>
+                    )}
+                    {isBeneficiaryActive && (
+                        <TabsTrigger value="beneficiary" className="font-bold text-xs sm:text-sm">Beneficiary</TabsTrigger>
+                    )}
+                </TabsList>
+            )}
 
             <TabsContent value="member" className="mt-0 outline-none">
                 <Card className="shadow-xl border-primary/10 bg-white">

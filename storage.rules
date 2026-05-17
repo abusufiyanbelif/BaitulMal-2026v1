@@ -1,6 +1,9 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read: if true;
+    }
 
     // =========================================================================
     // HELPER FUNCTIONS
@@ -69,7 +72,10 @@ service firebase.storage {
         isSignedIn() &&
         userDocExists() &&
         getUserData().get('status', '') == 'Active' &&
-        getUserData().get('permissions', {})[module].get(permission, false) == true
+        (
+          getUserData().get('permissions', {}).get(module, {}).get(permission, false) == true ||
+          getUserData().get('permissions', {}).get(module, {}).get('admin', false) == true
+        )
       );
     }
 

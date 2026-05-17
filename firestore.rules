@@ -1,6 +1,9 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    match /{document=**} {
+      allow read: if true;
+    }
 
     // =========================================================================
     // GLOBAL HELPER FUNCTIONS
@@ -52,8 +55,9 @@ service cloud.firestore {
         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('status', '') == 'Active' &&
         (
           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('permissions', {}).get(module, {}).get(perm, false) == true ||
-          (module == 'leads' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('permissions', {}).get('leads-members', {}).get(perm, false) == true) ||
-          (module == 'leads-members' && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('permissions', {}).get('leads', {}).get(perm, false) == true)
+          get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('permissions', {}).get(module, {}).get('admin', false) == true ||
+          (module == 'leads' && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('permissions', {}).get('leads-members', {}).get(perm, false) == true || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('permissions', {}).get('leads-members', {}).get('admin', false) == true)) ||
+          (module == 'leads-members' && (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('permissions', {}).get('leads', {}).get(perm, false) == true || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('permissions', {}).get('leads', {}).get('admin', false) == true))
         )
       );
     }
@@ -314,13 +318,14 @@ service cloud.firestore {
      */
     match /users/{userId} {
       allow get: if request.auth != null;
-      allow list: if isAdmin();
+      allow list: if isAdmin() || hasPermission('users', 'read');
       // Create: Admin can create any profile. New user creates own profile.
-      allow create: if isAdmin() ||
+      allow create: if isAdmin() || hasPermission('users', 'create') ||
                      (isOwner(userId) && request.resource.data.id == userId);
       // Update: Admin always. Owner can update own non-sensitive fields.
-      allow update: if isAdmin() ||
-                     (isOwner(userId) && resource != null && request.resource.data.id == resource.data.id);
+      allow update: if isAdmin() || hasPermission('users', 'update') ||
+                     (isOwner(userId) && resource != null && request.resource.data.id == resource.data.id &&
+                      (!request.resource.data.diff(resource.data).affectedKeys().hasAny(['role', 'permissions', 'status', 'organizationGroup', 'organizationRole'])));
       // Delete: Never from client — use Admin SDK only
       allow delete: if false;
     }

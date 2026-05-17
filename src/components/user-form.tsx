@@ -52,6 +52,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
   const isEditing = !!user;
   const { userProfile: currentUser } = useCurrentUserSession();
   const isCurrentUserAdmin = currentUser?.role === 'Admin';
+  const canManageRoles = isCurrentUserAdmin || !!currentUser?.permissions?.users?.update || !!currentUser?.permissions?.users?.admin;
   
   const { toast } = useToast();
   const auth = useAuth();
@@ -955,7 +956,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <FormField control={control as any} name="status" render={({ field }) => (
                                     <FormItem>
                                         {renderLabel('Account Status', 'status')}
-                                        <Select onValueChange={field.onChange} value={field.value || 'Active'} disabled={isFormDisabled}>
+                                        <Select onValueChange={field.onChange} value={field.value || 'Active'} disabled={isFormDisabled || !canManageRoles}>
                                             <FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl>
                                             <SelectContent className="rounded-[12px] shadow-dropdown">
                                                 <SelectItem value="Active" className="font-normal text-primary">Active</SelectItem>
@@ -1045,7 +1046,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <FormField control={control as any} name="role" render={({ field }: any) => (
                                     <FormItem>
                                         {renderLabel('Access Role', 'role')}
-                                        <Select onValueChange={field.onChange} value={field.value || 'User'} disabled={isFormDisabled}>
+                                        <Select onValueChange={field.onChange} value={field.value || 'User'} disabled={isFormDisabled || !canManageRoles}>
                                             <FormControl><SelectTrigger className="font-bold"><SelectValue/></SelectTrigger></FormControl>
                                             <SelectContent className="rounded-[12px] shadow-dropdown">
                                                 <SelectItem value="Admin" className="font-bold text-red-600">Admin (Superuser)</SelectItem>
@@ -1059,7 +1060,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                 <FormField control={control as any} name="organizationGroup" render={({ field }) => (
                                     <FormItem>
                                         {renderLabel('Organization Group', 'organizationGroup')}
-                                        <Select onValueChange={field.onChange} value={field.value || 'none'} disabled={isFormDisabled}>
+                                        <Select onValueChange={field.onChange} value={field.value || 'none'} disabled={isFormDisabled || !canManageRoles}>
                                             <FormControl><SelectTrigger className="font-normal"><SelectValue/></SelectTrigger></FormControl>
                                             <SelectContent className="rounded-[12px] shadow-dropdown">
                                                 <SelectItem value="none" className="font-normal italic">-- Not A Public Member --</SelectItem>
@@ -1069,13 +1070,13 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                         <FormDescription className="font-normal text-xs opacity-70">Determines Visibility In The Public Team Directory.</FormDescription>
                                     </FormItem>
                                 )}/>
-                                <FormField control={control as any} name="organizationRole" render={({ field }: any) => (<FormItem>{renderLabel('Organization Title', 'organizationRole')}<FormControl><Input placeholder="e.g. President, Treasurer" {...field} value={field.value || ''} disabled={isFormDisabled} className="font-normal" /></FormControl></FormItem>)}/>
+                                <FormField control={control as any} name="organizationRole" render={({ field }: any) => (<FormItem>{renderLabel('Organization Title', 'organizationRole')}<FormControl><Input placeholder="e.g. President, Treasurer" {...field} value={field.value || ''} disabled={isFormDisabled || !canManageRoles} className="font-normal" /></FormControl></FormItem>)}/>
                             </TabsContent>
                             <TabsContent value="permissions" className="mt-6 space-y-6 animate-fade-in-up">
                                 <div className="space-y-2">
                                     <FormLabel className="font-bold text-primary">Granular Module Permissions</FormLabel>
                                     <FormDescription className="font-normal text-xs opacity-70">Define Specific Access Levels Per Module. (Ignored If Admin Status Is Active).</FormDescription>
-                                    <PermissionsTable permissions={permissions} onPermissionChange={handlePermissionChange} role={roleValue === 'Admin' ? 'Admin' : 'User'} disabled={isFormDisabled} />
+                                    <PermissionsTable permissions={permissions} onPermissionChange={handlePermissionChange} role={roleValue === 'Admin' ? 'Admin' : 'User'} disabled={isFormDisabled || !canManageRoles} />
                                 </div>
                             </TabsContent>
                         </Tabs>

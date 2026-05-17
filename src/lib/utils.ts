@@ -18,9 +18,25 @@ export function getNestedValue(obj: any, path: string, defaultValue: any = undef
     for (const key of keys) {
         result = result?.[key];
         if (result === undefined) {
+            if (keys[0] === 'permissions' && keys.length >= 3) {
+                const moduleName = keys[1];
+                const action = keys[2];
+                if (action !== 'admin' && obj?.permissions?.[moduleName]?.admin === true) {
+                    return true;
+                }
+            }
             return defaultValue;
         }
     }
+    
+    if (result === false && keys[0] === 'permissions' && keys.length >= 3) {
+        const moduleName = keys[1];
+        const action = keys[2];
+        if (action !== 'admin' && obj?.permissions?.[moduleName]?.admin === true) {
+            return true;
+        }
+    }
+    
     return result;
 }
 

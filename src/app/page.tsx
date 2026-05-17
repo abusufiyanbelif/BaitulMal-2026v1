@@ -245,14 +245,14 @@ export default function Home() {
                 <div className="flex flex-col sm:flex-row items-center gap-2 bg-white/80 backdrop-blur-2xl p-2 rounded-[24px] sm:rounded-full border border-primary/10 shadow-[0_20px_50px_rgba(0,0,0,0.1)] w-full sm:w-auto">
                     <div className="flex w-full sm:w-auto items-center">
                         <Button asChild variant="ghost" className="flex-1 sm:flex-none h-10 sm:h-12 px-4 sm:px-6 rounded-full font-black text-[11px] sm:text-xs tracking-widest text-primary hover:bg-primary/5">
-                            <Link href="/login">Admin Login</Link>
+                            <Link href="/login?type=staff">Admin Login</Link>
                         </Button>
                         {(!isBrandingLoading && (brandingSettings?.isDonorLoginEnabled !== false || brandingSettings?.isBeneficiaryLoginEnabled !== false)) && (
                             <>
                                 <div className="w-px h-6 bg-primary/10 mx-1" />
                                 <Button asChild className="flex-[2] sm:flex-none h-10 sm:h-12 px-6 sm:px-8 rounded-full bg-primary text-white font-black text-[11px] sm:text-xs tracking-widest shadow-xl shadow-primary/20 active:scale-95 transition-all">
                                     <Link href="/portal-login">
-                                        {brandingSettings?.isDonorLoginEnabled !== false ? "Donor Login" : "Beneficiary Login"} <ChevronRight className="ml-1 sm:ml-2 h-3 sm:h-4 w-3 sm:h-4" />
+                                        Portal Login <ChevronRight className="ml-1 sm:ml-2 h-3 sm:h-4 w-3 sm:h-4" />
                                     </Link>
                                 </Button>
                             </>
