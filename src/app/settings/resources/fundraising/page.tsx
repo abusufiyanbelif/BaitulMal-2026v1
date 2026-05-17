@@ -55,6 +55,10 @@ export default function InfrastructureFundraisingPage() {
             const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() })) as InternalFundraising[];
             setCampaigns(data);
             setIsLoading(false);
+        }, (err) => {
+            console.error("[Fundraising] Snapshot error:", err);
+            toast({ title: 'Data Stream Error', description: err.message, variant: 'destructive' });
+            setIsLoading(false);
         });
 
         return () => unsubscribe();
