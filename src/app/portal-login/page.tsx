@@ -212,7 +212,8 @@ function PortalLoginContent() {
                     </Card>
                 ) : (
                     <Card className="border-none shadow-2xl shadow-slate-200/50 bg-white rounded-3xl overflow-hidden">
-                        <div className="bg-slate-900 p-1 flex rounded-none">
+                        {(brandingSettings?.isDonorLoginEnabled !== false && brandingSettings?.isBeneficiaryLoginEnabled !== false) && (
+                            <div className="bg-slate-900 p-1 flex rounded-none">
                             {brandingSettings?.isDonorLoginEnabled !== false && (
                                 <button 
                                     onClick={() => { setWorkspace('Donor'); setOtpSent(false); }}
@@ -236,6 +237,7 @@ function PortalLoginContent() {
                                 </button>
                             )}
                         </div>
+                        )}
 
                         <Tabs defaultValue={authMethod} onValueChange={(v) => { setAuthMethod(v as any); setOtpSent(false); }} className="w-full">
                             <TabsList className="grid w-full grid-cols-2 rounded-none h-14 bg-slate-50/50 border-b border-slate-100">
