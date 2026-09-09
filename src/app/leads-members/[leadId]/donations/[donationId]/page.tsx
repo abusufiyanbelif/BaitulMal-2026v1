@@ -26,13 +26,14 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { BrandedLoader } from '@/components/branded-loader';
-import { cn, getImageSrc } from '@/lib/utils';
+import { cn, getImageSrc, getDonationShareText } from '@/lib/utils';
 import { upsertDonationWithDonorAction } from '@/app/donations/actions';
+import { DonationReceipt } from '@/components/donation-receipt';
 
 const DetailItem = ({ label, value, isMono = false }: { label: string; value: React.ReactNode; isMono?: boolean }) => (
     <div className="space-y-1">
-        <p className="text-[10px] font-bold text-muted-foreground capitalize tracking-widest">{label}</p>
-        <div className={`text-sm font-bold text-primary ${isMono ? 'font-mono' : ''}`}>{value || <span className="italic opacity-30 font-normal">N/A</span>}</div>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
+        <div className={`text-sm md:text-base font-normal text-foreground ${isMono ? 'font-mono' : ''}`}>{value || <span className="italic text-muted-foreground font-normal">N/A</span>}</div>
     </div>
 );
 
@@ -46,6 +47,7 @@ export default function DonationDetailsPage() {
     const storage = useStorage();
     const { toast } = useToast();
     const summaryRef = useRef<HTMLDivElement>(null);
+    const receiptRef = useRef<HTMLDivElement>(null);
     const { download } = useDownloadAs();
     const auth = useAuth();
 
@@ -156,7 +158,14 @@ export default function DonationDetailsPage() {
     const handleShare = () => { if (donation) setIsShareDialogOpen(true); };
 
     const handleDownload = (format: 'png' | 'pdf') => {
-        download(format, { contentRef: summaryRef, documentTitle: 'Donation Receipt', documentName: `donation-receipt-${donationId}`, brandingSettings, paymentSettings });
+        download(format, { 
+            contentRef: receiptRef, 
+            documentTitle: 'Donation Receipt', 
+            documentName: `donation-receipt-${donationId}`, 
+            brandingSettings, 
+            paymentSettings,
+            skipLayout: true
+        });
     };
 
     const handleViewImage = (url: string, title: string = 'Evidence Document') => {
@@ -375,33 +384,33 @@ export default function DonationDetailsPage() {
                     {donation.transactions && donation.transactions.length > 0 && (
                         <Card className="border-primary/10 shadow-sm bg-white overflow-hidden">
                             <CardHeader className="bg-primary/5 border-b"><CardTitle className="text-lg font-bold tracking-tight text-primary">Verified Transaction Logs</CardTitle></CardHeader>
-                            <CardContent className="pt-6">
-                                <div className="border border-primary/5 rounded-xl overflow-hidden shadow-inner">
+                            <CardContent className="pt-6 space-y-6">
+                                <div className="border border-border rounded-xl overflow-hidden shadow-inner">
                                     <ScrollArea className="w-full">
                                         <div className="min-w-[800px]">
                                             <Table>
-                                                <TableHeader className="bg-primary/5">
+                                                <TableHeader className="bg-muted/50">
                                                     <TableRow>
-                                                        <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Transaction Value</TableHead>
-                                                        <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Reference ID</TableHead>
-                                                        <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Date Record</TableHead>
-                                                        <TableHead className="font-bold text-primary text-[9px] capitalize tracking-tighter">Sender UPI</TableHead>
-                                                        <TableHead className="text-right font-bold text-primary text-[9px] capitalize tracking-tighter pr-6">Organization Artifact</TableHead>
+                                                        <TableHead className="font-semibold text-muted-foreground text-xs uppercase tracking-wider h-10">Transaction Value</TableHead>
+                                                        <TableHead className="font-semibold text-muted-foreground text-xs uppercase tracking-wider h-10">Reference ID</TableHead>
+                                                        <TableHead className="font-semibold text-muted-foreground text-xs uppercase tracking-wider h-10">Date Record</TableHead>
+                                                        <TableHead className="font-semibold text-muted-foreground text-xs uppercase tracking-wider h-10">Sender UPI</TableHead>
+                                                        <TableHead className="text-right font-semibold text-muted-foreground text-xs uppercase tracking-wider h-10 pr-6">Organization Artifact</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
                                                     {donation.transactions.map((tx: TransactionDetail) => (
-                                                        <TableRow key={tx.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
-                                                            <TableCell className="font-bold font-mono text-primary text-xs">₹{tx.amount.toFixed(2)}</TableCell>
-                                                            <TableCell className="text-xs font-mono opacity-60">{tx.transactionId || 'N/A'}</TableCell>
-                                                            <TableCell className="text-xs font-normal">{tx.date || donation.donationDate}</TableCell>
-                                                            <TableCell className="text-xs font-mono opacity-60">{tx.upiId || 'N/A'}</TableCell>
+                                                        <TableRow key={tx.id} className="hover:bg-muted/30 border-b border-border/50">
+                                                            <TableCell className="font-medium font-mono text-foreground text-sm">₹{tx.amount.toFixed(2)}</TableCell>
+                                                            <TableCell className="text-xs md:text-sm font-mono text-foreground font-medium">{tx.transactionId || 'N/A'}</TableCell>
+                                                            <TableCell className="text-xs md:text-sm font-normal text-muted-foreground">{tx.date || donation.donationDate}</TableCell>
+                                                            <TableCell className="text-xs md:text-sm font-mono text-muted-foreground">{tx.upiId || 'N/A'}</TableCell>
                                                             <TableCell className="text-right pr-6">
                                                                 {tx.screenshotUrl ? (
-                                                                    <Button variant="outline" size="sm" className="h-7 text-[10px] font-bold border-primary/20 text-primary active:scale-95 transition-transform" onClick={() => handleViewImage(tx.screenshotUrl!, 'Transaction Evidence')}>
-                                                                        <ImageIcon className="mr-1.5 h-3 w-3"/> View Evidence
+                                                                    <Button variant="outline" size="sm" className="h-8 text-xs font-medium border-primary/30 text-primary active:scale-95 transition-transform" onClick={() => handleViewImage(tx.screenshotUrl!, 'Transaction Evidence')}>
+                                                                        <ImageIcon className="mr-1.5 h-3.5 w-3.5"/> View Evidence
                                                                     </Button>
-                                                                ) : <span className="text-muted-foreground text-[10px] italic">No Artifact Attached</span>}
+                                                                ) : <span className="text-muted-foreground text-xs italic">No Artifact Attached</span>}
                                                             </TableCell>
                                                         </TableRow>
                                                     ))}
@@ -411,6 +420,31 @@ export default function DonationDetailsPage() {
                                         <ScrollBar orientation="horizontal" />
                                     </ScrollArea>
                                 </div>
+
+                                {donation.transactions.some((tx: TransactionDetail) => tx.screenshotUrl) && (
+                                    <div className="pt-2 space-y-3">
+                                        <p className="text-xs font-semibold text-foreground uppercase tracking-wider flex items-center gap-2">
+                                            <ImageIcon className="h-4 w-4 text-primary" /> Uploaded Payment Evidence Artifact(s)
+                                        </p>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {donation.transactions.filter((tx: TransactionDetail) => tx.screenshotUrl).map((tx: TransactionDetail, idx: number) => (
+                                                <div key={tx.id || idx} className="border border-border rounded-xl p-3 bg-muted/20 space-y-2">
+                                                    <div className="flex justify-between items-center text-xs font-medium text-foreground">
+                                                        <span>Artifact #{idx + 1} ({tx.transactionId || 'N/A'})</span>
+                                                        <span className="font-mono text-primary font-medium">₹{Number(tx.amount || 0).toFixed(2)}</span>
+                                                    </div>
+                                                    <div className="flex flex-col items-center justify-center p-2 rounded-xl border border-border bg-card min-h-[200px] cursor-pointer hover:opacity-90 transition-opacity" onClick={() => handleViewImage(tx.screenshotUrl!, `Artifact #${idx + 1}`)}>
+                                                        <img
+                                                            src={getImageSrc(tx.screenshotUrl!)}
+                                                            alt={`Transaction Screenshot ${idx + 1}`}
+                                                            className="max-h-72 w-auto max-w-full object-contain rounded-lg shadow-sm border border-border"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
                             </CardContent>
                         </Card>
                     )}
@@ -431,7 +465,7 @@ export default function DonationDetailsPage() {
                 </div>
             </div>
 
-            <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={{ title: 'Thank you!', text: `Verified donation of ₹${donation.amount.toFixed(2)} received.\nCase ID: ${donation.caseId || donation.linkSplit?.[0]?.caseId || lead.caseId || lead.id}`, url: window.location.href }} />
+            <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={{ title: 'Contribution Certificate', text: getDonationShareText(donation, { leadName: lead?.name }), url: window.location.href }} />
 
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                 <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
@@ -464,6 +498,16 @@ export default function DonationDetailsPage() {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* Hidden Printable Receipt Element for Clean PNG/PDF Download */}
+            <div className="fixed top-[-9999px] left-[-9999px] pointer-events-none opacity-0 z-[-100] w-[850px]">
+                <DonationReceipt 
+                    ref={receiptRef} 
+                    donation={donation} 
+                    brandingSettings={brandingSettings || undefined} 
+                    paymentSettings={paymentSettings || undefined} 
+                />
+            </div>
         </main>
     );
 }

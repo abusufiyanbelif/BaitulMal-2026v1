@@ -25,6 +25,7 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ShareDialog } from '@/components/share-dialog';
+import { getDonationShareText } from '@/lib/utils';
 
 const DetailItem = ({ label, value, isMono = false }: { label: string; value: React.ReactNode; isMono?: boolean }) => (
     <div className="space-y-1">
@@ -369,8 +370,8 @@ export default function UnlinkedDonationDetailsPage() {
                 open={isShareDialogOpen} 
                 onOpenChange={setIsShareDialogOpen} 
                 shareData={{
-                    title: `Thank you for your donation!`,
-                    text: `JazakAllah Khair for your generous donation of ₹${donation.amount.toFixed(2)}. May Allah accept it and bless you abundantly.`,
+                    title: `Contribution Certificate`,
+                    text: getDonationShareText(donation),
                     url: window.location.href,
                 }} 
             />

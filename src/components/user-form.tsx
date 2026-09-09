@@ -534,15 +534,15 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                                      defaultValue="+91" 
                                                      disabled={isFormDisabled}
                                                  >
-                                                     <SelectTrigger className="h-12 rounded-xl border-slate-200 bg-slate-50/50 font-bold">
+                                                     <SelectTrigger className="h-12 rounded-xl border-border bg-background font-medium">
                                                          <SelectValue placeholder="+91" />
                                                      </SelectTrigger>
                                                      <SelectContent className="rounded-xl shadow-dropdown border-primary/10">
-                                                         <SelectItem value="+91" className="font-bold">🇮🇳 +91</SelectItem>
-                                                         <SelectItem value="+1" className="font-bold">🇺🇸 +1</SelectItem>
-                                                         <SelectItem value="+44" className="font-bold">🇬🇧 +44</SelectItem>
-                                                         <SelectItem value="+971" className="font-bold">🇦🇪 +971</SelectItem>
-                                                         <SelectItem value="+966" className="font-bold">🇸🇦 +966</SelectItem>
+                                                         <SelectItem value="+91" className="font-normal">🇮🇳 +91</SelectItem>
+                                                         <SelectItem value="+1" className="font-normal">🇺🇸 +1</SelectItem>
+                                                         <SelectItem value="+44" className="font-normal">🇬🇧 +44</SelectItem>
+                                                         <SelectItem value="+971" className="font-normal">🇦🇪 +971</SelectItem>
+                                                         <SelectItem value="+966" className="font-normal">🇸🇦 +966</SelectItem>
                                                      </SelectContent>
                                                  </Select>
                                              </div>
@@ -556,7 +556,7 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
                                                          field.onChange(val);
                                                      }}
                                                      disabled={isFormDisabled} 
-                                                     className="h-12 border-slate-200 bg-slate-50/50 focus:bg-white rounded-xl font-bold flex-1" 
+                                                     className="h-12 border-border bg-background rounded-xl font-normal flex-1" 
                                                  />
                                              </FormControl>
                                              {field.value && field.value.length === 10 && (

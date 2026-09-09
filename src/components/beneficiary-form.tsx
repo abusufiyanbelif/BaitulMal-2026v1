@@ -410,7 +410,7 @@ export function BeneficiaryForm({
                                                         defaultValue="+91" 
                                                         disabled={formIsDisabled}
                                                     >
-                                                        <SelectTrigger className="h-10 rounded-xl border-primary/5 bg-slate-50/50 font-bold">
+                                                        <SelectTrigger className="h-10 rounded-xl border-primary/10 bg-background font-medium">
                                                             <SelectValue placeholder="+91" />
                                                         </SelectTrigger>
                                                         <SelectContent className="rounded-xl shadow-dropdown border-primary/10">
@@ -432,7 +432,7 @@ export function BeneficiaryForm({
                                                             field.onChange(val);
                                                         }}
                                                         disabled={formIsDisabled} 
-                                                        className="h-10 text-xs font-bold rounded-xl border-primary/5 bg-white" 
+                                                        className="h-10 text-xs font-normal rounded-xl border-primary/10 bg-background" 
                                                     />
                                                 </FormControl>
                                                 {field.value && field.value.length === 10 && (
@@ -569,24 +569,24 @@ export function BeneficiaryForm({
                                             <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-xl border border-primary/5 bg-slate-50/50 relative group">
                                                 <FormField control={control} name={`bankDetails.${idx}.bankName`} render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Bank Name</FormLabel>
-                                                        <FormControl><Input {...field} placeholder="e.g. HDFC Bank" disabled={formIsDisabled} className="h-10 text-xs font-bold rounded-xl border-primary/5 bg-white" /></FormControl>
+                                                        <FormLabel className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Bank Name</FormLabel>
+                                                        <FormControl><Input {...field} placeholder="e.g. HDFC Bank" disabled={formIsDisabled} className="h-10 text-xs font-normal rounded-xl border-primary/10 bg-background" /></FormControl>
                                                     </FormItem>
                                                 )}/>
                                                 <FormField control={control} name={`bankDetails.${idx}.accountNumber`} render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Account Number</FormLabel>
-                                                        <FormControl><Input {...field} placeholder="Account No" disabled={formIsDisabled} className="h-10 text-xs font-bold rounded-xl border-primary/5 bg-white" /></FormControl>
+                                                        <FormLabel className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">Account Number</FormLabel>
+                                                        <FormControl><Input {...field} placeholder="Account No" disabled={formIsDisabled} className="h-10 text-xs font-normal rounded-xl border-primary/10 bg-background" /></FormControl>
                                                     </FormItem>
                                                 )}/>
                                                 <FormField control={control} name={`bankDetails.${idx}.ifscCode`} render={({ field }) => (
                                                     <FormItem>
-                                                        <FormLabel className="text-[10px] font-black text-slate-400 uppercase tracking-widest">IFSC Code</FormLabel>
-                                                        <FormControl><Input {...field} placeholder="IFSC" disabled={formIsDisabled} className="h-10 text-xs font-bold rounded-xl border-primary/5 bg-white font-mono" /></FormControl>
+                                                        <FormLabel className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest">IFSC Code</FormLabel>
+                                                        <FormControl><Input {...field} placeholder="IFSC" disabled={formIsDisabled} className="h-10 text-xs font-normal rounded-xl border-primary/10 bg-background font-mono" /></FormControl>
                                                     </FormItem>
                                                 )}/>
                                                 {(watch('bankDetails') || []).length > 1 && !formIsDisabled && (
-                                                    <Button type="button" variant="ghost" size="icon" onClick={() => setValue('bankDetails', (watch('bankDetails') || []).filter((_, i) => i !== idx))} className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-white shadow-sm border border-red-100 text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <Button type="button" variant="ghost" size="icon" onClick={() => setValue('bankDetails', (watch('bankDetails') || []).filter((_, i) => i !== idx))} className="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-card shadow-sm border border-destructive/20 text-destructive opacity-0 group-hover:opacity-100 transition-opacity">
                                                         <X className="h-4 w-4" />
                                                     </Button>
                                                 )}
@@ -611,7 +611,7 @@ export function BeneficiaryForm({
                                                 <FormItem className="relative group">
                                                     <FormControl>
                                                         <div className="flex gap-2">
-                                                            <Input {...field} placeholder="handle@upi" disabled={formIsDisabled} className="h-11 text-xs font-bold rounded-xl border-primary/5 bg-white font-mono" />
+                                                            <Input {...field} placeholder="handle@upi" disabled={formIsDisabled} className="h-11 text-xs font-normal rounded-xl border-primary/10 bg-background font-mono" />
                                                             {(watch('upiIds') || []).length > 1 && !formIsDisabled && (
                                                                 <Button type="button" variant="ghost" size="icon" onClick={() => setValue('upiIds', (watch('upiIds') || []).filter((_, i) => i !== idx))} className="h-11 w-11 rounded-xl text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
                                                                     <X className="h-4 w-4" />

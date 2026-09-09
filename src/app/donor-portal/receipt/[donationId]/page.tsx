@@ -61,34 +61,34 @@ export default function DonorReceiptPage() {
 
     return (
         <main className="container mx-auto p-4 md:p-8 space-y-8 animate-fade-in-up">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-card p-8 rounded-3xl shadow-sm border border-border">
                 <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="icon" asChild className="rounded-xl h-10 w-10 text-slate-400 hover:text-primary hover:bg-primary/5">
+                    <Button variant="ghost" size="icon" asChild className="rounded-xl h-10 w-10 text-muted-foreground hover:text-primary hover:bg-primary/5">
                         <Link href="/donor-portal/donations"><ArrowLeft className="h-5 w-5" /></Link>
                     </Button>
                     <div>
-                        <h1 className="text-2xl font-black text-slate-900 tracking-tight">Official Certificate</h1>
-                        <p className="text-slate-500 text-sm font-medium">Verify and download your contribution evidence.</p>
+                        <h1 className="text-2xl font-bold text-foreground tracking-tight">Official Certificate</h1>
+                        <p className="text-muted-foreground text-sm font-normal">Verify and download your contribution evidence.</p>
                     </div>
                 </div>
                 <div className="flex gap-3">
-                    <Button variant="outline" className="font-bold border-slate-200 rounded-xl h-12 px-6 text-primary">
+                    <Button variant="outline" className="font-semibold border-border rounded-xl h-12 px-6 text-primary">
                         <Share2 className="mr-2 h-4 w-4" /> Share
                     </Button>
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button className="font-bold shadow-lg shadow-primary/20 rounded-xl h-12 px-6">
+                            <Button className="font-semibold shadow-md rounded-xl h-12 px-6">
                                 <Download className="mr-2 h-4 w-4" />
-                                Download PDF
+                                Download Receipt
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="rounded-2xl border-slate-100 shadow-dropdown p-2 w-48">
-                            <DropdownMenuItem onClick={() => handleDownload('png')} className="font-bold text-xs p-3 rounded-xl cursor-pointer">
-                                <ImageIcon className="mr-3 h-4 w-4 opacity-40" />
+                        <DropdownMenuContent align="end" className="rounded-2xl border-border shadow-dropdown p-2 w-48">
+                            <DropdownMenuItem onClick={() => handleDownload('png')} className="font-medium text-xs p-3 rounded-xl cursor-pointer">
+                                <ImageIcon className="mr-3 h-4 w-4 opacity-60" />
                                 Download PNG
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDownload('pdf')} className="font-bold text-xs p-3 rounded-xl cursor-pointer">
-                                <FileText className="mr-3 h-4 w-4 opacity-40" />
+                            <DropdownMenuItem onClick={() => handleDownload('pdf')} className="font-medium text-xs p-3 rounded-xl cursor-pointer">
+                                <FileText className="mr-3 h-4 w-4 opacity-60" />
                                 Download PDF
                             </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -96,15 +96,15 @@ export default function DonorReceiptPage() {
                 </div>
             </div>
 
-            <div className="flex justify-center bg-slate-50/50 p-4 md:p-12 rounded-[40px] border border-slate-100 shadow-inner">
-                <div className="w-full max-w-2xl bg-white shadow-2xl rounded-2xl overflow-hidden ring-1 ring-slate-200">
+            <div className="flex justify-center bg-muted/30 p-4 md:p-12 rounded-[40px] border border-border shadow-inner">
+                <div className="w-full max-w-4xl bg-card shadow-2xl rounded-2xl overflow-hidden ring-1 ring-border">
                     <DonationReceipt ref={receiptRef} donation={donation} brandingSettings={brandingSettings || undefined} paymentSettings={paymentSettings || undefined} />
                 </div>
             </div>
 
             <div className="max-w-2xl mx-auto text-center space-y-4">
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Organization Authentication</p>
-                <p className="text-xs text-slate-500 leading-relaxed font-medium">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Organization Authentication</p>
+                <p className="text-xs text-muted-foreground leading-relaxed font-normal">
                     This document serves as an official acknowledgment of your contribution. 
                     It is electronically generated and verified by our organization audit systems. 
                     For any discrepancies, please contact our support desk with the Donation ID.

@@ -199,3 +199,32 @@ export function serializeForAction<T>(data: T): T {
         value === undefined ? null : value
     ));
 }
+
+/**
+ * Constructs a comprehensive share text message for a donation record.
+ */
+export function getDonationShareText(donation: any, extraContext?: { leadName?: string; campaignName?: string }): string {
+    if (!donation) return '';
+
+    const formattedAmount = `₹${Number(donation.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`;
+    const caseOrReceiptId = donation.caseId || donation.linkSplit?.[0]?.caseId || donation.id?.toUpperCase();
+    const initiative = donation.linkSplit?.[0]?.linkName || extraContext?.leadName || extraContext?.campaignName || 'General Cause';
+
+    const lines = [
+        `📜 Official Contribution Certificate`,
+        `Organization: Baitulmal Samajik Sanstha Solapur`,
+        `----------------------------------------`,
+        `• Donor Name: ${donation.donorName || 'Generous Contributor'}`,
+        `• Total Impact: ${formattedAmount}`,
+        `• Receipt / Case ID: ${caseOrReceiptId}`,
+        `• Payment Mode: ${donation.donationType || 'Verified Transfer'}`,
+        `• Target Initiative: ${initiative}`,
+        `• Issue Date: ${donation.donationDate || 'N/A'}`,
+        `• Receiver Entity: ${donation.receiverName || 'Baitulmal Solapur'}`,
+        `----------------------------------------`,
+        `Reg. No: Solapur/0000373/2025 | PAN: AAPAB1213J`,
+        `JazakAllah Khair! May Allah accept your contribution and bless you abundantly.`
+    ];
+
+    return lines.join('\n');
+}

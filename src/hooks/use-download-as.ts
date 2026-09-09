@@ -62,10 +62,10 @@ export function useDownloadAs() {
         const qrImg = qrDataUrl ? await new Promise<HTMLImageElement>(res => { const i = new Image(); i.onload = () => res(i); i.src = qrDataUrl; }) : null;
 
         if (format === 'png') {
-            const PADDING = options.skipLayout ? 0 : 60;
-            const HEADER_HEIGHT = options.skipLayout ? 0 : 120;
-            const FOOTER_HEIGHT = options.skipLayout ? 0 : 200;
-            const COPYRIGHT_HEIGHT = options.skipLayout ? 0 : 40;
+            const PADDING = options.skipLayout ? 0 : 50;
+            const HEADER_HEIGHT = options.skipLayout ? 0 : 100;
+            const FOOTER_HEIGHT = options.skipLayout ? 0 : 250;
+            const COPYRIGHT_HEIGHT = options.skipLayout ? 0 : 35;
 
             const finalCanvas = document.createElement('canvas');
             if (options.skipLayout) {
@@ -89,18 +89,18 @@ export function useDownloadAs() {
                 // Header
                 let headerTextX = PADDING;
                 if (logoImg) {
-                    const logoHeight = 80;
+                    const logoHeight = 64;
                     const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
                     ctx.drawImage(logoImg, PADDING, PADDING / 2, logoWidth, logoHeight);
-                    headerTextX = PADDING + logoWidth + 30;
+                    headerTextX = PADDING + logoWidth + 20;
                 }
                 ctx.fillStyle = '#0f172a';
-                ctx.font = 'bold 36px sans-serif';
+                ctx.font = 'bold 28px sans-serif';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(brandingSettings?.name || 'Registry', headerTextX, HEADER_HEIGHT / 2);
 
                 // Title
-                ctx.font = 'bold 30px sans-serif';
+                ctx.font = 'bold 24px sans-serif';
                 ctx.textBaseline = 'alphabetic';
                 ctx.fillText(documentTitle, PADDING, HEADER_HEIGHT + PADDING - 10);
                 
@@ -109,10 +109,10 @@ export function useDownloadAs() {
                 
                 // Watermark
                 if (logoImg) {
-                    const wmScale = 0.5;
+                    const wmScale = 0.45;
                     const wmWidth = finalCanvas.width * wmScale;
                     const wmHeight = (logoImg.height / logoImg.width) * wmWidth;
-                    ctx.globalAlpha = 0.05;
+                    ctx.globalAlpha = 0.04;
                     ctx.drawImage(logoImg, (finalCanvas.width - wmWidth) / 2, (finalCanvas.height - wmHeight) / 2, wmWidth, wmHeight);
                     ctx.globalAlpha = 1.0;
                 }
@@ -120,25 +120,30 @@ export function useDownloadAs() {
                 // Footer
                 const footerY = finalCanvas.height - FOOTER_HEIGHT - COPYRIGHT_HEIGHT;
                 if (qrImg) {
-                    const qrSize = 180;
-                    ctx.drawImage(qrImg, finalCanvas.width - PADDING - qrSize, footerY, qrSize, qrSize);
+                    const qrSize = 140;
+                    ctx.drawImage(qrImg, finalCanvas.width - PADDING - qrSize, footerY + 10, qrSize, qrSize);
                 }
                 ctx.fillStyle = '#0f172a';
-                ctx.font = 'bold 24px sans-serif';
-                ctx.fillText('For Donations & Contact', PADDING, footerY + 20);
-                ctx.font = '20px sans-serif';
-                let textY = footerY + 60;
-                const lineSpacing = 32;
+                ctx.font = 'bold 18px sans-serif';
+                ctx.fillText('For Donations & Contact', PADDING, footerY + 25);
+                ctx.font = '14px sans-serif';
+                ctx.fillStyle = '#334155';
+                let textY = footerY + 55;
+                const lineSpacing = 24;
                 if (paymentSettings?.upiId) { ctx.fillText(`UPI: ${paymentSettings.upiId}`, PADDING, textY); textY += lineSpacing; }
                 if (paymentSettings?.contactPhone) { ctx.fillText(`Phone: ${paymentSettings.contactPhone}`, PADDING, textY); textY += lineSpacing; }
                 if (paymentSettings?.website) { ctx.fillText(`Website: ${paymentSettings.website}`, PADDING, textY); textY += lineSpacing; }
-                if (paymentSettings?.address) { ctx.fillText(paymentSettings.address, PADDING, textY); }
+                const panVal = paymentSettings?.pan || 'AAPAB1213J';
+                const regNoVal = paymentSettings?.regNo || 'Solapur/0000373/2025';
+                if (panVal) { ctx.fillText(`PAN: ${panVal}`, PADDING, textY); textY += lineSpacing; }
+                if (regNoVal) { ctx.fillText(`Reg. No: ${regNoVal}`, PADDING, textY); textY += lineSpacing; }
+                if (paymentSettings?.address) { ctx.fillText(paymentSettings.address, PADDING, textY); textY += lineSpacing; }
 
                 // Copyright
                 ctx.textAlign = 'center';
-                ctx.font = '16px sans-serif';
+                ctx.font = '13px sans-serif';
                 ctx.fillStyle = '#64748b';
-                ctx.fillText(paymentSettings?.copyright || '© 2026 Charity Registry. All Rights Reserved.', finalCanvas.width / 2, finalCanvas.height - 25);
+                ctx.fillText(paymentSettings?.copyright || '© 2026 Charity Registry. All Rights Reserved.', finalCanvas.width / 2, finalCanvas.height - 15);
             }
 
             const link = document.createElement('a');
@@ -151,35 +156,35 @@ export function useDownloadAs() {
             const pdf = new jsPDF('p', 'mm', 'a4');
             const pdfWidth = pdf.internal.pageSize.getWidth();
             const pdfHeight = pdf.internal.pageSize.getHeight();
-            const margin = options.skipLayout ? 0 : 15;
+            const margin = options.skipLayout ? 0 : 12;
             let position = options.skipLayout ? 0 : margin;
 
             if (!options.skipLayout) {
                 // Header
                 pdf.setTextColor(19, 106, 51); // Dark green color
                 if (logoImg && logoDataUrl) {
-                    const logoHeight = 20;
+                    const logoHeight = 16;
                     const logoWidth = (logoImg.width / logoImg.height) * logoHeight;
                     pdf.addImage(logoDataUrl, 'PNG', margin, position, logoWidth, logoHeight);
-                    pdf.setFontSize(16);
-                    const textY = position + (logoHeight / 2) + 3; // Vertically center text with logo
-                    pdf.text(brandingSettings?.name || 'Registry', margin + logoWidth + 5, textY);
-                    position += logoHeight + 10;
+                    pdf.setFontSize(14);
+                    const textY = position + (logoHeight / 2) + 2; // Vertically center text with logo
+                    pdf.text(brandingSettings?.name || 'Registry', margin + logoWidth + 4, textY);
+                    position += logoHeight + 8;
                 } else {
-                    pdf.setFontSize(16);
+                    pdf.setFontSize(14);
                     pdf.text(brandingSettings?.name || 'Registry', pdfWidth / 2, position, { align: 'center' });
-                    position += 15;
+                    position += 12;
                 }
 
                 // Title
-                pdf.setFontSize(18).text(documentTitle, pdfWidth / 2, position, { align: 'center' });
-                position += 15;
+                pdf.setFontSize(15).text(documentTitle, pdfWidth / 2, position, { align: 'center' });
+                position += 10;
 
                 // Watermark
                 if (logoImg && logoDataUrl) {
                     pdf.saveGraphicsState();
-                    pdf.setGState(new (pdf as any).GState({ opacity: 0.08 }));
-                    const wmWidth = pdfWidth * 0.75;
+                    pdf.setGState(new (pdf as any).GState({ opacity: 0.06 }));
+                    const wmWidth = pdfWidth * 0.7;
                     const wmHeight = (logoImg.height / logoImg.width) * wmWidth;
                     pdf.addImage(logoDataUrl, 'PNG', (pdfWidth - wmWidth) / 2, (pdfHeight - wmHeight) / 2, wmWidth, wmHeight);
                     pdf.restoreGraphicsState();
@@ -192,51 +197,54 @@ export function useDownloadAs() {
             const contentWidth = pdfWidth - margin * 2;
             const contentHeight = (imgProps.height * contentWidth) / imgProps.width;
             
-            // Handle page overflow or multiple pages if not skipLayout
-            // For receipts (skipLayout: true), we usually want it scaled to fit or on one page while maintaining aspect ratio
-            if (options.skipLayout && contentHeight > pdfHeight) {
-                const finalWidth = (imgProps.width * pdfHeight) / imgProps.height;
-                const xOffset = (pdfWidth - finalWidth) / 2;
-                pdf.addImage(imgData, 'PNG', xOffset, 0, finalWidth, pdfHeight);
+            if (options.skipLayout) {
+                if (contentHeight > pdfHeight) {
+                    const finalWidth = (imgProps.width * pdfHeight) / imgProps.height;
+                    const xOffset = (pdfWidth - finalWidth) / 2;
+                    pdf.addImage(imgData, 'PNG', xOffset, 0, finalWidth, pdfHeight);
+                } else {
+                    const yOffset = (pdfHeight - contentHeight) / 2;
+                    pdf.addImage(imgData, 'PNG', 0, yOffset, pdfWidth, contentHeight);
+                }
             } else {
                 pdf.addImage(imgData, 'PNG', margin, position, contentWidth, contentHeight);
             }
 
             if (!options.skipLayout) {
                 // Footer
-                const footerY = pdfHeight - 65;
+                const footerY = pdfHeight - 50;
                 pdf.setLineWidth(0.2);
                 pdf.line(margin, footerY, pdfWidth - margin, footerY);
                 
-                const qrSize = 40;
+                const qrSize = 32;
                 const qrX = pdfWidth - margin - qrSize;
                 if (qrImg && qrDataUrl) {
-                    pdf.addImage(qrDataUrl, 'PNG', qrX, footerY + 5, qrSize, qrSize);
+                    pdf.addImage(qrDataUrl, 'PNG', qrX, footerY + 3, qrSize, qrSize);
                 }
                 
-                pdf.setFontSize(11);
+                pdf.setFontSize(10);
                 pdf.setTextColor(19, 106, 51);
-                pdf.text('For Donations & Contact', margin, footerY + 12);
-                pdf.setFontSize(9);
-                pdf.setTextColor(0, 0, 0);
+                pdf.text('For Donations & Contact', margin, footerY + 8);
+                pdf.setFontSize(8);
+                pdf.setTextColor(50, 50, 50);
 
                 const textBlockWidth = qrImg ? qrX - margin - 5 : pdfWidth - margin * 2;
-                let textY = footerY + 18;
+                let textY = footerY + 13;
                 
                 const addFooterLine = (label: string, value: string | undefined) => {
                     if (!value) return;
                     const fullText = `${label}: ${value}`;
                     const lines = pdf.splitTextToSize(fullText, textBlockWidth);
                     pdf.text(lines, margin, textY);
-                    textY += lines.length * 4;
+                    textY += lines.length * 3.5;
                 };
 
                 addFooterLine('UPI', paymentSettings?.upiId);
                 addFooterLine('Phone', paymentSettings?.contactPhone);
                 addFooterLine('Email', paymentSettings?.contactEmail);
                 addFooterLine('Website', paymentSettings?.website);
-                addFooterLine('PAN', paymentSettings?.pan);
-                addFooterLine('Reg. No', paymentSettings?.regNo);
+                addFooterLine('PAN', paymentSettings?.pan || 'AAPAB1213J');
+                addFooterLine('Reg. No', paymentSettings?.regNo || 'Solapur/0000373/2025');
                 
                 if (paymentSettings?.address) {
                     const lines = pdf.splitTextToSize(paymentSettings.address, textBlockWidth);
@@ -244,9 +252,9 @@ export function useDownloadAs() {
                 }
 
                 // Copyright
-                pdf.setFontSize(8);
+                pdf.setFontSize(7.5);
                 pdf.setTextColor(128, 128, 128);
-                pdf.text(paymentSettings?.copyright || '© 2026 Charity Registry. All Rights Reserved.', pdfWidth / 2, pdfHeight - 10, { align: 'center' });
+                pdf.text(paymentSettings?.copyright || '© 2026 Charity Registry. All Rights Reserved.', pdfWidth / 2, pdfHeight - 6, { align: 'center' });
             }
 
             pdf.save(`${documentName}.pdf`);
