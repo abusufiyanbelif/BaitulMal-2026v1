@@ -679,50 +679,68 @@ export async function migrateUseCaseIdsAction(): Promise<{
                     const generatedId = `${dateKey}${seqStr}`;
                     seq++;
 
-                    // Only update if missing or different
-                    if (item.caseId !== generatedId) {
-                        const oldId = item.caseId;
-                        const batch = adminDb.batch();
+                    const effectiveCaseId = item.caseId || generatedId;
+                    let initiativeUpdated = false;
+                    const batch = adminDb.batch();
 
+                    // Update initiative if caseId is missing or wrong format
+                    if (item.caseId !== generatedId) {
                         batch.update(item.ref, {
                             caseId: generatedId,
                             updatedAt: FieldValue.serverTimestamp(),
                         });
-
-                        // Cascade to donations linking this item
-                        const donSnap = await adminDb.collection('donations').get();
-                        donSnap.forEach((dDoc: any) => {
-                            const dData = dDoc.data();
-                            let isAffected = false;
-                            let updatedLinkSplit = dData.linkSplit;
-
-                            if (Array.isArray(dData.linkSplit)) {
-                                updatedLinkSplit = dData.linkSplit.map((l: any) => {
-                                    if (
-                                        l.linkId === item.id ||
-                                        (oldId && l.linkId === oldId) ||
-                                        l.linkId === `${collName.slice(0, -1)}_${item.id}`
-                                    ) {
-                                        isAffected = true;
-                                        return { ...l, caseId: generatedId };
-                                    }
-                                    return l;
-                                });
-                            }
-
-                            if (isAffected) {
-                                batch.update(dDoc.ref, {
-                                    linkSplit: updatedLinkSplit,
-                                    updatedAt: FieldValue.serverTimestamp(),
-                                });
-                                updatedDonations++;
-                            }
-                        });
-
-                        await batch.commit();
-
+                        initiativeUpdated = true;
                         if (collName === 'campaigns') migratedCampaigns++;
                         else migratedLeads++;
+                    }
+
+                    // Cascade / sync to all donations linking this item
+                    const donSnap = await adminDb.collection('donations').get();
+                    let donationBatchCount = 0;
+
+                    donSnap.forEach((dDoc: any) => {
+                        const dData = dDoc.data();
+                        let isAffected = false;
+                        let updatedLinkSplit = dData.linkSplit;
+
+                        const isDirectMatch = dData.campaignId === item.id || 
+                                              dData.leadId === item.id || 
+                                              (item.caseId && (dData.campaignId === item.caseId || dData.leadId === item.caseId));
+
+                        if (Array.isArray(dData.linkSplit)) {
+                            updatedLinkSplit = dData.linkSplit.map((l: any) => {
+                                if (
+                                    l.linkId === item.id ||
+                                    (item.caseId && (l.linkId === item.caseId || l.caseId === item.caseId)) ||
+                                    l.linkId === `${collName.slice(0, -1)}_${item.id}`
+                                ) {
+                                    if (l.caseId !== (initiativeUpdated ? generatedId : effectiveCaseId)) {
+                                        isAffected = true;
+                                    }
+                                    return { ...l, caseId: initiativeUpdated ? generatedId : effectiveCaseId };
+                                }
+                                return l;
+                            });
+                        }
+
+                        if (isDirectMatch && dData.caseId !== (initiativeUpdated ? generatedId : effectiveCaseId)) {
+                            isAffected = true;
+                        }
+
+                        if (isAffected) {
+                            const donUpdates: any = {
+                                linkSplit: updatedLinkSplit,
+                                caseId: initiativeUpdated ? generatedId : effectiveCaseId,
+                                updatedAt: FieldValue.serverTimestamp(),
+                            };
+                            batch.update(dDoc.ref, donUpdates);
+                            updatedDonations++;
+                            donationBatchCount++;
+                        }
+                    });
+
+                    if (initiativeUpdated || donationBatchCount > 0) {
+                        await batch.commit();
                     }
                 }
             }
@@ -731,14 +749,20 @@ export async function migrateUseCaseIdsAction(): Promise<{
         await processCollection('campaigns');
         await processCollection('leads');
 
-        revalidatePath('/campaign-members');
-        revalidatePath('/leads-members');
-        revalidatePath('/donations');
-        revalidatePath('/settings/data-health');
+        try {
+            revalidatePath('/campaign-members');
+            revalidatePath('/leads-members');
+            revalidatePath('/donations');
+            revalidatePath('/donors');
+            revalidatePath('/beneficiaries');
+            revalidatePath('/donor-portal/donations');
+            revalidatePath('/beneficiary-portal');
+            revalidatePath('/settings/data-health');
+        } catch (e) {}
 
         return {
             success: true,
-            message: `Migration completed successfully! Processed ${migratedCampaigns} Campaigns and ${migratedLeads} Leads with ${updatedDonations} donation cross-references updated.`,
+            message: `Migration & Sync completed successfully! Standardized ${migratedCampaigns} Campaigns and ${migratedLeads} Leads with ${updatedDonations} donation Case ID cross-references updated.`,
             migratedCampaigns,
             migratedLeads,
             updatedDonations,
@@ -779,6 +803,9 @@ export async function updateSingleUseCaseIdAction(
     );
 
     if (result.success) {
+        // Also rename Storage folder to match new Case ID
+        await renameStorageFolderAction(collectionName, docId, oldCaseId, newCaseId);
+
         revalidatePath('/campaign-members');
         revalidatePath('/leads-members');
         revalidatePath(`/campaign-members/${docId}/summary`);
@@ -788,5 +815,300 @@ export async function updateSingleUseCaseIdAction(
     }
 
     return { success: result.success, message: result.message };
+}
+
+/**
+ * Renames Cloud Storage folders for a Campaign or Lead when its Case ID changes.
+ * Moves files from legacy paths (`module/docId/` or `module/oldCaseId_docId/`) to `module/newCaseId_docId/`.
+ * Updates imageUrl and documents array URLs in the target Firestore document.
+ */
+export async function renameStorageFolderAction(
+    collectionName: 'campaigns' | 'leads',
+    docId: string,
+    oldCaseId: string | undefined,
+    newCaseId: string
+): Promise<{ success: boolean; message: string; movedFilesCount?: number }> {
+    const { adminDb, adminStorage } = getAdminServices();
+    if (!adminDb || !adminStorage) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const { getStorageFolderName } = await import('@/lib/storage-path');
+        const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'docuextract-q8vaa.firebasestorage.app';
+        const bucket = adminStorage.bucket(bucketName);
+        const oldFolderName1 = `${docId}/`;
+        const oldFolderName2 = oldCaseId ? `${getStorageFolderName(oldCaseId, docId)}/` : '';
+        const newFolderName = `${getStorageFolderName(newCaseId, docId)}/`;
+        const newPrefix = `${collectionName}/${newFolderName}`;
+
+        let movedCount = 0;
+
+        const moveFilesFromPrefix = async (oldPrefix: string) => {
+            if (!oldPrefix || oldPrefix === newPrefix) return;
+            const [files] = await bucket.getFiles({ prefix: oldPrefix });
+            for (const file of files) {
+                const relativePath = file.name.substring(oldPrefix.length);
+                if (!relativePath) continue;
+                
+                const destinationPath = `${newPrefix}${relativePath}`;
+                await file.copy(bucket.file(destinationPath));
+                
+                try {
+                    await bucket.file(destinationPath).makePublic();
+                } catch (e) {}
+
+                await file.delete().catch(() => {});
+                movedCount++;
+            }
+        };
+
+        await moveFilesFromPrefix(`${collectionName}/${oldFolderName1}`);
+        if (oldFolderName2 && oldFolderName2 !== oldFolderName1) {
+            await moveFilesFromPrefix(`${collectionName}/${oldFolderName2}`);
+        }
+
+        if (movedCount > 0) {
+            const docRef = adminDb.collection(collectionName).doc(docId);
+            const docSnap = await docRef.get();
+            if (docSnap.exists) {
+                const data = docSnap.data() as any;
+                const updatePayload: Record<string, any> = {};
+                let isUpdated = false;
+
+                const getNewUrl = (relativePath: string) => 
+                    `https://storage.googleapis.com/${bucket.name}/${newPrefix}${relativePath}`;
+
+                if (data.imageUrl) {
+                    const filename = data.imageUrl.split('?')[0].split('/').pop() || 'background.png';
+                    updatePayload.imageUrl = getNewUrl(decodeURIComponent(filename));
+                    isUpdated = true;
+                }
+
+                if (Array.isArray(data.documents) && data.documents.length > 0) {
+                    updatePayload.documents = data.documents.map((docItem: any) => {
+                        if (!docItem.url) return docItem;
+                        const filename = docItem.name || docItem.url.split('?')[0].split('/').pop();
+                        return {
+                            ...docItem,
+                            url: getNewUrl(`documents/${filename}`)
+                        };
+                    });
+                    isUpdated = true;
+                }
+
+                if (isUpdated) {
+                    await docRef.update(updatePayload);
+                }
+            }
+        }
+
+        return { success: true, message: `Moved ${movedCount} files to storage path ${newPrefix}`, movedFilesCount: movedCount };
+    } catch (e: any) {
+        console.error('Storage Folder Rename Error:', e);
+        return { success: false, message: `Storage rename error: ${e.message}` };
+    }
+}
+
+/**
+ * Server Action to rename Cloud Storage folders for a Donation when its linked Case IDs change.
+ * Concatenates all linked Case IDs alphabetically: `donations/caseId1_caseId2_donationId/`.
+ */
+export async function renameDonationStorageFolderAction(
+    donationId: string,
+    oldCaseIds?: string[],
+    newCaseIds?: string[]
+): Promise<{ success: boolean; message: string; movedFilesCount?: number }> {
+    const { adminDb, adminStorage } = getAdminServices();
+    if (!adminDb || !adminStorage) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    try {
+        const { getDonationStorageFolderName } = await import('@/lib/storage-path');
+        const bucketName = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'docuextract-q8vaa.firebasestorage.app';
+        const bucket = adminStorage.bucket(bucketName);
+
+        const oldFolderName1 = `${donationId}/`;
+        const oldFolderName2 = oldCaseIds && oldCaseIds.length > 0 ? `${getDonationStorageFolderName(oldCaseIds, donationId)}/` : '';
+        const newFolderName = `${getDonationStorageFolderName(newCaseIds, donationId)}/`;
+        const newPrefix = `donations/${newFolderName}`;
+
+        let movedCount = 0;
+
+        const moveFilesFromPrefix = async (oldPrefix: string) => {
+            if (!oldPrefix || oldPrefix === newPrefix) return;
+            const [files] = await bucket.getFiles({ prefix: oldPrefix });
+            for (const file of files) {
+                const relativePath = file.name.substring(oldPrefix.length);
+                if (!relativePath) continue;
+
+                const destinationPath = `${newPrefix}${relativePath}`;
+                await file.copy(bucket.file(destinationPath));
+
+                try {
+                    await bucket.file(destinationPath).makePublic();
+                } catch (e) {}
+
+                await file.delete().catch(() => {});
+                movedCount++;
+            }
+        };
+
+        await moveFilesFromPrefix(`donations/${oldFolderName1}`);
+        if (oldFolderName2 && oldFolderName2 !== oldFolderName1) {
+            await moveFilesFromPrefix(`donations/${oldFolderName2}`);
+        }
+
+        if (movedCount > 0) {
+            const docRef = adminDb.collection('donations').doc(donationId);
+            const docSnap = await docRef.get();
+            if (docSnap.exists) {
+                const data = docSnap.data() as any;
+                const updatePayload: Record<string, any> = {};
+                let isUpdated = false;
+
+                const getNewUrl = (relativePath: string) =>
+                    `https://storage.googleapis.com/${bucket.name}/${newPrefix}${relativePath}`;
+
+                if (data.paymentProofUrl) {
+                    const filename = data.paymentProofUrl.split('?')[0].split('/').pop() || 'proof.png';
+                    updatePayload.paymentProofUrl = getNewUrl(decodeURIComponent(filename));
+                    isUpdated = true;
+                }
+
+                if (data.receiptUrl) {
+                    const filename = data.receiptUrl.split('?')[0].split('/').pop() || 'receipt.png';
+                    updatePayload.receiptUrl = getNewUrl(decodeURIComponent(filename));
+                    isUpdated = true;
+                }
+
+                if (Array.isArray(data.transactions) && data.transactions.length > 0) {
+                    updatePayload.transactions = data.transactions.map((tx: any) => {
+                        if (!tx.screenshotUrl) return tx;
+                        const filename = tx.screenshotUrl.split('?')[0].split('/').pop() || 'screenshot.png';
+                        return {
+                            ...tx,
+                            screenshotUrl: getNewUrl(decodeURIComponent(filename))
+                        };
+                    });
+                    isUpdated = true;
+                }
+
+                if (Array.isArray(data.documents) && data.documents.length > 0) {
+                    updatePayload.documents = data.documents.map((docItem: any) => {
+                        if (!docItem.url) return docItem;
+                        const filename = docItem.name || docItem.url.split('?')[0].split('/').pop();
+                        return {
+                            ...docItem,
+                            url: getNewUrl(`documents/${decodeURIComponent(filename)}`)
+                        };
+                    });
+                    isUpdated = true;
+                }
+
+                if (isUpdated) {
+                    await docRef.update(updatePayload);
+                }
+            }
+        }
+
+        return { success: true, message: `Moved ${movedCount} donation files to ${newPrefix}`, movedFilesCount: movedCount };
+    } catch (e: any) {
+        console.error('Donation Storage Folder Rename Error:', e);
+        return { success: false, message: `Donation storage rename error: ${e.message}` };
+    }
+}
+
+/**
+ * Server Action to scan all campaigns, leads, and donations and migrate their Cloud Storage folders
+ * to the standardized Case ID format (caseId_docId or multi-case concatenated caseId1_caseId2_docId).
+ */
+export async function migrateStorageFoldersAction(): Promise<{
+    success: boolean;
+    message: string;
+    migratedCampaignFolders: number;
+    migratedLeadFolders: number;
+    migratedDonationFolders: number;
+    totalFilesMoved: number;
+}> {
+    const { adminDb, adminStorage } = getAdminServices();
+    if (!adminDb || !adminStorage) return {
+        success: false,
+        message: ADMIN_SDK_ERROR_MESSAGE,
+        migratedCampaignFolders: 0,
+        migratedLeadFolders: 0,
+        migratedDonationFolders: 0,
+        totalFilesMoved: 0
+    };
+
+    try {
+        const { generateNextUseCaseIdAdmin } = await import('@/lib/use-case-id');
+        const { extractCaseIdsFromDonation } = await import('@/lib/storage-path');
+
+        let migratedCampaignFolders = 0;
+        let migratedLeadFolders = 0;
+        let migratedDonationFolders = 0;
+        let totalFilesMoved = 0;
+
+        const processCollectionStorage = async (colName: 'campaigns' | 'leads') => {
+            const snap = await adminDb.collection(colName).get();
+            for (const doc of snap.docs) {
+                const data = doc.data();
+                let caseId = data.caseId as string | undefined;
+
+                if (!caseId) {
+                    caseId = await generateNextUseCaseIdAdmin(adminDb, data.startDate || new Date().toISOString(), colName);
+                    await doc.ref.update({ caseId });
+                }
+
+                const res = await renameStorageFolderAction(colName, doc.id, undefined, caseId);
+                if (res.success && (res.movedFilesCount || 0) > 0) {
+                    totalFilesMoved += res.movedFilesCount || 0;
+                    if (colName === 'campaigns') migratedCampaignFolders++;
+                    else migratedLeadFolders++;
+                }
+            }
+        };
+
+        const processDonationStorage = async () => {
+            const snap = await adminDb.collection('donations').get();
+            for (const doc of snap.docs) {
+                const data = doc.data();
+                const caseIds = extractCaseIdsFromDonation(data);
+                const res = await renameDonationStorageFolderAction(doc.id, undefined, caseIds);
+                if (res.success && (res.movedFilesCount || 0) > 0) {
+                    totalFilesMoved += res.movedFilesCount || 0;
+                    migratedDonationFolders++;
+                }
+            }
+        };
+
+        await processCollectionStorage('campaigns');
+        await processCollectionStorage('leads');
+        await processDonationStorage();
+
+        try {
+            revalidatePath('/campaign-members');
+            revalidatePath('/leads-members');
+            revalidatePath('/donations');
+            revalidatePath('/settings/data-health');
+        } catch (e) {}
+
+        return {
+            success: true,
+            message: `Storage migration complete! Renamed ${migratedCampaignFolders} campaign, ${migratedLeadFolders} lead, and ${migratedDonationFolders} donation folders. Moved ${totalFilesMoved} files total.`,
+            migratedCampaignFolders,
+            migratedLeadFolders,
+            migratedDonationFolders,
+            totalFilesMoved
+        };
+    } catch (e: any) {
+        console.error('Migrate Storage Folders Error:', e);
+        return {
+            success: false,
+            message: `Storage migration failed: ${e.message}`,
+            migratedCampaignFolders: 0,
+            migratedLeadFolders: 0,
+            migratedDonationFolders: 0,
+            totalFilesMoved: 0
+        };
+    }
 }
 

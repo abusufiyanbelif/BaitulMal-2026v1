@@ -87,6 +87,7 @@ import {
     DialogContent,
     DialogHeader,
     DialogTitle,
+    DialogFooter,
 } from "@/components/ui/dialog";
 import { DonationForm, type DonationFormData } from '@/components/donation-form';
 import { DonationSearchDialog } from '@/components/donation-search-dialog';
@@ -99,7 +100,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { cn, getNestedValue } from '@/lib/utils';
+import { cn, getNestedValue, getImageSrc } from '@/lib/utils';
 import { bulkUpdateDonationStatusAction, bulkImportDonationsAction, upsertDonationWithDonorAction, bulkMapDonorsAction, bulkUnmapDonorsAction, bulkManualMapDonorsAction } from '@/app/donations/actions';
 import { donationCategories } from '@/lib/modules';
 import { BrandedLoader } from '@/components/branded-loader';
@@ -643,9 +644,10 @@ function LeadDonationListContent() {
 
   const handleExport = () => {
     if (!donations || donations.length === 0) return;
-    const headers = ['ID', 'Donor Name', 'Donor Phone', 'Receiver Name', 'Referral', 'Total Amount', 'Donation Date', 'Status', 'Donation Type', 'Comments', 'Suggestions'];
+    const headers = ['ID', 'Case ID', 'Donor Name', 'Donor Phone', 'Receiver Name', 'Referral', 'Total Amount', 'Donation Date', 'Status', 'Donation Type', 'Comments', 'Suggestions'];
     const rows = donations.map(d => [
         d.id,
+        (d as any).caseId || lead?.caseId || d.id,
         `"${d.donorName || ''}"`,
         d.donorPhone || '',
         `"${(d.receiverName || '' )}"`,
@@ -1106,6 +1108,29 @@ function LeadDonationListContent() {
             onOpenChange={setIsManualMapOpen} 
             onSelectDonor={handleBulkManualMap} 
         />
+
+        <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
+          <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 rounded-[12px] border-primary/10 overflow-hidden shadow-2xl animate-fade-in-zoom">
+              <DialogHeader className="px-6 py-4 bg-primary/5 border-b">
+                  <DialogTitle className="text-xl font-bold text-primary tracking-tight capitalize tracking-widest">Transaction Artifact Viewer</DialogTitle>
+              </DialogHeader>
+              <ScrollArea className="flex-1 bg-secondary/20">
+                  <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
+                      {imageToView && (
+                          <Image src={getImageSrc(imageToView)} alt="Evidence Document" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                      )}
+                  </div>
+                  <ScrollBar orientation="horizontal" />
+                  <ScrollBar orientation="vertical" />
+              </ScrollArea>
+              <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white flex">
+                  <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
+                  <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5)) } className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
+                  <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
+                  <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
+              </DialogFooter>
+          </DialogContent>
+        </Dialog>
     </main>
   );
 }

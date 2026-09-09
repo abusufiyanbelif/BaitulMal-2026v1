@@ -85,11 +85,17 @@ export async function deleteCampaignAction(campaignId: string): Promise<{ succes
     try {
         const batch = adminDb.batch();
         const campaignRef = adminDb.collection('campaigns').doc(campaignId);
-        
-        // Delete all files in the campaign's storage folder
+        const campaignSnap = await campaignRef.get();
+        const campaignData = campaignSnap.data() as Campaign | undefined;
+        const caseId = campaignData?.caseId;
+
+        // Delete all files in the campaign's storage folder (legacy and caseId formats)
         const bucket = adminStorage.bucket();
-        const prefix = `campaigns/${campaignId}/`;
-        await bucket.deleteFiles({ prefix });
+        await bucket.deleteFiles({ prefix: `campaigns/${campaignId}/` });
+        if (caseId) {
+            await bucket.deleteFiles({ prefix: `campaigns/${caseId}_${campaignId}/` });
+            await bucket.deleteFiles({ prefix: `campaigns/${caseId}/` });
+        }
 
         // Delete all documents in the beneficiaries subcollection
         const beneficiariesSnap = await adminDb.collection(`campaigns/${campaignId}/beneficiaries`).get();

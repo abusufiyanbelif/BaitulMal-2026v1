@@ -112,6 +112,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFoo
 import type { ChartConfig } from '@/components/ui/chart';
 import { recalculateLeadGoalAction } from '../../actions';
 import { updateSingleUseCaseIdAction } from '@/app/settings/data-health/actions';
+import { getStorageFolderPath } from '@/lib/storage-path';
 import { PendingUpdateWarning } from '@/components/pending-update-warning';
 import { VerificationRequestDialog } from '@/components/verification-request-dialog';
 import { checkPendingVerificationAction, cleanupPendingVerificationsAction } from '@/app/verifications/actions';
@@ -500,12 +501,13 @@ export default function LeadSummaryPage() {
         let imageUrlFilename = editableLead.imageUrlFilename || '';
 
         // Priority 1: New File Upload
+        const storageFolder = getStorageFolderPath('leads', lead?.caseId, leadId);
         if (imageFile) {
             try {
                 const resizedBlob = await new Promise<Blob>((resolve) => {
                     (Resizer as any).imageFileResizer(imageFile, 1024, 1024, 'PNG', 85, 0, (blob: any) => resolve(blob as Blob), 'blob');
                 });
-                const filePath = `leads/${leadId}/background.png`;
+                const filePath = `${storageFolder}/background.png`;
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);
                 imageUrl = await getDownloadURL(fileRef);
@@ -530,7 +532,7 @@ export default function LeadSummaryPage() {
         // Priority 4: Keep Existing (Handled by the initial let assignments)
         const documentUploadPromises = newDocuments.map(async (file) => {
             const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-            const fileRef = storageRef(storage, `leads/${leadId}/documents/${safeFileName}`);
+            const fileRef = storageRef(storage, `${storageFolder}/documents/${safeFileName}`);
             await uploadBytes(fileRef, file);
             const url = await getDownloadURL(fileRef);
             return { name: file.name, url, uploadedAt: new Date().toISOString(), isPublic: false };
@@ -648,7 +650,7 @@ export default function LeadSummaryPage() {
                                 onClick={() => { 
                                     if(lead && fundingData) {
                                         const richText = `*Appeal: ${lead.name}*\n` +
-                                            `🆔 ID: ${lead.id}\n` +
+                                            `🆔 Case ID: ${lead.caseId || lead.id}\n` +
                                             `🎯 Purpose: ${lead.purpose} (${lead.category})\n` +
                                             `💰 Target Goal: ₹${fundingData.targetAmount.toLocaleString('en-IN')}\n` +
                                             `📈 Collected: ₹${fundingData.totalCollectedForGoal.toLocaleString('en-IN')}\n` +
@@ -1384,7 +1386,7 @@ export default function LeadSummaryPage() {
                     <DialogHeader className="px-6 py-4 border-b bg-primary/5"><DialogTitle className="font-bold text-primary tracking-tight text-sm capitalize">{imageToView?.name}</DialogTitle></DialogHeader>
                     <div className="p-4 bg-secondary/20 flex-1 overflow-hidden relative min-h-[70vh]">
                         {imageToView && (
-                            <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                            <Image src={getImageSrc(imageToView.url)} alt="Viewer" fill sizes="100vw" className="object-contain transition-transform duration-200 ease-out origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                         )}
                     </div>
                     <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white">

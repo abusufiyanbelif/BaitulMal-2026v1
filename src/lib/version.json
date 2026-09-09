@@ -1,9 +1,20 @@
 {
-  "version": "2026.06.21.4",
-  "buildDate": "2026-06-21T01:03:33.000Z",
-  "commitHash": "h9i0j1k2",
+  "version": "2026.09.09.1",
+  "buildDate": "2026-09-09T19:07:03.000Z",
+  "commitHash": "latest",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.09.09.1",
+      "date": "2026-09-09T19:07:03.000Z",
+      "commit": "latest",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-CASE-ID-SYSTEM-2026, MB-DATA-MIGRATION-2026, MB-UNIVERSAL-VISIBILITY-2026, MB-PROFILE-SYNC-2026",
+      "steps": "1. Type Safety & Build Verification: Executed `npx tsc --noEmit` across all updated files with clean exit code 0 and 0 errors.\n2. Auto-Generation Engine: Verified creation forms generate DDMMYYYYXX IDs based on start date (e.g., 0109202601).\n3. Backfill Migration Action: Verified `migrateUseCaseIdsAction` scans existing records, assigns sequential IDs, and recursively updates linked donation references.\n4. Donor & Beneficiary Visibility: Verified Case ID badges render in Donor Profile contribution tables, Beneficiary allocation breakdowns, Beneficiary Portal help history, and Donor Portal tables.\n5. Summary Edit & Cascading: Verified editing a Case ID in summary view updates the primary document, donation link splits, audit logs, and verification requests transactionally.\n6. Search & Filtering: Verified searching by Case ID returns exact matching campaigns, leads, and linked donations across admin hubs, public views, and donor portal.",
+      "type": "Feature, Data Migration, UI Visibility & Cascading Updates",
+      "message": "Comprehensive Case ID & Campaign ID (`DDMMYYYYXX`) System Implementation & Universal Multi-Module Sync. (1) Standardized ID Formatting & Auto-Generation: Implemented DDMMYYYYXX date-sequence generator (e.g. 0109202601, 0509202601, 0509202602) in src/lib/use-case-id.ts with automated pre-filling on campaign and lead creation dates. (2) Database Backfill Migration & Sync Tool: Enhanced migrateUseCaseIdsAction server action and Admin trigger button in Data Health settings to backfill existing campaigns/leads and recursively sync Case IDs across linked donations, donor logs, and beneficiary history. (3) Donor & Beneficiary Profile Synchronization: Rendered Case ID badges in Donor Profile contribution history (/donors/[donorId]), Beneficiary assistance & financial allocation breakdown (/beneficiaries/[beneficiaryId]), and Donor Portal contribution registry (/donor-portal/donations). (4) Summary Pages & Cascading Edits: Added prominent Case ID badges and transactional Edit ID dialog in campaign and lead summary views, executing batched cascading updates across initiatives, donations (linkSplit), pending verifications, and audit logs. (5) Financial Sync: Extended financial reconciliation lookups to match linked donations by both document ID and caseId. (6) Universal Search & Selectors: Extended search filters across all admin list views, public pages, donation logs, and donor portal to match by Case ID. Rendered (ID: DDMMYYYYXX) in all initiative selection dropdowns."
+    },
     {
       "version": "2026.06.21.4",
       "date": "2026-06-21T01:03:33.000Z",

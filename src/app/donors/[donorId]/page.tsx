@@ -960,14 +960,13 @@ export default function DonorProfilePage() {
                                                         ? [{ linkName: (donation as any).campaignName || 'Campaign', linkId: (donation as any).campaignId, linkType: 'campaign', amount: donation.amount }] 
                                                         : [] 
                                                     );
-                                                
                                                 return (
                                                     <TableRow key={donation.id} className="hover:bg-primary/[0.02] transition-colors border-b border-primary/5 last:border-0 bg-white group">
                                                         <TableCell className="pl-6 py-4">
                                                             {links.length > 0 ? (
                                                                 <div className="space-y-1.5">
                                                                     {links.map((ln, lIdx) => (
-                                                                        <div key={lIdx} className="flex items-center gap-2">
+                                                                        <div key={lIdx} className="flex items-center gap-2 flex-wrap">
                                                                             <div className="p-1 rounded-md bg-primary/5 text-primary shrink-0">
                                                                                 {ln.linkType === 'campaign' ? <FolderKanban className="h-3 w-3"/> : <Lightbulb className="h-3 w-3"/>}
                                                                             </div>
@@ -981,6 +980,9 @@ export default function DonorProfilePage() {
                                                                             ) : (
                                                                                 <span className="font-bold text-xs text-primary truncate max-w-[200px]">{ln.linkName}</span>
                                                                             )}
+                                                                            <Badge variant="outline" className="font-mono text-[9px] py-0 px-1 text-primary/70 bg-primary/[0.02] border-primary/10">
+                                                                                ID: {(ln as any).caseId || ln.linkId}
+                                                                            </Badge>
                                                                             {links.length > 1 && <span className="text-[10px] font-mono text-muted-foreground font-bold">(₹{ln.amount.toLocaleString('en-IN')})</span>}
                                                                         </div>
                                                                     ))}

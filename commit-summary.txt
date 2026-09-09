@@ -1,3 +1,24 @@
+release: v2026.09.10.1
+
+Type: Feature, Data Migration, Storage Folder Restructuring & Image Access Repair
+Message: Comprehensive Case ID (`DDMMYYYYXX`) System, Cloud Storage Folder Restructuring, Multi-Cause Donation Concatenation, Firestore Database URL Alignment & Universal Image Access Audit. (1) Case ID System Engine: Implemented standardized Case ID generation (`DDMMYYYYXX`) in `src/lib/use-case-id.ts` for Campaigns, Leads, and Donations. Enabled editable Case IDs with cascading updates (`cascadeUpdateUseCaseIdAdmin`) across linked donations, audit logs, and Cloud Storage paths. (2) Standardized Storage Folder Paths: Created `src/lib/storage-path.ts` for deterministic Cloud Storage folder resolution. Single initiatives store files in `module/${caseId}_${docId}/` (e.g. `leads/1602202601_5B9mm20dMa3VBK83seKu/`). Multi-cause split donations store files in concatenated folders `donations/${caseId1}_${caseId2}_${donationId}/` with Case IDs sorted alphabetically. (3) Cloud Storage & Database URL Repair Migration: Built `renameStorageFolderAction`, `renameDonationStorageFolderAction`, and `migrateStorageFoldersAction` in `src/app/settings/data-health/actions.ts`. Executed `scripts/repair-firestore-urls.ts` to fix duplicate path segments and align Firestore file URLs (`imageUrl`, `documents[].url`, `paymentProofUrl`, `receiptUrl`, `transactions[].screenshotUrl`) with actual Cloud Storage object paths. Updated 4 leads, 2 campaigns, and 6 donation documents in Firestore. (4) Multi-Module File Upload & Purge Sync: Updated creation and summary upload paths across Campaigns, Leads, and Donations to use Case ID prefixed storage folders. Updated `deleteCampaignAction`, `deleteLeadAction`, and `deleteDonationAction` to purge legacy, single-case, and multi-case storage folder prefixes. (5) Universal File Access & Viewer Audit: Audited image and document viewing across member/public summary pages, donation detail views, and user profiles. Built full-featured Image Viewer modals (with Zoom In/Out, 90° Rotation, and Reset controls) in `campaign-members/[campaignId]/donations/page.tsx` and `leads-members/[leadId]/donations/page.tsx`. Standardized `getImageSrc` in `src/lib/utils.ts` to prevent double-proxying issues. (6) Universal UI Case ID Visibility: Displayed Case ID badges in Donor/Beneficiary profiles, receipt downloads (PNG/PDF), WhatsApp share templates, donation registry tables, and CSV export utilities.
+Reference: MB-CASE-ID-SYSTEM-2026, MB-STORAGE-CASEID-FOLDER-2026, MB-MULTI-CAUSE-DONATION-STORAGE-2026, MB-DATABASE-URL-REPAIR-2026, MB-IMAGE-VIEWER-AUDIT-2026
+Branch: test_bmss_26
+Commit: latest
+
+Verification Steps:
+1. Type Safety & Build Verification: Executed `npx tsc --noEmit` across all updated files with clean exit code 0 and 0 errors.
+2. Firestore & Storage URL Alignment: Verified `scripts/repair-firestore-urls.ts` removed duplicated sub-path segments and aligned all document URLs to valid Cloud Storage locations.
+3. Multi-Cause Donation Storage Construction: Verified split donations generate deterministic `donations/${caseId1}_${caseId2}_${donationId}/` folders.
+4. Live Storage Folder Renaming: Verified editing a Case ID renames Cloud Storage folders for initiatives and linked multi-cause donations in real time.
+5. Image Viewer & Browser Verification: Used browser subagent to verify public and member summary views load hero banners and document attachments cleanly without broken image fallbacks.
+6. Multi-Prefix File Deletion: Purging commands successfully delete files across legacy, single-case, and multi-case storage folder prefixes.
+
+---
+*Build Summary Updated: 10/9/2026, 1:40:00 am*
+
+================================================================================
+
 release: v2026.06.21.4
 
 Type: Enhancement, ui polish & security fix

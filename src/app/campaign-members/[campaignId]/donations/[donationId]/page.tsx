@@ -27,6 +27,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { cn, getImageSrc } from '@/lib/utils';
 import { upsertDonationWithDonorAction } from '@/app/donations/actions';
 
 const DetailItem = ({ label, value, isMono = false }: { label: string; value: React.ReactNode; isMono?: boolean }) => (
@@ -435,7 +436,7 @@ export default function DonationDetailsPage() {
                     <ScrollArea className="flex-1 bg-secondary/20">
                         <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
                             {imageToView && (
-                                <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Evidence Document" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                                <Image src={getImageSrc(imageToView.url)} alt="Evidence Document" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                             )}
                         </div>
                         <ScrollBar orientation="horizontal" />
@@ -454,7 +455,7 @@ export default function DonationDetailsPage() {
                 onOpenChange={setIsShareDialogOpen} 
                 shareData={{
                     title: `Thank You For Your Support!`,
-                    text: `JazakAllah Khair! We have secured your contribution of ₹${donation.amount.toLocaleString('en-IN')}. May Allah reward you abundantly.`,
+                    text: `JazakAllah Khair! We have secured your contribution of ₹${donation.amount.toLocaleString('en-IN')}.\nCase ID: ${donation.caseId || donation.linkSplit?.[0]?.caseId || campaign.caseId || campaign.id}\nMay Allah reward you abundantly.`,
                     url: typeof window !== 'undefined' ? window.location.href : '',
                 }} 
             />

@@ -258,9 +258,21 @@ export default function DonorDonationsPage() {
                                                         <div className="font-bold text-slate-700 text-xs truncate max-w-[180px]">
                                                             {donation.linkName || donation.campaignName || 'General Organization Fund'}
                                                         </div>
-                                                        <div className="text-[10px] font-black text-primary uppercase tracking-widest mt-0.5">
-                                                            {donation.linkSplit?.[0]?.linkType || (donation.campaignId ? 'campaign' : (donation.leadId ? 'lead' : 'unallocated'))}
-                                                            {donation.linkSplit?.[0]?.caseId ? ` • ID: ${donation.linkSplit[0].caseId}` : ''}
+                                                        <div className="text-[10px] font-black text-primary uppercase tracking-widest mt-0.5 flex items-center gap-1.5 flex-wrap">
+                                                            <span>{donation.linkSplit?.[0]?.linkType || (donation.campaignId ? 'campaign' : (donation.leadId ? 'lead' : 'unallocated'))}</span>
+                                                            {donation.linkSplit && donation.linkSplit.length > 0 ? (
+                                                                donation.linkSplit.map((ls, lIdx) => (
+                                                                    <Badge key={lIdx} variant="outline" className="text-[8px] font-mono font-bold py-0 px-1 text-slate-700 bg-slate-100 border-slate-200">
+                                                                        ID: {ls.caseId || ls.linkId}
+                                                                    </Badge>
+                                                                ))
+                                                            ) : (
+                                                                (donation as any).caseId && (
+                                                                    <Badge variant="outline" className="text-[8px] font-mono font-bold py-0 px-1 text-slate-700 bg-slate-100 border-slate-200">
+                                                                        ID: {(donation as any).caseId}
+                                                                    </Badge>
+                                                                )
+                                                            )}
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>

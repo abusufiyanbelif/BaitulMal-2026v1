@@ -25,6 +25,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import type { Lead, DonationCategory } from '@/lib/types';
 import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters, priorityLevels } from '@/lib/modules';
 import { generateNextUseCaseIdClient } from '@/lib/use-case-id';
+import { getStorageFolderPath } from '@/lib/storage-path';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { FileUploader } from '@/components/file-uploader';
@@ -221,7 +222,8 @@ export default function CreateLeadPage() {
             
             setProgress(35);
             setLoadingMessage('Uploading Background Evidence...');
-            const filePath = `leads/${newLeadId}/background.png`;
+            const storageFolder = getStorageFolderPath('leads', data.caseId, newLeadId);
+            const filePath = `${storageFolder}/background.png`;
             const fileRef = storageRef(storage, filePath);
             await uploadBytes(fileRef, resizedBlob);
             imageUrl = await getDownloadURL(fileRef);
@@ -237,9 +239,10 @@ export default function CreateLeadPage() {
     
     setProgress(55);
     setLoadingMessage('Synchronizing Lead Documents...');
+    const storageFolder = getStorageFolderPath('leads', data.caseId, newLeadId);
     const documentUploadPromises = documentsToUpload.map(async (file, idx) => {
         const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-        const fileRef = storageRef(storage, `leads/${newLeadId}/documents/${safeFileName}`);
+        const fileRef = storageRef(storage, `${storageFolder}/documents/${safeFileName}`);
         await uploadBytes(fileRef, file);
         const url = await getDownloadURL(fileRef);
         const perDocProgress = 25 / Math.max(1, documentsToUpload.length);

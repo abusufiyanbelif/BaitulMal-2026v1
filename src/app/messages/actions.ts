@@ -1222,6 +1222,8 @@ export async function sendDonationReceiptAction(donationId: string) {
         const campaignId = donation.linkSplit?.[0]?.linkId?.replace('campaign_', '') || 'general';
         const receiptUrl = `${baseUrl}/campaign-public/${campaignId}/donations/${donationId}`;
 
+        const primaryCaseId = donation.caseId || donation.linkSplit?.[0]?.caseId || donationId;
+
         return await sendWhatsAppAction({
             to: donation.donorPhone,
             templateId: 'donation_receipt',
@@ -1229,6 +1231,7 @@ export async function sendDonationReceiptAction(donationId: string) {
                 donorName: donation.donorName,
                 amount: `₹${donation.amount.toFixed(2)}`,
                 donationId: donationId,
+                caseId: primaryCaseId,
                 date: donation.donationDate,
                 url: receiptUrl
             },

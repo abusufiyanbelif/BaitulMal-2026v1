@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { scanDataHealthAction, fixDataIssuesAction, recalculateAllCollectedAmountsAction, initializePortalCredentialsAction, migrateUseCaseIdsAction } from './actions';
+import { scanDataHealthAction, fixDataIssuesAction, recalculateAllCollectedAmountsAction, initializePortalCredentialsAction, migrateUseCaseIdsAction, migrateStorageFoldersAction } from './actions';
 import type { DataIssue, ScanResult } from './actions';
 import { cn } from '@/lib/utils';
 import {
@@ -28,6 +28,7 @@ import {
     Search,
     X,
     Hash,
+    Folder,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -141,6 +142,7 @@ export default function DataHealthPage() {
     const [isRecalculating, setIsRecalculating] = useState(false);
     const [isInitializingCredentials, setIsInitializingCredentials] = useState(false);
     const [isMigratingUseCaseIds, setIsMigratingUseCaseIds] = useState(false);
+    const [isMigratingStorageFolders, setIsMigratingStorageFolders] = useState(false);
     const [scanResult, setScanResult] = useState<ScanResult | null>(null);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [filterSeverity, setFilterSeverity] = useState<string>('all');
@@ -224,6 +226,20 @@ export default function DataHealthPage() {
         }
     };
 
+    const handleMigrateStorageFolders = async () => {
+        setIsMigratingStorageFolders(true);
+        try {
+            const result = await migrateStorageFoldersAction();
+            toast({
+                title: result.success ? 'Storage Folders Migrated' : 'Storage Migration Failed',
+                description: result.message,
+                variant: result.success ? 'success' : 'destructive'
+            });
+        } finally {
+            setIsMigratingStorageFolders(false);
+        }
+    };
+
     const toggleSelect = (id: string) => {
         setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
     };
@@ -289,6 +305,15 @@ export default function DataHealthPage() {
                     >
                         {isMigratingUseCaseIds ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Hash className="mr-2 h-4 w-4" />}
                         Migrate Case IDs (DDMMYYYYXX)
+                    </Button>
+                    <Button
+                        variant="outline"
+                        onClick={handleMigrateStorageFolders}
+                        disabled={isMigratingStorageFolders || isScanning}
+                        className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"
+                    >
+                        {isMigratingStorageFolders ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Folder className="mr-2 h-4 w-4" />}
+                        Migrate Storage Folders (Case ID)
                     </Button>
                     <Button
                         variant="outline"

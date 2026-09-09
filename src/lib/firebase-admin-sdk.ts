@@ -30,13 +30,15 @@ function initializeAdmin(): AdminServices {
             const serviceAccountPath = path.resolve(process.cwd(), 'serviceAccountKey.json');
             const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID;
 
+            const storageBucket = process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || 'docuextract-q8vaa.firebasestorage.app';
+
             if (serviceAccountVar) {
                 // Initialize using JSON string from environment variable
                 try {
                     const credentials = JSON.parse(serviceAccountVar);
                     initializeApp({
                         credential: cert(credentials),
-                        storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+                        storageBucket: storageBucket,
                     });
                     console.log("Firebase Admin SDK initialized using FIREBASE_SERVICE_ACCOUNT environment variable.");
                 } catch (parseErr: any) {
@@ -46,7 +48,7 @@ function initializeAdmin(): AdminServices {
                 // Initialize using local file
                 initializeApp({
                     credential: cert(serviceAccountPath),
-                    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+                    storageBucket: storageBucket,
                 });
                 console.log("Firebase Admin SDK initialized with serviceAccountKey.json for local development.");
             } else {
@@ -54,7 +56,7 @@ function initializeAdmin(): AdminServices {
                 // This will use ADC in a GCP environment (like Firebase App Hosting)
                 initializeApp({
                     projectId: projectId, // Explicit project ID helps in some hosting environments
-                    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+                    storageBucket: storageBucket,
                 });
                 console.log(`Firebase Admin SDK initialized with Application Default Credentials (Project: ${projectId || 'auto-detected'}).`);
             }

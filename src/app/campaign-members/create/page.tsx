@@ -25,6 +25,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import type { Campaign, DonationCategory } from '@/lib/types';
 import { donationCategories, priorityLevels } from '@/lib/modules';
 import { generateNextUseCaseIdClient } from '@/lib/use-case-id';
+import { getStorageFolderPath } from '@/lib/storage-path';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { FileUploader } from '@/components/file-uploader';
@@ -187,7 +188,8 @@ export default function CreateCampaignPage() {
                 
                 setProgress(35);
                 setLoadingMessage('Uploading background evidence...');
-                const filePath = `campaigns/${newCampaignId}/background.png`;
+                const storageFolder = getStorageFolderPath('campaigns', data.caseId, newCampaignId);
+                const filePath = `${storageFolder}/background.png`;
                 const fileRef = storageRef(storage, filePath);
                 await uploadBytes(fileRef, resizedBlob);
                 imageUrl = await getDownloadURL(fileRef);
@@ -203,9 +205,10 @@ export default function CreateCampaignPage() {
         
         setProgress(55);
         setLoadingMessage('Synchronizing campaign documents...');
+        const storageFolder = getStorageFolderPath('campaigns', data.caseId, newCampaignId);
         const documentUploadPromises = documentsToUpload.map(async (file, idx) => {
             const safeFileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-            const fileRef = storageRef(storage, `campaigns/${newCampaignId}/documents/${safeFileName}`);
+            const fileRef = storageRef(storage, `${storageFolder}/documents/${safeFileName}`);
             await uploadBytes(fileRef, file);
             const url = await getDownloadURL(fileRef);
             const perDocProgress = 25 / Math.max(1, documentsToUpload.length);

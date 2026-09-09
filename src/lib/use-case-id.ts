@@ -143,15 +143,21 @@ export async function cascadeUpdateUseCaseIdAdmin(
     counts.initiative += 1;
 
     // 2. Cascade to Donations
+    const { extractCaseIdsFromDonation } = await import('@/lib/storage-path');
+    const affectedDonationsToRename: { donationId: string; oldCaseIds: string[]; newCaseIds: string[] }[] = [];
+
     const donationsSnap = await adminDb.collection('donations').get();
     donationsSnap.forEach((dDoc: any) => {
       const dData = dDoc.data();
       let isUpdated = false;
 
-      // Direct campaignId check
-      let newCampaignId = dData.campaignId;
-      if (dData.campaignId === docId || (oldCaseId && dData.campaignId === oldCaseId)) {
-        newCampaignId = docId; // or cleanNewId if using caseId directly
+      const oldCaseIds = extractCaseIdsFromDonation(dData);
+
+      // Direct campaignId or leadId check
+      const matchesDirect = dData.campaignId === docId || 
+                            dData.leadId === docId || 
+                            (oldCaseId && (dData.campaignId === oldCaseId || dData.leadId === oldCaseId));
+      if (matchesDirect) {
         isUpdated = true;
       }
 
@@ -160,9 +166,11 @@ export async function cascadeUpdateUseCaseIdAdmin(
       if (Array.isArray(dData.linkSplit)) {
         updatedLinkSplit = dData.linkSplit.map((link: any) => {
           const rawId = String(link.linkId || '');
+          const rawCaseId = String(link.caseId || '');
           if (
             rawId === docId ||
             rawId === oldCaseId ||
+            rawCaseId === oldCaseId ||
             rawId === `campaign_${docId}` ||
             rawId === `lead_${docId}` ||
             (oldCaseId && (rawId === `campaign_${oldCaseId}` || rawId === `lead_${oldCaseId}`))
@@ -179,11 +187,21 @@ export async function cascadeUpdateUseCaseIdAdmin(
       }
 
       if (isUpdated) {
-        batch.update(dDoc.ref, {
+        const donationUpdates: any = {
           linkSplit: updatedLinkSplit,
           updatedAt: new Date(),
-        });
+        };
+        if (matchesDirect || (Array.isArray(updatedLinkSplit) && updatedLinkSplit.length > 0 && updatedLinkSplit[0].caseId === cleanNewId)) {
+          donationUpdates.caseId = cleanNewId;
+        }
+        batch.update(dDoc.ref, donationUpdates);
         counts.donations += 1;
+
+        const newCaseIds = extractCaseIdsFromDonation({
+          ...dData,
+          ...donationUpdates
+        });
+        affectedDonationsToRename.push({ donationId: dDoc.id, oldCaseIds, newCaseIds });
       }
     });
 
@@ -217,6 +235,18 @@ export async function cascadeUpdateUseCaseIdAdmin(
     counts.auditLogs += 1;
 
     await batch.commit();
+
+    // 5. Rename Cloud Storage folders for affected donations
+    if (affectedDonationsToRename.length > 0) {
+      try {
+        const { renameDonationStorageFolderAction } = await import('@/app/settings/data-health/actions');
+        for (const item of affectedDonationsToRename) {
+          await renameDonationStorageFolderAction(item.donationId, item.oldCaseIds, item.newCaseIds);
+        }
+      } catch (e) {
+        console.error('Error renaming donation storage folders during cascade update:', e);
+      }
+    }
 
     return {
       success: true,

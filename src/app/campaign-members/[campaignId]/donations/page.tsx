@@ -99,7 +99,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { cn, getNestedValue } from '@/lib/utils';
+import { cn, getNestedValue, getImageSrc } from '@/lib/utils';
 import { bulkUpdateDonationStatusAction, bulkImportDonationsAction, upsertDonationWithDonorAction, bulkMapDonorsAction, bulkUnmapDonorsAction, bulkManualMapDonorsAction } from '@/app/donations/actions';
 import { donationCategories } from '@/lib/modules';
 import { BrandedLoader } from '@/components/branded-loader';
@@ -863,7 +863,7 @@ function DonationListContent() {
                         <CardDescription className="font-normal text-primary/70">Refined And Verified Donations For This Project Hub.</CardDescription>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                        <Button variant="outline" size="sm" onClick={() => { if(!donations.length) return; const headers = ['ID', 'Donor Name', 'Donor Phone', 'Amount', 'Date', 'Type', 'Status']; const rows = donations.map(d => [ d.id, d.donorName, d.donorPhone, d.amountForThisCampaign, d.donationDate, d.donationType, d.status ]); const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const blob = new Blob([csv], { type: 'text/csv' }); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `donations_${campaignId}.csv`; a.click(); }} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><Download className="mr-2 h-4 w-4"/> Export CSV</Button>
+                        <Button variant="outline" size="sm" onClick={() => { if(!donations.length) return; const headers = ['ID', 'Case ID', 'Donor Name', 'Donor Phone', 'Amount', 'Date', 'Type', 'Status']; const rows = donations.map(d => [ d.id, (d as any).caseId || campaign?.caseId || d.id, d.donorName, d.donorPhone, d.amountForThisCampaign, d.donationDate, d.donationType, d.status ]); const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n'); const blob = new Blob([csv], { type: 'text/csv' }); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = `donations_${campaignId}.csv`; a.click(); }} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><Download className="mr-2 h-4 w-4"/> Export CSV</Button>
                         <Button variant="outline" size="sm" onClick={() => setIsImportOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><UploadCloud className="mr-2 h-4 w-4"/> Import Data</Button>
                         {canUpdate && <Button variant="outline" onClick={() => setIsSearchOpen(true)} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"><LinkIcon className="mr-2 h-4 w-4"/> Select From Master</Button>}
                         {canUpdate && <Button onClick={() => { setEditingDonation(null); setIsFormOpen(true); }} className="font-bold shadow-md active:scale-95 transition-transform rounded-[12px]"><PlusCircle className="mr-2 h-4 w-4" /> Add Record</Button>}
@@ -1076,6 +1076,29 @@ function DonationListContent() {
           onOpenChange={setIsManualMapOpen} 
           onSelectDonor={handleBulkManualMap} 
       />
+
+      <Dialog open={isImageViewerOpen} onOpenChange={setIsImageViewerOpen}>
+        <DialogContent className="max-w-4xl max-h-[95vh] flex flex-col p-0 rounded-[12px] border-primary/10 overflow-hidden shadow-2xl animate-fade-in-zoom">
+            <DialogHeader className="px-6 py-4 bg-primary/5 border-b">
+                <DialogTitle className="text-xl font-bold text-primary tracking-tight capitalize tracking-widest">Transaction Artifact Viewer</DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="flex-1 bg-secondary/20">
+                <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
+                    {imageToView && (
+                        <Image src={getImageSrc(imageToView)} alt="Evidence Document" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                    )}
+                </div>
+                <ScrollBar orientation="horizontal" />
+                <ScrollBar orientation="vertical" />
+            </ScrollArea>
+            <DialogFooter className="sm:justify-center pt-4 flex-wrap gap-2 px-6 py-4 border-t bg-white flex">
+                <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.min(z * 1.2, 5))} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomIn className="mr-1 h-4 w-4"/> Zoom In</Button>
+                <Button variant="secondary" size="sm" onClick={() => setZoom(z => Math.max(z / 1.2, 0.5)) } className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><ZoomOut className="mr-1 h-4 w-4"/> Zoom Out</Button>
+                <Button variant="secondary" size="sm" onClick={() => setRotation(r => r + 90)} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RotateCw className="mr-1 h-4 w-4"/> Rotate</Button>
+                <Button variant="secondary" size="sm" onClick={() => { setZoom(1); setRotation(0); }} className="font-bold text-[10px] border-primary/10 text-primary transition-transform active:scale-95"><RefreshCw className="mr-1 h-4 w-4"/> Reset</Button>
+            </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }

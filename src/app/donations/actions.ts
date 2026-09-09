@@ -270,7 +270,7 @@ export async function upsertDonationWithDonorAction(
 }
 
 export async function deleteDonationAction(donationId: string): Promise<{ success: boolean; message: string }> {
-    const { adminDb } = getAdminServices();
+    const { adminDb, adminStorage } = getAdminServices();
     if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
     try {
         const docRef = adminDb.collection('donations').doc(donationId);
@@ -279,6 +279,23 @@ export async function deleteDonationAction(donationId: string): Promise<{ succes
 
         const d = snap.data() as Donation;
         const links = d.linkSplit || [];
+
+        // Purge storage files for this donation across all potential folder prefixes
+        if (adminStorage) {
+            try {
+                const { extractCaseIdsFromDonation, getDonationStorageFolderName } = await import('@/lib/storage-path');
+                const bucket = adminStorage.bucket();
+                const caseIds = extractCaseIdsFromDonation(d);
+                const caseFolder = getDonationStorageFolderName(caseIds, donationId);
+
+                await bucket.deleteFiles({ prefix: `donations/${donationId}/` }).catch(() => {});
+                if (caseFolder && caseFolder !== donationId) {
+                    await bucket.deleteFiles({ prefix: `donations/${caseFolder}/` }).catch(() => {});
+                }
+            } catch (storageErr) {
+                console.error('Failed purging donation storage files:', storageErr);
+            }
+        }
 
         await docRef.delete();
 

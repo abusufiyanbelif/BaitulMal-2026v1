@@ -39,7 +39,7 @@ import {
     Info,
     LayoutDashboard
 } from 'lucide-react';
-import { formatDate, cn } from '@/lib/utils';
+import { formatDate, cn, getImageSrc } from '@/lib/utils';
 import type { UserProfile, BankDetail, PendingVerification } from '@/lib/types';
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
@@ -574,7 +574,7 @@ export default function ProfilePage() {
                     {imageToView && (
                         <div className="relative h-[60vh] w-full mt-4 bg-slate-50 rounded-2xl flex items-center justify-center overflow-hidden">
                             <div style={{ transform: `scale(${zoom}) rotate(${rotation}deg)`, transition: 'transform 0.2s' }} className="relative w-full h-full">
-                                <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView)}`} alt="Document" fill className="object-contain" unoptimized />
+                                <Image src={getImageSrc(imageToView)} alt="Document" fill className="object-contain" unoptimized />
                             </div>
                         </div>
                     )}

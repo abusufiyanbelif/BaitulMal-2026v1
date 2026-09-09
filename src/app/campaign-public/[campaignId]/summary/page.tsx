@@ -280,7 +280,7 @@ export default function PublicCampaignSummaryPage() {
 
     const handleShare = async () => {
         if (!campaign) return;
-        const shareText = `Campaign: ${campaign.name}\n${campaign.description}`;
+        const shareText = `Campaign: ${campaign.name}\nCampaign / Case ID: ${campaign.caseId || campaign.id}\n${campaign.description}`;
         setShareDialogData({ title: `Campaign Summary: ${campaign.name}`, text: shareText, url: window.location.href });
         setIsShareDialogOpen(true);
     };

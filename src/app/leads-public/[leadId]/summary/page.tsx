@@ -276,7 +276,7 @@ export default function PublicLeadSummaryPage() {
 
     const handleShare = async () => {
         if (!lead || !fundingData) return;
-        const shareText = `Lead: ${lead.name}\n${lead.description}`;
+        const shareText = `Lead: ${lead.name}\nCase ID: ${lead.caseId || lead.id}\n${lead.description}`;
         setShareDialogData({ title: `Lead Summary: ${lead.name}`, text: shareText, url: window.location.href });
         setIsShareDialogOpen(true);
     };

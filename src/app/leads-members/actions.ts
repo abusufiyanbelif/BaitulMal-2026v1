@@ -88,11 +88,17 @@ export async function deleteLeadAction(leadId: string): Promise<{ success: boole
     try {
         const batch = adminDb.batch();
         const leadRef = adminDb.collection('leads').doc(leadId);
+        const leadSnap = await leadRef.get();
+        const leadData = leadSnap.data() as Lead | undefined;
+        const caseId = leadData?.caseId;
 
-        // Delete all files in the lead's storage folder
+        // Delete all files in the lead's storage folder (legacy and caseId formats)
         const bucket = adminStorage.bucket();
-        const prefix = `leads/${leadId}/`;
-        await bucket.deleteFiles({ prefix });
+        await bucket.deleteFiles({ prefix: `leads/${leadId}/` });
+        if (caseId) {
+            await bucket.deleteFiles({ prefix: `leads/${caseId}_${leadId}/` });
+            await bucket.deleteFiles({ prefix: `leads/${caseId}/` });
+        }
         
         const beneficiariesSnap = await adminDb.collection(`leads/${leadId}/beneficiaries`).get();
         beneficiariesSnap.forEach((doc: any) => batch.delete(doc.ref));

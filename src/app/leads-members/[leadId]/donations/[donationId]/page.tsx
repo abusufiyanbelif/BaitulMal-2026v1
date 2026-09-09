@@ -26,6 +26,7 @@ import { Separator } from '@/components/ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { BrandedLoader } from '@/components/branded-loader';
+import { cn, getImageSrc } from '@/lib/utils';
 import { upsertDonationWithDonorAction } from '@/app/donations/actions';
 
 const DetailItem = ({ label, value, isMono = false }: { label: string; value: React.ReactNode; isMono?: boolean }) => (
@@ -430,7 +431,7 @@ export default function DonationDetailsPage() {
                 </div>
             </div>
 
-            <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={{ title: 'Thank you!', text: `Verified donation of ₹${donation.amount.toFixed(2)} received.`, url: window.location.href }} />
+            <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={{ title: 'Thank you!', text: `Verified donation of ₹${donation.amount.toFixed(2)} received.\nCase ID: ${donation.caseId || donation.linkSplit?.[0]?.caseId || lead.caseId || lead.id}`, url: window.location.href }} />
 
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                 <DialogContent className="max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden rounded-[16px] border-primary/10">
@@ -449,7 +450,7 @@ export default function DonationDetailsPage() {
                     <ScrollArea className="flex-1 bg-secondary/20">
                         <div className="relative min-h-[70vh] w-full flex items-center justify-center p-4">
                             {imageToView && (
-                                <Image src={`/api/image-proxy?url=${encodeURIComponent(imageToView.url)}`} alt="Evidence Document" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
+                                <Image src={getImageSrc(imageToView.url)} alt="Evidence Document" fill sizes="100vw" className="object-contain transition-transform origin-center" style={{ transform: `scale(${zoom}) rotate(${rotation}deg)` }} unoptimized />
                             )}
                         </div>
                         <ScrollBar orientation="horizontal" />

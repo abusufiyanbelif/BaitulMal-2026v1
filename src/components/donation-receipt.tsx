@@ -64,6 +64,9 @@ export const DonationReceipt = React.forwardRef<HTMLDivElement, DonationReceiptP
                         <div className="space-y-4">
                             <h3 className="text-[10px] font-black text-primary uppercase tracking-[0.2em] border-b border-slate-100 pb-2">Certificate Registry</h3>
                             <ReceiptRow label="Receipt No." value={donation.id.toUpperCase()} isMono />
+                            {(donation.caseId || donation.linkSplit?.[0]?.caseId) && (
+                                <ReceiptRow label="Case / Campaign ID" value={donation.caseId || donation.linkSplit?.[0]?.caseId} isMono />
+                            )}
                             <ReceiptRow label="Issue Date" value={formatDate(donation.donationDate, { dateStyle: 'medium' })} />
                             <ReceiptRow label="Audit Status" value={<Badge variant="eligible" className="text-[9px] font-black uppercase px-2 py-0">Verified</Badge>} />
                         </div>

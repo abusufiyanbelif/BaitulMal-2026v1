@@ -519,7 +519,10 @@ export default function BeneficiaryDetailsPage() {
                                                         <div className="p-1.5 rounded-md bg-primary/5 text-primary">
                                                             {link.type === 'Campaign' ? <FolderKanban className="h-3.5 w-3.5"/> : <Lightbulb className="h-3.5 w-3.5"/>}
                                                         </div>
-                                                        <p className="font-bold text-sm text-primary">{link.name}</p>
+                                                         <div>
+                                                             <p className="font-bold text-sm text-primary">{link.name}</p>
+                                                             <p className="text-[10px] font-mono text-muted-foreground font-bold">{link.type} • ID: {link.caseId || link.id}</p>
+                                                         </div>
                                                     </div>
                                                 </TableCell>
                                                 <TableCell className="text-right font-mono text-xs opacity-60">₹{link.kitAmount.toLocaleString('en-IN')}</TableCell>
