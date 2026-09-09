@@ -24,6 +24,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import type { Lead, DonationCategory } from '@/lib/types';
 import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters, priorityLevels } from '@/lib/modules';
+import { generateNextUseCaseIdClient } from '@/lib/use-case-id';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { FileUploader } from '@/components/file-uploader';
@@ -35,6 +36,7 @@ import { Check, Sparkles } from 'lucide-react';
 
 const leadSchema = z.object({
   name: z.string().min(3, 'Lead Name Must Be At Least 3 Characters.'),
+  caseId: z.string().optional(),
   description: z.string().optional(),
   purpose: z.enum(['Relief', 'General', 'Education', 'Medical', 'Other']),
   purposeDetails: z.string().optional(),
@@ -107,6 +109,7 @@ export default function CreateLeadPage() {
     resolver: zodResolver(leadSchema),
     defaultValues: {
       name: '',
+      caseId: '',
       description: '',
       purpose: 'Relief',
       category: '',
@@ -121,6 +124,17 @@ export default function CreateLeadPage() {
       allowedDonationTypes: [...donationCategories],
     },
   });
+
+  const startDate = form.watch('startDate');
+  useEffect(() => {
+    if (firestore && startDate) {
+      generateNextUseCaseIdClient(firestore, startDate, 'leads').then((nextId: string) => {
+        if (!form.getValues('caseId')) {
+          form.setValue('caseId', nextId);
+        }
+      });
+    }
+  }, [firestore, startDate, form]);
   
   const [selectedDefaultImageUrl, setSelectedDefaultImageUrl] = useState<string | null>(null);
 
@@ -353,9 +367,24 @@ export default function CreateLeadPage() {
         <CardContent className="pt-6">
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 font-normal text-primary">
-              <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem>{renderLabel('Lead Name', 'name')}<FormControl><Input placeholder="e.g. Surgery Assistance For Patient A" {...field} className="font-normal" /></FormControl><FormMessage /></FormItem>
-              )}/>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="sm:col-span-1">
+                  <FormField control={form.control} name="caseId" render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="font-bold text-primary">Lead / Case ID (DDMMYYYYXX)</FormLabel>
+                      <FormControl>
+                        <Input placeholder="e.g. 0109202601" {...field} className="font-mono font-bold text-primary" />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}/>
+                </div>
+                <div className="sm:col-span-2">
+                  <FormField control={form.control} name="name" render={({ field }) => (
+                    <FormItem>{renderLabel('Lead Name', 'name')}<FormControl><Input placeholder="e.g. Surgery Assistance For Patient A" {...field} className="font-normal" /></FormControl><FormMessage /></FormItem>
+                  )}/>
+                </div>
+              </div>
               <FormField control={form.control} name="description" render={({ field }) => (
                 <FormItem>{renderLabel('Detailed Description', 'description')}<FormControl><Textarea placeholder="Background And Specific Needs..." {...field} rows={4} className="font-normal" /></FormControl><FormMessage /></FormItem>
               )}/>

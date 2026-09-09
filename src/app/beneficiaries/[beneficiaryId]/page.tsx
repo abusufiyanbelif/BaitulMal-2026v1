@@ -42,6 +42,7 @@ import { ResetPasswordDialog } from '@/components/reset-password-dialog';
 
 interface LinkedInitiative {
     id: string;
+    caseId?: string;
     name: string;
     type: 'Campaign' | 'Lead';
     initiativeStatus: Campaign['status'] | Lead['status'];
@@ -136,6 +137,7 @@ export default function BeneficiaryDetailsPage() {
                 const cData = c.data() as Campaign;
                 initiatives.push({ 
                     id: c.id, 
+                    caseId: cData.caseId || c.id,
                     name: cData.name, 
                     type: 'Campaign', 
                     initiativeStatus: cData.status, 
@@ -159,6 +161,7 @@ export default function BeneficiaryDetailsPage() {
                 const lData = l.data() as Lead;
                 initiatives.push({ 
                     id: l.id, 
+                    caseId: lData.caseId || l.id,
                     name: lData.name, 
                     type: 'Lead', 
                     initiativeStatus: lData.status, 
@@ -396,7 +399,7 @@ export default function BeneficiaryDetailsPage() {
                                                                     {link.name}
                                                                 </Link>
                                                             </p>
-                                                            <p className="text-[10px] font-normal text-muted-foreground tracking-tight capitalize">{link.type} • {link.initiativeStatus}</p>
+                                                            <p className="text-[10px] font-normal text-muted-foreground tracking-tight capitalize">{link.type} • ID: {link.caseId || link.id} • {link.initiativeStatus}</p>
                                                         </div>
                                                     </div>
                                                 </TableCell>

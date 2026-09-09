@@ -1,0 +1,59 @@
+BUILD FAILURE LOG - 21/6/2026, 6:30:49 am
+Version: 2026.06.21.2
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+   Generating static pages (0/76) ...
+   Generating static pages (19/76) 
+   Generating static pages (38/76) 
+   Generating static pages (57/76) 
+ ✓ Generating static pages (76/76)
+   Finalizing page optimization ...
+   Collecting build traces ...
+
+
+STDERR:
+ ⚠ Using edge runtime on a page currently disables static generation for that page
+Error: ENOENT: no such file or directory, open 'C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\pages\_app.js.nft.json'
+    at async open (node:internal/fs/promises:642:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\collect-build-traces.js:429:50
+    at async Promise.all (index 0)
+    at async C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\collect-build-traces.js:410:13
+    at async Span.traceAsyncFn (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\trace\trace.js:154:20)
+    at async collectBuildTraces (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\collect-build-traces.js:164:5)
+    at async C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\index.js:2134:13
+    at async Span.traceAsyncFn (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\trace\trace.js:154:20)
+    at async build (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\index.js:368:9) {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\.next\\server\\pages\\_app.js.nft.json'
+}
+
+
+ERROR MESSAGE:
+Command failed: npx next build
+ ⚠ Using edge runtime on a page currently disables static generation for that page
+Error: ENOENT: no such file or directory, open 'C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\pages\_app.js.nft.json'
+    at async open (node:internal/fs/promises:642:25)
+    at async Object.readFile (node:internal/fs/promises:1279:14)
+    at async C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\collect-build-traces.js:429:50
+    at async Promise.all (index 0)
+    at async C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\collect-build-traces.js:410:13
+    at async Span.traceAsyncFn (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\trace\trace.js:154:20)
+    at async collectBuildTraces (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\collect-build-traces.js:164:5)
+    at async C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\index.js:2134:13
+    at async Span.traceAsyncFn (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\trace\trace.js:154:20)
+    at async build (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\index.js:368:9) {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\.next\\server\\pages\\_app.js.nft.json'
+}

@@ -108,6 +108,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFooter } from '@/components/ui/table';
 import type { ChartConfig } from '@/components/ui/chart';
 import { recalculateCampaignGoalAction } from '../../actions';
+import { updateSingleUseCaseIdAction } from '@/app/settings/data-health/actions';
 import { PendingUpdateWarning } from '@/components/pending-update-warning';
 import { VerificationRequestDialog } from '@/components/verification-request-dialog';
 import { checkPendingVerificationAction, cleanupPendingVerificationsAction } from '@/app/verifications/actions';
@@ -184,6 +185,38 @@ export default function CampaignSummaryPage() {
     const [pendingSaveData, setPendingSaveData] = useState<any>(null);
     const [existingPendingRequest, setExistingPendingRequest] = useState<PendingVerification | null>(null);
     const [selectedDefaultImageUrl, setSelectedDefaultImageUrl] = useState<string | null>(null);
+
+    const [isEditCaseIdOpen, setIsEditCaseIdOpen] = useState(false);
+    const [newCaseIdInput, setNewCaseIdInput] = useState('');
+    const [isUpdatingCaseId, setIsUpdatingCaseId] = useState(false);
+
+    const handleOpenEditCaseId = () => {
+        setNewCaseIdInput(campaign?.caseId || '');
+        setIsEditCaseIdOpen(true);
+    };
+
+    const handleSaveCaseId = async () => {
+        if (!newCaseIdInput || !userProfile || !campaignId) return;
+        setIsUpdatingCaseId(true);
+        try {
+            const result = await updateSingleUseCaseIdAction(
+                'campaigns',
+                campaignId,
+                campaign?.caseId,
+                newCaseIdInput,
+                { id: userProfile.id, name: userProfile.name }
+            );
+            if (result.success) {
+                toast({ title: 'Case ID Updated', description: result.message, variant: 'success' });
+                setIsEditCaseIdOpen(false);
+                forceRefetchCampaign();
+            } else {
+                toast({ title: 'Update Failed', description: result.message, variant: 'destructive' });
+            }
+        } finally {
+            setIsUpdatingCaseId(false);
+        }
+    };
 
     const summaryRef = useRef<HTMLDivElement>(null);
 
@@ -610,7 +643,21 @@ export default function CampaignSummaryPage() {
             <div className="flex justify-between items-center mb-4 flex-wrap gap-2 animate-fade-in-up">
                  <div className="space-y-1">
                     {editMode ? ( <Input id="name" value={editableCampaign.name || ''} onChange={(e) => handleFieldChange('name', e.target.value)} className="text-3xl font-bold h-auto p-0 border-0 shadow-none focus-visible:ring-0 text-primary" /> ) : ( <h1 className="text-3xl font-bold text-primary tracking-tight">{campaign?.name}</h1> )}
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-1.5 bg-primary/5 px-2.5 py-0.5 rounded-full border border-primary/10">
+                            <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">ID:</span>
+                            <span className="text-xs font-mono font-bold text-primary">{campaign?.caseId || campaign?.id}</span>
+                            {canUpdateSummary && (
+                                <button
+                                    type="button"
+                                    onClick={handleOpenEditCaseId}
+                                    className="ml-1 text-primary/60 hover:text-primary transition-colors p-0.5"
+                                    title="Edit Campaign / Case ID"
+                                >
+                                    <Edit className="h-3 w-3" />
+                                </button>
+                            )}
+                        </div>
                         <Badge variant="outline" className="text-[10px] font-bold tracking-tight capitalize">{campaign?.status}</Badge>
                         <Badge variant={campaign?.authenticityStatus === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-bold flex items-center gap-1 capitalize">
                             <ShieldCheck className="h-3 w-3" />
@@ -1339,7 +1386,38 @@ export default function CampaignSummaryPage() {
             )}
 
             <ShareDialog open={isShareDialogOpen} onOpenChange={setIsShareDialogOpen} shareData={shareDialogData} />
- 
+
+            <Dialog open={isEditCaseIdOpen} onOpenChange={setIsEditCaseIdOpen}>
+                <DialogContent className="rounded-[20px] border-primary/10 shadow-2xl max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="font-bold text-primary text-lg">Edit Campaign / Case ID</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4 py-2">
+                        <p className="text-xs text-muted-foreground">
+                            Updating the Case ID will automatically cascade changes across all linked donations, verification logs, and audit histories across the system.
+                        </p>
+                        <div className="space-y-1">
+                            <Label className="font-bold text-xs text-primary">New Case ID (DDMMYYYYXX)</Label>
+                            <Input
+                                value={newCaseIdInput}
+                                onChange={e => setNewCaseIdInput(e.target.value)}
+                                placeholder="e.g. 0109202601"
+                                className="font-mono font-bold text-primary"
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter className="gap-2">
+                        <Button variant="outline" onClick={() => setIsEditCaseIdOpen(false)} disabled={isUpdatingCaseId} className="font-bold border-primary/20">
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSaveCaseId} disabled={isUpdatingCaseId} className="font-bold bg-primary text-white">
+                            {isUpdatingCaseId ? <RefreshCw className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                            Update & Cascade References
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
             <div className="mt-8 animate-fade-in-up">
                 <AuditHistory targetId={campaignId} module="campaigns" />
             </div>

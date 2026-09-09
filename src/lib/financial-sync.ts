@@ -61,8 +61,12 @@ export async function syncInitiativeCollectedTotals(db: any, links: DonationLink
         let otherEligibleSum = 0;
 
         allVerifiedDonations.forEach(d => {
-            // Support both prefixed and raw IDs for robustness
-            const split = d.linkSplit?.find(l => l.linkId === id || l.linkId === `${type}_${id}`);
+            // Support both prefixed, raw IDs, and caseId for robustness
+            const split = d.linkSplit?.find(l => 
+                l.linkId === id || 
+                l.linkId === `${type}_${id}` || 
+                ((l as any).caseId && (l as any).caseId === (initiativeData as any).caseId)
+            );
             if (split) {
                 const totalDonation = d.amount || 1;
                 const proportion = split.amount / totalDonation;

@@ -97,6 +97,7 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                                 </CardHeader>
                                 <CardContent className="flex-grow space-y-3 p-4 pt-0">
                                     <div className="flex flex-wrap gap-2 items-center text-xs">
+                                        <Badge variant="outline" className="text-[10px] border-primary/20 text-primary font-bold">ID: {campaign.caseId || campaign.id}</Badge>
                                         <Badge variant="outline" className="text-[10px] border-primary/20 text-primary font-bold capitalize">{campaign.category}</Badge>
                                         <Badge 
                                           variant={campaign.status === 'Active' ? 'success' : 'outline'}
@@ -226,7 +227,9 @@ export function PublicCampaignsView() {
     let items = campaignsWithProgress.filter(c => 
         (statusFilter === 'All' || c.status === statusFilter) &&
         (categoryFilter === 'All' || c.category === categoryFilter) &&
-        (c.name.toLowerCase().includes(searchTerm.toLowerCase()))
+        (c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+         (c.caseId && c.caseId.toLowerCase().includes(searchTerm.toLowerCase())) || 
+         c.id.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     if (dateRange?.from) {

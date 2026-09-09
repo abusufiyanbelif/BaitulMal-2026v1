@@ -197,7 +197,12 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
             </div>
             <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                    <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary tracking-tight px-2">{lead.purpose}</Badge>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary tracking-tight px-2">{lead.purpose}</Badge>
+                        <Badge variant="outline" className="text-[10px] font-bold tracking-tight border-primary/20 text-primary bg-primary/5 px-2">
+                            ID: {lead.caseId || lead.id}
+                        </Badge>
+                    </div>
                     <Badge 
                         variant={lead.status === 'Active' ? 'success' : lead.status === 'Completed' ? 'secondary' : 'outline'}
                         className={cn("text-[10px] font-bold", lead.status === 'Active' && "animate-status-pulse")}
@@ -427,7 +432,9 @@ export default function LeadPage() {
         const matchesPurpose = purposeFilter.length === 0 || purposeFilter.includes(l.purpose);
         const matchesAuth = authenticityFilter.length === 0 || authenticityFilter.includes(l.authenticityStatus || 'Pending Verification');
         const matchesVisibility = visibilityFilter.length === 0 || visibilityFilter.includes(l.publicVisibility || 'Hold');
-        const matchesSearch = l.name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = l.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (l.caseId && l.caseId.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          l.id.toLowerCase().includes(searchTerm.toLowerCase());
         
         return matchesSearch && matchesStatus && matchesPurpose && matchesAuth && matchesVisibility;
     });

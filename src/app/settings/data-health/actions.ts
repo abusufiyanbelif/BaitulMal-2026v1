@@ -624,3 +624,169 @@ export async function initializePortalCredentialsAction(): Promise<{ success: bo
         return { success: false, message: `Initialization Failed: ${e.message}`, updatedDonors: 0, updatedBeneficiaries: 0 };
     }
 }
+
+/**
+ * Migration action to backfill / re-format all existing Campaigns and Leads to standard DDMMYYYYXX Case IDs
+ * and cascade link updates to linked donations and system logs.
+ */
+export async function migrateUseCaseIdsAction(): Promise<{
+    success: boolean;
+    message: string;
+    migratedCampaigns: number;
+    migratedLeads: number;
+    updatedDonations: number;
+}> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) {
+        return { success: false, message: ADMIN_SDK_ERROR_MESSAGE, migratedCampaigns: 0, migratedLeads: 0, updatedDonations: 0 };
+    }
+
+    try {
+        let migratedCampaigns = 0;
+        let migratedLeads = 0;
+        let updatedDonations = 0;
+
+        const processCollection = async (collName: 'campaigns' | 'leads') => {
+            const snap = await adminDb.collection(collName).get();
+            const docs: any[] = [];
+            snap.forEach((doc: any) => docs.push({ id: doc.id, ref: doc.ref, ...doc.data() }));
+
+            // Sort by creation date / start date
+            docs.sort((a, b) => {
+                const dateA = a.createdAt?.toDate?.() || new Date(a.startDate || Date.now());
+                const dateB = b.createdAt?.toDate?.() || new Date(b.startDate || Date.now());
+                return dateA.getTime() - dateB.getTime();
+            });
+
+            // Group by DDMMYYYY
+            const dateGroups: Record<string, any[]> = {};
+            for (const item of docs) {
+                const rawDate = item.createdAt?.toDate?.() || new Date(item.startDate || Date.now());
+                const day = String(rawDate.getDate()).padStart(2, '0');
+                const month = String(rawDate.getMonth() + 1).padStart(2, '0');
+                const year = rawDate.getFullYear();
+                const key = `${day}${month}${year}`;
+
+                if (!dateGroups[key]) dateGroups[key] = [];
+                dateGroups[key].push(item);
+            }
+
+            // Assign sequential DDMMYYYYXX
+            for (const [dateKey, groupItems] of Object.entries(dateGroups)) {
+                let seq = 1;
+                for (const item of groupItems) {
+                    const seqStr = String(seq).padStart(2, '0');
+                    const generatedId = `${dateKey}${seqStr}`;
+                    seq++;
+
+                    // Only update if missing or different
+                    if (item.caseId !== generatedId) {
+                        const oldId = item.caseId;
+                        const batch = adminDb.batch();
+
+                        batch.update(item.ref, {
+                            caseId: generatedId,
+                            updatedAt: FieldValue.serverTimestamp(),
+                        });
+
+                        // Cascade to donations linking this item
+                        const donSnap = await adminDb.collection('donations').get();
+                        donSnap.forEach((dDoc: any) => {
+                            const dData = dDoc.data();
+                            let isAffected = false;
+                            let updatedLinkSplit = dData.linkSplit;
+
+                            if (Array.isArray(dData.linkSplit)) {
+                                updatedLinkSplit = dData.linkSplit.map((l: any) => {
+                                    if (
+                                        l.linkId === item.id ||
+                                        (oldId && l.linkId === oldId) ||
+                                        l.linkId === `${collName.slice(0, -1)}_${item.id}`
+                                    ) {
+                                        isAffected = true;
+                                        return { ...l, caseId: generatedId };
+                                    }
+                                    return l;
+                                });
+                            }
+
+                            if (isAffected) {
+                                batch.update(dDoc.ref, {
+                                    linkSplit: updatedLinkSplit,
+                                    updatedAt: FieldValue.serverTimestamp(),
+                                });
+                                updatedDonations++;
+                            }
+                        });
+
+                        await batch.commit();
+
+                        if (collName === 'campaigns') migratedCampaigns++;
+                        else migratedLeads++;
+                    }
+                }
+            }
+        };
+
+        await processCollection('campaigns');
+        await processCollection('leads');
+
+        revalidatePath('/campaign-members');
+        revalidatePath('/leads-members');
+        revalidatePath('/donations');
+        revalidatePath('/settings/data-health');
+
+        return {
+            success: true,
+            message: `Migration completed successfully! Processed ${migratedCampaigns} Campaigns and ${migratedLeads} Leads with ${updatedDonations} donation cross-references updated.`,
+            migratedCampaigns,
+            migratedLeads,
+            updatedDonations,
+        };
+    } catch (error: any) {
+        console.error('Case ID Migration Error:', error);
+        return {
+            success: false,
+            message: `Migration Failed: ${error.message}`,
+            migratedCampaigns: 0,
+            migratedLeads: 0,
+            updatedDonations: 0,
+        };
+    }
+}
+
+/**
+ * Server Action for editing a Case ID and performing a cascading update.
+ */
+export async function updateSingleUseCaseIdAction(
+    collectionName: 'campaigns' | 'leads',
+    docId: string,
+    oldCaseId: string | undefined,
+    newCaseId: string,
+    updatedBy: { id: string; name: string }
+): Promise<{ success: boolean; message: string }> {
+    const { adminDb } = getAdminServices();
+    if (!adminDb) return { success: false, message: ADMIN_SDK_ERROR_MESSAGE };
+
+    const { cascadeUpdateUseCaseIdAdmin } = await import('@/lib/use-case-id');
+    const result = await cascadeUpdateUseCaseIdAdmin(
+        adminDb,
+        collectionName,
+        docId,
+        oldCaseId,
+        newCaseId,
+        updatedBy
+    );
+
+    if (result.success) {
+        revalidatePath('/campaign-members');
+        revalidatePath('/leads-members');
+        revalidatePath(`/campaign-members/${docId}/summary`);
+        revalidatePath(`/leads-members/${docId}/summary`);
+        revalidatePath('/donations');
+        revalidatePath('/dashboard');
+    }
+
+    return { success: result.success, message: result.message };
+}
+

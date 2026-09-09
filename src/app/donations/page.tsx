@@ -413,7 +413,10 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                                 <div className="p-2 rounded-lg bg-primary/[0.03] text-primary">
                                                                     {link.linkType === 'campaign' ? <FolderKanban className="h-3.5 w-3.5" /> : <Lightbulb className="h-3.5 w-3.5" />}
                                                                 </div>
-                                                                <span className="text-sm font-bold text-primary tracking-tight truncate max-w-[150px]">{link.linkName}</span>
+                                                                <div className="flex flex-col">
+                                                                    <span className="text-sm font-bold text-primary tracking-tight truncate max-w-[180px]">{link.linkName}</span>
+                                                                    <span className="text-[10px] font-mono text-muted-foreground font-bold">ID: {link.caseId || link.linkId}</span>
+                                                                </div>
                                                             </TableCell>
                                                             <TableCell className="text-right font-black font-mono text-primary py-4 px-6 text-sm">₹{link.amount.toFixed(2)}</TableCell>
                                                         </TableRow>
@@ -514,7 +517,8 @@ function DonationListContent() {
         items = items.filter(d => 
             d.donorName.toLowerCase().includes(lower) || 
             d.donorPhone.includes(searchTerm) ||
-            d.id.toLowerCase().includes(lower)
+            d.id.toLowerCase().includes(lower) ||
+            (d.linkSplit && d.linkSplit.some(l => l.linkName.toLowerCase().includes(lower) || (l.caseId && l.caseId.toLowerCase().includes(lower)) || l.linkId.toLowerCase().includes(lower)))
         );
     }
 

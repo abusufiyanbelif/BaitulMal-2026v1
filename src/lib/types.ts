@@ -327,6 +327,7 @@ export interface ItemCategory {
 
 export interface Campaign extends DocumentData {
   id: string;
+  caseId?: string;
   campaignNumber?: number;
   name: string;
   imageUrl?: string;
@@ -358,6 +359,7 @@ export interface Campaign extends DocumentData {
 
 export interface Lead extends DocumentData {
   id: string;
+  caseId?: string;
   leadNumber?: number;
   name: string;
   imageUrl?: string;
@@ -495,6 +497,7 @@ export interface Donor extends DocumentData {
 
 export interface DonationLink {
   linkId: string;
+  caseId?: string;
   linkName: string;
   linkType: 'campaign' | 'lead' | 'general';
   amount: number;

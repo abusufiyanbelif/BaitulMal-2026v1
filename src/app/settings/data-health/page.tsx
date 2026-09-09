@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Checkbox } from '@/components/ui/checkbox';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
-import { scanDataHealthAction, fixDataIssuesAction, recalculateAllCollectedAmountsAction, initializePortalCredentialsAction } from './actions';
+import { scanDataHealthAction, fixDataIssuesAction, recalculateAllCollectedAmountsAction, initializePortalCredentialsAction, migrateUseCaseIdsAction } from './actions';
 import type { DataIssue, ScanResult } from './actions';
 import { cn } from '@/lib/utils';
 import {
@@ -27,6 +27,7 @@ import {
     Filter,
     Search,
     X,
+    Hash,
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -139,6 +140,7 @@ export default function DataHealthPage() {
     const [isFixing, setIsFixing] = useState(false);
     const [isRecalculating, setIsRecalculating] = useState(false);
     const [isInitializingCredentials, setIsInitializingCredentials] = useState(false);
+    const [isMigratingUseCaseIds, setIsMigratingUseCaseIds] = useState(false);
     const [scanResult, setScanResult] = useState<ScanResult | null>(null);
     const [selectedIds, setSelectedIds] = useState<string[]>([]);
     const [filterSeverity, setFilterSeverity] = useState<string>('all');
@@ -208,6 +210,20 @@ export default function DataHealthPage() {
         }
     };
 
+    const handleMigrateUseCaseIds = async () => {
+        setIsMigratingUseCaseIds(true);
+        try {
+            const result = await migrateUseCaseIdsAction();
+            toast({
+                title: result.success ? 'Case ID Migration Completed' : 'Migration Failed',
+                description: result.message,
+                variant: result.success ? 'success' : 'destructive'
+            });
+        } finally {
+            setIsMigratingUseCaseIds(false);
+        }
+    };
+
     const toggleSelect = (id: string) => {
         setSelectedIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
     };
@@ -265,6 +281,15 @@ export default function DataHealthPage() {
                     </p>
                 </div>
                 <div className="flex flex-wrap gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={handleMigrateUseCaseIds}
+                        disabled={isMigratingUseCaseIds || isScanning}
+                        className="font-bold border-primary/20 text-primary active:scale-95 transition-transform"
+                    >
+                        {isMigratingUseCaseIds ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Hash className="mr-2 h-4 w-4" />}
+                        Migrate Case IDs (DDMMYYYYXX)
+                    </Button>
                     <Button
                         variant="outline"
                         onClick={handleInitCredentials}

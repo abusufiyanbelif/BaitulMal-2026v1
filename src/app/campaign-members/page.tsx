@@ -218,7 +218,12 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
             </div>
             <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                    <Badge variant="secondary" className="text-[10px] font-bold tracking-tight">{campaign.category}</Badge>
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        <Badge variant="secondary" className="text-[10px] font-bold tracking-tight">{campaign.category}</Badge>
+                        <Badge variant="outline" className="text-[10px] font-bold tracking-tight border-primary/20 text-primary bg-primary/5">
+                            ID: {campaign.caseId || campaign.id}
+                        </Badge>
+                    </div>
                     <Badge 
                         variant={campaign.status === 'Active' ? 'success' : 'outline'}
                         className={cn("text-[10px] font-bold", campaign.status === 'Active' && "animate-status-pulse")}
@@ -450,7 +455,9 @@ export default function CampaignPage() {
         const matchesCategory = categoryFilter.length === 0 || categoryFilter.includes(c.category);
         const matchesAuth = authenticityFilter.length === 0 || authenticityFilter.includes(c.authenticityStatus || 'Pending Verification');
         const matchesVisibility = visibilityFilter.length === 0 || visibilityFilter.includes(c.publicVisibility || 'Hold');
-        const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          (c.caseId && c.caseId.toLowerCase().includes(searchTerm.toLowerCase())) ||
+          c.id.toLowerCase().includes(searchTerm.toLowerCase());
         return matchesSearch && matchesStatus && matchesCategory && matchesAuth && matchesVisibility;
     });
 

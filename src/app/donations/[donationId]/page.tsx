@@ -141,7 +141,7 @@ export default function UnlinkedDonationDetailsPage() {
                 const source = linkType === 'campaign' ? allCampaigns : allLeads;
                 const linkedItem = source?.find((item: Campaign | Lead) => item.id === id);
 
-                return { linkId: id, linkName: linkedItem?.name || 'Unknown Initiative', linkType: linkType, amount: split.amount };
+                return { linkId: id, caseId: linkedItem?.caseId || id, linkName: linkedItem?.name || 'Unknown Initiative', linkType: linkType, amount: split.amount };
             }).filter((item): item is NonNullable<typeof item> => item !== null && item.amount > 0);
 
             const processedDonationData = {
@@ -452,7 +452,10 @@ export default function UnlinkedDonationDetailsPage() {
                                                     <TableRow key={link.linkId} className="hover:bg-primary/[0.02] border-b border-primary/5">
                                                         <TableCell className="flex items-center gap-2 py-2">
                                                             {link.linkType === 'campaign' ? <FolderKanban className="h-3.5 w-3.5 text-primary/40" /> : <Lightbulb className="h-3.5 w-3.5 text-primary/40" />}
-                                                            <span className="font-bold text-xs truncate max-w-[150px]">{link.linkName}</span>
+                                                            <div className="flex flex-col">
+                                                                <span className="font-bold text-xs truncate max-w-[180px]">{link.linkName}</span>
+                                                                <span className="text-[10px] font-mono text-muted-foreground font-bold">ID: {link.caseId || link.linkId}</span>
+                                                            </div>
                                                         </TableCell>
                                                         <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{link.amount.toFixed(2)}</TableCell>
                                                     </TableRow>

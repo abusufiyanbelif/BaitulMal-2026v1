@@ -1,7 +1,7 @@
 # 📘 User Guide: /registry-index
     
-**Build Version:** `2026.05.18.1`
-**Last Updated:** 18/5/2026, 1:28:56 am
+**Build Version:** `2026.06.21.4`
+**Last Updated:** 21/6/2026, 6:35:04 am
 **Internal Route:** `/registry-index`
 
 ---

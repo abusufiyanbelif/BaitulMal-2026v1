@@ -122,7 +122,7 @@ export const DonationReceipt = React.forwardRef<HTMLDivElement, DonationReceiptP
                                                         {link.linkType === 'campaign' ? <FolderKanban className="h-3 w-3 text-slate-400" /> : <Lightbulb className="h-3 w-3 text-slate-400" />}
                                                         <div className="flex flex-col">
                                                             <p className="font-bold text-xs text-slate-700">{link.linkName}</p>
-                                                            <p className="text-[8px] text-slate-400 font-mono uppercase">{link.linkType}</p>
+                                                            <p className="text-[8px] text-slate-400 font-mono uppercase">{link.linkType} • ID: {link.caseId || link.linkId}</p>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell className="py-2 text-right font-mono text-xs font-bold text-slate-900">₹{Number(link.amount || 0).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</TableCell>

@@ -95,6 +95,7 @@ const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: num
                                 </CardHeader>
                                 <CardContent className="flex-grow space-y-3 p-4 pt-0">
                                     <div className="flex flex-wrap gap-2 items-center text-xs">
+                                        <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary">ID: {lead.caseId || lead.id}</Badge>
                                         <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary">{lead.purpose}</Badge>
                                         <Badge 
                                           variant={lead.status === 'Active' ? 'success' : lead.status === 'Completed' ? 'secondary' : 'outline'}
@@ -225,7 +226,9 @@ export function PublicLeadsView() {
     let items = leadsWithProgress.filter(l => 
         (statusFilter === 'All' || l.status === statusFilter) &&
         (purposeFilter === 'All' || l.purpose === purposeFilter) &&
-        (l.name.toLowerCase().includes(searchTerm.toLowerCase()))
+        (l.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+         (l.caseId && l.caseId.toLowerCase().includes(searchTerm.toLowerCase())) ||
+         l.id.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     if (dateRange?.from) {

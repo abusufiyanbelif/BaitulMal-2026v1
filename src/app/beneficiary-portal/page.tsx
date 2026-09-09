@@ -29,6 +29,7 @@ import { useAuth } from '@/firebase';
 
 interface LinkedInitiative {
     id: string;
+    caseId?: string;
     name: string;
     type: 'Campaign' | 'Lead';
     initiativeStatus: string;
@@ -72,6 +73,7 @@ export default function BeneficiaryPortalPage() {
                     const cData = c.data();
                     results.push({
                         id: c.id,
+                        caseId: cData.caseId || c.id,
                         name: cData.name,
                         type: 'Campaign',
                         initiativeStatus: cData.status,
@@ -93,6 +95,7 @@ export default function BeneficiaryPortalPage() {
                     const lData = l.data();
                     results.push({
                         id: l.id,
+                        caseId: lData.caseId || l.id,
                         name: lData.name,
                         type: 'Lead',
                         initiativeStatus: lData.status,
@@ -303,7 +306,7 @@ export default function BeneficiaryPortalPage() {
                                         <TableRow key={item.id} className="border-slate-50 hover:bg-slate-50/50 transition-colors">
                                             <TableCell className="pl-8 py-5">
                                                 <div className="font-bold text-slate-900 text-sm">{item.name}</div>
-                                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{item.type}</div>
+                                                <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-0.5">{item.type} • ID: {item.caseId || item.id}</div>
                                             </TableCell>
                                             <TableCell className="font-bold text-slate-600 text-xs">
                                                 {item.purpose}

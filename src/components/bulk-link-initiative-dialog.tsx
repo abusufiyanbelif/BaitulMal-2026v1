@@ -124,7 +124,7 @@ export function BulkLinkInitiativeDialog({ open, onOpenChange, mode, selectedDon
                                     )}
                                     {campaigns.map(c => (
                                         <SelectItem key={`campaign_${c.id}`} value={`campaign_${c.id}`} className="font-bold text-primary">
-                                            {c.name}
+                                            {c.name} (ID: {c.caseId || c.id})
                                         </SelectItem>
                                     ))}
                                     {leads.length > 0 && (
@@ -132,7 +132,7 @@ export function BulkLinkInitiativeDialog({ open, onOpenChange, mode, selectedDon
                                     )}
                                     {leads.map(l => (
                                         <SelectItem key={`lead_${l.id}`} value={`lead_${l.id}`} className="font-bold text-primary">
-                                            {l.name}
+                                            {l.name} (ID: {l.caseId || l.id})
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

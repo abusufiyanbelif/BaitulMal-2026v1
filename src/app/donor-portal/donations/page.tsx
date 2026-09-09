@@ -75,7 +75,8 @@ export default function DonorDonationsPage() {
                 d.id.toLowerCase().includes(q) || 
                 (d.linkName || '').toLowerCase().includes(q) ||
                 (d.campaignName || '').toLowerCase().includes(q) ||
-                (d.type || '').toLowerCase().includes(q)
+                (d.type || '').toLowerCase().includes(q) ||
+                (d.linkSplit && d.linkSplit.some(l => (l.caseId && l.caseId.toLowerCase().includes(q)) || l.linkId.toLowerCase().includes(q)))
             );
         }
 
@@ -259,6 +260,7 @@ export default function DonorDonationsPage() {
                                                         </div>
                                                         <div className="text-[10px] font-black text-primary uppercase tracking-widest mt-0.5">
                                                             {donation.linkSplit?.[0]?.linkType || (donation.campaignId ? 'campaign' : (donation.leadId ? 'lead' : 'unallocated'))}
+                                                            {donation.linkSplit?.[0]?.caseId ? ` • ID: ${donation.linkSplit[0].caseId}` : ''}
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>

@@ -522,9 +522,9 @@ export function PublicDonationForm({
                                                                     </FormControl>
                                                                     <SelectContent>
                                                                         <div className="px-2 py-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">Active Campaigns</div>
-                                                                        {campaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`}>{c.name}</SelectItem>)}
+                                                                        {campaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`}>{c.name} (ID: {c.caseId || c.id})</SelectItem>)}
                                                                         <div className="px-2 py-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Active Appeals</div>
-                                                                        {leads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`}>{l.name}</SelectItem>)}
+                                                                        {leads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`}>{l.name} (ID: {l.caseId || l.id})</SelectItem>)}
                                                                     </SelectContent>
                                                                 </Select>
                                                             )}

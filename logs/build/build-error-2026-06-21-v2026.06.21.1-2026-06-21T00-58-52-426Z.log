@@ -1,0 +1,31 @@
+BUILD FAILURE LOG - 21/6/2026, 6:29:49 am
+Version: 2026.06.21.1
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+
+
+STDERR:
+Failed to compile.
+
+Type error: File 'C:/Users/Admin/Documents/baitulamal_2026v1/.next/types/app/analytics/layout.ts' not found.
+  The file is in the program because:
+    Root file specified for compilation
+
+Next.js build worker exited with code: 1 and signal: null
+
+
+ERROR MESSAGE:
+Command failed: npx next build
+Failed to compile.
+
+Type error: File 'C:/Users/Admin/Documents/baitulamal_2026v1/.next/types/app/analytics/layout.ts' not found.
+  The file is in the program because:
+    Root file specified for compilation
+
+Next.js build worker exited with code: 1 and signal: null
