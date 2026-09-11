@@ -88,9 +88,12 @@ export default function DonorCausesPage() {
                                     category={(cause as any).category} 
                                 />
                             )}
-                            <div className="absolute top-4 left-4">
+                            <div className="absolute top-4 left-4 flex flex-wrap gap-2">
                                 <Badge className={`${cause.type === 'Campaign' ? 'bg-indigo-600' : 'bg-primary'} text-white font-black text-[9px] uppercase tracking-widest border-none shadow-xl px-3 py-1`}>
                                     {cause.type}
+                                </Badge>
+                                <Badge variant="outline" className="bg-black/60 text-white backdrop-blur-md border-white/20 font-mono text-[9px] font-bold text-white px-3 py-1">
+                                    ID: {cause.caseId || cause.id}
                                 </Badge>
                             </div>
                             <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/90 via-black/40 to-transparent">
