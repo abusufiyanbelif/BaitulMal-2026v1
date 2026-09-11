@@ -1,7 +1,7 @@
 # 📘 User Guide: /settings/notifications
     
-**Build Version:** `2026.09.11.3`
-**Last Updated:** 11/9/2026, 9:57:27 pm
+**Build Version:** `2026.09.12.1`
+**Last Updated:** 12/9/2026, 12:35:30 am
 **Internal Route:** `/settings/notifications`
 
 ---
