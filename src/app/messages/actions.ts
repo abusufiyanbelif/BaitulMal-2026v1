@@ -129,8 +129,12 @@ function generateDetailedPayload(params: {
     isTelegram?: boolean;
 }) {
     const changes = params.oldData && params.newData ? generateChanges(params.oldData, params.newData) : [];
+    const caseId = params.newData?.caseId || params.oldData?.caseId;
     
     let message = `🔔 *${params.title}*\n\n`;
+    if (caseId) {
+        message += `🆔 *Case ID:* ${caseId}\n`;
+    }
     message += `👤 *Performed by:* ${params.userName || 'System'}\n`;
     message += `🎯 *Purpose:* ${params.purpose}\n`;
     message += `⚠️ *Details:* ${params.cause}\n\n`;
@@ -1846,9 +1850,12 @@ export async function notifyApprovalFinalizedAction(params: {
             } catch (e) {}
         }
 
+        const targetCaseId = (params.changes.find(c => c.field === 'caseId')?.new) || (params as any).caseId || params.targetId;
+
         const message = `🏛️ *Organization Registry Updated*\n\n` +
             `*Action:* Final Approval Granted\n` +
             `*Module:* ${params.module.toUpperCase()}\n` +
+            `*Case / Record ID:* ${targetCaseId}\n` +
             `*Description:* ${params.description}\n\n` +
             `🔄 *Modifications:*\n${changeDetails}\n` +
             `${statsInfo}\n\n` +
@@ -1956,8 +1963,11 @@ export async function notifyVerificationUpdateAction(params: {
         const createdAtDate = (request.createdAt as any)?.toDate ? (request.createdAt as any).toDate() : new Date(request.createdAt as any);
         const dateString = !isNaN(createdAtDate.getTime()) ? createdAtDate.toLocaleDateString() : 'Unknown';
 
+        const targetCaseId = (request.newValue as any)?.caseId || (request.originalValue as any)?.caseId || request.targetId;
+
         const message = `${header}\n\n` +
             `*Module:* ${request.module.toUpperCase()}\n` +
+            `*Case / Record ID:* ${targetCaseId}\n` +
             `*Request Date:* ${dateString}\n` +
             `*Description:* ${request.description || 'Data update'}\n` +
             (params.reason ? `*Reason:* ${params.reason}\n` : '') +

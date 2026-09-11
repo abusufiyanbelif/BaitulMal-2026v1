@@ -114,7 +114,7 @@ import { PendingUpdateWarning } from '@/components/pending-update-warning';
 import { VerificationRequestDialog } from '@/components/verification-request-dialog';
 import { checkPendingVerificationAction, cleanupPendingVerificationsAction } from '@/app/verifications/actions';
 import { recordAuditLogAction } from '@/app/audit/actions';
-import { generateChanges, getImageSrc, serializeForAction } from '@/lib/utils';
+import { generateChanges, getImageSrc, serializeForAction, isDonationLinkedToInitiative, getDonationLinkForInitiative } from '@/lib/utils';
 import { notifyCampaignAction } from '@/app/messages/actions';
 import { AuditHistory } from '@/components/audit-history';
 import { getDefaultImage, defaultRegistryAssets } from '@/lib/default-images';
@@ -319,16 +319,7 @@ export default function CampaignSummaryPage() {
     const fundingData = useMemo(() => {
         if (!allDonations || !campaign || !beneficiaries) return null;
         
-        const donationsList = allDonations.filter(d => {
-            if (d.linkSplit && d.linkSplit.length > 0) {
-                return d.linkSplit.some(link => 
-                    link.linkId === campaign.id || 
-                    link.linkId === `campaign_${campaign.id}` ||
-                    (link.linkType === 'campaign' && link.linkId === campaign.id)
-                );
-            }
-            return (d as any).campaignId === campaign.id;
-        });
+        const donationsList = allDonations.filter(d => isDonationLinkedToInitiative(d, campaign.id, campaign.caseId, 'campaign'));
 
         const verifiedDonationsList = donationsList.filter(d => d.status === 'Verified');
     
@@ -340,15 +331,11 @@ export default function CampaignSummaryPage() {
 
         verifiedDonationsList.forEach(d => {
             let amountForThisCampaign = 0;
-            const campaignLink = d.linkSplit?.find((l: any) => 
-                l.linkId === campaign.id || 
-                l.linkId === `campaign_${campaign.id}` ||
-                (l.linkType === 'campaign' && l.linkId === campaign.id)
-            );
+            const campaignLink = getDonationLinkForInitiative(d, campaign.id, campaign.caseId, 'campaign');
 
             if (campaignLink) {
                 amountForThisCampaign = campaignLink.amount;
-            } else if ((!d.linkSplit || d.linkSplit.length === 0) && (d as any).campaignId === campaign.id) {
+            } else if ((!d.linkSplit || d.linkSplit.length === 0) && ((d as any).campaignId === campaign.id || d.caseId === campaign.caseId)) {
                 amountForThisCampaign = d.amount;
             } else { return; }
 

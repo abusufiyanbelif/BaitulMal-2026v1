@@ -126,6 +126,8 @@ import { generateChanges } from '@/lib/utils';
                     }
                 } catch (e) {}
 
+                const targetCaseId = (payload.newValue as any)?.caseId || (payload.originalValue as any)?.caseId || payload.targetId;
+
                 if (verifierPhone && verifierPhone !== 'Unknown') {
 
                     const notifyResult = await sendWhatsAppAction({
@@ -136,7 +138,8 @@ import { generateChanges } from '@/lib/utils';
                             requesterName: payload.requestedBy.name,
                             purpose: payload.description || 'Data Update',
                             module: payload.module.toUpperCase(),
-                            recordId: payload.targetId,
+                            recordId: targetCaseId,
+                            caseId: targetCaseId,
                             requestId: payload.id,
                             url: `${baseUrl}/verifications?requestId=${payload.id}`
                         },
@@ -167,7 +170,7 @@ import { generateChanges } from '@/lib/utils';
                     } catch (e) {}
 
                     await sendTelegramAction({
-                        message: `🔔 *New Verification Request*\n\n*Module:* ${payload.module.toUpperCase()}\n*Requested By:* ${payload.requestedBy.name}\n*Purpose:* ${payload.description || 'Data Update'}\n\n🔗 Review: ${baseUrl}/verifications?requestId=${payload.id}`,
+                        message: `🔔 *New Verification Request*\n\n*Module:* ${payload.module.toUpperCase()}\n*Case / Record ID:* ${targetCaseId}\n*Requested By:* ${payload.requestedBy.name}\n*Purpose:* ${payload.description || 'Data Update'}\n\n🔗 Review: ${baseUrl}/verifications?requestId=${payload.id}`,
                         chatId: verifierTelegramId,
                         moduleId: payload.module.replace(/s$/, '') as any,
                         configOverride: verifierBotToken ? { telegramBotToken: verifierBotToken } : undefined,

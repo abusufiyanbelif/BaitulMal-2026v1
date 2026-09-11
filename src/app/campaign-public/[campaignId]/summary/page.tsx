@@ -69,7 +69,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, TableFoo
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { getDefaultImage } from '@/lib/default-images';
-import { getImageSrc } from '@/lib/utils';
+import { getImageSrc, isDonationLinkedToInitiative, getDonationLinkForInitiative } from '@/lib/utils';
 
 const donationCategoryChartConfig = {
     Fitra: { label: "Fitra", color: "hsl(var(--chart-3))" },
@@ -152,12 +152,8 @@ export default function PublicCampaignSummaryPage() {
 
     const donationsList = useMemo(() => {
         if (!allDonations || !campaign) return [];
-        return allDonations.filter(d => {
-            if (d.linkSplit && d.linkSplit.length > 0) {
-                return d.linkSplit.some(link => link.linkId === campaign.id || link.linkId === `campaign_${campaign.id}`);
-            }
-            return (d as any).campaignId === campaign.id;
-        }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        return allDonations.filter(d => isDonationLinkedToInitiative(d, campaign.id, campaign.caseId, 'campaign'))
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     }, [allDonations, campaign]);
 
     const [currentPage, setCurrentPage] = useState(1);
@@ -176,10 +172,10 @@ export default function PublicCampaignSummaryPage() {
 
         verifiedDonationsList.forEach(d => {
             let amountForThisCampaign = 0;
-            const campaignLink = d.linkSplit?.find((l: any) => l.linkId === campaign.id || l.linkId === `campaign_${campaign.id}`);
+            const campaignLink = getDonationLinkForInitiative(d, campaign.id, campaign.caseId, 'campaign');
             if (campaignLink) {
                 amountForThisCampaign = campaignLink.amount;
-            } else if ((!d.linkSplit || d.linkSplit.length === 0) && (d as any).campaignId === campaign.id) {
+            } else if ((!d.linkSplit || d.linkSplit.length === 0) && ((d as any).campaignId === campaign.id || d.caseId === campaign.caseId)) {
                 amountForThisCampaign = d.amount;
             } else { return; }
 
@@ -643,7 +639,7 @@ export default function PublicCampaignSummaryPage() {
                                                 <TableHeader className="bg-[hsl(var(--table-header-bg))]">
                                                     <TableRow>
                                                         <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Date</TableHead>
-                                                        <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Reference</TableHead>
+                                                        <TableHead className="font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Case / Ref ID</TableHead>
                                                         <TableHead className="text-right font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight capitalize">Amount</TableHead>
                                                     </TableRow>
                                                 </TableHeader>
@@ -651,7 +647,9 @@ export default function PublicCampaignSummaryPage() {
                                                     {paginatedDonations.map((d) => (
                                                         <TableRow key={d.id} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors bg-white border-b border-primary/5 last:border-none">
                                                             <TableCell className="text-xs opacity-70">{new Date(d.date).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</TableCell>
-                                                            <TableCell className="font-mono text-[10px] opacity-50">{d.id.slice(0, 8)}...</TableCell>
+                                                            <TableCell className="font-mono text-[10px] font-bold text-primary opacity-80">
+                                                                {d.caseId || d.linkSplit?.[0]?.caseId || `${d.id.slice(0, 8)}...`}
+                                                            </TableCell>
                                                             <TableCell className="text-right font-mono font-bold text-primary text-xs">₹{d.amount.toLocaleString('en-IN')}</TableCell>
                                                         </TableRow>
                                                     ))}

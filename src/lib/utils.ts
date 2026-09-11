@@ -228,3 +228,91 @@ export function getDonationShareText(donation: any, extraContext?: { leadName?: 
 
     return lines.join('\n');
 }
+
+/**
+ * Checks if a donation record is linked to a specific campaign/lead initiative.
+ * Supports matching against initiative document ID, Case ID, prefixed IDs (campaign_*, lead_*),
+ * linkSplit entries, and direct caseId/campaignId/leadId fields.
+ */
+export function isDonationLinkedToInitiative(
+    d: any,
+    targetId: string,
+    targetCaseId?: string,
+    targetType?: 'campaign' | 'lead'
+): boolean {
+    if (!d) return false;
+    const cleanId = String(targetId || '').trim();
+    const cleanCaseId = String(targetCaseId || '').trim();
+
+    if (!cleanId && !cleanCaseId) return false;
+
+    // Direct field matches
+    if (cleanCaseId && d.caseId && String(d.caseId).trim() === cleanCaseId) return true;
+    if (cleanId && (d.campaignId === cleanId || d.leadId === cleanId)) return true;
+    if (cleanCaseId && (d.campaignId === cleanCaseId || d.leadId === cleanCaseId)) return true;
+
+    // Check linkSplit array
+    if (Array.isArray(d.linkSplit) && d.linkSplit.length > 0) {
+        return d.linkSplit.some((l: any) => {
+            if (!l) return false;
+            const lId = String(l.linkId || '').trim();
+            const lCaseId = String(l.caseId || '').trim();
+            const lType = l.linkType;
+
+            if (targetType && lType && lType !== 'general' && lType !== targetType) return false;
+
+            if (cleanId && (lId === cleanId || lId === `campaign_${cleanId}` || lId === `lead_${cleanId}`)) return true;
+            if (cleanCaseId && (lId === cleanCaseId || lId === `campaign_${cleanCaseId}` || lId === `lead_${cleanCaseId}`)) return true;
+            if (cleanCaseId && lCaseId && lCaseId === cleanCaseId) return true;
+            if (cleanId && lCaseId && lCaseId === cleanId) return true;
+
+            return false;
+        });
+    }
+
+    return false;
+}
+
+/**
+ * Retrieves the specific linkSplit entry from a donation for a campaign/lead initiative.
+ */
+export function getDonationLinkForInitiative(
+    d: any,
+    targetId: string,
+    targetCaseId?: string,
+    targetType?: 'campaign' | 'lead'
+): any | null {
+    if (!d) return null;
+    const cleanId = String(targetId || '').trim();
+    const cleanCaseId = String(targetCaseId || '').trim();
+
+    if (Array.isArray(d.linkSplit) && d.linkSplit.length > 0) {
+        const found = d.linkSplit.find((l: any) => {
+            if (!l) return false;
+            const lId = String(l.linkId || '').trim();
+            const lCaseId = String(l.caseId || '').trim();
+            const lType = l.linkType;
+
+            if (targetType && lType && lType !== 'general' && lType !== targetType) return false;
+
+            if (cleanId && (lId === cleanId || lId === `campaign_${cleanId}` || lId === `lead_${cleanId}`)) return true;
+            if (cleanCaseId && (lId === cleanCaseId || lId === `campaign_${cleanCaseId}` || lId === `lead_${cleanCaseId}`)) return true;
+            if (cleanCaseId && lCaseId && lCaseId === cleanCaseId) return true;
+            if (cleanId && lCaseId && lCaseId === cleanId) return true;
+
+            return false;
+        });
+        if (found) return found;
+    }
+
+    if (isDonationLinkedToInitiative(d, targetId, targetCaseId, targetType)) {
+        return {
+            linkId: targetId,
+            caseId: targetCaseId,
+            linkType: targetType || 'general',
+            amount: d.amount || 0
+        };
+    }
+
+    return null;
+}

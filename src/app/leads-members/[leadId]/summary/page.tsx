@@ -73,7 +73,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { useToast } from '@/hooks/use-toast';
 import { useDownloadAs } from '@/hooks/use-download-as';
 import { Label } from '@/components/ui/label';
-import { cn, getNestedValue, getImageSrc, serializeForAction, generateChanges } from '@/lib/utils';
+import { cn, getNestedValue, getImageSrc, serializeForAction, generateChanges, isDonationLinkedToInitiative, getDonationLinkForInitiative } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ShareDialog } from '@/components/share-dialog';
 import { donationCategories, leadPurposesConfig, leadSeriousnessLevels, educationDegrees, educationYears, educationSemesters, priorityLevels } from '@/lib/modules';
@@ -292,9 +292,7 @@ export default function LeadSummaryPage() {
     const fundingData = useMemo(() => {
         if (!allDonations || !lead || !beneficiaries) return null;
 
-        const donations = allDonations.filter(d => 
-            d.linkSplit?.some(link => link.linkId === lead.id || link.linkId === `lead_${lead.id}`)
-        );
+        const donations = allDonations.filter(d => isDonationLinkedToInitiative(d, lead.id, lead.caseId, 'lead'));
         const verifiedDonationsList = donations.filter(d => d.status === 'Verified');
     
         const amountsByCategory: Record<DonationCategory, number> = donationCategories.reduce((acc, cat) => ({...acc, [cat]: 0}), {} as Record<DonationCategory, number>);
@@ -302,7 +300,7 @@ export default function LeadSummaryPage() {
         let zakatForGoalAmount = 0;
 
         verifiedDonationsList.forEach(d => {
-            const leadAllocation = d.linkSplit?.find(link => link.linkId === lead.id || link.linkId === `lead_${lead.id}`);
+            const leadAllocation = getDonationLinkForInitiative(d, lead.id, lead.caseId, 'lead');
             if (!leadAllocation) return;
 
             const paymentType = d.donationType || 'Other';

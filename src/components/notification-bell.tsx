@@ -278,7 +278,7 @@ export function NotificationBell() {
                                                 </AccordionTrigger>
                                                 <AccordionContent className="px-1 pb-2">
                                                     {unlinkedDonations.slice(0, 5).map(d => (
-                                                        <NotificationItem key={`unlinked_${d.id}`} icon={AlertCircle} title={d.donorName} subtitle="Link To Profile" href={`/donations/${d.id}`} variant="warning" />
+                                                        <NotificationItem key={`unlinked_${d.id}`} icon={AlertCircle} title={d.donorName} subtitle={`Link Profile • Case ID: ${d.caseId || d.linkSplit?.[0]?.caseId || d.id}`} href={`/donations/${d.id}`} variant="warning" />
                                                     ))}
                                                     {unlinkedDonations.length > 5 && (
                                                         <Button variant="ghost" asChild className="w-full h-8 text-[9px] font-bold text-primary/40"><Link href="/donors">Open Resolver Center</Link></Button>
@@ -297,7 +297,7 @@ export function NotificationBell() {
                                                 </AccordionTrigger>
                                                 <AccordionContent className="px-1 pb-2">
                                                     {unverifiedDonations.slice(0, 5).map(d => (
-                                                        <NotificationItem key={d.id} icon={IndianRupee} title={d.donorName} subtitle="Confirm Contribution" href={`/donations/${d.id}`} variant="destructive" />
+                                                        <NotificationItem key={d.id} icon={IndianRupee} title={d.donorName} subtitle={`Confirm Contribution • Case ID: ${d.caseId || d.linkSplit?.[0]?.caseId || d.id}`} href={`/donations/${d.id}`} variant="destructive" />
                                                     ))}
                                                     {unverifiedDonations.length > 5 && (
                                                         <Button variant="ghost" asChild className="w-full h-8 text-[9px] font-bold text-primary/40"><Link href="/donations?status=Pending">View Pending Payments</Link></Button>
@@ -316,7 +316,7 @@ export function NotificationBell() {
                                                 </AccordionTrigger>
                                                 <AccordionContent className="px-1 pb-2">
                                                     {unverifiedBeneficiaries.slice(0, 5).map(b => (
-                                                        <NotificationItem key={b.id} icon={Users} title={b.name} subtitle="Review Case Files" href={`/beneficiaries/${b.id}`} variant="destructive" />
+                                                        <NotificationItem key={b.id} icon={Users} title={b.name} subtitle={`Review Case • Case ID: ${b.caseId || b.id}`} href={`/beneficiaries/${b.id}`} variant="destructive" />
                                                     ))}
                                                     {unverifiedBeneficiaries.length > 5 && (
                                                         <Button variant="ghost" asChild className="w-full h-8 text-[9px] font-bold text-primary/40"><Link href="/beneficiaries?status=Pending">View All Cases</Link></Button>
@@ -335,10 +335,10 @@ export function NotificationBell() {
                                                 </AccordionTrigger>
                                                 <AccordionContent className="px-1 pb-2">
                                                     {pendingCampaigns?.slice(0, 3)?.map(c => (
-                                                        <NotificationItem key={`pending_camp_${c.id}`} icon={FolderKanban} title={c.name} subtitle="Awaiting Verification" href={`/campaign-members/${c.id}/summary`} variant="warning" />
+                                                        <NotificationItem key={`pending_camp_${c.id}`} icon={FolderKanban} title={c.name} subtitle={`Awaiting Verification • Case ID: ${c.caseId || c.id}`} href={`/campaign-members/${c.id}/summary`} variant="warning" />
                                                     ))}
                                                     {pendingLeads?.slice(0, 3)?.map(l => (
-                                                        <NotificationItem key={`pending_lead_${l.id}`} icon={Lightbulb} title={l.name} subtitle="Awaiting Verification" href={`/leads-members/${l.id}/summary`} variant="warning" />
+                                                        <NotificationItem key={`pending_lead_${l.id}`} icon={Lightbulb} title={l.name} subtitle={`Awaiting Verification • Case ID: ${l.caseId || l.id}`} href={`/leads-members/${l.id}/summary`} variant="warning" />
                                                     ))}
                                                 </AccordionContent>
                                             </AccordionItem>
@@ -354,10 +354,10 @@ export function NotificationBell() {
                                                 </AccordionTrigger>
                                                 <AccordionContent className="px-1 pb-2">
                                                     {privateCampaigns?.slice(0, 3)?.map(c => (
-                                                        <NotificationItem key={`hold_camp_${c.id}`} icon={FolderKanban} title={c.name} subtitle="Internal Draft" href={`/campaign-members/${c.id}/summary`} variant="info" />
+                                                        <NotificationItem key={`hold_camp_${c.id}`} icon={FolderKanban} title={c.name} subtitle={`Internal Draft • Case ID: ${c.caseId || c.id}`} href={`/campaign-members/${c.id}/summary`} variant="info" />
                                                     ))}
                                                     {privateLeads?.slice(0, 3)?.map(l => (
-                                                        <NotificationItem key={`hold_lead_${l.id}`} icon={Lightbulb} title={l.name} subtitle="Internal Draft" href={`/leads-members/${l.id}/summary`} variant="info" />
+                                                        <NotificationItem key={`hold_lead_${l.id}`} icon={Lightbulb} title={l.name} subtitle={`Internal Draft • Case ID: ${l.caseId || l.id}`} href={`/leads-members/${l.id}/summary`} variant="info" />
                                                     ))}
                                                 </AccordionContent>
                                             </AccordionItem>

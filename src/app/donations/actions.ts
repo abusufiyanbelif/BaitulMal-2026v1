@@ -6,6 +6,7 @@ import { recordAuditLogAction } from '@/app/audit/actions';
 import type { Donation, Donor, DonationLink, TransactionDetail, Campaign, Lead } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 import { sendWhatsAppAction } from '@/app/messages/actions';
+import { getDonationLinkForInitiative } from '@/lib/utils';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure Server Credentials Are Configured Correctly.";
 
@@ -58,7 +59,7 @@ export async function syncInitiativeCollectedTotals(db: any, links: DonationLink
         let otherEligibleSum = 0;
 
         allVerifiedDonations.forEach((d: any) => {
-            const split = d.linkSplit?.find((l: any) => l.linkId === id || l.linkId === `${type}_${id}`);
+            const split = getDonationLinkForInitiative(d, id, (initiativeData as any)?.caseId, type as any);
             if (split) {
                 const totalDonation = d.amount || 1;
                 const prop = split.amount / totalDonation;
@@ -667,11 +668,7 @@ export async function bulkRecalculateInitiativeTotalsAction(): Promise<{ success
             donationsSnap.docs.forEach((doc: any) => {
                 const d = doc.data() as Donation;
                 
-                const split = d.linkSplit?.find(l => 
-                    l.linkId === init.id || 
-                    l.linkId === `campaign_${init.id}` || 
-                    l.linkId === `lead_${init.id}`
-                );
+                const split = getDonationLinkForInitiative(d, init.id, (init.data as any)?.caseId, init.type as any);
 
                 if (split) {
                     const totalDonation = d.amount || 1;
