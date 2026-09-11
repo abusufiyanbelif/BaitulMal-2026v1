@@ -1,9 +1,42 @@
 {
-  "version": "2026.09.09.1",
-  "buildDate": "2026-09-09T19:07:03.000Z",
+  "version": "2026.09.11.3",
+  "buildDate": "2026-09-11T16:20:28.970Z",
   "commitHash": "latest",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.09.11.3",
+      "date": "2026-09-11T16:20:28.970Z",
+      "commit": "a4ce2c0f",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-GOAL-VETTING-PORTAL-FIX-2026, MB-SECURITY-ROUTING-FIX-2026, MB-UI-POLISH-2026",
+      "steps": "1. Type Safety & Build Verification: Executed `npx tsc --noEmit` across all updated files with clean exit code 0 and 0 errors.\n2. Firestore & Storage URL Alignment: Verified `scripts/repair-firestore-urls.ts` removed duplicated sub-path segments and aligned all document URLs to valid Cloud Storage locations.\n3. Multi-Cause Donation Storage Construction: Verified split donations generate deterministic `donations/${caseId1}_${caseId2}_${donationId}/` folders.\n4. Live Storage Folder Renaming: Verified editing a Case ID renames Cloud Storage folders for initiatives and linked multi-cause donations in real time.\n5. Image Viewer & Browser Verification: Used browser subagent to verify public and member summary views load hero banners and document attachments cleanly without broken image fallbacks.\n6. Multi-Prefix File Deletion: Purging commands successfully delete files across legacy, single-case, and multi-case storage folder prefixes.\n1. Production Build: Verified npm run build completed flawlessly with exit code 0 across all static and dynamic pages.\n2. App Footer Build Versioning: Verified App Footer dynamically reads versionData.version and formats versionData.buildDate cleanly with toLocaleDateString ('17 May 2026').\n3. Initial Mount & Loading Skeleton (/login & /portal-login): Verified that during initial Firestore branding fetch, UI displays elegant skeleton loader boxes rather than defaulting to active tabs, eliminating any momentary flashing of disabled portals.\n4. Institutional & Staff Login (/login): Verified Donor and Beneficiary portal tabs on the staff login page dynamically disappear when disabled in App Settings, automatically adjusting tab grid column layouts. Verified ?type=staff isolates Staff tab view.\n5. Supporter Portal Controls (/portal-login): Verified Supporter Portal login buttons and switcher tabs dynamically disappear when disabled in App Settings. Verified workspace switcher completely hides when only one workspace is enabled. Full lockout state rendered when both portals are offline.\n6. Target Goal Overwrite: Verified manual Target Goal values exceeding beneficiary kit totals are perfectly preserved on Sync across all member and public summary views.\n7. Lead Vetting Governance: Verified lead creation prompts vetting approval modal and sets authenticityStatus to Pending Verification.\n8. UI & Styling: Verified Synchronize save button renders in high contrast white text on emerald primary background across theme configurations.\n9. Infrastructure Fundraising: Verified Firestore security rules explicitly match /internal_fundraising collection, resolving the missing permission error.\n10. Identity Security: Verified global admin fallback allows CRUD access correctly, and non-admins cannot mutate their own roles via UI or API.",
+      "type": "Enhancement, ui polish & security fix",
+      "message": "Comprehensive multi-module audit and hardening. (1) Target Goal Preservation: Fully resolved Target Goal manual overwrite bug across server recalculation actions for leads/campaigns and client summary views. (2) Vetting Governance: Implemented lead creation approval popup enforcing Pending Verification status and Hold visibility on new submissions. (3) Dynamic Supporter Portal Control: Enforced real-time portal offline status in RouteGuard session revocation and login UI. Eliminated initial mount UI flash by wrapping login tab lists and landing page quick access in skeleton loading states while branding settings fetch from Firestore. Dynamically hidden disabled supporter portal login buttons from landing page quick access, portal switcher tabs, staff login page tabs (/login), and account header navigation. Full lockout state rendered when both portals are offline. (4) UI Polish & Security: Fixed Synchronize save button text color and styling in App Settings. Formatted automated build date cleanly in App Footer. Granted secure Firestore security rule access to internal_fundraising collection and added robust error handling to prevent loader stalls. (5) Identity Security: Hardened getNestedValue to resolve global module admin access bypasses. Patched firestore.rules for users collection to prevent unauthorized role escalation and disabled sensitive profile fields in UserForm for non-admins. (6) Portal Routing Polish: Appended ?type=staff to landing page Admin Login for strict UI gating. Rebranded landing page Portal Login button to dynamically render as \"Donor Login\", \"Beneficiary Login\", or \"Donor / Beneficiary Login\" based on visibility configs. Completely hid the workspace switcher in /portal-login when only a single workspace is active."
+    },
+    {
+      "version": "2026.09.11.2",
+      "date": "2026-09-11T16:19:41.920Z",
+      "commit": "a4ce2c0f",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-GOAL-VETTING-PORTAL-FIX-2026, MB-SECURITY-ROUTING-FIX-2026, MB-UI-POLISH-2026",
+      "steps": "1. Type Safety & Build Verification: Executed `npx tsc --noEmit` across all updated files with clean exit code 0 and 0 errors.\n2. Firestore & Storage URL Alignment: Verified `scripts/repair-firestore-urls.ts` removed duplicated sub-path segments and aligned all document URLs to valid Cloud Storage locations.\n3. Multi-Cause Donation Storage Construction: Verified split donations generate deterministic `donations/${caseId1}_${caseId2}_${donationId}/` folders.\n4. Live Storage Folder Renaming: Verified editing a Case ID renames Cloud Storage folders for initiatives and linked multi-cause donations in real time.\n5. Image Viewer & Browser Verification: Used browser subagent to verify public and member summary views load hero banners and document attachments cleanly without broken image fallbacks.\n6. Multi-Prefix File Deletion: Purging commands successfully delete files across legacy, single-case, and multi-case storage folder prefixes.\n1. Production Build: Verified npm run build completed flawlessly with exit code 0 across all static and dynamic pages.\n2. App Footer Build Versioning: Verified App Footer dynamically reads versionData.version and formats versionData.buildDate cleanly with toLocaleDateString ('17 May 2026').\n3. Initial Mount & Loading Skeleton (/login & /portal-login): Verified that during initial Firestore branding fetch, UI displays elegant skeleton loader boxes rather than defaulting to active tabs, eliminating any momentary flashing of disabled portals.\n4. Institutional & Staff Login (/login): Verified Donor and Beneficiary portal tabs on the staff login page dynamically disappear when disabled in App Settings, automatically adjusting tab grid column layouts. Verified ?type=staff isolates Staff tab view.\n5. Supporter Portal Controls (/portal-login): Verified Supporter Portal login buttons and switcher tabs dynamically disappear when disabled in App Settings. Verified workspace switcher completely hides when only one workspace is enabled. Full lockout state rendered when both portals are offline.\n6. Target Goal Overwrite: Verified manual Target Goal values exceeding beneficiary kit totals are perfectly preserved on Sync across all member and public summary views.\n7. Lead Vetting Governance: Verified lead creation prompts vetting approval modal and sets authenticityStatus to Pending Verification.\n8. UI & Styling: Verified Synchronize save button renders in high contrast white text on emerald primary background across theme configurations.\n9. Infrastructure Fundraising: Verified Firestore security rules explicitly match /internal_fundraising collection, resolving the missing permission error.\n10. Identity Security: Verified global admin fallback allows CRUD access correctly, and non-admins cannot mutate their own roles via UI or API.",
+      "type": "Enhancement, ui polish & security fix",
+      "message": "Comprehensive multi-module audit and hardening. (1) Target Goal Preservation: Fully resolved Target Goal manual overwrite bug across server recalculation actions for leads/campaigns and client summary views. (2) Vetting Governance: Implemented lead creation approval popup enforcing Pending Verification status and Hold visibility on new submissions. (3) Dynamic Supporter Portal Control: Enforced real-time portal offline status in RouteGuard session revocation and login UI. Eliminated initial mount UI flash by wrapping login tab lists and landing page quick access in skeleton loading states while branding settings fetch from Firestore. Dynamically hidden disabled supporter portal login buttons from landing page quick access, portal switcher tabs, staff login page tabs (/login), and account header navigation. Full lockout state rendered when both portals are offline. (4) UI Polish & Security: Fixed Synchronize save button text color and styling in App Settings. Formatted automated build date cleanly in App Footer. Granted secure Firestore security rule access to internal_fundraising collection and added robust error handling to prevent loader stalls. (5) Identity Security: Hardened getNestedValue to resolve global module admin access bypasses. Patched firestore.rules for users collection to prevent unauthorized role escalation and disabled sensitive profile fields in UserForm for non-admins. (6) Portal Routing Polish: Appended ?type=staff to landing page Admin Login for strict UI gating. Rebranded landing page Portal Login button to dynamically render as \"Donor Login\", \"Beneficiary Login\", or \"Donor / Beneficiary Login\" based on visibility configs. Completely hid the workspace switcher in /portal-login when only a single workspace is active."
+    },
+    {
+      "version": "2026.09.11.1",
+      "date": "2026-09-11T16:08:23.382Z",
+      "commit": "a4ce2c0f",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "MB-GOAL-VETTING-PORTAL-FIX-2026, MB-SECURITY-ROUTING-FIX-2026, MB-UI-POLISH-2026",
+      "steps": "1. Type Safety & Build Verification: Executed `npx tsc --noEmit` across all updated files with clean exit code 0 and 0 errors.\n2. Firestore & Storage URL Alignment: Verified `scripts/repair-firestore-urls.ts` removed duplicated sub-path segments and aligned all document URLs to valid Cloud Storage locations.\n3. Multi-Cause Donation Storage Construction: Verified split donations generate deterministic `donations/${caseId1}_${caseId2}_${donationId}/` folders.\n4. Live Storage Folder Renaming: Verified editing a Case ID renames Cloud Storage folders for initiatives and linked multi-cause donations in real time.\n5. Image Viewer & Browser Verification: Used browser subagent to verify public and member summary views load hero banners and document attachments cleanly without broken image fallbacks.\n6. Multi-Prefix File Deletion: Purging commands successfully delete files across legacy, single-case, and multi-case storage folder prefixes.\n1. Production Build: Verified npm run build completed flawlessly with exit code 0 across all static and dynamic pages.\n2. App Footer Build Versioning: Verified App Footer dynamically reads versionData.version and formats versionData.buildDate cleanly with toLocaleDateString ('17 May 2026').\n3. Initial Mount & Loading Skeleton (/login & /portal-login): Verified that during initial Firestore branding fetch, UI displays elegant skeleton loader boxes rather than defaulting to active tabs, eliminating any momentary flashing of disabled portals.\n4. Institutional & Staff Login (/login): Verified Donor and Beneficiary portal tabs on the staff login page dynamically disappear when disabled in App Settings, automatically adjusting tab grid column layouts. Verified ?type=staff isolates Staff tab view.\n5. Supporter Portal Controls (/portal-login): Verified Supporter Portal login buttons and switcher tabs dynamically disappear when disabled in App Settings. Verified workspace switcher completely hides when only one workspace is enabled. Full lockout state rendered when both portals are offline.\n6. Target Goal Overwrite: Verified manual Target Goal values exceeding beneficiary kit totals are perfectly preserved on Sync across all member and public summary views.\n7. Lead Vetting Governance: Verified lead creation prompts vetting approval modal and sets authenticityStatus to Pending Verification.\n8. UI & Styling: Verified Synchronize save button renders in high contrast white text on emerald primary background across theme configurations.\n9. Infrastructure Fundraising: Verified Firestore security rules explicitly match /internal_fundraising collection, resolving the missing permission error.\n10. Identity Security: Verified global admin fallback allows CRUD access correctly, and non-admins cannot mutate their own roles via UI or API.",
+      "type": "Enhancement, ui polish & security fix",
+      "message": "Comprehensive multi-module audit and hardening. (1) Target Goal Preservation: Fully resolved Target Goal manual overwrite bug across server recalculation actions for leads/campaigns and client summary views. (2) Vetting Governance: Implemented lead creation approval popup enforcing Pending Verification status and Hold visibility on new submissions. (3) Dynamic Supporter Portal Control: Enforced real-time portal offline status in RouteGuard session revocation and login UI. Eliminated initial mount UI flash by wrapping login tab lists and landing page quick access in skeleton loading states while branding settings fetch from Firestore. Dynamically hidden disabled supporter portal login buttons from landing page quick access, portal switcher tabs, staff login page tabs (/login), and account header navigation. Full lockout state rendered when both portals are offline. (4) UI Polish & Security: Fixed Synchronize save button text color and styling in App Settings. Formatted automated build date cleanly in App Footer. Granted secure Firestore security rule access to internal_fundraising collection and added robust error handling to prevent loader stalls. (5) Identity Security: Hardened getNestedValue to resolve global module admin access bypasses. Patched firestore.rules for users collection to prevent unauthorized role escalation and disabled sensitive profile fields in UserForm for non-admins. (6) Portal Routing Polish: Appended ?type=staff to landing page Admin Login for strict UI gating. Rebranded landing page Portal Login button to dynamically render as \"Donor Login\", \"Beneficiary Login\", or \"Donor / Beneficiary Login\" based on visibility configs. Completely hid the workspace switcher in /portal-login when only a single workspace is active."
+    },
     {
       "version": "2026.09.09.1",
       "date": "2026-09-09T19:07:03.000Z",
@@ -520,50 +553,6 @@
       "steps": "Uncommitted changes detected. Manual verification required.",
       "type": "Build",
       "message": "release: v2026.05.07.20 (with local changes)"
-    },
-    {
-      "version": "2026.05.07.24",
-      "date": "2026-05-07T17:35:54.360Z",
-      "commit": "ec94cebe",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Uncommitted changes detected. Manual verification required.",
-      "type": "Build",
-      "message": "release: v2026.05.07.20 (with local changes)"
-    },
-    {
-      "version": "2026.05.07.23",
-      "date": "2026-05-07T17:34:00.143Z",
-      "commit": "ec94cebe",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "MB-MSG-PROF-2026 (Granular Communication)",
-      "steps": "Manual verification required.",
-      "type": "Feature, infrastructure & ui",
-      "message": "Expanded messaging profile architecture to support Admin and General categories. Implemented Meta Cloud API free-tier guidance and optimized role-based template mappings for organizational scaling."
-    },
-    {
-      "version": "2026.05.07.22",
-      "date": "2026-05-07T17:32:33.261Z",
-      "commit": "ec94cebe",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "MB-MSG-PROF-2026 (Granular Communication)",
-      "steps": "Manual verification required.",
-      "type": "Feature, infrastructure & ui",
-      "message": "Expanded messaging profile architecture to support Admin and General categories. Implemented Meta Cloud API free-tier guidance and optimized role-based template mappings for organizational scaling."
-    },
-    {
-      "version": "2026.05.07.21",
-      "date": "2026-05-07T17:30:28.166Z",
-      "commit": "ec94cebe",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "MB-MSG-PROF-2026 (Granular Communication)",
-      "steps": "Manual verification required.",
-      "type": "Feature, infrastructure & ui",
-      "message": "Expanded messaging profile architecture to support Admin and General categories. Implemented Meta Cloud API free-tier guidance and optimized role-based template mappings for organizational scaling."
     }
   ]
 }

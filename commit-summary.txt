@@ -1,3 +1,22 @@
+release: v2026.09.11.4
+
+Type: Security Rules Hardening, Script Path Repair, Data Health Audit & User Record Backfill
+Message: Deep System Scan & Flaw Remediation. (1) Firestore & Storage Security Rules Hardening: Removed global wildcard read permissions (`match /{document=**}` in `firestore.rules` and `match /{allPaths=**}` in `storage.rules`) to enforce strict collection-level and path-level access control via sovereign admin checks, staff verification, and owner rules. (2) Diagnostic Script Path Resolution: Updated `scripts/scan_flaws.js` to correctly resolve `serviceAccountKey.json` from project root (`../serviceAccountKey.json`). (3) Database Data Integrity & User Backfill: Audited active user profiles and executed an automated backfill script (`scratch/fix_user_orgs.js`) to populate missing `organizationGroup` ('general') and `organizationRole` fields across 17 user documents. Re-scanned Firestore database to verify 0 user flaws (`USER_FLAWS: []`). (4) Production Build & Type Safety Verification: Cleaned `.next` build cache, verified `npx tsc --noEmit` exit code 0, and compiled production bundle via `npm run build`.
+Reference: MB-SECURITY-HARDENING-2026, MB-DATA-HEALTH-AUDIT-2026, MB-SCRIPT-REPAIR-2026
+Branch: test_bmss_26
+Commit: latest
+
+Verification Steps:
+1. Security Rules Hardening: Verified `firestore.rules` and `storage.rules` no longer allow global wildcard reads, enforcing strict role and permission checks.
+2. Script Execution & Diagnostic Repair: Verified `node scripts/scan_flaws.js` executes cleanly without module errors and outputs `USER_FLAWS: []`.
+3. User Organization Backfill: Verified 17 user documents updated with valid `organizationGroup` and `organizationRole` values.
+4. Type Safety & Production Build: Executed `npx tsc --noEmit` and `npm run build` with clean exit code 0 across static and dynamic pages.
+
+---
+*Build Summary Updated: 11/9/2026, 9:50:00 pm*
+
+================================================================================
+
 release: v2026.09.10.1
 
 Type: Feature, Data Migration, Storage Folder Restructuring, Receipt Visual Enhancement & Image Access Repair
@@ -33,7 +52,7 @@ Verification Steps:
 3. Initial Mount & Loading Skeleton (/login & /portal-login): Verified that during initial Firestore branding fetch, UI displays elegant skeleton loader boxes rather than defaulting to active tabs, eliminating any momentary flashing of disabled portals.
 4. Institutional & Staff Login (/login): Verified Donor and Beneficiary portal tabs on the staff login page dynamically disappear when disabled in App Settings, automatically adjusting tab grid column layouts. Verified ?type=staff isolates Staff tab view.
 5. Supporter Portal Controls (/portal-login): Verified Supporter Portal login buttons and switcher tabs dynamically disappear when disabled in App Settings. Verified workspace switcher completely hides when only one workspace is enabled. Full lockout state rendered when both portals are offline.
-6. Target Goal Overwrite: Verified manual Target Goal values exceeding beneficiary kit totals are perfectly preserved on Sync across all member and public summary views.
+6. Target Goal Overwrite: Verified manual Target Goal values exceeding beneficiary kit totals are preserved on Sync across all member and public summary views.
 7. Lead Vetting Governance: Verified lead creation prompts vetting approval modal and sets authenticityStatus to Pending Verification.
 8. UI & Styling: Verified Synchronize save button renders in high contrast white text on emerald primary background across theme configurations.
 9. Infrastructure Fundraising: Verified Firestore security rules explicitly match /internal_fundraising collection, resolving the missing permission error.
