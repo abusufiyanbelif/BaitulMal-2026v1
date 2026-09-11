@@ -1,7 +1,7 @@
 # 📘 User Guide: /donor-portal/receipt/[donationId]
     
-**Build Version:** `2026.06.21.4`
-**Last Updated:** 21/6/2026, 6:35:04 am
+**Build Version:** `2026.09.11.3`
+**Last Updated:** 11/9/2026, 9:57:27 pm
 **Internal Route:** `/donor-portal/receipt/[donationId]`
 
 ---
@@ -25,7 +25,7 @@ Application Module
 ## ⚡ Interactive Action Items
 - **Back to History**: Interactive button to initiate back to history operation.
 - **Share**: Interactive button to initiate share operation.
-- **Download PDF**: Interactive button to initiate download pdf operation.
+- **Download Receipt**: Interactive button to initiate download receipt operation.
 - **handleDownload**: Internal logic handler for Download workflow.
 
 ## 🛡️ Security & Access

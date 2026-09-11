@@ -1,7 +1,7 @@
 # 🏗️ Organization Data Architecture
 
-**Build Version:** `2026.06.21.4`
-**Last Updated:** 21/6/2026, 6:35:04 am
+**Build Version:** `2026.09.11.3`
+**Last Updated:** 11/9/2026, 9:57:27 pm
 
 Mapping between Application Modules and Firestore Collections.
 
@@ -77,3 +77,6 @@ Mapping between Application Modules and Firestore Collections.
 | `lib\auth-server.ts` | `users` | Read-Only |
 | `lib\auth-server.ts` | `donors` | Read-Only |
 | `lib\auth-server.ts` | `beneficiaries` | Read-Only |
+| `lib\use-case-id.ts` | `donations` | Read/Write |
+| `lib\use-case-id.ts` | `pending_verifications` | Read/Write |
+| `lib\use-case-id.ts` | `audit_logs` | Read/Write |

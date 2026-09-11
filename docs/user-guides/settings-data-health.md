@@ -1,7 +1,7 @@
 # 📘 User Guide: /settings/data-health
     
-**Build Version:** `2026.06.21.4`
-**Last Updated:** 21/6/2026, 6:35:04 am
+**Build Version:** `2026.09.11.3`
+**Last Updated:** 11/9/2026, 9:57:27 pm
 **Internal Route:** `/settings/data-health`
 
 ---
@@ -33,6 +33,8 @@ The following fields are mapped within this interface:
 - **handleFixSelected**: Internal logic handler for FixSelected workflow.
 - **handleRecalculate**: Internal logic handler for Recalculate workflow.
 - **handleInitCredentials**: Internal logic handler for InitCredentials workflow.
+- **handleMigrateUseCaseIds**: Internal logic handler for MigrateUseCaseIds workflow.
+- **handleMigrateStorageFolders**: Internal logic handler for MigrateStorageFolders workflow.
 
 ## 🛡️ Security & Access
 Access to this module is restricted based on organization roles (Admin, Staff, or Portal User). Ensure you have the necessary clearance before attempting modifications.

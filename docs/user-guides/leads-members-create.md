@@ -1,7 +1,7 @@
 # 📘 User Guide: /leads-members/create
     
-**Build Version:** `2026.06.21.4`
-**Last Updated:** 21/6/2026, 6:35:04 am
+**Build Version:** `2026.09.11.3`
+**Last Updated:** 11/9/2026, 9:57:27 pm
 **Internal Route:** `/leads-members/create`
 
 ---
@@ -26,6 +26,7 @@ The following fields are mapped within this interface:
 - Suggested Registry Backgrounds
 - Any
 - {type}
+- Input: e.g. 0109202601
 - Input: e.g. Surgery Assistance For Patient A
 - Input: Background And Specific Needs...
 - Input: Select Purpose

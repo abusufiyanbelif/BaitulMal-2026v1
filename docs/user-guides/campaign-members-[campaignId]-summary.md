@@ -1,7 +1,7 @@
 # 📘 User Guide: /campaign-members/[campaignId]/summary
     
-**Build Version:** `2026.06.21.4`
-**Last Updated:** 21/6/2026, 6:35:04 am
+**Build Version:** `2026.09.11.3`
+**Last Updated:** 11/9/2026, 9:57:27 pm
 **Internal Route:** `/campaign-members/[campaignId]/summary`
 
 ---
@@ -44,6 +44,8 @@ The following fields are mapped within this interface:
 - Upload New Files
 - Manage Saved Documents
 - Public
+- New Case ID (DDMMYYYYXX)
+- Input: e.g. 0109202601
 
 ## ⚡ Interactive Action Items
 - **All Campaigns**: Interactive button to initiate all campaigns operation.
@@ -51,6 +53,8 @@ The following fields are mapped within this interface:
 - **Save Modifications**: Interactive button to initiate save modifications operation (Triggers handleSave).
 - **{ e.preventDefault(); handleRemoveImage(); }}>**: Interactive button to initiate { e.preventdefault(); handleremoveimage(); }}> operation (Triggers (e) => { e.preventDefault(); handleRemoveImage(); ).
 - **handleRemoveExistingDocument(doc.url)}>**: Interactive button to initiate handleremoveexistingdocument(doc.url)}> operation (Triggers () => handleRemoveExistingDocument(doc.url)).
+- **handleOpenEditCaseId**: Internal logic handler for OpenEditCaseId workflow.
+- **handleSaveCaseId**: Internal logic handler for SaveCaseId workflow.
 - **handleFieldChange**: Internal logic handler for FieldChange workflow.
 - **handleImageFileChange**: Internal logic handler for ImageFileChange workflow.
 - **handleRemoveImage**: Internal logic handler for RemoveImage workflow.

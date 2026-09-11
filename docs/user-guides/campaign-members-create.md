@@ -1,7 +1,7 @@
 # 📘 User Guide: /campaign-members/create
     
-**Build Version:** `2026.06.21.4`
-**Last Updated:** 21/6/2026, 6:35:04 am
+**Build Version:** `2026.09.11.3`
+**Last Updated:** 11/9/2026, 9:57:27 pm
 **Internal Route:** `/campaign-members/create`
 
 ---
@@ -25,6 +25,7 @@ The following fields are mapped within this interface:
 - Suggested Registry Backgrounds
 - Any
 - {type}
+- Input: e.g. 0109202601
 - Input: e.g. Ration Kit Distribution Ramzan 2027
 - Input: Objectives And Target Impact...
 - Input: Select Category
