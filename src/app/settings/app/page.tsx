@@ -64,7 +64,10 @@ import {
     Sparkles,
     ChevronRight,
     Activity,
-    CloudCog
+    CloudCog,
+    Instagram,
+    Facebook,
+    Youtube
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -112,6 +115,9 @@ interface FormDataType {
     address: string;
     website: string;
     copyright: string;
+    instagramUrl: string;
+    facebookUrl: string;
+    youtubeUrl: string;
     bankAccountName: string;
     bankAccountNumber: string;
     bankIfsc: string;
@@ -284,6 +290,9 @@ export default function AppSettingsPage() {
                 address: paymentSettings?.address || '',
                 website: paymentSettings?.website || '',
                 copyright: paymentSettings?.copyright || '',
+                instagramUrl: paymentSettings?.instagramUrl || '',
+                facebookUrl: paymentSettings?.facebookUrl || '',
+                youtubeUrl: paymentSettings?.youtubeUrl || '',
                 bankAccountName: paymentSettings?.bankAccountName || '',
                 bankAccountNumber: paymentSettings?.bankAccountNumber || '',
                 bankIfsc: paymentSettings?.bankIfsc || '',
@@ -449,6 +458,9 @@ export default function AppSettingsPage() {
                 address: editableData.address,
                 website: editableData.website,
                 copyright: editableData.copyright,
+                instagramUrl: editableData.instagramUrl,
+                facebookUrl: editableData.facebookUrl,
+                youtubeUrl: editableData.youtubeUrl,
                 bankAccountName: editableData.bankAccountName,
                 bankAccountNumber: editableData.bankAccountNumber,
                 bankIfsc: editableData.bankIfsc,
@@ -514,6 +526,9 @@ export default function AppSettingsPage() {
         address: paymentSettings?.address || '',
         website: paymentSettings?.website || '',
         copyright: paymentSettings?.copyright || '',
+        instagramUrl: paymentSettings?.instagramUrl || '',
+        facebookUrl: paymentSettings?.facebookUrl || '',
+        youtubeUrl: paymentSettings?.youtubeUrl || '',
         bankAccountName: paymentSettings?.bankAccountName || '',
         bankAccountNumber: paymentSettings?.bankAccountNumber || '',
         bankIfsc: paymentSettings?.bankIfsc || '',
@@ -885,6 +900,24 @@ export default function AppSettingsPage() {
                                 <div className="space-y-2">
                                     <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Contact Email Vector</Label>
                                     <Input value={displayData.contactEmail} onChange={e => handleFieldChange('contactEmail', e.target.value)} disabled={isFormDisabled} className="h-12 font-bold text-xs rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" placeholder="admin@organization.org" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1 flex items-center gap-1.5">
+                                        <Instagram className="h-3 w-3 text-pink-500" /> Instagram Profile URL
+                                    </Label>
+                                    <Input value={displayData.instagramUrl} onChange={e => handleFieldChange('instagramUrl', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-bold text-xs rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" placeholder="https://instagram.com/your_profile" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1 flex items-center gap-1.5">
+                                        <Facebook className="h-3 w-3 text-blue-600" /> Facebook Profile URL
+                                    </Label>
+                                    <Input value={displayData.facebookUrl} onChange={e => handleFieldChange('facebookUrl', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-bold text-xs rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" placeholder="https://facebook.com/your_page" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1 flex items-center gap-1.5">
+                                        <Youtube className="h-3 w-3 text-red-600" /> YouTube Channel URL
+                                    </Label>
+                                    <Input value={displayData.youtubeUrl} onChange={e => handleFieldChange('youtubeUrl', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-bold text-xs rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" placeholder="https://youtube.com/@your_channel" />
                                 </div>
                             </div>
                         </div>

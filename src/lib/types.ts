@@ -50,6 +50,9 @@ export interface PaymentSettings extends DocumentData {
   address?: string;
   website?: string;
   copyright?: string;
+  instagramUrl?: string;
+  facebookUrl?: string;
+  youtubeUrl?: string;
   // Bank Details
   bankAccountName?: string;
   bankAccountNumber?: string;

@@ -154,7 +154,7 @@ function LoginContent() {
 
         setIsSendingReset(true);
         try {
-            await sendPasswordResetEmail(auth, resetEmail, { url: `${window.location.origin}/login`, handleCodeInApp: false });
+            await sendPasswordResetEmail(auth, resetEmail);
             toast({ title: "Reset email sent", description: `Instructions have been dispatched to ${resetEmail}.`, variant: "success" });
             setIsResetDialogOpen(false);
         } catch (error: any) {

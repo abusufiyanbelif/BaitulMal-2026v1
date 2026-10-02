@@ -313,9 +313,8 @@ export function UserForm({ user, onSubmit, onCancel, isSubmitting, isLoading, is
         toast({ title: "Operation Error", description: "User Email Or Auth Service Unavailable.", variant: "destructive"});
         return;
     }
-    const actionCodeSettings = { url: `${window.location.origin}/login`, handleCodeInApp: false };
     try {
-        await sendPasswordResetEmail(auth, user.email, actionCodeSettings);
+        await sendPasswordResetEmail(auth, user.email);
         toast({ title: "Reset Email Dispatched", description: `A Secure Password Reset Link Has Been Sent To ${user.email}.`, variant: "success", duration: 10000 });
     } catch (error: any) {
         toast({ title: "Dispatch Failed", description: `Could Not Send Reset Link: ${error.message}`, variant: "destructive"});

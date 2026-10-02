@@ -8,6 +8,11 @@ import {
 import {
   doc,
   getDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  limit,
   type Firestore,
 } from 'firebase/firestore';
 
@@ -23,45 +28,83 @@ const setAuthCookie = async (user: any) => {
 };
 
 export const signInWithLoginId = async (auth: Auth, firestore: Firestore, loginId: string, password?: string) => {
-    // Sanitize loginId: if it's a 10-digit number, prefix with +91 for standardized lookup
     let sanitizedLoginId = loginId.trim();
-    const numericOnly = sanitizedLoginId.replace(/\D/g, '');
-    let alternativeLoginId: string | null = null;
-    
-    if (numericOnly.length === 10) {
-        if (!sanitizedLoginId.startsWith('+')) {
-            alternativeLoginId = sanitizedLoginId;
-            sanitizedLoginId = '+91' + numericOnly;
-        } else {
-            alternativeLoginId = numericOnly;
+    if (!sanitizedLoginId) {
+        throw new Error('Login ID, Phone Number, or Email is required.');
+    }
+    if (!password) {
+        throw new Error('Password is required.');
+    }
+
+    let targetEmail: string | null = null;
+
+    // Case 1: Direct email address input
+    if (sanitizedLoginId.includes('@')) {
+        targetEmail = sanitizedLoginId;
+    } else {
+        // Case 2: Phone or Login ID
+        const numericOnly = sanitizedLoginId.replace(/\D/g, '');
+        let alternativeLoginId: string | null = null;
+        
+        if (numericOnly.length === 10) {
+            if (!sanitizedLoginId.startsWith('+')) {
+                alternativeLoginId = sanitizedLoginId;
+                sanitizedLoginId = '+91' + numericOnly;
+            } else {
+                alternativeLoginId = numericOnly;
+            }
+        }
+
+        // Try exact match in user_lookups
+        let lookupDocRef = doc(firestore, 'user_lookups', sanitizedLoginId);
+        try {
+            let lookupDoc = await getDoc(lookupDocRef);
+
+            if (!lookupDoc.exists() && alternativeLoginId) {
+                lookupDocRef = doc(firestore, 'user_lookups', alternativeLoginId);
+                lookupDoc = await getDoc(lookupDocRef);
+            }
+
+            if (!lookupDoc.exists()) {
+                lookupDocRef = doc(firestore, 'user_lookups', sanitizedLoginId.toLowerCase());
+                lookupDoc = await getDoc(lookupDocRef);
+            }
+
+            if (lookupDoc.exists()) {
+                targetEmail = lookupDoc.data()?.email || null;
+            }
+
+            // Fallback: Query users collection if lookupDoc wasn't found
+            if (!targetEmail) {
+                const usersRef = collection(firestore, 'users');
+                const queriesToTry = [
+                    query(usersRef, where('loginId', '==', sanitizedLoginId), limit(1)),
+                    query(usersRef, where('loginId', '==', sanitizedLoginId.toLowerCase()), limit(1)),
+                ];
+                if (alternativeLoginId) {
+                    queriesToTry.push(query(usersRef, where('phone', '==', alternativeLoginId), limit(1)));
+                    queriesToTry.push(query(usersRef, where('phone', '==', `+91${alternativeLoginId}`), limit(1)));
+                }
+
+                for (const q of queriesToTry) {
+                    const snap = await getDocs(q);
+                    if (!snap.empty) {
+                        targetEmail = snap.docs[0].data()?.email || null;
+                        if (targetEmail) break;
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn("Lookup resolution error:", e);
         }
     }
 
-    let lookupDocRef = doc(firestore, 'user_lookups', sanitizedLoginId);
-    
+    if (!targetEmail) {
+        throw new Error('User not found. Please check your Login ID, Phone Number, or Email.');
+    }
+
     try {
-        let lookupDoc = await getDoc(lookupDocRef);
-
-        if (!lookupDoc.exists() && alternativeLoginId) {
-            lookupDocRef = doc(firestore, 'user_lookups', alternativeLoginId);
-            lookupDoc = await getDoc(lookupDocRef);
-        }
-
-
-        if (!lookupDoc.exists()) {
-            throw new Error('User not found. Please check your Login ID or Phone Number.');
-        }
-        
-        const email = lookupDoc.data()?.email;
-        if (!email) {
-            throw new Error('Authentication configuration error for this user. Email is missing from lookup.');
-        }
-        
-        if (!password) {
-            throw new Error('Password is required.');
-        }
-
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, targetEmail, password);
         await setAuthCookie(userCredential.user);
 
         // Post-login check to ensure the user is active with latency retry mechanism.
@@ -104,7 +147,7 @@ export const signInWithLoginId = async (auth: Auth, firestore: Firestore, loginI
         if (error.code === 'auth/too-many-requests') {
             throw new Error("Access temporarily disabled due to too many failed login attempts. Please reset your password or try again later.");
         }
-        // Re-throw our custom errors
+        // Re-throw custom errors
         if (error.message.includes('deactivated') || error.message.includes('User not found') || error.message.includes('configuration error')) {
             throw error;
         }

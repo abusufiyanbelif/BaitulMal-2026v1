@@ -21,7 +21,10 @@ import {
   CreditCard,
   Copy,
   BookOpen,
-  Navigation2
+  Navigation2,
+  Instagram,
+  Facebook,
+  Youtube
 } from 'lucide-react';
 import { 
   Dialog, 
@@ -133,6 +136,46 @@ export function AppFooter() {
                   </a>
                 )}
               </div>
+              {(paymentSettings?.instagramUrl || paymentSettings?.facebookUrl || paymentSettings?.youtubeUrl) && (
+                <div className="flex items-center gap-3 pt-3">
+                  {paymentSettings?.instagramUrl && (
+                    <a
+                      href={paymentSettings.instagramUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Instagram"
+                      aria-label="Instagram Profile"
+                      className="p-2.5 rounded-full bg-primary/5 text-primary hover:bg-gradient-to-tr hover:from-amber-500 hover:via-rose-500 hover:to-purple-600 hover:text-white transition-all transform hover:scale-110 shadow-sm"
+                    >
+                      <Instagram className="h-4 w-4" />
+                    </a>
+                  )}
+                  {paymentSettings?.facebookUrl && (
+                    <a
+                      href={paymentSettings.facebookUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Facebook"
+                      aria-label="Facebook Profile"
+                      className="p-2.5 rounded-full bg-primary/5 text-primary hover:bg-blue-600 hover:text-white transition-all transform hover:scale-110 shadow-sm"
+                    >
+                      <Facebook className="h-4 w-4" />
+                    </a>
+                  )}
+                  {paymentSettings?.youtubeUrl && (
+                    <a
+                      href={paymentSettings.youtubeUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="YouTube"
+                      aria-label="YouTube Channel"
+                      className="p-2.5 rounded-full bg-primary/5 text-primary hover:bg-red-600 hover:text-white transition-all transform hover:scale-110 shadow-sm"
+                    >
+                      <Youtube className="h-4 w-4" />
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 
