@@ -9,11 +9,13 @@ function LoggerInner() {
     const searchParams = useSearchParams();
     const { info, error } = useLogger();
 
+    const searchParamsString = searchParams.toString();
+
     useEffect(() => {
         // Log page navigation
-        const url = `${pathname}${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+        const url = `${pathname}${searchParamsString ? `?${searchParamsString}` : ''}`;
         info(`Navigation: ${url}`, { type: 'page_view' });
-    }, [pathname, searchParams, info]);
+    }, [pathname, searchParamsString]);
 
     useEffect(() => {
         // Log startup/reload
@@ -53,7 +55,7 @@ function LoggerInner() {
             window.removeEventListener('error', handleError);
             window.removeEventListener('unhandledrejection', handleRejection);
         };
-    }, [info, error]);
+    }, []);
 
     return null;
 }

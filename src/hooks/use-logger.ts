@@ -27,11 +27,11 @@ export function useLogger() {
                 })
             });
         } catch (e) {}
-    }, [profile, user]);
+    }, [profile, user?.uid, user?.email]);
 
-    return {
-        info: (msg: string, meta?: any) => log('info', msg, meta),
-        warn: (msg: string, meta?: any) => log('warn', msg, meta),
-        error: (msg: string, meta?: any) => log('error', msg, meta)
-    };
+    const info = useCallback((msg: string, meta?: any) => log('info', msg, meta), [log]);
+    const warn = useCallback((msg: string, meta?: any) => log('warn', msg, meta), [log]);
+    const error = useCallback((msg: string, meta?: any) => log('error', msg, meta), [log]);
+
+    return { info, warn, error };
 }

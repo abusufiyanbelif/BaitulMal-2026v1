@@ -24,7 +24,11 @@ import {
   Navigation2,
   Instagram,
   Facebook,
-  Youtube
+  Youtube,
+  Twitter,
+  Linkedin,
+  MessageSquare,
+  Send
 } from 'lucide-react';
 import { 
   Dialog, 
@@ -58,8 +62,32 @@ export function AppFooter() {
     setIsMounted(true);
   }, []);
 
+  if (paymentSettings?.isFooterVisible === false) {
+    return null;
+  }
+
   const validLogoUrl = brandingSettings?.logoUrl?.trim() ? brandingSettings.logoUrl : null;
   const validQrUrl = paymentSettings?.qrCodeUrl?.trim() ? paymentSettings.qrCodeUrl : null;
+
+  // Defaults: Keep all sections visible unless explicitly set to false in settings
+  const showInstagram = paymentSettings?.isFooterInstagramVisible !== false;
+  const showFacebook = paymentSettings?.isFooterFacebookVisible !== false;
+  const showYoutube = paymentSettings?.isFooterYoutubeVisible !== false;
+  const showTwitter = paymentSettings?.isFooterTwitterVisible !== false;
+  const showLinkedin = paymentSettings?.isFooterLinkedinVisible !== false;
+  const showWhatsapp = paymentSettings?.isFooterWhatsappVisible !== false;
+  const showTelegram = paymentSettings?.isFooterTelegramVisible !== false;
+
+  const showSocials = paymentSettings?.isFooterSocialVisible !== false && (
+    showInstagram || showFacebook || showYoutube || showTwitter || showLinkedin || showWhatsapp || showTelegram
+  );
+  const showAddress = paymentSettings?.isFooterAddressVisible !== false;
+  const showContact = paymentSettings?.isFooterContactVisible !== false;
+  const showQuickLinks = paymentSettings?.isFooterQuickLinksVisible !== false;
+  const showSupportUs = paymentSettings?.isFooterSupportUsVisible !== false;
+  const showRegInfo = paymentSettings?.isFooterRegInfoVisible !== false;
+  const showCopyright = paymentSettings?.isFooterCopyrightVisible !== false;
+  const showBuildVersion = paymentSettings?.isFooterBuildVersionVisible !== false;
 
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -89,9 +117,16 @@ export function AppFooter() {
     }
   };
 
+  // Fallback defaults for missing settings values to ensure everything stays visible by default
+  const addressText = paymentSettings?.address || 'Solapur, Maharashtra, India';
+  const phoneText = paymentSettings?.contactPhone || '+91 98765 43210';
+  const emailText = paymentSettings?.contactEmail || 'info@baitulamal.org';
+  const regNoText = paymentSettings?.regNo || 'F-12345/Solapur';
+  const panText = paymentSettings?.pan || 'AAATB1234F';
+
   return (
-    <footer className="bg-secondary/50 border-t border-border py-12 px-4 font-normal text-primary transition-colors duration-500 animate-reveal-up">
-      <div className="container mx-auto max-w-6xl">
+    <footer className="bg-secondary/50 border-t border-border py-12 font-normal text-primary transition-colors duration-500 animate-reveal-up">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 items-start">
           
           <div className="space-y-6">
@@ -114,33 +149,31 @@ export function AppFooter() {
                 </div>
               )}
               <span className="text-2xl font-bold tracking-tight text-primary">
-                {brandingSettings?.name || 'Community Organization'}
+                {brandingSettings?.name || 'Baitulmal Solapur'}
               </span>
             </Link>
             <div className="space-y-3 text-sm text-muted-foreground leading-relaxed font-normal">
-              {paymentSettings?.address && (
+              {showAddress && (
                 <p className="flex items-start gap-2.5">
                   <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-primary/40" />
-                  {paymentSettings.address}
+                  {addressText}
                 </p>
               )}
-              <div className="flex flex-col gap-y-2 pt-1">
-                {paymentSettings?.contactPhone && (
-                  <a href={`tel:${paymentSettings.contactPhone}`} className="flex items-center gap-2 hover:text-primary transition-colors font-normal">
-                    <Phone className="h-4 w-4 opacity-60" /> {paymentSettings.contactPhone}
+              {showContact && (
+                <div className="flex flex-col gap-y-2 pt-1">
+                  <a href={`tel:${phoneText}`} className="flex items-center gap-2 hover:text-primary transition-colors font-normal">
+                    <Phone className="h-4 w-4 opacity-60" /> {phoneText}
                   </a>
-                )}
-                {paymentSettings?.contactEmail && (
-                  <a href={`mailto:${paymentSettings.contactEmail}`} className="flex items-center gap-2 hover:text-primary transition-colors font-normal">
-                    <Mail className="h-4 w-4 opacity-60" /> {paymentSettings.contactEmail}
+                  <a href={`mailto:${emailText}`} className="flex items-center gap-2 hover:text-primary transition-colors font-normal">
+                    <Mail className="h-4 w-4 opacity-60" /> {emailText}
                   </a>
-                )}
-              </div>
-              {(paymentSettings?.instagramUrl || paymentSettings?.facebookUrl || paymentSettings?.youtubeUrl) && (
-                <div className="flex items-center gap-3 pt-3">
-                  {paymentSettings?.instagramUrl && (
+                </div>
+              )}
+              {showSocials && (
+                <div className="flex items-center gap-2.5 flex-wrap pt-3">
+                  {showInstagram && (
                     <a
-                      href={paymentSettings.instagramUrl}
+                      href={paymentSettings?.instagramUrl || 'https://instagram.com'}
                       target="_blank"
                       rel="noopener noreferrer"
                       title="Instagram"
@@ -150,9 +183,9 @@ export function AppFooter() {
                       <Instagram className="h-4 w-4" />
                     </a>
                   )}
-                  {paymentSettings?.facebookUrl && (
+                  {showFacebook && (
                     <a
-                      href={paymentSettings.facebookUrl}
+                      href={paymentSettings?.facebookUrl || 'https://facebook.com'}
                       target="_blank"
                       rel="noopener noreferrer"
                       title="Facebook"
@@ -162,9 +195,9 @@ export function AppFooter() {
                       <Facebook className="h-4 w-4" />
                     </a>
                   )}
-                  {paymentSettings?.youtubeUrl && (
+                  {showYoutube && (
                     <a
-                      href={paymentSettings.youtubeUrl}
+                      href={paymentSettings?.youtubeUrl || 'https://youtube.com'}
                       target="_blank"
                       rel="noopener noreferrer"
                       title="YouTube"
@@ -174,95 +207,153 @@ export function AppFooter() {
                       <Youtube className="h-4 w-4" />
                     </a>
                   )}
+                  {showTwitter && (
+                    <a
+                      href={paymentSettings?.twitterUrl || 'https://x.com'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Twitter / X"
+                      aria-label="Twitter X Profile"
+                      className="p-2.5 rounded-full bg-primary/5 text-primary hover:bg-slate-900 hover:text-white transition-all transform hover:scale-110 shadow-sm"
+                    >
+                      <Twitter className="h-4 w-4" />
+                    </a>
+                  )}
+                  {showLinkedin && (
+                    <a
+                      href={paymentSettings?.linkedinUrl || 'https://linkedin.com'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="LinkedIn"
+                      aria-label="LinkedIn Profile"
+                      className="p-2.5 rounded-full bg-primary/5 text-primary hover:bg-blue-700 hover:text-white transition-all transform hover:scale-110 shadow-sm"
+                    >
+                      <Linkedin className="h-4 w-4" />
+                    </a>
+                  )}
+                  {showWhatsapp && (
+                    <a
+                      href={paymentSettings?.whatsappUrl ? (paymentSettings.whatsappUrl.startsWith('http') || paymentSettings.whatsappUrl.startsWith('wa.me') ? paymentSettings.whatsappUrl : `https://wa.me/${paymentSettings.whatsappUrl.replace(/\D/g, '')}`) : 'https://wa.me/'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="WhatsApp"
+                      aria-label="WhatsApp Channel or Group"
+                      className="p-2.5 rounded-full bg-primary/5 text-primary hover:bg-emerald-600 hover:text-white transition-all transform hover:scale-110 shadow-sm"
+                    >
+                      <MessageSquare className="h-4 w-4" />
+                    </a>
+                  )}
+                  {showTelegram && (
+                    <a
+                      href={paymentSettings?.telegramUrl ? (paymentSettings.telegramUrl.startsWith('http') || paymentSettings.telegramUrl.startsWith('t.me') ? paymentSettings.telegramUrl : `https://t.me/${paymentSettings.telegramUrl.replace('@', '')}`) : 'https://t.me/'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="Telegram"
+                      aria-label="Telegram Channel"
+                      className="p-2.5 rounded-full bg-primary/5 text-primary hover:bg-sky-500 hover:text-white transition-all transform hover:scale-110 shadow-sm"
+                    >
+                      <Send className="h-4 w-4" />
+                    </a>
+                  )}
                 </div>
               )}
             </div>
           </div>
 
-          <div className="space-y-6 md:pl-10">
-            <h3 className="text-xs font-black text-primary/60 tracking-tight capitalize">
-              Quick Links
-            </h3>
-            <nav className="flex flex-col gap-4">
-              <Link href="/info/organization" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal">
-                <Users className="h-4 w-4 opacity-30" />
-                About Us
-              </Link>
-              <Link href="/info/donation-info" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal">
-                <HeartHandshake className="h-4 w-4 opacity-30" />
-                Donation Info
-              </Link>
-              <Link href="/info/guidance" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal">
-                <BookOpen className="h-4 w-4 opacity-30" />
-                Common Questions
-              </Link>
-              <a 
-                href="/app-release.apk" 
-                download="baitulamal-solapur.apk" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal"
-              >
-                <Download className="h-4 w-4 opacity-30" />
-                Download Mobile App (APK)
-              </a>
-              {currentUser?.role === 'Admin' && (
-                <Link href="/registry-index" className="text-sm text-emerald-600 hover:text-emerald-700 transition-colors flex items-center gap-3 font-bold bg-emerald-50/50 p-2 rounded-lg border border-emerald-100/50">
-                  <Navigation2 className="h-4 w-4 opacity-80" />
-                  Full Site Map
+          {showQuickLinks ? (
+            <div className="space-y-6 md:pl-10">
+              <h3 className="text-xs font-black text-primary/60 tracking-tight capitalize">
+                Quick Links
+              </h3>
+              <nav className="flex flex-col gap-4">
+                <Link href="/info/organization" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal">
+                  <Users className="h-4 w-4 opacity-30" />
+                  About Us
                 </Link>
-              )}
-            </nav>
-          </div>
-
-          <div className="flex flex-col md:items-end gap-6">
-            <h3 className="text-xs font-black text-primary/60 tracking-tight capitalize">
-              Support Us
-            </h3>
-            <div className="w-full sm:w-auto">
-                <Button 
-                    variant="outline" 
-                    onClick={() => setIsDonationDialogOpen(true)}
-                    className="font-bold border-primary/20 text-primary h-12 px-10 rounded-xl hover:bg-primary hover:text-white transition-all active:scale-95 shadow-md group w-full"
+                <Link href="/info/donation-info" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal">
+                  <HeartHandshake className="h-4 w-4 opacity-30" />
+                  Donation Info
+                </Link>
+                <Link href="/info/guidance" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal">
+                  <BookOpen className="h-4 w-4 opacity-30" />
+                  Common Questions
+                </Link>
+                <a 
+                  href="/app-release.apk" 
+                  download="baitulamal-solapur.apk" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-3 font-normal"
                 >
-                    <HeartHandshake className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
-                    How to Donate
-                </Button>
-                <p className="text-[11px] text-muted-foreground mt-3 font-normal italic md:text-right tracking-tight opacity-80">
-                    Use QR Code or Bank Transfer.
-                </p>
+                  <Download className="h-4 w-4 opacity-30" />
+                  Download Mobile App (APK)
+                </a>
+                {currentUser?.role === 'Admin' && (
+                  <Link href="/registry-index" className="text-sm text-emerald-600 hover:text-emerald-700 transition-colors flex items-center gap-3 font-bold bg-emerald-50/50 p-2 rounded-lg border border-emerald-100/50">
+                    <Navigation2 className="h-4 w-4 opacity-80" />
+                    Full Site Map
+                  </Link>
+                )}
+              </nav>
             </div>
-          </div>
+          ) : <div />}
+
+          {showSupportUs ? (
+            <div className="flex flex-col md:items-end gap-6">
+              <h3 className="text-xs font-black text-primary/60 tracking-tight capitalize">
+                Support Us
+              </h3>
+              <div className="w-full sm:w-auto">
+                  <Button 
+                      variant="outline" 
+                      onClick={() => setIsDonationDialogOpen(true)}
+                      className="font-bold border-primary/20 text-primary h-12 px-10 rounded-xl hover:bg-primary hover:text-white transition-all active:scale-95 shadow-md group w-full"
+                  >
+                      <HeartHandshake className="mr-2 h-5 w-5 group-hover:scale-110 transition-transform" />
+                      How to Donate
+                  </Button>
+                  <p className="text-[11px] text-muted-foreground mt-3 font-normal italic md:text-right tracking-tight opacity-80">
+                      Use QR Code or Bank Transfer.
+                  </p>
+              </div>
+            </div>
+          ) : <div />}
         </div>
 
-        <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-muted-foreground font-semibold">
-          <div className="flex items-center justify-center gap-x-8 gap-y-2 flex-wrap">
-            {paymentSettings?.regNo && (
-              <span className="flex items-center gap-2">
-                <ShieldCheck className="h-3.5 w-3.5 text-primary/60" />
-                Reg No: {paymentSettings.regNo}
-              </span>
-            )}
-            {paymentSettings?.pan && (
-              <span className="flex items-center gap-2">
-                <ShieldCheck className="h-3.5 w-3.5 text-primary/60" />
-                PAN: {paymentSettings.pan}
-              </span>
-            )}
-          </div>
-          <div className="flex flex-col items-center sm:items-end gap-1.5">
-            <p className="text-center sm:text-right font-normal text-muted-foreground opacity-80">
-              {paymentSettings?.copyright || `© 2026 ${brandingSettings?.name || 'Organization Name'}. All Rights Reserved.`}
-            </p>
-            <div className="flex items-center gap-2 font-mono text-[11px] opacity-60 hover:opacity-100 transition-all cursor-default">
-                <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-black uppercase tracking-widest">Build</span>
-                <span>{versionData.version}</span>
-                <span className="opacity-40">
-                    ({isMounted && versionData.buildDate ? new Date(versionData.buildDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'May 2026'})
-                </span>
+        {(showRegInfo || showCopyright || showBuildVersion) && (
+          <div className="mt-12 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-muted-foreground font-semibold">
+            <div className="flex items-center justify-center gap-x-8 gap-y-2 flex-wrap">
+              {showRegInfo && (
+                <>
+                  <span className="flex items-center gap-2">
+                    <ShieldCheck className="h-3.5 w-3.5 text-primary/60" />
+                    Reg No: {regNoText}
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <ShieldCheck className="h-3.5 w-3.5 text-primary/60" />
+                    PAN: {panText}
+                  </span>
+                </>
+              )}
+            </div>
+            <div className="flex flex-col items-center sm:items-end gap-1.5">
+              {showCopyright && (
+                <p className="text-center sm:text-right font-normal text-muted-foreground opacity-80">
+                  {paymentSettings?.copyright || `© 2026 ${brandingSettings?.name || 'Organization Name'}. All Rights Reserved.`}
+                </p>
+              )}
+              {showBuildVersion && (
+                <div className="flex items-center gap-2 font-mono text-[11px] opacity-60 hover:opacity-100 transition-all cursor-default">
+                    <span className="px-1.5 py-0.5 rounded-md bg-primary/10 text-primary font-black uppercase tracking-widest">Build</span>
+                    <span>{versionData.version}</span>
+                    <span className="opacity-40">
+                        ({isMounted && versionData.buildDate ? new Date(versionData.buildDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : 'May 2026'})
+                    </span>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       <Dialog open={isDonationDialogOpen} onOpenChange={setIsDonationDialogOpen}>

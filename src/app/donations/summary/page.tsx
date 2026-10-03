@@ -27,6 +27,7 @@ import { format, startOfMonth, endOfMonth, startOfQuarter, subMonths, startOfYea
 import type { Donation, DonationCategory, Campaign, Lead } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { ArrowLeft, Loader2, Wallet, Calendar as CalendarIcon, TrendingUp, FolderKanban, Lightbulb, ShieldAlert, IndianRupee, Target, Hourglass } from 'lucide-react';
 import {
@@ -181,15 +182,15 @@ export default function DonationsSummaryPage() {
         const monthlyContributionTotal = amountsByCategory['Monthly Contribution'] || 0;
         const grandTotal = fitraTotal + zakatTotal + sadaqahTotal + fidiyaTotal + interestTotal + lillahTotal + loanTotal + monthlyContributionTotal;
 
-        const initiativeTotals: Record<string, { name: string; type: 'campaign' | 'lead' | 'general'; amount: number; count: number }> = {};
+        const initiativeTotals: Record<string, { name: string; caseId?: string; status?: string; type: 'campaign' | 'lead' | 'general'; amount: number; count: number }> = {};
         
         campaigns?.forEach(c => {
-            initiativeTotals[`campaign_${c.id}`] = { name: c.name, type: 'campaign', amount: 0, count: 0 };
+            initiativeTotals[`campaign_${c.id}`] = { name: c.name, caseId: c.caseId || c.id, status: c.status, type: 'campaign', amount: 0, count: 0 };
         });
         leads?.forEach(l => {
-            initiativeTotals[`lead_${l.id}`] = { name: l.name, type: 'lead', amount: 0, count: 0 };
+            initiativeTotals[`lead_${l.id}`] = { name: l.name, caseId: l.caseId || l.id, status: l.status, type: 'lead', amount: 0, count: 0 };
         });
-        initiativeTotals.unallocated = { name: 'Unallocated', type: 'general', amount: 0, count: 0 };
+        initiativeTotals.unallocated = { name: 'Unallocated', caseId: '-', type: 'general', amount: 0, count: 0 };
 
         const donationsPerInitiative: Record<string, Set<string>> = {};
 
@@ -497,9 +498,21 @@ export default function DonationsSummaryPage() {
                                         <TableBody>
                                             {summaryData?.sortedInitiatives.map((initiative) => (
                                                 <TableRow key={`${initiative.type}_${initiative.name}`} className="hover:bg-[hsl(var(--table-row-hover))] transition-colors border-b border-primary/5 bg-white">
-                                                    <TableCell className="font-bold text-sm flex items-center gap-2 text-primary pl-6">
-                                                        {initiative.type === 'campaign' ? <FolderKanban className="h-4 w-4 opacity-40" /> : initiative.type === 'lead' ? <Lightbulb className="h-4 w-4 opacity-40" /> : <Wallet className="h-4 w-4 opacity-40" />}
-                                                        <span className="truncate max-w-[400px]">{initiative.name}</span>
+                                                    <TableCell className="font-bold text-sm flex items-center gap-2.5 text-primary pl-6">
+                                                        {initiative.type === 'campaign' ? <FolderKanban className="h-4 w-4 opacity-40 shrink-0" /> : initiative.type === 'lead' ? <Lightbulb className="h-4 w-4 opacity-40 shrink-0" /> : <Wallet className="h-4 w-4 opacity-40 shrink-0" />}
+                                                        <div className="flex flex-wrap items-center gap-2">
+                                                            <span className="truncate max-w-[320px] font-bold">{initiative.name}</span>
+                                                            {initiative.caseId && initiative.caseId !== '-' && (
+                                                                <Badge variant="outline" className="text-[9px] font-black border-primary/20 text-primary shrink-0">
+                                                                    Case ID: {initiative.caseId}
+                                                                </Badge>
+                                                            )}
+                                                            {initiative.status && (
+                                                                <Badge variant={initiative.status === 'Active' ? 'eligible' : initiative.status === 'Upcoming' ? 'outline' : 'secondary'} className="text-[8px] font-bold shrink-0">
+                                                                    {initiative.status}
+                                                                </Badge>
+                                                            )}
+                                                        </div>
                                                     </TableCell>
                                                     <TableCell className="text-right font-normal">{initiative.count}</TableCell>
                                                     <TableCell className="text-right font-bold font-mono text-primary pr-6">₹{initiative.amount.toLocaleString('en-IN')}</TableCell>

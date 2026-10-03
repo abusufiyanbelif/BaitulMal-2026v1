@@ -127,39 +127,39 @@ export default function Home() {
             <div className="absolute bottom-0 left-0 w-full h-[800px] bg-gradient-to-t from-primary/[0.01] to-transparent -z-10" />
 
             {isHeroVisible && (
-                <section className="relative text-center py-16 sm:py-24 lg:py-32 space-y-10">
-                    <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary/5 text-primary rounded-full border border-primary/10 mb-2 shadow-sm animate-fade-in-up">
+                <section className="relative text-center py-10 sm:py-16 lg:py-20 space-y-8">
+                    <div className="inline-flex items-center gap-2 px-5 py-2.5 bg-primary/5 text-primary rounded-full border border-primary/15 mb-2 shadow-sm animate-fade-in-up">
                         <Sparkles className="h-4 w-4 animate-pulse" />
                         <span className="text-xs font-black tracking-[0.2em]">{brandingSettings?.name || 'Baitulmal'} Official Website</span>
                     </div>
 
-                    <h1 className="text-3xl sm:text-6xl lg:text-8xl font-black tracking-tighter text-primary max-w-[1200px] mx-auto leading-[1.1] sm:leading-[0.95] drop-shadow-sm px-4 animate-fade-in-up animate-hero-text-glow">
+                    <h1 className="text-3xl sm:text-5xl lg:text-7xl font-black tracking-tighter text-primary max-w-[1200px] mx-auto leading-[1.1] sm:leading-[0.98] drop-shadow-sm px-4 animate-fade-in-up animate-hero-text-glow">
                         {heroTitle}
                     </h1>
 
-                    <p className="mt-8 max-w-2xl mx-auto text-lg sm:text-xl text-muted-foreground font-normal leading-relaxed px-4 opacity-70 animate-stagger-reveal" style={{ animationDelay: '400ms' }}>
+                    <p className="mt-6 max-w-2xl mx-auto text-base sm:text-lg text-muted-foreground font-normal leading-relaxed px-4 opacity-80 animate-stagger-reveal" style={{ animationDelay: '400ms' }}>
                         {heroDescription}
                     </p>
 
-                    <div className="flex flex-col sm:flex-row gap-6 justify-center items-center pt-8">
+                    <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
                         {brandingSettings?.isLandingDonateNowVisible !== false && (
-                            <Button asChild size="lg" className="h-16 px-12 rounded-[24px] bg-primary text-white font-black text-lg shadow-2xl shadow-primary/30 transition-all hover:scale-105 active:scale-95 group">
+                            <Button asChild size="lg" className="h-14 px-10 rounded-[20px] bg-primary text-white font-black text-base shadow-xl shadow-primary/25 transition-all hover:scale-105 hover:bg-primary/90 active:scale-95 group">
                                 <Link href="/donate">
-                                    <HeartHandshake className="mr-3 h-6 w-6 text-emerald-400 transition-transform group-hover:scale-125" />
+                                    <HeartHandshake className="mr-3 h-5 w-5 text-emerald-300 transition-transform group-hover:scale-125" />
                                     Donate Now
                                 </Link>
                             </Button>
                         )}
-                        <div className="flex gap-4">
-                            <Button asChild variant="outline" size="lg" className="h-14 px-8 rounded-2xl border-primary/10 bg-white/50 backdrop-blur-md font-black text-xs tracking-widest transition-all hover:bg-white hover:shadow-xl active:scale-95">
+                        <div className="flex gap-3">
+                            <Button asChild variant="outline" size="lg" className="h-14 px-6 rounded-2xl border-primary/20 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md font-black text-xs tracking-wider transition-all hover:bg-white hover:border-primary/40 hover:shadow-lg active:scale-95">
                                 <Link href="/campaign-public">
-                                    <FolderKanban className="mr-2 h-4 w-4 opacity-40" />
+                                    <FolderKanban className="mr-2 h-4 w-4 opacity-60" />
                                     Campaigns
                                 </Link>
                             </Button>
-                            <Button asChild variant="outline" size="lg" className="h-14 px-8 rounded-2xl border-primary/10 bg-white/50 backdrop-blur-md font-black text-xs tracking-widest transition-all hover:bg-white hover:shadow-xl active:scale-95">
+                            <Button asChild variant="outline" size="lg" className="h-14 px-6 rounded-2xl border-primary/20 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md font-black text-xs tracking-wider transition-all hover:bg-white hover:border-primary/40 hover:shadow-lg active:scale-95">
                                 <Link href="/leads-public">
-                                    <Lightbulb className="mr-2 h-4 w-4 opacity-40" />
+                                    <Lightbulb className="mr-2 h-4 w-4 opacity-60" />
                                     Appeals
                                 </Link>
                             </Button>
@@ -169,7 +169,7 @@ export default function Home() {
             )}
 
             {showTickers && (
-                <div className="space-y-4">
+                <div className="space-y-3">
                     {activeTickerItems.length > 0 && (
                         <NewsTicker items={activeTickerItems} label="Live Updates" variant="active" />
                     )}
@@ -182,29 +182,29 @@ export default function Home() {
                 </div>
             )}
 
-            <div className="space-y-32 py-20 relative">
+            <div className="space-y-12 sm:space-y-16 py-8 relative">
                 {isWisdomVisible && <WisdomAndReflection />}
 
-                <div className="space-y-32">
+                <div className="space-y-12 sm:space-y-16">
                     {isOverallSummaryVisible && (
-                        <div className="rounded-[48px] bg-white/30 backdrop-blur-2xl border border-primary/5 p-4 sm:p-8 shadow-none transition-all hover:shadow-2xl">
-                            <Suspense fallback={<Skeleton className="h-[200px] w-full rounded-[48px]" />}>
+                        <div className="rounded-[36px] bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-primary/15 p-4 sm:p-8 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-xl">
+                            <Suspense fallback={<Skeleton className="h-[200px] w-full rounded-[36px]" />}>
                                 <OverallFundingSummary />
                             </Suspense>
                         </div>
                     )}
                     
-                    <div className="grid gap-12 lg:grid-cols-2">
+                    <div className="grid gap-8 lg:grid-cols-2">
                         {isDonationSummaryVisible && (
-                            <div className="rounded-[40px] bg-white/30 backdrop-blur-2xl border border-primary/5 p-4 sm:p-8 shadow-none transition-all hover:shadow-2xl">
-                                <Suspense fallback={<Skeleton className="h-[300px] w-full rounded-[40px]" />}>
+                            <div className="rounded-[32px] bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-primary/15 p-4 sm:p-8 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-xl">
+                                <Suspense fallback={<Skeleton className="h-[300px] w-full rounded-[32px]" />}>
                                     <DonationSummary />
                                 </Suspense>
                             </div>
                         )}
                         {isPurposeSummaryVisible && (
-                            <div className="rounded-[40px] bg-white/30 backdrop-blur-2xl border border-primary/5 p-4 sm:p-8 shadow-none transition-all hover:shadow-2xl">
-                                <Suspense fallback={<Skeleton className="h-[300px] w-full rounded-[40px]" />}>
+                            <div className="rounded-[32px] bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-primary/15 p-4 sm:p-8 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-xl">
+                                <Suspense fallback={<Skeleton className="h-[300px] w-full rounded-[32px]" />}>
                                     <PurposeFundingSummary />
                                 </Suspense>
                             </div>
@@ -212,32 +212,32 @@ export default function Home() {
                     </div>
                     
                     {isInitiativeSummaryVisible && (
-                        <div className="rounded-[48px] bg-white/30 backdrop-blur-2xl border border-primary/5 p-4 sm:p-12 shadow-none transition-all hover:shadow-2xl">
-                            <div className="flex items-center gap-4 mb-10 border-b border-primary/5 pb-8">
-                                <div className="h-14 w-14 rounded-2xl bg-primary/5 text-primary flex items-center justify-center">
-                                    <TrendingUp className="h-8 w-8" />
+                        <div className="rounded-[36px] bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border border-primary/15 p-4 sm:p-10 shadow-sm transition-all duration-300 hover:border-primary/30 hover:shadow-xl">
+                            <div className="flex items-center gap-4 mb-8 border-b border-primary/10 pb-6">
+                                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                                    <TrendingUp className="h-7 w-7" />
                                 </div>
                                 <div>
-                                    <h2 className="text-3xl font-black tracking-tighter">Our Work & Cases</h2>
-                                    <p className="text-sm font-normal opacity-40 tracking-widest">Live Updates & Progress</p>
+                                    <h2 className="text-2xl sm:text-3xl font-black tracking-tighter">Our Work & Cases</h2>
+                                    <p className="text-xs font-semibold text-muted-foreground tracking-wider uppercase">Live Updates & Progress</p>
                                 </div>
                             </div>
-                            <Suspense fallback={<Skeleton className="h-[400px] w-full rounded-[48px]" />}>
+                            <Suspense fallback={<Skeleton className="h-[400px] w-full rounded-[36px]" />}>
                                 <LeadAndCampaignSummary />
                             </Suspense>
                         </div>
                     )}
                     
                     {isRecentVerificationVisible && recentDonationsFormatted.length > 0 && (
-                        <div className="rounded-[48px] bg-primary/[0.02] border border-primary/5 p-8 sm:p-12 relative overflow-hidden group transition-all hover:bg-primary/[0.04]">
-                            <div className="flex items-center justify-between mb-8">
-                                <div className="flex items-center gap-4">
-                                    <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center animate-pulse">
+                        <div className="rounded-[36px] bg-primary/[0.03] border border-primary/15 p-6 sm:p-10 relative overflow-hidden group transition-all duration-300 hover:border-primary/30 hover:bg-primary/[0.05]">
+                            <div className="flex items-center justify-between mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-11 w-11 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center animate-pulse">
                                         <ShieldCheck className="h-6 w-6" />
                                     </div>
-                                    <h3 className="text-2xl font-black tracking-tighter">Verified Donations</h3>
+                                    <h3 className="text-xl sm:text-2xl font-black tracking-tighter">Verified Donations</h3>
                                 </div>
-                                <div className="hidden sm:flex items-center gap-2 text-[10px] font-normal tracking-widest text-primary/40">
+                                <div className="hidden sm:flex items-center gap-2 text-[10px] font-bold tracking-widest text-primary/60">
                                     <Activity className="h-4 w-4" /> Live List
                                 </div>
                             </div>

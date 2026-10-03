@@ -25,22 +25,20 @@ export function PWABadgeHandler() {
     // --- Member Level Queries (Only if logged in and Staff) ---
     
     // 1. Unverified Beneficiaries
-    const unverifiedBenQuery = useMemoFirebase(() => 
-        (firestore && user && isStaff) ? query(collection(firestore, 'beneficiaries'), where('status', '!=', 'Verified')) : null, 
+    const allBenQuery = useMemoFirebase(() => 
+        (firestore && user && isStaff) ? collection(firestore, 'beneficiaries') : null, 
     [firestore, user, isStaff]);
-    const { data: unverifiedBen } = useCollection<Beneficiary>(unverifiedBenQuery);
+    const { data: allBeneficiaries } = useCollection<Beneficiary>(allBenQuery);
+    const unverifiedBen = useMemo(() => allBeneficiaries?.filter(b => b.status !== 'Verified') || [], [allBeneficiaries]);
 
-    // 2. Pending Donations
-    const pendingDonQuery = useMemoFirebase(() => 
-        (firestore && user && isStaff) ? query(collection(firestore, 'donations'), where('status', '==', 'Pending')) : null, 
+    // 2. Donations
+    const allDonQuery = useMemoFirebase(() => 
+        (firestore && user && isStaff) ? collection(firestore, 'donations') : null, 
     [firestore, user, isStaff]);
-    const { data: pendingDon } = useCollection<Donation>(pendingDonQuery);
+    const { data: allDonations } = useCollection<Donation>(allDonQuery);
 
-    // 3. Unallocated Verified Donations
-    const verifiedDonQuery = useMemoFirebase(() => 
-        (firestore && user && isStaff) ? query(collection(firestore, 'donations'), where('status', '==', 'Verified')) : null, 
-    [firestore, user, isStaff]);
-    const { data: verifiedDon } = useCollection<Donation>(verifiedDonQuery);
+    const pendingDon = useMemo(() => allDonations?.filter(d => d.status === 'Pending') || [], [allDonations]);
+    const verifiedDon = useMemo(() => allDonations?.filter(d => d.status === 'Verified') || [], [allDonations]);
 
     const unallocatedCount = useMemo(() => {
         if (!verifiedDon) return 0;
@@ -51,15 +49,17 @@ export function PWABadgeHandler() {
     }, [verifiedDon]);
 
     // 4. Unverified Initiatives
-    const unverifiedLeadsQuery = useMemoFirebase(() => 
-        (firestore && user && isStaff) ? query(collection(firestore, 'leads'), where('authenticityStatus', '!=', 'Verified')) : null, 
+    const allLeadsQuery = useMemoFirebase(() => 
+        (firestore && user && isStaff) ? collection(firestore, 'leads') : null, 
     [firestore, user, isStaff]);
-    const { data: unverifiedLeads } = useCollection<Lead>(unverifiedLeadsQuery);
+    const { data: allLeads } = useCollection<Lead>(allLeadsQuery);
+    const unverifiedLeads = useMemo(() => allLeads?.filter(l => l.authenticityStatus !== 'Verified') || [], [allLeads]);
 
-    const unverifiedCampsQuery = useMemoFirebase(() => 
-        (firestore && user && isStaff) ? query(collection(firestore, 'campaigns'), where('authenticityStatus', '!=', 'Verified')) : null, 
+    const allCampsQuery = useMemoFirebase(() => 
+        (firestore && user && isStaff) ? collection(firestore, 'campaigns') : null, 
     [firestore, user, isStaff]);
-    const { data: unverifiedCamps } = useCollection<Campaign>(unverifiedCampsQuery);
+    const { data: allCamps } = useCollection<Campaign>(allCampsQuery);
+    const unverifiedCamps = useMemo(() => allCamps?.filter(c => c.authenticityStatus !== 'Verified') || [], [allCamps]);
 
     // --- Calculation Engine ---
 

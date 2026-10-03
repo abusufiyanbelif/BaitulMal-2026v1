@@ -216,7 +216,7 @@ function LoginContent() {
   const activeTabCount = 1 + (isDonorActive ? 1 : 0) + (isBeneficiaryActive ? 1 : 0);
 
   return (
-    <div className="w-full max-w-sm">
+    <div className="w-full max-w-md mx-auto my-auto">
         <div className="mb-4 flex animate-slide-in-from-top" style={{ animationDelay: '200ms', animationFillMode: 'backwards' }}>
             <Button variant="outline" asChild className="transition-transform active:scale-95 font-bold border-primary/20 text-primary">
                 <Link href="/">

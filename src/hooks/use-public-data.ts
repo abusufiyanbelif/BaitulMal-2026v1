@@ -23,20 +23,12 @@ export function usePublicData() {
 
   const campaignsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(
-      collection(firestore, 'campaigns'),
-      where('authenticityStatus', '==', 'Verified'),
-      where('publicVisibility', '==', 'Published')
-    );
+    return collection(firestore, 'campaigns');
   }, [firestore]);
 
   const leadsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(
-      collection(firestore, 'leads'),
-      where('authenticityStatus', '==', 'Verified'),
-      where('publicVisibility', '==', 'Published')
-    );
+    return collection(firestore, 'leads');
   }, [firestore]);
   
   const beneficiariesCollectionRef = useMemoFirebase(() => {
@@ -46,13 +38,36 @@ export function usePublicData() {
 
   const donationsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
+    if (user && isStaff) {
+      return collection(firestore, 'donations');
+    }
     return query(collection(firestore, 'donations'), where('status', '==', 'Verified'));
-  }, [firestore]);
+  }, [firestore, user, isStaff]);
 
-  const { data: campaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
-  const { data: leads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
+  const { data: rawCampaigns, isLoading: areCampaignsLoading } = useCollection<Campaign>(campaignsCollectionRef);
+  const { data: rawLeads, isLoading: areLeadsLoading } = useCollection<Lead>(leadsCollectionRef);
   const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
-  const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
+  const { data: rawDonations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
+
+  const campaigns = useMemo(() => {
+    if (!rawCampaigns) return [];
+    return rawCampaigns.filter(c => c.authenticityStatus === 'Verified' && c.publicVisibility === 'Published');
+  }, [rawCampaigns]);
+
+  const leads = useMemo(() => {
+    if (!rawLeads) return [];
+    return rawLeads.filter(l => l.authenticityStatus === 'Verified' && l.publicVisibility === 'Published');
+  }, [rawLeads]);
+
+  const donations = useMemo(() => {
+    if (!rawDonations) return [];
+    return rawDonations.filter(d => d.status === 'Verified');
+  }, [rawDonations]);
+
+  const pendingDonationsList = useMemo(() => {
+    if (!rawDonations) return [];
+    return rawDonations.filter(d => d.status === 'Pending');
+  }, [rawDonations]);
 
   const isLoading = areCampaignsLoading || areLeadsLoading || areDonationsLoading || (user ? areBeneficiariesLoading : false) || isSessionLoading || isBrandingLoading || isVisLoading;
 
@@ -94,11 +109,11 @@ export function usePublicData() {
     const endDate = brandingSettings?.summaryEndDate || '';
 
     // --- RECONCILIATION ENGINE ---
-    // Calculates verified contributions for an individual initiative by summing donations on-the-fly
+    // Calculates verified and pending contributions for an individual initiative by summing donations on-the-fly
     const reconcileInitiative = (item: Campaign | Lead, isCampaign: boolean) => {
         const itemType = isCampaign ? 'campaign' : 'lead';
         
-        // Filter donations linked to this specific initiative
+        // Filter verified donations linked to this specific initiative
         const itemDonations = donations.filter(d => 
             d.linkSplit?.some(l => l.linkId === item.id || l.linkId === `${itemType}_${item.id}`)
         );
@@ -133,12 +148,51 @@ export function usePublicData() {
             });
         });
 
+        // Filter pending donations linked to this specific initiative
+        let totalPending = 0;
+        const itemPendingDonations = pendingDonationsList.filter(d => 
+            d.linkSplit?.some(l => l.linkId === item.id || l.linkId === `${itemType}_${item.id}`)
+        );
+
+        itemPendingDonations.forEach(d => {
+            const link = d.linkSplit?.find(l => l.linkId === item.id || l.linkId === `${itemType}_${item.id}`);
+            if (!link) return;
+
+            const amountForThisItem = link.amount;
+            const totalDonationAmount = d.amount > 0 ? d.amount : 1;
+            const proportion = amountForThisItem / totalDonationAmount;
+
+            const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
+            
+            splits.forEach((split: any) => {
+                const rawCategory = (split.category as string || '').trim();
+                const normalizedCategory = rawCategory === 'General' || rawCategory === 'Sadqa' ? 'Sadaqah' : rawCategory;
+                
+                const isAllowed = allowedTypes.some(t => t.toLowerCase() === normalizedCategory.toLowerCase());
+                
+                if (isAllowed) {
+                    const isForFundraising = normalizedCategory.toLowerCase() !== 'zakat' || split.forFundraising !== false;
+                    if (isForFundraising) {
+                        totalPending += split.amount * proportion;
+                    }
+                }
+            });
+        });
+
         const target = Number(item.targetAmount) || 0;
         // Fallback to document field if on-the-fly calculation is 0 but document says otherwise (to handle edge cases)
         const finalCollected = totalCollected > 0 ? totalCollected : (Number(item.collectedAmount) || 0);
         const progress = target > 0 ? (finalCollected / target) * 100 : 0;
+        const pendingProgress = target > 0 ? (totalPending / target) * 100 : 0;
         
-        return { collected: finalCollected, target, progress: Math.min(progress, 100) };
+        return { 
+            collected: finalCollected, 
+            pendingAmount: totalPending,
+            target, 
+            progress: Math.min(progress, 100),
+            pendingProgress: Math.min(pendingProgress, Math.max(0, 100 - Math.min(progress, 100))),
+            totalLinkedAmount: finalCollected + totalPending
+        };
     };
 
     const campaignsWithProgress = campaigns.map(c => ({ ...c, ...reconcileInitiative(c, true) }));

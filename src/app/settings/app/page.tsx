@@ -67,7 +67,12 @@ import {
     CloudCog,
     Instagram,
     Facebook,
-    Youtube
+    Youtube,
+    Twitter,
+    Linkedin,
+    MessageSquare,
+    Send,
+    HardHat
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -118,6 +123,29 @@ interface FormDataType {
     instagramUrl: string;
     facebookUrl: string;
     youtubeUrl: string;
+    twitterUrl: string;
+    linkedinUrl: string;
+    whatsappUrl: string;
+    telegramUrl: string;
+    isFooterVisible: boolean;
+    isFooterSocialVisible: boolean;
+    isFooterInstagramVisible: boolean;
+    isFooterFacebookVisible: boolean;
+    isFooterYoutubeVisible: boolean;
+    isFooterTwitterVisible: boolean;
+    isFooterLinkedinVisible: boolean;
+    isFooterWhatsappVisible: boolean;
+    isFooterTelegramVisible: boolean;
+    isFooterAddressVisible: boolean;
+    isFooterContactVisible: boolean;
+    isFooterRegInfoVisible: boolean;
+    isUnderConstructionAlertVisible: boolean;
+    underConstructionAlertText: string;
+    underConstructionAlertStyle: 'amber' | 'blue' | 'emerald' | 'rose';
+    isFooterQuickLinksVisible: boolean;
+    isFooterSupportUsVisible: boolean;
+    isFooterCopyrightVisible: boolean;
+    isFooterBuildVersionVisible: boolean;
     bankAccountName: string;
     bankAccountNumber: string;
     bankIfsc: string;
@@ -251,6 +279,21 @@ export default function AppSettingsPage() {
 
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [qrCodeFile, setQrCodeFile] = useState<File | null>(null);
+
+    // Smart Alert Generator Topic Selection
+    const [alertIncludeTopics, setAlertIncludeTopics] = useState<{
+        domain: boolean;
+        gateways: boolean;
+        whatsapp: boolean;
+        sync: boolean;
+        portals: boolean;
+    }>({
+        domain: true,
+        gateways: true,
+        whatsapp: true,
+        sync: false,
+        portals: false,
+    });
     
     const canUpdateSettings = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.settings.app.update', false);
 
@@ -276,6 +319,9 @@ export default function AppSettingsPage() {
                 isInitiativeSummaryVisible: brandingSettings?.isInitiativeSummaryVisible ?? true,
                 isRecentVerificationVisible: brandingSettings?.isRecentVerificationVisible ?? true,
                 isLandingDonateNowVisible: brandingSettings?.isLandingDonateNowVisible ?? true,
+                isUnderConstructionAlertVisible: brandingSettings?.isUnderConstructionAlertVisible ?? true,
+                underConstructionAlertText: brandingSettings?.underConstructionAlertText || '',
+                underConstructionAlertStyle: brandingSettings?.underConstructionAlertStyle || 'amber',
                 summaryStartDate: brandingSettings?.summaryStartDate || '',
                 summaryEndDate: brandingSettings?.summaryEndDate || '',
                 qrCodeUrl: paymentSettings?.qrCodeUrl || '',
@@ -293,6 +339,26 @@ export default function AppSettingsPage() {
                 instagramUrl: paymentSettings?.instagramUrl || '',
                 facebookUrl: paymentSettings?.facebookUrl || '',
                 youtubeUrl: paymentSettings?.youtubeUrl || '',
+                twitterUrl: paymentSettings?.twitterUrl || '',
+                linkedinUrl: paymentSettings?.linkedinUrl || '',
+                whatsappUrl: paymentSettings?.whatsappUrl || '',
+                telegramUrl: paymentSettings?.telegramUrl || '',
+                isFooterVisible: paymentSettings?.isFooterVisible ?? true,
+                isFooterSocialVisible: paymentSettings?.isFooterSocialVisible ?? true,
+                isFooterInstagramVisible: paymentSettings?.isFooterInstagramVisible ?? true,
+                isFooterFacebookVisible: paymentSettings?.isFooterFacebookVisible ?? true,
+                isFooterYoutubeVisible: paymentSettings?.isFooterYoutubeVisible ?? true,
+                isFooterTwitterVisible: paymentSettings?.isFooterTwitterVisible ?? true,
+                isFooterLinkedinVisible: paymentSettings?.isFooterLinkedinVisible ?? true,
+                isFooterWhatsappVisible: paymentSettings?.isFooterWhatsappVisible ?? true,
+                isFooterTelegramVisible: paymentSettings?.isFooterTelegramVisible ?? true,
+                isFooterAddressVisible: paymentSettings?.isFooterAddressVisible ?? true,
+                isFooterContactVisible: paymentSettings?.isFooterContactVisible ?? true,
+                isFooterRegInfoVisible: paymentSettings?.isFooterRegInfoVisible ?? true,
+                isFooterQuickLinksVisible: paymentSettings?.isFooterQuickLinksVisible ?? true,
+                isFooterSupportUsVisible: paymentSettings?.isFooterSupportUsVisible ?? true,
+                isFooterCopyrightVisible: paymentSettings?.isFooterCopyrightVisible ?? true,
+                isFooterBuildVersionVisible: paymentSettings?.isFooterBuildVersionVisible ?? true,
                 bankAccountName: paymentSettings?.bankAccountName || '',
                 bankAccountNumber: paymentSettings?.bankAccountNumber || '',
                 bankIfsc: paymentSettings?.bankIfsc || '',
@@ -419,6 +485,9 @@ export default function AppSettingsPage() {
                 isInitiativeSummaryVisible: editableData.isInitiativeSummaryVisible,
                 isRecentVerificationVisible: editableData.isRecentVerificationVisible,
                 isLandingDonateNowVisible: editableData.isLandingDonateNowVisible,
+                isUnderConstructionAlertVisible: editableData.isUnderConstructionAlertVisible,
+                underConstructionAlertText: editableData.underConstructionAlertText,
+                underConstructionAlertStyle: editableData.underConstructionAlertStyle,
                 summaryStartDate: editableData.summaryStartDate,
                 summaryEndDate: editableData.summaryEndDate,
                 isTickerActiveVisible: editableData.isTickerActiveVisible,
@@ -461,6 +530,26 @@ export default function AppSettingsPage() {
                 instagramUrl: editableData.instagramUrl,
                 facebookUrl: editableData.facebookUrl,
                 youtubeUrl: editableData.youtubeUrl,
+                twitterUrl: editableData.twitterUrl,
+                linkedinUrl: editableData.linkedinUrl,
+                whatsappUrl: editableData.whatsappUrl,
+                telegramUrl: editableData.telegramUrl,
+                isFooterVisible: editableData.isFooterVisible,
+                isFooterSocialVisible: editableData.isFooterSocialVisible,
+                isFooterInstagramVisible: editableData.isFooterInstagramVisible,
+                isFooterFacebookVisible: editableData.isFooterFacebookVisible,
+                isFooterYoutubeVisible: editableData.isFooterYoutubeVisible,
+                isFooterTwitterVisible: editableData.isFooterTwitterVisible,
+                isFooterLinkedinVisible: editableData.isFooterLinkedinVisible,
+                isFooterWhatsappVisible: editableData.isFooterWhatsappVisible,
+                isFooterTelegramVisible: editableData.isFooterTelegramVisible,
+                isFooterAddressVisible: editableData.isFooterAddressVisible,
+                isFooterContactVisible: editableData.isFooterContactVisible,
+                isFooterRegInfoVisible: editableData.isFooterRegInfoVisible,
+                isFooterQuickLinksVisible: editableData.isFooterQuickLinksVisible,
+                isFooterSupportUsVisible: editableData.isFooterSupportUsVisible,
+                isFooterCopyrightVisible: editableData.isFooterCopyrightVisible,
+                isFooterBuildVersionVisible: editableData.isFooterBuildVersionVisible,
                 bankAccountName: editableData.bankAccountName,
                 bankAccountNumber: editableData.bankAccountNumber,
                 bankIfsc: editableData.bankIfsc,
@@ -512,6 +601,9 @@ export default function AppSettingsPage() {
         isInitiativeSummaryVisible: brandingSettings?.isInitiativeSummaryVisible ?? true,
         isRecentVerificationVisible: brandingSettings?.isRecentVerificationVisible ?? true,
         isLandingDonateNowVisible: brandingSettings?.isLandingDonateNowVisible ?? true,
+        isUnderConstructionAlertVisible: brandingSettings?.isUnderConstructionAlertVisible ?? true,
+        underConstructionAlertText: brandingSettings?.underConstructionAlertText || '',
+        underConstructionAlertStyle: brandingSettings?.underConstructionAlertStyle || 'amber',
         summaryStartDate: brandingSettings?.summaryStartDate || '',
         summaryEndDate: brandingSettings?.summaryEndDate || '',
         qrCodeUrl: paymentSettings?.qrCodeUrl || '',
@@ -529,6 +621,26 @@ export default function AppSettingsPage() {
         instagramUrl: paymentSettings?.instagramUrl || '',
         facebookUrl: paymentSettings?.facebookUrl || '',
         youtubeUrl: paymentSettings?.youtubeUrl || '',
+        twitterUrl: paymentSettings?.twitterUrl || '',
+        linkedinUrl: paymentSettings?.linkedinUrl || '',
+        whatsappUrl: paymentSettings?.whatsappUrl || '',
+        telegramUrl: paymentSettings?.telegramUrl || '',
+        isFooterVisible: paymentSettings?.isFooterVisible ?? true,
+        isFooterSocialVisible: paymentSettings?.isFooterSocialVisible ?? true,
+        isFooterInstagramVisible: paymentSettings?.isFooterInstagramVisible ?? true,
+        isFooterFacebookVisible: paymentSettings?.isFooterFacebookVisible ?? true,
+        isFooterYoutubeVisible: paymentSettings?.isFooterYoutubeVisible ?? true,
+        isFooterTwitterVisible: paymentSettings?.isFooterTwitterVisible ?? true,
+        isFooterLinkedinVisible: paymentSettings?.isFooterLinkedinVisible ?? true,
+        isFooterWhatsappVisible: paymentSettings?.isFooterWhatsappVisible ?? true,
+        isFooterTelegramVisible: paymentSettings?.isFooterTelegramVisible ?? true,
+        isFooterAddressVisible: paymentSettings?.isFooterAddressVisible ?? true,
+        isFooterContactVisible: paymentSettings?.isFooterContactVisible ?? true,
+        isFooterRegInfoVisible: paymentSettings?.isFooterRegInfoVisible ?? true,
+        isFooterQuickLinksVisible: paymentSettings?.isFooterQuickLinksVisible ?? true,
+        isFooterSupportUsVisible: paymentSettings?.isFooterSupportUsVisible ?? true,
+        isFooterCopyrightVisible: paymentSettings?.isFooterCopyrightVisible ?? true,
+        isFooterBuildVersionVisible: paymentSettings?.isFooterBuildVersionVisible ?? true,
         bankAccountName: paymentSettings?.bankAccountName || '',
         bankAccountNumber: paymentSettings?.bankAccountNumber || '',
         bankIfsc: paymentSettings?.bankIfsc || '',
@@ -713,14 +825,38 @@ export default function AppSettingsPage() {
                             onChange={(val) => handleFieldChange('isPurposeSummaryVisible', val)}
                             disabled={isFormDisabled}
                         />
+                        <VisibilityToggle 
+                            id="donate-now-visibility"
+                            label="Donate Now Button"
+                            description="Enables or disables public online donation button."
+                            icon={HeartHandshake}
+                            checked={displayData.isLandingDonateNowVisible}
+                            onChange={(val) => handleFieldChange('isLandingDonateNowVisible', val)}
+                            disabled={isFormDisabled}
+                        />
                     </div>
                 </SettingsSection>
 
                 <SettingsSection 
                     title="Bank & Payment Details" 
-                    description="Set up your UPI and bank account information for donations."
+                    description="Set up your UPI, bank account information, and online payment gateways."
                     icon={CreditCard}
                 >
+                    <div className="p-5 rounded-3xl bg-primary/5 border border-primary/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+                        <div className="space-y-1">
+                            <h4 className="font-black text-sm text-primary flex items-center gap-2">
+                                <CreditCard className="h-4 w-4 text-blue-600" />
+                                Online Payment Gateways (Razorpay, Instamojo, PhonePe)
+                            </h4>
+                            <p className="text-xs text-muted-foreground">Configure automated online payment gateways, sandbox testing modes, and public/donor visibility rules.</p>
+                        </div>
+                        <Button asChild className="bg-primary hover:bg-primary/90 text-white font-bold h-10 px-5 rounded-xl shrink-0 shadow-md">
+                            <Link href="/settings/payment-gateways">
+                                Manage Gateways <ChevronRight className="ml-1 h-4 w-4" />
+                            </Link>
+                        </Button>
+                    </div>
+
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                         <div className="space-y-10">
                             <div className="space-y-6">
@@ -884,6 +1020,142 @@ export default function AppSettingsPage() {
                                         <Input value={displayData.pan} onChange={e => handleFieldChange('pan', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" />
                                     </div>
                                 </div>
+                                <div className="p-6 rounded-3xl bg-amber-500/5 border border-amber-500/10 space-y-5">
+                                    <div className="flex items-center justify-between">
+                                        <div className="space-y-0.5">
+                                            <Label className="font-black text-xs text-amber-900 flex items-center gap-2">
+                                                <HardHat className="h-4 w-4 text-amber-600" /> Site Under Construction / Service Notice Banner
+                                            </Label>
+                                            <p className="text-[10px] text-amber-700/70 font-normal">Display global top announcement banner to inform users of domain setup or operational status.</p>
+                                        </div>
+                                        <Switch checked={displayData.isUnderConstructionAlertVisible} onCheckedChange={(val) => handleFieldChange('isUnderConstructionAlertVisible', val)} disabled={isFormDisabled} className="data-[state=checked]:bg-amber-600" />
+                                    </div>
+
+                                    {displayData.isUnderConstructionAlertVisible && (
+                                        <div className="space-y-4 pt-2 border-t border-amber-500/10">
+                                            {/* Style / Theme Preset */}
+                                            <div className="space-y-2">
+                                                <Label className="text-[9px] font-black tracking-widest text-amber-900/60 uppercase">Banner Color Theme</Label>
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    {[
+                                                        { id: 'amber', label: '🟡 Amber (Notice)', class: 'bg-amber-500/20 text-amber-900 border-amber-500/30' },
+                                                        { id: 'blue', label: '🔵 Blue (System Update)', class: 'bg-blue-500/20 text-blue-900 border-blue-500/30' },
+                                                        { id: 'emerald', label: '🟢 Emerald (Operational)', class: 'bg-emerald-500/20 text-emerald-900 border-emerald-500/30' },
+                                                        { id: 'rose', label: '🔴 Rose (Maintenance)', class: 'bg-rose-500/20 text-rose-900 border-rose-500/30' },
+                                                    ].map((preset) => (
+                                                        <button
+                                                            key={preset.id}
+                                                            type="button"
+                                                            disabled={isFormDisabled}
+                                                            onClick={() => handleFieldChange('underConstructionAlertStyle', preset.id)}
+                                                            className={cn(
+                                                                "text-[10px] font-bold px-3 py-1.5 rounded-full border transition-all",
+                                                                preset.class,
+                                                                displayData.underConstructionAlertStyle === preset.id ? "ring-2 ring-primary ring-offset-1 font-black shadow-sm scale-105" : "opacity-60 hover:opacity-100"
+                                                            )}
+                                                        >
+                                                            {preset.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Smart Message Generator Box */}
+                                            <div className="p-4 rounded-2xl bg-white/70 border border-amber-500/15 space-y-3">
+                                                <div className="flex items-center justify-between">
+                                                    <Label className="text-[10px] font-black text-amber-900 flex items-center gap-1.5">
+                                                        <Sparkles className="h-3.5 w-3.5 text-amber-600" /> Smart Message Generator
+                                                    </Label>
+                                                    <span className="text-[9px] font-bold text-amber-700/60">Select Active Capabilities</span>
+                                                </div>
+                                                
+                                                <div className="flex flex-wrap gap-2">
+                                                    {[
+                                                        { key: 'domain', label: '🌐 Domain Setup' },
+                                                        { key: 'gateways', label: '💳 Online Gateways & QR' },
+                                                        { key: 'whatsapp', label: '💬 WhatsApp & Receipts' },
+                                                        { key: 'sync', label: '🔄 Real-Time Data Sync' },
+                                                        { key: 'portals', label: '🔐 Self-Service Portals' },
+                                                    ].map((item) => (
+                                                        <button
+                                                            key={item.key}
+                                                            type="button"
+                                                            disabled={isFormDisabled}
+                                                            onClick={() => setAlertIncludeTopics(prev => ({ ...prev, [item.key]: !prev[item.key as keyof typeof prev] }))}
+                                                            className={cn(
+                                                                "text-[9px] font-bold px-2.5 py-1 rounded-lg border transition-all flex items-center gap-1",
+                                                                alertIncludeTopics[item.key as keyof typeof alertIncludeTopics]
+                                                                    ? "bg-amber-600 text-white border-amber-600 shadow-sm"
+                                                                    : "bg-white text-muted-foreground border-border hover:bg-slate-50"
+                                                            )}
+                                                        >
+                                                            {item.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
+
+                                                <Button
+                                                    type="button"
+                                                    disabled={isFormDisabled}
+                                                    onClick={() => {
+                                                        const parts: string[] = [];
+                                                        if (alertIncludeTopics.domain) {
+                                                            parts.push("Official web domain registration & custom URL setup is currently in progress");
+                                                        }
+                                                        
+                                                        const activeServices: string[] = [];
+                                                        if (alertIncludeTopics.gateways) {
+                                                            activeServices.push("online payment options & QR transfers");
+                                                        }
+                                                        if (alertIncludeTopics.whatsapp) {
+                                                            activeServices.push("WhatsApp direct channel & receipt dispatch");
+                                                        }
+                                                        if (alertIncludeTopics.sync) {
+                                                            activeServices.push("real-time cloud data sync");
+                                                        }
+                                                        if (alertIncludeTopics.portals) {
+                                                            activeServices.push("Donor self-service portal access");
+                                                        }
+
+                                                        let generated = "";
+                                                        if (parts.length > 0 && activeServices.length > 0) {
+                                                            generated = `Notice: ${parts.join('. ')}. However, ${activeServices.join(', ')} remain 100% active, secure, and operational.`;
+                                                        } else if (parts.length > 0) {
+                                                            generated = `Notice: ${parts.join('. ')}. All community services remain fully active.`;
+                                                        } else if (activeServices.length > 0) {
+                                                            generated = `System Update: ${activeServices.join(', ')} are live and fully operational across all portals.`;
+                                                        } else {
+                                                            generated = "Notice: Website maintenance and system optimizations in progress. All donor services are active.";
+                                                        }
+
+                                                        handleFieldChange('underConstructionAlertText', generated);
+                                                        toast({
+                                                            title: "Smart Alert Message Generated",
+                                                            description: "Alert text populated based on selected active services. You can customize it further below.",
+                                                            variant: "success",
+                                                        });
+                                                    }}
+                                                    className="w-full h-8 font-black text-[10px] uppercase tracking-wider bg-amber-600 hover:bg-amber-700 text-white rounded-xl shadow-sm"
+                                                >
+                                                    <Sparkles className="mr-1.5 h-3 w-3" /> Auto-Generate Alert Message
+                                                </Button>
+                                            </div>
+
+                                            {/* Editable Text Area */}
+                                            <div className="space-y-1.5">
+                                                <Label className="text-[9px] font-black tracking-widest text-amber-900/60 uppercase pl-1">Custom Alert Message (Fully Editable)</Label>
+                                                <Textarea 
+                                                    value={displayData.underConstructionAlertText} 
+                                                    onChange={e => handleFieldChange('underConstructionAlertText', e.target.value)} 
+                                                    disabled={isFormDisabled} 
+                                                    rows={3} 
+                                                    className="font-semibold text-xs rounded-2xl border-amber-500/20 bg-white shadow-sm p-3 focus-visible:ring-amber-500" 
+                                                    placeholder="Notice: Official domain registration & web URL setup is in progress. All online donation options and community portals are fully operational."
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
@@ -919,8 +1191,187 @@ export default function AppSettingsPage() {
                                     </Label>
                                     <Input value={displayData.youtubeUrl} onChange={e => handleFieldChange('youtubeUrl', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-bold text-xs rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" placeholder="https://youtube.com/@your_channel" />
                                 </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1 flex items-center gap-1.5">
+                                        <Twitter className="h-3 w-3 text-slate-800" /> Twitter / X Profile URL
+                                    </Label>
+                                    <Input value={displayData.twitterUrl} onChange={e => handleFieldChange('twitterUrl', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-bold text-xs rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" placeholder="https://x.com/your_handle" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1 flex items-center gap-1.5">
+                                        <Linkedin className="h-3 w-3 text-blue-700" /> LinkedIn Profile URL
+                                    </Label>
+                                    <Input value={displayData.linkedinUrl} onChange={e => handleFieldChange('linkedinUrl', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-bold text-xs rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" placeholder="https://linkedin.com/company/your_org" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1 flex items-center gap-1.5">
+                                        <MessageSquare className="h-3 w-3 text-emerald-600" /> WhatsApp Link / Number
+                                    </Label>
+                                    <Input value={displayData.whatsappUrl} onChange={e => handleFieldChange('whatsappUrl', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-bold text-xs rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" placeholder="https://wa.me/919876543210 or +919876543210" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1 flex items-center gap-1.5">
+                                        <Send className="h-3 w-3 text-sky-500" /> Telegram Channel / Link
+                                    </Label>
+                                    <Input value={displayData.telegramUrl} onChange={e => handleFieldChange('telegramUrl', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-bold text-xs rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" placeholder="https://t.me/your_channel or @your_channel" />
+                                </div>
                             </div>
                         </div>
+                    </div>
+                </SettingsSection>
+
+                {/* Footer Content & Visibility Controls */}
+                <SettingsSection
+                    title="Footer Content & Visibility Controls"
+                    description="Manage visibility rules for social icons, contact details, quick links, and footer layout sections."
+                    icon={Layout}
+                    defaultOpen={true}
+                >
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <VisibilityToggle
+                            id="isFooterVisible"
+                            label="Public Site Footer"
+                            description="Master switch to display or hide the footer section across all public pages."
+                            icon={Layout}
+                            checked={displayData.isFooterVisible}
+                            onChange={val => handleFieldChange('isFooterVisible', val)}
+                            disabled={isFormDisabled}
+                        />
+                        <VisibilityToggle
+                            id="isFooterSocialVisible"
+                            label="Social Media Profile Icons (All)"
+                            description="Master switch to display or hide the entire social media icons row."
+                            icon={Globe2}
+                            checked={displayData.isFooterSocialVisible}
+                            onChange={val => handleFieldChange('isFooterSocialVisible', val)}
+                            disabled={isFormDisabled}
+                        />
+                        <VisibilityToggle
+                            id="isFooterInstagramVisible"
+                            label="Instagram Icon"
+                            description="Display Instagram profile button in footer."
+                            icon={Instagram}
+                            checked={displayData.isFooterInstagramVisible}
+                            onChange={val => handleFieldChange('isFooterInstagramVisible', val)}
+                            disabled={isFormDisabled || !displayData.isFooterSocialVisible}
+                        />
+                        <VisibilityToggle
+                            id="isFooterFacebookVisible"
+                            label="Facebook Icon"
+                            description="Display Facebook profile button in footer."
+                            icon={Facebook}
+                            checked={displayData.isFooterFacebookVisible}
+                            onChange={val => handleFieldChange('isFooterFacebookVisible', val)}
+                            disabled={isFormDisabled || !displayData.isFooterSocialVisible}
+                        />
+                        <VisibilityToggle
+                            id="isFooterYoutubeVisible"
+                            label="YouTube Icon"
+                            description="Display YouTube channel button in footer."
+                            icon={Youtube}
+                            checked={displayData.isFooterYoutubeVisible}
+                            onChange={val => handleFieldChange('isFooterYoutubeVisible', val)}
+                            disabled={isFormDisabled || !displayData.isFooterSocialVisible}
+                        />
+                        <VisibilityToggle
+                            id="isFooterTwitterVisible"
+                            label="Twitter / X Icon"
+                            description="Display Twitter / X handle button in footer."
+                            icon={Twitter}
+                            checked={displayData.isFooterTwitterVisible}
+                            onChange={val => handleFieldChange('isFooterTwitterVisible', val)}
+                            disabled={isFormDisabled || !displayData.isFooterSocialVisible}
+                        />
+                        <VisibilityToggle
+                            id="isFooterLinkedinVisible"
+                            label="LinkedIn Icon"
+                            description="Display LinkedIn company button in footer."
+                            icon={Linkedin}
+                            checked={displayData.isFooterLinkedinVisible}
+                            onChange={val => handleFieldChange('isFooterLinkedinVisible', val)}
+                            disabled={isFormDisabled || !displayData.isFooterSocialVisible}
+                        />
+                        <VisibilityToggle
+                            id="isFooterWhatsappVisible"
+                            label="WhatsApp Icon"
+                            description="Display WhatsApp chat/group button in footer."
+                            icon={MessageSquare}
+                            checked={displayData.isFooterWhatsappVisible}
+                            onChange={val => handleFieldChange('isFooterWhatsappVisible', val)}
+                            disabled={isFormDisabled || !displayData.isFooterSocialVisible}
+                        />
+                        <VisibilityToggle
+                            id="isFooterTelegramVisible"
+                            label="Telegram Icon"
+                            description="Display Telegram channel button in footer."
+                            icon={Send}
+                            checked={displayData.isFooterTelegramVisible}
+                            onChange={val => handleFieldChange('isFooterTelegramVisible', val)}
+                            disabled={isFormDisabled || !displayData.isFooterSocialVisible}
+                        />
+                        <VisibilityToggle
+                            id="isFooterAddressVisible"
+                            label="Organization Address"
+                            description="Display physical office address in public site footer."
+                            icon={MapPin}
+                            checked={displayData.isFooterAddressVisible}
+                            onChange={val => handleFieldChange('isFooterAddressVisible', val)}
+                            disabled={isFormDisabled}
+                        />
+                        <VisibilityToggle
+                            id="isFooterContactVisible"
+                            label="Phone & Email Contacts"
+                            description="Display official phone number and email contact links in public site footer."
+                            icon={Globe}
+                            checked={displayData.isFooterContactVisible}
+                            onChange={val => handleFieldChange('isFooterContactVisible', val)}
+                            disabled={isFormDisabled}
+                        />
+                        <VisibilityToggle
+                            id="isFooterQuickLinksVisible"
+                            label="Quick Links Navigation Column"
+                            description="Display quick navigation links (About Us, Donation Info, Guidance, Site Map)."
+                            icon={ListChecks}
+                            checked={displayData.isFooterQuickLinksVisible}
+                            onChange={val => handleFieldChange('isFooterQuickLinksVisible', val)}
+                            disabled={isFormDisabled}
+                        />
+                        <VisibilityToggle
+                            id="isFooterSupportUsVisible"
+                            label="'How to Donate' Support Column"
+                            description="Display right-hand column with 'How to Donate' action button."
+                            icon={HeartHandshake}
+                            checked={displayData.isFooterSupportUsVisible}
+                            onChange={val => handleFieldChange('isFooterSupportUsVisible', val)}
+                            disabled={isFormDisabled}
+                        />
+                        <VisibilityToggle
+                            id="isFooterRegInfoVisible"
+                            label="Registration & PAN Details"
+                            description="Display official Registration Number and PAN in footer bottom bar."
+                            icon={ShieldCheck}
+                            checked={displayData.isFooterRegInfoVisible}
+                            onChange={val => handleFieldChange('isFooterRegInfoVisible', val)}
+                            disabled={isFormDisabled}
+                        />
+                        <VisibilityToggle
+                            id="isFooterCopyrightVisible"
+                            label="Copyright Notice"
+                            description="Display copyright notice text line in footer bottom bar."
+                            icon={Shield}
+                            checked={displayData.isFooterCopyrightVisible}
+                            onChange={val => handleFieldChange('isFooterCopyrightVisible', val)}
+                            disabled={isFormDisabled}
+                        />
+                        <VisibilityToggle
+                            id="isFooterBuildVersionVisible"
+                            label="System Build Version Tag"
+                            description="Display system build version badge in footer bottom bar."
+                            icon={Activity}
+                            checked={displayData.isFooterBuildVersionVisible}
+                            onChange={val => handleFieldChange('isFooterBuildVersionVisible', val)}
+                            disabled={isFormDisabled}
+                        />
                     </div>
                 </SettingsSection>
             </div>

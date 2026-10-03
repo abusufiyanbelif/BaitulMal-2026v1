@@ -16,6 +16,7 @@ import { usePublicData } from '@/hooks/use-public-data';
 import Link from 'next/link';
 import { cn, getImageSrc } from '@/lib/utils';
 import { PurposePlaceholder } from '@/components/purpose-placeholder';
+import { CauseProgressBar } from '@/components/cause-progress-bar';
 import { LoadingProgressBar } from './loading-progress-bar';
 import { getDefaultImage } from '@/lib/default-images';
 import { DateRange } from "react-day-picker";
@@ -120,18 +121,14 @@ const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: numbe
                                         </div>
                                     )}
                                     {(campaign.targetAmount || 0) > 0 && (
-                                        <div className="space-y-2 border-t border-primary/5 pt-3">
-                                            <div className="flex justify-between items-baseline text-[11px] font-bold text-primary tracking-tight capitalize">
-                                                <span className="opacity-60">Raised: ₹{campaign.collected.toLocaleString('en-IN')}</span>
-                                                <span className="text-sm">Goal: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</span>
-                                            </div>
-                                            <Progress value={campaign.progress} className="h-2 bg-primary/10 shadow-inner" />
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-[9px] font-bold text-muted-foreground tracking-tight capitalize">Progress</span>
-                                                <span className="text-[10px] font-bold text-primary px-2 py-0.5 rounded-full bg-primary/5 border border-primary/10 capitalize">
-                                                    {Math.round(campaign.progress)}% Funded
-                                                </span>
-                                            </div>
+                                        <div className="border-t border-primary/5 pt-3">
+                                            <CauseProgressBar 
+                                                targetAmount={campaign.targetAmount || 0}
+                                                collectedAmount={campaign.collected || 0}
+                                                pendingAmount={(campaign as any).pendingAmount || 0}
+                                                size="md"
+                                                showDetails={true}
+                                            />
                                         </div>
                                     )}
                                 </CardContent>

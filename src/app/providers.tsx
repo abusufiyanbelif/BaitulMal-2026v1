@@ -35,9 +35,11 @@ function ThemeSync() {
   return null;
 }
 
+import { UnderConstructionAlert } from '@/components/under-construction-alert';
+
 export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const isLoginPage = pathname === '/login';
+  const isLoginPage = pathname === '/login' || pathname === '/portal-login';
   const allThemes = THEME_SUGGESTIONS.map(t => t.id);
 
   return (
@@ -62,8 +64,9 @@ export function Providers({ children }: { children: ReactNode }) {
               <PWABadgeHandler />
               <InactivityMonitor />
               <div className="relative z-10 flex flex-col min-h-screen w-full overflow-x-hidden">
+                 <UnderConstructionAlert />
                  <DocuExtractHeader />
-                 <main className={cn("flex-1 w-full pb-20 md:pb-0", isLoginPage && "flex items-center justify-center p-4")}>
+                 <main className={cn("flex-1 w-full pb-20 md:pb-0 flex flex-col", isLoginPage && "items-center justify-center p-4 sm:p-6 my-auto")}>
                    {children}
                  </main>
                  <MobileNav />

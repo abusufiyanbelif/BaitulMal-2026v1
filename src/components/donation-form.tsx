@@ -46,6 +46,7 @@ import {
     ShieldCheck, 
     CheckCircle2, 
     AlertCircle,
+    AlertTriangle,
     Calendar
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -56,6 +57,8 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/use-session';
+import { usePaymentSettings } from '@/hooks/use-payment-settings';
+import { usePaymentGateways } from '@/hooks/use-payment-gateways';
 import { useAuth, useFirestore, useMemoFirebase, useDoc, doc, collection, getDocs, query, where, limit, getDoc, updateDoc, arrayUnion } from '@/firebase';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -84,6 +87,7 @@ const formSchema = z.object({
     forFundraising: z.boolean().default(false),
   })).min(1, { message: 'At Least One Category Is Required.'}),
   donationType: z.enum(['Cash', 'Online Payment', 'Check', 'Other']),
+  frequency: z.enum(['One-Time', 'Monthly']).default('One-Time'),
   onlineProvider: z.enum(['Google Pay', 'PhonePe', 'Paytm', 'Amazon Pay', 'WhatsApp Pay', 'Bank Transfer', 'Other']).optional(),
   donationDate: z.string().min(1, { message: "Date Is Required."}),
   contributionFromDate: z.string().optional(),
@@ -296,6 +300,14 @@ const TransactionItem = ({ control, index, remove, register, setValue, getValues
 
 export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], leads = [], defaultLinkId, isReadOnly = false }: DonationFormProps) {
   const { userProfile } = useSession();
+  const { paymentSettings } = usePaymentSettings();
+  const { isMasterEnabled, canDonorUseGateway } = usePaymentGateways();
+
+  const isStaff = userProfile?.role === 'Admin' || userProfile?.role === 'User' || userProfile?.role === 'Staff' || userProfile?.role === 'Member';
+  const isDonorUser = !!userProfile && !isStaff;
+  const isDonorSelfRecordAllowed = isDonorUser ? (paymentSettings?.isDonorSelfRecordPaymentEnabled !== false) : true;
+  const isSubmissionAllowed = isStaff || (isDonorUser ? isDonorSelfRecordAllowed : true);
+
   const auth = useAuth();
   const { toast } = useToast();
   const firestore = useFirestore();
@@ -330,6 +342,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
       referral: donation?.referral || '',
       amount: donation?.amount || 0,
       donationType: donation?.donationType || 'Online Payment',
+      frequency: donation?.frequency || 'One-Time',
       onlineProvider: (donation as any)?.onlineProvider || 'Google Pay',
       donationDate: donation?.donationDate || new Date().toISOString().split('T')[0],
       contributionFromDate: donation?.contributionFromDate || '',
@@ -398,6 +411,11 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   }, [leads, donation, defaultLinkId]);
 
   const onFormSubmit = async (data: DonationFormData) => {
+    if (!isSubmissionAllowed) {
+        toast({ title: "Permission Denied", description: "Donation entry self-recording is currently disabled for donor accounts. Please contact our team.", variant: "destructive" });
+        return;
+    }
+
     const missingFields: string[] = [];
     Object.entries(mandatoryFields).forEach(([field, isMandatory]) => {
         if (isMandatory) {
@@ -590,6 +608,16 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
         <div className="flex-1 min-h-0 relative flex flex-col">
             <ScrollArea className="flex-1 w-full">
                 <div className="px-6 py-4 space-y-6 text-primary font-normal pb-24">
+                    {!isSubmissionAllowed && (
+                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3 text-amber-900 shadow-sm">
+                            <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" />
+                            <div className="text-xs">
+                                <p className="font-bold">Self-Recording Disabled</p>
+                                <p className="text-amber-700">Manual donation entry self-recording is currently disabled for donor accounts. Please contact the team to log your contribution.</p>
+                            </div>
+                        </div>
+                    )}
+
                     <FormField control={control} name="amount" render={({ field }) => (
                         <FormItem><FormLabel className="font-bold text-primary tracking-tight capitalize">Total Donation Amount (₹) *</FormLabel><FormControl><Input type="number" {...field} readOnly className="bg-primary/5 font-bold font-mono text-xl text-primary" /></FormControl><FormDescription className="font-normal text-[10px] opacity-70 italic">Calculated Sum Of All Transactions Below.</FormDescription><FormMessage /></FormItem>
                     )}/>
@@ -605,9 +633,48 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                                 </div>
                             )}
                         </div>
-                        <FormField control={control} name="donationType" render={({ field }) => (
-                            <FormItem>{renderLabel('Payment Method', 'donationType')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Method" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="Online Payment" className="font-normal">Online (Digital)</SelectItem><SelectItem value="Cash" className="font-normal">Cash (Physical)</SelectItem><SelectItem value="Check" className="font-normal">Check</SelectItem><SelectItem value="Other" className="font-normal">Other</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-                        )}/>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <FormField control={control} name="donationType" render={({ field }) => (
+                                <FormItem>
+                                    {renderLabel('Payment Method', 'donationType')}
+                                    <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly || !isSubmissionAllowed}>
+                                        <FormControl>
+                                            <SelectTrigger className="font-bold">
+                                                <SelectValue placeholder="Select Method" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                                            <SelectItem value="Online Payment" disabled={!isMasterEnabled || (isDonorUser && !canDonorUseGateway)} className="font-normal">
+                                                Online (Digital) {!isMasterEnabled ? '(Gateway Inactive)' : (isDonorUser && !canDonorUseGateway) ? '(Disabled for Donors)' : ''}
+                                            </SelectItem>
+                                            <SelectItem value="Cash" disabled={isDonorUser && !isDonorSelfRecordAllowed} className="font-normal">
+                                                Cash (Physical) {isDonorUser && !isDonorSelfRecordAllowed ? '(Disabled for Donors)' : ''}
+                                            </SelectItem>
+                                            <SelectItem value="Check" disabled={isDonorUser && !isDonorSelfRecordAllowed} className="font-normal">Check</SelectItem>
+                                            <SelectItem value="Other" disabled={isDonorUser && !isDonorSelfRecordAllowed} className="font-normal">Other</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}/>
+                            <FormField control={control} name="frequency" render={({ field }) => (
+                                <FormItem>
+                                    {renderLabel('Donation Frequency', 'frequency')}
+                                    <Select onValueChange={field.onChange} defaultValue={field.value || 'One-Time'} disabled={isReadOnly || !isSubmissionAllowed}>
+                                        <FormControl>
+                                            <SelectTrigger className="font-bold">
+                                                <SelectValue placeholder="Select Frequency" />
+                                            </SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent className="rounded-[12px] shadow-dropdown border-primary/10">
+                                            <SelectItem value="One-Time" className="font-bold">One-Time Contribution</SelectItem>
+                                            <SelectItem value="Monthly" className="font-bold text-primary">Monthly Subscription</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )}/>
+                        </div>
                         {watchedDonationType === 'Online Payment' && (
                             <FormField control={control} name="onlineProvider" render={({ field }) => (
                                 <FormItem>{renderLabel('Online Gateway/App', 'onlineProvider')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold"><SelectValue placeholder="Select Gateway/App" /></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="Google Pay" className="font-normal">Google Pay (GPay)</SelectItem><SelectItem value="PhonePe" className="font-normal">PhonePe</SelectItem><SelectItem value="Paytm" className="font-normal">Paytm</SelectItem><SelectItem value="Amazon Pay" className="font-normal">Amazon Pay</SelectItem><SelectItem value="WhatsApp Pay" className="font-normal">WhatsApp Pay</SelectItem><SelectItem value="Bank Transfer" className="font-normal">Direct Bank Transfer</SelectItem><SelectItem value="Other" className="font-normal">Other UPI / Digital Wallet</SelectItem></SelectContent></Select><FormMessage /></FormItem>
@@ -824,7 +891,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
         {!isReadOnly && (
             <div className="flex flex-col sm:flex-row justify-end gap-3 pt-6 sticky bottom-0 bg-background/95 backdrop-blur-sm p-4 border-t z-50 shrink-0">
                 <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting} className="w-full sm:w-auto font-bold text-primary border-primary/20 transition-transform active:scale-95">Discard</Button>
-                <Button type="submit" disabled={isSubmitting || (!!donation && !isDirty)} className="w-full sm:w-auto font-bold px-10 transition-transform active:scale-95 shadow-md">
+                <Button type="submit" disabled={isSubmitting || (!!donation && !isDirty) || !isSubmissionAllowed} className="w-full sm:w-auto font-bold px-10 transition-transform active:scale-95 shadow-md">
                     {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
                     {isSubmitting ? 'Securing Registry...' : 'Finalize Record'}
                 </Button>

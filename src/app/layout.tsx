@@ -36,6 +36,7 @@ export const viewport: Viewport = {
 
 
 import { ActivityLogger } from '@/components/activity-logger';
+import { UnderConstructionAlert } from '@/components/under-construction-alert';
 
 export default function RootLayout({
   children,

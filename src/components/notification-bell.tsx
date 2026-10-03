@@ -91,7 +91,7 @@ const moduleIcons: Record<string, any> = {
 
 export function NotificationBell() {
     const firestore = useFirestore();
-    const { user, userProfile } = useSession();
+    const { user, userProfile, isStaff } = useSession();
 
     // --- PERSONAL NOTIFICATIONS FROM FIRESTORE ---
     const personalNotifQuery = useMemoFirebase(() => 
@@ -106,33 +106,36 @@ export function NotificationBell() {
     const { data: personalNotifications } = useCollection<InAppNotification>(personalNotifQuery);
 
     // --- EXISTING TASK-BASED QUERIES ---
-    const unverifiedBenQuery = useMemoFirebase(() => 
-        (firestore && user) ? query(collection(firestore, 'beneficiaries'), where('status', '!=', 'Verified')) : null, 
-    [firestore, user]);
-    const { data: unverifiedBeneficiaries } = useCollection<Beneficiary>(unverifiedBenQuery);
+    const allBenQuery = useMemoFirebase(() => 
+        (firestore && user && isStaff) ? collection(firestore, 'beneficiaries') : null, 
+    [firestore, user, isStaff]);
+    const { data: allBeneficiaries } = useCollection<Beneficiary>(allBenQuery);
+    const unverifiedBeneficiaries = useMemo(() => allBeneficiaries?.filter(b => b.status !== 'Verified') || [], [allBeneficiaries]);
 
-    const unverifiedDonQuery = useMemoFirebase(() => 
-        (firestore && user) ? query(collection(firestore, 'donations'), where('status', '==', 'Pending')) : null, 
-    [firestore, user]);
-    const { data: unverifiedDonations } = useCollection<Donation>(unverifiedDonQuery);
+    const allDonQuery = useMemoFirebase(() => 
+        (firestore && user && isStaff) ? collection(firestore, 'donations') : null, 
+    [firestore, user, isStaff]);
+    const { data: allDonations } = useCollection<Donation>(allDonQuery);
 
-    const verifiedDonQuery = useMemoFirebase(() => 
-        (firestore && user) ? query(collection(firestore, 'donations'), where('status', '==', 'Verified')) : null, 
-    [firestore, user]);
-    const { data: verifiedDonations } = useCollection<Donation>(verifiedDonQuery);
-    const unlinkedDonations = useMemo(() => verifiedDonations?.filter(d => !d.donorId) || [], [verifiedDonations]);
+    const allCampsQuery = useMemoFirebase(() => 
+        (firestore && user && isStaff) ? collection(firestore, 'campaigns') : null, 
+    [firestore, user, isStaff]);
+    const { data: allCampaigns } = useCollection<Campaign>(allCampsQuery);
 
-    const pendingCampsQuery = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'campaigns'), where('authenticityStatus', '==', 'Pending Verification')) : null, [firestore, user]);
-    const { data: pendingCampaigns } = useCollection<Campaign>(pendingCampsQuery);
+    const allLeadsQuery = useMemoFirebase(() => 
+        (firestore && user && isStaff) ? collection(firestore, 'leads') : null, 
+    [firestore, user, isStaff]);
+    const { data: allLeads } = useCollection<Lead>(allLeadsQuery);
 
-    const pendingLeadsQuery = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'leads'), where('authenticityStatus', '==', 'Pending Verification')) : null, [firestore, user]);
-    const { data: pendingLeads } = useCollection<Lead>(pendingLeadsQuery);
+    const unverifiedDonations = useMemo(() => allDonations?.filter(d => d.status === 'Pending') || [], [allDonations]);
+    const verifiedDonations = useMemo(() => allDonations?.filter(d => d.status === 'Verified') || [], [allDonations]);
+    const unlinkedDonations = useMemo(() => verifiedDonations.filter(d => !d.donorId) || [], [verifiedDonations]);
 
-    const holdCampsQuery = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'campaigns'), where('publicVisibility', '==', 'Hold'), where('authenticityStatus', '==', 'Verified')) : null, [firestore, user]);
-    const { data: privateCampaigns } = useCollection<Campaign>(holdCampsQuery);
+    const pendingCampaigns = useMemo(() => allCampaigns?.filter(c => c.authenticityStatus === 'Pending Verification') || [], [allCampaigns]);
+    const pendingLeads = useMemo(() => allLeads?.filter(l => l.authenticityStatus === 'Pending Verification') || [], [allLeads]);
 
-    const holdLeadsQuery = useMemoFirebase(() => (firestore && user) ? query(collection(firestore, 'leads'), where('publicVisibility', '==', 'Hold'), where('authenticityStatus', '==', 'Verified')) : null, [firestore, user]);
-    const { data: privateLeads } = useCollection<Lead>(holdLeadsQuery);
+    const privateCampaigns = useMemo(() => allCampaigns?.filter(c => c.publicVisibility === 'Hold' && c.authenticityStatus === 'Verified') || [], [allCampaigns]);
+    const privateLeads = useMemo(() => allLeads?.filter(l => l.publicVisibility === 'Hold' && l.authenticityStatus === 'Verified') || [], [allLeads]);
 
     const taskAlerts = (unverifiedBeneficiaries?.length || 0) + 
                         (unverifiedDonations?.length || 0) + 

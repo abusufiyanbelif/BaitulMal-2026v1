@@ -179,8 +179,8 @@ function PortalLoginContent() {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-            <div className="w-full max-w-md space-y-8 animate-fade-in-up">
+        <div className="w-full max-w-md mx-auto my-auto py-8">
+            <div className="w-full space-y-8 animate-fade-in-up">
                 <div className="text-center space-y-2">
                     <div className="inline-flex p-4 rounded-3xl bg-primary text-white shadow-xl shadow-primary/20 mb-2">
                         <ShieldCheck className="h-8 w-8" />

@@ -35,6 +35,10 @@ export interface BrandingSettings extends DocumentData {
   isDonorSelfRecordPaymentEnabled?: boolean;
   portalAuthMethod?: 'OTP' | 'Password';
   isPortalPasswordEnabled?: boolean;
+  // Site Announcement & Domain Construction Alert
+  isUnderConstructionAlertVisible?: boolean;
+  underConstructionAlertText?: string;
+  underConstructionAlertStyle?: 'amber' | 'blue' | 'emerald' | 'rose';
 }
 
 export interface PaymentSettings extends DocumentData {
@@ -50,13 +54,68 @@ export interface PaymentSettings extends DocumentData {
   address?: string;
   website?: string;
   copyright?: string;
+  // Social Profiles
   instagramUrl?: string;
   facebookUrl?: string;
   youtubeUrl?: string;
+  twitterUrl?: string;
+  linkedinUrl?: string;
+  whatsappUrl?: string;
+  telegramUrl?: string;
+  // Footer Visibility Controls
+  isFooterVisible?: boolean;
+  isFooterSocialVisible?: boolean;
+  isFooterInstagramVisible?: boolean;
+  isFooterFacebookVisible?: boolean;
+  isFooterYoutubeVisible?: boolean;
+  isFooterTwitterVisible?: boolean;
+  isFooterLinkedinVisible?: boolean;
+  isFooterWhatsappVisible?: boolean;
+  isFooterTelegramVisible?: boolean;
+  isFooterAddressVisible?: boolean;
+  isFooterContactVisible?: boolean;
+  isFooterRegInfoVisible?: boolean;
+  isFooterQuickLinksVisible?: boolean;
+  isFooterSupportUsVisible?: boolean;
+  isFooterCopyrightVisible?: boolean;
+  isFooterBuildVersionVisible?: boolean;
   // Bank Details
   bankAccountName?: string;
   bankAccountNumber?: string;
   bankIfsc?: string;
+}
+
+export interface PaymentGatewaySettings extends DocumentData {
+  isOnlineGatewayEnabled?: boolean;
+  isInternalTestMode?: boolean;
+  isPublicGatewayEnabled?: boolean;
+  isDonorGatewayEnabled?: boolean;
+  activeGateway?: 'razorpay' | 'instamojo' | 'phonepe' | 'none';
+  isMonthlyDonationEnabled?: boolean;
+  showUpiApps?: boolean;
+  showNetBanking?: boolean;
+  showCards?: boolean;
+  razorpay?: {
+    keyId?: string;
+    keySecret?: string;
+    webhookSecret?: string;
+    mode?: 'test' | 'live';
+    isEnabled?: boolean;
+  };
+  instamojo?: {
+    apiKey?: string;
+    authToken?: string;
+    salt?: string;
+    mode?: 'test' | 'live';
+    isEnabled?: boolean;
+  };
+  phonepe?: {
+    merchantId?: string;
+    saltKey?: string;
+    saltIndex?: string;
+    mode?: 'test' | 'live';
+    isEnabled?: boolean;
+  };
 }
 
 export interface InfoSettings extends DocumentData {
@@ -544,6 +603,11 @@ export interface Donation extends DocumentData {
   campaignName?: string;
   contributionFromDate?: string;
   contributionToDate?: string;
+  frequency?: 'One-Time' | 'Monthly';
+  gatewayProvider?: 'razorpay' | 'instamojo' | 'phonepe' | 'direct';
+  gatewayPaymentId?: string;
+  gatewayOrderId?: string;
+  isAutonomousDonor?: boolean;
   updatedById?: string;
   updatedByName?: string;
   updatedAt?: Timestamp | FieldValue;

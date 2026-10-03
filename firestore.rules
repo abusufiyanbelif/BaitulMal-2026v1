@@ -144,10 +144,10 @@ service cloud.firestore {
       allow read: if
         docId in [
           'branding', 'payment', 'donation_visibility', 'campaign_visibility',
-          'lead_visibility', 'beneficiary_visibility', 'donationInfo',
+          'lead_visibility', 'beneficiary_visibility', 'donor_visibility', 'donationInfo',
           'guidingPrinciples', 'info', 'guidance', 'campaign_config',
           'lead_config', 'donation_config', 'beneficiary_config',
-          'user_config', 'donor_config', 'notifications'
+          'user_config', 'donor_config', 'notifications', 'payment_gateways', 'resources'
         ] || isStaff();
 
       allow write: if isAdmin() || hasPermission('settings', 'update');

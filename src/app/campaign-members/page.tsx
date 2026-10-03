@@ -12,6 +12,7 @@ import { useMemo, useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { CauseProgressBar } from '@/components/cause-progress-bar';
 import { Progress } from '@/components/ui/progress';
 import {
   DropdownMenu,
@@ -252,34 +253,14 @@ function CampaignCard({ campaign, index, router, canUpdate, canCreate, canDelete
             <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground pt-1">{campaign.startDate} To {campaign.endDate}</CardDescription>
           </CardHeader>
           <CardContent className="flex-grow space-y-3 p-4 pt-0 font-normal text-primary">
-            <div className="space-y-2 border-t border-primary/5 pt-3">
-                <div className="flex justify-between items-baseline text-[11px] font-bold text-primary tracking-tight">
-                    <span className="opacity-60">Collected: ₹{campaign.collected.toLocaleString('en-IN')}</span>
-                    <span className="text-sm">Target: ₹{(campaign.targetAmount || 0).toLocaleString('en-IN')}</span>
-                </div>
-                <div className="relative">
-                    <Progress 
-                        value={campaign.progress} 
-                        className={cn(
-                            "h-2 bg-primary/10 shadow-inner overflow-hidden",
-                            campaign.progress >= 100 && "bg-emerald-100"
-                        )} 
-                    />
-                    {campaign.progress >= 100 && (
-                        <div className="absolute inset-0 bg-emerald-400/20 animate-pulse pointer-events-none" />
-                    )}
-                </div>
-                <div className="flex justify-between items-center">
-                    <span className="text-[9px] font-bold text-muted-foreground tracking-tight">Progress</span>
-                    <span className={cn(
-                        "text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-all duration-300",
-                        campaign.progress >= 100 
-                            ? "bg-emerald-500 text-white border-emerald-600 shadow-sm" 
-                            : "bg-primary/5 text-primary border-primary/10"
-                    )}>
-                        {Math.round(campaign.progress)}% {campaign.progress >= 100 ? 'Goal Reached' : 'Funded'}
-                    </span>
-                </div>
+            <div className="border-t border-primary/5 pt-3">
+                <CauseProgressBar 
+                    targetAmount={campaign.targetAmount || 0}
+                    collectedAmount={campaign.collected || 0}
+                    pendingAmount={(campaign as any).pendingAmount || 0}
+                    size="md"
+                    showDetails={true}
+                />
             </div>
           </CardContent>
           <CardFooter className="p-2 border-t bg-primary/5">
@@ -403,8 +384,30 @@ export default function CampaignPage() {
             return sum + (eligibleSum * proportion);
         }, 0);
 
+        const pendingDonations = donations.filter(d => 
+            d.status === 'Pending' && 
+            (d.linkSplit?.some(l => l.linkId === campaign.id && l.linkType === 'campaign') || (d as any).campaignId === campaign.id)
+        );
+
+        const pendingAmount = pendingDonations.reduce((sum, d) => {
+            const link = d.linkSplit?.find((l: any) => l.linkId === campaign.id);
+            const amountForThis = link ? link.amount : ( (d as any).campaignId === campaign.id ? d.amount : 0 );
+            
+            const totalDonation = d.amount || 1;
+            const proportion = amountForThis / totalDonation;
+            const typeSplits = d.typeSplit || [];
+            
+            const eligibleSum = typeSplits.reduce((acc: number, split: any) => {
+                const isAllowed = campaign.allowedDonationTypes?.includes(split.category);
+                const isForGoal = split.category !== 'Zakat' || split.forFundraising === true;
+                return (isAllowed && isForGoal) ? acc + split.amount : acc;
+            }, 0);
+
+            return sum + (eligibleSum * proportion);
+        }, 0);
+
         const progress = campaign.targetAmount ? (collected / campaign.targetAmount) * 100 : 0;
-        return { ...campaign, collected, progress };
+        return { ...campaign, collected, pendingAmount, progress };
     });
   }, [rawCampaigns, donations]);
 

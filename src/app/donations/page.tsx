@@ -287,9 +287,12 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                     </div>
                 </div>
                 <div className="whitespace-nowrap text-[11px] font-bold text-primary/60 text-center italic">{donation.donationDate}</div>
-                <div className="text-center">
-                    <Badge variant="secondary" className="text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm bg-primary/5 text-primary">
+                <div className="text-center flex flex-col items-center gap-1">
+                    <Badge variant="secondary" className="text-[9px] font-black px-2.5 h-5 rounded-full tracking-widest border-0 shadow-sm bg-primary/5 text-primary">
                         {donation.donationType}
+                    </Badge>
+                    <Badge variant={donation.frequency === 'Monthly' ? 'default' : 'outline'} className={cn("text-[8px] font-bold px-2 h-4 rounded-full tracking-wider", donation.frequency === 'Monthly' ? "bg-emerald-600 text-white border-0" : "border-primary/10 text-primary/70")}>
+                        {donation.frequency || 'One-Time'}
                     </Badge>
                 </div>
                 <div className="flex flex-wrap justify-center gap-1.5 overflow-hidden">
@@ -353,8 +356,9 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                     </div>
                 </div>
                 <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                         <Badge variant="secondary" className="text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm bg-primary/5 text-primary">{donation.donationType}</Badge>
+                        <Badge variant={donation.frequency === 'Monthly' ? 'default' : 'outline'} className={cn("text-[9px] font-bold px-2.5 h-6 rounded-full tracking-wider", donation.frequency === 'Monthly' ? "bg-emerald-600 text-white border-0" : "border-primary/10 text-primary/70")}>{donation.frequency || 'One-Time'}</Badge>
                         <span className="text-[10px] font-bold text-muted-foreground italic">{donation.donationDate}</span>
                     </div>
                     <div className="flex gap-2" onClick={e => e.stopPropagation()}>
@@ -453,6 +457,7 @@ function DonationListContent() {
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [identityFilter, setIdentityFilter] = useState<string[]>([]);
   const [methodFilter, setMethodFilter] = useState<string[]>([]);
+  const [frequencyFilter, setFrequencyFilter] = useState<string[]>([]);
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
   const [dateRange, setDateRange] = useState<DateRange | undefined>(undefined);
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'ascending' | 'descending' } | null>({ key: 'donationDate', direction: 'descending'});
@@ -503,6 +508,10 @@ function DonationListContent() {
 
     if (methodFilter.length > 0) items = items.filter(d => methodFilter.includes(d.donationType));
     
+    if (frequencyFilter.length > 0) {
+        items = items.filter(d => frequencyFilter.includes(d.frequency || 'One-Time'));
+    }
+
     if (categoryFilter.length > 0) {
         items = items.filter(d => {
             if (d.typeSplit && d.typeSplit.length > 0) {
@@ -518,6 +527,7 @@ function DonationListContent() {
             d.donorName.toLowerCase().includes(lower) || 
             d.donorPhone.includes(searchTerm) ||
             d.id.toLowerCase().includes(lower) ||
+            (d.frequency && d.frequency.toLowerCase().includes(lower)) ||
             (d.linkSplit && d.linkSplit.some(l => l.linkName.toLowerCase().includes(lower) || (l.caseId && l.caseId.toLowerCase().includes(lower)) || l.linkId.toLowerCase().includes(lower)))
         );
     }
@@ -718,11 +728,40 @@ function DonationListContent() {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 animate-fade-in-up">
             <StatCard title="Total Volume" count={stats.total} description="Authorized and Pending Logs" icon={Activity} delay="100ms" onClick={() => { setSearchTerm(''); setStatusFilter([]); setIdentityFilter([]); setMethodFilter([]); setCategoryFilter([]); }} />
             <StatCard title="Verified Liquidity" count={stats.totalAmount.toLocaleString('en-IN')} description="Finalized Fund Reserves" icon={IndianRupee} delay="150ms" isCurrency onClick={() => setStatusFilter(['Verified'])} />
-            <StatCard title="Audit Pipeline" count={stats.pendingAmount.toLocaleString('en-IN')} description="Funds Awaiting Clearance" icon={Hourglass} delay="200ms" isCurrency onClick={() => setStatusFilter(['Pending'])} />
+            <StatCard 
+                title="Audit Pipeline" 
+                count={stats.pendingAmount.toLocaleString('en-IN')} 
+                description={`${stats.pending} Entries Awaiting Verification`} 
+                icon={Hourglass} 
+                delay="200ms" 
+                isCurrency 
+                colorClass={stats.pending > 0 ? "bg-amber-500/[0.05] border-amber-500/20 ring-2 ring-amber-400/20" : ""} 
+                onClick={() => setStatusFilter(['Pending'])} 
+            />
             <StatCard title="Identity Gap" count={stats.unlinked} description="Awaiting Profile Mapping" icon={AlertCircle} delay="250ms" colorClass={stats.unlinked > 0 ? "bg-amber-500/[0.03] border-amber-500/10" : ""} onClick={() => setIdentityFilter(['Unlinked'])} />
         </div>
 
-        <Card className="rounded-[32px] border border-primary/5 bg-white/30 backdrop-blur-md overflow-hidden shadow-none animate-fade-in-zoom" style={{ animationDelay: '400ms' }}>
+        {/* Active Pending Filter Alert Banner */}
+        {statusFilter.includes('Pending') && (
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between text-amber-900 text-xs shadow-sm animate-fade-in-up">
+                <div className="flex items-center gap-3">
+                    <Hourglass className="h-5 w-5 text-amber-600 animate-pulse shrink-0" />
+                    <div>
+                        <p className="font-extrabold text-amber-900">
+                            🔒 Quarantined Audit Queue: Showing {filteredAndSortedDonations.length} Pending Donations (Total: ₹{filteredTotalAmount.toLocaleString('en-IN')})
+                        </p>
+                        <p className="text-amber-700 text-[11px]">
+                            These manual/offline submissions are unverified and currently do NOT alter public campaign progress or donation tickers until verified by team.
+                        </p>
+                    </div>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setStatusFilter([])} className="h-8 rounded-xl font-bold border-amber-300 text-amber-900 hover:bg-amber-100 text-xs shrink-0">
+                    Show All Donations
+                </Button>
+            </div>
+        )}
+
+        <Card className="rounded-[32px] border border-primary/15 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md overflow-hidden shadow-sm hover:border-primary/30 transition-all duration-300 animate-fade-in-zoom" style={{ animationDelay: '400ms' }}>
             <CardHeader className="p-4 sm:p-6 border-b bg-white/80 backdrop-blur-md sticky top-[73px] z-20">
                 <ScrollArea className="w-full">
                     <div className="flex flex-nowrap gap-4 pb-3">
@@ -751,6 +790,7 @@ function DonationListContent() {
                         </Popover>
 
                         <MultiSelectFilter title="Status" options={['Verified', 'Pending', 'Canceled']} selected={statusFilter} onChange={setStatusFilter} />
+                        <MultiSelectFilter title="Frequency" options={['One-Time', 'Monthly']} selected={frequencyFilter} onChange={setFrequencyFilter} />
                         <MultiSelectFilter title="Category" options={donationCategories} selected={categoryFilter} onChange={setCategoryFilter} />
                         <MultiSelectFilter title="Method" options={['Online Payment', 'Cash', 'Check', 'Other']} selected={methodFilter} onChange={setMethodFilter} />
                         <MultiSelectFilter title="Identity" options={['Linked', 'Unlinked']} selected={identityFilter} onChange={setIdentityFilter} />
