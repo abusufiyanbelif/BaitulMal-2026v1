@@ -58,6 +58,7 @@ import {
     Briefcase,
     Lightbulb,
     Lock,
+    HardDrive,
     Key,
     UserCheck,
     SmartphoneNfc,
@@ -842,6 +843,22 @@ export default function AppSettingsPage() {
                             {displayData.isTestMode ? "Test Mode Active" : "Live Mode"}
                         </Badge>
                     </div>
+                </div>
+
+                {/* Cloud Usage & Billing Monitor Banner */}
+                <div className="p-5 rounded-3xl bg-gradient-to-r from-emerald-500/10 via-primary/5 to-blue-500/10 border border-primary/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+                    <div className="space-y-1">
+                        <h4 className="font-black text-sm text-primary flex items-center gap-2">
+                            <HardDrive className="h-4 w-4 text-emerald-600" />
+                            Cloud Usage, Storage & Billing Monitor
+                        </h4>
+                        <p className="text-xs text-muted-foreground">Monitor live Firestore operations, Cloud Storage files, database size, and separate cost breakdowns.</p>
+                    </div>
+                    <Button asChild className="bg-primary hover:bg-primary/90 text-white font-bold h-10 px-5 rounded-xl shrink-0 shadow-md">
+                        <Link href="/settings/usage">
+                            View Usage & Billing <ChevronRight className="ml-1 h-4 w-4" />
+                        </Link>
+                    </Button>
                 </div>
             </div>
 

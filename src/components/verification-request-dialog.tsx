@@ -94,8 +94,9 @@ export function VerificationRequestDialog({
 
   const filteredUsers = (users || []).filter(u => {
     const isNotSelf = u.id !== user.id;
-    const matchesSearch = u.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         u.loginId.toLowerCase().includes(searchTerm.toLowerCase());
+    const term = (searchTerm || '').toLowerCase();
+    const matchesSearch = (u.name || '').toLowerCase().includes(term) || 
+                         (u.loginId || '').toLowerCase().includes(term);
     
     // If authorizedVerifiers is provided and not empty, restrict to that list.
     // Otherwise, fallback to Admin or User role.

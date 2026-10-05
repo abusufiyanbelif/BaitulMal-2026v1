@@ -114,9 +114,9 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
                 const term = searchTerm.toLowerCase();
                 snap.forEach(docSnap => {
                     const d = { id: docSnap.id, ...docSnap.data() } as Donor;
-                    const nameMatch = d.name.toLowerCase().includes(term);
-                    const phoneMatch = d.phone.includes(searchTerm);
-                    const upiMatch = d.upiIds?.some(u => u.toLowerCase().includes(term));
+                    const nameMatch = (d.name || '').toLowerCase().includes(term);
+                    const phoneMatch = (d.phone || '').includes(searchTerm);
+                    const upiMatch = d.upiIds?.some(u => u && typeof u === 'string' ? u.toLowerCase().includes(term) : false);
                     if (nameMatch || phoneMatch || upiMatch) {
                         donors.push(d);
                     }

@@ -407,7 +407,11 @@ function LeadDonationListContent() {
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      items = items.filter(d => d.donorName.toLowerCase().includes(term) || d.receiverName.toLowerCase().includes(term) || d.donorPhone.includes(term));
+      items = items.filter(d => 
+        (d.donorName || '').toLowerCase().includes(term) || 
+        (d.receiverName || '').toLowerCase().includes(term) || 
+        (d.donorPhone || '').includes(term)
+      );
     }
     if (dateRange?.from) {
         const from = startOfDay(dateRange.from);

@@ -434,7 +434,7 @@ export interface Campaign extends DocumentData {
   targetAmount?: number;
   startDate: string;
   endDate: string;
-  status: 'Upcoming' | 'Active' | 'Completed';
+  status: 'Upcoming' | 'Active' | 'Completed' | 'Closed' | 'Archived';
   priority?: PriorityLevel;
   authenticityStatus?: 'Pending Verification' | 'Verified' | 'Rejected' | 'On Hold' | 'Need More Details';
   publicVisibility?: 'Hold' | 'Ready to Publish' | 'Published';
@@ -471,7 +471,7 @@ export interface Lead extends DocumentData {
   requiredAmount?: number;
   startDate: string;
   endDate: string;
-  status: 'Upcoming' | 'Active' | 'Completed';
+  status: 'Upcoming' | 'Active' | 'Completed' | 'Closed' | 'Archived';
   priority?: PriorityLevel;
   authenticityStatus?: 'Pending Verification' | 'Verified' | 'Rejected' | 'On Hold' | 'Need More Details';
   publicVisibility?: 'Hold' | 'Ready to Publish' | 'Published';

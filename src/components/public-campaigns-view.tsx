@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { FolderKanban, HandHelping, Calendar as CalendarIcon, X, Utensils, LifeBuoy, Clock, CheckCircle2, ShieldCheck, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle } from 'lucide-react';
 import type { Campaign } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useMemo, useState, useRef } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -225,9 +225,10 @@ export function PublicCampaignsView() {
     let items = campaignsWithProgress.filter(c => 
         (statusFilter === 'All' || c.status === statusFilter) &&
         (categoryFilter === 'All' || c.category === categoryFilter) &&
-        (c.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        (searchTerm === '' ||
+         (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || 
          (c.caseId && c.caseId.toLowerCase().includes(searchTerm.toLowerCase())) || 
-         c.id.toLowerCase().includes(searchTerm.toLowerCase()))
+         (c.id || '').toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     if (dateRange?.from) {
@@ -243,10 +244,12 @@ export function PublicCampaignsView() {
     return items.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
   }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter, dateRange, selectedYear]);
 
+  const isCompletedStatus = (s?: string) => s === 'Completed' || s === 'Closed' || s === 'Finished' || s === 'Archived' || s === 'completed' || s === 'closed';
+
   const sections = useMemo(() => {
-    const priorityItems = filteredCampaigns.filter(c => (c.priority === 'Urgent' || c.priority === 'High') && c.status !== 'Completed');
+    const priorityItems = filteredCampaigns.filter(c => (c.priority === 'Urgent' || c.priority === 'High') && !isCompletedStatus(c.status));
     const ongoingItems = filteredCampaigns.filter(c => (c.status === 'Active' || c.status === 'Upcoming') && !priorityItems.find(p => p.id === c.id));
-    const completedItems = filteredCampaigns.filter(c => c.status === 'Completed');
+    const completedItems = filteredCampaigns.filter(c => isCompletedStatus(c.status));
 
     return [
       { id: 'priority', title: 'Critical Initiatives', icon: AlertTriangle, items: priorityItems, color: 'text-red-600' },
@@ -254,6 +257,21 @@ export function PublicCampaignsView() {
       { id: 'completed', title: 'Archived Campaigns', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
     ].filter(s => s.items.length > 0);
   }, [filteredCampaigns]);
+
+  const [expandedSections, setExpandedSections] = useState<string[]>(['priority', 'ongoing_upcoming', 'completed']);
+
+  useEffect(() => {
+    if (sections.length > 0) {
+      setExpandedSections(prev => {
+        const allIds = sections.map(s => s.id);
+        const hasAll = allIds.every(id => prev.includes(id));
+        if (!hasAll) {
+          return Array.from(new Set([...prev, ...allIds]));
+        }
+        return prev;
+      });
+    }
+  }, [sections]);
 
   return (
     <div className="space-y-8">
@@ -298,7 +316,7 @@ export function PublicCampaignsView() {
           ))}
         </div>
       ) : sections.length > 0 ? (
-        <Accordion type="multiple" defaultValue={['priority', 'ongoing_upcoming', 'completed']} className="space-y-6">
+        <Accordion type="multiple" value={expandedSections} onValueChange={setExpandedSections} className="space-y-6">
           {sections.map(section => (
             <AccordionItem key={section.id} value={section.id} className="border-none">
               <AccordionTrigger className="hover:no-underline group font-bold">

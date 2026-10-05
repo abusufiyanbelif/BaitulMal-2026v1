@@ -120,7 +120,7 @@ export default function PublicLeadSummaryPage() {
     const visibilityRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_visibility') : null, [firestore]);
     const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'lead_config') : null, [firestore]);
     const { data: visibilitySettings } = useDoc<any>(visibilityRef);
-    const { data: configSettings } = useDoc<any>(configRef);
+    const { data: configSettings, isLoading: isConfigLoading } = useDoc<any>(configRef);
 
     const isRationInitiative = useMemo(() => {
         return lead?.purpose === 'Relief' && lead?.category === 'Ration Kit';
@@ -153,7 +153,7 @@ export default function PublicLeadSummaryPage() {
         } else {
             const firstCategory = lead.itemCategories?.[0];
             if (!firstCategory) return 0;
-            return firstCategory.items.reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+            return (firstCategory.items || []).reduce((sum, item) => sum + (Number(item.price) || 0), 0);
         }
     }, [lead, isRationInitiative, beneficiaryGroups]);
 
@@ -179,47 +179,46 @@ export default function PublicLeadSummaryPage() {
 
         verifiedDonationsList.forEach(d => {
             const leadAllocation = getDonationLinkForInitiative(d, lead.id, lead.caseId, 'lead');
-            if (!leadAllocation) return;
+            const allocatedAmount = (leadAllocation && leadAllocation.amount > 0) ? leadAllocation.amount : (d.amount || 0);
 
             const paymentType = d.donationType || 'Other';
             if (!paymentTypeStats[paymentType]) {
                 paymentTypeStats[paymentType] = { count: 0, amount: 0 };
             }
             paymentTypeStats[paymentType].count += 1;
-            paymentTypeStats[paymentType].amount += leadAllocation.amount;
+            paymentTypeStats[paymentType].amount += allocatedAmount;
 
             const totalDonationAmount = d.amount > 0 ? d.amount : 1;
-            const allocationProportion = leadAllocation.amount / totalDonationAmount;
+            const allocationProportion = allocatedAmount / totalDonationAmount;
             const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
             splits.forEach(split => {
                 const rawCategory = (split.category as string || '').trim();
                 const normalizedCategory = rawCategory === 'General' || rawCategory === 'Sadqa' ? 'Sadaqah' : rawCategory;
                 
                 if (amountsByCategory.hasOwnProperty(normalizedCategory)) {
-                    const allocatedAmount = split.amount * allocationProportion;
-                    amountsByCategory[normalizedCategory as DonationCategory] += allocatedAmount;
+                    const splitAllocated = split.amount * allocationProportion;
+                    amountsByCategory[normalizedCategory as DonationCategory] += splitAllocated;
                     const isForFundraising = normalizedCategory !== 'Zakat' || split.forFundraising !== false;
-                    if (normalizedCategory === 'Zakat' && isForFundraising) zakatForGoalAmount += allocatedAmount;
+                    if (normalizedCategory === 'Zakat' && isForFundraising) zakatForGoalAmount += splitAllocated;
                 }
             });
         });
         
         const stats = lead.beneficiaryStats || { total: 0, given: 0, pending: 0, zakatEligible: 0 };
         
-        // Note: Individual zakat allocations are not aggregated yet in lead.beneficiaryStats, 
-        // but we can estimate or wait for more complex aggregation if needed.
-        // For now, we'll keep it simple to fix the security leak.
-        
         const allowedTypes = lead.allowedDonationTypes && lead.allowedDonationTypes.length > 0
             ? lead.allowedDonationTypes
             : [...donationCategories];
 
-        const totalCollectedForGoal = Object.entries(amountsByCategory)
+        const rawTotalCollected = Object.entries(amountsByCategory)
             .filter(([category]) => allowedTypes.some(t => t.toLowerCase() === category.toLowerCase()))
             .reduce((sum, [category, amount]) => {
                 if (category === 'Zakat') return sum + zakatForGoalAmount;
                 return sum + amount;
             }, 0);
+
+        const docCollected = Number(lead.collectedAmount || (lead as any).collected || (lead as any).raisedAmount || (lead as any).targetAmount || 0);
+        const totalCollectedForGoal = rawTotalCollected > 0 ? rawTotalCollected : (lead.status === 'Completed' && docCollected > 0 ? docCollected : rawTotalCollected);
 
         const targetAmount = Math.max(lead.targetAmount || 0, calculatedRequirementTotal);
 
@@ -328,7 +327,7 @@ export default function PublicLeadSummaryPage() {
             </div>
 
             <div className="flex justify-end items-center mb-4 flex-wrap gap-2">
-                {configSettings?.isDonateNowVisible !== false && (
+                {(!isConfigLoading && configSettings?.isDonateNowVisible !== false) && (
                     <Button asChild className="active:scale-95 transition-transform font-bold shadow-xl h-11 px-10 rounded-2xl bg-primary text-primary-foreground hover:shadow-2xl hover:-translate-y-0.5 group">
                         <Link href={`/donate?leadId=${leadId}`}>
                             <HeartHandshake className="mr-2 h-5 w-5 text-red-500 group-hover:scale-110 transition-transform" />

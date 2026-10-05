@@ -253,7 +253,12 @@ export default function DataHealthPage() {
         if (filterModule !== 'all' && issue.module !== filterModule) return false;
         if (filterAutofix === 'auto' && !issue.canAutoFix) return false;
         if (filterAutofix === 'manual' && issue.canAutoFix) return false;
-        if (searchTerm && !issue.description.toLowerCase().includes(searchTerm.toLowerCase()) && !issue.field.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+        if (searchTerm) {
+            const term = searchTerm.toLowerCase();
+            const descMatch = (issue.description || '').toLowerCase().includes(term);
+            const fieldMatch = (issue.field || '').toLowerCase().includes(term);
+            if (!descMatch && !fieldMatch) return false;
+        }
         return true;
     });
 

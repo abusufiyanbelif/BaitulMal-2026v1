@@ -101,12 +101,13 @@ export default function MessageTemplatesPage() {
     const filteredTemplates = useMemo(() => {
         if (!rawTemplates) return [];
         return rawTemplates.filter(t => {
+            const term = (searchTerm || '').toLowerCase();
             const matchesSearch = 
-                t.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                t.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                t.body.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                (t.profileType && t.profileType.toLowerCase().includes(searchTerm.toLowerCase())) ||
-                (t.category && t.category.toLowerCase().includes(searchTerm.toLowerCase()));
+                (t.name || '').toLowerCase().includes(term) ||
+                (t.id || '').toLowerCase().includes(term) ||
+                (t.body || '').toLowerCase().includes(term) ||
+                (t.profileType && t.profileType.toLowerCase().includes(term)) ||
+                (t.category && t.category.toLowerCase().includes(term));
             
             const matchesCategory = categoryFilter === 'All' || t.category === categoryFilter;
             const matchesProfile = profileFilter === 'All' || t.profileType === profileFilter;

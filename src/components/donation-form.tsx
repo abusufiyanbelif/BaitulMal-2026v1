@@ -54,7 +54,7 @@ import { Separator } from '@/components/ui/separator';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger, DialogFooter } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
 import { useSession } from '@/hooks/use-session';
 import { usePaymentSettings } from '@/hooks/use-payment-settings';
@@ -363,6 +363,31 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
   const { fields: typeSplitFields, append: appendTypeSplit, remove: removeTypeSplit, replace: replaceTypeSplit } = useFieldArray({ control, name: "typeSplit" });
   const { fields: linkSplitFields, append: appendLinkSplit, remove: removeLinkSplit, replace: replaceLinkSplit } = useFieldArray({ control, name: "linkSplit" });
 
+  const [closedInitiativeConfirm, setClosedInitiativeConfirm] = useState<{
+    item: { id: string; name: string; status: string; type: 'campaign' | 'lead' };
+    onConfirm: () => void;
+  } | null>(null);
+
+  const handleInitiativeSelect = (val: string, onChange: (val: string) => void) => {
+    if (val === 'unlinked') {
+      onChange(val);
+      return;
+    }
+    const [type, id] = val.split('_');
+    const targetItem = type === 'campaign' ? campaigns.find(c => c.id === id) : leads.find(l => l.id === id);
+    if (targetItem && (targetItem.status === 'Completed' || targetItem.status === 'Closed' || targetItem.status === 'Archived')) {
+      setClosedInitiativeConfirm({
+        item: { id: targetItem.id, name: targetItem.name, status: targetItem.status || 'Closed', type: type as 'campaign' | 'lead' },
+        onConfirm: () => {
+          onChange(val);
+          setClosedInitiativeConfirm(null);
+        }
+      });
+    } else {
+      onChange(val);
+    }
+  };
+
   const watchedTransactions = useWatch({ control, name: 'transactions' });
   const isTypeSplit = watch('isTypeSplit');
   const isLinkSplit = watch('isSplit');
@@ -398,7 +423,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     return campaigns.filter(c => {
       const isAlreadyLinked = donation?.linkSplit?.some(link => link.linkId === c.id && link.linkType === 'campaign');
       const isDefaultContext = defaultLinkId === `campaign_${c.id}`;
-      return isAlreadyLinked || isDefaultContext || (c.status !== 'Completed' && c.publicVisibility === 'Published');
+      return isAlreadyLinked || isDefaultContext || c.publicVisibility === 'Published' || c.status === 'Completed' || c.status === 'Closed' || c.status === 'Archived';
     });
   }, [campaigns, donation, defaultLinkId]);
 
@@ -406,7 +431,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
     return leads.filter(l => {
       const isAlreadyLinked = donation?.linkSplit?.some(link => link.linkId === l.id && link.linkType === 'lead');
       const isDefaultContext = defaultLinkId === `lead_${l.id}`;
-      return isAlreadyLinked || isDefaultContext || (l.status !== 'Completed' && l.publicVisibility === 'Published');
+      return isAlreadyLinked || isDefaultContext || l.publicVisibility === 'Published' || l.status === 'Completed' || l.status === 'Closed' || l.status === 'Archived';
     });
   }, [leads, donation, defaultLinkId]);
 
@@ -854,7 +879,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                                             <TableBody>
                                                 {linkSplitFields.map((field, index) => (
                                                     <TableRow key={field.id} className="hover:bg-primary/[0.02] border-b border-primary/5">
-                                                        <TableCell><FormField control={control} name={`linkSplit.${index}.linkId`} render={({ field }) => (<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none min-w-[200px] h-8"><SelectValue placeholder="Select target..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectGroup><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 capitalize">Active Campaigns</SelectLabel>{filteredCampaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`} className="font-normal">{c.name} (ID: {c.caseId || c.id})</SelectItem>)}</SelectGroup><SelectGroup><Separator className="my-1 opacity-10"/><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 capitalize">Active Appeals</SelectLabel>{filteredLeads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`} className="font-normal">{l.name} (ID: {l.caseId || l.id})</SelectItem>)}</SelectGroup></SelectContent></Select>)}/></TableCell>
+                                                        <TableCell><FormField control={control} name={`linkSplit.${index}.linkId`} render={({ field }) => (<Select onValueChange={(val) => handleInitiativeSelect(val, field.onChange)} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold border-none bg-transparent shadow-none min-w-[200px] h-8"><SelectValue placeholder="Select target..."/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectGroup><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 capitalize">Campaigns</SelectLabel>{filteredCampaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`} className="font-normal">{c.name} (ID: {c.caseId || c.id}){(c.status === 'Completed' || c.status === 'Closed' || c.status === 'Archived') ? ` [${c.status}]` : ''}</SelectItem>)}</SelectGroup><SelectGroup><Separator className="my-1 opacity-10"/><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 capitalize">Appeals</SelectLabel>{filteredLeads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`} className="font-normal">{l.name} (ID: {l.caseId || l.id}){(l.status === 'Completed' || l.status === 'Closed' || l.status === 'Archived') ? ` [${l.status}]` : ''}</SelectItem>)}</SelectGroup></SelectContent></Select>)}/></TableCell>
                                                         <TableCell><FormField control={control} name={`linkSplit.${index}.amount`} render={({ field }) => (<FormControl><Input type="number" placeholder="0.00" {...field} disabled={isReadOnly} className="border-none bg-transparent shadow-none font-bold font-mono h-8 text-primary"/></FormControl>)}/></TableCell>
                                                         <TableCell className="text-right pr-4">{!isReadOnly && <Button type="button" variant="ghost" size="icon" onClick={() => removeLinkSplit(index)} disabled={linkSplitFields.length <= 1} className="h-8 w-8 text-destructive transition-transform hover:scale-110"><Trash2 className="h-4 w-4"/></Button>}</TableCell>
                                                     </TableRow>
@@ -869,7 +894,7 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
                         </div>
                     ) : (
                         <FormField control={control} name={`linkSplit.0.linkId`} render={({ field }) => (
-                            <FormItem className="pl-6">{renderLabel('Allocate Funds To', 'linkSplit.0.linkId')}<Select onValueChange={field.onChange} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold text-primary"><SelectValue placeholder="Unallocated / General Fund"/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="unlinked" className="font-normal italic">-- Unallocated / Organization Fund --</SelectItem><SelectGroup><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 capitalize">Campaigns</SelectLabel>{filteredCampaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`} className="font-normal">{c.name} (ID: {c.caseId || c.id})</SelectItem>)}</SelectGroup><SelectGroup><Separator className="my-1 opacity-10"/><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 capitalize">Public Appeals</SelectLabel>{filteredLeads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`} className="font-normal">{l.name} (ID: {l.caseId || l.id})</SelectItem>)}</SelectGroup></SelectContent></Select></FormItem>
+                            <FormItem className="pl-6">{renderLabel('Allocate Funds To', 'linkSplit.0.linkId')}<Select onValueChange={(val) => handleInitiativeSelect(val, field.onChange)} defaultValue={field.value} disabled={isReadOnly}><FormControl><SelectTrigger className="font-bold text-primary"><SelectValue placeholder="Unallocated / General Fund"/></SelectTrigger></FormControl><SelectContent className="rounded-[12px] shadow-dropdown border-primary/10"><SelectItem value="unlinked" className="font-normal italic">-- Unallocated / Organization Fund --</SelectItem><SelectGroup><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 capitalize">Campaigns</SelectLabel>{filteredCampaigns.map(c => <SelectItem key={c.id} value={`campaign_${c.id}`} className="font-normal">{c.name} (ID: {c.caseId || c.id}){(c.status === 'Completed' || c.status === 'Closed' || c.status === 'Archived') ? ` [${c.status}]` : ''}</SelectItem>)}</SelectGroup><SelectGroup><Separator className="my-1 opacity-10"/><SelectLabel className="font-black text-primary/40 text-[8px] tracking-widest px-2 capitalize">Appeals</SelectLabel>{filteredLeads.map(l => <SelectItem key={l.id} value={`lead_${l.id}`} className="font-normal">{l.name} (ID: {l.caseId || l.id}){(l.status === 'Completed' || l.status === 'Closed' || l.status === 'Archived') ? ` [${l.status}]` : ''}</SelectItem>)}</SelectGroup></SelectContent></Select></FormItem>
                         )}/>
                     )}
                     </div>
@@ -939,6 +964,34 @@ export function DonationForm({ donation, onSubmit, onCancel, campaigns = [], lea
             }}
         />
       )}
+      <Dialog open={!!closedInitiativeConfirm} onOpenChange={(open) => { if (!open) setClosedInitiativeConfirm(null); }}>
+        <DialogContent className="max-w-md rounded-[16px] border-primary/10 shadow-2xl p-0 overflow-hidden">
+          <DialogHeader className="bg-amber-50 p-6 border-b border-amber-100">
+            <DialogTitle className="text-lg font-bold text-amber-900 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" /> Confirm Closed Initiative Linking
+            </DialogTitle>
+            <DialogDescription className="text-xs text-amber-800/80 mt-1 font-medium">
+              This initiative is currently marked as <span className="font-bold text-amber-900">[{closedInitiativeConfirm?.item.status}]</span>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="p-6 text-sm font-medium text-primary/80 space-y-3 bg-white">
+            <p>
+              Do you still want to apply and link this donation to <strong className="text-primary">{closedInitiativeConfirm?.item.name}</strong>?
+            </p>
+            <p className="text-xs text-muted-foreground bg-amber-50/50 p-3 rounded-lg border border-amber-100">
+              Note: Linking will add this donation to the collected financial records for this closed {closedInitiativeConfirm?.item.type}.
+            </p>
+          </div>
+          <DialogFooter className="p-4 bg-gray-50 border-t flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setClosedInitiativeConfirm(null)} className="font-bold border-primary/20">
+              Cancel
+            </Button>
+            <Button onClick={() => closedInitiativeConfirm?.onConfirm()} className="font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-md">
+              Yes, Link Donation
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Form>
   );
 }

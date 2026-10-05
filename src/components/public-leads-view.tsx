@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Lightbulb, HandHelping, CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info, Clock, CheckCircle2, ShieldCheck, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle } from 'lucide-react';
 import type { Lead, Campaign } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useMemo, useState, useRef } from 'react';
+import { useMemo, useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -224,9 +224,10 @@ export function PublicLeadsView() {
     let items = leadsWithProgress.filter(l => 
         (statusFilter === 'All' || l.status === statusFilter) &&
         (purposeFilter === 'All' || l.purpose === purposeFilter) &&
-        (l.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (searchTerm === '' ||
+         (l.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
          (l.caseId && l.caseId.toLowerCase().includes(searchTerm.toLowerCase())) ||
-         l.id.toLowerCase().includes(searchTerm.toLowerCase()))
+         (l.id || '').toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
     if (dateRange?.from) {
@@ -242,10 +243,12 @@ export function PublicLeadsView() {
     return items.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
   }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, dateRange, selectedYear]);
 
+  const isCompletedStatus = (s?: string) => s === 'Completed' || s === 'Closed' || s === 'Finished' || s === 'Archived' || s === 'completed' || s === 'closed';
+
   const sections = useMemo(() => {
-    const priorityItems = filteredLeads.filter(l => (l.priority === 'Urgent' || l.priority === 'High') && l.status !== 'Completed');
+    const priorityItems = filteredLeads.filter(l => (l.priority === 'Urgent' || l.priority === 'High') && !isCompletedStatus(l.status));
     const ongoingItems = filteredLeads.filter(l => (l.status === 'Active' || l.status === 'Upcoming') && !priorityItems.find(p => p.id === l.id));
-    const completedItems = filteredLeads.filter(l => l.status === 'Completed');
+    const completedItems = filteredLeads.filter(l => isCompletedStatus(l.status));
 
     return [
       { id: 'priority', title: 'Critical Appeals', icon: AlertTriangle, items: priorityItems, color: 'text-red-600' },
@@ -253,7 +256,22 @@ export function PublicLeadsView() {
       { id: 'completed', title: 'Archived Appeals', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
     ].filter(s => s.items.length > 0);
   }, [filteredLeads]);
-  
+
+  const [expandedSections, setExpandedSections] = useState<string[]>(['priority', 'ongoing_upcoming', 'completed']);
+
+  useEffect(() => {
+    if (sections.length > 0) {
+      setExpandedSections(prev => {
+        const allIds = sections.map(s => s.id);
+        const hasAll = allIds.every(id => prev.includes(id));
+        if (!hasAll) {
+          return Array.from(new Set([...prev, ...allIds]));
+        }
+        return prev;
+      });
+    }
+  }, [sections]);
+
   return (
     <div className="space-y-8">
       <div className="space-y-4">
@@ -297,7 +315,7 @@ export function PublicLeadsView() {
           ))}
         </div>
       ) : (sections && sections.length > 0) ? (
-        <Accordion type="multiple" defaultValue={['priority', 'ongoing_upcoming', 'completed']} className="space-y-6">
+        <Accordion type="multiple" value={expandedSections} onValueChange={setExpandedSections} className="space-y-6">
           {sections.map(section => (
             <AccordionItem key={section.id} value={section.id} className="border-none">
               <AccordionTrigger className="hover:no-underline group font-bold">

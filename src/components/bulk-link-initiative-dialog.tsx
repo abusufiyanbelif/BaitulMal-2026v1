@@ -60,11 +60,19 @@ export function BulkLinkInitiativeDialog({ open, onOpenChange, mode, selectedDon
           .slice(0, 5);
   }, [allDonations]);
 
-  const handleApply = async () => {
-      if (mode === 'unlink') {
-          await onConfirm(undefined);
-          return;
-      }
+  const activeCampaigns = useMemo(() => campaigns.filter(c => c.status !== 'Completed' && c.status !== 'Closed' && c.status !== 'Archived'), [campaigns]);
+  const closedCampaigns = useMemo(() => campaigns.filter(c => c.status === 'Completed' || c.status === 'Closed' || c.status === 'Archived'), [campaigns]);
+  const activeLeads = useMemo(() => leads.filter(l => l.status !== 'Completed' && l.status !== 'Closed' && l.status !== 'Archived'), [leads]);
+  const closedLeads = useMemo(() => leads.filter(l => l.status === 'Completed' || l.status === 'Closed' || l.status === 'Archived'), [leads]);
+
+  const isSelectedClosed = useMemo(() => {
+      if (!selectedInitiativeData) return false;
+      return selectedInitiativeData.status === 'Completed' || selectedInitiativeData.status === 'Closed' || selectedInitiativeData.status === 'Archived';
+  }, [selectedInitiativeData]);
+
+  const [showClosedConfirm, setShowClosedConfirm] = useState(false);
+
+  const executeApply = async () => {
       if (!selectedInitiative) return;
       const [type, id] = selectedInitiative.split('_');
       const name = selectedInitiativeData?.name || 'Unknown';
@@ -74,6 +82,20 @@ export function BulkLinkInitiativeDialog({ open, onOpenChange, mode, selectedDon
         : undefined;
 
       await onConfirm({ id, type: type as 'campaign' | 'lead', name }, splitOptions);
+      setShowClosedConfirm(false);
+  };
+
+  const handleApply = async () => {
+      if (mode === 'unlink') {
+          await onConfirm(undefined);
+          return;
+      }
+      if (!selectedInitiative) return;
+      if (isSelectedClosed) {
+          setShowClosedConfirm(true);
+          return;
+      }
+      await executeApply();
   };
 
   return (
@@ -119,24 +141,46 @@ export function BulkLinkInitiativeDialog({ open, onOpenChange, mode, selectedDon
                                     <SelectValue placeholder="Choose a Campaign or Lead..." />
                                 </SelectTrigger>
                                 <SelectContent className="max-h-[300px] border-primary/10">
-                                    {campaigns.length > 0 && (
+                                    {activeCampaigns.length > 0 && (
                                         <div className="px-2 py-1.5 text-xs font-black text-primary/40 uppercase tracking-widest">Active Campaigns</div>
                                     )}
-                                    {campaigns.map(c => (
+                                    {activeCampaigns.map(c => (
                                         <SelectItem key={`campaign_${c.id}`} value={`campaign_${c.id}`} className="font-bold text-primary">
                                             {c.name} (ID: {c.caseId || c.id})
                                         </SelectItem>
                                     ))}
-                                    {leads.length > 0 && (
-                                        <div className="px-2 py-1.5 text-xs font-black text-primary/40 uppercase tracking-widest mt-2 border-t border-primary/5">Active Leads</div>
+                                    {closedCampaigns.length > 0 && (
+                                        <div className="px-2 py-1.5 text-xs font-black text-amber-600/70 uppercase tracking-widest mt-1 border-t border-amber-100">Completed / Closed Campaigns</div>
                                     )}
-                                    {leads.map(l => (
+                                    {closedCampaigns.map(c => (
+                                        <SelectItem key={`campaign_${c.id}`} value={`campaign_${c.id}`} className="font-bold text-amber-900">
+                                            {c.name} (ID: {c.caseId || c.id}) [{c.status}]
+                                        </SelectItem>
+                                    ))}
+                                    {activeLeads.length > 0 && (
+                                        <div className="px-2 py-1.5 text-xs font-black text-primary/40 uppercase tracking-widest mt-2 border-t border-primary/5">Active Appeals</div>
+                                    )}
+                                    {activeLeads.map(l => (
                                         <SelectItem key={`lead_${l.id}`} value={`lead_${l.id}`} className="font-bold text-primary">
                                             {l.name} (ID: {l.caseId || l.id})
                                         </SelectItem>
                                     ))}
+                                    {closedLeads.length > 0 && (
+                                        <div className="px-2 py-1.5 text-xs font-black text-amber-600/70 uppercase tracking-widest mt-1 border-t border-amber-100">Completed / Closed Appeals</div>
+                                    )}
+                                    {closedLeads.map(l => (
+                                        <SelectItem key={`lead_${l.id}`} value={`lead_${l.id}`} className="font-bold text-amber-900">
+                                            {l.name} (ID: {l.caseId || l.id}) [{l.status}]
+                                        </SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
+                            {isSelectedClosed && (
+                                <div className="bg-amber-50 border border-amber-200 rounded-[12px] p-3 text-amber-900 text-xs font-bold flex items-start gap-2 mt-2">
+                                    <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600 mt-0.5" />
+                                    <p>This initiative is currently marked as <strong>{selectedInitiativeData?.status}</strong>. Linking donations will still apply to its collection totals.</p>
+                                </div>
+                            )}
                         </div>
 
                         {targetDiff && (
@@ -205,6 +249,34 @@ export function BulkLinkInitiativeDialog({ open, onOpenChange, mode, selectedDon
             </Button>
         </DialogFooter>
       </DialogContent>
+      <Dialog open={showClosedConfirm} onOpenChange={setShowClosedConfirm}>
+        <DialogContent className="max-w-md rounded-[16px] border-amber-200 shadow-2xl p-0 overflow-hidden">
+          <DialogHeader className="bg-amber-50 p-6 border-b border-amber-100">
+            <DialogTitle className="text-lg font-bold text-amber-900 flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0" /> Confirm Link to Closed Initiative
+            </DialogTitle>
+            <DialogDescription className="text-xs text-amber-800/80 mt-1 font-medium">
+              Target <strong>{selectedInitiativeData?.name}</strong> is currently marked as <strong>[{selectedInitiativeData?.status}]</strong>.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="p-6 text-sm font-medium text-primary/80 space-y-3 bg-white">
+            <p>
+              Do you still want to apply and link <strong>{selectedDonations.length} donation(s)</strong> (totaling ₹{totalSelectedAmount.toFixed(2)}) to this closed target?
+            </p>
+            <p className="text-xs text-muted-foreground bg-amber-50/50 p-3 rounded-lg border border-amber-100">
+              Linking will update the collected totals for this initiative.
+            </p>
+          </div>
+          <DialogFooter className="p-4 bg-gray-50 border-t flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowClosedConfirm(false)} className="font-bold border-primary/20">
+              Cancel
+            </Button>
+            <Button onClick={executeApply} disabled={isSubmitting} className="font-bold bg-amber-600 hover:bg-amber-700 text-white shadow-md">
+              {isSubmitting ? 'Applying...' : 'Yes, Apply Allocation'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }

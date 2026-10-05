@@ -6,6 +6,7 @@ import { useFirestore, useMemoFirebase, collection, query, where, doc } from '@/
 import { useSession } from '@/hooks/use-session';
 import type { Campaign, Lead, Donation, DonationCategory, BrandingSettings, Beneficiary } from '@/lib/types';
 import { donationCategories } from '@/lib/modules';
+import { isDonationLinkedToInitiative, getDonationLinkForInitiative } from '@/lib/utils';
 
 /**
  * usePublicData - High-fidelity organizational impact reporting.
@@ -115,7 +116,7 @@ export function usePublicData() {
         
         // Filter verified donations linked to this specific initiative
         const itemDonations = donations.filter(d => 
-            d.linkSplit?.some(l => l.linkId === item.id || l.linkId === `${itemType}_${item.id}`)
+            d.status === 'Verified' && isDonationLinkedToInitiative(d, item.id, item.caseId, itemType as 'campaign' | 'lead')
         );
 
         let totalCollected = 0;
@@ -124,14 +125,21 @@ export function usePublicData() {
             : [...donationCategories];
 
         itemDonations.forEach(d => {
-            const link = d.linkSplit?.find(l => l.linkId === item.id || l.linkId === `${itemType}_${item.id}`);
-            if (!link) return;
+            let amountForThisItem = 0;
+            const link = getDonationLinkForInitiative(d, item.id, item.caseId, itemType as 'campaign' | 'lead');
 
-            const amountForThisItem = link.amount;
+            if (link) {
+                amountForThisItem = link.amount;
+            } else if ((!d.linkSplit || d.linkSplit.length === 0) && ((d as any).campaignId === item.id || (d as any).leadId === item.id || d.caseId === item.caseId)) {
+                amountForThisItem = d.amount;
+            }
+
+            if (amountForThisItem <= 0) return;
+
             const totalDonationAmount = d.amount > 0 ? d.amount : 1;
             const proportion = amountForThisItem / totalDonationAmount;
 
-            const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
+            const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : [{ category: 'Sadaqah' as DonationCategory, amount: d.amount, forFundraising: true }]);
             
             splits.forEach((split: any) => {
                 const rawCategory = (split.category as string || '').trim();
@@ -151,18 +159,25 @@ export function usePublicData() {
         // Filter pending donations linked to this specific initiative
         let totalPending = 0;
         const itemPendingDonations = pendingDonationsList.filter(d => 
-            d.linkSplit?.some(l => l.linkId === item.id || l.linkId === `${itemType}_${item.id}`)
+            isDonationLinkedToInitiative(d, item.id, item.caseId, itemType as 'campaign' | 'lead')
         );
 
         itemPendingDonations.forEach(d => {
-            const link = d.linkSplit?.find(l => l.linkId === item.id || l.linkId === `${itemType}_${item.id}`);
-            if (!link) return;
+            let amountForThisItem = 0;
+            const link = getDonationLinkForInitiative(d, item.id, item.caseId, itemType as 'campaign' | 'lead');
 
-            const amountForThisItem = link.amount;
+            if (link) {
+                amountForThisItem = link.amount;
+            } else if ((!d.linkSplit || d.linkSplit.length === 0) && ((d as any).campaignId === item.id || (d as any).leadId === item.id || d.caseId === item.caseId)) {
+                amountForThisItem = d.amount;
+            }
+
+            if (amountForThisItem <= 0) return;
+
             const totalDonationAmount = d.amount > 0 ? d.amount : 1;
             const proportion = amountForThisItem / totalDonationAmount;
 
-            const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
+            const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : [{ category: 'Sadaqah' as DonationCategory, amount: d.amount, forFundraising: true }]);
             
             splits.forEach((split: any) => {
                 const rawCategory = (split.category as string || '').trim();
@@ -180,8 +195,8 @@ export function usePublicData() {
         });
 
         const target = Number(item.targetAmount) || 0;
-        // Fallback to document field if on-the-fly calculation is 0 but document says otherwise (to handle edge cases)
-        const finalCollected = totalCollected > 0 ? totalCollected : (Number(item.collectedAmount) || 0);
+        const docCollected = Number(item.collectedAmount || (item as any).collected || (item as any).raisedAmount || 0);
+        const finalCollected = totalCollected > 0 ? totalCollected : (item.status === 'Completed' && docCollected > 0 ? docCollected : totalCollected);
         const progress = target > 0 ? (finalCollected / target) * 100 : 0;
         const pendingProgress = target > 0 ? (totalPending / target) * 100 : 0;
         

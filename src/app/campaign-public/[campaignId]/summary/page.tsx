@@ -120,7 +120,7 @@ export default function PublicCampaignSummaryPage() {
     const visibilityRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'campaign_visibility') : null, [firestore]);
     const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'campaign_config') : null, [firestore]);
     const { data: visibilitySettings } = useDoc<any>(visibilityRef);
-    const { data: configSettings } = useDoc<any>(configRef);
+    const { data: configSettings, isLoading: isConfigLoading } = useDoc<any>(configRef);
 
     const isRationInitiative = useMemo(() => {
         return campaign?.category === 'Ration';
@@ -217,7 +217,7 @@ export default function PublicCampaignSummaryPage() {
             ? campaign.allowedDonationTypes
             : [...donationCategories];
 
-        const totalCollectedForGoal = Object.entries(amountsByCategory)
+        const rawTotalCollected = Object.entries(amountsByCategory)
             .filter(([category]) => {
                 const cat = category as DonationCategory;
                 return allowedTypes.some(t => t.toLowerCase() === cat.toLowerCase());
@@ -226,6 +226,9 @@ export default function PublicCampaignSummaryPage() {
                 if (category === 'Zakat') return sum + zakatForGoalAmount;
                 return sum + amount;
             }, 0);
+
+        const docCollected = Number(campaign.collectedAmount || (campaign as any).collected || (campaign as any).raisedAmount || (campaign as any).targetAmount || 0);
+        const totalCollectedForGoal = rawTotalCollected > 0 ? rawTotalCollected : (campaign.status === 'Completed' && docCollected > 0 ? docCollected : rawTotalCollected);
 
         const targetAmount = Math.max(campaign.targetAmount || 0, calculatedRequirementTotal);
 
@@ -328,7 +331,7 @@ export default function PublicCampaignSummaryPage() {
             </div>
 
             <div className="flex justify-end items-center mb-4 flex-wrap gap-2">
-                {configSettings?.isDonateNowVisible !== false && (
+                {(!isConfigLoading && configSettings?.isDonateNowVisible !== false) && (
                     <Button asChild className="active:scale-95 transition-transform font-bold shadow-xl h-11 px-10 rounded-2xl bg-primary text-primary-foreground hover:shadow-2xl hover:-translate-y-0.5 group">
                         <Link href={`/donate?campaignId=${campaignId}`}>
                             <HeartHandshake className="mr-2 h-5 w-5 text-red-500 group-hover:scale-110 transition-transform" />

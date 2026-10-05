@@ -63,10 +63,10 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
         if (!searchTerm) return true;
         const lowerTerm = searchTerm.toLowerCase();
         return (
-            d.donorName.toLowerCase().includes(lowerTerm) ||
-            d.donorPhone.includes(searchTerm) ||
-            d.id.toLowerCase().includes(lowerTerm) ||
-            d.receiverName.toLowerCase().includes(lowerTerm)
+            (d.donorName || '').toLowerCase().includes(lowerTerm) ||
+            (d.donorPhone || '').includes(searchTerm) ||
+            (d.id || '').toLowerCase().includes(lowerTerm) ||
+            (d.receiverName || '').toLowerCase().includes(lowerTerm)
         );
     }).map(d => {
         const totalAllocated = d.linkSplit?.reduce((sum, l) => sum + l.amount, 0) || 0;
@@ -84,7 +84,9 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
     });
   }, [allDonations, searchTerm, targetId, allowedTypes]);
 
-  const handleLinkDonation = async (donation: any) => {
+  const [confirmDonationToLink, setConfirmDonationToLink] = useState<any | null>(null);
+
+  const executeLink = async (donation: any) => {
     if (!firestore || isLinking) return;
     
     setIsLinking(donation.id);
@@ -103,6 +105,7 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
     try {
         await updateDoc(docRef, { linkSplit: updatedLinks });
         toast({ title: 'Donation Linked', description: `₹${donation.maxPossibleLink.toLocaleString()} Allocated To ${targetName}.`, variant: 'success' });
+        setConfirmDonationToLink(null);
         onOpenChange(false);
     } catch (e: any) {
         console.error("Linking Failed:", e);
@@ -110,6 +113,10 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
     } finally {
         setIsLinking(null);
     }
+  };
+
+  const handleLinkDonation = async (donation: any) => {
+    setConfirmDonationToLink(donation);
   };
 
   return (
@@ -216,6 +223,35 @@ export function DonationSearchDialog({ open, onOpenChange, targetId, targetName,
           </div>
         </DialogFooter>
       </DialogContent>
+      <Dialog open={!!confirmDonationToLink} onOpenChange={(val) => { if (!val) setConfirmDonationToLink(null); }}>
+        <DialogContent className="max-w-md rounded-[16px] border-primary/10 shadow-2xl p-0 overflow-hidden">
+          <DialogHeader className="bg-primary/5 p-6 border-b border-primary/10">
+            <DialogTitle className="text-lg font-bold text-primary flex items-center gap-2">
+              <LinkIcon className="h-5 w-5 text-primary shrink-0" /> Confirm Donation Allocation
+            </DialogTitle>
+            <DialogDescription className="text-xs text-primary/70 mt-1 font-medium">
+              Target: <strong>{targetName}</strong>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="p-6 text-sm font-medium text-primary/80 space-y-3 bg-white">
+            <p>
+              Are you sure you want to allocate <strong>₹{confirmDonationToLink?.maxPossibleLink?.toLocaleString()}</strong> from <strong>{confirmDonationToLink?.donorName || 'Donor'}</strong> to this initiative?
+            </p>
+            <p className="text-xs text-muted-foreground bg-primary/[0.02] p-3 rounded-lg border border-primary/10">
+              This action will update the collection goal progress for {targetName}.
+            </p>
+          </div>
+          <DialogFooter className="p-4 bg-gray-50 border-t flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setConfirmDonationToLink(null)} className="font-bold border-primary/20">
+              Cancel
+            </Button>
+            <Button onClick={() => executeLink(confirmDonationToLink)} disabled={!!isLinking} className="font-bold bg-primary text-white shadow-md">
+              {isLinking ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Yes, Link Donation
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }

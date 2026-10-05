@@ -72,11 +72,11 @@ export default function DonorDonationsPage() {
         if (searchQuery) {
             const q = searchQuery.toLowerCase();
             result = result.filter(d => 
-                d.id.toLowerCase().includes(q) || 
+                (d.id && d.id.toLowerCase().includes(q)) || 
                 (d.linkName || '').toLowerCase().includes(q) ||
                 (d.campaignName || '').toLowerCase().includes(q) ||
                 (d.type || '').toLowerCase().includes(q) ||
-                (d.linkSplit && d.linkSplit.some(l => (l.caseId && l.caseId.toLowerCase().includes(q)) || l.linkId.toLowerCase().includes(q)))
+                (d.linkSplit && d.linkSplit.some(l => (l.caseId && l.caseId.toLowerCase().includes(q)) || (l.linkId && l.linkId.toLowerCase().includes(q))))
             );
         }
 

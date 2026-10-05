@@ -21,8 +21,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { CopyLeadDialog } from '@/components/copy-lead-dialog';
 import { copyLeadAction, deleteLeadAction } from './actions';
-import { cn, getNestedValue, getImageSrc } from '@/lib/utils';
-import { priorityLevels } from '@/lib/modules';
+import { cn, getNestedValue, getImageSrc, isDonationLinkedToInitiative, getDonationLinkForInitiative } from '@/lib/utils';
+import { priorityLevels, donationCategories } from '@/lib/modules';
 import Image from 'next/image';
 import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -394,26 +394,52 @@ export default function LeadPage() {
     return rawLeads.map(lead => {
         const leadDonations = donations.filter(d => 
             d.status === 'Verified' && 
-            d.linkSplit?.some(l => l.linkId === lead.id && l.linkType === 'lead')
+            isDonationLinkedToInitiative(d, lead.id, lead.caseId, 'lead')
         );
 
-        const collected = leadDonations.reduce((sum, d) => {
-            const link = d.linkSplit?.find(l => l.linkId === lead.id);
-            const amountForThis = link ? link.amount : 0;
-            const totalDonation = d.amount || 1;
-            const proportion = amountForThis / totalDonation;
+        let collected = 0;
+        const allowedTypes = lead.allowedDonationTypes && lead.allowedDonationTypes.length > 0
+            ? lead.allowedDonationTypes
+            : [...donationCategories];
+
+        leadDonations.forEach(d => {
+            let amountForThis = 0;
+            const link = getDonationLinkForInitiative(d, lead.id, lead.caseId, 'lead');
+
+            if (link) {
+                amountForThis = link.amount;
+            } else if ((!d.linkSplit || d.linkSplit.length === 0) && ((d as any).leadId === lead.id || d.caseId === lead.caseId)) {
+                amountForThis = d.amount;
+            }
+
+            if (amountForThis <= 0) return;
+
+            const totalDonationAmount = d.amount > 0 ? d.amount : 1;
+            const proportion = amountForThis / totalDonationAmount;
+
+            const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as any, amount: d.amount, forFundraising: true }] : [{ category: 'Sadaqah', amount: d.amount, forFundraising: true }]);
             
-            const eligibleSum = (d.typeSplit || []).reduce((acc, split) => {
-                const isAllowed = lead.allowedDonationTypes?.includes(split.category);
-                const isForGoal = split.category !== 'Zakat' || split.forFundraising === true;
-                return (isAllowed && isForGoal) ? acc + split.amount : acc;
-            }, 0);
+            splits.forEach((split: any) => {
+                const rawCategory = (split.category as string || '').trim();
+                const normalizedCategory = rawCategory === 'General' || rawCategory === 'Sadqa' ? 'Sadaqah' : rawCategory;
+                
+                const isAllowed = allowedTypes.some(t => t.toLowerCase() === normalizedCategory.toLowerCase());
+                
+                if (isAllowed) {
+                    const isForFundraising = normalizedCategory.toLowerCase() !== 'zakat' || split.forFundraising !== false;
+                    if (isForFundraising) {
+                        collected += split.amount * proportion;
+                    }
+                }
+            });
+        });
 
-            return sum + (eligibleSum * proportion);
-        }, 0);
+        const docCollected = Number(lead.collectedAmount || (lead as any).collected || (lead as any).raisedAmount || 0);
+        const finalCollected = collected > 0 ? collected : (lead.status === 'Completed' && docCollected > 0 ? docCollected : collected);
 
-        const progress = lead.targetAmount ? (collected / lead.targetAmount) * 100 : 0;
-        return { ...lead, collected, progress };
+        const target = Number(lead.targetAmount) || 0;
+        const progress = target > 0 ? Math.min((finalCollected / target) * 100, 100) : 0;
+        return { ...lead, collected: finalCollected, progress };
     });
   }, [rawLeads, donations]);
 
@@ -457,16 +483,22 @@ export default function LeadPage() {
     }
   };
 
+  const isCompletedStatus = (s?: string) => s === 'Completed' || s === 'Closed' || s === 'Finished' || s === 'Archived' || s === 'completed' || s === 'closed';
+
   const filteredLeads = useMemo(() => {
     if (!leadsWithProgress) return [];
     let items = [...leadsWithProgress].filter(l => {
-        const matchesStatus = statusFilter.length === 0 || statusFilter.includes(l.status);
+        const matchesStatus = statusFilter.length === 0 || statusFilter.some(sf => {
+            if (sf === 'Completed' || sf === 'Closed' || sf === 'Archived') return isCompletedStatus(l.status);
+            return l.status === sf;
+        });
         const matchesPurpose = purposeFilter.length === 0 || purposeFilter.includes(l.purpose);
         const matchesAuth = authenticityFilter.length === 0 || authenticityFilter.includes(l.authenticityStatus || 'Pending Verification');
         const matchesVisibility = visibilityFilter.length === 0 || visibilityFilter.includes(l.publicVisibility || 'Hold');
-        const matchesSearch = l.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        const matchesSearch = searchTerm === '' ||
+          (l.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
           (l.caseId && l.caseId.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          l.id.toLowerCase().includes(searchTerm.toLowerCase());
+          (l.id || '').toLowerCase().includes(searchTerm.toLowerCase());
         
         return matchesSearch && matchesStatus && matchesPurpose && matchesAuth && matchesVisibility;
     });
@@ -485,8 +517,8 @@ export default function LeadPage() {
   }, [leadsWithProgress, searchTerm, statusFilter, purposeFilter, authenticityFilter, visibilityFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => {
-    const ongoing = filteredLeads.filter(l => l.status !== 'Completed');
-    const completed = filteredLeads.filter(l => l.status === 'Completed');
+    const ongoing = filteredLeads.filter(l => !isCompletedStatus(l.status));
+    const completed = filteredLeads.filter(l => isCompletedStatus(l.status));
 
     const ongoingPublished = ongoing.filter(l => l.publicVisibility === 'Published');
     const ongoingInternal = ongoing.filter(l => l.publicVisibility !== 'Published');
@@ -499,6 +531,21 @@ export default function LeadPage() {
       { id: 'completed', title: 'Archived Appeals', icon: CheckCircle2, items: sortByPriority(completed), color: 'text-muted-foreground' }
     ].filter(s => s.items.length > 0);
   }, [filteredLeads]);
+
+  const [expandedSections, setExpandedSections] = useState<string[]>(['published', 'internal', 'completed']);
+
+  useEffect(() => {
+    if (sections.length > 0) {
+      setExpandedSections(prev => {
+        const allIds = sections.map(s => s.id);
+        const hasAll = allIds.every(id => prev.includes(id));
+        if (!hasAll) {
+          return Array.from(new Set([...prev, ...allIds]));
+        }
+        return prev;
+      });
+    }
+  }, [sections]);
 
   const isLoading = isProfileLoading || areLeadsLoading || areDonationsLoading;
   
@@ -594,7 +641,7 @@ export default function LeadPage() {
         </div>
 
         {(sections && sections.length > 0) ? (
-          <Accordion type="multiple" defaultValue={['published', 'internal', 'completed']} className="space-y-6">
+          <Accordion type="multiple" value={expandedSections} onValueChange={setExpandedSections} className="space-y-6">
             {sections.map(section => (
               <AccordionItem key={section.id} value={section.id} className="border border-primary/10 rounded-2xl px-4 sm:px-6 bg-white shadow-sm overflow-hidden transition-all duration-300">
                 <AccordionTrigger className="hover:no-underline py-6 group font-bold">

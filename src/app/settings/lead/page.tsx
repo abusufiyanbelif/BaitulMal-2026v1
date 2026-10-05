@@ -76,9 +76,10 @@ export default function LeadSettingsPage() {
   const { data: allUsers } = useCollection<UserProfile>(usersRef);
 
   const availableVerifiers = useMemo(() => {
+    const term = (userSearchTerm || '').toLowerCase();
     return (allUsers || []).filter(u => 
         (u.role === 'Admin' || u.role === 'User') &&
-        (u.name.toLowerCase().includes(userSearchTerm.toLowerCase()) || u.loginId.toLowerCase().includes(userSearchTerm.toLowerCase()))
+        ((u.name || '').toLowerCase().includes(term) || (u.loginId || '').toLowerCase().includes(term))
     );
   }, [allUsers, userSearchTerm]);
   const [localDonateNow, setLocalDonateNow] = useState(false);

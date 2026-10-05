@@ -51,7 +51,7 @@ import versionData from '@/lib/version.json';
  */
 export function AppFooter() {
   const { brandingSettings } = useBranding();
-  const { paymentSettings } = usePaymentSettings();
+  const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
   const { userProfile: currentUser } = useSession();
   const pathname = usePathname();
   const { toast } = useToast();
@@ -84,7 +84,7 @@ export function AppFooter() {
   const showAddress = paymentSettings?.isFooterAddressVisible !== false;
   const showContact = paymentSettings?.isFooterContactVisible !== false;
   const showQuickLinks = paymentSettings?.isFooterQuickLinksVisible !== false;
-  const showSupportUs = paymentSettings?.isFooterSupportUsVisible !== false;
+  const showSupportUs = !isPaymentLoading && paymentSettings?.isFooterSupportUsVisible !== false;
   const showRegInfo = paymentSettings?.isFooterRegInfoVisible !== false;
   const showCopyright = paymentSettings?.isFooterCopyrightVisible !== false;
   const showBuildVersion = paymentSettings?.isFooterBuildVersionVisible !== false;

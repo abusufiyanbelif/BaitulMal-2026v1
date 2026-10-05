@@ -42,10 +42,10 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { CopyCampaignDialog } from '@/components/copy-campaign-dialog';
 import { copyCampaignAction, deleteCampaignAction } from './actions';
-import { cn, getNestedValue, getImageSrc } from '@/lib/utils';
+import { cn, getNestedValue, getImageSrc, isDonationLinkedToInitiative, getDonationLinkForInitiative } from '@/lib/utils';
 import { getDefaultImage } from '@/lib/default-images';
 import { PurposePlaceholder } from '@/components/purpose-placeholder';
-import { priorityLevels } from '@/lib/modules';
+import { priorityLevels, donationCategories } from '@/lib/modules';
 import Image from 'next/image';
 import { DateRange } from "react-day-picker";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -395,50 +395,90 @@ export default function CampaignPage() {
     return rawCampaigns.map(campaign => {
         const campaignDonations = donations.filter(d => 
             d.status === 'Verified' && 
-            (d.linkSplit?.some(l => l.linkId === campaign.id && l.linkType === 'campaign') || (d as any).campaignId === campaign.id)
+            isDonationLinkedToInitiative(d, campaign.id, campaign.caseId, 'campaign')
         );
 
-        const collected = campaignDonations.reduce((sum, d) => {
-            const link = d.linkSplit?.find((l: any) => l.linkId === campaign.id);
-            const amountForThis = link ? link.amount : ( (d as any).campaignId === campaign.id ? d.amount : 0 );
-            
-            const totalDonation = d.amount || 1;
-            const proportion = amountForThis / totalDonation;
-            const typeSplits = d.typeSplit || [];
-            
-            const eligibleSum = typeSplits.reduce((acc: number, split: any) => {
-                const isAllowed = campaign.allowedDonationTypes?.includes(split.category);
-                const isForGoal = split.category !== 'Zakat' || split.forFundraising === true;
-                return (isAllowed && isForGoal) ? acc + split.amount : acc;
-            }, 0);
+        let collected = 0;
+        const allowedTypes = campaign.allowedDonationTypes && campaign.allowedDonationTypes.length > 0
+            ? campaign.allowedDonationTypes
+            : [...donationCategories];
 
-            return sum + (eligibleSum * proportion);
-        }, 0);
+        campaignDonations.forEach(d => {
+            let amountForThis = 0;
+            const link = getDonationLinkForInitiative(d, campaign.id, campaign.caseId, 'campaign');
+
+            if (link) {
+                amountForThis = link.amount;
+            } else if ((!d.linkSplit || d.linkSplit.length === 0) && ((d as any).campaignId === campaign.id || d.caseId === campaign.caseId)) {
+                amountForThis = d.amount;
+            }
+
+            if (amountForThis <= 0) return;
+
+            const totalDonationAmount = d.amount > 0 ? d.amount : 1;
+            const proportion = amountForThis / totalDonationAmount;
+
+            const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as any, amount: d.amount, forFundraising: true }] : [{ category: 'Sadaqah', amount: d.amount, forFundraising: true }]);
+            
+            splits.forEach((split: any) => {
+                const rawCategory = (split.category as string || '').trim();
+                const normalizedCategory = rawCategory === 'General' || rawCategory === 'Sadqa' ? 'Sadaqah' : rawCategory;
+                
+                const isAllowed = allowedTypes.some(t => t.toLowerCase() === normalizedCategory.toLowerCase());
+                
+                if (isAllowed) {
+                    const isForFundraising = normalizedCategory.toLowerCase() !== 'zakat' || split.forFundraising !== false;
+                    if (isForFundraising) {
+                        collected += split.amount * proportion;
+                    }
+                }
+            });
+        });
+
+        const docCollected = Number(campaign.collectedAmount || (campaign as any).collected || (campaign as any).raisedAmount || 0);
+        const finalCollected = collected > 0 ? collected : (campaign.status === 'Completed' && docCollected > 0 ? docCollected : collected);
 
         const pendingDonations = donations.filter(d => 
             d.status === 'Pending' && 
-            (d.linkSplit?.some(l => l.linkId === campaign.id && l.linkType === 'campaign') || (d as any).campaignId === campaign.id)
+            isDonationLinkedToInitiative(d, campaign.id, campaign.caseId, 'campaign')
         );
 
-        const pendingAmount = pendingDonations.reduce((sum, d) => {
-            const link = d.linkSplit?.find((l: any) => l.linkId === campaign.id);
-            const amountForThis = link ? link.amount : ( (d as any).campaignId === campaign.id ? d.amount : 0 );
-            
-            const totalDonation = d.amount || 1;
-            const proportion = amountForThis / totalDonation;
-            const typeSplits = d.typeSplit || [];
-            
-            const eligibleSum = typeSplits.reduce((acc: number, split: any) => {
-                const isAllowed = campaign.allowedDonationTypes?.includes(split.category);
-                const isForGoal = split.category !== 'Zakat' || split.forFundraising === true;
-                return (isAllowed && isForGoal) ? acc + split.amount : acc;
-            }, 0);
+        let pendingAmount = 0;
+        pendingDonations.forEach(d => {
+            let amountForThis = 0;
+            const link = getDonationLinkForInitiative(d, campaign.id, campaign.caseId, 'campaign');
 
-            return sum + (eligibleSum * proportion);
-        }, 0);
+            if (link) {
+                amountForThis = link.amount;
+            } else if ((!d.linkSplit || d.linkSplit.length === 0) && ((d as any).campaignId === campaign.id || d.caseId === campaign.caseId)) {
+                amountForThis = d.amount;
+            }
 
-        const progress = campaign.targetAmount ? (collected / campaign.targetAmount) * 100 : 0;
-        return { ...campaign, collected, pendingAmount, progress };
+            if (amountForThis <= 0) return;
+
+            const totalDonationAmount = d.amount > 0 ? d.amount : 1;
+            const proportion = amountForThis / totalDonationAmount;
+
+            const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as any, amount: d.amount, forFundraising: true }] : [{ category: 'Sadaqah', amount: d.amount, forFundraising: true }]);
+            
+            splits.forEach((split: any) => {
+                const rawCategory = (split.category as string || '').trim();
+                const normalizedCategory = rawCategory === 'General' || rawCategory === 'Sadqa' ? 'Sadaqah' : rawCategory;
+                
+                const isAllowed = allowedTypes.some(t => t.toLowerCase() === normalizedCategory.toLowerCase());
+                
+                if (isAllowed) {
+                    const isForFundraising = normalizedCategory.toLowerCase() !== 'zakat' || split.forFundraising !== false;
+                    if (isForFundraising) {
+                        pendingAmount += split.amount * proportion;
+                    }
+                }
+            });
+        });
+
+        const target = Number(campaign.targetAmount) || 0;
+        const progress = target > 0 ? Math.min((finalCollected / target) * 100, 100) : 0;
+        return { ...campaign, collected: finalCollected, pendingAmount, progress };
     });
   }, [rawCampaigns, donations]);
 
@@ -482,16 +522,22 @@ export default function CampaignPage() {
     }
   };
   
+  const isCompletedStatus = (s?: string) => s === 'Completed' || s === 'Closed' || s === 'Finished' || s === 'Archived' || s === 'completed' || s === 'closed';
+
   const filteredCampaigns = useMemo(() => {
     if (!campaignsWithProgress) return [];
     let items = campaignsWithProgress.filter(c => {
-        const matchesStatus = statusFilter.length === 0 || statusFilter.includes(c.status);
+        const matchesStatus = statusFilter.length === 0 || statusFilter.some(sf => {
+            if (sf === 'Completed' || sf === 'Closed' || sf === 'Archived') return isCompletedStatus(c.status);
+            return c.status === sf;
+        });
         const matchesCategory = categoryFilter.length === 0 || categoryFilter.includes(c.category);
         const matchesAuth = authenticityFilter.length === 0 || authenticityFilter.includes(c.authenticityStatus || 'Pending Verification');
         const matchesVisibility = visibilityFilter.length === 0 || visibilityFilter.includes(c.publicVisibility || 'Hold');
-        const matchesSearch = c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        const matchesSearch = searchTerm === '' ||
+          (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
           (c.caseId && c.caseId.toLowerCase().includes(searchTerm.toLowerCase())) ||
-          c.id.toLowerCase().includes(searchTerm.toLowerCase());
+          (c.id || '').toLowerCase().includes(searchTerm.toLowerCase());
         return matchesSearch && matchesStatus && matchesCategory && matchesAuth && matchesVisibility;
     });
 
@@ -509,8 +555,8 @@ export default function CampaignPage() {
   }, [campaignsWithProgress, searchTerm, statusFilter, categoryFilter, authenticityFilter, visibilityFilter, dateRange, selectedYear]);
 
   const sections = useMemo(() => {
-    const ongoing = filteredCampaigns.filter(c => c.status !== 'Completed');
-    const completed = filteredCampaigns.filter(c => c.status === 'Completed');
+    const ongoing = filteredCampaigns.filter(c => !isCompletedStatus(c.status));
+    const completed = filteredCampaigns.filter(c => isCompletedStatus(c.status));
 
     const ongoingPublished = ongoing.filter(c => c.publicVisibility === 'Published');
     const ongoingInternal = ongoing.filter(c => c.publicVisibility !== 'Published');
@@ -523,6 +569,21 @@ export default function CampaignPage() {
       { id: 'completed', title: 'Archived Campaigns', icon: CheckCircle2, items: sortByPriority(completed), color: 'text-muted-foreground' }
     ].filter(s => s.items.length > 0);
   }, [filteredCampaigns]);
+
+  const [expandedSections, setExpandedSections] = useState<string[]>(['published', 'internal', 'completed']);
+
+  useEffect(() => {
+    if (sections.length > 0) {
+      setExpandedSections(prev => {
+        const allIds = sections.map(s => s.id);
+        const hasAll = allIds.every(id => prev.includes(id));
+        if (!hasAll) {
+          return Array.from(new Set([...prev, ...allIds]));
+        }
+        return prev;
+      });
+    }
+  }, [sections]);
 
   const isLoading = isProfileLoading || areCampaignsLoading || areDonationsLoading;
   
@@ -620,7 +681,7 @@ export default function CampaignPage() {
         </div>
 
         {sections.length > 0 ? (
-          <Accordion type="multiple" defaultValue={['published', 'internal', 'completed']} className="space-y-6">
+          <Accordion type="multiple" value={expandedSections} onValueChange={setExpandedSections} className="space-y-6">
             {sections.map(section => (
               <AccordionItem key={section.id} value={section.id} className="border border-primary/10 rounded-2xl px-4 sm:px-6 bg-white shadow-sm overflow-hidden transition-all duration-300">
                 <AccordionTrigger className="hover:no-underline py-5 group font-bold">

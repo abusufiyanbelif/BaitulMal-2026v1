@@ -533,11 +533,15 @@ function DonationListContent() {
     if (searchTerm) {
         const lower = searchTerm.toLowerCase();
         items = items.filter(d => 
-            d.donorName.toLowerCase().includes(lower) || 
-            d.donorPhone.includes(searchTerm) ||
-            d.id.toLowerCase().includes(lower) ||
+            (d.donorName && d.donorName.toLowerCase().includes(lower)) || 
+            (d.donorPhone && d.donorPhone.includes(searchTerm)) ||
+            (d.id && d.id.toLowerCase().includes(lower)) ||
             (d.frequency && d.frequency.toLowerCase().includes(lower)) ||
-            (d.linkSplit && d.linkSplit.some(l => l.linkName.toLowerCase().includes(lower) || (l.caseId && l.caseId.toLowerCase().includes(lower)) || l.linkId.toLowerCase().includes(lower)))
+            (d.linkSplit && Array.isArray(d.linkSplit) && d.linkSplit.some(l => 
+                (l?.linkName && String(l.linkName).toLowerCase().includes(lower)) || 
+                (l?.caseId && String(l.caseId).toLowerCase().includes(lower)) || 
+                (l?.linkId && String(l.linkId).toLowerCase().includes(lower))
+            ))
         );
     }
 

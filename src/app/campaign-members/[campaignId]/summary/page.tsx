@@ -378,7 +378,7 @@ export default function CampaignSummaryPage() {
 
         const zakatSurplus = Math.max(0, zakatForGoalAmount - zakatAllocated);
 
-        const totalCollectedForGoal = Object.entries(amountsByCategory)
+        const rawTotalCollected = Object.entries(amountsByCategory)
             .filter(([category]) => {
                 const cat = category as DonationCategory;
                 return allowedTypes.some(t => t.toLowerCase() === cat.toLowerCase());
@@ -387,6 +387,9 @@ export default function CampaignSummaryPage() {
                 if (category === 'Zakat') return sum + zakatForGoalAmount;
                 return sum + amount;
             }, 0);
+
+        const docCollected = Number(campaign.collectedAmount || (campaign as any).collected || (campaign as any).raisedAmount || (campaign as any).targetAmount || 0);
+        const totalCollectedForGoal = rawTotalCollected > 0 ? rawTotalCollected : (campaign.status === 'Completed' && docCollected > 0 ? docCollected : rawTotalCollected);
 
         const targetAmount = Math.max(campaign.targetAmount || 0, calculatedRequirementTotal);
 

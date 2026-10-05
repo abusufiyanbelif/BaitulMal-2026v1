@@ -72,10 +72,11 @@ export default function MessageModulePage() {
     const filteredLogs = useMemo(() => {
         if (!rawLogs) return [];
         return rawLogs.filter(log => {
+            const term = (searchTerm || '').toLowerCase();
             const matchesSearch = 
-                log.recipient.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                log.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                log.metadata?.moduleId?.toLowerCase().includes(searchTerm.toLowerCase());
+                (log.recipient || '').toLowerCase().includes(term) ||
+                (log.content || '').toLowerCase().includes(term) ||
+                (log.metadata?.moduleId || '').toLowerCase().includes(term);
             
             const matchesStatus = statusFilter === 'All' || log.status === statusFilter;
             

@@ -142,7 +142,7 @@ export default function Home() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
-                        {brandingSettings?.isLandingDonateNowVisible !== false && (
+                        {(!isBrandingLoading && brandingSettings?.isLandingDonateNowVisible !== false) && (
                             <Button asChild size="lg" className="h-14 px-10 rounded-[20px] bg-primary text-white font-black text-base shadow-xl shadow-primary/25 transition-all hover:scale-105 hover:bg-primary/90 active:scale-95 group">
                                 <Link href="/donate">
                                     <HeartHandshake className="mr-3 h-5 w-5 text-emerald-300 transition-transform group-hover:scale-125" />

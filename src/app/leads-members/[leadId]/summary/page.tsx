@@ -284,7 +284,7 @@ export default function LeadSummaryPage() {
         if (isRationInitiative) {
             return beneficiaryGroups.reduce((sum, g) => sum + g.totalAmount, 0);
         } else {
-            const singleUnitTotal = lead?.itemCategories?.[0]?.items.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity) || 0), 0) || 0;
+            const singleUnitTotal = lead?.itemCategories?.[0]?.items?.reduce((sum, i) => sum + (Number(i.price) * Number(i.quantity) || 0), 0) || 0;
             return singleUnitTotal * (beneficiaries?.length || 0);
         }
     }, [beneficiaryGroups, isRationInitiative, lead, beneficiaries]);
@@ -301,26 +301,26 @@ export default function LeadSummaryPage() {
 
         verifiedDonationsList.forEach(d => {
             const leadAllocation = getDonationLinkForInitiative(d, lead.id, lead.caseId, 'lead');
-            if (!leadAllocation) return;
+            const allocatedAmount = (leadAllocation && leadAllocation.amount > 0) ? leadAllocation.amount : (d.amount || 0);
 
             const paymentType = d.donationType || 'Other';
             if (!paymentTypeStats[paymentType]) {
                 paymentTypeStats[paymentType] = { count: 0, amount: 0 };
             }
             paymentTypeStats[paymentType].count += 1;
-            paymentTypeStats[paymentType].amount += leadAllocation.amount;
+            paymentTypeStats[paymentType].amount += allocatedAmount;
 
             const totalDonationAmount = d.amount > 0 ? d.amount : 1;
-            const allocationProportion = leadAllocation.amount / totalDonationAmount;
+            const allocationProportion = allocatedAmount / totalDonationAmount;
             const splits = d.typeSplit && d.typeSplit.length > 0 ? d.typeSplit : (d.type ? [{ category: d.type as DonationCategory, amount: d.amount, forFundraising: true }] : []);
             splits.forEach(split => {
                 const category = (split.category as any) === 'General' || (split.category as any) === 'Sadqa' ? 'Sadaqah' : split.category;
                 if (amountsByCategory.hasOwnProperty(category)) {
-                    const allocatedAmount = split.amount * allocationProportion;
-                    amountsByCategory[category as DonationCategory] += allocatedAmount;
+                    const splitAllocated = split.amount * allocationProportion;
+                    amountsByCategory[category as DonationCategory] += splitAllocated;
                     
                     const isForFundraising = category !== 'Zakat' || split.forFundraising !== false;
-                    if (category === 'Zakat' && isForFundraising) zakatForGoalAmount += allocatedAmount;
+                    if (category === 'Zakat' && isForFundraising) zakatForGoalAmount += splitAllocated;
                 }
             });
         });
@@ -336,12 +336,15 @@ export default function LeadSummaryPage() {
             ? lead.allowedDonationTypes
             : [...donationCategories];
 
-        const totalCollectedForGoal = Object.entries(amountsByCategory)
+        const rawTotalCollected = Object.entries(amountsByCategory)
             .filter(([category]) => allowedTypes.some(t => t.toLowerCase() === category.toLowerCase()))
             .reduce((sum, [category, amount]) => {
                 if (category === 'Zakat') return sum + zakatForGoalAmount;
                 return sum + amount;
             }, 0);
+
+        const docCollected = Number(lead.collectedAmount || (lead as any).collected || (lead as any).raisedAmount || (lead as any).targetAmount || 0);
+        const totalCollectedForGoal = rawTotalCollected > 0 ? rawTotalCollected : (lead.status === 'Completed' && docCollected > 0 ? docCollected : rawTotalCollected);
 
         const targetAmount = Math.max(lead.targetAmount || 0, calculatedRequirementTotal);
 
