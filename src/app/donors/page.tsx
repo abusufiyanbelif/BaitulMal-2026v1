@@ -642,7 +642,7 @@ export default function DonorRegistryPage() {
         <DialogContent className="max-w-3xl rounded-[32px] border-primary/10 p-0 flex flex-col max-h-[92vh] overflow-hidden shadow-2xl animate-fade-in-zoom gap-0">
             <DialogHeader className="px-8 py-7 bg-primary/5 border-b shrink-0">
                 <DialogTitle className="text-2xl font-black tracking-tighter text-primary">Register Donor Identity</DialogTitle>
-                <DialogDescription className="font-bold text-primary opacity-60 mt-1">Authenticate a new benefactor profile for organization cloud synchronization.</DialogDescription>
+                <DialogDescription className="font-bold text-primary opacity-60 mt-1">Add a new donor profile to the system.</DialogDescription>
             </DialogHeader>
             <form onSubmit={handleSaveDonor} className="flex flex-col h-full overflow-hidden bg-white/95 backdrop-blur-sm">
                 <ScrollArea className="flex-1">
@@ -650,11 +650,11 @@ export default function DonorRegistryPage() {
                         <div className="space-y-6">
                             <div className="flex items-center gap-3 border-b border-primary/5 pb-3">
                                 <Activity className="h-4 w-4 text-primary opacity-40" />
-                                <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Core Identity Matrix</h4>
+                                <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Donor Personal Information</h4>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                                 <div className="space-y-2.5">
-                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Full Legal Name *</Label>
+                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Full Name *</Label>
                                     <Input name="name" required className="font-bold h-12 rounded-2xl border-primary/10 focus:ring-primary shadow-sm" placeholder="e.g. John Doe"/>
                                 </div>
                                 <div className="space-y-2.5">
@@ -680,11 +680,11 @@ export default function DonorRegistryPage() {
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                                 <div className="space-y-2.5">
-                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Email Identifier</Label>
-                                    <Input name="email" type="email" className="font-bold h-12 rounded-2xl border-primary/10 shadow-sm" placeholder="donor@organization.com"/>
+                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Email Address</Label>
+                                    <Input name="email" type="email" className="font-bold h-12 rounded-2xl border-primary/10 shadow-sm" placeholder="donor@example.com"/>
                                 </div>
                                 <div className="space-y-2.5">
-                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Residential Vector</Label>
+                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Address</Label>
                                     <Input name="address" className="font-bold h-12 rounded-2xl border-primary/10 shadow-sm" placeholder="Primary Address"/>
                                 </div>
                             </div>
@@ -709,11 +709,11 @@ export default function DonorRegistryPage() {
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
                                 <div className="space-y-2.5">
-                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Telegram Chat Id</Label>
+                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Telegram Chat ID</Label>
                                     <Input name="telegramChatId" className="font-mono font-bold h-12 rounded-2xl border-primary/10 shadow-sm" placeholder="e.g. 123456789"/>
                                 </div>
                                 <div className="space-y-2.5">
-                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Pan Number (80G Tax Exemption)</Label>
+                                    <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">PAN Number (for Tax Exemption)</Label>
                                     <Input name="panNumber" className="font-mono font-bold h-12 rounded-2xl border-primary/10 shadow-sm" placeholder="ABCDE1234F"/>
                                 </div>
                             </div>
@@ -722,15 +722,15 @@ export default function DonorRegistryPage() {
                         <div className="space-y-6">
                             <div className="flex items-center gap-3 border-b border-primary/5 pb-3">
                                 <ScanLine className="h-4 w-4 text-primary opacity-40" />
-                                <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Organization Identity Verification (Kyc)</h4>
+                                <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Identity Verification (KYC)</h4>
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div className="space-y-6">
                                     <div className="space-y-2.5">
-                                        <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Aadhaar Proof Document</Label>
+                                        <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Aadhaar Document</Label>
                                         <div className="p-4 rounded-2xl border-2 border-dashed border-primary/10 bg-primary/[0.01] hover:bg-primary/[0.03] transition-all">
                                             <Input type="file" accept="image/*" onChange={handleScanAadhaarCard} disabled={isScanningAadhaar} className="h-10 text-[10px] cursor-pointer" />
-                                            {isScanningAadhaar && <div className="flex items-center gap-2 text-[10px] font-black text-primary mt-2 animate-pulse"><Loader2 className="h-3 w-3 animate-spin" /> Analyzing Document Evidence...</div>}
+                                            {isScanningAadhaar && <div className="flex items-center gap-2 text-[10px] font-black text-primary mt-2 animate-pulse"><Loader2 className="h-3 w-3 animate-spin" /> Scanning Aadhaar Card...</div>}
                                         </div>
                                     </div>
                                     {aadhaarPreview && (
@@ -753,16 +753,16 @@ export default function DonorRegistryPage() {
 
                                 <div className="space-y-6">
                                     <div className="space-y-2.5">
-                                        <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Other Identity (Pan/Passport/Id)</Label>
+                                        <Label className="font-black text-[10px] text-muted-foreground tracking-widest pl-1">Other Identity Proof (PAN / Passport / ID)</Label>
                                         <div className="p-4 rounded-2xl border-2 border-dashed border-primary/10 bg-primary/[0.01] hover:bg-primary/[0.03] transition-all">
                                             <Input type="file" accept="image/*,application/pdf" onChange={handleScanIdProof} disabled={isScanningId} className="h-10 text-[10px] cursor-pointer" />
-                                            {isScanningId && <div className="flex items-center gap-2 text-[10px] font-black text-primary mt-2 animate-pulse"><Loader2 className="h-3 w-3 animate-spin" /> Analyzing ID Proof...</div>}
+                                            {isScanningId && <div className="flex items-center gap-2 text-[10px] font-black text-primary mt-2 animate-pulse"><Loader2 className="h-3 w-3 animate-spin" /> Scanning ID Proof...</div>}
                                         </div>
                                     </div>
                                     {idProofPreview && (
                                         <div className="relative h-40 w-full rounded-2xl border border-primary/10 bg-white overflow-hidden shadow-inner group">
                                             {idProofPreview.startsWith('data:application/pdf') ? (
-                                                <div className="flex flex-col items-center justify-center h-full text-primary/40"><FileIcon className="h-10 w-10 mb-2"/><p className="text-[10px] font-black">Pdf Document</p></div>
+                                                <div className="flex flex-col items-center justify-center h-full text-primary/40"><FileIcon className="h-10 w-10 mb-2"/><p className="text-[10px] font-black">PDF Document</p></div>
                                             ) : (
                                                 <Image src={idProofPreview} alt="ID" fill className="object-contain p-2" />
                                             )}
@@ -772,17 +772,17 @@ export default function DonorRegistryPage() {
                                     <div className="space-y-4">
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <Label className="text-[9px] font-black tracking-widest text-muted-foreground ml-1">Id Type</Label>
+                                                <Label className="text-[9px] font-black tracking-widest text-muted-foreground ml-1">ID Type</Label>
                                                 <Input name="idProofType" value={idProofType} onChange={(e) => setIdProofType(e.target.value)} className="h-10 text-xs font-black rounded-xl border-primary/10" />
                                             </div>
                                             <div className="space-y-2">
-                                                <Label className="text-[9px] font-black tracking-widest text-muted-foreground ml-1">Id Number</Label>
+                                                <Label className="text-[9px] font-black tracking-widest text-muted-foreground ml-1">ID Number</Label>
                                                 <Input name="idNumber" value={idNumber} onChange={(e) => setIdNumber(e.target.value)} className="h-10 text-xs font-mono font-black rounded-xl border-primary/10" />
                                             </div>
                                         </div>
                                         <div className="grid grid-cols-2 gap-4">
                                             <div className="space-y-2">
-                                                <Label className="text-[9px] font-black tracking-widest text-muted-foreground ml-1">Dob (Id Proof)</Label>
+                                                <Label className="text-[9px] font-black tracking-widest text-muted-foreground ml-1">Date of Birth</Label>
                                                 <Input name="aadhaarDob" value={aadhaarData.aadhaarDob} onChange={(e) => setAadhaarData({...aadhaarData, aadhaarDob: e.target.value})} className="h-10 text-xs font-black rounded-xl border-primary/10" placeholder="DD/MM/YYYY" />
                                             </div>
                                             <div className="space-y-2">
@@ -799,7 +799,7 @@ export default function DonorRegistryPage() {
                             <div className="flex items-center justify-between border-b border-primary/5 pb-3">
                                 <div className="flex items-center gap-3">
                                     <CreditCard className="h-4 w-4 text-primary opacity-40" />
-                                    <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Verified Financial Handles</h4>
+                                    <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Bank Account Details</h4>
                                 </div>
                                 <Button type="button" variant="outline" size="sm" onClick={() => setBankDetails([...bankDetails, { bankName: '', accountNumber: '', ifscCode: '' }])} className="h-8 text-[10px] font-black tracking-widest rounded-xl px-4 border-primary/10 hover:bg-primary/5 transition-all">
                                     <Plus className="h-3.5 w-3.5 mr-2"/> Add Account
@@ -822,7 +822,7 @@ export default function DonorRegistryPage() {
                                             <Input value={bank.accountNumber} onChange={(e) => { const newB = [...bankDetails]; newB[idx].accountNumber = e.target.value; setBankDetails(newB); }} className="h-10 text-xs font-mono font-black rounded-xl border-primary/5 bg-white shadow-sm"/>
                                         </div>
                                         <div className="space-y-2">
-                                            <Label className="text-[9px] font-black tracking-widest pl-1">Ifsc Vector</Label>
+                                            <Label className="text-[9px] font-black tracking-widest pl-1">IFSC Code</Label>
                                             <Input value={bank.ifscCode} onChange={(e) => { const newB = [...bankDetails]; newB[idx].ifscCode = e.target.value; setBankDetails(newB); }} className="h-10 text-xs font-mono font-black rounded-xl border-primary/5 bg-white shadow-sm"/>
                                         </div>
                                     </div>

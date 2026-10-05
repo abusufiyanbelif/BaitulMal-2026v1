@@ -244,10 +244,11 @@ interface DonationRowProps {
     handleEdit: () => void;
     handleDeleteClick: () => void;
     handleViewImage: (url: string) => void;
+    isTarget?: boolean;
 }
 
-function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handleDeleteClick, handleViewImage }: DonationRowProps) {
-    const [isOpen, setIsOpen] = useState(false);
+function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handleDeleteClick, handleViewImage, isTarget = false }: DonationRowProps) {
+    const [isOpen, setIsOpen] = useState(isTarget);
     const router = useRouter();
     const { userProfile } = useSession();
     const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.donations.update', false);
@@ -259,7 +260,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
     return (
         <div className="flex flex-col">
             {/* Desktop View */}
-            <div onClick={() => setIsOpen(!isOpen)} className={cn("hidden md:grid cursor-pointer border-b border-primary/5 hover:bg-primary/[0.01] group transition-colors bg-white/40", donationGridClass)}>
+            <div onClick={() => setIsOpen(!isOpen)} className={cn("hidden md:grid cursor-pointer border-b border-primary/5 hover:bg-primary/[0.01] group transition-colors bg-white/40", donationGridClass, isTarget && "bg-emerald-500/10 border-emerald-500/40 ring-2 ring-emerald-500/20")}>
                 <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
                     <Checkbox 
                         checked={isSelected}
@@ -331,7 +332,7 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
             </div>
 
             {/* Mobile Registry Card */}
-            <div className="md:hidden p-5 border-b border-primary/5 bg-white/60 space-y-4 group/mobile" onClick={() => setIsOpen(!isOpen)}>
+            <div className={cn("md:hidden p-5 border-b border-primary/5 bg-white/60 space-y-4 group/mobile", isTarget && "bg-emerald-500/10 border-emerald-500/40 ring-2 ring-emerald-500/20")} onClick={() => setIsOpen(!isOpen)}>
                 <div className="flex justify-between items-start">
                     <div className="flex items-start gap-4">
                         <Checkbox 
@@ -472,6 +473,14 @@ function DonationListContent() {
   
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+  
+  const targetId = searchParams.get('id') || searchParams.get('highlight');
+
+  React.useEffect(() => {
+    if (targetId) {
+        setSearchTerm(targetId);
+    }
+  }, [targetId]);
   
   const donationsCollectionRef = useMemoFirebase(() => (firestore && user) ? collection(firestore, 'donations') : null, [firestore, user]);
   const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
@@ -871,6 +880,7 @@ function DonationListContent() {
                                 handleEdit={() => { setEditingDonation(d); setIsFormOpen(true); }} 
                                 handleDeleteClick={() => { setDonationToDelete(d.id); setIsDeleteDialogOpen(true); }} 
                                 handleViewImage={(url) => { setImageToView(url); setZoom(1); setRotation(0); setIsImageViewerOpen(true); }}
+                                isTarget={d.id === targetId}
                             />
                         ))}
                         <div className={cn("bg-primary/[0.03] border-t border-primary/5 py-6 px-10", donationGridClass)}>

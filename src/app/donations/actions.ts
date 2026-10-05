@@ -230,13 +230,19 @@ export async function upsertDonationWithDonorAction(
                 });
             }
 
-            // 2. Notify admin group (Telegram) about new donation
-            const adminMessage = `💰 *New Donation Entry*\n` +
-                `*Donor:* ${donorName}\n` +
-                `*Amount:* ₹${(Number(donationData.amount) || 0).toLocaleString('en-IN')}\n` +
-                `*Type:* ${donationData.donationType || 'N/A'}\n` +
-                `*Recorded By:* ${uploadedBy.name}\n` +
-                `\nManage: ${baseUrl}/donations`;
+            // 2. Notify admin group (Telegram) about donation record
+            const adminMessage = donationId 
+                ? `✏️ *Donation Record Updated*\n` +
+                  `*Donor:* ${donorName}\n` +
+                  `*Amount:* ₹${(Number(donationData.amount) || 0).toLocaleString('en-IN')}\n` +
+                  `*Modified By:* ${uploadedBy.name}\n` +
+                  `\nManage: ${baseUrl}/donations?id=${id}`
+                : `💰 *New Donation Entry*\n` +
+                  `*Donor:* ${donorName}\n` +
+                  `*Amount:* ₹${(Number(donationData.amount) || 0).toLocaleString('en-IN')}\n` +
+                  `*Type:* ${donationData.donationType || 'N/A'}\n` +
+                  `*Recorded By:* ${uploadedBy.name}\n` +
+                  `\nManage: ${baseUrl}/donations?id=${id}`;
 
             await dispatchNotificationToGroups({
                 module: 'donations',
@@ -246,10 +252,12 @@ export async function upsertDonationWithDonorAction(
 
             // 3. Admin in-app notification
             await notifyAdminUsersInAppAction({
-                title: 'New Donation Recorded',
-                body: `₹${(Number(donationData.amount) || 0).toLocaleString('en-IN')} from ${donorName}`,
+                title: donationId ? 'Donation Record Updated' : 'New Donation Recorded',
+                body: donationId 
+                    ? `Donation of ₹${(Number(donationData.amount) || 0).toLocaleString('en-IN')} from ${donorName} modified by ${uploadedBy.name}`
+                    : `₹${(Number(donationData.amount) || 0).toLocaleString('en-IN')} from ${donorName}`,
                 module: 'donations',
-                linkUrl: `/donations`
+                linkUrl: `/donations?id=${id}`
             });
 
             // 4. If verified, also send receipt

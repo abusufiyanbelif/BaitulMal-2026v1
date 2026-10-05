@@ -424,6 +424,12 @@ export function AppFooter() {
                                 <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Account Holder Name</Label>
                                 <p className="text-sm font-bold text-primary">{paymentSettings?.bankAccountName || 'N/A'}</p>
                             </div>
+                            {paymentSettings?.bankName && (
+                                <div className="space-y-1">
+                                    <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Bank Name & Branch</Label>
+                                    <p className="text-sm font-bold text-primary">{paymentSettings.bankName} {paymentSettings?.bankBranch ? `(${paymentSettings.bankBranch})` : ''}</p>
+                                </div>
+                            )}
                             <div className="space-y-1">
                                 <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Account Number</Label>
                                 <div className="flex items-center gap-2">
@@ -446,6 +452,18 @@ export function AppFooter() {
                                     )}
                                 </div>
                             </div>
+                            {paymentSettings?.bankAccountType && (
+                                <div className="space-y-1">
+                                    <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">Account Type</Label>
+                                    <p className="text-xs font-bold text-primary">{paymentSettings.bankAccountType}</p>
+                                </div>
+                            )}
+                            {paymentSettings?.bankSwiftCode && (
+                                <div className="space-y-1">
+                                    <Label className="text-[10px] font-bold text-muted-foreground tracking-tight">SWIFT / BIC Code</Label>
+                                    <p className="text-xs font-bold font-mono text-primary">{paymentSettings.bankSwiftCode}</p>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

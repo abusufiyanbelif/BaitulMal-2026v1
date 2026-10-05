@@ -234,7 +234,7 @@ export default function ResourceSettingsPage() {
                 fromEmail: editableData.fromEmail?.trim() || ''
             };
             await setDoc(doc(firestore, 'settings', 'resources'), cleanedData, { merge: true });
-            toast({ title: 'Success', description: 'Resource Configuration secured.', variant: 'success' });
+            toast({ title: 'Success', description: 'Settings saved successfully.', variant: 'success' });
             setIsEditMode(false);
             checkWaStatus();
         } catch (error: any) {
@@ -267,7 +267,7 @@ export default function ResourceSettingsPage() {
                         <Button variant="outline" onClick={() => setIsEditMode(false)} disabled={isSubmitting} className="font-bold border-primary/20 text-primary transition-transform active:scale-95"><X className="mr-2 h-4 w-4" /> Cancel</Button>
                         <Button onClick={handleSave} disabled={isSubmitting} className="font-bold shadow-md active:scale-95 transition-transform">
                             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-                            Secure Settings
+                            Save Settings
                         </Button>
                     </div>
                 )}

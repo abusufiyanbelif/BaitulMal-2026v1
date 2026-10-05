@@ -1587,6 +1587,13 @@ export async function notifyLeadAction(leadId: string, templateId: 'lead_created
             metadata: { moduleId: 'leads', recordId: leadId, templateId }
         });
 
+        await notifyAdminUsersInAppAction({
+            title: templateId === 'lead_created' ? 'New Lead Registered' : 'Lead Record Updated',
+            body: `${variables.name} (${variables.purpose}) - ${extra?.summary || 'Record modified'}`,
+            module: 'leads',
+            linkUrl: `/leads-members?id=${leadId}`
+        });
+
         return res;
     } catch (e: any) {
         return { success: false, message: e.message };
@@ -1596,7 +1603,7 @@ export async function notifyLeadAction(leadId: string, templateId: 'lead_created
 /**
  * Notify about Campaign operations
  */
-export async function notifyCampaignAction(campaignId: string, templateId: 'campaign_created' | 'campaign_milestone', extra?: { actionType?: string, summary?: string, oldData?: any, newData?: any }) {
+export async function notifyCampaignAction(campaignId: string, templateId: 'campaign_created' | 'campaign_milestone' | 'campaign_updated', extra?: { actionType?: string, summary?: string, oldData?: any, newData?: any }) {
     const { adminDb } = getAdminServices();
     if (!adminDb) return { success: false, message: 'DB Unavailable' };
 
@@ -1634,11 +1641,11 @@ export async function notifyCampaignAction(campaignId: string, templateId: 'camp
             module: 'campaigns',
             message: `📈 *Campaign Update: ${variables.name}*\n*Action:* ${variables.actionType}\n*Purpose:* ${variables.purpose}\n*Details:* ${variables.description}\n\nPortal: ${variables.url}`,
             whatsappTemplate: {
-                id: templateId,
+                id: templateId === 'campaign_updated' ? 'campaign_created' : templateId,
                 variables
             },
             richData: {
-                title: templateId === 'campaign_created' ? 'New Campaign Launched' : 'Campaign Milestone Alert',
+                title: templateId === 'campaign_created' ? 'New Campaign Launched' : templateId === 'campaign_updated' ? 'Campaign Record Updated' : 'Campaign Milestone Alert',
                 cause: variables.description,
                 purpose: variables.purpose,
                 oldData: extra?.oldData,
@@ -1646,6 +1653,13 @@ export async function notifyCampaignAction(campaignId: string, templateId: 'camp
                 actionUrl: variables.url
             },
             metadata: { moduleId: 'campaigns', recordId: campaignId, templateId }
+        });
+
+        await notifyAdminUsersInAppAction({
+            title: templateId === 'campaign_created' ? 'New Campaign Launched' : templateId === 'campaign_updated' ? 'Campaign Record Updated' : 'Campaign Milestone Alert',
+            body: `${variables.name} (${variables.purpose}) - ${extra?.summary || 'Record modified'}`,
+            module: 'campaigns',
+            linkUrl: `/campaign-members?id=${campaignId}`
         });
 
         return res;

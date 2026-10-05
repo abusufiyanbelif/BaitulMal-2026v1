@@ -139,9 +139,11 @@ export function PublicDonationForm({
     const { toast } = useToast();
     const storage = useStorage();
     const { paymentSettings, isLoading: isPaymentLoading } = usePaymentSettings();
-    const { gatewaySettings, canPublicUseGateway, canDonorUseGateway, isInternalTest } = usePaymentGateways();
+    const { gatewaySettings, canPublicUseGateway, canDonorUseGateway, isInternalTest, enabledGateways, allowMultipleGateways } = usePaymentGateways();
     const { campaignsWithProgress: campaigns, leadsWithProgress: leads, isLoading: isPublicDataLoading } = usePublicData();
     const { userProfile, isContributor } = useSession();
+
+    const [selectedGateway, setSelectedGateway] = useState<string>('razorpay');
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isGatewayProcessing, setIsGatewayProcessing] = useState(false);
@@ -1035,8 +1037,31 @@ export function PublicDonationForm({
                                                             <p className={cn("text-xs font-normal", field.value === 'Online Gateway' ? "text-slate-300" : "text-slate-500")}>
                                                                 {!isGatewayAvailable 
                                                                     ? "Automated gateway is inactive. Click to view Direct QR, UPI & Bank details below." 
-                                                                    : `Automated checkout via ${(gatewaySettings?.activeGateway || 'gateway').toUpperCase()} (UPI, Cards, NetBanking, GPay, PhonePe). Instant verification.`}
+                                                                    : `Automated checkout via ${(selectedGateway || gatewaySettings?.activeGateway || 'gateway').toUpperCase()} (UPI, Cards, NetBanking, GPay, PhonePe). Instant verification.`}
                                                             </p>
+
+                                                            {field.value === 'Online Gateway' && enabledGateways.length > 1 && (
+                                                                <div className="pt-2 space-y-1.5 border-t border-slate-700/50 mt-2" onClick={(e) => e.stopPropagation()}>
+                                                                    <p className="text-[10px] font-bold uppercase tracking-wider text-slate-300">Select Payment Gateway Provider:</p>
+                                                                    <div className="flex flex-wrap gap-2">
+                                                                        {enabledGateways.map((gw) => (
+                                                                            <button
+                                                                                key={gw}
+                                                                                type="button"
+                                                                                onClick={() => setSelectedGateway(gw)}
+                                                                                className={cn(
+                                                                                    "px-3 py-1 rounded-xl text-xs font-extrabold capitalize transition-all border",
+                                                                                    (selectedGateway || enabledGateways[0]) === gw 
+                                                                                        ? "bg-emerald-500 text-white border-emerald-400 shadow-md" 
+                                                                                        : "bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700"
+                                                                                )}
+                                                                            >
+                                                                                {gw}
+                                                                            </button>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            )}
                                                         </div>
                                                     </div>
 

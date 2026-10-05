@@ -63,9 +63,9 @@ export const settingsSubModules = [
     { id: 'donor', name: 'Donor Settings', permissions: crudPermissions },
     { id: 'user', name: 'User Settings', permissions: crudPermissions },
     { id: 'resources', name: 'Resource Config', permissions: crudPermissions },
-    { id: 'notifications', name: '🔔 Notifications', permissions: crudPermissions },
-    { id: 'data-health', name: '🩺 Data Health', permissions: simpleReadPermission },
-    { id: 'logs', name: '🛡️ System Diagnostics', permissions: simpleReadPermission },
+    { id: 'notifications', name: 'Notifications', permissions: crudPermissions },
+    { id: 'data-health', name: 'Data Health', permissions: simpleReadPermission },
+    { id: 'logs', name: 'System Diagnostics', permissions: simpleReadPermission },
 ] as const;
 
 export const leadPurposesConfig = [

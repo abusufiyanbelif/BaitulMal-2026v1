@@ -1,61 +1,31 @@
-release: v2026.10.03.4
+release: v2026.10.06.1
 
-Type: Major Feature - Social Media Profiles Integration & Comprehensive Footer Content & Visibility Settings
-Message: Added full support for Twitter/X, LinkedIn, WhatsApp, and Telegram social profiles alongside Instagram, Facebook, and YouTube. Introduced granular Footer Content & Visibility Controls in System Settings to configure layout elements and section visibility.
-
-Key Enhancements:
-1. Extended Social Media Profile Support:
-   - Added input fields for Twitter / X (`twitterUrl`), LinkedIn (`linkedinUrl`), WhatsApp (`whatsappUrl`), and Telegram (`telegramUrl`) in `PaymentSettings` and System Settings (`/settings/app`).
-   - `AppFooter` now renders branded, animated hover icons for all 7 major social platforms when configured.
-2. System Settings - Footer Content & Visibility Controls (`/settings/app`):
-   - Created a dedicated "Footer Content & Visibility Controls" collapsible section with individual visibility switches:
-     - `isFooterVisible`: Master toggle for public site footer.
-     - `isFooterSocialVisible`: Toggle visibility for social media profile icons.
-     - `isFooterAddressVisible`: Toggle physical address display.
-     - `isFooterContactVisible`: Toggle phone & email contact links.
-     - `isFooterQuickLinksVisible`: Toggle Quick Links navigation column.
-     - `isFooterSupportUsVisible`: Toggle "How to Donate" support column.
-     - `isFooterRegInfoVisible`: Toggle Registration No. and PAN details.
-     - `isFooterCopyrightVisible`: Toggle copyright notice text line.
-     - `isFooterBuildVersionVisible`: Toggle system build version badge.
-3. Dynamic Public Footer (`AppFooter`):
-   - `AppFooter` dynamically respects all admin-configured visibility switches from `PaymentSettings` in Firestore.
-   - If `isFooterVisible` is disabled by admin, the footer cleanly suppresses rendering.
-
-Verification Steps:
-1. Admin Control Test: Navigated to `/settings/app`, configured social profile links, and toggled individual footer visibility switches.
-2. Footer Verification: Verified public footer dynamically renders all configured social profile icons (Instagram, Facebook, YouTube, Twitter/X, LinkedIn, WhatsApp, Telegram) and respects all visibility toggles.
-3. Type Safety: TypeScript compilation checked cleanly with 0 errors.
-
----
-*Build Summary Updated: 10/3/2026, 06:20:00 AM*
-
-================================================================================
-release: v2026.10.03.5
-
-Type: Feature & Bug Fix - Offline Donation Quarantine, Dual Cause Progress Bar & Actionable Audit Pipeline Filter
-Message: Enforced mandatory donor Phone, Email, and UTR Reference ID validation for offline entries to prevent dummy records. Created CauseProgressBar component to display dual Verified vs. Pending funds on initiative progress bars. Enhanced All Donations page with actionable Audit Pipeline filter card and fixed React hook nesting error in usePublicData.
+Type: Feature & Alignment - Resource Consolidation, Plain Copy & Archived Canvas Alignment
+Message: Consolidated system resources under Settings, standardized UI copy to simple English ("Save Changes"), fixed canvas area alignment when no active campaigns or appeals exist by expanding sections by default, and renamed all closed sections to "Archived Campaigns" and "Archived Appeals".
 
 Key Enhancements:
-1. Mandatory Offline Donation Validation & Quarantine:
-   - Updated Zod schema (`PublicDonationForm`) and server action (`processPublicDonationAction`) to enforce mandatory `donorPhone`, `donorEmail`, and `transactionId` (UTR) for offline entries (`UPI`/`Bank Transfer`).
-   - Added quarantine notice banner on offline donation receipts indicating that entries are held in team verification before affecting campaign totals or public boards.
-2. Dual-Layered Cause Progress Bar (`CauseProgressBar`):
-   - Created `CauseProgressBar` (`src/components/cause-progress-bar.tsx`) displaying solid Emerald bar for confirmed funds and muted striped Amber bar for pending audit funds.
-   - Updated `reconcileInitiative` in `usePublicData` to compute both `collected` (verified) and `pendingAmount` (unverified).
-   - Integrated dual progress bar across `PublicCampaignsView`, `PublicLeadsView`, and `CampaignMembersPage`.
-3. Actionable Audit Pipeline Card (`/donations`):
-   - Highlighted Audit Pipeline StatCard with amber alert styling when pending items exist.
-   - Added click action to filter table by `status === 'Pending'`, with a dedicated Quarantined Audit Queue alert banner above the table.
-4. Bug Fixes:
-   - Fixed `TypeError: prevDeps.join is not a function` in `usePublicData` by moving top-level `pendingDonationsList` hook out of nested `useMemo`.
-   - Fixed `/login` canvas alert alignment and prevented infinite re-render loop in `useLogger`.
+1. Canvas Alignment & Default Accordion Expansion:
+   - Fixed empty canvas alignment on admin Campaign (`/campaign-members`) and Appeal (`/leads-members`) pages when no active campaigns or appeals are present.
+   - Set Accordion `defaultValue` to `['published', 'internal', 'completed']` across admin list views so completed/archived sections expand by default beneath search and filter toolbars.
+
+2. Consistent "Archived" Terminology:
+   - Replaced all UI references to "Closed Campaigns", "Finished Campaigns", and "Closed Appeals" with clean, standard terms: "Archived Campaigns" and "Archived Appeals" across `campaign-members`, `leads-members`, `public-campaigns-view`, and `public-leads-view`.
+
+3. Simplified UI Copy ("Save Changes"):
+   - Replaced technical "Secure Changes" text with user-friendly "Save Changes" on buttons and forms throughout the entire application.
+   - Cleaned up complex technical jargon across system UI for clear, simple English.
+
+4. Notification Center Specific Entry Navigation:
+   - Updated "New Donation Records" click action in Notification Center to filter directly by specific `donationId` entry on `/donations` rather than opening the unfiltered list.
+   - Added automated team notification dispatching for record modifications and updates across leads, campaigns, and donation records.
+
+5. System Resources & Settings Consolidation:
+   - Consolidated system settings navigation to eliminate duplicate `/settings/app` links.
+   - Expanded resource management in `/settings/resources` to manage Bank Accounts, UPI IDs, and application operational resources centrally.
 
 Verification Steps:
-1. TypeScript Validation: `npx tsc --noEmit` passed with 0 errors.
-2. Offline Donation Test: Enforced mandatory email and UTR fields; unverified entries sit in Pending state without altering campaign totals.
-3. Progress Bar Verification: Dual progress bar renders verified (Emerald) and pending (Amber striped) segments correctly.
-4. Audit Filter Test: Clicking Audit Pipeline StatCard filters page to pending donations with active banner.
+1. TypeScript Validation: `npx tsc --noEmit` passed cleanly with 0 errors.
+2. Layout Alignment: Verified layout integrity across admin and public profile views.
 
 ---
-*Build Summary Updated: 10/3/2026, 07:51:30 AM*
+*Build Summary Updated: 10/6/2026, 01:35:00 AM*

@@ -7,6 +7,7 @@ import { revalidatePath } from 'next/cache';
 import { FieldValue, DocumentData } from 'firebase-admin/firestore';
 import { syncInitiativeCollectedTotals } from '../donations/actions';
 import { recordAuditLogAction } from '../audit/actions';
+import { notifyAdminUsersInAppAction } from '@/app/messages/actions';
 import { generateChanges } from '@/lib/utils';
 
 const ADMIN_SDK_ERROR_MESSAGE = "Admin SDK Initialization Failed. Please Ensure Server Credentials Are Configured Correctly.";
@@ -87,6 +88,13 @@ export async function createMasterBeneficiaryAction(data: Partial<Beneficiary>, 
 
         await batch.commit();
 
+        await notifyAdminUsersInAppAction({
+            title: 'New Beneficiary Registered',
+            body: `${data.name} was registered by ${createdBy.name}`,
+            module: 'beneficiaries',
+            linkUrl: `/beneficiaries?id=${profileId}`
+        });
+
         revalidatePath('/beneficiaries');
         return { 
             success: true, 
@@ -162,6 +170,13 @@ export async function updateMasterBeneficiaryAction(
         }
 
         await batch.commit();
+        
+        await notifyAdminUsersInAppAction({
+            title: 'Beneficiary Record Updated',
+            body: `${data.name || oldData?.name} profile updated by ${updatedBy.name}`,
+            module: 'beneficiaries',
+            linkUrl: `/beneficiaries?id=${beneficiaryId}`
+        });
         
         // Log Audit
         const changes = generateChanges(oldData, updatePayload);

@@ -7,8 +7,8 @@ import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { doc, updateDoc, collection } from 'firebase/firestore';
 import type { Lead, Donation } from '@/lib/types';
-import { useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useMemo, useState, useRef, useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -329,12 +329,44 @@ function MultiSelectFilter({ title, options, selected, onChange }: { title: stri
     );
 }
 
+function LeadSectionCarousel({ items, router, canUpdate, canCreate, canDelete, handleStatusUpdate, setLeadToCopy, setLeadToDelete }: any) {
+  const autoplayPlugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: false }));
+  return (
+    <Carousel
+      opts={{ align: "start", loop: true }}
+      plugins={[autoplayPlugin.current]}
+      className="w-full relative"
+    >
+      <CarouselContent className="-ml-4">
+        {items.map((lead: any, idx: number) => (
+          <CarouselItem key={lead.id} className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
+            <LeadCard lead={lead} index={idx} router={router} canUpdate={canUpdate} canCreate={canCreate} canDelete={canDelete} handleStatusUpdate={handleStatusUpdate} handleCopyClick={setLeadToCopy} handleDeleteClick={setLeadToDelete}/>
+          </CarouselItem>
+        ))}
+      </CarouselContent>
+      <div className="flex items-center justify-center gap-4 mt-8">
+          <CarouselPrevious className="static translate-y-0 h-10 w-10 border-primary/10 text-primary hover:bg-primary hover:text-white transition-all duration-500 shadow-sm" />
+          <CarouselNext className="static translate-y-0 h-10 w-10 border-primary/10 text-primary hover:bg-primary hover:text-white transition-all duration-500 shadow-sm" />
+      </div>
+    </Carousel>
+  );
+}
+
 export default function LeadPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const firestore = useFirestore();
   const { toast } = useToast();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const targetId = searchParams.get('id') || searchParams.get('highlight');
+
+  useEffect(() => {
+    if (targetId) {
+      setSearchTerm(targetId);
+    }
+  }, [targetId]);
+
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [purposeFilter, setPurposeFilter] = useState<string[]>([]);
   const [authenticityFilter, setAuthenticityFilter] = useState<string[]>([]);
@@ -464,7 +496,7 @@ export default function LeadPage() {
     return [
       { id: 'published', title: 'Live on Website', icon: Globe, items: sortByPriority(ongoingPublished), color: 'text-primary' },
       { id: 'internal', title: 'Working / Not Live', icon: FileLock, items: sortByPriority(ongoingInternal), color: 'text-amber-600' },
-      { id: 'completed', title: 'Finished Appeals', icon: CheckCircle2, items: sortByPriority(completed), color: 'text-muted-foreground' }
+      { id: 'completed', title: 'Archived Appeals', icon: CheckCircle2, items: sortByPriority(completed), color: 'text-muted-foreground' }
     ].filter(s => s.items.length > 0);
   }, [filteredLeads]);
 
@@ -502,111 +534,109 @@ export default function LeadPage() {
           <p className="text-sm font-bold opacity-70 leading-relaxed max-w-2xl">Review community help requests, check details, and manage archives.</p>
         </div>
 
-        <Card className="animate-fade-in-zoom shadow-none border-primary/5 bg-white/30 overflow-hidden rounded-[24px]">
-          <CardHeader className="p-4 border-b bg-background/80 backdrop-blur-md sticky top-[73px] z-20">
-            <ScrollArea className="w-full">
-                <div className="flex flex-nowrap items-center gap-3 pb-2">
-                    <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary font-normal text-primary bg-white/50 rounded-xl" disabled={isLoading}/>
-                    
-                    <MultiSelectFilter 
-                        title="Status" 
-                        options={['Active', 'Completed', 'Upcoming', 'Draft']} 
-                        selected={statusFilter} 
-                        onChange={setStatusFilter} 
-                    />
+        <div className="bg-white p-4 sm:p-5 rounded-2xl border border-primary/10 shadow-sm">
+          <ScrollArea className="w-full">
+              <div className="flex flex-nowrap items-center gap-3 pb-1">
+                  <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary font-normal text-primary bg-white/50 rounded-xl" disabled={isLoading}/>
+                  
+                  <MultiSelectFilter 
+                      title="Status" 
+                      options={['Active', 'Completed', 'Upcoming', 'Draft']} 
+                      selected={statusFilter} 
+                      onChange={setStatusFilter} 
+                  />
 
-                    <MultiSelectFilter 
-                        title="Purpose" 
-                        options={['Education', 'Medical', 'Relief', 'Ration', 'General', 'Zakat']} 
-                        selected={purposeFilter} 
-                        onChange={setPurposeFilter} 
-                    />
+                  <MultiSelectFilter 
+                      title="Purpose" 
+                      options={['Education', 'Medical', 'Relief', 'Ration', 'General', 'Zakat']} 
+                      selected={purposeFilter} 
+                      onChange={setPurposeFilter} 
+                  />
 
-                    <MultiSelectFilter 
-                        title="Authenticity" 
-                        options={['Pending Verification', 'Verified', 'On Hold', 'Rejected', 'Need More Details']} 
-                        selected={authenticityFilter} 
-                        onChange={setAuthenticityFilter} 
-                    />
+                  <MultiSelectFilter 
+                      title="Authenticity" 
+                      options={['Pending Verification', 'Verified', 'On Hold', 'Rejected', 'Need More Details']} 
+                      selected={authenticityFilter} 
+                      onChange={setAuthenticityFilter} 
+                  />
 
-                    <MultiSelectFilter 
-                        title="Visibility" 
-                        options={['Hold', 'Ready to Publish', 'Published']} 
-                        selected={visibilityFilter} 
-                        onChange={setVisibilityFilter} 
-                    />
-                    <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1 group">
-                        <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs text-primary font-bold bg-white/50 border-primary/10 hover:border-primary/30 transition-all rounded-xl"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent className="rounded-xl shadow-dropdown"><SelectItem value="All" className="font-normal text-xs">All Years</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-normal text-xs">{y}</SelectItem>)}</SelectContent></Select>
-                        <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-4 text-xs font-bold border-primary/10 text-primary bg-white/50 hover:bg-white transition-all rounded-xl", !dateRange ? "opacity-60" : "border-primary/40")} disabled={isLoading}><CalendarIcon className="mr-2 h-3.5 w-3.5 opacity-40" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0 rounded-2xl shadow-2xl border-none" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
-                        {(selectedYear !== 'All' || dateRange || statusFilter.length > 0 || purposeFilter.length > 0 || authenticityFilter.length > 0 || visibilityFilter.length > 0 || searchTerm) && (
-                            <Button 
-                                variant="ghost" 
-                                size="sm" 
-                                className="h-9 px-3 text-[10px] font-bold text-destructive hover:bg-destructive/10 rounded-xl animate-fade-in-up" 
-                                onClick={() => { 
-                                    setSelectedYear('All'); 
-                                    setDateRange(undefined); 
-                                    setStatusFilter([]);
-                                    setPurposeFilter([]);
-                                    setAuthenticityFilter([]);
-                                    setVisibilityFilter([]);
-                                    setSearchTerm('');
-                                }}
-                            >
-                                <X className="h-3.5 w-3.5 mr-1" /> Reset
-                            </Button>
-                        )}
-                    </div>
-                </div>
-                <ScrollBar orientation="horizontal" className="h-1.5" />
-            </ScrollArea>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-6 bg-card/30">
-            {(sections && sections.length > 0) ? (
-              <Accordion type="multiple" defaultValue={['published', 'internal']} className="space-y-6">
-                {sections.map(section => (
-                  <AccordionItem key={section.id} value={section.id} className="border-primary/10 rounded-[20px] px-4 bg-white shadow-none overflow-hidden transition-all duration-300">
-                    <AccordionTrigger className="hover:no-underline py-6 group font-bold">
-                      <div className="flex items-center gap-4">
-                        <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50 transition-all", section.id === 'published' ? 'bg-primary' : section.id === 'internal' ? 'bg-amber-600' : 'bg-muted-foreground')} />
-                        <div className="flex items-center gap-2">
-                            <section.icon className={cn("h-5 w-5 group-hover:rotate-6 transition-transform", section.color || "text-primary")} />
-                            <span className={cn("text-lg font-bold tracking-tight", section.color || "text-primary")}>{section.title}</span>
-                        </div>
-                        <Badge variant="secondary" className="rounded-full h-5 text-[10px] font-bold bg-primary/10 text-primary">{section.items.length}</Badge>
-                      </div>
-                    </AccordionTrigger>
-                    <AccordionContent className="pt-2 pb-8 px-2 sm:px-10">
-                      <Carousel
-                        opts={{ align: "start", loop: true }}
-                        plugins={[Autoplay({ delay: 5000, stopOnInteraction: false })]}
-                        className="w-full relative"
-                      >
-                        <CarouselContent className="-ml-4">
-                          {section.items.map((lead, idx) => (
-                            <CarouselItem key={lead.id} className="pl-4 basis-full sm:basis-1/2 lg:basis-1/3">
-                              <LeadCard lead={lead} index={idx} router={router} canUpdate={canUpdate} canCreate={canCreate} canDelete={canDelete} handleStatusUpdate={handleStatusUpdate} handleCopyClick={setLeadToCopy} handleDeleteClick={setLeadToDelete}/>
-                            </CarouselItem>
-                          ))}
-                        </CarouselContent>
-                        <div className="flex items-center justify-center gap-4 mt-8">
-                            <CarouselPrevious className="static translate-y-0 h-10 w-10 border-primary/10 text-primary hover:bg-primary hover:text-white transition-all duration-500 shadow-sm" />
-                            <CarouselNext className="static translate-y-0 h-10 w-10 border-primary/10 text-primary hover:bg-primary hover:text-white transition-all duration-500 shadow-sm" />
-                        </div>
-                      </Carousel>
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            ) : (
-              <div className="text-center py-24 bg-primary/5 rounded-[24px] border-2 border-dashed border-primary/20 animate-fade-in-up">
-                  <Lightbulb className="h-16 w-16 mx-auto text-primary/20 mb-4 animate-pulse" />
-                  <p className="font-bold text-sm opacity-60 text-primary tracking-tight">No Appeals Found Matching Criteria.</p>
-                  <Button variant="ghost" size="sm" className="mt-4 text-xs font-bold text-primary hover:bg-primary/10" onClick={() => { setSelectedYear('All'); setDateRange(undefined); setStatusFilter([]); setPurposeFilter([]); setAuthenticityFilter([]); setVisibilityFilter([]); setSearchTerm(''); }}>Clear All Filters</Button>
+                  <MultiSelectFilter 
+                      title="Visibility" 
+                      options={['Hold', 'Ready to Publish', 'Published']} 
+                      selected={visibilityFilter} 
+                      onChange={setVisibilityFilter} 
+                  />
+                  <div className="flex items-center gap-2 border-l border-primary/10 pl-3 ml-1 group">
+                      <Select value={selectedYear} onValueChange={(val) => { setSelectedYear(val); setDateRange(undefined); }} disabled={isLoading}><SelectTrigger className="w-[100px] h-9 text-xs text-primary font-bold bg-white/50 border-primary/10 hover:border-primary/30 transition-all rounded-xl"><SelectValue placeholder="Year" /></SelectTrigger><SelectContent className="rounded-xl shadow-dropdown"><SelectItem value="All" className="font-normal text-xs">All Years</SelectItem>{availableYears.map(y => <SelectItem key={y} value={y} className="font-normal text-xs">{y}</SelectItem>)}</SelectContent></Select>
+                      <Popover><PopoverTrigger asChild><Button variant="outline" size="sm" className={cn("h-9 px-4 text-xs font-bold border-primary/10 text-primary bg-white/50 hover:bg-white transition-all rounded-xl", !dateRange ? "opacity-60" : "border-primary/40")} disabled={isLoading}><CalendarIcon className="mr-2 h-3.5 w-3.5 opacity-40" /> Range</Button></PopoverTrigger><PopoverContent className="w-auto p-0 rounded-2xl shadow-2xl border-none" align="end"><Calendar initialFocus mode="range" selected={dateRange} onSelect={(d) => { setDateRange(d); if (d?.from) { setSelectedYear('All'); } }} numberOfMonths={2} /></PopoverContent></Popover>
+                      {(selectedYear !== 'All' || dateRange || statusFilter.length > 0 || purposeFilter.length > 0 || authenticityFilter.length > 0 || visibilityFilter.length > 0 || searchTerm) && (
+                          <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-9 px-3 text-[10px] font-bold text-destructive hover:bg-destructive/10 rounded-xl" 
+                              onClick={() => { 
+                                  setSelectedYear('All'); 
+                                  setDateRange(undefined); 
+                                  setStatusFilter([]);
+                                  setPurposeFilter([]);
+                                  setAuthenticityFilter([]);
+                                  setVisibilityFilter([]);
+                                  setSearchTerm('');
+                              }}
+                          >
+                              <X className="h-3.5 w-3.5 mr-1" /> Reset
+                          </Button>
+                      )}
+                  </div>
               </div>
-            )}
-          </CardContent>
-        </Card>
+              <ScrollBar orientation="horizontal" className="h-1.5" />
+          </ScrollArea>
+        </div>
+
+        {(sections && sections.length > 0) ? (
+          <Accordion type="multiple" defaultValue={['published', 'internal', 'completed']} className="space-y-6">
+            {sections.map(section => (
+              <AccordionItem key={section.id} value={section.id} className="border border-primary/10 rounded-2xl px-4 sm:px-6 bg-white shadow-sm overflow-hidden transition-all duration-300">
+                <AccordionTrigger className="hover:no-underline py-6 group font-bold">
+                  <div className="flex items-center gap-4">
+                    <div className={cn("h-8 w-1 rounded-full group-data-[state=closed]:opacity-50 transition-all", section.id === 'published' ? 'bg-primary' : section.id === 'internal' ? 'bg-amber-600' : 'bg-muted-foreground')} />
+                    <div className="flex items-center gap-2">
+                        <section.icon className={cn("h-5 w-5 group-hover:rotate-6 transition-transform", section.color || "text-primary")} />
+                        <span className={cn("text-lg font-bold tracking-tight", section.color || "text-primary")}>{section.title}</span>
+                    </div>
+                    <Badge variant="secondary" className="rounded-full h-5 text-[10px] font-bold bg-primary/10 text-primary">{section.items.length}</Badge>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent className="pt-2 pb-8 px-2 sm:px-6">
+                  <LeadSectionCarousel 
+                    items={section.items} 
+                    router={router} 
+                    canUpdate={canUpdate} 
+                    canCreate={canCreate} 
+                    canDelete={canDelete} 
+                    handleStatusUpdate={handleStatusUpdate} 
+                    setLeadToCopy={setLeadToCopy} 
+                    setLeadToDelete={setLeadToDelete}
+                  />
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        ) : (
+          <div className="text-center py-20 px-6 bg-white rounded-2xl border-2 border-dashed border-primary/15 shadow-sm space-y-4">
+              <Lightbulb className="h-16 w-16 mx-auto text-primary/20" />
+              <h3 className="text-lg font-bold text-primary">No Appeals Found</h3>
+              <p className="text-xs font-bold text-muted-foreground max-w-sm mx-auto">No help requests match your current filters. Try resetting your search filters.</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="font-bold border-primary/20 text-primary hover:bg-primary/5 rounded-xl mt-2" 
+                onClick={() => { setSelectedYear('All'); setDateRange(undefined); setStatusFilter([]); setPurposeFilter([]); setAuthenticityFilter([]); setVisibilityFilter([]); setSearchTerm(''); }}
+              >
+                <X className="h-3.5 w-3.5 mr-1.5" /> Clear All Filters
+              </Button>
+          </div>
+        )}
       </main>
       
       <AlertDialog open={!!leadToDelete} onOpenChange={(open) => !open && setLeadToDelete(null)}>

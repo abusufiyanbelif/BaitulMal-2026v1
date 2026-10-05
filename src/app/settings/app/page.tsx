@@ -72,7 +72,24 @@ import {
     Linkedin,
     MessageSquare,
     Send,
-    HardHat
+    HardHat,
+    FlaskConical,
+    Wrench,
+    AlertCircle,
+    XCircle,
+    Copy,
+    ExternalLink,
+    Cpu,
+    Database,
+    Terminal,
+    Share2,
+    Play,
+    Eye,
+    RefreshCw,
+    Sliders,
+    Zap,
+    Check,
+    FileText
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -83,6 +100,7 @@ import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import type { GuidingPrinciple, FocusArea, Campaign, Lead, BrandingSettings } from '@/lib/types';
 import { BrandedLoader } from '@/components/branded-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -112,6 +130,8 @@ interface FormDataType {
     qrWidth: number | string;
     qrHeight: number | string;
     upiId: string;
+    secondaryUpiId: string;
+    isUpiQrPublic: boolean;
     paymentMobileNumber: string;
     contactEmail: string;
     contactPhone: string;
@@ -149,6 +169,12 @@ interface FormDataType {
     bankAccountName: string;
     bankAccountNumber: string;
     bankIfsc: string;
+    bankName: string;
+    bankBranch: string;
+    bankAccountType: string;
+    bankSwiftCode: string;
+    isBankDetailsPublic: boolean;
+    isTestMode: boolean;
     isGuidingPrinciplesPublic: boolean;
     gpTitle: string;
     gpDescription: string;
@@ -280,6 +306,17 @@ export default function AppSettingsPage() {
     const [logoFile, setLogoFile] = useState<File | null>(null);
     const [qrCodeFile, setQrCodeFile] = useState<File | null>(null);
 
+    // Interactive Testing & Sandbox State
+    const [testUpiAmount, setTestUpiAmount] = useState('100');
+    const [testUpiNote, setTestUpiNote] = useState('Baitulmal Donation Test');
+    const [isDiagnosticRunning, setIsDiagnosticRunning] = useState(false);
+    const [diagnosticReport, setDiagnosticReport] = useState<{
+        score: number;
+        total: number;
+        items: { id: string; name: string; status: 'pass' | 'warn' | 'fail'; message: string }[];
+    } | null>(null);
+    const [isPreviewBannerOpen, setIsPreviewBannerOpen] = useState(false);
+
     // Smart Alert Generator Topic Selection
     const [alertIncludeTopics, setAlertIncludeTopics] = useState<{
         domain: boolean;
@@ -328,6 +365,8 @@ export default function AppSettingsPage() {
                 qrWidth: paymentSettings?.qrWidth || 120,
                 qrHeight: paymentSettings?.qrHeight || 120,
                 upiId: paymentSettings?.upiId || '',
+                secondaryUpiId: paymentSettings?.secondaryUpiId || '',
+                isUpiQrPublic: paymentSettings?.isUpiQrPublic ?? true,
                 paymentMobileNumber: paymentSettings?.paymentMobileNumber || '',
                 contactEmail: paymentSettings?.contactEmail || '',
                 contactPhone: paymentSettings?.contactPhone || '',
@@ -362,6 +401,12 @@ export default function AppSettingsPage() {
                 bankAccountName: paymentSettings?.bankAccountName || '',
                 bankAccountNumber: paymentSettings?.bankAccountNumber || '',
                 bankIfsc: paymentSettings?.bankIfsc || '',
+                bankName: paymentSettings?.bankName || '',
+                bankBranch: paymentSettings?.bankBranch || '',
+                bankAccountType: paymentSettings?.bankAccountType || 'Current Account',
+                bankSwiftCode: paymentSettings?.bankSwiftCode || '',
+                isBankDetailsPublic: paymentSettings?.isBankDetailsPublic ?? true,
+                isTestMode: paymentSettings?.isTestMode ?? false,
                 isGuidingPrinciplesPublic: guidingPrinciplesData?.isGuidingPrinciplesPublic || false,
                 gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
                 gpDescription: guidingPrinciplesData?.description || '',
@@ -450,7 +495,7 @@ export default function AppSettingsPage() {
 
     const handleSave = async () => {
         if (!firestore || !storage || !canUpdateSettings || !editableData) {
-            toast({ title: "Auth Restriction", description: "Insufficient Privilege to secure organization settings.", variant: "destructive" });
+            toast({ title: "Permission Required", description: "You do not have permission to update settings.", variant: "destructive" });
             return;
         }
 
@@ -519,6 +564,8 @@ export default function AppSettingsPage() {
                 qrWidth: Number(editableData.qrWidth) || 120, 
                 qrHeight: Number(editableData.qrHeight) || 120,
                 upiId: editableData.upiId, 
+                secondaryUpiId: editableData.secondaryUpiId,
+                isUpiQrPublic: editableData.isUpiQrPublic,
                 paymentMobileNumber: editableData.paymentMobileNumber, 
                 contactEmail: editableData.contactEmail,
                 contactPhone: editableData.contactPhone, 
@@ -553,6 +600,12 @@ export default function AppSettingsPage() {
                 bankAccountName: editableData.bankAccountName,
                 bankAccountNumber: editableData.bankAccountNumber,
                 bankIfsc: editableData.bankIfsc,
+                bankName: editableData.bankName,
+                bankBranch: editableData.bankBranch,
+                bankAccountType: editableData.bankAccountType,
+                bankSwiftCode: editableData.bankSwiftCode,
+                isBankDetailsPublic: editableData.isBankDetailsPublic,
+                isTestMode: editableData.isTestMode,
             };
             batch.set(doc(firestore, 'settings', 'payment'), paymentData, { merge: true });
 
@@ -566,10 +619,10 @@ export default function AppSettingsPage() {
             batch.set(doc(firestore, 'settings', 'guidingPrinciples'), gpData);
 
             await batch.commit();
-            toast({ title: 'Configuration Finalized', description: 'Cloud Organization Configuration Synchronized Successfully.', variant: 'success' });
+            toast({ title: 'Settings Saved', description: 'Your app settings have been saved successfully.', variant: 'success' });
             setIsEditMode(false);
         } catch (error: any) {
-            toast({ title: 'Sync Failure', description: error.message || 'Critical error during system sync.', variant: 'destructive' });
+            toast({ title: 'Save Failed', description: error.message || 'Could not save settings. Please try again.', variant: 'destructive' });
         } finally {
             setIsSubmitting(false);
         }
@@ -580,7 +633,7 @@ export default function AppSettingsPage() {
     const isGlobalLoading = isSessionLoading || isBrandingLoading || isPaymentLoading || isGPLoading;
 
     if (isGlobalLoading) {
-        return <SectionLoader label="Syncing Cloud Hub..." description="Retrieving Organization Parameters." />;
+        return <SectionLoader label="Loading Settings..." description="Please wait while settings are retrieved." />;
     }
 
     const isFormDisabled = !isEditMode || isSubmitting;
@@ -610,6 +663,8 @@ export default function AppSettingsPage() {
         qrWidth: paymentSettings?.qrWidth || 120,
         qrHeight: paymentSettings?.qrHeight || 120,
         upiId: paymentSettings?.upiId || '',
+        secondaryUpiId: paymentSettings?.secondaryUpiId || '',
+        isUpiQrPublic: paymentSettings?.isUpiQrPublic ?? true,
         paymentMobileNumber: paymentSettings?.paymentMobileNumber || '',
         contactEmail: paymentSettings?.contactEmail || '',
         contactPhone: paymentSettings?.contactPhone || '',
@@ -644,6 +699,12 @@ export default function AppSettingsPage() {
         bankAccountName: paymentSettings?.bankAccountName || '',
         bankAccountNumber: paymentSettings?.bankAccountNumber || '',
         bankIfsc: paymentSettings?.bankIfsc || '',
+        bankName: paymentSettings?.bankName || '',
+        bankBranch: paymentSettings?.bankBranch || '',
+        bankAccountType: paymentSettings?.bankAccountType || 'Current Account',
+        bankSwiftCode: paymentSettings?.bankSwiftCode || '',
+        isBankDetailsPublic: paymentSettings?.isBankDetailsPublic ?? true,
+        isTestMode: paymentSettings?.isTestMode ?? false,
         isGuidingPrinciplesPublic: guidingPrinciplesData?.isGuidingPrinciplesPublic || false,
         gpTitle: guidingPrinciplesData?.title || 'Our Guiding Principles',
         gpDescription: guidingPrinciplesData?.description || '',
@@ -668,40 +729,320 @@ export default function AppSettingsPage() {
             <div className="absolute top-40 -right-20 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl -z-10 animate-pulse" />
 
             <div className="flex flex-col gap-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-6">
-                    <div className="space-y-1.5">
-                        <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-2xl bg-primary text-white flex items-center justify-center shadow-lg shadow-primary/20">
-                                <Settings2 className="h-5 w-5" />
-                            </div>
-                            <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-primary">Main Settings</h1>
-                        </div>
-                        <p className="text-sm font-normal opacity-70 max-w-2xl leading-relaxed">Manage your website info, bank details, and other basic options.</p>
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/60 backdrop-blur-md p-6 rounded-3xl border border-primary/5 shadow-sm">
+                    <div className="space-y-1">
+                        <h2 className="text-xl font-bold tracking-tight text-primary">App Settings & Payment Config</h2>
+                        <p className="text-xs text-muted-foreground">Manage your website display, bank accounts, UPI transfers, and test modes easily.</p>
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-3">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => {
+                                setIsDiagnosticRunning(true);
+                                setTimeout(() => {
+                                    const items = [
+                                        {
+                                            id: 'bank-acc',
+                                            name: 'Bank Account Details',
+                                            status: (displayData.bankAccountName && displayData.bankAccountNumber) ? 'pass' as const : 'fail' as const,
+                                            message: (displayData.bankAccountName && displayData.bankAccountNumber) ? `Account holder '${displayData.bankAccountName}' with A/C ${displayData.bankAccountNumber}` : 'Missing Account Name or Number'
+                                        },
+                                        {
+                                            id: 'bank-ifsc',
+                                            name: 'Bank IFSC Code Syntax',
+                                            status: (/^[A-Z]{4}0[A-Z0-9]{6}$/i.test(displayData.bankIfsc?.trim())) ? 'pass' as const : 'warn' as const,
+                                            message: (/^[A-Z]{4}0[A-Z0-9]{6}$/i.test(displayData.bankIfsc?.trim())) ? `Valid IFSC code: ${displayData.bankIfsc.toUpperCase()}` : 'IFSC Code format recommendation (e.g. SBIN0000373)'
+                                        },
+                                        {
+                                            id: 'upi-primary',
+                                            name: 'Primary UPI Handle',
+                                            status: (displayData.upiId && displayData.upiId.includes('@')) ? 'pass' as const : 'warn' as const,
+                                            message: (displayData.upiId && displayData.upiId.includes('@')) ? `Primary handle active: ${displayData.upiId}` : 'No valid UPI ID configured'
+                                        },
+                                        {
+                                            id: 'qr-code',
+                                            name: 'UPI QR Code Image',
+                                            status: displayData.qrCodeUrl ? 'pass' as const : 'warn' as const,
+                                            message: displayData.qrCodeUrl ? 'Payment QR image is uploaded' : 'No QR code image uploaded'
+                                        },
+                                        {
+                                            id: 'contact-info',
+                                            name: 'Contact Info',
+                                            status: (displayData.contactEmail && displayData.contactPhone) ? 'pass' as const : 'fail' as const,
+                                            message: (displayData.contactEmail && displayData.contactPhone) ? `Email (${displayData.contactEmail}) & Phone (${displayData.contactPhone}) ready` : 'Missing contact email or phone'
+                                        },
+                                        {
+                                            id: 'reg-pan',
+                                            name: 'Legal Reg & PAN',
+                                            status: (displayData.regNo && displayData.pan) ? 'pass' as const : 'warn' as const,
+                                            message: (displayData.regNo && displayData.pan) ? `Reg: ${displayData.regNo} | PAN: ${displayData.pan}` : 'Reg No or PAN number incomplete'
+                                        },
+                                        {
+                                            id: 'sandbox-mode',
+                                            name: 'App Mode',
+                                            status: displayData.isTestMode ? 'warn' as const : 'pass' as const,
+                                            message: displayData.isTestMode ? 'Test Sandbox Mode is ON' : 'Live Production Mode'
+                                        }
+                                    ];
+                                    const passed = items.filter(i => i.status === 'pass').length;
+                                    setDiagnosticReport({
+                                        score: Math.round((passed / items.length) * 100),
+                                        total: items.length,
+                                        items
+                                    });
+                                    setIsDiagnosticRunning(false);
+                                    toast({
+                                        title: "System Check Completed",
+                                        description: `Status score: ${Math.round((passed / items.length) * 100)}% (${passed}/${items.length} checks passed).`,
+                                        variant: passed === items.length ? "success" : "default"
+                                    });
+                                }, 600);
+                            }}
+                            className="font-bold border-primary/20 text-primary h-10 rounded-xl px-4 hover:bg-primary/5 transition-all text-xs"
+                        >
+                            {isDiagnosticRunning ? <Loader2 className="mr-2 h-4 w-4 animate-spin text-primary" /> : <FlaskConical className="mr-2 h-4 w-4 text-emerald-600" />}
+                            Run System Check
+                        </Button>
+
                         {!isEditMode ? (
-                            <Button onClick={() => setIsEditMode(true)} className="bg-primary hover:bg-primary/90 text-white font-black h-11 rounded-2xl px-6 shadow-xl shadow-primary/20 active:scale-95 transition-all">
+                            <Button onClick={() => setIsEditMode(true)} className="bg-primary hover:bg-primary/90 text-white font-bold h-10 rounded-xl px-5 shadow-md active:scale-95 transition-all text-xs">
                                 <Edit className="mr-2 h-4 w-4"/>Edit Settings
                             </Button>
                         ) : (
-                            <div className="flex bg-white/50 backdrop-blur-md p-1 rounded-2xl border border-primary/5 shadow-sm">
-                                <Button variant="ghost" onClick={handleCancel} disabled={isSubmitting} className="font-bold text-destructive rounded-xl h-10 px-5 hover:bg-destructive/5">
-                                    <X className="mr-2 h-4 w-4 opacity-40" /> Discard
+                            <div className="flex bg-white p-1 rounded-xl border border-primary/10 shadow-sm">
+                                <Button variant="ghost" onClick={handleCancel} disabled={isSubmitting} className="font-bold text-destructive rounded-lg h-9 px-4 hover:bg-destructive/5 text-xs">
+                                    <X className="mr-1.5 h-3.5 w-3.5 opacity-60" /> Cancel
                                 </Button>
-                                <div className="w-px h-6 bg-primary/10 my-2" />
-                                <Button onClick={handleSave} disabled={isSubmitting} className="font-black text-white bg-primary hover:bg-primary/90 rounded-xl h-10 px-6 shadow-md transition-all active:scale-95">
-                                    {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>} 
-                                    Synchronize
+                                <div className="w-px h-5 bg-primary/10 my-2" />
+                                <Button onClick={handleSave} disabled={isSubmitting} className="font-bold text-white bg-primary hover:bg-primary/90 rounded-lg h-9 px-5 shadow-sm transition-all active:scale-95 text-xs">
+                                    {isSubmitting ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin"/> : <Save className="mr-1.5 h-3.5 w-3.5"/>} 
+                                    Save Settings
                                 </Button>
                             </div>
                         )}
                     </div>
                 </div>
+
+                {/* Integration Status Bar */}
+                <div className="p-4 rounded-2xl bg-white/60 backdrop-blur-md border border-primary/5 shadow-sm flex flex-wrap items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                        <Activity className="h-4 w-4 text-primary opacity-60" />
+                        <span className="text-xs font-bold text-primary">System Status:</span>
+                    </div>
+                    <div className="flex items-center gap-2 flex-wrap text-xs font-semibold">
+                        <Badge variant="outline" className={cn("px-3 py-1 rounded-full border", displayData.bankAccountName ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20" : "bg-amber-500/10 text-amber-700 border-amber-500/20")}>
+                            Bank: {displayData.bankAccountName ? 'Ready' : 'Incomplete'}
+                        </Badge>
+                        <Badge variant="outline" className={cn("px-3 py-1 rounded-full border", displayData.upiId ? "bg-emerald-500/10 text-emerald-700 border-emerald-500/20" : "bg-rose-500/10 text-rose-700 border-rose-500/20")}>
+                            UPI: {displayData.upiId || 'Not Set'}
+                        </Badge>
+                        <Badge variant="outline" className={cn("px-3 py-1 rounded-full border", displayData.isTestMode ? "bg-amber-500 text-white border-amber-600 animate-pulse" : "bg-primary/10 text-primary border-primary/20")}>
+                            {displayData.isTestMode ? "Test Mode Active" : "Live Mode"}
+                        </Badge>
+                    </div>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-10">
-                
+            <div className="grid grid-cols-1 gap-8">
+                <SettingsSection
+                    title="Interactive Diagnostic, Sandbox & Testing Suite"
+                    description="Run live system diagnostics, generate test UPI links & QR codes, copy bank transfer payloads, and simulate application test mode."
+                    icon={FlaskConical}
+                    defaultOpen={true}
+                >
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        {/* Tool 1: Sandbox Test Mode */}
+                        <div className="p-6 rounded-3xl bg-amber-500/5 border border-amber-500/10 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <div className="space-y-0.5">
+                                    <h4 className="font-black text-sm text-amber-900 flex items-center gap-2">
+                                        <Wrench className="h-4 w-4 text-amber-600" />
+                                        Application Internal Test / Sandbox Mode
+                                    </h4>
+                                    <p className="text-xs text-amber-700/80">Enable test mode to run test transactions and dispatches without affecting live statistics.</p>
+                                </div>
+                                <Switch
+                                    checked={displayData.isTestMode}
+                                    onCheckedChange={(val) => handleFieldChange('isTestMode', val)}
+                                    disabled={isFormDisabled}
+                                    className="data-[state=checked]:bg-amber-600"
+                                />
+                            </div>
+                            {displayData.isTestMode && (
+                                <div className="p-3 rounded-2xl bg-white border border-amber-500/20 text-xs font-bold text-amber-900 flex items-center justify-between">
+                                    <span>🧪 Sandbox Mode is Active. Admin tests are highlighted.</span>
+                                    <Badge className="bg-amber-600 text-white">Sandbox Active</Badge>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Tool 2: Bank Account Payload & IFSC Format Tester */}
+                        <div className="p-6 rounded-3xl bg-primary/[0.02] border border-primary/5 space-y-4">
+                            <div className="flex items-center justify-between border-b border-primary/5 pb-3">
+                                <h4 className="font-black text-sm text-primary flex items-center gap-2">
+                                    <Landmark className="h-4 w-4 text-primary opacity-60" />
+                                    Bank Account Payload & IFSC Tester
+                                </h4>
+                                {displayData.bankIfsc && (
+                                    <Badge variant="outline" className={cn("text-[10px] font-mono font-bold", /^[A-Z]{4}0[A-Z0-9]{6}$/i.test(displayData.bankIfsc) ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-amber-50 text-amber-700 border-amber-200")}>
+                                        {/^[A-Z]{4}0[A-Z0-9]{6}$/i.test(displayData.bankIfsc) ? "✅ IFSC Syntax Valid" : "⚠️ Check IFSC Format"}
+                                    </Badge>
+                                )}
+                            </div>
+                            <div className="p-4 rounded-2xl bg-white border border-primary/5 space-y-2">
+                                <div className="text-xs font-mono font-bold text-slate-800 leading-relaxed">
+                                    <p><span className="text-muted-foreground">Bank:</span> {displayData.bankName || 'Not Set'} ({displayData.bankAccountType || 'Current'})</p>
+                                    <p><span className="text-muted-foreground">Account Holder:</span> {displayData.bankAccountName || 'Not Set'}</p>
+                                    <p><span className="text-muted-foreground">A/C No:</span> {displayData.bankAccountNumber || 'Not Set'}</p>
+                                    <p><span className="text-muted-foreground">IFSC:</span> {displayData.bankIfsc || 'Not Set'} {displayData.bankBranch ? `(${displayData.bankBranch})` : ''}</p>
+                                </div>
+                            </div>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    const payload = `Bank: ${displayData.bankName || 'N/A'}\nAccount Name: ${displayData.bankAccountName || 'N/A'}\nAccount No: ${displayData.bankAccountNumber || 'N/A'}\nIFSC Code: ${displayData.bankIfsc || 'N/A'}\nBranch: ${displayData.bankBranch || 'N/A'}`;
+                                    navigator.clipboard.writeText(payload);
+                                    toast({
+                                        title: "Bank Details Payload Copied",
+                                        description: "Formatted bank details copied to clipboard for testing transfers.",
+                                        variant: "success",
+                                    });
+                                }}
+                                className="w-full h-10 font-bold text-xs rounded-xl border-primary/10 hover:bg-primary/5"
+                            >
+                                <Copy className="mr-1.5 h-3.5 w-3.5" /> Copy Verified Bank Details Payload
+                            </Button>
+                        </div>
+
+                        {/* Tool 3: Live Interactive UPI Link & QR Tester */}
+                        <div className="p-6 rounded-3xl bg-primary/[0.02] border border-primary/5 space-y-4 lg:col-span-2">
+                            <div className="flex items-center justify-between border-b border-primary/5 pb-3">
+                                <div className="space-y-0.5">
+                                    <h4 className="font-black text-sm text-primary flex items-center gap-2">
+                                        <QrCode className="h-4 w-4 text-emerald-600" />
+                                        Interactive UPI Link & QR Tester
+                                    </h4>
+                                    <p className="text-xs text-muted-foreground">Generate live UPI deep links (`upi://pay?...`) and test QR code URLs instantly.</p>
+                                </div>
+                                {displayData.upiId && (
+                                    <Badge variant="outline" className={cn("text-[10px] font-mono font-bold", displayData.upiId.includes('@') ? "bg-emerald-50 text-emerald-700 border-emerald-200" : "bg-rose-50 text-rose-700 border-rose-200")}>
+                                        {displayData.upiId.includes('@') ? "✅ Valid VPA Handle" : "❌ Invalid VPA Syntax"}
+                                    </Badge>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div className="space-y-1.5">
+                                    <Label className="text-[10px] font-black tracking-widest opacity-60">Test Amount (₹)</Label>
+                                    <Input
+                                        type="number"
+                                        value={testUpiAmount}
+                                        onChange={e => setTestUpiAmount(e.target.value)}
+                                        className="h-10 font-mono font-bold rounded-xl bg-white border-primary/10"
+                                        placeholder="100"
+                                    />
+                                </div>
+                                <div className="space-y-1.5 md:col-span-2">
+                                    <Label className="text-[10px] font-black tracking-widest opacity-60">Test Note / Remark</Label>
+                                    <Input
+                                        value={testUpiNote}
+                                        onChange={e => setTestUpiNote(e.target.value)}
+                                        className="h-10 font-bold rounded-xl bg-white border-primary/10"
+                                        placeholder="Donation Test Note"
+                                    />
+                                </div>
+                            </div>
+
+                            {displayData.upiId ? (
+                                <div className="p-4 rounded-2xl bg-white border border-primary/10 space-y-3">
+                                    <div className="flex items-center justify-between flex-wrap gap-2">
+                                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Generated UPI Deep-Link URI:</span>
+                                        <div className="flex items-center gap-2">
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => {
+                                                    const uri = `upi://pay?pa=${encodeURIComponent(displayData.upiId)}&pn=${encodeURIComponent(displayData.bankAccountName || displayData.name || 'Baitulmal')}&am=${testUpiAmount}&tn=${encodeURIComponent(testUpiNote)}&cu=INR`;
+                                                    navigator.clipboard.writeText(uri);
+                                                    toast({
+                                                        title: "UPI URI Copied",
+                                                        description: uri,
+                                                        variant: "success"
+                                                    });
+                                                }}
+                                                className="h-7 text-xs font-bold text-primary"
+                                            >
+                                                <Copy className="mr-1 h-3 w-3" /> Copy URI
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                asChild
+                                                variant="outline"
+                                                size="sm"
+                                                className="h-7 text-xs font-bold text-emerald-700 border-emerald-200 bg-emerald-50 hover:bg-emerald-100"
+                                            >
+                                                <a href={`upi://pay?pa=${encodeURIComponent(displayData.upiId)}&pn=${encodeURIComponent(displayData.bankAccountName || displayData.name || 'Baitulmal')}&am=${testUpiAmount}&tn=${encodeURIComponent(testUpiNote)}&cu=INR`}>
+                                                    <ExternalLink className="mr-1 h-3 w-3" /> Launch UPI App
+                                                </a>
+                                            </Button>
+                                        </div>
+                                    </div>
+                                    <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] font-mono text-slate-700 break-all">
+                                        {`upi://pay?pa=${displayData.upiId}&pn=${encodeURIComponent(displayData.bankAccountName || displayData.name || 'Baitulmal')}&am=${testUpiAmount}&tn=${encodeURIComponent(testUpiNote)}&cu=INR`}
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs font-bold text-amber-800">
+                                    ⚠️ Please enter a valid UPI ID in the section below to test live UPI payment links.
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Diagnostic Self-Test Results Card */}
+                    {diagnosticReport && (
+                        <div className="mt-8 p-6 rounded-3xl bg-white border border-primary/10 shadow-lg space-y-6 animate-fade-in-up">
+                            <div className="flex items-center justify-between border-b border-primary/10 pb-4">
+                                <div className="space-y-1">
+                                    <h4 className="font-black text-lg text-primary flex items-center gap-2">
+                                        <ShieldCheck className="h-5 w-5 text-emerald-600" />
+                                        System Self-Diagnostic Report
+                                    </h4>
+                                    <p className="text-xs text-muted-foreground">Automated verification scan across all application resources and configurations.</p>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-2xl font-black text-primary">{diagnosticReport.score}%</span>
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Readiness Score</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {diagnosticReport.items.map((item) => (
+                                    <div key={item.id} className="p-4 rounded-2xl bg-primary/[0.02] border border-primary/5 flex items-start gap-3">
+                                        {item.status === 'pass' && <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />}
+                                        {item.status === 'warn' && <AlertCircle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />}
+                                        {item.status === 'fail' && <XCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />}
+                                        <div className="space-y-0.5 flex-1">
+                                            <div className="flex items-center justify-between">
+                                                <h5 className="font-bold text-xs text-primary">{item.name}</h5>
+                                                <Badge className={cn("text-[9px] px-2 py-0.5", item.status === 'pass' ? "bg-emerald-100 text-emerald-800" : item.status === 'warn' ? "bg-amber-100 text-amber-800" : "bg-rose-100 text-rose-800")}>
+                                                    {item.status.toUpperCase()}
+                                                </Badge>
+                                            </div>
+                                            <p className="text-[11px] text-muted-foreground leading-tight">{item.message}</p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </SettingsSection>
+
+                {/* Section 3: Website Display */}
                 <SettingsSection 
                     title="Website Display" 
                     description="Change how your website looks and what people can see."
@@ -837,16 +1178,18 @@ export default function AppSettingsPage() {
                     </div>
                 </SettingsSection>
 
+                {/* Section 4: Expanded Bank & Payment Details */}
                 <SettingsSection 
                     title="Bank & Payment Details" 
-                    description="Set up your UPI, bank account information, and online payment gateways."
+                    description="Set up your primary & backup UPI accounts, full bank account info, and online payment gateways."
                     icon={CreditCard}
+                    defaultOpen={true}
                 >
                     <div className="p-5 rounded-3xl bg-primary/5 border border-primary/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                         <div className="space-y-1">
                             <h4 className="font-black text-sm text-primary flex items-center gap-2">
                                 <CreditCard className="h-4 w-4 text-blue-600" />
-                                Online Payment Gateways (Razorpay, Instamojo, PhonePe)
+                                Online Payment Gateways (Razorpay, Instamojo, PhonePe, Paytm, Stripe)
                             </h4>
                             <p className="text-xs text-muted-foreground">Configure automated online payment gateways, sandbox testing modes, and public/donor visibility rules.</p>
                         </div>
@@ -862,7 +1205,7 @@ export default function AppSettingsPage() {
                             <div className="space-y-6">
                                 <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
                                     <QrCode className="h-5 w-5 text-primary opacity-40" />
-                                    <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">QR Code Settings</h4>
+                                    <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">UPI & QR Transfer Settings</h4>
                                 </div>
                                 <div className="flex items-start gap-8">
                                     <div className="relative group">
@@ -882,9 +1225,9 @@ export default function AppSettingsPage() {
                                             </div>
                                         )}
                                     </div>
-                                    <div className="space-y-6 flex-1 pt-4">
-                                        <div className="space-y-2">
-                                            <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Your UPI ID</Label>
+                                    <div className="space-y-4 flex-1 pt-2">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Primary UPI ID (VPA Handle)</Label>
                                             <Input 
                                                 value={displayData.upiId} 
                                                 onChange={e => handleFieldChange('upiId', e.target.value)} 
@@ -893,14 +1236,33 @@ export default function AppSettingsPage() {
                                                 placeholder="handle@upi"
                                             />
                                         </div>
-                                        <div className="space-y-2">
+                                        <div className="space-y-1.5">
+                                            <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Secondary / Backup UPI ID</Label>
+                                            <Input 
+                                                value={displayData.secondaryUpiId} 
+                                                onChange={e => handleFieldChange('secondaryUpiId', e.target.value)} 
+                                                disabled={isFormDisabled} 
+                                                className="h-11 font-mono font-bold rounded-2xl border-primary/5 bg-white shadow-sm px-4 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0 text-xs" 
+                                                placeholder="backup@icici"
+                                            />
+                                        </div>
+                                        <div className="space-y-1.5">
                                             <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Mobile Number for Payment</Label>
                                             <Input 
                                                 value={displayData.paymentMobileNumber} 
                                                 onChange={e => handleFieldChange('paymentMobileNumber', e.target.value)} 
                                                 disabled={isFormDisabled} 
-                                                className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" 
+                                                className="h-11 font-mono font-bold rounded-2xl border-primary/5 bg-white shadow-sm px-4 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0 text-xs" 
                                                 placeholder="+91-XXXXX-XXXXX"
+                                            />
+                                        </div>
+                                        <div className="flex items-center justify-between p-3 rounded-2xl bg-white border border-primary/5">
+                                            <Label className="text-xs font-bold text-primary">Display QR & UPI Publicly</Label>
+                                            <Switch
+                                                checked={displayData.isUpiQrPublic}
+                                                onCheckedChange={(val) => handleFieldChange('isUpiQrPublic', val)}
+                                                disabled={isFormDisabled}
+                                                className="data-[state=checked]:bg-primary"
                                             />
                                         </div>
                                     </div>
@@ -909,24 +1271,67 @@ export default function AppSettingsPage() {
                         </div>
 
                         <div className="space-y-6">
-                            <div className="p-8 rounded-[40px] bg-primary/[0.02] border border-primary/5 space-y-8">
-                                <div className="flex items-center gap-3 border-b border-primary/5 pb-4">
-                                    <Landmark className="h-5 w-5 text-primary opacity-40" />
-                                    <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Bank Account Details</h4>
+                            <div className="p-8 rounded-[40px] bg-primary/[0.02] border border-primary/5 space-y-6">
+                                <div className="flex items-center justify-between border-b border-primary/5 pb-4">
+                                    <div className="flex items-center gap-3">
+                                        <Landmark className="h-5 w-5 text-primary opacity-40" />
+                                        <h4 className="text-[10px] font-black text-muted-foreground tracking-[0.2em]">Bank Account Details</h4>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Label className="text-[10px] font-bold opacity-60">Public View</Label>
+                                        <Switch
+                                            checked={displayData.isBankDetailsPublic}
+                                            onCheckedChange={(val) => handleFieldChange('isBankDetailsPublic', val)}
+                                            disabled={isFormDisabled}
+                                            className="data-[state=checked]:bg-primary"
+                                        />
+                                    </div>
                                 </div>
-                                <div className="space-y-6">
+                                <div className="space-y-5">
                                     <div className="space-y-2">
                                         <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Account Holder Name</Label>
-                                        <Input value={displayData.bankAccountName} onChange={e => handleFieldChange('bankAccountName', e.target.value)} disabled={isFormDisabled} className="h-12 font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" />
+                                        <Input value={displayData.bankAccountName} onChange={e => handleFieldChange('bankAccountName', e.target.value)} disabled={isFormDisabled} className="h-12 font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" placeholder="Baitulmal Samajik Sanstha" />
                                     </div>
-                                    <div className="grid grid-cols-2 gap-6">
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Bank Name</Label>
+                                            <Input value={displayData.bankName} onChange={e => handleFieldChange('bankName', e.target.value)} disabled={isFormDisabled} className="h-11 font-bold rounded-2xl border-primary/5 bg-white shadow-sm px-4 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0 text-xs" placeholder="State Bank of India" />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Branch Name</Label>
+                                            <Input value={displayData.bankBranch} onChange={e => handleFieldChange('bankBranch', e.target.value)} disabled={isFormDisabled} className="h-11 font-bold rounded-2xl border-primary/5 bg-white shadow-sm px-4 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0 text-xs" placeholder="Solapur Main Branch" />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
                                             <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Account Number</Label>
-                                            <Input value={displayData.bankAccountNumber} onChange={e => handleFieldChange('bankAccountNumber', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" />
+                                            <Input value={displayData.bankAccountNumber} onChange={e => handleFieldChange('bankAccountNumber', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" placeholder="0000000000" />
                                         </div>
                                         <div className="space-y-2">
                                             <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Bank IFSC Code</Label>
-                                            <Input value={displayData.bankIfsc} onChange={e => handleFieldChange('bankIfsc', e.target.value)} disabled={isFormDisabled} className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0" />
+                                            <Input value={displayData.bankIfsc} onChange={e => handleFieldChange('bankIfsc', e.target.value.toUpperCase())} disabled={isFormDisabled} className="h-12 font-mono font-black rounded-2xl border-primary/5 bg-white shadow-sm px-5 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0 uppercase" placeholder="SBIN0000000" />
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">Account Type</Label>
+                                            <Select value={displayData.bankAccountType} onValueChange={(val) => handleFieldChange('bankAccountType', val)} disabled={isFormDisabled}>
+                                                <SelectTrigger className="h-11 font-bold rounded-2xl border-primary/5 bg-white shadow-sm px-4 text-xs">
+                                                    <SelectValue placeholder="Select Account Type" />
+                                                </SelectTrigger>
+                                                <SelectContent className="rounded-2xl border-primary/10 p-1">
+                                                    <SelectItem value="Current Account" className="font-bold text-xs">Current Account</SelectItem>
+                                                    <SelectItem value="Savings Account" className="font-bold text-xs">Savings Account</SelectItem>
+                                                    <SelectItem value="Trust FCRA Account" className="font-bold text-xs">Trust / FCRA Account</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[9px] font-black tracking-widest opacity-40 pl-1">SWIFT / BIC Code</Label>
+                                            <Input value={displayData.bankSwiftCode} onChange={e => handleFieldChange('bankSwiftCode', e.target.value.toUpperCase())} disabled={isFormDisabled} className="h-11 font-mono font-bold rounded-2xl border-primary/5 bg-white shadow-sm px-4 disabled:opacity-100 disabled:bg-transparent disabled:border-none disabled:p-0 text-xs uppercase" placeholder="SBININBBXXX" />
                                         </div>
                                     </div>
                                 </div>

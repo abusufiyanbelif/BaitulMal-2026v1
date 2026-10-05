@@ -606,7 +606,7 @@ export default function CampaignDetailsPage() {
     }
     
     if(editMode){
-        toast({ title: "Save Required", description: "Please Secure Inventory Edits Before Batch Syncing.", variant: 'destructive' });
+        toast({ title: "Save Required", description: "Please Save Inventory Edits Before Batch Syncing.", variant: 'destructive' });
         return;
     }
 
@@ -875,7 +875,7 @@ export default function CampaignDetailsPage() {
                             <div className="flex gap-2">
                                 <Button variant="outline" onClick={handleCancel} className="font-bold border-primary/20 text-primary">Cancel</Button>
                                 <Button onClick={handleSave} className="font-bold shadow-md bg-primary text-white">
-                                    <Save className="mr-2 h-4 w-4" /> Secure Procurement
+                                    <Save className="mr-2 h-4 w-4" /> Save Procurement
                                 </Button>
                             </div>
                         )

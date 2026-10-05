@@ -30,6 +30,7 @@ import {
     orderBy,
     limit,
     doc,
+    updateDoc,
     writeBatch
 } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
@@ -161,6 +162,15 @@ export function NotificationBell() {
         }
     }, [firestore, personalNotifications]);
 
+    const handleItemClick = useCallback(async (notifId: string) => {
+        if (!firestore || !notifId) return;
+        try {
+            await updateDoc(doc(firestore, 'notifications', notifId), { isRead: true });
+        } catch (e) {
+            console.error('Failed to mark notification as read:', e);
+        }
+    }, [firestore]);
+
     if (!user || !userProfile) return null;
 
     return (
@@ -237,6 +247,7 @@ export function NotificationBell() {
                                                 <Link
                                                     key={n.id}
                                                     href={n.linkUrl || '#'}
+                                                    onClick={() => handleItemClick(n.id)}
                                                     className="group flex items-start gap-3 p-3 rounded-xl hover:bg-primary/5 transition-all border border-transparent hover:border-primary/10 active:scale-[0.98]"
                                                 >
                                                     <div className="p-2 rounded-lg bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-colors shrink-0 mt-0.5">

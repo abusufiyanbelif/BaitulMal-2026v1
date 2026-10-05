@@ -83,6 +83,16 @@ export interface PaymentSettings extends DocumentData {
   bankAccountName?: string;
   bankAccountNumber?: string;
   bankIfsc?: string;
+  bankName?: string;
+  bankBranch?: string;
+  bankAccountType?: string;
+  bankSwiftCode?: string;
+  isBankDetailsPublic?: boolean;
+  // UPI Extended Details
+  secondaryUpiId?: string;
+  isUpiQrPublic?: boolean;
+  // System Sandbox & Test Mode
+  isTestMode?: boolean;
 }
 
 export interface PaymentGatewaySettings extends DocumentData {
@@ -90,7 +100,7 @@ export interface PaymentGatewaySettings extends DocumentData {
   isInternalTestMode?: boolean;
   isPublicGatewayEnabled?: boolean;
   isDonorGatewayEnabled?: boolean;
-  activeGateway?: 'razorpay' | 'instamojo' | 'phonepe' | 'none';
+  activeGateway?: 'razorpay' | 'instamojo' | 'phonepe' | 'stripe' | 'paytm' | 'cashfree' | 'paypal' | 'multiple' | 'none';
   isMonthlyDonationEnabled?: boolean;
   showUpiApps?: boolean;
   showNetBanking?: boolean;
@@ -114,6 +124,31 @@ export interface PaymentGatewaySettings extends DocumentData {
     saltKey?: string;
     saltIndex?: string;
     mode?: 'test' | 'live';
+    isEnabled?: boolean;
+  };
+  stripe?: {
+    publishableKey?: string;
+    secretKey?: string;
+    mode?: 'test' | 'live';
+    isEnabled?: boolean;
+  };
+  paytm?: {
+    merchantId?: string;
+    merchantKey?: string;
+    websiteName?: string;
+    mode?: 'test' | 'live';
+    isEnabled?: boolean;
+  };
+  cashfree?: {
+    appId?: string;
+    secretKey?: string;
+    mode?: 'test' | 'live';
+    isEnabled?: boolean;
+  };
+  paypal?: {
+    clientId?: string;
+    clientSecret?: string;
+    mode?: 'sandbox' | 'live';
     isEnabled?: boolean;
   };
 }
@@ -604,7 +639,7 @@ export interface Donation extends DocumentData {
   contributionFromDate?: string;
   contributionToDate?: string;
   frequency?: 'One-Time' | 'Monthly';
-  gatewayProvider?: 'razorpay' | 'instamojo' | 'phonepe' | 'direct';
+  gatewayProvider?: 'razorpay' | 'instamojo' | 'phonepe' | 'stripe' | 'paytm' | 'cashfree' | 'paypal' | 'direct' | 'multiple';
   gatewayPaymentId?: string;
   gatewayOrderId?: string;
   isAutonomousDonor?: boolean;

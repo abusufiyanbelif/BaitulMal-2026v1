@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Lightbulb, HandHelping, CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info, Clock, CheckCircle2, ShieldCheck, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle } from 'lucide-react';
 import type { Lead, Campaign } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -53,10 +53,11 @@ const priorityWeight: Record<string, number> = {
 
 const LeadGrid = ({ leads }: { leads: (Lead & { collected: number; progress: number; })[] }) => {
     const router = useRouter();
+    const autoplayPlugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: false }));
     return (
         <Carousel
             opts={{ align: "start", loop: true }}
-            plugins={[Autoplay({ delay: 5000, stopOnInteraction: false })]}
+            plugins={[autoplayPlugin.current]}
             className="w-full relative"
         >
             <CarouselContent className="-ml-4">
@@ -249,7 +250,7 @@ export function PublicLeadsView() {
     return [
       { id: 'priority', title: 'Critical Appeals', icon: AlertTriangle, items: priorityItems, color: 'text-red-600' },
       { id: 'ongoing_upcoming', title: 'Ongoing Leads', icon: Clock, items: ongoingItems, color: 'text-primary' },
-      { id: 'completed', title: 'Closed Appeals', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
+      { id: 'completed', title: 'Archived Appeals', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
     ].filter(s => s.items.length > 0);
   }, [filteredLeads]);
   

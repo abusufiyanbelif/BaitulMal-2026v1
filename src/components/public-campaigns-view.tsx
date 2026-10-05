@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { FolderKanban, HandHelping, Calendar as CalendarIcon, X, Utensils, LifeBuoy, Clock, CheckCircle2, ShieldCheck, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle } from 'lucide-react';
 import type { Campaign } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -53,10 +53,11 @@ const priorityWeight: Record<string, number> = {
 
 const CampaignGrid = ({ campaigns }: { campaigns: (Campaign & { collected: number; progress: number; })[] }) => {
     const router = useRouter();
+    const autoplayPlugin = useRef(Autoplay({ delay: 5000, stopOnInteraction: false }));
     return (
         <Carousel
             opts={{ align: "start", loop: true }}
-            plugins={[Autoplay({ delay: 5000, stopOnInteraction: false })]}
+            plugins={[autoplayPlugin.current]}
             className="w-full relative"
         >
             <CarouselContent className="-ml-4">
@@ -250,7 +251,7 @@ export function PublicCampaignsView() {
     return [
       { id: 'priority', title: 'Critical Initiatives', icon: AlertTriangle, items: priorityItems, color: 'text-red-600' },
       { id: 'ongoing_upcoming', title: 'Ongoing Campaigns', icon: Clock, items: ongoingItems, color: 'text-primary' },
-      { id: 'completed', title: 'Project Archive', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
+      { id: 'completed', title: 'Archived Campaigns', icon: CheckCircle2, items: completedItems, color: 'text-muted-foreground' }
     ].filter(s => s.items.length > 0);
   }, [filteredCampaigns]);
 

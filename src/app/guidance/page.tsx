@@ -164,7 +164,7 @@ export default function GuidanceHubPage() {
                             <Link href="/dashboard"><ArrowLeft className="mr-2 h-4 w-4" /> Dashboard</Link>
                         </Button>
                         <h1 className="text-3xl sm:text-4xl font-black tracking-tighter text-primary">Guidance Hub</h1>
-                        <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">Organization directory of external assistance resources, medical protocols, and public support vectors.</p>
+                        <p className="text-sm font-bold opacity-70 max-w-2xl leading-relaxed">Directory of assistance resources, medical contacts, and public support details.</p>
                     </div>
                     
                     <div className="flex flex-wrap items-center gap-3">
@@ -174,17 +174,17 @@ export default function GuidanceHubPage() {
                         {canUpdate && (
                             !isEditMode ? (
                                 <Button onClick={() => setIsEditMode(true)} className="bg-primary hover:bg-primary/90 text-white font-black h-11 rounded-2xl px-6 shadow-xl shadow-primary/20 active:scale-95 transition-all">
-                                    <Edit className="mr-2 h-4 w-4" /> Modify Protocols
+                                    <Edit className="mr-2 h-4 w-4" /> Edit Guidance
                                 </Button>
                             ) : (
                                 <div className="flex bg-white/50 backdrop-blur-md p-1 rounded-2xl border border-primary/5 shadow-sm">
                                     <Button variant="ghost" onClick={() => setIsEditMode(false)} disabled={isSubmitting} className="font-bold text-destructive rounded-xl h-10 px-5 hover:bg-destructive/5">
-                                        <X className="mr-2 h-4 w-4 opacity-40" /> Discard
+                                        <X className="mr-2 h-4 w-4 opacity-40" /> Cancel
                                     </Button>
                                     <div className="w-px h-6 bg-primary/10 my-2" />
                                     <Button onClick={handleSave} disabled={isSubmitting} className="font-black text-primary rounded-xl h-10 px-6 hover:bg-primary/5">
                                         {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4 opacity-40"/>} 
-                                        Finalize Hub
+                                        Save Changes
                                     </Button>
                                 </div>
                             )
@@ -197,11 +197,11 @@ export default function GuidanceHubPage() {
                 <div className="space-y-10">
                     <div className="flex items-center justify-between border-b border-primary/5 pb-4">
                         <h3 className="text-xl font-black text-primary tracking-tighter flex items-center gap-3">
-                            <LayoutGrid className="h-6 w-6 opacity-40" /> Assistance Sector Matrix
+                            <LayoutGrid className="h-6 w-6 opacity-40" /> Assistance Categories
                         </h3>
                         {isEditMode && (
                             <Button onClick={addCategory} variant="outline" size="sm" className="font-black text-[10px] uppercase tracking-widest border-primary/10 h-10 px-6 rounded-xl bg-white shadow-sm hover:bg-primary/5 transition-all active:scale-95">
-                                <Plus className="mr-2 h-4 w-4" /> New Sector
+                                <Plus className="mr-2 h-4 w-4" /> New Category
                             </Button>
                         )}
                     </div>
@@ -257,7 +257,7 @@ export default function GuidanceHubPage() {
 
                                                 <div className="space-y-4">
                                                     <div className="flex flex-col gap-1.5">
-                                                        <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40">Identity Protocol</Label>
+                                                        <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40">Resource Name</Label>
                                                         <Input 
                                                             value={res.name} 
                                                             onChange={(e) => updateResource(cat.id, res.id, 'name', e.target.value)} 
@@ -267,13 +267,13 @@ export default function GuidanceHubPage() {
                                                         />
                                                     </div>
                                                     <div className="flex flex-col gap-1.5">
-                                                        <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40">Functional Context</Label>
+                                                        <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40">Category / Subtitle</Label>
                                                         <Input 
                                                             value={res.subtitle || ''} 
                                                             onChange={(e) => updateResource(cat.id, res.id, 'subtitle', e.target.value)} 
                                                             disabled={!isEditMode}
                                                             className="h-10 font-bold text-sm text-primary/70 bg-white/50 border-primary/5 rounded-xl px-5 disabled:opacity-100 disabled:bg-transparent disabled:px-0 disabled:border-none disabled:h-auto"
-                                                            placeholder="e.g. Hospital Grade / Specialist Title"
+                                                            placeholder="e.g. Hospital / Specialist Title"
                                                         />
                                                     </div>
                                                 </div>
@@ -282,7 +282,7 @@ export default function GuidanceHubPage() {
 
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                                     <div className="flex flex-col gap-1.5">
-                                                        <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40 flex items-center gap-1.5"><Phone className="h-3 w-3"/> Tele-Vector</Label>
+                                                        <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40 flex items-center gap-1.5"><Phone className="h-3 w-3"/> Phone Number</Label>
                                                         <Input 
                                                             value={res.phone || ''} 
                                                             onChange={(e) => updateResource(cat.id, res.id, 'phone', e.target.value)} 
@@ -292,7 +292,7 @@ export default function GuidanceHubPage() {
                                                         />
                                                     </div>
                                                     <div className="flex flex-col gap-1.5">
-                                                        <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40 flex items-center gap-1.5"><Globe className="h-3 w-3"/> Portal Link</Label>
+                                                        <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40 flex items-center gap-1.5"><Globe className="h-3 w-3"/> Website Link</Label>
                                                         <Input 
                                                             value={res.link || ''} 
                                                             onChange={(e) => updateResource(cat.id, res.id, 'link', e.target.value)} 
@@ -304,18 +304,18 @@ export default function GuidanceHubPage() {
                                                 </div>
 
                                                 <div className="flex flex-col gap-1.5">
-                                                    <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40 flex items-center gap-1.5"><MapPin className="h-3 w-3"/> Location Vector</Label>
+                                                    <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40 flex items-center gap-1.5"><MapPin className="h-3 w-3"/> Address</Label>
                                                     <Input 
                                                         value={res.address || ''} 
                                                         onChange={(e) => updateResource(cat.id, res.id, 'address', e.target.value)} 
                                                         disabled={!isEditMode} 
                                                         className="h-10 font-bold text-xs bg-white/50 border-primary/5 rounded-xl px-4 disabled:opacity-100 disabled:bg-transparent disabled:px-0 disabled:border-none disabled:h-auto"
-                                                        placeholder="Full Operational Address"
+                                                        placeholder="Full Address"
                                                     />
                                                 </div>
 
                                                 <div className="flex flex-col gap-1.5">
-                                                    <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40 flex items-center gap-1.5"><Info className="h-3.5 w-3.5"/> Operational Scope & Methodology</Label>
+                                                    <Label className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em] pl-1 opacity-40 flex items-center gap-1.5"><Info className="h-3.5 w-3.5"/> Description</Label>
                                                     <Textarea 
                                                         value={res.description || ''} 
                                                         onChange={(e) => updateResource(cat.id, res.id, 'description', e.target.value)} 

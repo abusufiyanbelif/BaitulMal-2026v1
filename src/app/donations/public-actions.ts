@@ -24,7 +24,7 @@ export interface PublicDonationSubmission {
     linkSplit?: { linkId: string; amount: number }[];
     screenshotUrl?: string;
     frequency?: 'One-Time' | 'Monthly';
-    gatewayProvider?: 'razorpay' | 'instamojo' | 'phonepe' | 'direct';
+    gatewayProvider?: 'razorpay' | 'instamojo' | 'phonepe' | 'stripe' | 'paytm' | 'cashfree' | 'paypal' | 'direct' | 'multiple';
     gatewayPaymentId?: string;
     gatewayOrderId?: string;
 }

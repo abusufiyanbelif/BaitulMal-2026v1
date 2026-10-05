@@ -133,7 +133,7 @@ import { revokeAllSessionsForRoleAction } from '../auth-actions';
                      </Button>
                      <Button onClick={handleSave} disabled={isSubmitting || !isDirty} className="font-bold shadow-md transition-transform active:scale-95">
                          {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Save className="mr-2 h-4 w-4"/>}
-                         Secure Changes
+                         Save Changes
                      </Button>
                  </div>
              )}

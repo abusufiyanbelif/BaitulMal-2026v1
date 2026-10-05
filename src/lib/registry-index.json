@@ -1747,7 +1747,7 @@
       "actions": [
         "Back To Leads",
         "Cancel",
-        "Secure Changes",
+        "Save Changes",
         "setIsAddingCategory(false)}>",
         "handleDeleteItemClick(item.id, item.name)}>",
         "Add Line Item"
@@ -1782,7 +1782,7 @@
       "actions": [
         "All Help Requests",
         "Download",
-        "Secure Changes",
+        "Save Changes",
         "{ e.preventDefault(); handleRemoveImage(); }}>",
         "handleRemoveExistingDocument(doc.url)}>"
       ],

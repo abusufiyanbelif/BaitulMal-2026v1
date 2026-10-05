@@ -31,7 +31,18 @@ export function usePaymentGateways() {
   const canPublicUseGateway = isMasterEnabled && (gatewaySettings.isPublicGatewayEnabled !== false) && (!isInternalTest || isStaff);
   const canDonorUseGateway = isMasterEnabled && (gatewaySettings.isDonorGatewayEnabled !== false) && (!isInternalTest || isStaff);
 
-  const activeGateway = gatewaySettings.activeGateway || 'none';
+  const enabledGateways: string[] = [];
+  if (gatewaySettings.razorpay?.isEnabled !== false) enabledGateways.push('razorpay');
+  if (gatewaySettings.instamojo?.isEnabled) enabledGateways.push('instamojo');
+  if (gatewaySettings.phonepe?.isEnabled) enabledGateways.push('phonepe');
+  if (gatewaySettings.stripe?.isEnabled) enabledGateways.push('stripe');
+  if (gatewaySettings.paytm?.isEnabled) enabledGateways.push('paytm');
+  if (gatewaySettings.cashfree?.isEnabled) enabledGateways.push('cashfree');
+  if (gatewaySettings.paypal?.isEnabled) enabledGateways.push('paypal');
+
+  const activeGateway = gatewaySettings.activeGateway && gatewaySettings.activeGateway !== 'none'
+    ? gatewaySettings.activeGateway
+    : (enabledGateways[0] || 'razorpay');
 
   return {
     gatewaySettings,
@@ -42,6 +53,8 @@ export function usePaymentGateways() {
     canPublicUseGateway,
     canDonorUseGateway,
     activeGateway,
+    enabledGateways,
+    allowMultipleGateways: enabledGateways.length > 1,
     isStaff,
   };
 }

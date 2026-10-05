@@ -3,7 +3,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { ShieldCheck, Hourglass } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface CauseProgressBarProps {
   targetAmount: number;
@@ -57,39 +56,23 @@ export function CauseProgressBar({
       )}
 
       {/* Layered Progress Bar Track */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className={cn("relative w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner border border-slate-200/60", heightClass)}>
-              {/* Verified Segment */}
-              <div
-                style={{ width: `${verifiedPercent}%` }}
-                className="bg-gradient-to-r from-emerald-500 to-teal-600 h-full transition-all duration-500"
-              />
-              {/* Pending Segment */}
-              {pendingPercent > 0 && (
-                <div
-                  style={{ width: `${pendingPercent}%` }}
-                  className="h-full bg-amber-400 opacity-90 transition-all duration-500 border-l border-white/40 relative overflow-hidden bg-[linear-gradient(45deg,rgba(255,255,255,0.3)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.3)_50%,rgba(255,255,255,0.3)_75%,transparent_75%,transparent)] bg-[length:10px_10px]"
-                />
-              )}
-            </div>
-          </TooltipTrigger>
-          <TooltipContent side="top" className="text-xs space-y-1 font-sans p-3 rounded-xl bg-slate-900 text-white shadow-xl border border-slate-700 z-50">
-            <p className="font-bold flex items-center gap-1.5 text-emerald-400">
-              <ShieldCheck className="h-4 w-4" /> Confirmed / Verified: ₹{verified.toLocaleString('en-IN')} ({Math.round(verifiedPercent)}%)
-            </p>
-            {pending > 0 && (
-              <p className="font-bold flex items-center gap-1.5 text-amber-300">
-                <Hourglass className="h-4 w-4" /> Pending Audit: ₹{pending.toLocaleString('en-IN')} ({Math.round(pendingPercent)}%)
-              </p>
-            )}
-            <p className="text-slate-400 text-[10px]">
-              Required Target: ₹{target.toLocaleString('en-IN')}
-            </p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      <div 
+        title={`Verified: ₹${verified.toLocaleString('en-IN')} (${Math.round(verifiedPercent)}%) ${pending > 0 ? `| Pending Audit: ₹${pending.toLocaleString('en-IN')} (${Math.round(pendingPercent)}%)` : ''} | Goal: ₹${target.toLocaleString('en-IN')}`}
+        className={cn("relative w-full bg-slate-100 rounded-full overflow-hidden flex shadow-inner border border-slate-200/60 cursor-pointer group", heightClass)}
+      >
+        {/* Verified Segment */}
+        <div
+          style={{ width: `${verifiedPercent}%` }}
+          className="bg-gradient-to-r from-emerald-500 to-teal-600 h-full transition-all duration-500"
+        />
+        {/* Pending Segment */}
+        {pendingPercent > 0 && (
+          <div
+            style={{ width: `${pendingPercent}%` }}
+            className="h-full bg-amber-400 opacity-90 transition-all duration-500 border-l border-white/40 relative overflow-hidden bg-[linear-gradient(45deg,rgba(255,255,255,0.3)_25%,transparent_25%,transparent_50%,rgba(255,255,255,0.3)_50%,rgba(255,255,255,0.3)_75%,transparent_75%,transparent)] bg-[length:10px_10px]"
+          />
+        )}
+      </div>
 
       {/* Bottom Footer Details */}
       {showDetails && (

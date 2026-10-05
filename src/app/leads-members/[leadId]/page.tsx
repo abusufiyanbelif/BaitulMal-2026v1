@@ -248,7 +248,7 @@ export default function LeadDetailsPage() {
     }
     
     if (editMode) {
-        toast({ title: "Save Required", description: "Secure Inventory Edits First.", variant: 'destructive' });
+        toast({ title: "Save Required", description: "Save Inventory Edits First.", variant: 'destructive' });
         return;
     }
 
@@ -386,7 +386,7 @@ export default function LeadDetailsPage() {
                       <div className="flex gap-2">
                           <Button variant="outline" onClick={handleCancel} className="font-bold border-primary/20 text-primary">Cancel</Button>
                           <Button onClick={handleSave} className="font-bold shadow-md bg-primary text-white">
-                              <Save className="mr-2 h-4 w-4" /> Secure Changes
+                              <Save className="mr-2 h-4 w-4" /> Save Changes
                           </Button>
                       </div>
                   )

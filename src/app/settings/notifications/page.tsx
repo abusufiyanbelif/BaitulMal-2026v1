@@ -195,7 +195,7 @@ export default function NotificationSettingsPage() {
                         <Bell className="h-6 w-6 text-primary/40" />
                         Notification Management
                     </h2>
-                    <p className="text-sm text-muted-foreground">Orchestrate how and where organization alerts are delivered.</p>
+                    <p className="text-sm text-muted-foreground">Manage how and where alerts and updates are delivered.</p>
                 </div>
                 {canUpdate && (
                     <Button onClick={() => handleOpenDialog()} className="font-bold shadow-md transition-transform active:scale-95">
@@ -213,7 +213,7 @@ export default function NotificationSettingsPage() {
                         <h3 className="text-lg font-bold text-primary opacity-60">No Notification Groups</h3>
                         <p className="text-sm text-muted-foreground max-w-xs mt-2">Create groups to route verification alerts and system updates to specific team members.</p>
                         <Button variant="outline" onClick={() => handleOpenDialog()} className="mt-6 font-bold">
-                            Initialize First Group
+                            Create Alert Group
                         </Button>
                     </Card>
                 ) : (
