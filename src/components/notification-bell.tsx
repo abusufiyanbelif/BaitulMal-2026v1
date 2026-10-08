@@ -72,7 +72,7 @@ function NotificationItem({ icon: Icon, title, subtitle, href, variant = 'info' 
             </div>
             <div className="flex-1 min-w-0 space-y-0.5">
                 <p className="text-xs font-bold text-primary truncate tracking-tight">{title}</p>
-                <p className="text-[9px] text-muted-foreground truncate font-medium tracking-tight opacity-80">{subtitle}</p>
+                <p className="text-xs text-muted-foreground truncate font-medium tracking-tight opacity-80">{subtitle}</p>
             </div>
             <ChevronRight className="h-3 w-3 text-muted-foreground/30 group-hover:text-primary transition-colors shrink-0" />
         </Link>
@@ -193,22 +193,22 @@ export function NotificationBell() {
                     <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
                             <h3 className="text-sm font-bold text-primary tracking-tight">Notification Center</h3>
-                            <p className="text-[9px] text-muted-foreground font-medium tracking-tight opacity-60">Alerts, Tasks & Updates</p>
+                            <p className="text-xs text-muted-foreground font-medium tracking-tight opacity-60">Alerts, Tasks & Updates</p>
                         </div>
-                        <Badge variant="eligible" className="text-[9px] font-black">{totalAlerts} Active</Badge>
+                        <Badge variant="eligible" className="text-xs font-black">{totalAlerts} Active</Badge>
                     </div>
                 </div>
                 
                 <Tabs defaultValue={personalCount > 0 ? "updates" : "tasks"} className="flex flex-col flex-1 min-h-0">
                     <div className="px-2 pt-2 shrink-0">
                         <TabsList className="grid w-full grid-cols-2 h-9 bg-primary/5 p-0.5 rounded-xl">
-                            <TabsTrigger value="updates" className="font-bold text-[10px] data-[state=active]:shadow-sm relative">
-                                <MessageCircle className="mr-1.5 h-3 w-3" /> Updates
-                                {personalCount > 0 && <Badge variant="destructive" className="ml-1.5 h-4 min-w-4 px-1 text-[8px] font-black">{personalCount}</Badge>}
+                            <TabsTrigger value="updates" className="font-bold text-xs data-[state=active]:shadow-sm relative">
+                                <MessageCircle className="mr-1.5 h-3.5 w-3.5" /> Updates
+                                {personalCount > 0 && <Badge variant="destructive" className="ml-1.5 h-4 min-w-4 px-1 text-[10px] font-black">{personalCount}</Badge>}
                             </TabsTrigger>
-                            <TabsTrigger value="tasks" className="font-bold text-[10px] data-[state=active]:shadow-sm relative">
-                                <AlertCircle className="mr-1.5 h-3 w-3" /> Tasks
-                                {taskAlerts > 0 && <Badge variant="outline" className="ml-1.5 h-4 min-w-4 px-1 text-[8px] font-black border-primary/20">{taskAlerts}</Badge>}
+                            <TabsTrigger value="tasks" className="font-bold text-xs data-[state=active]:shadow-sm relative">
+                                <AlertCircle className="mr-1.5 h-3.5 w-3.5" /> Tasks
+                                {taskAlerts > 0 && <Badge variant="outline" className="ml-1.5 h-4 min-w-4 px-1 text-[10px] font-black border-primary/20">{taskAlerts}</Badge>}
                             </TabsTrigger>
                         </TabsList>
                     </div>
@@ -255,8 +255,8 @@ export function NotificationBell() {
                                                     </div>
                                                     <div className="flex-1 min-w-0 space-y-0.5">
                                                         <p className="text-xs font-bold text-primary truncate tracking-tight">{n.title}</p>
-                                                        <p className="text-[10px] text-muted-foreground font-normal line-clamp-2 leading-relaxed">{n.body}</p>
-                                                        {timeStr && <p className="text-[8px] text-muted-foreground/50 font-medium flex items-center gap-1"><Clock className="h-2.5 w-2.5" /> {timeStr}</p>}
+                                                        <p className="text-xs text-muted-foreground font-normal line-clamp-2 leading-relaxed">{n.body}</p>
+                                                        {timeStr && <p className="text-xs text-muted-foreground/60 font-medium flex items-center gap-1 mt-1"><Clock className="h-3 w-3" /> {timeStr}</p>}
                                                     </div>
                                                 </Link>
                                             );

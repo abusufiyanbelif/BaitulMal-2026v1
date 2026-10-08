@@ -1,7 +1,7 @@
 # 📘 User Guide: /leads-members/[leadId]
     
-**Build Version:** `2026.09.12.3`
-**Last Updated:** 12/9/2026, 12:58:40 am
+**Build Version:** `2026.10.08.1`
+**Last Updated:** 8/10/2026, 11:36:00 pm
 **Internal Route:** `/leads-members/[leadId]`
 
 ---
@@ -31,7 +31,7 @@ The following fields are mapped within this interface:
 - **Back To Leads**: Interactive button to initiate back to leads operation.
 - **Back To Leads**: Interactive button to initiate back to leads operation.
 - **Cancel**: Interactive button to initiate cancel operation (Triggers handleCancel).
-- **Secure Changes**: Interactive button to initiate secure changes operation (Triggers handleSave).
+- **Save Changes**: Interactive button to initiate save changes operation (Triggers handleSave).
 - **setIsAddingCategory(false)}>**: Interactive button to initiate setisaddingcategory(false)}> operation (Triggers () => setIsAddingCategory(false)).
 - **handleDeleteItemClick(item.id, item.name)}>**: Interactive button to initiate handledeleteitemclick(item.id, item.name)}> operation (Triggers () => handleDeleteItemClick(item.id, item.name)).
 - **Add Line Item**: Interactive button to initiate add line item operation (Triggers handleAddItem).

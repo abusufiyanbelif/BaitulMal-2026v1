@@ -1,7 +1,7 @@
 # 📘 User Guide: /settings/app
     
-**Build Version:** `2026.09.12.3`
-**Last Updated:** 12/9/2026, 12:58:40 am
+**Build Version:** `2026.10.08.1`
+**Last Updated:** 8/10/2026, 11:36:00 pm
 **Internal Route:** `/settings/app`
 
 ---
@@ -24,17 +24,26 @@ Application Module
 ## ⌨️ Fields & Data Mapping
 The following fields are mapped within this interface:
 - Visible
+- Test Amount (₹)
+- Test Note / Remark
 - Big Title / Headline
 - Short Description
 - {ticker.label}
 - Max Feed Items
 - Archive Depth
 - Update Vector
-- Your UPI ID
+- Primary UPI ID (VPA Handle)
+- Secondary / Backup UPI ID
 - Mobile Number for Payment
+- Display QR & UPI Publicly
+- Public View
 - Account Holder Name
+- Bank Name
+- Branch Name
 - Account Number
 - Bank IFSC Code
+- Account Type
+- SWIFT / BIC Code
 - Inbound Portal (Donors)
 - Outbound Portal (Recipients)
 - Primary Auth Method
@@ -42,15 +51,46 @@ The following fields are mapped within this interface:
 - Organization Name
 - Registration No.
 - PAN Vector
+- Banner Color Theme
+- Smart Message Generator
+- Custom Alert Message (Fully Editable)
 - Official Portal URL
 - Contact Email Vector
+- Instagram Profile URL
+- Facebook Profile URL
+- YouTube Channel URL
+- Twitter / X Profile URL
+- LinkedIn Profile URL
+- WhatsApp Link / Number
+- Telegram Channel / Link
+- Input: 100
+- Input: Donation Test Note
 - Input: handle@upi
+- Input: backup@icici
 - Input: +91-XXXXX-XXXXX
+- Input: Baitulmal Samajik Sanstha
+- Input: State Bank of India
+- Input: Solapur Main Branch
+- Input: 0000000000
+- Input: SBIN0000000
+- Input: Select Account Type
+- Input: SBININBBXXX
+- Input: Notice: Official domain registration & web URL setup is in progress. All online donation options and community portals are fully operational.
 - Input: https://organization.org
 - Input: admin@organization.org
+- Input: https://instagram.com/your_profile
+- Input: https://facebook.com/your_page
+- Input: https://youtube.com/@your_channel
+- Input: https://x.com/your_handle
+- Input: https://linkedin.com/company/your_org
+- Input: https://wa.me/919876543210 or +919876543210
+- Input: https://t.me/your_channel or @your_channel
 
 ## ⚡ Interactive Action Items
-- **Discard**: Interactive button to initiate discard operation (Triggers handleCancel).
+- **Cancel**: Interactive button to initiate cancel operation (Triggers handleCancel).
+- **View Usage & Billing**: Interactive button to initiate view usage & billing operation.
+- **Launch UPI App**: Interactive button to initiate launch upi app operation.
+- **Manage Gateways**: Interactive button to initiate manage gateways operation.
 - **Discard Updates**: Interactive button to initiate discard updates operation (Triggers handleCancel).
 - **handleFieldChange**: Internal logic handler for FieldChange workflow.
 - **handleRemoveLogo**: Internal logic handler for RemoveLogo workflow.

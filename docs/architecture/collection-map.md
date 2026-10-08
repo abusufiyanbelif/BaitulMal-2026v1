@@ -1,7 +1,7 @@
 # 🏗️ Organization Data Architecture
 
-**Build Version:** `2026.09.12.3`
-**Last Updated:** 12/9/2026, 12:58:41 am
+**Build Version:** `2026.10.08.1`
+**Last Updated:** 8/10/2026, 11:36:00 pm
 
 Mapping between Application Modules and Firestore Collections.
 
@@ -23,8 +23,12 @@ Mapping between Application Modules and Firestore Collections.
 | `app\donations\actions.ts` | `donors` | Read/Write |
 | `app\donations\actions.ts` | `campaigns` | Read/Write |
 | `app\donations\actions.ts` | `leads` | Read/Write |
+| `app\donations\public-actions.ts` | `settings` | Read/Write |
 | `app\donations\public-actions.ts` | `donors` | Read/Write |
+| `app\donations\public-actions.ts` | `users` | Read/Write |
+| `app\donations\public-actions.ts` | `user_lookups` | Read/Write |
 | `app\donations\public-actions.ts` | `donations` | Read/Write |
+| `app\donations\public-actions.ts` | `logs` | Read/Write |
 | `app\donors\actions.ts` | `user_lookups` | Read/Write |
 | `app\donors\actions.ts` | `donors` | Read/Write |
 | `app\donors\actions.ts` | `users` | Read/Write |

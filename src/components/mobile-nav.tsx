@@ -45,7 +45,7 @@ export function MobileNav() {
             )}>
               <Icon className={cn("h-5 w-5", isActive && "stroke-[2.5px]")} />
             </div>
-            <span className="text-[10px] font-bold tracking-tight uppercase">
+            <span className="text-[11px] font-bold tracking-tight uppercase">
               {item.label}
             </span>
           </Link>

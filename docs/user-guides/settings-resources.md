@@ -1,7 +1,7 @@
 # 📘 User Guide: /settings/resources
     
-**Build Version:** `2026.09.12.3`
-**Last Updated:** 12/9/2026, 12:58:41 am
+**Build Version:** `2026.10.08.1`
+**Last Updated:** 8/10/2026, 11:36:00 pm
 **Internal Route:** `/settings/resources`
 
 ---
@@ -28,6 +28,8 @@ The following fields are mapped within this interface:
 - Meta Permanent Access Token
 - Phone Number Id
 - Waba Id
+- WhatsApp Default Group ID
+- WhatsApp Donation Group ID
 - Auto WhatsApp Messages
 - WhatsApp OTP for Portal Login
 - WhatsApp Subscription Detail
@@ -61,6 +63,8 @@ The following fields are mapped within this interface:
 - Input: https://gate.whapi.cloud/messages/text
 - Input: e.g. 123456789
 - Input: Business Account ID
+- Input: e.g. 1203630123456789@g.us
+- Input: e.g. 1203639876543210@g.us
 - Input: Standard Monthly
 - Input: +919999999999
 - Input: smtp.gmail.com

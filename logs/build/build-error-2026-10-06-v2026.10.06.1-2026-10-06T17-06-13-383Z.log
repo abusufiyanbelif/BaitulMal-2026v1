@@ -1,0 +1,431 @@
+BUILD FAILURE LOG - 6/10/2026, 10:38:44 pm
+Version: 2026.10.06.1
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+
+
+STDERR:
+Failed to compile.
+
+./src/app/messages/actions.ts
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\messages\actions.ts[0m:359:1]
+ [2m359[0m |             message: status === 'Sent' ? 'Message dispatched successfully.' : `Failed: ${error}`,
+ [2m360[0m |             logId: logRef.id
+ [2m361[0m |         };
+ [2m362[0m |     } catch (e: any) {
+     : [31;1m      ^^^^^[0m
+ [2m363[0m |         console.error('Messaging Action Error:', e);
+ [2m364[0m |         return { success: false, message: `System Error: ${e.message}` };
+ [2m365[0m |     }
+     `----
+
+  [31mx[0m 'import', and 'export' cannot be used outside of module code
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\messages\actions.ts[0m:369:1]
+ [2m369[0m | /**
+ [2m370[0m |  * Seed default templates if they don't exist
+ [2m371[0m |  */
+ [2m372[0m | export async function seedDefaultTemplatesAction() {
+     : [31;1m^^^^^^[0m
+ [2m373[0m |     const { adminDb } = getAdminServices();
+ [2m374[0m |     if (!adminDb) return;
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/messages/actions.ts
+./src/app/diagnostics/page.tsx
+
+./src/app/verifications/actions.ts
+Error: 
+  [31mx[0m the name `verifierPhone` is defined multiple times
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\verifications\actions.ts[0m:115:1]
+ [2m115[0m |         for (const verifier of payload.assignedVerifiers) {
+ [2m116[0m |             try {
+ [2m117[0m |                 const verifierSnap = await adminDb.collection('users').doc(verifier.id).get();
+ [2m118[0m |                 const verifierPhone = verifierSnap.data()?.phone;
+     : [31;1m                      ^^^^^^|^^^^^^[0m
+     :                             [31;1m`-- [31;1mprevious definition of `verifierPhone` here[0m[0m
+ [2m119[0m |                 
+ [2m120[0m |                 // Get Base URL
+ [2m121[0m |                 let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
+ [2m122[0m |                 try {
+ [2m123[0m |                     const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+ [2m124[0m |                     if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
+ [2m125[0m |                         baseUrl = resourceSnap.data()?.baseUrl;
+ [2m126[0m |                     }
+ [2m127[0m |                 } catch (e) {}
+ [2m128[0m | 
+ [2m129[0m |                 const targetCaseId = (payload.newValue as any)?.caseId || (payload.originalValue as any)?.caseId || payload.targetId;
+ [2m130[0m | 
+ [2m131[0m |                 if (verifierPhone && verifierPhone !== 'Unknown') {
+ [2m132[0m | 
+ [2m133[0m |                     const notifyResult = await sendWhatsAppAction({
+ [2m134[0m |                         to: verifierPhone,
+ [2m135[0m |                         templateId: 'verification_request',
+ [2m136[0m |                         variables: {
+ [2m137[0m |                             verifierName: verifier.name,
+ [2m138[0m |                             requesterName: payload.requestedBy.name,
+ [2m139[0m |                             purpose: payload.description || 'Data Update',
+ [2m140[0m |                             module: payload.module.toUpperCase(),
+ [2m141[0m |                             recordId: targetCaseId,
+ [2m142[0m |                             caseId: targetCaseId,
+ [2m143[0m |                             requestId: payload.id,
+ [2m144[0m |                             url: `${baseUrl}/verifications?requestId=${payload.id}`
+ [2m145[0m |                         },
+ [2m146[0m |                         metadata: {
+ [2m147[0m |                             moduleId: payload.module,
+ [2m148[0m |                             recordId: payload.targetId,
+ [2m149[0m |                             userId: verifier.id,
+ [2m150[0m |                             templateId: 'verification_request'
+ [2m151[0m |                         },
+ [2m152[0m |                         moduleId: payload.module.replace(/s$/, '') as any // Map plurals to singular
+ [2m153[0m |                     });
+ [2m154[0m |                     
+ [2m155[0m |                     if (notifyResult.success) sentCount++;
+ [2m156[0m |                     else failCount++;
+ [2m157[0m |                 }
+ [2m158[0m |                 
+ [2m159[0m |                 const verifierData = verifierSnap.data();
+ [2m160[0m |                 const verifierTelegramId = verifierData?.telegramChatId;
+ [2m161[0m |                 const verifierBotToken = verifierData?.customTelegramBotToken;
+ [2m162[0m |                 
+ [2m163[0m |                 if (verifierTelegramId) {
+ [2m164[0m |                     let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
+ [2m165[0m |                     try {
+ [2m166[0m |                         const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+ [2m167[0m |                         if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
+ [2m168[0m |                             baseUrl = resourceSnap.data()?.baseUrl;
+ [2m169[0m |                         }
+ [2m170[0m |                     } catch (e) {}
+ [2m171[0m | 
+ [2m172[0m |                     await sendTelegramAction({
+ [2m173[0m |                         message: `🔔 *New Verification Request*\n\n*Module:* ${payload.module.toUpperCase()}\n*Case / Record ID:* ${targetCaseId}\n*Requested By:* ${payload.requestedBy.name}\n*Purpose:* ${payload.description || 'Data Update'}\n\n🔗 Review: ${baseUrl}/verifications?requestId=${payload.id}`,
+ [2m174[0m |                         chatId: verifierTelegramId,
+ [2m175[0m |                         moduleId: payload.module.replace(/s$/, '') as any,
+ [2m176[0m |                         configOverride: verifierBotToken ? { telegramBotToken: verifierBotToken } : undefined,
+ [2m177[0m |                         richData: {
+ [2m178[0m |                             title: 'Data Verification Request',
+ [2m179[0m |                             cause: payload.description || 'System Data Update',
+ [2m180[0m |                             purpose: payload.module.toUpperCase(),
+ [2m181[0m |                             oldData: payload.originalValue,
+ [2m182[0m |                             newData: payload.newValue,
+ [2m183[0m |                             actionUrl: `${baseUrl}/verifications?requestId=${payload.id}`
+ [2m184[0m |                         }
+ [2m185[0m |                     });
+ [2m186[0m |                 }
+ [2m187[0m | 
+ [2m188[0m |                 const verifierPhone = verifierData?.phone;
+     : [33;1m                      ^^^^^^|^^^^^^[0m
+     :                             [33;1m`-- [33;1m`verifierPhone` redefined here[0m[0m
+ [2m189[0m |                 if (verifierPhone && verifierPhone.length >= 10) {
+ [2m190[0m |                     let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
+ [2m190[0m |                     await sendWhatsAppAction({
+     `----
+
+  [31mx[0m the name `requesterPhone` is defined multiple times
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\verifications\actions.ts[0m:511:1]
+ [2m511[0m |             // Notify Requester
+ [2m512[0m |             try {
+ [2m513[0m |                 const requesterSnap = await adminDb.collection('users').doc(request.requestedBy.id).get();
+ [2m514[0m |                 const requesterPhone = requesterSnap.data()?.phone;
+     : [31;1m                      ^^^^^^^|^^^^^^[0m
+     :                              [31;1m`-- [31;1mprevious definition of `requesterPhone` here[0m[0m
+ [2m515[0m |                 if (requesterPhone && requesterPhone !== 'Unknown') {
+ [2m516[0m |                     await sendWhatsAppAction({
+ [2m517[0m |                         to: requesterPhone,
+ [2m518[0m |                         templateId: 'verification_approved',
+ [2m519[0m |                         variables: {
+ [2m520[0m |                             requesterName: request.requestedBy.name,
+ [2m521[0m |                             module: request.module.toUpperCase(),
+ [2m522[0m |                             recordId: request.targetId,
+ [2m523[0m |                             purpose: request.description || 'Data Update'
+ [2m524[0m |                         },
+ [2m525[0m |                         metadata: {
+ [2m526[0m |                             moduleId: request.module,
+ [2m527[0m |                             recordId: request.targetId,
+ [2m528[0m |                             userId: request.requestedBy.id,
+ [2m529[0m |                             templateId: 'verification_approved'
+ [2m530[0m |                         },
+ [2m531[0m |                         moduleId: request.module.replace(/s$/, '') as any
+ [2m532[0m |                     });
+ [2m533[0m |                 }
+ [2m534[0m |                 
+ [2m535[0m |                 const requesterData = requesterSnap.data();
+ [2m536[0m |                 const requesterTelegramId = requesterData?.telegramChatId;
+ [2m537[0m |                 const requesterBotToken = requesterData?.customTelegramBotToken;
+ [2m538[0m | 
+ [2m539[0m |                 if (requesterTelegramId) {
+ [2m540[0m |                     await sendTelegramAction({
+ [2m541[0m |                         message: `✅ *Verification Approved*\n\n*Module:* ${request.module.toUpperCase()}\n*Requested By:* ${request.requestedBy.name}\n*Purpose:* ${request.description || 'Data Update'}`,
+ [2m542[0m |                         chatId: requesterTelegramId,
+ [2m543[0m |                         moduleId: request.module.replace(/s$/, '') as any,
+ [2m544[0m |                         configOverride: requesterBotToken ? { telegramBotToken: requesterBotToken } : undefined
+ [2m545[0m |                     });
+ [2m546[0m |                 }
+ [2m547[0m | 
+ [2m548[0m |                 const requesterPhone = requesterData?.phone;
+     : [33;1m                      ^^^^^^^|^^^^^^[0m
+     :                              [33;1m`-- [33;1m`requesterPhone` redefined here[0m[0m
+ [2m549[0m |                 if (requesterPhone && requesterPhone.length >= 10) {
+ [2m550[0m |                     await sendWhatsAppAction({
+ [2m550[0m |                         to: requesterPhone,
+     `----
+
+Import trace for requested module:
+./src/app/verifications/actions.ts
+./src/app/verifications/page.tsx
+
+./src/app/messages/actions.ts
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\messages\actions.ts[0m:359:1]
+ [2m359[0m |             message: status === 'Sent' ? 'Message dispatched successfully.' : `Failed: ${error}`,
+ [2m360[0m |             logId: logRef.id
+ [2m361[0m |         };
+ [2m362[0m |     } catch (e: any) {
+     : [31;1m      ^^^^^[0m
+ [2m363[0m |         console.error('Messaging Action Error:', e);
+ [2m364[0m |         return { success: false, message: `System Error: ${e.message}` };
+ [2m365[0m |     }
+     `----
+
+  [31mx[0m 'import', and 'export' cannot be used outside of module code
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\messages\actions.ts[0m:369:1]
+ [2m369[0m | /**
+ [2m370[0m |  * Seed default templates if they don't exist
+ [2m371[0m |  */
+ [2m372[0m | export async function seedDefaultTemplatesAction() {
+     : [31;1m^^^^^^[0m
+ [2m373[0m |     const { adminDb } = getAdminServices();
+ [2m374[0m |     if (!adminDb) return;
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/messages/actions.ts
+./src/app/portal-login/actions.ts
+
+
+> Build failed because of webpack errors
+
+
+ERROR MESSAGE:
+Command failed: npx next build
+Failed to compile.
+
+./src/app/messages/actions.ts
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\messages\actions.ts[0m:359:1]
+ [2m359[0m |             message: status === 'Sent' ? 'Message dispatched successfully.' : `Failed: ${error}`,
+ [2m360[0m |             logId: logRef.id
+ [2m361[0m |         };
+ [2m362[0m |     } catch (e: any) {
+     : [31;1m      ^^^^^[0m
+ [2m363[0m |         console.error('Messaging Action Error:', e);
+ [2m364[0m |         return { success: false, message: `System Error: ${e.message}` };
+ [2m365[0m |     }
+     `----
+
+  [31mx[0m 'import', and 'export' cannot be used outside of module code
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\messages\actions.ts[0m:369:1]
+ [2m369[0m | /**
+ [2m370[0m |  * Seed default templates if they don't exist
+ [2m371[0m |  */
+ [2m372[0m | export async function seedDefaultTemplatesAction() {
+     : [31;1m^^^^^^[0m
+ [2m373[0m |     const { adminDb } = getAdminServices();
+ [2m374[0m |     if (!adminDb) return;
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/messages/actions.ts
+./src/app/diagnostics/page.tsx
+
+./src/app/verifications/actions.ts
+Error: 
+  [31mx[0m the name `verifierPhone` is defined multiple times
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\verifications\actions.ts[0m:115:1]
+ [2m115[0m |         for (const verifier of payload.assignedVerifiers) {
+ [2m116[0m |             try {
+ [2m117[0m |                 const verifierSnap = await adminDb.collection('users').doc(verifier.id).get();
+ [2m118[0m |                 const verifierPhone = verifierSnap.data()?.phone;
+     : [31;1m                      ^^^^^^|^^^^^^[0m
+     :                             [31;1m`-- [31;1mprevious definition of `verifierPhone` here[0m[0m
+ [2m119[0m |                 
+ [2m120[0m |                 // Get Base URL
+ [2m121[0m |                 let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
+ [2m122[0m |                 try {
+ [2m123[0m |                     const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+ [2m124[0m |                     if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
+ [2m125[0m |                         baseUrl = resourceSnap.data()?.baseUrl;
+ [2m126[0m |                     }
+ [2m127[0m |                 } catch (e) {}
+ [2m128[0m | 
+ [2m129[0m |                 const targetCaseId = (payload.newValue as any)?.caseId || (payload.originalValue as any)?.caseId || payload.targetId;
+ [2m130[0m | 
+ [2m131[0m |                 if (verifierPhone && verifierPhone !== 'Unknown') {
+ [2m132[0m | 
+ [2m133[0m |                     const notifyResult = await sendWhatsAppAction({
+ [2m134[0m |                         to: verifierPhone,
+ [2m135[0m |                         templateId: 'verification_request',
+ [2m136[0m |                         variables: {
+ [2m137[0m |                             verifierName: verifier.name,
+ [2m138[0m |                             requesterName: payload.requestedBy.name,
+ [2m139[0m |                             purpose: payload.description || 'Data Update',
+ [2m140[0m |                             module: payload.module.toUpperCase(),
+ [2m141[0m |                             recordId: targetCaseId,
+ [2m142[0m |                             caseId: targetCaseId,
+ [2m143[0m |                             requestId: payload.id,
+ [2m144[0m |                             url: `${baseUrl}/verifications?requestId=${payload.id}`
+ [2m145[0m |                         },
+ [2m146[0m |                         metadata: {
+ [2m147[0m |                             moduleId: payload.module,
+ [2m148[0m |                             recordId: payload.targetId,
+ [2m149[0m |                             userId: verifier.id,
+ [2m150[0m |                             templateId: 'verification_request'
+ [2m151[0m |                         },
+ [2m152[0m |                         moduleId: payload.module.replace(/s$/, '') as any // Map plurals to singular
+ [2m153[0m |                     });
+ [2m154[0m |                     
+ [2m155[0m |                     if (notifyResult.success) sentCount++;
+ [2m156[0m |                     else failCount++;
+ [2m157[0m |                 }
+ [2m158[0m |                 
+ [2m159[0m |                 const verifierData = verifierSnap.data();
+ [2m160[0m |                 const verifierTelegramId = verifierData?.telegramChatId;
+ [2m161[0m |                 const verifierBotToken = verifierData?.customTelegramBotToken;
+ [2m162[0m |                 
+ [2m163[0m |                 if (verifierTelegramId) {
+ [2m164[0m |                     let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
+ [2m165[0m |                     try {
+ [2m166[0m |                         const resourceSnap = await adminDb.collection('settings').doc('resources').get();
+ [2m167[0m |                         if (resourceSnap.exists && resourceSnap.data()?.baseUrl) {
+ [2m168[0m |                             baseUrl = resourceSnap.data()?.baseUrl;
+ [2m169[0m |                         }
+ [2m170[0m |                     } catch (e) {}
+ [2m171[0m | 
+ [2m172[0m |                     await sendTelegramAction({
+ [2m173[0m |                         message: `🔔 *New Verification Request*\n\n*Module:* ${payload.module.toUpperCase()}\n*Case / Record ID:* ${targetCaseId}\n*Requested By:* ${payload.requestedBy.name}\n*Purpose:* ${payload.description || 'Data Update'}\n\n🔗 Review: ${baseUrl}/verifications?requestId=${payload.id}`,
+ [2m174[0m |                         chatId: verifierTelegramId,
+ [2m175[0m |                         moduleId: payload.module.replace(/s$/, '') as any,
+ [2m176[0m |                         configOverride: verifierBotToken ? { telegramBotToken: verifierBotToken } : undefined,
+ [2m177[0m |                         richData: {
+ [2m178[0m |                             title: 'Data Verification Request',
+ [2m179[0m |                             cause: payload.description || 'System Data Update',
+ [2m180[0m |                             purpose: payload.module.toUpperCase(),
+ [2m181[0m |                             oldData: payload.originalValue,
+ [2m182[0m |                             newData: payload.newValue,
+ [2m183[0m |                             actionUrl: `${baseUrl}/verifications?requestId=${payload.id}`
+ [2m184[0m |                         }
+ [2m185[0m |                     });
+ [2m186[0m |                 }
+ [2m187[0m | 
+ [2m188[0m |                 const verifierPhone = verifierData?.phone;
+     : [33;1m                      ^^^^^^|^^^^^^[0m
+     :                             [33;1m`-- [33;1m`verifierPhone` redefined here[0m[0m
+ [2m189[0m |                 if (verifierPhone && verifierPhone.length >= 10) {
+ [2m190[0m |                     let baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://baitulamalsolapur.com';
+ [2m190[0m |                     await sendWhatsAppAction({
+     `----
+
+  [31mx[0m the name `requesterPhone` is defined multiple times
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\verifications\actions.ts[0m:511:1]
+ [2m511[0m |             // Notify Requester
+ [2m512[0m |             try {
+ [2m513[0m |                 const requesterSnap = await adminDb.collection('users').doc(request.requestedBy.id).get();
+ [2m514[0m |                 const requesterPhone = requesterSnap.data()?.phone;
+     : [31;1m                      ^^^^^^^|^^^^^^[0m
+     :                              [31;1m`-- [31;1mprevious definition of `requesterPhone` here[0m[0m
+ [2m515[0m |                 if (requesterPhone && requesterPhone !== 'Unknown') {
+ [2m516[0m |                     await sendWhatsAppAction({
+ [2m517[0m |                         to: requesterPhone,
+ [2m518[0m |                         templateId: 'verification_approved',
+ [2m519[0m |                         variables: {
+ [2m520[0m |                             requesterName: request.requestedBy.name,
+ [2m521[0m |                             module: request.module.toUpperCase(),
+ [2m522[0m |                             recordId: request.targetId,
+ [2m523[0m |                             purpose: request.description || 'Data Update'
+ [2m524[0m |                         },
+ [2m525[0m |                         metadata: {
+ [2m526[0m |                             moduleId: request.module,
+ [2m527[0m |                             recordId: request.targetId,
+ [2m528[0m |                             userId: request.requestedBy.id,
+ [2m529[0m |                             templateId: 'verification_approved'
+ [2m530[0m |                         },
+ [2m531[0m |                         moduleId: request.module.replace(/s$/, '') as any
+ [2m532[0m |                     });
+ [2m533[0m |                 }
+ [2m534[0m |                 
+ [2m535[0m |                 const requesterData = requesterSnap.data();
+ [2m536[0m |                 const requesterTelegramId = requesterData?.telegramChatId;
+ [2m537[0m |                 const requesterBotToken = requesterData?.customTelegramBotToken;
+ [2m538[0m | 
+ [2m539[0m |                 if (requesterTelegramId) {
+ [2m540[0m |                     await sendTelegramAction({
+ [2m541[0m |                         message: `✅ *Verification Approved*\n\n*Module:* ${request.module.toUpperCase()}\n*Requested By:* ${request.requestedBy.name}\n*Purpose:* ${request.description || 'Data Update'}`,
+ [2m542[0m |                         chatId: requesterTelegramId,
+ [2m543[0m |                         moduleId: request.module.replace(/s$/, '') as any,
+ [2m544[0m |                         configOverride: requesterBotToken ? { telegramBotToken: requesterBotToken } : undefined
+ [2m545[0m |                     });
+ [2m546[0m |                 }
+ [2m547[0m | 
+ [2m548[0m |                 const requesterPhone = requesterData?.phone;
+     : [33;1m                      ^^^^^^^|^^^^^^[0m
+     :                              [33;1m`-- [33;1m`requesterPhone` redefined here[0m[0m
+ [2m549[0m |                 if (requesterPhone && requesterPhone.length >= 10) {
+ [2m550[0m |                     await sendWhatsAppAction({
+ [2m550[0m |                         to: requesterPhone,
+     `----
+
+Import trace for requested module:
+./src/app/verifications/actions.ts
+./src/app/verifications/page.tsx
+
+./src/app/messages/actions.ts
+Error: 
+  [31mx[0m Expected a semicolon
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\messages\actions.ts[0m:359:1]
+ [2m359[0m |             message: status === 'Sent' ? 'Message dispatched successfully.' : `Failed: ${error}`,
+ [2m360[0m |             logId: logRef.id
+ [2m361[0m |         };
+ [2m362[0m |     } catch (e: any) {
+     : [31;1m      ^^^^^[0m
+ [2m363[0m |         console.error('Messaging Action Error:', e);
+ [2m364[0m |         return { success: false, message: `System Error: ${e.message}` };
+ [2m365[0m |     }
+     `----
+
+  [31mx[0m 'import', and 'export' cannot be used outside of module code
+     ,-[[36;1;4mC:\Users\Admin\Documents\baitulamal_2026v1\src\app\messages\actions.ts[0m:369:1]
+ [2m369[0m | /**
+ [2m370[0m |  * Seed default templates if they don't exist
+ [2m371[0m |  */
+ [2m372[0m | export async function seedDefaultTemplatesAction() {
+     : [31;1m^^^^^^[0m
+ [2m373[0m |     const { adminDb } = getAdminServices();
+ [2m374[0m |     if (!adminDb) return;
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/messages/actions.ts
+./src/app/portal-login/actions.ts
+
+
+> Build failed because of webpack errors

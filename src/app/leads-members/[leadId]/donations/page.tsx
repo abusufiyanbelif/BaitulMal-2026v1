@@ -57,7 +57,8 @@ import {
     Check,
     Trophy,
     Flag,
-    TrendingUp
+    TrendingUp,
+    Search
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -120,6 +121,11 @@ import {
 } from "@/components/ui/command";
 
 function MultiSelectFilter({ title, options, selected, onChange }: { title: string, options: readonly string[], selected: string[], onChange: (val: string[]) => void }) {
+    const handleToggle = (opt: string) => {
+        const next = selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt];
+        onChange(next);
+    };
+
     return (
         <Popover>
             <PopoverTrigger asChild>
@@ -134,31 +140,37 @@ function MultiSelectFilter({ title, options, selected, onChange }: { title: stri
             <PopoverContent className="w-[200px] p-0 rounded-[12px] shadow-dropdown border-primary/10 overflow-hidden" align="start">
                 <Command className="w-full">
                     <CommandInput placeholder={`Search ${title}...`} className="h-9 text-xs font-normal px-3 outline-none w-full border-b" />
-                    <CommandList className="max-h-[300px] overflow-y-auto p-1">
+                    <CommandList className="max-h-[300px] overflow-y-auto p-1 touch-auto">
                         <CommandEmpty className="py-4 text-center text-xs text-muted-foreground font-normal">No results found.</CommandEmpty>
                         <CommandGroup>
-                            <CommandItem onSelect={() => onChange([])} className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-bold text-xs mb-1">
-                                <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors", selected.length === 0 ? "bg-primary text-white" : "bg-transparent")}>
+                            <CommandItem 
+                                value={`all_${title}`}
+                                onSelect={() => onChange([])} 
+                                onPointerDown={(e) => { e.preventDefault(); onChange([]); }}
+                                onClick={(e) => { e.preventDefault(); onChange([]); }}
+                                className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-bold text-xs mb-1 select-none"
+                            >
+                                <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors pointer-events-none", selected.length === 0 ? "bg-primary text-white" : "bg-transparent")}>
                                     {selected.length === 0 && <Check className="h-3 w-3 stroke-[3]" />}
                                 </div>
-                                <span className="flex-1 truncate">All {title}s</span>
+                                <span className="flex-1 truncate pointer-events-none">All {title}s</span>
                             </CommandItem>
                             
                             <div className="h-px bg-primary/5 my-1" />
 
                             {options.map((opt) => (
                                 <CommandItem 
-                                    key={opt} 
-                                    onSelect={() => {
-                                        const next = selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt];
-                                        onChange(next);
-                                    }} 
-                                    className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-medium text-xs"
+                                    key={opt}
+                                    value={opt}
+                                    onSelect={() => handleToggle(opt)} 
+                                    onPointerDown={(e) => { e.preventDefault(); handleToggle(opt); }}
+                                    onClick={(e) => { e.preventDefault(); handleToggle(opt); }}
+                                    className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-medium text-xs select-none"
                                 >
-                                    <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors", selected.includes(opt) ? "bg-primary text-white" : "bg-transparent")}>
+                                    <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors pointer-events-none", selected.includes(opt) ? "bg-primary text-white" : "bg-transparent")}>
                                         {selected.includes(opt) && <Check className="h-3 w-3 stroke-[3]" />}
                                     </div>
-                                    <span className="flex-1 truncate">{opt}</span>
+                                    <span className="flex-1 truncate pointer-events-none">{opt}</span>
                                 </CommandItem>
                             ))}
                         </CommandGroup>
@@ -288,6 +300,29 @@ function LeadDonationListContent() {
   
   const canUpdate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.update', false);
   const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.leads-members.donations.create', false);
+
+  const resetAllFilters = () => {
+    setSearchTerm('');
+    setStatusFilter([]);
+    setIdentityFilter([]);
+    setMethodFilter([]);
+    setCategoryFilter([]);
+    setCalculationFilter('All');
+    setIncludedFilter([]);
+    setDateRange(undefined);
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = Boolean(
+    searchTerm || 
+    statusFilter.length > 0 || 
+    identityFilter.length > 0 || 
+    methodFilter.length > 0 || 
+    categoryFilter.length > 0 || 
+    calculationFilter !== 'All' || 
+    includedFilter.length > 0 || 
+    dateRange
+  );
 
   const handleSort = (key: string) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -884,7 +919,45 @@ function LeadDonationListContent() {
                     </div>
                 </div>
                 <div className="flex flex-wrap items-center gap-2 pt-4">
-                    <Input placeholder="Search Donor..." value={searchTerm} onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} className="max-w-[200px] h-9 text-xs font-normal" />
+                    <div className="flex items-center gap-1.5 shrink-0">
+                        <div className="relative w-[180px] sm:w-[220px]">
+                            <Input 
+                                placeholder="Search Donor..." 
+                                value={searchTerm} 
+                                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
+                                onKeyDown={(e) => { if (e.key === 'Enter') setCurrentPage(1); }}
+                                className="pl-8 pr-7 h-9 text-xs font-normal bg-white rounded-xl border-primary/20" 
+                            />
+                            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-primary opacity-40" />
+                            {searchTerm && (
+                                <button onClick={() => setSearchTerm('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary p-0.5">
+                                    <X className="h-3 w-3" />
+                                </button>
+                            )}
+                        </div>
+                        <Button 
+                            type="button" 
+                            onClick={() => setCurrentPage(1)} 
+                            size="sm" 
+                            className="h-9 px-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl text-xs shadow-sm flex items-center gap-1"
+                        >
+                            <Search className="h-3 w-3" />
+                            Search
+                        </Button>
+                        {hasActiveFilters && (
+                            <Button
+                                type="button"
+                                onClick={resetAllFilters}
+                                variant="outline"
+                                size="sm"
+                                className="h-9 px-3 border-destructive/20 text-destructive hover:bg-destructive/10 font-bold rounded-xl text-xs flex items-center gap-1 bg-white"
+                                title="Reset All Filters"
+                            >
+                                <RotateCw className="h-3 w-3" />
+                                Clear Filters
+                            </Button>
+                        )}
+                    </div>
                     
                     <Popover>
                         <PopoverTrigger asChild>
@@ -956,7 +1029,26 @@ function LeadDonationListContent() {
                         <div className="text-right pr-4 font-bold text-[hsl(var(--table-header-fg))] text-[10px] tracking-tight">Actions</div>
                     </div>
                     <div className="w-full max-h-[70vh]">
-                        {paginatedDonations.map((donation, index) => {
+                        {filteredAndSortedDonations.length === 0 ? (
+                            <div className="py-12 text-center space-y-3 px-4">
+                                <div className="w-12 h-12 rounded-full bg-primary/5 text-primary flex items-center justify-center mx-auto">
+                                    <Search className="h-6 w-6 opacity-40" />
+                                </div>
+                                <div className="space-y-1">
+                                    <h3 className="text-sm font-bold text-primary">No Matching Donations Found</h3>
+                                    <p className="text-xs text-muted-foreground max-w-sm mx-auto">
+                                        No lead donation records match your search term or active filters.
+                                    </p>
+                                </div>
+                                {hasActiveFilters && (
+                                    <Button onClick={resetAllFilters} variant="outline" size="sm" className="font-bold border-primary/20 text-primary rounded-xl h-9 px-4 bg-white shadow-sm text-xs">
+                                        <RotateCw className="h-3.5 w-3.5 mr-1.5" /> Reset All Filters
+                                    </Button>
+                                )}
+                            </div>
+                        ) : (
+                            <>
+                                {paginatedDonations.map((donation, index) => {
                             const isOpen = openRows[donation.id] || false;
                             const isSelected = selectedIds.includes(donation.id);
                             return (
@@ -1045,15 +1137,18 @@ function LeadDonationListContent() {
                                 </React.Fragment>
                             );
                         })}
-                                <div className={cn("bg-primary/5 border-t border-primary/20 font-bold py-3", donationGridClass)}>
-                                    <div />
-                                    <div />
-                                    <div className="text-right">Page Total:</div>
-                                    <div className="text-right font-mono text-primary text-sm pr-1">₹{paginatedDonations.reduce((sum, d) => sum + d.amountForThisLead, 0).toLocaleString('en-IN')}</div>
-                                    <div className="col-span-6" />
-                                    <div className="text-right pr-4 text-[10px] text-muted-foreground">Filtered Total: ₹{filteredTotalAmount.toLocaleString('en-IN')}</div>
-                                </div>
-                        {paginatedDonations.length === 0 && <div className="h-32 text-center text-muted-foreground font-normal italic bg-primary/[0.02] py-20 tracking-widest capitalize">No Donation Records Found.</div>}
+                        {filteredAndSortedDonations.length > 0 && (
+                            <div className={cn("bg-primary/5 border-t border-primary/20 font-bold py-3", donationGridClass)}>
+                                <div />
+                                <div />
+                                <div className="text-right">Page Total:</div>
+                                <div className="text-right font-mono text-primary text-sm pr-1">₹{paginatedDonations.reduce((sum, d) => sum + d.amountForThisLead, 0).toLocaleString('en-IN')}</div>
+                                <div className="col-span-6" />
+                                <div className="text-right pr-4 text-[10px] text-muted-foreground">Filtered Total: ₹{filteredTotalAmount.toLocaleString('en-IN')}</div>
+                            </div>
+                        )}
+                            </>
+                        )}
                     </div>
                     <ScrollBar orientation="horizontal" />
                     <ScrollBar orientation="vertical" />

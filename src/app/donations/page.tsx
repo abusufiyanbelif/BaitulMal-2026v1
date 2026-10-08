@@ -122,10 +122,15 @@ import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 type SortKey = keyof Donation | 'srNo';
 
 function MultiSelectFilter({ title, options, selected, onChange }: { title: string, options: readonly string[], selected: string[], onChange: (val: string[]) => void }) {
+    const handleToggle = (opt: string) => {
+        const next = selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt];
+        onChange(next);
+    };
+
     return (
         <Popover>
             <PopoverTrigger asChild>
-                <Button variant="outline" size="sm" className="h-10 text-xs border-primary/10 text-primary rounded-xl bg-white font-bold transition-all hover:border-primary/30 min-w-[140px] justify-between shadow-sm group">
+                <Button variant="outline" size="sm" className="h-11 text-xs border-primary/10 text-primary rounded-2xl bg-white font-bold transition-all hover:border-primary/30 min-w-[140px] justify-between shadow-sm group">
                     <div className="flex items-center gap-2 truncate">
                         <Filter className={cn("h-3.5 w-3.5 shrink-0 transition-transform group-hover:rotate-12", selected.length > 0 ? "text-primary opacity-100" : "opacity-40")} />
                         <span className="truncate">{selected.length === 0 ? `All ${title}s` : `${selected.length} ${title}${selected.length > 1 ? 's' : ''}`}</span>
@@ -136,31 +141,37 @@ function MultiSelectFilter({ title, options, selected, onChange }: { title: stri
             <PopoverContent className="w-[220px] p-0 rounded-2xl shadow-dropdown border-primary/10 overflow-hidden" align="start">
                 <Command className="w-full">
                     <CommandInput placeholder={`Search ${title}...`} className="h-10 text-xs font-normal px-4 outline-none w-full border-b" />
-                    <CommandList className="max-h-[300px] overflow-y-auto p-1.5">
+                    <CommandList className="max-h-[300px] overflow-y-auto p-1.5 touch-auto">
                         <CommandEmpty className="py-4 text-center text-xs text-muted-foreground font-bold opacity-60">No results found.</CommandEmpty>
                         <CommandGroup>
-                            <CommandItem onSelect={() => onChange([])} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 cursor-pointer font-bold text-xs mb-1">
-                                <div className={cn("flex h-4 w-4 items-center justify-center rounded-md border border-primary transition-colors", selected.length === 0 ? "bg-primary text-white" : "bg-transparent")}>
+                            <CommandItem 
+                                value={`all_${title}`}
+                                onSelect={() => onChange([])} 
+                                onPointerDown={(e) => { e.preventDefault(); onChange([]); }}
+                                onClick={(e) => { e.preventDefault(); onChange([]); }}
+                                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 cursor-pointer font-bold text-xs mb-1 select-none"
+                            >
+                                <div className={cn("flex h-4 w-4 items-center justify-center rounded-md border border-primary transition-colors pointer-events-none", selected.length === 0 ? "bg-primary text-white" : "bg-transparent")}>
                                     {selected.length === 0 && <Check className="h-3 w-3 stroke-[3]" />}
                                 </div>
-                                <span className="flex-1 truncate">All {title}s</span>
+                                <span className="flex-1 truncate pointer-events-none">All {title}s</span>
                             </CommandItem>
                             
                             <div className="h-px bg-primary/5 my-1.5" />
 
                             {options.map((opt) => (
                                 <CommandItem 
-                                    key={opt} 
-                                    onSelect={() => {
-                                        const next = selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt];
-                                        onChange(next);
-                                    }} 
-                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 cursor-pointer font-bold text-xs"
+                                    key={opt}
+                                    value={opt}
+                                    onSelect={() => handleToggle(opt)} 
+                                    onPointerDown={(e) => { e.preventDefault(); handleToggle(opt); }}
+                                    onClick={(e) => { e.preventDefault(); handleToggle(opt); }}
+                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 cursor-pointer font-bold text-xs select-none"
                                 >
-                                    <div className={cn("flex h-4 w-4 items-center justify-center rounded-md border border-primary transition-colors", selected.includes(opt) ? "bg-primary text-white" : "bg-transparent")}>
+                                    <div className={cn("flex h-4 w-4 items-center justify-center rounded-md border border-primary transition-colors pointer-events-none", selected.includes(opt) ? "bg-primary text-white" : "bg-transparent")}>
                                         {selected.includes(opt) && <Check className="h-3 w-3 stroke-[3]" />}
                                     </div>
-                                    <span className="flex-1 truncate">{opt}</span>
+                                    <span className="flex-1 truncate pointer-events-none">{opt}</span>
                                 </CommandItem>
                             ))}
                         </CommandGroup>
@@ -236,6 +247,20 @@ function SortableHeader({ sortKey, children, className, sortConfig, handleSort }
     );
 };
 
+function resolveCaseId(link: DonationLink, campaigns?: Campaign[], leads?: Lead[]): string | null {
+    if (link.caseId) return link.caseId;
+    const cleanId = (link.linkId || '').replace(/^campaign_/, '').replace(/^lead_/, '');
+    if (link.linkType === 'campaign' || !link.linkType) {
+        const c = campaigns?.find(camp => camp.id === cleanId || camp.id === link.linkId);
+        if (c?.caseId) return c.caseId;
+    }
+    if (link.linkType === 'lead' || !link.linkType) {
+        const l = leads?.find(ld => ld.id === cleanId || ld.id === link.linkId);
+        if (l?.caseId) return l.caseId;
+    }
+    return null;
+}
+
 interface DonationRowProps {
     donation: Donation;
     index: number;
@@ -245,9 +270,11 @@ interface DonationRowProps {
     handleDeleteClick: () => void;
     handleViewImage: (url: string) => void;
     isTarget?: boolean;
+    allCampaigns?: Campaign[];
+    allLeads?: Lead[];
 }
 
-function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handleDeleteClick, handleViewImage, isTarget = false }: DonationRowProps) {
+function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handleDeleteClick, handleViewImage, isTarget = false, allCampaigns, allLeads }: DonationRowProps) {
     const [isOpen, setIsOpen] = useState(isTarget);
     const router = useRouter();
     const { userProfile } = useSession();
@@ -277,9 +304,46 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                 <div className="min-w-0 pr-4">
                     <div className="flex items-center gap-2 mb-0.5">
                         <div className="font-bold text-sm text-primary truncate tracking-tight">{donation.donorName}</div>
-                        {!donation.donorId && <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />}
+                        {!donation.donorId && (
+                            <span title="Unlinked Donor Profile">
+                                <AlertCircle className="h-3.5 w-3.5 text-amber-500 shrink-0" />
+                            </span>
+                        )}
                     </div>
-                    <div className="text-[10px] text-muted-foreground font-black opacity-50 tracking-tight">{donation.donorPhone || 'N/A'}</div>
+                    <div className="text-[10px] text-muted-foreground font-black opacity-50 tracking-tight flex items-center gap-1.5 flex-wrap">
+                        <span>{donation.donorPhone || 'N/A'}</span>
+                        <span>•</span>
+                        <span className="font-mono">ID: {donation.id}</span>
+                        {(donation.caseId || donation.linkSplit?.[0]?.caseId) && (
+                            <>
+                                <span>•</span>
+                                <span className="font-mono text-primary font-bold">Case ID: {donation.caseId || donation.linkSplit?.[0]?.caseId}</span>
+                            </>
+                        )}
+                    </div>
+                    
+                    {/* Linked Cause / Initiative Badge with ID and Case ID */}
+                    {donation.linkSplit && donation.linkSplit.length > 0 ? (
+                        <div className="mt-1 flex items-center gap-1.5 flex-wrap">
+                            {donation.linkSplit.map((link, idx) => {
+                                const caseId = resolveCaseId(link, allCampaigns, allLeads);
+                                return (
+                                    <Badge key={idx} variant="outline" className="text-[10px] font-bold border-primary/15 bg-primary/[0.04] text-primary flex items-center gap-1 py-0.5 px-2 h-auto max-w-full">
+                                        <FolderKanban className="h-3 w-3 text-primary opacity-60 shrink-0" />
+                                        <span className="truncate max-w-[110px]">{link.linkName}</span>
+                                        <span className="font-mono text-[10px] font-bold text-primary/70 shrink-0">(ID: {link.linkId})</span>
+                                        {caseId && <span className="font-mono text-[10px] font-bold text-primary/90 shrink-0">(Case ID: {caseId})</span>}
+                                    </Badge>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <div className="mt-1">
+                            <Badge variant="secondary" className="text-[10px] font-bold px-2 py-0.5 h-auto bg-amber-50 text-amber-800 border border-amber-200">
+                                Unlinked Cause
+                            </Badge>
+                        </div>
+                    )}
                 </div>
                 <div className="text-right pr-4">
                     <div className="font-black font-mono text-primary text-sm flex items-center justify-end gap-1.5">
@@ -287,26 +351,26 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                         ₹{donation.amount.toFixed(2)}
                     </div>
                 </div>
-                <div className="whitespace-nowrap text-[11px] font-bold text-primary/60 text-center italic">{donation.donationDate}</div>
+                <div className="whitespace-nowrap text-xs font-bold text-primary/70 text-center italic">{donation.donationDate}</div>
                 <div className="text-center flex flex-col items-center gap-1">
-                    <Badge variant="secondary" className="text-[9px] font-black px-2.5 h-5 rounded-full tracking-widest border-0 shadow-sm bg-primary/5 text-primary">
+                    <Badge variant="secondary" className="text-xs font-black px-2.5 py-0.5 h-auto rounded-full tracking-wider border-0 shadow-sm bg-primary/5 text-primary">
                         {donation.donationType}
                     </Badge>
-                    <Badge variant={donation.frequency === 'Monthly' ? 'default' : 'outline'} className={cn("text-[8px] font-bold px-2 h-4 rounded-full tracking-wider", donation.frequency === 'Monthly' ? "bg-emerald-600 text-white border-0" : "border-primary/10 text-primary/70")}>
+                    <Badge variant={donation.frequency === 'Monthly' ? 'default' : 'outline'} className={cn("text-[10px] font-bold px-2 py-0.5 h-auto rounded-full tracking-wider", donation.frequency === 'Monthly' ? "bg-emerald-600 text-white border-0" : "border-primary/10 text-primary/70")}>
                         {donation.frequency || 'One-Time'}
                     </Badge>
                 </div>
                 <div className="flex flex-wrap justify-center gap-1.5 overflow-hidden">
                     {(donation.typeSplit && donation.typeSplit.length > 0) ? (
                         donation.typeSplit.map(s => (
-                            <Badge key={s.category} variant="outline" className="text-[8px] font-bold px-2 py-0.5 border-primary/10 text-primary/60 rounded-lg">{s.category}</Badge>
+                            <Badge key={s.category} variant="outline" className="text-[10px] font-bold px-2 py-0.5 border-primary/10 text-primary/70 rounded-lg">{s.category}</Badge>
                         ))
                     ) : (
-                        <Badge variant="outline" className="text-[8px] font-bold px-2 py-0.5 border-primary/10 text-primary/60 rounded-lg">{donation.type || 'N/A'}</Badge>
+                        <Badge variant="outline" className="text-[10px] font-bold px-2 py-0.5 border-primary/10 text-primary/70 rounded-lg">{donation.type || 'N/A'}</Badge>
                     )}
                 </div>
                 <div className="text-center">
-                    <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm">
+                    <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="text-xs font-black px-3 py-1 h-auto rounded-full tracking-wider border-0 shadow-sm">
                         {donation.status}
                     </Badge>
                 </div>
@@ -346,21 +410,53 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                 {donation.donorName}
                                 {!donation.donorId && <AlertCircle className="h-4 w-4 text-amber-500 animate-pulse" />}
                             </div>
-                            <div className="text-[11px] text-muted-foreground font-black opacity-50 tracking-tight">{donation.donorPhone}</div>
+                            <div className="text-[11px] text-muted-foreground font-black opacity-50 tracking-tight flex flex-wrap items-center gap-1.5">
+                                <span>{donation.donorPhone}</span>
+                                <span>•</span>
+                                <span className="font-mono">ID: {donation.id}</span>
+                                {(donation.caseId || donation.linkSplit?.[0]?.caseId) && (
+                                    <>
+                                        <span>•</span>
+                                        <span className="font-mono text-primary font-bold">Case ID: {donation.caseId || donation.linkSplit?.[0]?.caseId}</span>
+                                    </>
+                                )}
+                            </div>
+                            {/* Mobile Linked Cause Badges */}
+                            {donation.linkSplit && donation.linkSplit.length > 0 ? (
+                                <div className="flex flex-wrap gap-1 pt-1">
+                                    {donation.linkSplit.map((link, idx) => {
+                                        const caseId = resolveCaseId(link, allCampaigns, allLeads);
+                                        return (
+                                            <Badge key={idx} variant="outline" className="text-[10px] font-bold border-primary/20 bg-primary/5 text-primary flex items-center gap-1.5 py-1 px-2.5 h-auto">
+                                                <FolderKanban className="h-3.5 w-3.5 text-primary opacity-70 shrink-0" />
+                                                <span>{link.linkName}</span>
+                                                <span className="font-mono text-[10px] font-bold text-primary/70">(ID: {link.linkId})</span>
+                                                {caseId && <span className="font-mono text-[10px] font-bold text-primary/90">(Case ID: {caseId})</span>}
+                                            </Badge>
+                                        );
+                                    })}
+                                </div>
+                            ) : (
+                                <div className="pt-1">
+                                    <Badge variant="secondary" className="text-[10px] font-bold px-2.5 py-1 bg-amber-50 text-amber-800 border border-amber-200">
+                                        Unlinked Cause
+                                    </Badge>
+                                </div>
+                            )}
                         </div>
                     </div>
                     <div className="text-right">
                         <div className="font-black text-primary text-lg tracking-tighter">₹{donation.amount.toFixed(2)}</div>
-                        <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm mt-1">
+                        <Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="text-xs font-black px-3 py-1 rounded-full tracking-wider border-0 shadow-sm mt-1">
                             {donation.status}
                         </Badge>
                     </div>
                 </div>
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between flex-wrap gap-2">
                     <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant="secondary" className="text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm bg-primary/5 text-primary">{donation.donationType}</Badge>
-                        <Badge variant={donation.frequency === 'Monthly' ? 'default' : 'outline'} className={cn("text-[9px] font-bold px-2.5 h-6 rounded-full tracking-wider", donation.frequency === 'Monthly' ? "bg-emerald-600 text-white border-0" : "border-primary/10 text-primary/70")}>{donation.frequency || 'One-Time'}</Badge>
-                        <span className="text-[10px] font-bold text-muted-foreground italic">{donation.donationDate}</span>
+                        <Badge variant="secondary" className="text-xs font-black px-3 py-1 rounded-full tracking-wider border-0 shadow-sm bg-primary/5 text-primary">{donation.donationType}</Badge>
+                        <Badge variant={donation.frequency === 'Monthly' ? 'default' : 'outline'} className={cn("text-xs font-bold px-2.5 py-1 rounded-full tracking-wider", donation.frequency === 'Monthly' ? "bg-emerald-600 text-white border-0" : "border-primary/10 text-primary/70")}>{donation.frequency || 'One-Time'}</Badge>
+                        <span className="text-xs font-bold text-muted-foreground italic">{donation.donationDate}</span>
                     </div>
                     <div className="flex gap-2" onClick={e => e.stopPropagation()}>
                         <Button variant="ghost" size="icon" className="h-10 w-10 text-primary border border-primary/5 bg-primary/5 rounded-2xl" onClick={() => router.push(`/donations/${donation.id}`)}><Eye className="h-5 w-5" /></Button>
@@ -412,20 +508,26 @@ function DonationRow({ donation, index, isSelected, onToggle, handleEdit, handle
                                                     </TableRow>
                                                 </TableHeader>
                                                 <TableBody>
-                                                    {(donation.linkSplit || []).map(link => (
-                                                        <TableRow key={link.linkId} className="hover:bg-primary/[0.01] border-primary/5">
-                                                            <TableCell className="flex items-center gap-3 py-4 px-6">
-                                                                <div className="p-2 rounded-lg bg-primary/[0.03] text-primary">
-                                                                    {link.linkType === 'campaign' ? <FolderKanban className="h-3.5 w-3.5" /> : <Lightbulb className="h-3.5 w-3.5" />}
-                                                                </div>
-                                                                <div className="flex flex-col">
-                                                                    <span className="text-sm font-bold text-primary tracking-tight truncate max-w-[180px]">{link.linkName}</span>
-                                                                    <span className="text-[10px] font-mono text-muted-foreground font-bold">ID: {link.caseId || link.linkId}</span>
-                                                                </div>
-                                                            </TableCell>
-                                                            <TableCell className="text-right font-black font-mono text-primary py-4 px-6 text-sm">₹{link.amount.toFixed(2)}</TableCell>
-                                                        </TableRow>
-                                                    ))}
+                                                    {(donation.linkSplit || []).map(link => {
+                                                        const caseId = resolveCaseId(link, allCampaigns, allLeads);
+                                                        return (
+                                                            <TableRow key={link.linkId} className="hover:bg-primary/[0.01] border-primary/5">
+                                                                <TableCell className="flex items-center gap-3 py-4 px-6">
+                                                                    <div className="p-2 rounded-lg bg-primary/[0.03] text-primary">
+                                                                        {link.linkType === 'campaign' ? <FolderKanban className="h-3.5 w-3.5" /> : <Lightbulb className="h-3.5 w-3.5" />}
+                                                                    </div>
+                                                                    <div className="flex flex-col">
+                                                                        <span className="text-sm font-bold text-primary tracking-tight truncate max-w-[200px]">{link.linkName}</span>
+                                                                        <div className="flex items-center gap-2 text-[11px] font-mono text-primary font-bold">
+                                                                            <span>ID: {link.linkId}</span>
+                                                                            {caseId && <span className="text-emerald-700">• Case ID: {caseId}</span>}
+                                                                        </div>
+                                                                    </div>
+                                                                </TableCell>
+                                                                <TableCell className="text-right font-black font-mono text-primary py-4 px-6 text-sm">₹{link.amount.toFixed(2)}</TableCell>
+                                                            </TableRow>
+                                                        );
+                                                    })}
                                                     {(donation.linkSplit?.length === 0 || !donation.linkSplit) && (
                                                         <TableRow className="hover:bg-transparent"><TableCell colSpan={2} className="text-center text-muted-foreground py-10 italic text-sm font-bold opacity-40 tracking-widest">Unallocated General Pool</TableCell></TableRow>
                                                     )}
@@ -457,6 +559,7 @@ function DonationListContent() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
   const [identityFilter, setIdentityFilter] = useState<string[]>([]);
+  const [causeLinkFilter, setCauseLinkFilter] = useState<'All' | 'Linked' | 'Unlinked'>('All');
   const [methodFilter, setMethodFilter] = useState<string[]>([]);
   const [frequencyFilter, setFrequencyFilter] = useState<string[]>([]);
   const [categoryFilter, setCategoryFilter] = useState<string[]>([]);
@@ -515,6 +618,12 @@ function DonationListContent() {
         });
     }
 
+    if (causeLinkFilter === 'Unlinked') {
+        items = items.filter(d => !d.linkSplit || d.linkSplit.length === 0 || d.linkSplit.every(l => l.linkId === 'unallocated'));
+    } else if (causeLinkFilter === 'Linked') {
+        items = items.filter(d => d.linkSplit && d.linkSplit.length > 0 && d.linkSplit.some(l => l.linkId !== 'unallocated'));
+    }
+
     if (methodFilter.length > 0) items = items.filter(d => methodFilter.includes(d.donationType));
     
     if (frequencyFilter.length > 0) {
@@ -566,21 +675,49 @@ function DonationListContent() {
         });
     }
     return items;
-  }, [donations, searchTerm, statusFilter, identityFilter, methodFilter, dateRange, sortConfig]);
+  }, [donations, searchTerm, statusFilter, identityFilter, causeLinkFilter, methodFilter, dateRange, sortConfig]);
 
   const stats = useMemo(() => {
       const allData = donations || [];
+      const unlinkedCause = allData.filter(d => !d.linkSplit || d.linkSplit.length === 0 || d.linkSplit.every(l => l.linkId === 'unallocated'));
+      const unlinkedDonor = allData.filter(d => !d.donorId);
+      
       return {
           total: allData.length,
           verified: allData.filter(d => d.status === 'Verified').length,
           pending: allData.filter(d => d.status === 'Pending').length,
-          unlinked: allData.filter(d => !d.donorId).length,
+          unlinkedDonor: unlinkedDonor.length,
+          unlinkedCause: unlinkedCause.length,
+          unlinkedCauseAmount: unlinkedCause.filter(d => d.status === 'Verified').reduce((sum, d) => sum + (d.amount || 0), 0),
           totalAmount: allData.filter(d => d.status === 'Verified').reduce((sum, d) => sum + d.amount, 0),
           pendingAmount: allData.filter(d => d.status === 'Pending').reduce((sum, d) => sum + d.amount, 0),
           online: allData.filter(d => d.donationType === 'Online Payment').length,
           cash: allData.filter(d => d.donationType === 'Cash').length,
       };
   }, [donations]);
+
+  const resetAllFilters = () => {
+    setSearchTerm('');
+    setStatusFilter([]);
+    setIdentityFilter([]);
+    setCauseLinkFilter('All');
+    setMethodFilter([]);
+    setFrequencyFilter([]);
+    setCategoryFilter([]);
+    setDateRange(undefined);
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = Boolean(
+    searchTerm || 
+    statusFilter.length > 0 || 
+    identityFilter.length > 0 || 
+    causeLinkFilter !== 'All' || 
+    methodFilter.length > 0 || 
+    frequencyFilter.length > 0 || 
+    categoryFilter.length > 0 || 
+    dateRange
+  );
 
   const paginatedDonations = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -714,33 +851,51 @@ function DonationListContent() {
                 </div>
             </div>
 
-            <div className="bg-white/30 backdrop-blur-md p-1.5 rounded-[24px] border border-primary/5 shadow-sm inline-flex w-fit overflow-hidden">
-                <div className="flex flex-nowrap">
-                    {[
-                        { label: 'Registry List', path: '/donations', icon: Activity },
-                        { label: 'Financial Summary', path: '/donations/summary', icon: TrendingUp },
-                        { label: 'Pending Audit', path: '/verifications?module=donations', icon: ShieldCheck },
-                        { label: 'Donor Hub', path: '/donors', icon: Users },
-                    ].map((tab) => (
-                        <Link 
-                            key={tab.path}
-                            href={tab.path} 
-                            className={cn(
-                                "inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black tracking-widest transition-all duration-500",
-                                pathname === tab.path ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-primary/60 hover:bg-primary/5 hover:text-primary"
-                            )}
-                        >
-                            <tab.icon className="h-3.5 w-3.5" />
-                            {tab.label}
-                        </Link>
-                    ))}
-                </div>
+            <div className="bg-white/30 backdrop-blur-md p-1.5 rounded-[24px] border border-primary/5 shadow-sm w-full max-w-full overflow-hidden">
+                <ScrollArea className="w-full">
+                    <div className="flex flex-nowrap min-w-max p-0.5">
+                        {[
+                            { label: 'Registry List', path: '/donations', icon: Activity },
+                            { label: 'Financial Summary', path: '/donations/summary', icon: TrendingUp },
+                            { label: 'Pending Audit', path: '/verifications?module=donations', icon: ShieldCheck },
+                            { label: 'Donor Hub', path: '/donors', icon: Users },
+                        ].map((tab) => (
+                            <Link 
+                                key={tab.path}
+                                href={tab.path} 
+                                className={cn(
+                                    "inline-flex items-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 rounded-2xl text-xs font-black tracking-wider transition-all duration-300 shrink-0",
+                                    pathname === tab.path ? "bg-primary text-white shadow-lg shadow-primary/20" : "text-primary/60 hover:bg-primary/5 hover:text-primary"
+                                )}
+                            >
+                                <tab.icon className="h-3.5 w-3.5" />
+                                {tab.label}
+                            </Link>
+                        ))}
+                    </div>
+                    <ScrollBar orientation="horizontal" className="h-1.5" />
+                </ScrollArea>
             </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6 animate-fade-in-up">
-            <StatCard title="Total Volume" count={stats.total} description="Authorized and Pending Logs" icon={Activity} delay="100ms" onClick={() => { setSearchTerm(''); setStatusFilter([]); setIdentityFilter([]); setMethodFilter([]); setCategoryFilter([]); }} />
-            <StatCard title="Verified Liquidity" count={stats.totalAmount.toLocaleString('en-IN')} description="Finalized Fund Reserves" icon={IndianRupee} delay="150ms" isCurrency onClick={() => setStatusFilter(['Verified'])} />
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-6 animate-fade-in-up">
+            <StatCard 
+                title="Total Volume" 
+                count={stats.total} 
+                description="Authorized and Pending Logs" 
+                icon={Activity} 
+                delay="100ms" 
+                onClick={() => { setSearchTerm(''); setStatusFilter([]); setIdentityFilter([]); setMethodFilter([]); setCategoryFilter([]); setCauseLinkFilter('All'); }} 
+            />
+            <StatCard 
+                title="Verified Liquidity" 
+                count={stats.totalAmount.toLocaleString('en-IN')} 
+                description="Finalized Fund Reserves" 
+                icon={IndianRupee} 
+                delay="150ms" 
+                isCurrency 
+                onClick={() => setStatusFilter(['Verified'])} 
+            />
             <StatCard 
                 title="Audit Pipeline" 
                 count={stats.pendingAmount.toLocaleString('en-IN')} 
@@ -751,7 +906,24 @@ function DonationListContent() {
                 colorClass={stats.pending > 0 ? "bg-amber-500/[0.05] border-amber-500/20 ring-2 ring-amber-400/20" : ""} 
                 onClick={() => setStatusFilter(['Pending'])} 
             />
-            <StatCard title="Identity Gap" count={stats.unlinked} description="Awaiting Profile Mapping" icon={AlertCircle} delay="250ms" colorClass={stats.unlinked > 0 ? "bg-amber-500/[0.03] border-amber-500/10" : ""} onClick={() => setIdentityFilter(['Unlinked'])} />
+            <StatCard 
+                title="Unlinked Cause" 
+                count={stats.unlinkedCause} 
+                description={`₹${stats.unlinkedCauseAmount.toLocaleString('en-IN')} Unallocated Pool`} 
+                icon={FolderKanban} 
+                delay="250ms" 
+                colorClass={stats.unlinkedCause > 0 ? "bg-amber-500/[0.05] border-amber-500/20 ring-2 ring-amber-400/20" : ""} 
+                onClick={() => setCauseLinkFilter(causeLinkFilter === 'Unlinked' ? 'All' : 'Unlinked')} 
+            />
+            <StatCard 
+                title="Identity Gap" 
+                count={stats.unlinkedDonor} 
+                description="Awaiting Profile Mapping" 
+                icon={AlertCircle} 
+                delay="300ms" 
+                colorClass={stats.unlinkedDonor > 0 ? "bg-amber-500/[0.03] border-amber-500/10" : ""} 
+                onClick={() => setIdentityFilter(identityFilter.includes('Unlinked') ? [] : ['Unlinked'])} 
+            />
         </div>
 
         {/* Active Pending Filter Alert Banner */}
@@ -774,27 +946,77 @@ function DonationListContent() {
             </div>
         )}
 
+        {/* Active Unlinked Cause Filter Alert Banner */}
+        {causeLinkFilter === 'Unlinked' && (
+            <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-center justify-between text-amber-900 text-xs shadow-sm animate-fade-in-up">
+                <div className="flex items-center gap-3">
+                    <FolderKanban className="h-5 w-5 text-amber-600 shrink-0" />
+                    <div>
+                        <p className="font-extrabold text-amber-900">
+                            📂 Filtered by Unlinked Cause: Showing {filteredAndSortedDonations.length} Unallocated Donations (Total: ₹{filteredTotalAmount.toLocaleString('en-IN')})
+                        </p>
+                        <p className="text-amber-700 text-[11px]">
+                            These donations belong to the unallocated general pool and can be assigned to campaigns/leads.
+                        </p>
+                    </div>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setCauseLinkFilter('All')} className="h-8 rounded-xl font-bold border-amber-300 text-amber-900 hover:bg-amber-100 text-xs shrink-0">
+                    Show All Donations
+                </Button>
+            </div>
+        )}
+
         <Card className="rounded-[32px] border border-primary/15 bg-white/60 dark:bg-slate-900/60 backdrop-blur-md overflow-hidden shadow-sm hover:border-primary/30 transition-all duration-300 animate-fade-in-zoom" style={{ animationDelay: '400ms' }}>
             <CardHeader className="p-4 sm:p-6 border-b bg-white/80 backdrop-blur-md sticky top-[73px] z-20">
                 <ScrollArea className="w-full">
-                    <div className="flex flex-nowrap gap-4 pb-3">
-                        <div className="relative w-[300px] shrink-0">
-                            <Input 
-                                placeholder="Search Donor, Phone, ID..." 
-                                value={searchTerm} 
-                                onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
-                                className="pl-11 h-11 text-sm border-primary/10 focus-visible:ring-primary font-bold text-primary rounded-2xl bg-white shadow-sm"
-                            />
-                            <div className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary opacity-30">
-                                <Search className="h-4 w-4" />
+                    <div className="flex flex-nowrap items-center gap-3 pb-3">
+                        <div className="flex items-center gap-2 shrink-0">
+                            <div className="relative w-[220px] sm:w-[260px]">
+                                <Input 
+                                    placeholder="Search Donor, Phone, ID..." 
+                                    value={searchTerm} 
+                                    onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
+                                    onKeyDown={e => { if (e.key === 'Enter') setCurrentPage(1); }}
+                                    className="pl-10 pr-8 h-11 text-xs border-primary/10 focus-visible:ring-primary font-bold text-primary rounded-2xl bg-white shadow-sm"
+                                />
+                                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary opacity-40">
+                                    <Search className="h-4 w-4" />
+                                </div>
+                                {searchTerm && (
+                                    <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary p-0.5">
+                                        <X className="h-3.5 w-3.5" />
+                                    </button>
+                                )}
                             </div>
+                            <Button 
+                                type="button" 
+                                onClick={() => setCurrentPage(1)} 
+                                size="sm" 
+                                className="h-11 px-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-2xl text-xs shadow-sm flex items-center gap-1.5 shrink-0"
+                            >
+                                <Search className="h-3.5 w-3.5" />
+                                Search
+                            </Button>
+                            {hasActiveFilters && (
+                                <Button
+                                    type="button"
+                                    onClick={resetAllFilters}
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-11 px-4 border-destructive/20 text-destructive hover:bg-destructive/10 font-bold rounded-2xl text-xs flex items-center gap-1.5 shrink-0 bg-white"
+                                    title="Reset All Filters"
+                                >
+                                    <RotateCw className="h-3.5 w-3.5" />
+                                    Clear Filters
+                                </Button>
+                            )}
                         </div>
                         
                         <Popover>
                             <PopoverTrigger asChild>
-                                <Button id="date" variant={"outline"} className={cn("w-[240px] shrink-0 justify-start h-11 text-sm border-primary/10 text-primary font-bold rounded-2xl bg-white shadow-sm transition-all hover:border-primary/30", !dateRange && "opacity-60")}>
-                                    <CalendarIcon className="mr-3 h-4 w-4 opacity-40" />
-                                    {dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd, y")) : "Log Range"}
+                                <Button id="date" variant={"outline"} className={cn("w-[220px] shrink-0 justify-start h-11 text-xs border-primary/10 text-primary font-bold rounded-2xl bg-white shadow-sm transition-all hover:border-primary/30", !dateRange && "opacity-60")}>
+                                    <CalendarIcon className="mr-2.5 h-4 w-4 opacity-40 shrink-0" />
+                                    <span className="truncate">{dateRange?.from ? (dateRange.to ? <>{format(dateRange.from, "LLL dd")} - {format(dateRange.to, "LLL dd")}</> : format(dateRange.from, "LLL dd, y")) : "Log Range"}</span>
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0 rounded-3xl shadow-2xl border-none overflow-hidden" align="start">
@@ -874,30 +1096,51 @@ function DonationListContent() {
                         <div className="text-right pr-6 font-black tracking-[0.1em] text-[10px]">Audit</div>
                     </div>
                     <div className="w-full">
-                        {paginatedDonations.map((d, i) => (
-                            <DonationRow 
-                                key={d.id} 
-                                donation={d} 
-                                isSelected={selectedIds.includes(d.id)}
-                                onToggle={() => toggleSelect(d.id)}
-                                index={(currentPage - 1) * itemsPerPage + i + 1} 
-                                handleEdit={() => { setEditingDonation(d); setIsFormOpen(true); }} 
-                                handleDeleteClick={() => { setDonationToDelete(d.id); setIsDeleteDialogOpen(true); }} 
-                                handleViewImage={(url) => { setImageToView(url); setZoom(1); setRotation(0); setIsImageViewerOpen(true); }}
-                                isTarget={d.id === targetId}
-                            />
-                        ))}
-                        <div className={cn("bg-primary/[0.03] border-t border-primary/5 py-6 px-10", donationGridClass)}>
-                            <div />
-                            <div />
-                            <div className="text-right font-black text-muted-foreground tracking-widest text-[10px]">Page Liquidity</div>
-                            <div className="text-right font-black font-mono text-primary text-lg tracking-tighter">₹{paginatedDonations.reduce((sum, d) => sum + d.amount, 0).toLocaleString('en-IN')}</div>
-                            <div className="col-span-3" />
-                            <div className="text-right pr-6 flex flex-col items-end">
-                                <span className="text-[9px] font-black text-muted-foreground opacity-40">Registry Total</span>
-                                <span className="text-sm font-black text-primary tracking-tighter">₹{filteredTotalAmount.toLocaleString('en-IN')}</span>
+                        {filteredAndSortedDonations.length === 0 ? (
+                            <div className="py-16 text-center space-y-4 px-4">
+                                <div className="w-16 h-16 rounded-full bg-primary/5 text-primary flex items-center justify-center mx-auto">
+                                    <Search className="h-8 w-8 opacity-40" />
+                                </div>
+                                <div className="space-y-1">
+                                    <h3 className="text-lg font-black text-primary">No Matching Records Found</h3>
+                                    <p className="text-xs font-bold text-muted-foreground max-w-sm mx-auto">
+                                        No donation logs match your active search terms or selected filter parameters.
+                                    </p>
+                                </div>
+                                {hasActiveFilters && (
+                                    <Button onClick={resetAllFilters} variant="outline" size="sm" className="font-bold border-primary/20 text-primary rounded-xl h-10 px-5 bg-white shadow-sm">
+                                        <RotateCw className="h-4 w-4 mr-2" /> Reset All Filters
+                                    </Button>
+                                )}
                             </div>
-                        </div>
+                        ) : (
+                            <>
+                                {paginatedDonations.map((d, i) => (
+                                    <DonationRow 
+                                        key={d.id} 
+                                        donation={d} 
+                                        isSelected={selectedIds.includes(d.id)}
+                                        onToggle={() => toggleSelect(d.id)}
+                                        index={(currentPage - 1) * itemsPerPage + i + 1} 
+                                        handleEdit={() => { setEditingDonation(d); setIsFormOpen(true); }} 
+                                        handleDeleteClick={() => { setDonationToDelete(d.id); setIsDeleteDialogOpen(true); }} 
+                                        handleViewImage={(url) => { setImageToView(url); setZoom(1); setRotation(0); setIsImageViewerOpen(true); }}
+                                        isTarget={d.id === targetId}
+                                    />
+                                ))}
+                                <div className={cn("bg-primary/[0.03] border-t border-primary/5 py-6 px-10", donationGridClass)}>
+                                    <div />
+                                    <div />
+                                    <div className="text-right font-black text-muted-foreground tracking-widest text-[10px]">Page Liquidity</div>
+                                    <div className="text-right font-black font-mono text-primary text-lg tracking-tighter">₹{paginatedDonations.reduce((sum, d) => sum + d.amount, 0).toLocaleString('en-IN')}</div>
+                                    <div className="col-span-3" />
+                                    <div className="text-right pr-6 flex flex-col items-end">
+                                        <span className="text-[9px] font-black text-muted-foreground opacity-40">Registry Total</span>
+                                        <span className="text-sm font-black text-primary tracking-tighter">₹{filteredTotalAmount.toLocaleString('en-IN')}</span>
+                                    </div>
+                                </div>
+                            </>
+                        )}
                     </div>
                     <ScrollBar orientation="horizontal" />
                 </ScrollArea>

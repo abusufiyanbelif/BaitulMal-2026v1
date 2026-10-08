@@ -181,6 +181,10 @@ export interface ResourceSettings extends DocumentData {
   isTelegramEnabled?: boolean;
   portalOtpValidityMinutes?: number;
 
+  // WhatsApp Group Configuration
+  whatsappGroupChatId?: string; // Default WhatsApp Group / Chat ID for general alerts
+  whatsappDonationGroupChatId?: string; // Dedicated WhatsApp Group for logged donations alerts
+
   // OTP Channel Configuration
   isWhatsAppOtpEnabled?: boolean; // Allow OTP via WhatsApp (requires Meta/Whapi config)
   

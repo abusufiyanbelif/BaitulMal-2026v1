@@ -103,6 +103,11 @@ import { Calendar } from "@/components/ui/calendar";
 import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
 
 function MultiSelectFilter({ title, options, selected, onChange }: { title: string, options: string[], selected: string[], onChange: (val: string[]) => void }) {
+    const handleToggle = (opt: string) => {
+        const next = selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt];
+        onChange(next);
+    };
+
     return (
         <Popover>
             <PopoverTrigger asChild>
@@ -117,31 +122,37 @@ function MultiSelectFilter({ title, options, selected, onChange }: { title: stri
             <PopoverContent className="w-[200px] p-0 rounded-[12px] shadow-dropdown border-primary/10 overflow-hidden" align="start">
                 <Command className="w-full">
                     <CommandInput placeholder={`Search ${title}...`} className="h-9 text-xs font-normal px-3 outline-none w-full border-b" />
-                    <CommandList className="max-h-[300px] overflow-y-auto p-1">
+                    <CommandList className="max-h-[300px] overflow-y-auto p-1 touch-auto">
                         <CommandEmpty className="py-4 text-center text-xs text-muted-foreground font-normal">No results found.</CommandEmpty>
                         <CommandGroup>
-                            <CommandItem onSelect={() => onChange([])} className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-bold text-xs mb-1">
-                                <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors", selected.length === 0 ? "bg-primary text-white" : "bg-transparent")}>
+                            <CommandItem 
+                                value={`all_${title}`}
+                                onSelect={() => onChange([])} 
+                                onPointerDown={(e) => { e.preventDefault(); onChange([]); }}
+                                onClick={(e) => { e.preventDefault(); onChange([]); }}
+                                className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-bold text-xs mb-1 select-none"
+                            >
+                                <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors pointer-events-none", selected.length === 0 ? "bg-primary text-white" : "bg-transparent")}>
                                     {selected.length === 0 && <Check className="h-3 w-3 stroke-[3]" />}
                                 </div>
-                                <span className="flex-1 truncate">All {title}s</span>
+                                <span className="flex-1 truncate pointer-events-none">All {title}s</span>
                             </CommandItem>
                             
                             <div className="h-px bg-primary/5 my-1" />
 
                             {options.map((opt) => (
                                 <CommandItem 
-                                    key={opt} 
-                                    onSelect={() => {
-                                        const next = selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt];
-                                        onChange(next);
-                                    }} 
-                                    className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-medium text-xs"
+                                    key={opt}
+                                    value={opt}
+                                    onSelect={() => handleToggle(opt)} 
+                                    onPointerDown={(e) => { e.preventDefault(); handleToggle(opt); }}
+                                    onClick={(e) => { e.preventDefault(); handleToggle(opt); }}
+                                    className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-medium text-xs select-none"
                                 >
-                                    <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors", selected.includes(opt) ? "bg-primary text-white" : "bg-transparent")}>
+                                    <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors pointer-events-none", selected.includes(opt) ? "bg-primary text-white" : "bg-transparent")}>
                                         {selected.includes(opt) && <Check className="h-3 w-3 stroke-[3]" />}
                                     </div>
-                                    <span className="flex-1 truncate">{opt}</span>
+                                    <span className="flex-1 truncate pointer-events-none">{opt}</span>
                                 </CommandItem>
                             ))}
                         </CommandGroup>
@@ -588,16 +599,31 @@ function BeneficiaryListContent() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3 bg-primary/5 p-4 rounded-xl border border-primary/10 shadow-sm">
-          <div className="relative flex-1 min-w-[250px]">
-            <Input 
-                placeholder="Search Name, Phone..." 
-                value={searchTerm} 
-                onChange={(e) => setSearchTerm(e.target.value)} 
-                className="pl-10 pr-10 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary rounded-[12px]" 
-            />
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/50">
-                <Search className="h-4 w-4" />
+          <div className="flex items-center gap-1.5 flex-1 min-w-[250px]">
+            <div className="relative flex-1">
+                <Input 
+                    placeholder="Search Name, Phone..." 
+                    value={searchTerm} 
+                    onChange={(e) => setSearchTerm(e.target.value)} 
+                    className="pl-10 pr-8 h-10 text-sm border-primary/10 focus-visible:ring-primary font-normal text-primary rounded-[12px] bg-white" 
+                />
+                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary/50">
+                    <Search className="h-4 w-4" />
+                </div>
+                {searchTerm && (
+                    <button onClick={() => setSearchTerm('')} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary p-0.5">
+                        <X className="h-3.5 w-3.5" />
+                    </button>
+                )}
             </div>
+            <Button 
+                type="button" 
+                size="sm" 
+                className="h-10 px-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-[12px] text-xs shadow-sm flex items-center gap-1.5 shrink-0"
+            >
+                <Search className="h-3.5 w-3.5" />
+                Search
+            </Button>
           </div>
 
           <Popover>

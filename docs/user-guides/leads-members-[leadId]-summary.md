@@ -1,7 +1,7 @@
 # 📘 User Guide: /leads-members/[leadId]/summary
     
-**Build Version:** `2026.09.12.3`
-**Last Updated:** 12/9/2026, 12:58:40 am
+**Build Version:** `2026.10.08.1`
+**Last Updated:** 8/10/2026, 11:36:00 pm
 **Internal Route:** `/leads-members/[leadId]/summary`
 
 ---
@@ -58,7 +58,7 @@ The following fields are mapped within this interface:
 ## ⚡ Interactive Action Items
 - **All Help Requests**: Interactive button to initiate all help requests operation.
 - **Download**: Interactive button to initiate download operation.
-- **Secure Changes**: Interactive button to initiate secure changes operation (Triggers handleSave).
+- **Save Changes**: Interactive button to initiate save changes operation (Triggers handleSave).
 - **{ e.preventDefault(); handleRemoveImage(); }}>**: Interactive button to initiate { e.preventdefault(); handleremoveimage(); }}> operation (Triggers (e) => { e.preventDefault(); handleRemoveImage(); ).
 - **handleRemoveExistingDocument(doc.url)}>**: Interactive button to initiate handleremoveexistingdocument(doc.url)}> operation (Triggers () => handleRemoveExistingDocument(doc.url)).
 - **handleOpenEditCaseId**: Internal logic handler for OpenEditCaseId workflow.

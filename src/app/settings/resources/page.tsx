@@ -227,6 +227,8 @@ export default function ResourceSettingsPage() {
                 ...editableData,
                 whatsappApiKey: editableData.whatsappApiKey?.trim() || '',
                 metaAccessToken: editableData.metaAccessToken?.trim() || '',
+                whatsappGroupChatId: editableData.whatsappGroupChatId?.trim() || '',
+                whatsappDonationGroupChatId: editableData.whatsappDonationGroupChatId?.trim() || '',
                 telegramBotToken: editableData.telegramBotToken?.trim() || '',
                 telegramChatId: editableData.telegramChatId?.toString().trim() || '',
                 smtpHost: editableData.smtpHost?.trim() || '',
@@ -424,6 +426,31 @@ export default function ResourceSettingsPage() {
                                     </div>
                                 </div>
                             )}
+
+                            <div className="grid grid-cols-2 gap-4 border-t border-border/40 pt-3">
+                                <div className="space-y-1">
+                                    <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">WhatsApp Default Group ID</Label>
+                                    <Input 
+                                        value={editableData?.whatsappGroupChatId || ''} 
+                                        onChange={(e) => handleFieldChange('whatsappGroupChatId', e.target.value)}
+                                        placeholder="e.g. 1203630123456789@g.us"
+                                        className="font-mono text-xs"
+                                        readOnly={!isEditMode}
+                                    />
+                                    <p className="text-[9px] text-muted-foreground">General alerts group (Whapi group format or Meta target)</p>
+                                </div>
+                                <div className="space-y-1">
+                                    <Label className="text-[10px] font-bold text-muted-foreground tracking-widest opacity-60">WhatsApp Donation Group ID</Label>
+                                    <Input 
+                                        value={editableData?.whatsappDonationGroupChatId || ''} 
+                                        onChange={(e) => handleFieldChange('whatsappDonationGroupChatId', e.target.value)}
+                                        placeholder="e.g. 1203639876543210@g.us"
+                                        className="font-mono text-xs"
+                                        readOnly={!isEditMode}
+                                    />
+                                    <p className="text-[9px] text-muted-foreground">Dedicated WhatsApp group for logged donation alerts</p>
+                                </div>
+                            </div>
 
                             <div className="flex items-center justify-between p-3 rounded-xl border border-primary/10 bg-primary/5">
                                 <div className="space-y-0.5">

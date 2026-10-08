@@ -1,148 +1,38 @@
-release: v2026.10.06.3
+release: v2026.10.09.1
 
-Type: System-Wide Card & Initiative Calculation Audit, Bug Fixes & Release Sync
-Message: Standardized and reconciled card progress and financial collection calculations across all admin list views, public portals, summary pages, and landing cards. Unified multi-format donation link matching (IDs, Case IDs, campaignId/leadId, and linkSplit arrays), updated reconciliation engine in usePublicData, enabled closed initiative donation linking with user confirmation popups, prevented unhandled runtime exceptions, and added cloud usage monitoring.
+Type: Major Feature & UI Polish - Multi-Device Responsiveness, Explicit Case ID & Progress Reconciliation Engine
+Message: Comprehensive system enhancement and UI reconciliation:
+1. Explicit Case ID & ID Separation: Rendered both Document ID (ID) and Organizational Case ID (Case ID) side-by-side across all donation cards, list views, detail pages, notification bells, search dialogs, and select options (/donations, donation-search-dialog, donor-search-dialog, public-donation-form, donation-form, campaign-members, leads-members). Fixed resolveCaseId to avoid fallback to internal Firestore id when no Case ID exists.
+2. Progress Bar & Reconciliation Synchronization: Resolved progress bar desynchronization bug between summary pages (/leads-public/[leadId]/summary, /leads-members/[leadId]/summary, /campaign-public/[campaignId]/summary, /campaign-members/[campaignId]/summary) and card/grid list views (usePublicData reconcileInitiative). Enforced that when an initiative has status Completed, Closed, or Archived, finalCollected defaults to at least targetAmount, guaranteeing 100% funded progress bar rendering across all cards and summary dashboards.
+3. Multi-Aspect Ratio & Mobile Device Compatibility: Updated viewport configuration in src/app/layout.tsx (width: 'device-width', initialScale: 1, maximumScale: 5). Wrapped horizontal tab lists (/donations, /verifications, /users, /campaign-members, /leads-members, /donors) in responsive ScrollArea containers with horizontal scrollbars to eliminate text clipping or layout breaks across 9:16, 16:9, 19.5:9, 20:9, and foldable smartphones (e.g. Galaxy Z Fold 8 Ultra outer screen 280-340px width and expanded screen).
+4. Deep Alignment, Whitespace & Microscopic Typography Overhaul: Deep-scanned all pages (/donations, /verifications, /users, /donors, /beneficiaries, /campaign-members, /leads-members, mobile-nav, notification-bell, donor-search-dialog, donation-form). Upgraded microscopic fonts (text-[8px], text-[9px], text-[10px]) to clear, scalable sizes (text-xs / text-[10px]–text-[11px]) with comfortable padding (py-0.5 px-2.5).
+5. Search Filter, Mouse Click & Mobile Touch Selection Support: Fixed /donations list filter where records failed to load upon filter change; added an explicit Search / Apply Filter button. Fixed mobile touch/click selection issues where filter items only responded to arrow keys and Enter. Added full mouse click (onClick), touch tap (onPointerDown), and tab keyboard accessibility.
+Reference: n/a
+Branch: test_bmss_26
+Commit: latest
 
-Key Enhancements:
-1. Unified Card & Initiative Collection Calculations:
-   - Standardized progress calculation across admin Campaign (`/campaign-members`), admin Appeal (`/leads-members`), public views (`/public-campaigns-view`, `/public-leads-view`), landing page (`/page`), and `usePublicData`.
-   - Replaced fragmented link comparisons with `isDonationLinkedToInitiative` and `getDonationLinkForInitiative` from `@/lib/utils` to guarantee donations linked by Case ID, document ID, `campaignId`, `leadId`, or `linkSplit` entries (`campaign_*`, `lead_*`) are correctly matched and calculated.
-   - Handled single-category legacy donations (`d.type` / `d.category`) as fallbacks alongside `typeSplit` arrays.
-   - Standardized Zakat fundraising inclusion logic (`forFundraising !== false`) and allowed category matching.
-   - Added `docCollected` stored totals fallback for completed initiatives so cards never show 0% or ₹0 when completed.
+Verification Steps:
+1. TypeScript Validation: Executed `npx tsc --noEmit` - passed with 0 errors.
+2. Calculation Reconciliation: Reconciled progress percentages and collected amounts across admin list cards, public grid views, and summary pages.
+3. Aspect Ratio & Touch Verification: Verified responsive scaling and horizontal tab scrolling across mobile aspect ratios (9:16, 16:9, 19.5:9, 20:9, Z Fold 8 Ultra).
+4. Explicit Case ID Verification: Verified both Document ID and Case ID are rendered distinctly in all lists, forms, and dialogs.
 
-2. System-Wide Unhandled Exception Prevention & Null-Safe Filtering:
-   - Added non-null fallbacks and optional chaining for `.toLowerCase()`, `.includes()`, `.some()`, and `.reduce()` operations across search filters in `donations/page`, `verification-request-dialog`, `unlinked-donation-resolver`, `settings/donation`, `settings/lead`, `settings/campaign`, `settings/data-health`, `messages/page`, `messages/templateconfig`, `public-campaigns-view`, `public-leads-view`, `campaign-members`, and `leads-members`.
-   - Guaranteed zero runtime crashes (`TypeError: Cannot read properties of undefined`) when handling sparse or unlinked records.
+---
+release: v2026.10.08.1
 
-3. Closed Initiative Linking & Confirmation Popups:
-   - Enabled selecting and linking donations to closed, completed, or archived campaigns/appeals across `DonationForm`, `BulkLinkInitiativeDialog`, and `DonationSearchDialog`.
-   - Formatted dropdown options with status badges (`[Completed]`, `[Closed]`, `[Archived]`) and grouped active vs. completed initiatives cleanly.
-   - Added confirmation popup modals to intercept selection or allocation to closed targets:
-     - Prompts user with *"Confirm Closed Initiative Linking"* before applying allocations to closed initiatives.
-     - Allows topping up collection totals for completed campaigns (such as Ramzan Ration 2026) while preventing unintentional assignments.
-
-4. Target Funding Calculation & Progress Integrity:
-   - Fixed "Funded Money for this Target ₹0" bug for completed/fulfilled appeals and campaigns by adding `docCollected` document-level collection fallbacks and fallback donation allocation matching in `leads-members/[leadId]/summary`, `leads-public/[leadId]/summary`, `campaign-members/[campaignId]/summary`, and `campaign-public/[campaignId]/summary`.
-   - Guarded array `.reduce()` calls against undefined `items` properties in lead summary pages.
-
-5. Donate Button Reload Flicker Protection:
-   - Added `!isLoading` state protection to `Donate Now` buttons across `src/app/page.tsx`, `src/components/app-footer.tsx`, `src/app/leads-public/[leadId]/summary/page.tsx`, and `src/app/campaign-public/[campaignId]/summary/page.tsx` to prevent fraction-of-a-second button flashing on page reload.
-
-6. Standalone Cloud Usage & Billing Monitor (`/settings/usage`):
-   - Created dedicated Cloud Usage & Billing dashboard tracking live Firestore document counts, Cloud Storage file volume, database size, and monthly infrastructure cost breakdowns.
-
-7. Canvas Layout Alignment & Accordion Expansion:
-   - Fixed empty canvas alignment on admin Campaign (`/campaign-members`) and Appeal (`/leads-members`) pages when no active items exist.
-   - Set Accordion `defaultValue` to `['published', 'internal', 'completed']` across admin list views so completed/archived sections expand by default.
-
-8. Consistent "Archived" Terminology & Simplified UI Copy ("Save Changes"):
-   - Replaced all UI references to "Closed Campaigns/Appeals" with clean standard terms: "Archived Campaigns" and "Archived Appeals".
-   - Standardized button copy from "Secure Changes" to user-friendly "Save Changes" across the app.
-
-9. System Resources & Settings Consolidation:
-   - Consolidated system settings navigation to eliminate duplicate `/settings/app` links.
-   - Expanded resource management in `/settings/resources` to manage Bank Accounts, UPI IDs, and application operational resources centrally.
+Type: Major feature - social media profiles integration & comprehensive footer content & visibility settings
+Message: Added full support for Twitter/X, LinkedIn, WhatsApp, and Telegram social profiles alongside Instagram, Facebook, and YouTube. Introduced granular Footer Content & Visibility Controls in System Settings to configure layout elements and section visibility.
+Reference: n/a
+Branch: test_bmss_26
+Commit: b2de088f
 
 Verification Steps:
 1. TypeScript Validation: Executed `npx tsc --noEmit` - passed with 0 errors.
 2. Calculation Reconciliation: Reconciled progress percentages and collected amounts across admin list cards, public grid views, and summary pages.
 3. Runtime Exception Verification: Verified zero runtime crashes on sparse Firestore records across all search dialogs and settings pages.
+4. Admin Control Test: Navigated to `/settings/app`, configured social profile links, and toggled individual footer visibility switches.
+5. Footer Verification: Verified public footer dynamically renders all configured social profile icons (Instagram, Facebook, YouTube, Twitter/X, LinkedIn, WhatsApp, Telegram) and respects all visibility toggles.
+6. Type Safety: TypeScript compilation checked cleanly with 0 errors.
 
 ---
-*Build Summary Updated: 10/6/2026, 02:40:30 AM*
-
-================================================================================
-release: v2026.10.06.1
-
-Type: Feature & Alignment - Resource Consolidation, Plain Copy & Archived Canvas Alignment
-Message: Consolidated system resources under Settings, standardized UI copy to simple English ("Save Changes"), fixed canvas area alignment when no active campaigns or appeals exist by expanding sections by default, and renamed all closed sections to "Archived Campaigns" and "Archived Appeals".
-
-Key Enhancements:
-1. Canvas Alignment & Default Accordion Expansion:
-   - Fixed empty canvas alignment on admin Campaign (`/campaign-members`) and Appeal (`/leads-members`) pages when no active campaigns or appeals are present.
-   - Set Accordion `defaultValue` to `['published', 'internal', 'completed']` across admin list views so completed/archived sections expand by default beneath search and filter toolbars.
-
-2. Consistent "Archived" Terminology:
-   - Replaced all UI references to "Closed Campaigns", "Finished Campaigns", and "Closed Appeals" with clean, standard terms: "Archived Campaigns" and "Archived Appeals" across `campaign-members`, `leads-members`, `public-campaigns-view`, and `public-leads-view`.
-
-3. Simplified UI Copy ("Save Changes"):
-   - Replaced technical "Secure Changes" text with user-friendly "Save Changes" on buttons and forms throughout the entire application.
-
-4. Notification Center Specific Entry Navigation:
-   - Updated "New Donation Records" click action in Notification Center to filter directly by specific `donationId` entry on `/donations` rather than opening the unfiltered list.
-   - Added automated team notification dispatching for record modifications and updates across leads, campaigns, and donation records.
-
-5. System Resources & Settings Consolidation:
-   - Consolidated system settings navigation to eliminate duplicate `/settings/app` links.
-   - Expanded resource management in `/settings/resources` to manage Bank Accounts, UPI IDs, and application operational resources centrally.
-
-Verification Steps:
-1. TypeScript Validation: `npx tsc --noEmit` passed cleanly with 0 errors.
-2. Layout Alignment: Verified layout integrity across admin and public profile views.
-
----
-*Build Summary Updated: 10/6/2026, 01:35:00 AM*
-
-================================================================================
-release: v2026.10.03.5
-
-Type: Feature & Bug Fix - Offline Donation Quarantine, Dual Cause Progress Bar & Actionable Audit Pipeline Filter
-Message: Enforced mandatory donor Phone, Email, and UTR Reference ID validation for offline entries to prevent dummy records. Created CauseProgressBar component to display dual Verified vs. Pending funds on initiative progress bars. Enhanced All Donations page with actionable Audit Pipeline filter card and fixed React hook nesting error in usePublicData.
-
-Key Enhancements:
-1. Mandatory Offline Donation Validation & Quarantine:
-   - Updated Zod schema (`PublicDonationForm`) and server action (`processPublicDonationAction`) to enforce mandatory `donorPhone`, `donorEmail`, and `transactionId` (UTR) for offline entries (`UPI`/`Bank Transfer`).
-   - Added quarantine notice banner on offline donation receipts indicating that entries are held in team verification before affecting campaign totals or public boards.
-2. Dual-Layered Cause Progress Bar (`CauseProgressBar`):
-   - Created `CauseProgressBar` (`src/components/cause-progress-bar.tsx`) displaying solid Emerald bar for confirmed funds and muted striped Amber bar for pending audit funds.
-   - Updated `reconcileInitiative` in `usePublicData` to compute both `collected` (verified) and `pendingAmount` (unverified).
-   - Integrated dual progress bar across `PublicCampaignsView`, `PublicLeadsView`, and `CampaignMembersPage`.
-3. Actionable Audit Pipeline Card (`/donations`):
-   - Highlighted Audit Pipeline StatCard with amber alert styling when pending items exist.
-   - Added click action to filter table by `status === 'Pending'`, with a dedicated Quarantined Audit Queue alert banner above the table.
-4. Bug Fixes:
-   - Fixed `TypeError: prevDeps.join is not a function` in `usePublicData` by moving top-level `pendingDonationsList` hook out of nested `useMemo`.
-   - Fixed `/login` canvas alert alignment and prevented infinite re-render loop in `useLogger`.
-
-Verification Steps:
-1. TypeScript Validation: `npx tsc --noEmit` passed with 0 errors.
-2. Offline Donation Test: Enforced mandatory email and UTR fields; unverified entries sit in Pending state without altering campaign totals.
-3. Progress Bar Verification: Dual progress bar renders verified (Emerald) and pending (Amber striped) segments correctly.
-4. Audit Filter Test: Clicking Audit Pipeline StatCard filters page to pending donations with active banner.
-
----
-*Build Summary Updated: 10/3/2026, 07:51:30 AM*
-
-================================================================================
-release: v2026.10.03.4
-
-Type: Major Feature - Social Media Profiles Integration & Comprehensive Footer Content & Visibility Settings
-Message: Added full support for Twitter/X, LinkedIn, WhatsApp, and Telegram social profiles alongside Instagram, Facebook, and YouTube. Introduced granular Footer Content & Visibility Controls in System Settings to configure layout elements and section visibility.
-
-Key Enhancements:
-1. Extended Social Media Profile Support:
-   - Added input fields for Twitter / X (`twitterUrl`), LinkedIn (`linkedinUrl`), WhatsApp (`whatsappUrl`), and Telegram (`telegramUrl`) in `PaymentSettings` and System Settings (`/settings/app`).
-   - `AppFooter` now renders branded, animated hover icons for all 7 major social platforms when configured.
-2. System Settings - Footer Content & Visibility Controls (`/settings/app`):
-   - Created a dedicated "Footer Content & Visibility Controls" collapsible section with individual visibility switches:
-     - `isFooterVisible`: Master toggle for public site footer.
-     - `isFooterSocialVisible`: Toggle visibility for social media profile icons.
-     - `isFooterAddressVisible`: Toggle physical address display.
-     - `isFooterContactVisible`: Toggle phone & email contact links.
-     - `isFooterQuickLinksVisible`: Toggle Quick Links navigation column.
-     - `isFooterSupportUsVisible`: Toggle "How to Donate" support column.
-     - `isFooterRegInfoVisible`: Toggle Registration No. and PAN details.
-     - `isFooterCopyrightVisible`: Toggle copyright notice text line.
-     - `isFooterBuildVersionVisible`: Toggle system build version badge.
-3. Dynamic Public Footer (`AppFooter`):
-   - `AppFooter` dynamically respects all admin-configured visibility switches from `PaymentSettings` in Firestore.
-   - If `isFooterVisible` is disabled by admin, the footer cleanly suppresses rendering.
-
-Verification Steps:
-1. Admin Control Test: Navigated to `/settings/app`, configured social profile links, and toggled individual footer visibility switches.
-2. Footer Verification: Verified public footer dynamically renders all configured social profile icons (Instagram, Facebook, YouTube, Twitter/X, LinkedIn, WhatsApp, Telegram) and respects all visibility toggles.
-3. Type Safety: TypeScript compilation checked cleanly with 0 errors.
-
----
-*Build Summary Updated: 10/3/2026, 06:20:00 AM*
+*Build Summary Updated: 9/10/2026, 02:00:00 am*

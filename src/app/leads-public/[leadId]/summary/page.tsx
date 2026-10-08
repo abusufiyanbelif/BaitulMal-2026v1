@@ -217,14 +217,21 @@ export default function PublicLeadSummaryPage() {
                 return sum + amount;
             }, 0);
 
-        const docCollected = Number(lead.collectedAmount || (lead as any).collected || (lead as any).raisedAmount || (lead as any).targetAmount || 0);
-        const totalCollectedForGoal = rawTotalCollected > 0 ? rawTotalCollected : (lead.status === 'Completed' && docCollected > 0 ? docCollected : rawTotalCollected);
-
+        const docCollected = Number(lead.collectedAmount || (lead as any).collected || (lead as any).raisedAmount || 0);
         const targetAmount = Math.max(lead.targetAmount || 0, calculatedRequirementTotal);
+        const isCompleted = lead.status === 'Completed' || lead.status === 'Closed' || lead.status === 'Archived';
+
+        let totalCollectedForGoal = Math.max(rawTotalCollected, docCollected);
+        if (isCompleted && totalCollectedForGoal < targetAmount && targetAmount > 0) {
+            totalCollectedForGoal = targetAmount;
+        }
+
+        const rawProgress = targetAmount > 0 ? (totalCollectedForGoal / targetAmount) * 100 : (isCompleted ? 100 : 0);
+        const fundingProgress = isCompleted ? Math.max(rawProgress, 100) : rawProgress;
 
         return {
             totalCollectedForGoal,
-            fundingProgress: targetAmount > 0 ? (totalCollectedForGoal / targetAmount) * 100 : 0,
+            fundingProgress,
             targetAmount,
             amountsByCategory,
             paymentTypeStats,

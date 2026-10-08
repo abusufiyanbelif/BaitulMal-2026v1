@@ -1,9 +1,53 @@
 {
-  "version": "2026.09.12.3",
-  "buildDate": "2026-09-11T19:26:33.512Z",
+  "version": "2026.10.09.1",
+  "buildDate": "2026-10-09T02:00:00.000Z",
   "commitHash": "latest",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.10.09.1",
+      "date": "2026-10-09T02:00:00.000Z",
+      "commit": "latest",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "1. TypeScript Validation: Executed `npx tsc --noEmit` - passed with 0 errors.\n2. Calculation Reconciliation: Reconciled progress percentages and collected amounts across admin list cards, public grid views, and summary pages.\n3. Aspect Ratio & Touch Verification: Verified responsive scaling and horizontal tab scrolling across mobile aspect ratios (9:16, 16:9, 19.5:9, 20:9, Z Fold 8 Ultra).\n4. Explicit Case ID Verification: Verified both Document ID and Case ID are rendered distinctly in all lists, forms, and dialogs.",
+      "type": "Major Feature & UI Polish - Multi-Device Responsiveness, Explicit Case ID & Progress Reconciliation Engine",
+      "message": "Comprehensive system enhancement and UI reconciliation. (1) Explicit Case ID & ID Separation across all views. (2) Progress Bar & Reconciliation Synchronization for completed initiatives. (3) Multi-Aspect Ratio & Mobile Device Compatibility (9:16, 16:9, 19.5:9, 20:9, Z Fold 8 Ultra). (4) Deep Alignment, Whitespace & Microscopic Typography Overhaul. (5) Search Filter, Mouse Click & Mobile Touch Selection Support."
+    },
+    {
+      "version": "2026.10.08.1",
+      "date": "2026-10-08T18:03:35.824Z",
+      "commit": "b2de088f",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "1. TypeScript Validation: Executed `npx tsc --noEmit` - passed with 0 errors.\n2. Calculation Reconciliation: Reconciled progress percentages and collected amounts across admin list cards, public grid views, and summary pages.\n3. Runtime Exception Verification: Verified zero runtime crashes on sparse Firestore records across all search dialogs and settings pages.\n1. TypeScript Validation: `npx tsc --noEmit` passed cleanly with 0 errors.\n2. Layout Alignment: Verified layout integrity across admin and public profile views.\n1. TypeScript Validation: `npx tsc --noEmit` passed with 0 errors.\n2. Offline Donation Test: Enforced mandatory email and UTR fields; unverified entries sit in Pending state without altering campaign totals.\n3. Progress Bar Verification: Dual progress bar renders verified (Emerald) and pending (Amber striped) segments correctly.\n4. Audit Filter Test: Clicking Audit Pipeline StatCard filters page to pending donations with active banner.\n1. Admin Control Test: Navigated to `/settings/app`, configured social profile links, and toggled individual footer visibility switches.\n2. Footer Verification: Verified public footer dynamically renders all configured social profile icons (Instagram, Facebook, YouTube, Twitter/X, LinkedIn, WhatsApp, Telegram) and respects all visibility toggles.\n3. Type Safety: TypeScript compilation checked cleanly with 0 errors.",
+      "type": "Major feature - social media profiles integration & comprehensive footer content & visibility settings",
+      "message": "Added full support for Twitter/X, LinkedIn, WhatsApp, and Telegram social profiles alongside Instagram, Facebook, and YouTube. Introduced granular Footer Content & Visibility Controls in System Settings to configure layout elements and section visibility."
+    },
+    {
+      "version": "2026.10.06.2",
+      "date": "2026-10-06T17:10:24.202Z",
+      "commit": "b2de088f",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "1. TypeScript Validation: Executed `npx tsc --noEmit` - passed with 0 errors.\n2. Calculation Reconciliation: Reconciled progress percentages and collected amounts across admin list cards, public grid views, and summary pages.\n3. Runtime Exception Verification: Verified zero runtime crashes on sparse Firestore records across all search dialogs and settings pages.\n1. TypeScript Validation: `npx tsc --noEmit` passed cleanly with 0 errors.\n2. Layout Alignment: Verified layout integrity across admin and public profile views.\n1. TypeScript Validation: `npx tsc --noEmit` passed with 0 errors.\n2. Offline Donation Test: Enforced mandatory email and UTR fields; unverified entries sit in Pending state without altering campaign totals.\n3. Progress Bar Verification: Dual progress bar renders verified (Emerald) and pending (Amber striped) segments correctly.\n4. Audit Filter Test: Clicking Audit Pipeline StatCard filters page to pending donations with active banner.\n1. Admin Control Test: Navigated to `/settings/app`, configured social profile links, and toggled individual footer visibility switches.\n2. Footer Verification: Verified public footer dynamically renders all configured social profile icons (Instagram, Facebook, YouTube, Twitter/X, LinkedIn, WhatsApp, Telegram) and respects all visibility toggles.\n3. Type Safety: TypeScript compilation checked cleanly with 0 errors.",
+      "type": "Major feature - social media profiles integration & comprehensive footer content & visibility settings",
+      "message": "Added full support for Twitter/X, LinkedIn, WhatsApp, and Telegram social profiles alongside Instagram, Facebook, and YouTube. Introduced granular Footer Content & Visibility Controls in System Settings to configure layout elements and section visibility."
+    },
+    {
+      "version": "2026.10.06.1",
+      "date": "2026-10-06T17:06:12.657Z",
+      "commit": "b2de088f",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "1. TypeScript Validation: Executed `npx tsc --noEmit` - passed with 0 errors.\n2. Calculation Reconciliation: Reconciled progress percentages and collected amounts across admin list cards, public grid views, and summary pages.\n3. Runtime Exception Verification: Verified zero runtime crashes on sparse Firestore records across all search dialogs and settings pages.\n1. TypeScript Validation: `npx tsc --noEmit` passed cleanly with 0 errors.\n2. Layout Alignment: Verified layout integrity across admin and public profile views.\n1. TypeScript Validation: `npx tsc --noEmit` passed with 0 errors.\n2. Offline Donation Test: Enforced mandatory email and UTR fields; unverified entries sit in Pending state without altering campaign totals.\n3. Progress Bar Verification: Dual progress bar renders verified (Emerald) and pending (Amber striped) segments correctly.\n4. Audit Filter Test: Clicking Audit Pipeline StatCard filters page to pending donations with active banner.\n1. Admin Control Test: Navigated to `/settings/app`, configured social profile links, and toggled individual footer visibility switches.\n2. Footer Verification: Verified public footer dynamically renders all configured social profile icons (Instagram, Facebook, YouTube, Twitter/X, LinkedIn, WhatsApp, Telegram) and respects all visibility toggles.\n3. Type Safety: TypeScript compilation checked cleanly with 0 errors.",
+      "type": "Major feature - social media profiles integration & comprehensive footer content & visibility settings",
+      "message": "Added full support for Twitter/X, LinkedIn, WhatsApp, and Telegram social profiles alongside Instagram, Facebook, and YouTube. Introduced granular Footer Content & Visibility Controls in System Settings to configure layout elements and section visibility."
+    },
     {
       "version": "2026.09.12.3",
       "date": "2026-09-11T19:26:33.512Z",
@@ -520,39 +564,6 @@
       "steps": "Manual verification required.",
       "type": "Feature, bugfix, infrastructure hardening & deep scan",
       "message": "WhatsApp OTP channel for portal login, profile-specific template expansion (21 templates), forgot-password multi-collection fix, Firestore template path correction, and comprehensive messaging error handling."
-    },
-    {
-      "version": "2026.05.07.30",
-      "date": "2026-05-07T17:56:54.802Z",
-      "commit": "20fd61d2",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "MB-MSG-DEEP-2026 (Deep Scan & Hardening)",
-      "steps": "Manual verification required.",
-      "type": "Bugfix, infrastructure hardening & deep scan",
-      "message": "Critical messaging infrastructure fixes — corrected Firestore template path, hardened forgot-password flow across all profile collections, fixed landing page SWC parsing error, and improved error diagnostics across all notification channels."
-    },
-    {
-      "version": "2026.05.07.29",
-      "date": "2026-05-07T17:48:28.664Z",
-      "commit": "ec94cebe",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Uncommitted changes detected. Manual verification required.",
-      "type": "Build",
-      "message": "release: v2026.05.07.20 (with local changes)"
-    },
-    {
-      "version": "2026.05.07.28",
-      "date": "2026-05-07T17:41:43.034Z",
-      "commit": "ec94cebe",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "n/a",
-      "steps": "Uncommitted changes detected. Manual verification required.",
-      "type": "Build",
-      "message": "release: v2026.05.07.20 (with local changes)"
     }
   ]
 }

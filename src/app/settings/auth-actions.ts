@@ -157,14 +157,20 @@ export async function getUserSessionsAction(userId: string) {
     try {
         const sessionsSnap = await adminDb.collection('user_sessions')
             .where('userId', '==', userId)
-            .orderBy('loginAt', 'desc')
-            .limit(10)
+            .limit(20)
             .get();
 
-        const sessions = sessionsSnap.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data()
-        }));
+        const sessions = sessionsSnap.docs
+            .map(doc => ({
+                id: doc.id,
+                ...doc.data()
+            }))
+            .sort((a: any, b: any) => {
+                const timeA = a.loginAt?.toMillis ? a.loginAt.toMillis() : new Date(a.loginAt || 0).getTime();
+                const timeB = b.loginAt?.toMillis ? b.loginAt.toMillis() : new Date(b.loginAt || 0).getTime();
+                return timeB - timeA;
+            })
+            .slice(0, 10);
 
         return { success: true, sessions };
     } catch (error: any) {

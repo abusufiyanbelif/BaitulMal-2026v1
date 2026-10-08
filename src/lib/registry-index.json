@@ -16,16 +16,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/messages",
-          "name": "messages"
+          "route": "/settings/resources",
+          "name": "resources"
         },
         {
-          "route": "/settings/guidance",
-          "name": "guidance"
+          "route": "/settings/campaign",
+          "name": "campaign"
         },
         {
-          "route": "/portal-register",
-          "name": "portal-register"
+          "route": "/leads-public/[leadId]",
+          "name": "[leadId]"
         }
       ],
       "prev": null,
@@ -46,16 +46,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-public",
-          "name": "leads-public"
+          "route": "/leads-members/[leadId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/settings",
+          "route": "/beneficiary-portal/settings",
           "name": "settings"
         },
         {
-          "route": "/donor-portal/receipt/[donationId]",
-          "name": "[donationId]"
+          "route": "/settings/guidance",
+          "name": "guidance"
         }
       ],
       "prev": "/analytics",
@@ -83,16 +83,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-public/[leadId]/summary",
-          "name": "summary"
+          "route": "/settings/user",
+          "name": "user"
         },
         {
-          "route": "/_offline",
-          "name": "_offline"
+          "route": "/donors",
+          "name": "donors"
         },
         {
-          "route": "/settings/viewport",
-          "name": "viewport"
+          "route": "/leads-members/[leadId]/donations",
+          "name": "donations"
         }
       ],
       "prev": "/beneficiaries/create",
@@ -113,16 +113,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/users/create",
-          "name": "create"
+          "route": "/leads-members/[leadId]/beneficiaries",
+          "name": "beneficiaries"
         },
         {
-          "route": "/campaign-members/[campaignId]/donations/summary",
-          "name": "summary"
+          "route": "/portal-register",
+          "name": "portal-register"
         },
         {
-          "route": "/campaign-members",
-          "name": "campaign-members"
+          "route": "/leads-members/[leadId]/donations",
+          "name": "donations"
         }
       ],
       "prev": "/beneficiaries",
@@ -143,16 +143,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/beneficiary-portal/profile",
-          "name": "profile"
+          "route": "/dashboard",
+          "name": "dashboard"
         },
         {
-          "route": "/leads-members/[leadId]/donations/summary",
-          "name": "summary"
+          "route": "/campaign-members/[campaignId]/audit",
+          "name": "audit"
         },
         {
-          "route": "/campaign-members/[campaignId]/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/info/organization",
+          "name": "organization"
         }
       ],
       "prev": "/beneficiaries/summary",
@@ -178,16 +178,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/settings/members",
-          "name": "members"
+          "route": "/settings/donation",
+          "name": "donation"
         },
         {
-          "route": "/messages/templateconfig",
-          "name": "templateconfig"
+          "route": "/settings",
+          "name": "settings"
         },
         {
-          "route": "/verifications",
-          "name": "verifications"
+          "route": "/campaign-public/[campaignId]",
+          "name": "[campaignId]"
         }
       ],
       "prev": "/beneficiaries/[beneficiaryId]",
@@ -227,16 +227,16 @@
       ],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/dashboard",
+          "name": "dashboard"
         },
         {
-          "route": "/donor-portal/donations",
-          "name": "donations"
+          "route": "/messages",
+          "name": "messages"
         },
         {
-          "route": "/donor-portal/receipt/[donationId]",
-          "name": "[donationId]"
+          "route": "/donors/summary",
+          "name": "summary"
         }
       ],
       "prev": "/beneficiary-portal",
@@ -261,16 +261,16 @@
       ],
       "suggested": [
         {
-          "route": "/settings/info",
-          "name": "info"
+          "route": "/campaign-members/[campaignId]/donations",
+          "name": "donations"
         },
         {
           "route": "/leads-public/[leadId]",
           "name": "[leadId]"
         },
         {
-          "route": "/leads-members/[leadId]/summary",
-          "name": "summary"
+          "route": "/leads-members/[leadId]",
+          "name": "[leadId]"
         }
       ],
       "prev": "/beneficiary-portal/profile",
@@ -295,16 +295,16 @@
       ],
       "suggested": [
         {
-          "route": "/donor-portal/settings",
-          "name": "settings"
+          "route": "/seed",
+          "name": "seed"
         },
         {
-          "route": "/beneficiaries/summary",
-          "name": "summary"
+          "route": "/leads-members/[leadId]/donations",
+          "name": "donations"
         },
         {
-          "route": "/public-initiatives",
-          "name": "public-initiatives"
+          "route": "/campaign-members/[campaignId]/donations/[donationId]",
+          "name": "[donationId]"
         }
       ],
       "prev": "/beneficiary-portal/settings",
@@ -317,7 +317,7 @@
       "name": "campaign-members",
       "purpose": "Application Module",
       "createdAt": "2026-03-25T14:34:06.000Z",
-      "updatedAt": "2026-09-09T13:04:25.094Z",
+      "updatedAt": "2026-10-05T21:07:19.355Z",
       "collections": [],
       "actions": [
         "e.stopPropagation()}>",
@@ -330,16 +330,16 @@
       "fields": [],
       "suggested": [
         {
+          "route": "/",
+          "name": "Home"
+        },
+        {
           "route": "/analytics",
           "name": "analytics"
         },
         {
-          "route": "/donor-portal/receipt/[donationId]",
-          "name": "[donationId]"
-        },
-        {
-          "route": "/settings/data-health",
-          "name": "data-health"
+          "route": "/info/organization",
+          "name": "organization"
         }
       ],
       "prev": "/campaign-members/create",
@@ -360,16 +360,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/settings/viewport",
+          "name": "viewport"
         },
         {
-          "route": "/leads-members/create",
-          "name": "create"
+          "route": "/donor-portal/settings",
+          "name": "settings"
         },
         {
-          "route": "/settings/resources",
-          "name": "resources"
+          "route": "/donors/summary",
+          "name": "summary"
         }
       ],
       "prev": "/campaign-members",
@@ -395,16 +395,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/settings/members",
-          "name": "members"
+          "route": "/settings/logs",
+          "name": "logs"
         },
         {
-          "route": "/leads-members/[leadId]/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/campaign-members",
+          "name": "campaign-members"
         },
         {
-          "route": "/leads-members/[leadId]/donations/summary",
-          "name": "summary"
+          "route": "/donor-portal/causes",
+          "name": "causes"
         }
       ],
       "prev": "/campaign-members/[campaignId]/audit",
@@ -429,16 +429,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/beneficiaries/[beneficiaryId]",
-          "name": "[beneficiaryId]"
+          "route": "/campaign-members/[campaignId]/beneficiaries",
+          "name": "beneficiaries"
         },
         {
-          "route": "/campaign-public/[campaignId]",
-          "name": "[campaignId]"
+          "route": "/campaign-members/[campaignId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/settings",
-          "name": "settings"
+          "route": "/beneficiary-portal/profile",
+          "name": "profile"
         }
       ],
       "prev": "/campaign-members/[campaignId]/beneficiaries",
@@ -463,12 +463,12 @@
           "name": "messages"
         },
         {
-          "route": "/leads-members",
-          "name": "leads-members"
+          "route": "/beneficiary-portal/settings",
+          "name": "settings"
         },
         {
-          "route": "/users/create",
-          "name": "create"
+          "route": "/donor-portal/receipt/[donationId]",
+          "name": "[donationId]"
         }
       ],
       "prev": "/campaign-members/[campaignId]/donations",
@@ -493,16 +493,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-public",
-          "name": "leads-public"
+          "route": "/campaign-public",
+          "name": "campaign-public"
         },
         {
-          "route": "/donors",
-          "name": "donors"
+          "route": "/public",
+          "name": "public"
         },
         {
-          "route": "/campaign-members/[campaignId]/audit",
-          "name": "audit"
+          "route": "/settings/resources/fundraising",
+          "name": "fundraising"
         }
       ],
       "prev": "/campaign-members/[campaignId]/donations/summary",
@@ -515,12 +515,12 @@
       "name": "[campaignId]",
       "purpose": "Application Module",
       "createdAt": "2026-03-14T10:29:30.000Z",
-      "updatedAt": "2026-04-26T20:10:31.318Z",
+      "updatedAt": "2026-10-05T19:38:29.253Z",
       "collections": [],
       "actions": [
         "Back To Campaigns",
         "Cancel",
-        "Secure Procurement",
+        "Save Procurement",
         "handleEditCategoryClick(category)}>",
         "Add Category",
         "Create Category",
@@ -543,16 +543,16 @@
       ],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/summary",
-          "name": "summary"
-        },
-        {
           "route": "/leads-public/[leadId]",
           "name": "[leadId]"
         },
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/leads-members/[leadId]/donations/summary",
+          "name": "summary"
+        },
+        {
+          "route": "/donor-portal/settings",
+          "name": "settings"
         }
       ],
       "prev": "/campaign-members/[campaignId]/donations/[donationId]",
@@ -565,7 +565,7 @@
       "name": "summary",
       "purpose": "Application Module",
       "createdAt": "2026-04-04T03:14:10.000Z",
-      "updatedAt": "2026-09-11T19:23:03.112Z",
+      "updatedAt": "2026-10-05T20:30:03.686Z",
       "collections": [],
       "actions": [
         "All Campaigns",
@@ -601,16 +601,16 @@
       ],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/beneficiaries",
-          "name": "beneficiaries"
+          "route": "/beneficiary-portal",
+          "name": "beneficiary-portal"
         },
         {
-          "route": "/campaign-members/[campaignId]/audit",
-          "name": "audit"
+          "route": "/beneficiaries/create",
+          "name": "create"
         },
         {
-          "route": "/beneficiaries/summary",
-          "name": "summary"
+          "route": "/guidance",
+          "name": "guidance"
         }
       ],
       "prev": "/campaign-members/[campaignId]",
@@ -631,16 +631,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/settings/beneficiary",
-          "name": "beneficiary"
+          "route": "/info/organization",
+          "name": "organization"
         },
         {
-          "route": "/beneficiaries/summary",
-          "name": "summary"
+          "route": "/donate",
+          "name": "donate"
         },
         {
-          "route": "/campaign-members/[campaignId]/donations",
-          "name": "donations"
+          "route": "/campaign-members/create",
+          "name": "create"
         }
       ],
       "prev": "/campaign-members/[campaignId]/summary",
@@ -659,16 +659,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/settings/lead",
-          "name": "lead"
+          "route": "/leads-public/[leadId]",
+          "name": "[leadId]"
         },
         {
-          "route": "/info/organization",
-          "name": "organization"
+          "route": "/public",
+          "name": "public"
         },
         {
-          "route": "/donor-portal/settings",
-          "name": "settings"
+          "route": "/story-creator",
+          "name": "story-creator"
         }
       ],
       "prev": "/campaign-public",
@@ -681,7 +681,7 @@
       "name": "summary",
       "purpose": "Application Module",
       "createdAt": "2026-03-26T00:38:38.000Z",
-      "updatedAt": "2026-09-11T19:21:59.997Z",
+      "updatedAt": "2026-10-05T20:30:17.018Z",
       "collections": [],
       "actions": [
         "Back To Campaigns",
@@ -693,16 +693,16 @@
       ],
       "suggested": [
         {
-          "route": "/leads-public",
-          "name": "leads-public"
+          "route": "/settings/resources",
+          "name": "resources"
         },
         {
-          "route": "/campaign-public/[campaignId]",
+          "route": "/leads-members/[leadId]/beneficiaries",
+          "name": "beneficiaries"
+        },
+        {
+          "route": "/campaign-members/[campaignId]",
           "name": "[campaignId]"
-        },
-        {
-          "route": "/settings/members",
-          "name": "members"
         }
       ],
       "prev": "/campaign-public/[campaignId]",
@@ -725,16 +725,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/settings/migration",
-          "name": "migration"
+          "route": "/campaign-public",
+          "name": "campaign-public"
         },
         {
-          "route": "/info/guidance",
-          "name": "guidance"
+          "route": "/login",
+          "name": "login"
         },
         {
-          "route": "/beneficiaries/[beneficiaryId]",
-          "name": "[beneficiaryId]"
+          "route": "/leads-members/[leadId]/donations/summary",
+          "name": "summary"
         }
       ],
       "prev": "/campaign-public/[campaignId]/summary",
@@ -755,16 +755,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/info/organization",
-          "name": "organization"
+          "route": "/users",
+          "name": "users"
         },
         {
-          "route": "/donor-portal/donations",
-          "name": "donations"
+          "route": "/leads-members/[leadId]/beneficiaries",
+          "name": "beneficiaries"
         },
         {
-          "route": "/donor-portal/receipt/[donationId]",
-          "name": "[donationId]"
+          "route": "/leads-public/[leadId]/summary",
+          "name": "summary"
         }
       ],
       "prev": "/dashboard",
@@ -785,16 +785,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/settings/logs",
+          "name": "logs"
         },
         {
-          "route": "/beneficiaries/create",
-          "name": "create"
+          "route": "/leads-public/[leadId]",
+          "name": "[leadId]"
         },
         {
-          "route": "/messages",
-          "name": "messages"
+          "route": "/public",
+          "name": "public"
         }
       ],
       "prev": "/diagnostics",
@@ -807,7 +807,7 @@
       "name": "donations",
       "purpose": "Application Module",
       "createdAt": "2026-03-29T13:13:34.000Z",
-      "updatedAt": "2026-09-09T13:05:33.841Z",
+      "updatedAt": "2026-10-08T18:04:41.508Z",
       "collections": [],
       "actions": [
         "{isOpen ?  : }",
@@ -821,16 +821,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-public/[campaignId]",
-          "name": "[campaignId]"
+          "route": "/campaign-members/[campaignId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/leads-members/[leadId]/beneficiaries",
-          "name": "beneficiaries"
+          "route": "/info/guiding-principles",
+          "name": "guiding-principles"
         },
         {
-          "route": "/campaign-public/[campaignId]/summary",
-          "name": "summary"
+          "route": "/beneficiary-portal/settings",
+          "name": "settings"
         }
       ],
       "prev": "/donate",
@@ -843,7 +843,7 @@
       "name": "summary",
       "purpose": "Application Module",
       "createdAt": "2026-03-16T21:51:22.000Z",
-      "updatedAt": "2026-05-03T19:41:34.888Z",
+      "updatedAt": "2026-10-03T01:37:22.875Z",
       "collections": [],
       "actions": [
         "Back To Dashboard"
@@ -851,16 +851,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/donors/summary",
-          "name": "summary"
+          "route": "/portal-register",
+          "name": "portal-register"
         },
         {
-          "route": "/leads-members/[leadId]/beneficiaries",
-          "name": "beneficiaries"
+          "route": "/donor-portal",
+          "name": "donor-portal"
         },
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/leads-members/[leadId]/donations",
+          "name": "donations"
         }
       ],
       "prev": "/donations",
@@ -883,16 +883,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]",
-          "name": "[leadId]"
+          "route": "/leads-members/[leadId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/beneficiaries/summary",
-          "name": "summary"
+          "route": "/donor-portal/settings",
+          "name": "settings"
         },
         {
-          "route": "/leads-members",
-          "name": "leads-members"
+          "route": "/public-summary",
+          "name": "public-summary"
         }
       ],
       "prev": "/donations/summary",
@@ -914,16 +914,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/donor-portal/donations",
-          "name": "donations"
+          "route": "/settings/lead",
+          "name": "lead"
         },
         {
-          "route": "/donors",
-          "name": "donors"
+          "route": "/info/guiding-principles",
+          "name": "guiding-principles"
         },
         {
-          "route": "/settings/beneficiary",
-          "name": "beneficiary"
+          "route": "/donor-portal/profile",
+          "name": "profile"
         }
       ],
       "prev": "/donations/[donationId]",
@@ -936,7 +936,7 @@
       "name": "donations",
       "purpose": "Application Module",
       "createdAt": "2026-04-30T23:56:16.938Z",
-      "updatedAt": "2026-09-09T13:40:48.977Z",
+      "updatedAt": "2026-10-05T20:39:30.996Z",
       "collections": [],
       "actions": [
         "Return to Login",
@@ -945,16 +945,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/donations/summary",
-          "name": "summary"
+          "route": "/campaign-members/[campaignId]",
+          "name": "[campaignId]"
         },
         {
-          "route": "/beneficiaries/create",
-          "name": "create"
+          "route": "/analytics",
+          "name": "analytics"
         },
         {
-          "route": "/leads-members/[leadId]",
-          "name": "[leadId]"
+          "route": "/donor-portal/receipt/[donationId]",
+          "name": "[donationId]"
         }
       ],
       "prev": "/donor-portal/causes",
@@ -979,16 +979,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/settings/lead",
-          "name": "lead"
+          "route": "/leads-public",
+          "name": "leads-public"
         },
         {
-          "route": "/leads-members",
-          "name": "leads-members"
+          "route": "/campaign-members/[campaignId]/summary",
+          "name": "summary"
         },
         {
-          "route": "/campaign-members/[campaignId]/donations",
-          "name": "donations"
+          "route": "/campaign-members/create",
+          "name": "create"
         }
       ],
       "prev": "/donor-portal/donations",
@@ -1027,16 +1027,16 @@
       ],
       "suggested": [
         {
-          "route": "/leads-public/[leadId]",
+          "route": "/leads-members/[leadId]/donations/[donationId]",
+          "name": "[donationId]"
+        },
+        {
+          "route": "/leads-members/[leadId]",
           "name": "[leadId]"
         },
         {
-          "route": "/beneficiary-portal/profile",
-          "name": "profile"
-        },
-        {
-          "route": "/story-creator",
-          "name": "story-creator"
+          "route": "/campaign-members/[campaignId]/donations",
+          "name": "donations"
         }
       ],
       "prev": "/donor-portal",
@@ -1059,16 +1059,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/messages/templateconfig",
-          "name": "templateconfig"
+          "route": "/settings/campaign",
+          "name": "campaign"
         },
         {
-          "route": "/leads-members/[leadId]/donations",
-          "name": "donations"
+          "route": "/registry-index",
+          "name": "registry-index"
         },
         {
-          "route": "/users",
-          "name": "users"
+          "route": "/leads-members/[leadId]/audit",
+          "name": "audit"
         }
       ],
       "prev": "/donor-portal/profile",
@@ -1093,15 +1093,15 @@
       ],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/beneficiaries",
+          "route": "/donor-portal/causes",
+          "name": "causes"
+        },
+        {
+          "route": "/campaign-members/[campaignId]/beneficiaries",
           "name": "beneficiaries"
         },
         {
-          "route": "/donors/[donorId]",
-          "name": "[donorId]"
-        },
-        {
-          "route": "/campaign-members/[campaignId]/donations/summary",
+          "route": "/leads-public/[leadId]/summary",
           "name": "summary"
         }
       ],
@@ -1115,7 +1115,7 @@
       "name": "donors",
       "purpose": "Application Module",
       "createdAt": "2026-03-20T11:10:00.000Z",
-      "updatedAt": "2026-05-03T20:01:31.589Z",
+      "updatedAt": "2026-10-05T15:56:17.338Z",
       "collections": [],
       "actions": [
         "Dashboard",
@@ -1123,37 +1123,35 @@
         "{isSubmitting ?  : } Authorize Profile"
       ],
       "fields": [
-        "Full Legal Name *",
+        "Full Name *",
         "Primary Contact *",
-        "Email Identifier",
-        "Residential Vector",
+        "Email Address",
+        "Address",
         "Gender",
         "Date of Birth",
-        "Telegram Chat Id",
-        "Pan Number (80G Tax Exemption)",
-        "Aadhaar Proof Document",
+        "Telegram Chat ID",
+        "PAN Number (for Tax Exemption)",
+        "Aadhaar Document",
         "Aadhaar Number",
         "Name on Aadhaar",
-        "Other Identity (Pan/Passport/Id)",
-        "Id Type",
-        "Id Number",
-        "Dob (Id Proof)",
+        "ID Type",
+        "ID Number",
         "Bank Name",
         "Account No.",
-        "Ifsc Vector"
+        "IFSC Code"
       ],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/login",
+          "name": "login"
         },
         {
-          "route": "/portal-register",
-          "name": "portal-register"
+          "route": "/campaign-members/create",
+          "name": "create"
         },
         {
-          "route": "/settings/viewport",
-          "name": "viewport"
+          "route": "/analytics",
+          "name": "analytics"
         }
       ],
       "prev": "/donor-portal/settings",
@@ -1175,16 +1173,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/beneficiaries/summary",
+          "name": "summary"
         },
         {
-          "route": "/leads-members/[leadId]/donations",
-          "name": "donations"
+          "route": "/leads-members/[leadId]",
+          "name": "[leadId]"
         },
         {
-          "route": "/donor-portal/settings",
-          "name": "settings"
+          "route": "/leads-public",
+          "name": "leads-public"
         }
       ],
       "prev": "/donors",
@@ -1230,15 +1228,15 @@
       ],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/leads-public/[leadId]",
+          "name": "[leadId]"
         },
         {
-          "route": "/info/donation-info",
-          "name": "donation-info"
+          "route": "/campaign-members/[campaignId]/audit",
+          "name": "audit"
         },
         {
-          "route": "/beneficiaries",
+          "route": "/campaign-members/[campaignId]/beneficiaries",
           "name": "beneficiaries"
         }
       ],
@@ -1258,16 +1256,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]",
-          "name": "[leadId]"
+          "route": "/info/organization",
+          "name": "organization"
         },
         {
-          "route": "/campaign-members/[campaignId]/beneficiaries",
+          "route": "/leads-members/[leadId]/beneficiaries",
           "name": "beneficiaries"
         },
         {
-          "route": "/beneficiaries/create",
-          "name": "create"
+          "route": "/beneficiary-portal",
+          "name": "beneficiary-portal"
         }
       ],
       "prev": "/donors/[donorId]",
@@ -1288,16 +1286,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/diagnostics",
-          "name": "diagnostics"
+          "route": "/campaign-members/create",
+          "name": "create"
         },
         {
-          "route": "/settings/members",
-          "name": "members"
+          "route": "/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/settings/user",
-          "name": "user"
+          "route": "/donor-portal/settings",
+          "name": "settings"
         }
       ],
       "prev": "/env-check",
@@ -1310,37 +1308,37 @@
       "name": "guidance",
       "purpose": "Application Module",
       "createdAt": "2026-03-12T21:47:46.000Z",
-      "updatedAt": "2026-05-03T18:11:51.043Z",
+      "updatedAt": "2026-10-05T15:55:50.369Z",
       "collections": [],
       "actions": [
         "Dashboard",
         "Public Portal View",
-        "New Sector",
+        "New Category",
         "removeCategory(cat.id)}>",
         "removeResource(cat.id, res.id)}>",
         "Access Portal"
       ],
       "fields": [
         "Hide",
-        "Identity Protocol",
-        "Functional Context",
-        "Tele-Vector",
-        "Portal Link",
-        "Location Vector",
-        "Operational Scope & Methodology"
+        "Resource Name",
+        "Category / Subtitle",
+        "Phone Number",
+        "Website Link",
+        "Address",
+        "Description"
       ],
       "suggested": [
         {
-          "route": "/env-check",
-          "name": "env-check"
+          "route": "/donor-portal/settings",
+          "name": "settings"
         },
         {
-          "route": "/profile",
-          "name": "profile"
+          "route": "/campaign-members/[campaignId]/donations",
+          "name": "donations"
         },
         {
-          "route": "/campaign-public",
-          "name": "campaign-public"
+          "route": "/leads-members/[leadId]/audit",
+          "name": "audit"
         }
       ],
       "prev": "/extractor",
@@ -1362,16 +1360,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/audit",
-          "name": "audit"
+          "route": "/settings/members",
+          "name": "members"
         },
         {
-          "route": "/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/env-check",
+          "name": "env-check"
         },
         {
-          "route": "/guidance",
-          "name": "guidance"
+          "route": "/campaign-members/[campaignId]/summary",
+          "name": "summary"
         }
       ],
       "prev": "/guidance",
@@ -1395,16 +1393,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/donations/[donationId]",
+          "route": "/leads-members/[leadId]/donations",
+          "name": "donations"
+        },
+        {
+          "route": "/donate",
+          "name": "donate"
+        },
+        {
+          "route": "/campaign-members/[campaignId]/donations/[donationId]",
           "name": "[donationId]"
-        },
-        {
-          "route": "/",
-          "name": "Home"
-        },
-        {
-          "route": "/story-creator",
-          "name": "story-creator"
         }
       ],
       "prev": "/info/donation-info",
@@ -1428,16 +1426,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/settings/members",
-          "name": "members"
+          "route": "/info/donation-info",
+          "name": "donation-info"
         },
         {
-          "route": "/_offline",
-          "name": "_offline"
+          "route": "/donor-portal",
+          "name": "donor-portal"
         },
         {
-          "route": "/portal-register",
-          "name": "portal-register"
+          "route": "/leads-members/[leadId]/summary",
+          "name": "summary"
         }
       ],
       "prev": "/info/guidance",
@@ -1458,16 +1456,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/registry-index",
+          "name": "registry-index"
         },
         {
-          "route": "/beneficiaries/summary",
-          "name": "summary"
+          "route": "/leads-members/[leadId]/donations",
+          "name": "donations"
         },
         {
-          "route": "/leads-members",
-          "name": "leads-members"
+          "route": "/",
+          "name": "Home"
         }
       ],
       "prev": "/info/guiding-principles",
@@ -1488,16 +1486,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/donations/summary",
-          "name": "summary"
+          "route": "/settings/donation",
+          "name": "donation"
         },
         {
-          "route": "/login",
-          "name": "login"
+          "route": "/campaign-members/[campaignId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/beneficiary-portal/profile",
-          "name": "profile"
+          "route": "/settings/migration",
+          "name": "migration"
         }
       ],
       "prev": "/info/members",
@@ -1522,16 +1520,16 @@
       ],
       "suggested": [
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/leads-public/[leadId]/summary",
+          "name": "summary"
         },
         {
-          "route": "/beneficiaries/[beneficiaryId]",
-          "name": "[beneficiaryId]"
+          "route": "/beneficiaries/create",
+          "name": "create"
         },
         {
-          "route": "/donations",
-          "name": "donations"
+          "route": "/beneficiaries",
+          "name": "beneficiaries"
         }
       ],
       "prev": "/info/organization",
@@ -1544,7 +1542,7 @@
       "name": "leads-members",
       "purpose": "Application Module",
       "createdAt": "2026-03-25T14:34:06.000Z",
-      "updatedAt": "2026-09-09T13:04:44.109Z",
+      "updatedAt": "2026-10-05T21:07:25.063Z",
       "collections": [],
       "actions": [
         "e.stopPropagation()}>",
@@ -1557,16 +1555,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/public-summary",
+          "name": "public-summary"
         },
         {
-          "route": "/leads-public/[leadId]/summary",
-          "name": "summary"
+          "route": "/settings/donor",
+          "name": "donor"
         },
         {
-          "route": "/settings/members",
-          "name": "members"
+          "route": "/settings/donation",
+          "name": "donation"
         }
       ],
       "prev": "/leads-members/create",
@@ -1587,16 +1585,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/profile",
-          "name": "profile"
+          "route": "/",
+          "name": "Home"
         },
         {
-          "route": "/settings/resources/fundraising",
-          "name": "fundraising"
+          "route": "/info/members",
+          "name": "members"
         },
         {
-          "route": "/leads-members/[leadId]/summary",
-          "name": "summary"
+          "route": "/donor-portal/settings",
+          "name": "settings"
         }
       ],
       "prev": "/leads-members",
@@ -1622,16 +1620,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/info/guidance",
-          "name": "guidance"
-        },
-        {
-          "route": "/analytics",
-          "name": "analytics"
-        },
-        {
-          "route": "/leads-members/[leadId]/donations/summary",
+          "route": "/leads-public/[leadId]/summary",
           "name": "summary"
+        },
+        {
+          "route": "/portal-login",
+          "name": "portal-login"
+        },
+        {
+          "route": "/settings/logs",
+          "name": "logs"
         }
       ],
       "prev": "/leads-members/[leadId]/audit",
@@ -1644,7 +1642,7 @@
       "name": "donations",
       "purpose": "Application Module",
       "createdAt": "2026-03-20T11:10:00.000Z",
-      "updatedAt": "2026-09-09T16:13:36.024Z",
+      "updatedAt": "2026-10-05T20:39:39.545Z",
       "collections": [],
       "actions": [
         "Back",
@@ -1658,16 +1656,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/audit",
-          "name": "audit"
+          "route": "/leads-members/[leadId]/beneficiaries",
+          "name": "beneficiaries"
         },
         {
-          "route": "/beneficiaries/summary",
-          "name": "summary"
+          "route": "/donor-portal/donations",
+          "name": "donations"
         },
         {
-          "route": "/donor-portal/receipt/[donationId]",
-          "name": "[donationId]"
+          "route": "/beneficiary-portal/settings",
+          "name": "settings"
         }
       ],
       "prev": "/leads-members/[leadId]/beneficiaries",
@@ -1686,16 +1684,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/analytics",
-          "name": "analytics"
-        },
-        {
           "route": "/",
           "name": "Home"
         },
         {
-          "route": "/leads-members/[leadId]/donations",
-          "name": "donations"
+          "route": "/public",
+          "name": "public"
+        },
+        {
+          "route": "/leads-members/[leadId]/donations/[donationId]",
+          "name": "[donationId]"
         }
       ],
       "prev": "/leads-members/[leadId]/donations",
@@ -1720,16 +1718,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/audit",
-          "name": "audit"
+          "route": "/leads-members/create",
+          "name": "create"
         },
         {
-          "route": "/donors/summary",
-          "name": "summary"
+          "route": "/beneficiary-portal/settings",
+          "name": "settings"
         },
         {
-          "route": "/campaign-members/[campaignId]/beneficiaries",
-          "name": "beneficiaries"
+          "route": "/info/guiding-principles",
+          "name": "guiding-principles"
         }
       ],
       "prev": "/leads-members/[leadId]/donations/summary",
@@ -1742,7 +1740,7 @@
       "name": "[leadId]",
       "purpose": "Application Module",
       "createdAt": "2026-03-14T10:29:30.000Z",
-      "updatedAt": "2026-04-30T21:36:48.241Z",
+      "updatedAt": "2026-10-05T19:38:22.824Z",
       "collections": [],
       "actions": [
         "Back To Leads",
@@ -1755,12 +1753,12 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/beneficiaries",
-          "name": "beneficiaries"
+          "route": "/public-initiatives",
+          "name": "public-initiatives"
         },
         {
-          "route": "/donors",
-          "name": "donors"
+          "route": "/analytics",
+          "name": "analytics"
         },
         {
           "route": "/info/guiding-principles",
@@ -1777,7 +1775,7 @@
       "name": "summary",
       "purpose": "Application Module",
       "createdAt": "2026-03-26T00:38:38.000Z",
-      "updatedAt": "2026-09-11T19:23:12.776Z",
+      "updatedAt": "2026-10-05T20:41:03.970Z",
       "collections": [],
       "actions": [
         "All Help Requests",
@@ -1820,16 +1818,16 @@
       ],
       "suggested": [
         {
-          "route": "/verifications",
-          "name": "verifications"
+          "route": "/settings/notifications",
+          "name": "notifications"
         },
         {
-          "route": "/settings/migration",
-          "name": "migration"
+          "route": "/donor-portal/causes",
+          "name": "causes"
         },
         {
-          "route": "/beneficiaries/summary",
-          "name": "summary"
+          "route": "/beneficiaries",
+          "name": "beneficiaries"
         }
       ],
       "prev": "/leads-members/[leadId]",
@@ -1850,16 +1848,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/summary",
-          "name": "summary"
+          "route": "/campaign-members/[campaignId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/settings/donation",
-          "name": "donation"
+          "route": "/leads-members/[leadId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/settings/guidance",
-          "name": "guidance"
+          "route": "/settings/data-health",
+          "name": "data-health"
         }
       ],
       "prev": "/leads-members/[leadId]/summary",
@@ -1878,16 +1876,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/donations/summary",
-          "name": "summary"
+          "route": "/campaign-public/[campaignId]",
+          "name": "[campaignId]"
         },
         {
-          "route": "/donor-portal/settings",
-          "name": "settings"
+          "route": "/portal-register",
+          "name": "portal-register"
         },
         {
-          "route": "/users/create",
-          "name": "create"
+          "route": "/dashboard",
+          "name": "dashboard"
         }
       ],
       "prev": "/leads-public",
@@ -1900,7 +1898,7 @@
       "name": "summary",
       "purpose": "Application Module",
       "createdAt": "2026-03-26T00:38:38.000Z",
-      "updatedAt": "2026-09-11T19:22:50.018Z",
+      "updatedAt": "2026-10-05T20:41:10.046Z",
       "collections": [],
       "actions": [
         "Back To Leads",
@@ -1912,16 +1910,16 @@
       ],
       "suggested": [
         {
-          "route": "/donor-portal",
-          "name": "donor-portal"
+          "route": "/seed",
+          "name": "seed"
         },
         {
-          "route": "/campaign-members/[campaignId]",
-          "name": "[campaignId]"
+          "route": "/beneficiary-portal/settings",
+          "name": "settings"
         },
         {
-          "route": "/beneficiaries",
-          "name": "beneficiaries"
+          "route": "/beneficiaries/summary",
+          "name": "summary"
         }
       ],
       "prev": "/leads-public/[leadId]",
@@ -1934,7 +1932,7 @@
       "name": "login",
       "purpose": "Application Module",
       "createdAt": "2026-03-05T16:00:06.000Z",
-      "updatedAt": "2026-05-17T09:52:27.279Z",
+      "updatedAt": "2026-10-03T01:59:12.746Z",
       "collections": [],
       "actions": [
         "Back to home",
@@ -1955,16 +1953,16 @@
       ],
       "suggested": [
         {
-          "route": "/settings/resources/fundraising",
-          "name": "fundraising"
+          "route": "/donors/summary",
+          "name": "summary"
+        },
+        {
+          "route": "/settings",
+          "name": "settings"
         },
         {
           "route": "/info/donation-info",
           "name": "donation-info"
-        },
-        {
-          "route": "/beneficiary-portal/settings",
-          "name": "settings"
         }
       ],
       "prev": "/leads-public/[leadId]/summary",
@@ -1977,7 +1975,7 @@
       "name": "messages",
       "purpose": "Application Module",
       "createdAt": "2026-04-25T22:30:14.576Z",
-      "updatedAt": "2026-05-04T20:42:49.745Z",
+      "updatedAt": "2026-10-05T20:39:49.977Z",
       "collections": [],
       "actions": [
         "Return to Dashboard",
@@ -1989,16 +1987,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/audit",
-          "name": "audit"
+          "route": "/leads-members/[leadId]/donations/[donationId]",
+          "name": "[donationId]"
         },
         {
-          "route": "/public-summary",
-          "name": "public-summary"
+          "route": "/analytics",
+          "name": "analytics"
         },
         {
-          "route": "/settings/beneficiary",
-          "name": "beneficiary"
+          "route": "/donor-portal",
+          "name": "donor-portal"
         }
       ],
       "prev": "/login",
@@ -2011,7 +2009,7 @@
       "name": "templateconfig",
       "purpose": "Application Module",
       "createdAt": "2026-04-25T22:29:59.386Z",
-      "updatedAt": "2026-05-07T22:22:38.629Z",
+      "updatedAt": "2026-10-05T20:39:59.307Z",
       "collections": [],
       "actions": [
         "Back to Dashboard",
@@ -2032,16 +2030,16 @@
       ],
       "suggested": [
         {
-          "route": "/portal-register",
-          "name": "portal-register"
+          "route": "/settings/guidance",
+          "name": "guidance"
         },
         {
-          "route": "/dashboard",
-          "name": "dashboard"
+          "route": "/campaign-public/[campaignId]",
+          "name": "[campaignId]"
         },
         {
-          "route": "/campaign-members/[campaignId]/audit",
-          "name": "audit"
+          "route": "/donor-portal",
+          "name": "donor-portal"
         }
       ],
       "prev": "/messages",
@@ -2054,7 +2052,7 @@
       "name": "Home",
       "purpose": "Application Module",
       "createdAt": "2026-03-26T00:12:02.000Z",
-      "updatedAt": "2026-05-17T10:29:12.823Z",
+      "updatedAt": "2026-10-05T20:22:23.057Z",
       "collections": [],
       "actions": [
         "Donate Now",
@@ -2066,16 +2064,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-public/[leadId]/summary",
-          "name": "summary"
+          "route": "/extractor",
+          "name": "extractor"
         },
         {
-          "route": "/profile",
-          "name": "profile"
+          "route": "/leads-public/[leadId]",
+          "name": "[leadId]"
         },
         {
-          "route": "/campaign-members/[campaignId]/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/donations",
+          "name": "donations"
         }
       ],
       "prev": "/messages/templateconfig",
@@ -2088,7 +2086,7 @@
       "name": "portal-login",
       "purpose": "Application Module",
       "createdAt": "2026-04-30T22:39:59.499Z",
-      "updatedAt": "2026-05-17T12:04:33.719Z",
+      "updatedAt": "2026-10-03T01:59:22.464Z",
       "collections": [],
       "actions": [],
       "fields": [
@@ -2102,16 +2100,16 @@
       ],
       "suggested": [
         {
-          "route": "/_offline",
-          "name": "_offline"
+          "route": "/settings/donation",
+          "name": "donation"
         },
         {
-          "route": "/login",
-          "name": "login"
+          "route": "/leads-members/[leadId]/beneficiaries",
+          "name": "beneficiaries"
         },
         {
-          "route": "/info/members",
-          "name": "members"
+          "route": "/leads-members/[leadId]/audit",
+          "name": "audit"
         }
       ],
       "prev": "/",
@@ -2124,7 +2122,7 @@
       "name": "portal-register",
       "purpose": "Application Module",
       "createdAt": "2026-04-30T22:40:22.033Z",
-      "updatedAt": "2026-05-03T20:05:13.647Z",
+      "updatedAt": "2026-10-03T01:56:06.044Z",
       "collections": [],
       "actions": [],
       "fields": [
@@ -2138,16 +2136,16 @@
       ],
       "suggested": [
         {
-          "route": "/campaign-members",
-          "name": "campaign-members"
-        },
-        {
-          "route": "/env-check",
-          "name": "env-check"
-        },
-        {
-          "route": "/campaign-members/[campaignId]/donations/summary",
+          "route": "/donations/summary",
           "name": "summary"
+        },
+        {
+          "route": "/campaign-public",
+          "name": "campaign-public"
+        },
+        {
+          "route": "/beneficiary-portal/settings",
+          "name": "settings"
         }
       ],
       "prev": "/portal-login",
@@ -2184,16 +2182,16 @@
       ],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/donations",
-          "name": "donations"
+          "route": "/beneficiaries",
+          "name": "beneficiaries"
         },
         {
-          "route": "/campaign-members/[campaignId]",
-          "name": "[campaignId]"
+          "route": "/leads-members/[leadId]/beneficiaries",
+          "name": "beneficiaries"
         },
         {
-          "route": "/settings/info",
-          "name": "info"
+          "route": "/info/guidance",
+          "name": "guidance"
         }
       ],
       "prev": "/portal-register",
@@ -2212,16 +2210,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/donations/summary",
-          "name": "summary"
+          "route": "/campaign-members",
+          "name": "campaign-members"
         },
         {
-          "route": "/verifications",
-          "name": "verifications"
+          "route": "/portal-login",
+          "name": "portal-login"
         },
         {
-          "route": "/campaign-members/[campaignId]/donations/summary",
-          "name": "summary"
+          "route": "/settings/user",
+          "name": "user"
         }
       ],
       "prev": "/profile",
@@ -2242,16 +2240,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/beneficiaries",
-          "name": "beneficiaries"
+          "route": "/info/donation-info",
+          "name": "donation-info"
         },
         {
-          "route": "/donor-portal/settings",
-          "name": "settings"
+          "route": "/campaign-public/[campaignId]/summary",
+          "name": "summary"
         },
         {
-          "route": "/_offline",
-          "name": "_offline"
+          "route": "/beneficiary-portal",
+          "name": "beneficiary-portal"
         }
       ],
       "prev": "/public",
@@ -2272,16 +2270,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/public",
-          "name": "public"
+          "route": "/seed",
+          "name": "seed"
         },
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/donor-portal/settings",
+          "name": "settings"
         },
         {
-          "route": "/beneficiaries/summary",
-          "name": "summary"
+          "route": "/campaign-members/[campaignId]/donations",
+          "name": "donations"
         }
       ],
       "prev": "/public-initiatives",
@@ -2308,16 +2306,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/messages",
-          "name": "messages"
+          "route": "/settings/migration",
+          "name": "migration"
         },
         {
-          "route": "/leads-members/[leadId]/donations/summary",
-          "name": "summary"
+          "route": "/leads-public",
+          "name": "leads-public"
         },
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/beneficiaries/create",
+          "name": "create"
         }
       ],
       "prev": "/public-summary",
@@ -2330,7 +2328,7 @@
       "name": "seed",
       "purpose": "Application Module",
       "createdAt": "2026-03-05T16:00:06.000Z",
-      "updatedAt": "2026-05-03T20:04:21.371Z",
+      "updatedAt": "2026-10-05T15:56:34.674Z",
       "collections": [],
       "actions": [
         "Dashboard"
@@ -2338,16 +2336,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-members",
-          "name": "leads-members"
+          "route": "/settings/migration",
+          "name": "migration"
         },
         {
-          "route": "/settings/user",
-          "name": "user"
+          "route": "/settings/resources/fundraising",
+          "name": "fundraising"
         },
         {
-          "route": "/diagnostics",
-          "name": "diagnostics"
+          "route": "/donors/summary",
+          "name": "summary"
         }
       ],
       "prev": "/registry-index",
@@ -2360,25 +2358,37 @@
       "name": "app",
       "purpose": "Application Module",
       "createdAt": "2026-04-04T04:28:24.000Z",
-      "updatedAt": "2026-05-16T20:17:27.127Z",
+      "updatedAt": "2026-10-05T20:12:42.310Z",
       "collections": [],
       "actions": [
-        "Discard",
+        "Cancel",
+        "View Usage & Billing",
+        "Launch UPI App",
+        "Manage Gateways",
         "Discard Updates"
       ],
       "fields": [
         "Visible",
+        "Test Amount (₹)",
+        "Test Note / Remark",
         "Big Title / Headline",
         "Short Description",
         "{ticker.label}",
         "Max Feed Items",
         "Archive Depth",
         "Update Vector",
-        "Your UPI ID",
+        "Primary UPI ID (VPA Handle)",
+        "Secondary / Backup UPI ID",
         "Mobile Number for Payment",
+        "Display QR & UPI Publicly",
+        "Public View",
         "Account Holder Name",
+        "Bank Name",
+        "Branch Name",
         "Account Number",
         "Bank IFSC Code",
+        "Account Type",
+        "SWIFT / BIC Code",
         "Inbound Portal (Donors)",
         "Outbound Portal (Recipients)",
         "Primary Auth Method",
@@ -2386,21 +2396,31 @@
         "Organization Name",
         "Registration No.",
         "PAN Vector",
+        "Banner Color Theme",
+        "Smart Message Generator",
+        "Custom Alert Message (Fully Editable)",
         "Official Portal URL",
-        "Contact Email Vector"
+        "Contact Email Vector",
+        "Instagram Profile URL",
+        "Facebook Profile URL",
+        "YouTube Channel URL",
+        "Twitter / X Profile URL",
+        "LinkedIn Profile URL",
+        "WhatsApp Link / Number",
+        "Telegram Channel / Link"
       ],
       "suggested": [
         {
-          "route": "/donations",
-          "name": "donations"
-        },
-        {
-          "route": "/beneficiary-portal/settings",
+          "route": "/settings",
           "name": "settings"
         },
         {
-          "route": "/campaign-public/[campaignId]",
-          "name": "[campaignId]"
+          "route": "/leads-members/[leadId]/donations/[donationId]",
+          "name": "[donationId]"
+        },
+        {
+          "route": "/_offline",
+          "name": "_offline"
         }
       ],
       "prev": "/seed",
@@ -2428,16 +2448,16 @@
       ],
       "suggested": [
         {
-          "route": "/verifications",
-          "name": "verifications"
+          "route": "/settings/app",
+          "name": "app"
         },
         {
-          "route": "/donations",
-          "name": "donations"
+          "route": "/leads-members/[leadId]/summary",
+          "name": "summary"
         },
         {
-          "route": "/donor-portal/receipt/[donationId]",
-          "name": "[donationId]"
+          "route": "/campaign-members",
+          "name": "campaign-members"
         }
       ],
       "prev": "/settings/app",
@@ -2450,7 +2470,7 @@
       "name": "campaign",
       "purpose": "Application Module",
       "createdAt": "2026-03-05T16:00:06.000Z",
-      "updatedAt": "2026-04-27T22:52:17.587Z",
+      "updatedAt": "2026-10-05T20:38:51.468Z",
       "collections": [],
       "actions": [
         "Cancel"
@@ -2468,16 +2488,16 @@
       ],
       "suggested": [
         {
-          "route": "/donations/summary",
-          "name": "summary"
+          "route": "/users/create",
+          "name": "create"
         },
         {
-          "route": "/campaign-members/[campaignId]/summary",
-          "name": "summary"
+          "route": "/beneficiaries",
+          "name": "beneficiaries"
         },
         {
-          "route": "/users/[userId]",
-          "name": "[userId]"
+          "route": "/beneficiary-portal/settings",
+          "name": "settings"
         }
       ],
       "prev": "/settings/beneficiary",
@@ -2490,7 +2510,7 @@
       "name": "data-health",
       "purpose": "Application Module",
       "createdAt": "2026-04-06T20:09:56.978Z",
-      "updatedAt": "2026-09-09T14:29:08.223Z",
+      "updatedAt": "2026-10-05T20:39:00.152Z",
       "collections": [],
       "actions": [
         "Run Health Scan"
@@ -2498,16 +2518,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/donations/summary",
-          "name": "summary"
-        },
-        {
           "route": "/leads-members/[leadId]/summary",
           "name": "summary"
         },
         {
-          "route": "/settings/guidance",
-          "name": "guidance"
+          "route": "/settings/info",
+          "name": "info"
+        },
+        {
+          "route": "/users/create",
+          "name": "create"
         }
       ],
       "prev": "/settings/campaign",
@@ -2520,7 +2540,7 @@
       "name": "donation",
       "purpose": "Application Module",
       "createdAt": "2026-03-13T10:55:14.000Z",
-      "updatedAt": "2026-04-27T22:53:24.927Z",
+      "updatedAt": "2026-10-05T20:38:30.148Z",
       "collections": [],
       "actions": [
         "Cancel"
@@ -2537,16 +2557,16 @@
       ],
       "suggested": [
         {
-          "route": "/donations",
-          "name": "donations"
+          "route": "/donor-portal/profile",
+          "name": "profile"
         },
         {
-          "route": "/donors/summary",
+          "route": "/campaign-members/[campaignId]/summary",
           "name": "summary"
         },
         {
-          "route": "/donors",
-          "name": "donors"
+          "route": "/campaign-members/[campaignId]/beneficiaries",
+          "name": "beneficiaries"
         }
       ],
       "prev": "/settings/data-health",
@@ -2559,7 +2579,7 @@
       "name": "donor",
       "purpose": "Application Module",
       "createdAt": "2026-03-13T07:42:10.000Z",
-      "updatedAt": "2026-05-03T18:07:04.809Z",
+      "updatedAt": "2026-10-05T19:38:05.031Z",
       "collections": [],
       "actions": [
         "Discard"
@@ -2574,16 +2594,16 @@
       ],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/donations/summary",
-          "name": "summary"
+          "route": "/beneficiary-portal/profile",
+          "name": "profile"
         },
         {
-          "route": "/leads-members/[leadId]/audit",
-          "name": "audit"
+          "route": "/leads-members/[leadId]/beneficiaries",
+          "name": "beneficiaries"
         },
         {
-          "route": "/donor-portal/causes",
-          "name": "causes"
+          "route": "/leads-public/[leadId]",
+          "name": "[leadId]"
         }
       ],
       "prev": "/settings/donation",
@@ -2609,16 +2629,16 @@
       ],
       "suggested": [
         {
-          "route": "/leads-public/[leadId]",
-          "name": "[leadId]"
+          "route": "/donations",
+          "name": "donations"
         },
         {
-          "route": "/campaign-public/[campaignId]",
-          "name": "[campaignId]"
+          "route": "/campaign-members/[campaignId]/beneficiaries",
+          "name": "beneficiaries"
         },
         {
-          "route": "/beneficiary-portal/profile",
-          "name": "profile"
+          "route": "/campaign-members/[campaignId]/donations",
+          "name": "donations"
         }
       ],
       "prev": "/settings/donor",
@@ -2642,16 +2662,16 @@
       ],
       "suggested": [
         {
-          "route": "/donations/[donationId]",
+          "route": "/beneficiary-portal/profile",
+          "name": "profile"
+        },
+        {
+          "route": "/leads-members/[leadId]",
+          "name": "[leadId]"
+        },
+        {
+          "route": "/leads-members/[leadId]/donations/[donationId]",
           "name": "[donationId]"
-        },
-        {
-          "route": "/messages/templateconfig",
-          "name": "templateconfig"
-        },
-        {
-          "route": "/leads-public",
-          "name": "leads-public"
         }
       ],
       "prev": "/settings/guidance",
@@ -2664,7 +2684,7 @@
       "name": "lead",
       "purpose": "Application Module",
       "createdAt": "2026-03-05T16:00:06.000Z",
-      "updatedAt": "2026-04-27T22:52:58.493Z",
+      "updatedAt": "2026-10-05T20:38:41.938Z",
       "collections": [],
       "actions": [
         "Cancel"
@@ -2682,16 +2702,16 @@
       ],
       "suggested": [
         {
-          "route": "/settings/members",
-          "name": "members"
+          "route": "/campaign-members/[campaignId]/donations/summary",
+          "name": "summary"
         },
         {
-          "route": "/leads-members/[leadId]/beneficiaries",
-          "name": "beneficiaries"
+          "route": "/campaign-public/[campaignId]/summary",
+          "name": "summary"
         },
         {
-          "route": "/campaign-members/[campaignId]/beneficiaries",
-          "name": "beneficiaries"
+          "route": "/leads-members/create",
+          "name": "create"
         }
       ],
       "prev": "/settings/info",
@@ -2710,16 +2730,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/campaign-members/[campaignId]/donations/[donationId]",
+          "route": "/settings/migration",
+          "name": "migration"
+        },
+        {
+          "route": "/donor-portal/receipt/[donationId]",
           "name": "[donationId]"
         },
         {
-          "route": "/beneficiaries/create",
-          "name": "create"
-        },
-        {
-          "route": "/beneficiary-portal/profile",
-          "name": "profile"
+          "route": "/users/[userId]",
+          "name": "[userId]"
         }
       ],
       "prev": "/settings/lead",
@@ -2740,16 +2760,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/beneficiary-portal/profile",
-          "name": "profile"
+          "route": "/leads-members/create",
+          "name": "create"
         },
         {
-          "route": "/campaign-public",
-          "name": "campaign-public"
+          "route": "/campaign-members/[campaignId]",
+          "name": "[campaignId]"
         },
         {
-          "route": "/donate",
-          "name": "donate"
+          "route": "/settings/resources",
+          "name": "resources"
         }
       ],
       "prev": "/settings/logs",
@@ -2770,16 +2790,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/donations",
-          "name": "donations"
+          "route": "/leads-members",
+          "name": "leads-members"
         },
         {
-          "route": "/beneficiary-portal",
-          "name": "beneficiary-portal"
+          "route": "/settings/members",
+          "name": "members"
         },
         {
-          "route": "/beneficiary-portal/settings",
-          "name": "settings"
+          "route": "/portal-login",
+          "name": "portal-login"
         }
       ],
       "prev": "/settings/members",
@@ -2792,7 +2812,7 @@
       "name": "notifications",
       "purpose": "Application Module",
       "createdAt": "2026-04-27T13:45:12.839Z",
-      "updatedAt": "2026-05-03T20:03:20.773Z",
+      "updatedAt": "2026-10-05T15:56:54.086Z",
       "collections": [],
       "actions": [
         "handleOpenDialog(group)}>",
@@ -2809,16 +2829,16 @@
       ],
       "suggested": [
         {
-          "route": "/campaign-members/create",
-          "name": "create"
+          "route": "/campaign-members/[campaignId]/audit",
+          "name": "audit"
         },
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/verifications",
+          "name": "verifications"
         },
         {
-          "route": "/leads-members/[leadId]",
-          "name": "[leadId]"
+          "route": "/settings/lead",
+          "name": "lead"
         }
       ],
       "prev": "/settings/migration",
@@ -2837,23 +2857,70 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/leads-public/[leadId]/summary",
-          "name": "summary"
+          "route": "/settings/info",
+          "name": "info"
         },
         {
-          "route": "/leads-members/[leadId]/donations",
-          "name": "donations"
+          "route": "/donor-portal",
+          "name": "donor-portal"
         },
         {
-          "route": "/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/registry-index",
+          "name": "registry-index"
         }
       ],
       "prev": "/settings/notifications",
-      "next": "/settings/resources/fundraising"
+      "next": "/settings/payment-gateways"
     },
     {
       "id": 82,
+      "path": "src/app/settings/payment-gateways/page.tsx",
+      "route": "/settings/payment-gateways",
+      "name": "payment-gateways",
+      "purpose": "Application Module",
+      "createdAt": "2026-10-02T23:57:35.477Z",
+      "updatedAt": "2026-10-03T02:30:46.813Z",
+      "collections": [],
+      "actions": [],
+      "fields": [
+        "Primary Gateway:",
+        "Master Gateway Switch",
+        "Internal Team Test Mode",
+        "Public Direct Donate",
+        "Donor Portal Checkout",
+        "Key ID",
+        "Key Secret",
+        "Environment Mode",
+        "API Key",
+        "Auth Token",
+        "Merchant ID",
+        "Salt Key",
+        "Salt Index",
+        "Publishable Key",
+        "Secret Key",
+        "Merchant ID (MID)",
+        "Merchant Key",
+        "App ID"
+      ],
+      "suggested": [
+        {
+          "route": "/users/[userId]",
+          "name": "[userId]"
+        },
+        {
+          "route": "/leads-public",
+          "name": "leads-public"
+        },
+        {
+          "route": "/public",
+          "name": "public"
+        }
+      ],
+      "prev": "/settings",
+      "next": "/settings/resources/fundraising"
+    },
+    {
+      "id": 83,
       "path": "src/app/settings/resources/fundraising/page.tsx",
       "route": "/settings/resources/fundraising",
       "name": "fundraising",
@@ -2876,29 +2943,29 @@
       ],
       "suggested": [
         {
-          "route": "/donors/[donorId]",
-          "name": "[donorId]"
-        },
-        {
           "route": "/analytics",
           "name": "analytics"
         },
         {
-          "route": "/campaign-members",
-          "name": "campaign-members"
+          "route": "/beneficiaries/summary",
+          "name": "summary"
+        },
+        {
+          "route": "/donor-portal",
+          "name": "donor-portal"
         }
       ],
-      "prev": "/settings",
+      "prev": "/settings/payment-gateways",
       "next": "/settings/resources"
     },
     {
-      "id": 83,
+      "id": 84,
       "path": "src/app/settings/resources/page.tsx",
       "route": "/settings/resources",
       "name": "resources",
       "purpose": "Application Module",
       "createdAt": "2026-04-25T22:25:17.957Z",
-      "updatedAt": "2026-05-07T17:55:09.899Z",
+      "updatedAt": "2026-10-06T16:35:56.968Z",
       "collections": [],
       "actions": [
         "Raise Internal Fund",
@@ -2911,6 +2978,8 @@
         "Meta Permanent Access Token",
         "Phone Number Id",
         "Waba Id",
+        "WhatsApp Default Group ID",
+        "WhatsApp Donation Group ID",
         "Auto WhatsApp Messages",
         "WhatsApp OTP for Portal Login",
         "WhatsApp Subscription Detail",
@@ -2944,23 +3013,55 @@
       ],
       "suggested": [
         {
-          "route": "/analytics",
-          "name": "analytics"
+          "route": "/settings/info",
+          "name": "info"
         },
         {
-          "route": "/settings/logs",
-          "name": "logs"
+          "route": "/campaign-members/[campaignId]",
+          "name": "[campaignId]"
         },
         {
-          "route": "/leads-public/[leadId]",
-          "name": "[leadId]"
+          "route": "/guidance",
+          "name": "guidance"
         }
       ],
       "prev": "/settings/resources/fundraising",
+      "next": "/settings/usage"
+    },
+    {
+      "id": 85,
+      "path": "src/app/settings/usage/page.tsx",
+      "route": "/settings/usage",
+      "name": "usage",
+      "purpose": "Application Module",
+      "createdAt": "2026-10-05T20:11:47.143Z",
+      "updatedAt": "2026-10-05T20:11:47.146Z",
+      "collections": [],
+      "actions": [
+        "Refresh Usage Metrics",
+        "Firebase Console",
+        "Inspect Storage Bucket"
+      ],
+      "fields": [],
+      "suggested": [
+        {
+          "route": "/settings/info",
+          "name": "info"
+        },
+        {
+          "route": "/donors/summary",
+          "name": "summary"
+        },
+        {
+          "route": "/portal-login",
+          "name": "portal-login"
+        }
+      ],
+      "prev": "/settings/resources",
       "next": "/settings/user"
     },
     {
-      "id": 84,
+      "id": 86,
       "path": "src/app/settings/user/page.tsx",
       "route": "/settings/user",
       "name": "user",
@@ -2983,19 +3084,19 @@
           "name": "summary"
         },
         {
-          "route": "/public-initiatives",
-          "name": "public-initiatives"
+          "route": "/settings/resources/fundraising",
+          "name": "fundraising"
         },
         {
-          "route": "/extractor",
-          "name": "extractor"
+          "route": "/campaign-members/[campaignId]/donations/[donationId]",
+          "name": "[donationId]"
         }
       ],
-      "prev": "/settings/resources",
+      "prev": "/settings/usage",
       "next": "/settings/viewport"
     },
     {
-      "id": 85,
+      "id": 87,
       "path": "src/app/settings/viewport/page.tsx",
       "route": "/settings/viewport",
       "name": "viewport",
@@ -3018,23 +3119,23 @@
       ],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/donations",
-          "name": "donations"
+          "route": "/users/[userId]",
+          "name": "[userId]"
         },
         {
-          "route": "/settings/members",
+          "route": "/beneficiary-portal/settings",
+          "name": "settings"
+        },
+        {
+          "route": "/info/members",
           "name": "members"
-        },
-        {
-          "route": "/leads-public",
-          "name": "leads-public"
         }
       ],
       "prev": "/settings/user",
       "next": "/story-creator"
     },
     {
-      "id": 86,
+      "id": 88,
       "path": "src/app/story-creator/page.tsx",
       "route": "/story-creator",
       "name": "story-creator",
@@ -3048,23 +3149,23 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/settings/campaign",
-          "name": "campaign"
+          "route": "/beneficiaries/summary",
+          "name": "summary"
         },
         {
-          "route": "/donor-portal/donations",
-          "name": "donations"
+          "route": "/leads-public/[leadId]",
+          "name": "[leadId]"
         },
         {
-          "route": "/beneficiaries/[beneficiaryId]",
-          "name": "[beneficiaryId]"
+          "route": "/portal-login",
+          "name": "portal-login"
         }
       ],
       "prev": "/settings/viewport",
       "next": "/users/create"
     },
     {
-      "id": 87,
+      "id": 89,
       "path": "src/app/users/create/page.tsx",
       "route": "/users/create",
       "name": "create",
@@ -3078,23 +3179,23 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/settings",
-          "name": "settings"
+          "route": "/leads-public/[leadId]",
+          "name": "[leadId]"
         },
         {
-          "route": "/donor-portal/profile",
-          "name": "profile"
+          "route": "/analytics",
+          "name": "analytics"
         },
         {
-          "route": "/diagnostics",
-          "name": "diagnostics"
+          "route": "/settings/payment-gateways",
+          "name": "payment-gateways"
         }
       ],
       "prev": "/story-creator",
       "next": "/users"
     },
     {
-      "id": 88,
+      "id": 90,
       "path": "src/app/users/page.tsx",
       "route": "/users",
       "name": "users",
@@ -3114,23 +3215,23 @@
       ],
       "suggested": [
         {
-          "route": "/portal-register",
-          "name": "portal-register"
+          "route": "/beneficiaries/summary",
+          "name": "summary"
         },
         {
-          "route": "/messages",
-          "name": "messages"
+          "route": "/settings/beneficiary",
+          "name": "beneficiary"
         },
         {
-          "route": "/verifications",
-          "name": "verifications"
+          "route": "/leads-public",
+          "name": "leads-public"
         }
       ],
       "prev": "/users/create",
       "next": "/users/[userId]"
     },
     {
-      "id": 89,
+      "id": 91,
       "path": "src/app/users/[userId]/page.tsx",
       "route": "/users/[userId]",
       "name": "[userId]",
@@ -3148,23 +3249,23 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/beneficiaries/[beneficiaryId]",
-          "name": "[beneficiaryId]"
+          "route": "/portal-login",
+          "name": "portal-login"
         },
         {
-          "route": "/campaign-members/[campaignId]/donations/[donationId]",
-          "name": "[donationId]"
+          "route": "/_offline",
+          "name": "_offline"
         },
         {
-          "route": "/leads-members/[leadId]/audit",
-          "name": "audit"
+          "route": "/info/members",
+          "name": "members"
         }
       ],
       "prev": "/users",
       "next": "/verifications"
     },
     {
-      "id": 90,
+      "id": 92,
       "path": "src/app/verifications/page.tsx",
       "route": "/verifications",
       "name": "verifications",
@@ -3183,23 +3284,23 @@
       ],
       "suggested": [
         {
-          "route": "/leads-members/[leadId]/donations",
-          "name": "donations"
-        },
-        {
           "route": "/donors",
           "name": "donors"
         },
         {
-          "route": "/leads-members",
-          "name": "leads-members"
+          "route": "/campaign-public/[campaignId]",
+          "name": "[campaignId]"
+        },
+        {
+          "route": "/campaign-members/[campaignId]/audit",
+          "name": "audit"
         }
       ],
       "prev": "/users/[userId]",
       "next": "/_offline"
     },
     {
-      "id": 91,
+      "id": 93,
       "path": "src/app/_offline/page.tsx",
       "route": "/_offline",
       "name": "_offline",
@@ -3213,16 +3314,16 @@
       "fields": [],
       "suggested": [
         {
-          "route": "/beneficiaries/summary",
+          "route": "/leads-members/[leadId]/donations/summary",
           "name": "summary"
         },
         {
-          "route": "/users/create",
-          "name": "create"
+          "route": "/leads-members/[leadId]/audit",
+          "name": "audit"
         },
         {
-          "route": "/login",
-          "name": "login"
+          "route": "/beneficiaries/summary",
+          "name": "summary"
         }
       ],
       "prev": "/verifications",
@@ -3316,297 +3417,297 @@
       {
         "name": "analytics.md",
         "path": "docs/user-guides/analytics.md",
-        "updatedAt": "2026-09-11T19:12:01.130Z"
+        "updatedAt": "2026-09-11T19:28:40.780Z"
       },
       {
         "name": "beneficiaries-create.md",
         "path": "docs/user-guides/beneficiaries-create.md",
-        "updatedAt": "2026-09-11T19:12:01.137Z"
+        "updatedAt": "2026-09-11T19:28:40.788Z"
       },
       {
         "name": "beneficiaries-summary.md",
         "path": "docs/user-guides/beneficiaries-summary.md",
-        "updatedAt": "2026-09-11T19:12:01.144Z"
+        "updatedAt": "2026-09-11T19:28:40.795Z"
       },
       {
         "name": "beneficiaries-[beneficiaryId].md",
         "path": "docs/user-guides/beneficiaries-[beneficiaryId].md",
-        "updatedAt": "2026-09-11T19:12:01.147Z"
+        "updatedAt": "2026-09-11T19:28:40.799Z"
       },
       {
         "name": "beneficiaries.md",
         "path": "docs/user-guides/beneficiaries.md",
-        "updatedAt": "2026-09-11T19:12:01.140Z"
+        "updatedAt": "2026-09-11T19:28:40.791Z"
       },
       {
         "name": "beneficiary-portal-profile.md",
         "path": "docs/user-guides/beneficiary-portal-profile.md",
-        "updatedAt": "2026-09-11T19:12:01.152Z"
+        "updatedAt": "2026-09-11T19:28:40.804Z"
       },
       {
         "name": "beneficiary-portal-settings.md",
         "path": "docs/user-guides/beneficiary-portal-settings.md",
-        "updatedAt": "2026-09-11T19:12:01.155Z"
+        "updatedAt": "2026-09-11T19:28:40.807Z"
       },
       {
         "name": "beneficiary-portal.md",
         "path": "docs/user-guides/beneficiary-portal.md",
-        "updatedAt": "2026-09-11T19:12:01.149Z"
+        "updatedAt": "2026-09-11T19:28:40.801Z"
       },
       {
         "name": "campaign-members-create.md",
         "path": "docs/user-guides/campaign-members-create.md",
-        "updatedAt": "2026-09-11T19:12:01.158Z"
+        "updatedAt": "2026-09-11T19:28:40.809Z"
       },
       {
         "name": "campaign-members-[campaignId]-audit.md",
         "path": "docs/user-guides/campaign-members-[campaignId]-audit.md",
-        "updatedAt": "2026-09-11T19:12:01.166Z"
+        "updatedAt": "2026-09-11T19:28:40.817Z"
       },
       {
         "name": "campaign-members-[campaignId]-beneficiaries.md",
         "path": "docs/user-guides/campaign-members-[campaignId]-beneficiaries.md",
-        "updatedAt": "2026-09-11T19:12:01.169Z"
+        "updatedAt": "2026-09-11T19:28:40.820Z"
       },
       {
         "name": "campaign-members-[campaignId]-donations-summary.md",
         "path": "docs/user-guides/campaign-members-[campaignId]-donations-summary.md",
-        "updatedAt": "2026-09-11T19:12:01.176Z"
+        "updatedAt": "2026-09-11T19:28:40.826Z"
       },
       {
         "name": "campaign-members-[campaignId]-donations-[donationId].md",
         "path": "docs/user-guides/campaign-members-[campaignId]-donations-[donationId].md",
-        "updatedAt": "2026-09-11T19:12:01.179Z"
+        "updatedAt": "2026-09-11T19:28:40.828Z"
       },
       {
         "name": "campaign-members-[campaignId]-donations.md",
         "path": "docs/user-guides/campaign-members-[campaignId]-donations.md",
-        "updatedAt": "2026-09-11T19:12:01.173Z"
+        "updatedAt": "2026-09-11T19:28:40.822Z"
       },
       {
         "name": "campaign-members-[campaignId]-summary.md",
         "path": "docs/user-guides/campaign-members-[campaignId]-summary.md",
-        "updatedAt": "2026-09-11T19:12:01.185Z"
+        "updatedAt": "2026-09-11T19:28:40.836Z"
       },
       {
         "name": "campaign-members-[campaignId].md",
         "path": "docs/user-guides/campaign-members-[campaignId].md",
-        "updatedAt": "2026-09-11T19:12:01.183Z"
+        "updatedAt": "2026-09-11T19:28:40.832Z"
       },
       {
         "name": "campaign-members.md",
         "path": "docs/user-guides/campaign-members.md",
-        "updatedAt": "2026-09-11T19:12:01.163Z"
+        "updatedAt": "2026-09-11T19:28:40.814Z"
       },
       {
         "name": "campaign-public-[campaignId]-summary.md",
         "path": "docs/user-guides/campaign-public-[campaignId]-summary.md",
-        "updatedAt": "2026-09-11T19:12:01.193Z"
+        "updatedAt": "2026-09-11T19:28:40.843Z"
       },
       {
         "name": "campaign-public-[campaignId].md",
         "path": "docs/user-guides/campaign-public-[campaignId].md",
-        "updatedAt": "2026-09-11T19:12:01.190Z"
+        "updatedAt": "2026-09-11T19:28:40.839Z"
       },
       {
         "name": "campaign-public.md",
         "path": "docs/user-guides/campaign-public.md",
-        "updatedAt": "2026-09-11T19:12:01.187Z"
+        "updatedAt": "2026-09-11T19:28:40.838Z"
       },
       {
         "name": "dashboard.md",
         "path": "docs/user-guides/dashboard.md",
-        "updatedAt": "2026-09-11T19:12:01.196Z"
+        "updatedAt": "2026-09-11T19:28:40.846Z"
       },
       {
         "name": "diagnostics.md",
         "path": "docs/user-guides/diagnostics.md",
-        "updatedAt": "2026-09-11T19:12:01.198Z"
+        "updatedAt": "2026-09-11T19:28:40.848Z"
       },
       {
         "name": "donate.md",
         "path": "docs/user-guides/donate.md",
-        "updatedAt": "2026-09-11T19:12:01.202Z"
+        "updatedAt": "2026-09-11T19:28:40.851Z"
       },
       {
         "name": "donations-summary.md",
         "path": "docs/user-guides/donations-summary.md",
-        "updatedAt": "2026-09-11T19:12:01.206Z"
+        "updatedAt": "2026-09-11T19:28:40.856Z"
       },
       {
         "name": "donations-[donationId].md",
         "path": "docs/user-guides/donations-[donationId].md",
-        "updatedAt": "2026-09-11T19:12:01.209Z"
+        "updatedAt": "2026-09-11T19:28:40.858Z"
       },
       {
         "name": "donations.md",
         "path": "docs/user-guides/donations.md",
-        "updatedAt": "2026-09-11T19:12:01.204Z"
+        "updatedAt": "2026-09-11T19:28:40.854Z"
       },
       {
         "name": "donor-portal-causes.md",
         "path": "docs/user-guides/donor-portal-causes.md",
-        "updatedAt": "2026-09-11T19:12:01.211Z"
+        "updatedAt": "2026-09-11T19:28:40.860Z"
       },
       {
         "name": "donor-portal-donations.md",
         "path": "docs/user-guides/donor-portal-donations.md",
-        "updatedAt": "2026-09-11T19:12:01.214Z"
+        "updatedAt": "2026-09-11T19:28:40.864Z"
       },
       {
         "name": "donor-portal-profile.md",
         "path": "docs/user-guides/donor-portal-profile.md",
-        "updatedAt": "2026-09-11T19:12:01.219Z"
+        "updatedAt": "2026-09-11T19:28:40.869Z"
       },
       {
         "name": "donor-portal-receipt-[donationId].md",
         "path": "docs/user-guides/donor-portal-receipt-[donationId].md",
-        "updatedAt": "2026-09-11T19:12:01.220Z"
+        "updatedAt": "2026-09-11T19:28:40.872Z"
       },
       {
         "name": "donor-portal-settings.md",
         "path": "docs/user-guides/donor-portal-settings.md",
-        "updatedAt": "2026-09-11T19:12:01.223Z"
+        "updatedAt": "2026-09-11T19:28:40.874Z"
       },
       {
         "name": "donor-portal.md",
         "path": "docs/user-guides/donor-portal.md",
-        "updatedAt": "2026-09-11T19:12:01.217Z"
+        "updatedAt": "2026-09-11T19:28:40.868Z"
       },
       {
         "name": "donors-summary.md",
         "path": "docs/user-guides/donors-summary.md",
-        "updatedAt": "2026-09-11T19:12:01.231Z"
+        "updatedAt": "2026-09-11T19:28:40.880Z"
       },
       {
         "name": "donors-[donorId].md",
         "path": "docs/user-guides/donors-[donorId].md",
-        "updatedAt": "2026-09-11T19:12:01.234Z"
+        "updatedAt": "2026-09-11T19:28:40.882Z"
       },
       {
         "name": "donors.md",
         "path": "docs/user-guides/donors.md",
-        "updatedAt": "2026-09-11T19:12:01.227Z"
+        "updatedAt": "2026-09-11T19:28:40.877Z"
       },
       {
         "name": "env-check.md",
         "path": "docs/user-guides/env-check.md",
-        "updatedAt": "2026-09-11T19:12:01.236Z"
+        "updatedAt": "2026-09-11T19:28:40.886Z"
       },
       {
         "name": "extractor.md",
         "path": "docs/user-guides/extractor.md",
-        "updatedAt": "2026-09-11T19:12:01.241Z"
+        "updatedAt": "2026-09-11T19:28:40.888Z"
       },
       {
         "name": "guidance.md",
         "path": "docs/user-guides/guidance.md",
-        "updatedAt": "2026-09-11T19:12:01.251Z"
+        "updatedAt": "2026-09-11T19:28:40.890Z"
       },
       {
         "name": "home.md",
         "path": "docs/user-guides/home.md",
-        "updatedAt": "2026-09-11T19:12:01.315Z"
+        "updatedAt": "2026-09-11T19:28:40.949Z"
       },
       {
         "name": "info-donation-info.md",
         "path": "docs/user-guides/info-donation-info.md",
-        "updatedAt": "2026-09-11T19:12:01.253Z"
+        "updatedAt": "2026-09-11T19:28:40.892Z"
       },
       {
         "name": "info-guidance.md",
         "path": "docs/user-guides/info-guidance.md",
-        "updatedAt": "2026-09-11T19:12:01.256Z"
+        "updatedAt": "2026-09-11T19:28:40.897Z"
       },
       {
         "name": "info-guiding-principles.md",
         "path": "docs/user-guides/info-guiding-principles.md",
-        "updatedAt": "2026-09-11T19:12:01.261Z"
+        "updatedAt": "2026-09-11T19:28:40.901Z"
       },
       {
         "name": "info-members.md",
         "path": "docs/user-guides/info-members.md",
-        "updatedAt": "2026-09-11T19:12:01.265Z"
+        "updatedAt": "2026-09-11T19:28:40.902Z"
       },
       {
         "name": "info-organization.md",
         "path": "docs/user-guides/info-organization.md",
-        "updatedAt": "2026-09-11T19:12:01.269Z"
+        "updatedAt": "2026-09-11T19:28:40.905Z"
       },
       {
         "name": "leads-members-create.md",
         "path": "docs/user-guides/leads-members-create.md",
-        "updatedAt": "2026-09-11T19:12:01.271Z"
+        "updatedAt": "2026-09-11T19:28:40.907Z"
       },
       {
         "name": "leads-members-[leadId]-audit.md",
         "path": "docs/user-guides/leads-members-[leadId]-audit.md",
-        "updatedAt": "2026-09-11T19:12:01.277Z"
+        "updatedAt": "2026-09-11T19:28:40.912Z"
       },
       {
         "name": "leads-members-[leadId]-beneficiaries.md",
         "path": "docs/user-guides/leads-members-[leadId]-beneficiaries.md",
-        "updatedAt": "2026-09-11T19:12:01.281Z"
+        "updatedAt": "2026-09-11T19:28:40.915Z"
       },
       {
         "name": "leads-members-[leadId]-donations-summary.md",
         "path": "docs/user-guides/leads-members-[leadId]-donations-summary.md",
-        "updatedAt": "2026-09-11T19:12:01.287Z"
+        "updatedAt": "2026-09-11T19:28:40.920Z"
       },
       {
         "name": "leads-members-[leadId]-donations-[donationId].md",
         "path": "docs/user-guides/leads-members-[leadId]-donations-[donationId].md",
-        "updatedAt": "2026-09-11T19:12:01.289Z"
+        "updatedAt": "2026-09-11T19:28:40.923Z"
       },
       {
         "name": "leads-members-[leadId]-donations.md",
         "path": "docs/user-guides/leads-members-[leadId]-donations.md",
-        "updatedAt": "2026-09-11T19:12:01.284Z"
+        "updatedAt": "2026-09-11T19:28:40.918Z"
       },
       {
         "name": "leads-members-[leadId]-summary.md",
         "path": "docs/user-guides/leads-members-[leadId]-summary.md",
-        "updatedAt": "2026-09-11T19:12:01.296Z"
+        "updatedAt": "2026-09-11T19:28:40.929Z"
       },
       {
         "name": "leads-members-[leadId].md",
         "path": "docs/user-guides/leads-members-[leadId].md",
-        "updatedAt": "2026-09-11T19:12:01.292Z"
+        "updatedAt": "2026-09-11T19:28:40.925Z"
       },
       {
         "name": "leads-members.md",
         "path": "docs/user-guides/leads-members.md",
-        "updatedAt": "2026-09-11T19:12:01.273Z"
+        "updatedAt": "2026-09-11T19:28:40.910Z"
       },
       {
         "name": "leads-public-[leadId]-summary.md",
         "path": "docs/user-guides/leads-public-[leadId]-summary.md",
-        "updatedAt": "2026-09-11T19:12:01.303Z"
+        "updatedAt": "2026-09-11T19:28:40.936Z"
       },
       {
         "name": "leads-public-[leadId].md",
         "path": "docs/user-guides/leads-public-[leadId].md",
-        "updatedAt": "2026-09-11T19:12:01.300Z"
+        "updatedAt": "2026-09-11T19:28:40.935Z"
       },
       {
         "name": "leads-public.md",
         "path": "docs/user-guides/leads-public.md",
-        "updatedAt": "2026-09-11T19:12:01.298Z"
+        "updatedAt": "2026-09-11T19:28:40.931Z"
       },
       {
         "name": "login.md",
         "path": "docs/user-guides/login.md",
-        "updatedAt": "2026-09-11T19:12:01.305Z"
+        "updatedAt": "2026-09-11T19:28:40.940Z"
       },
       {
         "name": "messages-templateconfig.md",
         "path": "docs/user-guides/messages-templateconfig.md",
-        "updatedAt": "2026-09-11T19:12:01.312Z"
+        "updatedAt": "2026-09-11T19:28:40.946Z"
       },
       {
         "name": "messages.md",
         "path": "docs/user-guides/messages.md",
-        "updatedAt": "2026-09-11T19:12:01.308Z"
+        "updatedAt": "2026-09-11T19:28:40.942Z"
       },
       {
         "name": "mobile-installation.md",
@@ -3616,169 +3717,169 @@
       {
         "name": "portal-login.md",
         "path": "docs/user-guides/portal-login.md",
-        "updatedAt": "2026-09-11T19:12:01.317Z"
+        "updatedAt": "2026-09-11T19:28:40.952Z"
       },
       {
         "name": "portal-register.md",
         "path": "docs/user-guides/portal-register.md",
-        "updatedAt": "2026-09-11T19:12:01.319Z"
+        "updatedAt": "2026-09-11T19:28:40.955Z"
       },
       {
         "name": "profile.md",
         "path": "docs/user-guides/profile.md",
-        "updatedAt": "2026-09-11T19:12:01.322Z"
+        "updatedAt": "2026-09-11T19:28:40.961Z"
       },
       {
         "name": "public-initiatives.md",
         "path": "docs/user-guides/public-initiatives.md",
-        "updatedAt": "2026-09-11T19:12:01.328Z"
+        "updatedAt": "2026-09-11T19:28:40.966Z"
       },
       {
         "name": "public-summary.md",
         "path": "docs/user-guides/public-summary.md",
-        "updatedAt": "2026-09-11T19:12:01.330Z"
+        "updatedAt": "2026-09-11T19:28:40.969Z"
       },
       {
         "name": "public.md",
         "path": "docs/user-guides/public.md",
-        "updatedAt": "2026-09-11T19:12:01.325Z"
+        "updatedAt": "2026-09-11T19:28:40.964Z"
       },
       {
         "name": "registry-index.md",
         "path": "docs/user-guides/registry-index.md",
-        "updatedAt": "2026-09-11T19:12:01.333Z"
+        "updatedAt": "2026-09-11T19:28:40.973Z"
       },
       {
         "name": "seed.md",
         "path": "docs/user-guides/seed.md",
-        "updatedAt": "2026-09-11T19:12:01.335Z"
+        "updatedAt": "2026-09-11T19:28:40.974Z"
       },
       {
         "name": "settings-app.md",
         "path": "docs/user-guides/settings-app.md",
-        "updatedAt": "2026-09-11T19:12:01.339Z"
+        "updatedAt": "2026-09-11T19:28:40.981Z"
       },
       {
         "name": "settings-beneficiary.md",
         "path": "docs/user-guides/settings-beneficiary.md",
-        "updatedAt": "2026-09-11T19:12:01.341Z"
+        "updatedAt": "2026-09-11T19:28:40.988Z"
       },
       {
         "name": "settings-campaign.md",
         "path": "docs/user-guides/settings-campaign.md",
-        "updatedAt": "2026-09-11T19:12:01.345Z"
+        "updatedAt": "2026-09-11T19:28:40.996Z"
       },
       {
         "name": "settings-data-health.md",
         "path": "docs/user-guides/settings-data-health.md",
-        "updatedAt": "2026-09-11T19:12:01.349Z"
+        "updatedAt": "2026-09-11T19:28:41.005Z"
       },
       {
         "name": "settings-donation.md",
         "path": "docs/user-guides/settings-donation.md",
-        "updatedAt": "2026-09-11T19:12:01.352Z"
+        "updatedAt": "2026-09-11T19:28:41.016Z"
       },
       {
         "name": "settings-donor.md",
         "path": "docs/user-guides/settings-donor.md",
-        "updatedAt": "2026-09-11T19:12:01.354Z"
+        "updatedAt": "2026-09-11T19:28:41.019Z"
       },
       {
         "name": "settings-guidance.md",
         "path": "docs/user-guides/settings-guidance.md",
-        "updatedAt": "2026-09-11T19:12:01.357Z"
+        "updatedAt": "2026-09-11T19:28:41.021Z"
       },
       {
         "name": "settings-info.md",
         "path": "docs/user-guides/settings-info.md",
-        "updatedAt": "2026-09-11T19:12:01.361Z"
+        "updatedAt": "2026-09-11T19:28:41.024Z"
       },
       {
         "name": "settings-lead.md",
         "path": "docs/user-guides/settings-lead.md",
-        "updatedAt": "2026-09-11T19:12:01.365Z"
+        "updatedAt": "2026-09-11T19:28:41.025Z"
       },
       {
         "name": "settings-logs.md",
         "path": "docs/user-guides/settings-logs.md",
-        "updatedAt": "2026-09-11T19:12:01.367Z"
+        "updatedAt": "2026-09-11T19:28:41.030Z"
       },
       {
         "name": "settings-members.md",
         "path": "docs/user-guides/settings-members.md",
-        "updatedAt": "2026-09-11T19:12:01.370Z"
+        "updatedAt": "2026-09-11T19:28:41.032Z"
       },
       {
         "name": "settings-migration.md",
         "path": "docs/user-guides/settings-migration.md",
-        "updatedAt": "2026-09-11T19:12:01.373Z"
+        "updatedAt": "2026-09-11T19:28:41.034Z"
       },
       {
         "name": "settings-notifications.md",
         "path": "docs/user-guides/settings-notifications.md",
-        "updatedAt": "2026-09-11T19:12:01.377Z"
+        "updatedAt": "2026-09-11T19:28:41.038Z"
       },
       {
         "name": "settings-resources-fundraising.md",
         "path": "docs/user-guides/settings-resources-fundraising.md",
-        "updatedAt": "2026-09-11T19:12:01.383Z"
+        "updatedAt": "2026-09-11T19:28:41.042Z"
       },
       {
         "name": "settings-resources.md",
         "path": "docs/user-guides/settings-resources.md",
-        "updatedAt": "2026-09-11T19:12:01.385Z"
+        "updatedAt": "2026-09-11T19:28:41.048Z"
       },
       {
         "name": "settings-user.md",
         "path": "docs/user-guides/settings-user.md",
-        "updatedAt": "2026-09-11T19:12:01.388Z"
+        "updatedAt": "2026-09-11T19:28:41.056Z"
       },
       {
         "name": "settings-viewport.md",
         "path": "docs/user-guides/settings-viewport.md",
-        "updatedAt": "2026-09-11T19:12:01.390Z"
+        "updatedAt": "2026-09-11T19:28:41.058Z"
       },
       {
         "name": "settings.md",
         "path": "docs/user-guides/settings.md",
-        "updatedAt": "2026-09-11T19:12:01.380Z"
+        "updatedAt": "2026-09-11T19:28:41.040Z"
       },
       {
         "name": "story-creator.md",
         "path": "docs/user-guides/story-creator.md",
-        "updatedAt": "2026-09-11T19:12:01.395Z"
+        "updatedAt": "2026-09-11T19:28:41.062Z"
       },
       {
         "name": "users-create.md",
         "path": "docs/user-guides/users-create.md",
-        "updatedAt": "2026-09-11T19:12:01.397Z"
+        "updatedAt": "2026-09-11T19:28:41.064Z"
       },
       {
         "name": "users-[userId].md",
         "path": "docs/user-guides/users-[userId].md",
-        "updatedAt": "2026-09-11T19:12:01.403Z"
+        "updatedAt": "2026-09-11T19:28:41.070Z"
       },
       {
         "name": "users.md",
         "path": "docs/user-guides/users.md",
-        "updatedAt": "2026-09-11T19:12:01.401Z"
+        "updatedAt": "2026-09-11T19:28:41.067Z"
       },
       {
         "name": "verifications.md",
         "path": "docs/user-guides/verifications.md",
-        "updatedAt": "2026-09-11T19:12:01.406Z"
+        "updatedAt": "2026-09-11T19:28:41.072Z"
       },
       {
         "name": "_offline.md",
         "path": "docs/user-guides/_offline.md",
-        "updatedAt": "2026-09-11T19:12:01.408Z"
+        "updatedAt": "2026-09-11T19:28:41.074Z"
       }
     ],
     "architecture": [
       {
         "name": "collection-map.md",
         "path": "docs/architecture/collection-map.md",
-        "updatedAt": "2026-09-11T19:12:01.589Z"
+        "updatedAt": "2026-09-11T19:28:41.281Z"
       }
     ]
   }

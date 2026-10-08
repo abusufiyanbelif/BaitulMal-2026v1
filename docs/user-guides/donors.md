@@ -1,7 +1,7 @@
 # 📘 User Guide: /donors
     
-**Build Version:** `2026.09.12.3`
-**Last Updated:** 12/9/2026, 12:58:40 am
+**Build Version:** `2026.10.08.1`
+**Last Updated:** 8/10/2026, 11:36:00 pm
 **Internal Route:** `/donors`
 
 ---
@@ -22,29 +22,27 @@ Application Module
 
 ## ⌨️ Fields & Data Mapping
 The following fields are mapped within this interface:
-- Full Legal Name *
+- Full Name *
 - Primary Contact *
-- Email Identifier
-- Residential Vector
+- Email Address
+- Address
 - Gender
 - Date of Birth
-- Telegram Chat Id
-- Pan Number (80G Tax Exemption)
-- Aadhaar Proof Document
+- Telegram Chat ID
+- PAN Number (for Tax Exemption)
+- Aadhaar Document
 - Aadhaar Number
 - Name on Aadhaar
-- Other Identity (Pan/Passport/Id)
-- Id Type
-- Id Number
-- Dob (Id Proof)
+- ID Type
+- ID Number
 - Bank Name
 - Account No.
-- Ifsc Vector
+- IFSC Code
 - Input: Search identities, handles, contacts...
 - Input: Account State
 - Input: e.g. John Doe
 - Input: 10-digit Mobile
-- Input: donor@organization.com
+- Input: donor@example.com
 - Input: Primary Address
 - Input: Select Gender
 - Input: e.g. 123456789

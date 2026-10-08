@@ -259,16 +259,21 @@ async function sendWhatsAppCore(params: {
 
         const PROVIDER = params.configOverride?.activeWhatsAppProvider || resources?.activeWhatsAppProvider || 'whapi';
 
+        // Determine recipient target (preserve group IDs like 123@g.us for Whapi)
+        let targetRecipient = params.to;
+        if (!targetRecipient.includes('@g.us') && !targetRecipient.includes('@s.whatsapp.net')) {
+            let cleanPhone = targetRecipient.replace(/\D/g, '');
+            if (cleanPhone.length === 10) cleanPhone = `91${cleanPhone}`;
+            targetRecipient = cleanPhone;
+        }
+
         if (PROVIDER === 'meta') {
             const META_TOKEN = params.configOverride?.metaAccessToken || resources?.metaAccessToken;
             const META_PHONE_ID = params.configOverride?.metaPhoneNumberId || resources?.metaPhoneNumberId;
 
             if (!META_TOKEN || !META_PHONE_ID) {
-                console.log(`[SIMULATED META WHATSAPP] To: ${params.to} | Content: ${finalMessage}`);
+                console.log(`[SIMULATED META WHATSAPP] To: ${targetRecipient} | Content: ${finalMessage}`);
             } else {
-                let cleanPhone = params.to.replace(/\D/g, '');
-                if (cleanPhone.length === 10) cleanPhone = `91${cleanPhone}`;
-
                 try {
                     const response = await fetch(`https://graph.facebook.com/v19.0/${META_PHONE_ID}/messages`, {
                         method: 'POST',
@@ -279,7 +284,7 @@ async function sendWhatsAppCore(params: {
                         body: JSON.stringify({
                             messaging_product: "whatsapp",
                             recipient_type: "individual",
-                            to: cleanPhone,
+                            to: targetRecipient,
                             type: "text",
                             text: { body: finalMessage }
                         })
@@ -298,11 +303,8 @@ async function sendWhatsAppCore(params: {
         } else {
             // WHAPI (Existing Logic)
             if (!API_URL || !API_KEY) {
-                console.log(`[SIMULATED WHAPI WHATSAPP] To: ${params.to} | Content: ${finalMessage}`);
+                console.log(`[SIMULATED WHAPI WHATSAPP] To: ${targetRecipient} | Content: ${finalMessage}`);
             } else {
-                let cleanPhone = params.to.replace(/\D/g, '');
-                if (cleanPhone.length === 10) cleanPhone = `91${cleanPhone}`;
-
                 try {
                     const response = await fetch(API_URL, {
                         method: 'POST',
@@ -311,7 +313,7 @@ async function sendWhatsAppCore(params: {
                             'Authorization': `Bearer ${API_KEY}`
                         },
                         body: JSON.stringify({
-                            to: cleanPhone,
+                            to: targetRecipient,
                             body: finalMessage
                         })
                     });
@@ -1409,40 +1411,53 @@ export async function dispatchNotificationToGroups(params: {
                     }
                 }
             } else if (group.type === 'WhatsApp') {
-                if (!group.memberIds || group.memberIds.length === 0) continue;
-                
-                const filteredMemberIds = group.memberIds.filter((id: string) => !params.excludeUserIds?.includes(id));
-                if (filteredMemberIds.length === 0) continue;
-
-                const { FieldPath } = require('firebase-admin/firestore');
-                
-                // Fetch member phone numbers using document IDs safely
-                // Batch query if more than 10 members (in operator limit)
-                const memberPhones: string[] = [];
-                const chunkSize = 10;
-                for (let i = 0; i < filteredMemberIds.length; i += chunkSize) {
-                    const chunk = filteredMemberIds.slice(i, i + chunkSize);
-                    const membersSnap = await adminDb.collection('users')
-                        .where(FieldPath.documentId(), 'in', chunk)
-                        .get();
-                    
-                    membersSnap.docs.forEach((doc: any) => {
-                        const p = (doc.data() as UserProfile).phone;
-                        if (p && p.length >= 10) memberPhones.push(p);
-                    });
-                }
-
-                for (const phone of memberPhones) {
+                if (group.channelType === 'Group' && group.targetId) {
                     await sendWhatsAppAction({
-                        to: phone,
+                        to: group.targetId,
                         templateId: params.whatsappTemplate?.id,
                         variables: params.whatsappTemplate?.variables,
                         customMessage: params.whatsappTemplate || params.richData ? undefined : params.message,
                         metadata: params.metadata,
-                        bypassAutoCheck: true, // Staff alerts bypass the "isAutoWhatsAppEnabled" toggle if coming via group
+                        bypassAutoCheck: true,
                         richData: params.richData
                     });
                     sentCount++;
+                } else if (group.channelType === 'Individual') {
+                    if (!group.memberIds || group.memberIds.length === 0) continue;
+                    
+                    const filteredMemberIds = group.memberIds.filter((id: string) => !params.excludeUserIds?.includes(id));
+                    if (filteredMemberIds.length === 0) continue;
+
+                    const { FieldPath } = require('firebase-admin/firestore');
+                    
+                    // Fetch member phone numbers using document IDs safely
+                    // Batch query if more than 10 members (in operator limit)
+                    const memberPhones: string[] = [];
+                    const chunkSize = 10;
+                    for (let i = 0; i < filteredMemberIds.length; i += chunkSize) {
+                        const chunk = filteredMemberIds.slice(i, i + chunkSize);
+                        const membersSnap = await adminDb.collection('users')
+                            .where(FieldPath.documentId(), 'in', chunk)
+                            .get();
+                        
+                        membersSnap.docs.forEach((doc: any) => {
+                            const p = (doc.data() as UserProfile).phone;
+                            if (p && p.length >= 10) memberPhones.push(p);
+                        });
+                    }
+
+                    for (const phone of memberPhones) {
+                        await sendWhatsAppAction({
+                            to: phone,
+                            templateId: params.whatsappTemplate?.id,
+                            variables: params.whatsappTemplate?.variables,
+                            customMessage: params.whatsappTemplate || params.richData ? undefined : params.message,
+                            metadata: params.metadata,
+                            bypassAutoCheck: true, // Staff alerts bypass the "isAutoWhatsAppEnabled" toggle if coming via group
+                            richData: params.richData
+                        });
+                        sentCount++;
+                    }
                 }
             }
         }

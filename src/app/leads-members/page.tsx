@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, Calendar as CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info, Lightbulb, Globe, ShieldCheck, Clock, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle, FileLock, Loader2, Filter, Check, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Plus, ShieldAlert, MoreHorizontal, Trash2, Edit, Copy, HandHelping, Calendar as CalendarIcon, X, GraduationCap, HeartPulse, LifeBuoy, Info, Lightbulb, Globe, ShieldCheck, Clock, CheckCircle2, AlertTriangle, ArrowUpCircle, MinusCircle, ArrowDownCircle, FileLock, Loader2, Filter, Check, ChevronDown, Search } from 'lucide-react';
 import { useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
 import { doc, updateDoc, collection } from 'firebase/firestore';
@@ -198,37 +198,42 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
             <div className="space-y-2">
                 <div className="flex justify-between items-center">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                        <Badge variant="outline" className="text-[10px] border-primary/20 font-bold text-primary tracking-tight px-2">{lead.purpose}</Badge>
-                        <Badge variant="outline" className="text-[10px] font-bold tracking-tight border-primary/20 text-primary bg-primary/5 px-2">
-                            ID: {lead.caseId || lead.id}
+                        <Badge variant="outline" className="text-xs border-primary/20 font-bold text-primary tracking-tight px-2.5 py-0.5">{lead.purpose}</Badge>
+                        <Badge variant="outline" className="text-xs font-bold tracking-tight border-primary/20 text-primary bg-primary/5 px-2.5 py-0.5">
+                            ID: {lead.id}
                         </Badge>
+                        {lead.caseId && (
+                            <Badge variant="outline" className="text-xs font-bold tracking-tight border-emerald-500/30 text-emerald-800 bg-emerald-50 px-2.5 py-0.5">
+                                Case ID: {lead.caseId}
+                            </Badge>
+                        )}
                     </div>
                     <Badge 
                         variant={lead.status === 'Active' ? 'success' : lead.status === 'Completed' ? 'secondary' : 'outline'}
-                        className={cn("text-[10px] font-bold", lead.status === 'Active' && "animate-status-pulse")}
+                        className={cn("text-xs font-bold px-2.5 py-0.5", lead.status === 'Active' && "animate-status-pulse")}
                     >
                         {lead.status}
                     </Badge>
                 </div>
-                <div className="flex justify-between items-center">
-                    <Badge variant="outline" className="text-[10px] font-bold border-primary/20 text-primary flex items-center gap-1 px-2">
-                        <ShieldCheck className="h-3 w-3" />
+                <div className="flex justify-between items-center gap-2 flex-wrap">
+                    <Badge variant="outline" className="text-xs font-bold border-primary/20 text-primary flex items-center gap-1 px-2.5 py-0.5">
+                        <ShieldCheck className="h-3.5 w-3.5" />
                         {lead.authenticityStatus?.replace('Verification', '')}
                     </Badge>
-                    <Badge variant={lead.publicVisibility === 'Published' ? 'eligible' : 'outline'} className="text-[10px] font-bold flex items-center gap-1 px-2">
-                        <Globe className="h-3 w-3" />
+                    <Badge variant={lead.publicVisibility === 'Published' ? 'eligible' : 'outline'} className="text-xs font-bold flex items-center gap-1 px-2.5 py-0.5">
+                        <Globe className="h-3.5 w-3.5" />
                         {lead.publicVisibility || 'Hold'}
                     </Badge>
                 </div>
                 <div className={cn(
-                    "text-[10px] font-bold tracking-tight flex items-center gap-1.5", 
+                    "text-xs font-bold tracking-tight flex items-center gap-1.5", 
                     isUrgent ? 'text-red-600' : isHigh ? 'text-orange-600' : 'text-primary'
                 )}>
                     {getPriorityIcon(priorityLabel)}
                     {priorityLabel} Priority
                 </div>
             </div>
-            <CardDescription className="text-[10px] font-bold tracking-tight text-muted-foreground pt-1">{lead.startDate} To {lead.endDate}</CardDescription>
+            <CardDescription className="text-xs font-bold tracking-tight text-muted-foreground pt-1">{lead.startDate} To {lead.endDate}</CardDescription>
         </CardHeader>
         <CardContent className="flex-grow space-y-3 p-4 pt-0 font-normal text-primary">
             <div className="space-y-2 border-t border-primary/5 pt-3">
@@ -273,6 +278,11 @@ function LeadCard({ lead, index, router, canUpdate, canCreate, canDelete, handle
 }
 
 function MultiSelectFilter({ title, options, selected, onChange }: { title: string, options: string[], selected: string[], onChange: (val: string[]) => void }) {
+    const handleToggle = (opt: string) => {
+        const next = selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt];
+        onChange(next);
+    };
+
     return (
         <Popover>
             <PopoverTrigger asChild>
@@ -287,31 +297,37 @@ function MultiSelectFilter({ title, options, selected, onChange }: { title: stri
             <PopoverContent className="w-[200px] p-0 rounded-[12px] shadow-dropdown border-primary/10 overflow-hidden" align="start">
                 <Command className="w-full">
                     <CommandInput placeholder={`Search ${title}...`} className="h-9 text-xs font-normal px-3 outline-none w-full border-b" />
-                    <CommandList className="max-h-[300px] overflow-y-auto p-1">
+                    <CommandList className="max-h-[300px] overflow-y-auto p-1 touch-auto">
                         <CommandEmpty className="py-4 text-center text-xs text-muted-foreground font-normal">No results found.</CommandEmpty>
                         <CommandGroup>
-                            <CommandItem onSelect={() => onChange([])} className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-bold text-xs mb-1">
-                                <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors", selected.length === 0 ? "bg-primary text-white" : "bg-transparent")}>
+                            <CommandItem 
+                                value={`all_${title}`}
+                                onSelect={() => onChange([])} 
+                                onPointerDown={(e) => { e.preventDefault(); onChange([]); }}
+                                onClick={(e) => { e.preventDefault(); onChange([]); }}
+                                className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-bold text-xs mb-1 select-none"
+                            >
+                                <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors pointer-events-none", selected.length === 0 ? "bg-primary text-white" : "bg-transparent")}>
                                     {selected.length === 0 && <Check className="h-3 w-3 stroke-[3]" />}
                                 </div>
-                                <span className="flex-1 truncate">All {title}s</span>
+                                <span className="flex-1 truncate pointer-events-none">All {title}s</span>
                             </CommandItem>
                             
                             <div className="h-px bg-primary/5 my-1" />
 
                             {options.map((opt) => (
                                 <CommandItem 
-                                    key={opt} 
-                                    onSelect={() => {
-                                        const next = selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt];
-                                        onChange(next);
-                                    }} 
-                                    className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-medium text-xs"
+                                    key={opt}
+                                    value={opt}
+                                    onSelect={() => handleToggle(opt)} 
+                                    onPointerDown={(e) => { e.preventDefault(); handleToggle(opt); }}
+                                    onClick={(e) => { e.preventDefault(); handleToggle(opt); }}
+                                    className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-primary/5 cursor-pointer font-medium text-xs select-none"
                                 >
-                                    <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors", selected.includes(opt) ? "bg-primary text-white" : "bg-transparent")}>
+                                    <div className={cn("flex h-4 w-4 items-center justify-center rounded border border-primary transition-colors pointer-events-none", selected.includes(opt) ? "bg-primary text-white" : "bg-transparent")}>
                                         {selected.includes(opt) && <Check className="h-3 w-3 stroke-[3]" />}
                                     </div>
-                                    <span className="flex-1 truncate">{opt}</span>
+                                    <span className="flex-1 truncate pointer-events-none">{opt}</span>
                                 </CommandItem>
                             ))}
                         </CommandGroup>
@@ -435,11 +451,17 @@ export default function LeadPage() {
         });
 
         const docCollected = Number(lead.collectedAmount || (lead as any).collected || (lead as any).raisedAmount || 0);
-        const finalCollected = collected > 0 ? collected : (lead.status === 'Completed' && docCollected > 0 ? docCollected : collected);
-
         const target = Number(lead.targetAmount) || 0;
-        const progress = target > 0 ? Math.min((finalCollected / target) * 100, 100) : 0;
-        return { ...lead, collected: finalCollected, progress };
+        const isCompleted = lead.status === 'Completed' || lead.status === 'Closed' || lead.status === 'Archived';
+
+        let finalCollected = Math.max(collected, docCollected);
+        if (isCompleted && finalCollected < target && target > 0) {
+            finalCollected = target;
+        }
+
+        const rawProgress = target > 0 ? (finalCollected / target) * 100 : (isCompleted ? 100 : 0);
+        const progress = isCompleted ? Math.max(rawProgress, 100) : rawProgress;
+        return { ...lead, collected: finalCollected, progress: Math.min(progress, 100) };
     });
   }, [rawLeads, donations]);
 
@@ -584,7 +606,32 @@ export default function LeadPage() {
         <div className="bg-white p-4 sm:p-5 rounded-2xl border border-primary/10 shadow-sm">
           <ScrollArea className="w-full">
               <div className="flex flex-nowrap items-center gap-3 pb-1">
-                  <Input placeholder="Search appeals..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-[200px] h-9 text-xs border-primary/20 focus-visible:ring-primary font-normal text-primary bg-white/50 rounded-xl" disabled={isLoading}/>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                      <div className="relative w-[180px] sm:w-[220px]">
+                          <Input 
+                              placeholder="Search appeals..." 
+                              value={searchTerm} 
+                              onChange={(e) => setSearchTerm(e.target.value)} 
+                              className="pl-8 pr-7 h-9 text-xs border-primary/20 focus-visible:ring-primary font-normal text-primary bg-white/50 rounded-xl" 
+                              disabled={isLoading}
+                          />
+                          <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-primary opacity-40" />
+                          {searchTerm && (
+                              <button onClick={() => setSearchTerm('')} className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary p-0.5">
+                                  <X className="h-3 w-3" />
+                              </button>
+                          )}
+                      </div>
+                      <Button 
+                          type="button" 
+                          size="sm" 
+                          className="h-9 px-3 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl text-xs shadow-sm flex items-center gap-1 shrink-0"
+                          disabled={isLoading}
+                      >
+                          <Search className="h-3 w-3" />
+                          Search
+                      </Button>
+                  </div>
                   
                   <MultiSelectFilter 
                       title="Status" 

@@ -322,6 +322,8 @@ export default function UnlinkedDonationDetailsPage() {
                                     <CardTitle className="text-lg font-bold tracking-tight text-primary">Donation Summary</CardTitle>
                                 </CardHeader>
                                 <CardContent className="grid gap-6 sm:grid-cols-2 pt-6">
+                                    <DetailItem label="Donation ID" value={donation.id} isMono />
+                                    <DetailItem label="Case ID" value={donation.caseId || donation.linkSplit?.[0]?.caseId || 'N/A'} isMono />
                                     <DetailItem label="Total Amount" value={`₹${donation.amount.toFixed(2)}`} isMono />
                                     <DetailItem label="Donation Date" value={donation.donationDate} />
                                     <DetailItem label="Status" value={<Badge variant={donation.status === 'Verified' ? 'eligible' : donation.status === 'Canceled' ? 'given' : 'secondary'} className="font-bold">{donation.status}</Badge>} />
@@ -490,7 +492,10 @@ export default function UnlinkedDonationDetailsPage() {
                                                             {link.linkType === 'campaign' ? <FolderKanban className="h-3.5 w-3.5 text-primary/40" /> : <Lightbulb className="h-3.5 w-3.5 text-primary/40" />}
                                                             <div className="flex flex-col">
                                                                 <span className="font-bold text-xs truncate max-w-[180px]">{link.linkName}</span>
-                                                                <span className="text-[10px] font-mono text-muted-foreground font-bold">ID: {link.caseId || link.linkId}</span>
+                                                                <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground font-bold">
+                                                                    <span>ID: {link.linkId}</span>
+                                                                    {link.caseId && <span className="text-emerald-700">• Case ID: {link.caseId}</span>}
+                                                                </div>
                                                             </div>
                                                         </TableCell>
                                                         <TableCell className="text-right font-bold font-mono text-primary text-xs">₹{link.amount.toFixed(2)}</TableCell>

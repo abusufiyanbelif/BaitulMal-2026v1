@@ -318,11 +318,23 @@ By default, Meta gives you a **free test phone number**. If you want messages to
 | **Meta Permanent Access Token** | `EAAGm0PX4ZCps...` | Step 7 (permanent token) |
 | **Phone Number ID** | `123456789012345` | Step 4 (or Step 8 if using own number) |
 | **WABA ID** | `987654321098765` | Step 4 |
+| **WhatsApp Default Group ID** | `1203630123456789@g.us` | Whapi Group ID or Meta Group target for general alerts |
+| **WhatsApp Donation Group ID** | `1203639876543210@g.us` | Dedicated WhatsApp Group for newly logged donations |
 
 5. Toggle **Auto WhatsApp Messages** → ON
 6. Toggle **WhatsApp OTP for Portal Login** → ON
 7. Set **Subscription Status** → `Active`
 8. Click **Save**
+
+---
+
+### Step 9B: WhatsApp Group & Broadcaster Setup
+
+You can route automated notifications directly to WhatsApp Groups:
+- **General Group Alerts (`whatsappGroupChatId`)**: Receives verifications, lead entries, campaign milestones, and system updates.
+- **Dedicated Donation Group (`whatsappDonationGroupChatId`)**: Receives real-time alerts whenever a new donation is logged or modified by staff.
+
+> 💡 **Group ID Format for Whapi.cloud**: Group IDs end in `@g.us` (e.g. `120363123456789012@g.us`). You can copy your Group ID directly from the Whapi Dashboard under **Groups**.
 
 ---
 

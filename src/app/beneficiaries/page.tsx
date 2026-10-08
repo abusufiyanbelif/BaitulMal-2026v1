@@ -40,7 +40,8 @@ import {
     Plus,
     Activity,
     ChevronRight,
-    UserPlus
+    UserPlus,
+    RotateCw
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -126,6 +127,11 @@ function SortableHeader({ sortKey, children, className, sortConfig, handleSort }
 };
 
 function MultiSelectFilter({ title, options, selected, onChange }: { title: string, options: string[], selected: string[], onChange: (val: string[]) => void }) {
+    const handleToggle = (opt: string) => {
+        const next = selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt];
+        onChange(next);
+    };
+
     return (
         <Popover>
             <PopoverTrigger asChild>
@@ -140,31 +146,37 @@ function MultiSelectFilter({ title, options, selected, onChange }: { title: stri
             <PopoverContent className="w-[220px] p-0 rounded-2xl shadow-dropdown border-primary/10 overflow-hidden" align="start">
                 <Command className="w-full">
                     <CommandInput placeholder={`Search ${title}...`} className="h-10 text-xs font-normal px-4 outline-none w-full border-b" />
-                    <CommandList className="max-h-[300px] overflow-y-auto p-1.5">
+                    <CommandList className="max-h-[300px] overflow-y-auto p-1.5 touch-auto">
                         <CommandEmpty className="py-4 text-center text-xs text-muted-foreground font-normal">No results found.</CommandEmpty>
                         <CommandGroup>
-                            <CommandItem onSelect={() => onChange([])} className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 cursor-pointer font-bold text-xs mb-1">
-                                <div className={cn("flex h-4 w-4 items-center justify-center rounded-md border border-primary transition-colors", selected.length === 0 ? "bg-primary text-white" : "bg-transparent")}>
+                            <CommandItem 
+                                value={`all_${title}`}
+                                onSelect={() => onChange([])} 
+                                onPointerDown={(e) => { e.preventDefault(); onChange([]); }}
+                                onClick={(e) => { e.preventDefault(); onChange([]); }}
+                                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 cursor-pointer font-bold text-xs mb-1 select-none"
+                            >
+                                <div className={cn("flex h-4 w-4 items-center justify-center rounded-md border border-primary transition-colors pointer-events-none", selected.length === 0 ? "bg-primary text-white" : "bg-transparent")}>
                                     {selected.length === 0 && <Check className="h-3 w-3 stroke-[3]" />}
                                 </div>
-                                <span className="flex-1 truncate">All {title}s</span>
+                                <span className="flex-1 truncate pointer-events-none">All {title}s</span>
                             </CommandItem>
                             
                             <div className="h-px bg-primary/5 my-1.5" />
 
                             {options.map((opt) => (
                                 <CommandItem 
-                                    key={opt} 
-                                    onSelect={() => {
-                                        const next = selected.includes(opt) ? selected.filter(s => s !== opt) : [...selected, opt];
-                                        onChange(next);
-                                    }} 
-                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 cursor-pointer font-bold text-xs"
+                                    key={opt}
+                                    value={opt}
+                                    onSelect={() => handleToggle(opt)} 
+                                    onPointerDown={(e) => { e.preventDefault(); handleToggle(opt); }}
+                                    onClick={(e) => { e.preventDefault(); handleToggle(opt); }}
+                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-primary/5 cursor-pointer font-bold text-xs select-none"
                                 >
-                                    <div className={cn("flex h-4 w-4 items-center justify-center rounded-md border border-primary transition-colors", selected.includes(opt) ? "bg-primary text-white" : "bg-transparent")}>
+                                    <div className={cn("flex h-4 w-4 items-center justify-center rounded-md border border-primary transition-colors pointer-events-none", selected.includes(opt) ? "bg-primary text-white" : "bg-transparent")}>
                                         {selected.includes(opt) && <Check className="h-3 w-3 stroke-[3]" />}
                                     </div>
-                                    <span className="flex-1 truncate">{opt}</span>
+                                    <span className="flex-1 truncate pointer-events-none">{opt}</span>
                                 </CommandItem>
                             ))}
                         </CommandGroup>
@@ -225,6 +237,23 @@ export default function BeneficiariesPage() {
     );
     setCurrentPage(1);
   };
+
+  const resetAllFilters = () => {
+    setSearchTerm('');
+    setStatusFilter([]);
+    setZakatFilter([]);
+    setDateRange(undefined);
+    setSelectedReferrals([]);
+    setCurrentPage(1);
+  };
+
+  const hasActiveFilters = Boolean(
+    searchTerm || 
+    statusFilter.length > 0 || 
+    zakatFilter.length > 0 || 
+    dateRange || 
+    selectedReferrals.length > 0
+  );
 
   const filteredAndSortedBeneficiaries = useMemo(() => {
     if (!beneficiaries) return [];
@@ -468,16 +497,46 @@ export default function BeneficiariesPage() {
         <CardHeader className="p-4 sm:p-6 border-b bg-white/80 backdrop-blur-md sticky top-[73px] z-20">
             <ScrollArea className="w-full">
                 <div className="flex flex-nowrap items-center gap-4 pb-3">
-                    <div className="relative w-[300px] shrink-0">
-                        <Input 
-                            placeholder="Search identities..." 
-                            value={searchTerm} 
-                            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
-                            className="pl-11 h-11 text-sm border-primary/10 focus-visible:ring-primary font-bold text-primary rounded-2xl bg-white shadow-sm" 
-                        />
-                        <div className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-primary opacity-30">
-                            <Search className="h-4 w-4" />
+                    <div className="flex items-center gap-2 shrink-0">
+                        <div className="relative w-[220px] sm:w-[260px]">
+                            <Input 
+                                placeholder="Search identities..." 
+                                value={searchTerm} 
+                                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }} 
+                                onKeyDown={(e) => { if (e.key === 'Enter') setCurrentPage(1); }}
+                                className="pl-10 pr-8 h-11 text-xs border-primary/10 focus-visible:ring-primary font-bold text-primary rounded-2xl bg-white shadow-sm" 
+                            />
+                            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-primary opacity-40">
+                                <Search className="h-4 w-4" />
+                            </div>
+                            {searchTerm && (
+                                <button onClick={() => setSearchTerm('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary p-0.5">
+                                    <X className="h-3.5 w-3.5" />
+                                </button>
+                            )}
                         </div>
+                        <Button 
+                            type="button" 
+                            onClick={() => setCurrentPage(1)} 
+                            size="sm" 
+                            className="h-11 px-4 bg-primary hover:bg-primary/90 text-white font-bold rounded-2xl text-xs shadow-sm flex items-center gap-1.5 shrink-0"
+                        >
+                            <Search className="h-3.5 w-3.5" />
+                            Search
+                        </Button>
+                        {hasActiveFilters && (
+                            <Button
+                                type="button"
+                                onClick={resetAllFilters}
+                                variant="outline"
+                                size="sm"
+                                className="h-11 px-4 border-destructive/20 text-destructive hover:bg-destructive/10 font-bold rounded-2xl text-xs flex items-center gap-1.5 shrink-0 bg-white"
+                                title="Reset All Filters"
+                            >
+                                <RotateCw className="h-3.5 w-3.5" />
+                                Clear Filters
+                            </Button>
+                        )}
                     </div>
                     
                     <Popover>
@@ -608,7 +667,25 @@ export default function BeneficiariesPage() {
                     </div>
 
                     <div className="flex flex-col">
-                    {paginatedBeneficiaries.map((b, idx) => (
+                    {filteredAndSortedBeneficiaries.length === 0 ? (
+                        <div className="py-16 text-center space-y-4 px-4">
+                            <div className="w-16 h-16 rounded-full bg-primary/5 text-primary flex items-center justify-center mx-auto">
+                                <Search className="h-8 w-8 opacity-40" />
+                            </div>
+                            <div className="space-y-1">
+                                <h3 className="text-lg font-black text-primary">No Matching Identities Found</h3>
+                                <p className="text-xs font-bold text-muted-foreground max-w-sm mx-auto">
+                                    No beneficiary records match your active search terms or selected filter parameters.
+                                </p>
+                            </div>
+                            {hasActiveFilters && (
+                                <Button onClick={resetAllFilters} variant="outline" size="sm" className="font-bold border-primary/20 text-primary rounded-xl h-10 px-5 bg-white shadow-sm">
+                                    <RotateCw className="h-4 w-4 mr-2" /> Reset All Filters
+                                </Button>
+                            )}
+                        </div>
+                    ) : (
+                        paginatedBeneficiaries.map((b, idx) => (
                         <div key={b.id} className="border-b border-primary/5 last:border-0 hover:bg-primary/[0.01] transition-colors group/row bg-white/40">
                             {/* Desktop Row */}
                             <div className={cn("hidden md:grid py-4 px-6", gridClass)}>
@@ -628,17 +705,17 @@ export default function BeneficiariesPage() {
                                 <div className="font-bold text-sm truncate pr-4 text-primary tracking-tight">{b.name}</div>
                                 <div className="font-mono text-[11px] font-bold opacity-50 text-primary">{b.phone || '—'}</div>
                                 <div className="text-center">
-                                    <Badge variant={b.status === 'Verified' ? 'eligible' : 'outline'} className="text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm">
+                                    <Badge variant={b.status === 'Verified' ? 'eligible' : 'outline'} className="text-xs font-black px-3 py-1 h-auto rounded-full tracking-wider border-0 shadow-sm">
                                         {b.status || 'Pending'}
                                     </Badge>
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-[9px] font-black text-muted-foreground opacity-30 tracking-tight">Operational</p>
+                                    <p className="text-xs font-bold text-muted-foreground opacity-50 tracking-tight">Operational</p>
                                 </div>
                                 <div className="text-center">
                                     <Badge 
                                         variant={b.isEligibleForZakat ? 'eligible' : 'outline'} 
-                                        className={cn("text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm", b.isEligibleForZakat ? "bg-emerald-500 text-white" : "opacity-40")}
+                                        className={cn("text-xs font-black px-3 py-1 h-auto rounded-full tracking-wider border-0 shadow-sm", b.isEligibleForZakat ? "bg-emerald-500 text-white" : "opacity-40")}
                                     >
                                         {b.isEligibleForZakat ? 'Eligible' : 'Hold'}
                                     </Badge>
@@ -715,14 +792,14 @@ export default function BeneficiariesPage() {
                                 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="p-3.5 rounded-[20px] bg-primary/[0.03] border border-primary/5 group-hover/mobile:bg-white group-hover/mobile:shadow-sm transition-all">
-                                        <p className="text-[9px] font-black text-muted-foreground tracking-widest mb-2 opacity-50">Verification</p>
-                                        <Badge variant={b.status === 'Verified' ? 'eligible' : 'outline'} className="text-[10px] font-black w-full justify-center py-1.5 h-7 rounded-full border-0 shadow-sm">{b.status || 'Pending'}</Badge>
+                                        <p className="text-xs font-bold text-muted-foreground tracking-wider mb-2 opacity-60">Verification</p>
+                                        <Badge variant={b.status === 'Verified' ? 'eligible' : 'outline'} className="text-xs font-black w-full justify-center py-1.5 h-auto rounded-full border-0 shadow-sm">{b.status || 'Pending'}</Badge>
                                     </div>
                                     <div className="p-3.5 rounded-[20px] bg-primary/[0.03] border border-primary/5 group-hover/mobile:bg-white group-hover/mobile:shadow-sm transition-all">
-                                        <p className="text-[9px] font-black text-muted-foreground tracking-widest mb-2 opacity-50">Zakat State</p>
+                                        <p className="text-xs font-bold text-muted-foreground tracking-wider mb-2 opacity-60">Zakat State</p>
                                         <Badge 
                                             variant={b.isEligibleForZakat ? 'eligible' : 'outline'} 
-                                            className={cn("text-[10px] font-black w-full justify-center py-1.5 h-7 rounded-full border-0 shadow-sm", b.isEligibleForZakat ? "bg-emerald-500 text-white" : "opacity-40")}
+                                            className={cn("text-xs font-black w-full justify-center py-1.5 h-auto rounded-full border-0 shadow-sm", b.isEligibleForZakat ? "bg-emerald-500 text-white" : "opacity-40")}
                                         >
                                             {b.isEligibleForZakat ? 'Eligible' : 'Ineligible'}
                                         </Badge>
@@ -740,14 +817,8 @@ export default function BeneficiariesPage() {
                                 </div>
                             </div>
                         </div>
-                    ))}
+                    )))}
                     </div>
-                    {paginatedBeneficiaries.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-32 bg-primary/[0.01] animate-pulse">
-                            <Users className="h-12 w-12 text-primary/10 mb-4" />
-                            <p className="font-black text-sm text-primary/30 tracking-widest">No identities matched query parameters.</p>
-                        </div>
-                    )}
                 </div>
                 <ScrollBar orientation="horizontal" className="h-2" />
             </ScrollArea>

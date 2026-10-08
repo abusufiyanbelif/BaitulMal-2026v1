@@ -519,18 +519,18 @@ export default function DonorRegistryPage() {
                                         </TableCell>
                                          <TableCell className="text-center">
                                              <div className="flex items-center justify-center gap-2">
-                                                 <Badge variant={donor.aadhaarNumber ? 'success' : 'outline'} className={cn("text-[8px] font-black px-2 h-5 rounded-md tracking-tighter border-primary/10", donor.aadhaarNumber ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "opacity-30")}>
+                                                 <Badge variant={donor.aadhaarNumber ? 'success' : 'outline'} className={cn("text-xs font-bold px-2.5 py-0.5 rounded-md border-primary/10", donor.aadhaarNumber ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "opacity-40")}>
                                                      {donor.aadhaarNumber ? 'Aadhaar' : 'No Kyc'}
                                                  </Badge>
-                                                 <Badge variant={donor.panNumber ? 'success' : 'outline'} className={cn("text-[8px] font-black px-2 h-5 rounded-md tracking-tighter border-primary/10", donor.panNumber ? "bg-blue-500/10 text-blue-600 border-blue-500/20" : "opacity-30")}>
-                                                     {donor.panNumber ? 'Pan' : 'No Pan'}
+                                                 <Badge variant={donor.panNumber ? 'success' : 'outline'} className={cn("text-xs font-bold px-2.5 py-0.5 rounded-md border-primary/10", donor.panNumber ? "bg-blue-500/10 text-blue-600 border-blue-500/20" : "opacity-40")}>
+                                                     {donor.panNumber ? 'PAN' : 'No PAN'}
                                                  </Badge>
                                              </div>
                                          </TableCell>
                                         <TableCell className="text-center">
                                             <Badge 
                                                 variant={donor.status === 'Active' ? 'active' : 'outline'} 
-                                                className={cn("text-[9px] font-black px-2.5 h-6 rounded-full tracking-widest border-0 shadow-sm", donor.status === 'Active' ? "bg-emerald-500 text-white" : "opacity-40")}
+                                                className={cn("text-xs font-black px-3 py-1 h-auto rounded-full tracking-wider border-0 shadow-sm", donor.status === 'Active' ? "bg-emerald-500 text-white" : "opacity-40")}
                                             >
                                                 {donor.status}
                                             </Badge>

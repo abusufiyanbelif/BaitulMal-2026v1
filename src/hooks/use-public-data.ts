@@ -196,8 +196,15 @@ export function usePublicData() {
 
         const target = Number(item.targetAmount) || 0;
         const docCollected = Number(item.collectedAmount || (item as any).collected || (item as any).raisedAmount || 0);
-        const finalCollected = totalCollected > 0 ? totalCollected : (item.status === 'Completed' && docCollected > 0 ? docCollected : totalCollected);
-        const progress = target > 0 ? (finalCollected / target) * 100 : 0;
+        const isCompleted = item.status === 'Completed' || item.status === 'Closed' || item.status === 'Archived';
+        
+        let finalCollected = Math.max(totalCollected, docCollected);
+        if (isCompleted && finalCollected < target && target > 0) {
+            finalCollected = target;
+        }
+
+        const rawProgress = target > 0 ? (finalCollected / target) * 100 : (isCompleted ? 100 : 0);
+        const progress = isCompleted ? Math.max(rawProgress, 100) : rawProgress;
         const pendingProgress = target > 0 ? (totalPending / target) * 100 : 0;
         
         return { 

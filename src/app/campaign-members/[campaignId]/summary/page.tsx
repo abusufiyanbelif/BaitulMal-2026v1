@@ -388,14 +388,21 @@ export default function CampaignSummaryPage() {
                 return sum + amount;
             }, 0);
 
-        const docCollected = Number(campaign.collectedAmount || (campaign as any).collected || (campaign as any).raisedAmount || (campaign as any).targetAmount || 0);
-        const totalCollectedForGoal = rawTotalCollected > 0 ? rawTotalCollected : (campaign.status === 'Completed' && docCollected > 0 ? docCollected : rawTotalCollected);
-
+        const docCollected = Number(campaign.collectedAmount || (campaign as any).collected || (campaign as any).raisedAmount || 0);
         const targetAmount = Math.max(campaign.targetAmount || 0, calculatedRequirementTotal);
+        const isCompleted = campaign.status === 'Completed' || campaign.status === 'Closed' || campaign.status === 'Archived';
+
+        let totalCollectedForGoal = Math.max(rawTotalCollected, docCollected);
+        if (isCompleted && totalCollectedForGoal < targetAmount && targetAmount > 0) {
+            totalCollectedForGoal = targetAmount;
+        }
+
+        const rawProgress = targetAmount > 0 ? (totalCollectedForGoal / targetAmount) * 100 : (isCompleted ? 100 : 0);
+        const fundingProgress = isCompleted ? Math.max(rawProgress, 100) : rawProgress;
 
         return { 
             totalCollectedForGoal, 
-            fundingProgress: targetAmount > 0 ? (totalCollectedForGoal / targetAmount) * 100 : 0, 
+            fundingProgress, 
             targetAmount, 
             totalBeneficiaries: beneficiaries.length, 
             beneficiariesGiven: beneficiaries.filter(b => b.status === 'Given').length, 

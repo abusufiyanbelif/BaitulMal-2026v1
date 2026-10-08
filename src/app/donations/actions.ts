@@ -250,6 +250,18 @@ export async function upsertDonationWithDonorAction(
                 metadata: { moduleId: 'donations', recordId: id }
             });
 
+            // Dispatch to configured WhatsApp Group for Donations if specified in Resources
+            const waDonationGroup = resourceSnap.data()?.whatsappDonationGroupChatId || resourceSnap.data()?.whatsappGroupChatId;
+            if (waDonationGroup) {
+                const { sendWhatsAppAction } = await import('@/app/messages/actions');
+                await sendWhatsAppAction({
+                    to: waDonationGroup,
+                    customMessage: adminMessage,
+                    bypassAutoCheck: true,
+                    metadata: { moduleId: 'donations', recordId: id }
+                });
+            }
+
             // 3. Admin in-app notification
             await notifyAdminUsersInAppAction({
                 title: donationId ? 'Donation Record Updated' : 'New Donation Recorded',

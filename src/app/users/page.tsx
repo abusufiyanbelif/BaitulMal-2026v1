@@ -384,19 +384,22 @@ export default function UsersPage() {
       </div>
 
       <Tabs defaultValue="management" className="w-full space-y-10 animate-fade-in-up" style={{ animationDelay: '300ms' }}>
-        <div className="bg-white/30 backdrop-blur-md p-1.5 rounded-[24px] border border-primary/5 shadow-sm inline-flex w-fit overflow-hidden">
-            <TabsList className="flex flex-nowrap bg-transparent p-0 gap-1 h-auto">
-                <TabsTrigger value="management" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
-                    <Users className="h-3.5 w-3.5" /> Registry List
-                </TabsTrigger>
-                <TabsTrigger value="audit" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black tracking-widest transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
-                    <ShieldCheck className="h-3.5 w-3.5" /> Identity Audit
-                </TabsTrigger>
-                <TabsTrigger value="duplicates" className={cn("inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-[10px] font-black tracking-widest transition-all duration-500 data-[state=active]:shadow-lg", stats.unlinked > 0 ? "text-amber-600 data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-amber-500/20" : "data-[state=active]:bg-primary data-[state=active]:text-white")}>
-                    <DatabaseZap className={cn("h-3.5 w-3.5", stats.unlinked > 0 && "animate-pulse")} /> Resolution Center
-                </TabsTrigger>
-            </TabsList>
-        </div>
+        <ScrollArea className="w-full">
+            <div className="bg-white/30 backdrop-blur-md p-1.5 rounded-[24px] border border-primary/5 shadow-sm inline-flex min-w-max">
+                <TabsList className="flex flex-nowrap bg-transparent p-0 gap-1 h-auto">
+                    <TabsTrigger value="management" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black tracking-wider transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
+                        <Users className="h-3.5 w-3.5" /> Registry List
+                    </TabsTrigger>
+                    <TabsTrigger value="audit" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black tracking-wider transition-all duration-500 data-[state=active]:bg-primary data-[state=active]:text-white data-[state=active]:shadow-lg data-[state=active]:shadow-primary/20">
+                        <ShieldCheck className="h-3.5 w-3.5" /> Identity Audit
+                    </TabsTrigger>
+                    <TabsTrigger value="duplicates" className={cn("inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl text-xs font-black tracking-wider transition-all duration-500 data-[state=active]:shadow-lg", stats.unlinked > 0 ? "text-amber-600 data-[state=active]:bg-amber-500 data-[state=active]:text-white data-[state=active]:shadow-amber-500/20" : "data-[state=active]:bg-primary data-[state=active]:text-white")}>
+                        <DatabaseZap className={cn("h-3.5 w-3.5", stats.unlinked > 0 && "animate-pulse")} /> Resolution Center
+                    </TabsTrigger>
+                </TabsList>
+            </div>
+            <ScrollBar orientation="horizontal" className="h-1.5" />
+        </ScrollArea>
 
         <TabsContent value="management" className="animate-fade-in-up mt-0 space-y-8">
             <Card className="rounded-[32px] border border-primary/5 bg-white/30 backdrop-blur-md overflow-hidden shadow-none">

@@ -181,9 +181,11 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
                                         onClick={() => handleSelect(donor)}
                                     >
                                         <div className="flex-1 min-w-0 space-y-1 pr-2">
-                                            <div className="flex items-center gap-2">
+                                            <div className="flex items-center gap-2 flex-wrap">
                                                 <p className="font-bold text-sm text-primary truncate">{donor.name}</p>
-                                                <Badge variant={donor.status === 'Active' ? 'eligible' : 'outline'} className="text-[9px] font-bold">
+                                                {donor.caseId && <Badge variant="outline" className="text-xs font-mono font-bold bg-primary/5 text-primary border-primary/20">Case ID: {donor.caseId}</Badge>}
+                                                <Badge variant="outline" className="text-xs font-mono text-muted-foreground">ID: {donor.id}</Badge>
+                                                <Badge variant={donor.status === 'Active' ? 'eligible' : 'outline'} className="text-xs font-bold py-0.5 px-2.5">
                                                     {donor.status}
                                                 </Badge>
                                             </div>
@@ -192,7 +194,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
                                                 {donor.email && <span className="flex items-center gap-1.5"><Mail className="h-3 w-3 opacity-40"/> {donor.email}</span>}
                                             </div>
                                         </div>
-                                        <Button size="sm" className="mt-3 sm:mt-0 font-bold bg-primary hover:bg-primary/90 text-white rounded-lg h-8 px-4 opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow-sm shrink-0">
+                                        <Button size="sm" className="mt-3 sm:mt-0 font-bold bg-primary hover:bg-primary/90 text-white rounded-lg h-8 px-4 sm:opacity-0 group-hover:opacity-100 transition-opacity active:scale-95 shadow-sm shrink-0">
                                             Select Profile
                                         </Button>
                                     </div>
@@ -200,7 +202,7 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
                                 
                                 <Separator className="my-6 bg-primary/10" />
                                 <div className="p-6 bg-primary/[0.03] rounded-2xl border border-dashed border-primary/20 flex flex-col items-center gap-4 text-center mx-2">
-                                    <p className="text-[10px] font-bold text-primary/60 capitalize tracking-widest">Donor Not Listed?</p>
+                                    <p className="text-xs font-bold text-primary/60 capitalize tracking-widest">Donor Not Listed?</p>
                                     <Button variant="outline" size="sm" onClick={handleRegisterNewProfile} disabled={isCreating} className="font-bold border-primary/20 text-primary active:scale-95 transition-transform h-10 px-8 rounded-xl bg-white shadow-sm w-full sm:w-auto">
                                         Register New Donor <ArrowRight className="ml-2 h-4 w-4" />
                                     </Button>
@@ -214,8 +216,8 @@ export function DonorSearchDialog({ open, onOpenChange, onSelectDonor, currentFo
         </div>
 
         <DialogFooter className="px-6 py-4 bg-primary/[0.02] border-t border-primary/10 shrink-0 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-[10px] font-bold text-primary/60 tracking-tight flex items-center gap-2">
-                <CheckCircle2 className="h-3 w-3" /> Secure Donor Profile Retrieval
+            <p className="text-xs font-bold text-primary/60 tracking-tight flex items-center gap-2">
+                <CheckCircle2 className="h-3.5 w-3.5" /> Secure Donor Profile Retrieval
             </p>
             <Button variant="outline" onClick={() => onOpenChange(false)} className="font-bold border-primary/20 text-primary h-10 px-10 rounded-xl transition-transform active:scale-95 w-full sm:w-auto">
                 Close

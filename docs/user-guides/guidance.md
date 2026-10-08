@@ -1,7 +1,7 @@
 # 📘 User Guide: /guidance
     
-**Build Version:** `2026.09.12.3`
-**Last Updated:** 12/9/2026, 12:58:40 am
+**Build Version:** `2026.10.08.1`
+**Last Updated:** 8/10/2026, 11:36:00 pm
 **Internal Route:** `/guidance`
 
 ---
@@ -22,23 +22,23 @@ Application Module
 ## ⌨️ Fields & Data Mapping
 The following fields are mapped within this interface:
 - Hide
-- Identity Protocol
-- Functional Context
-- Tele-Vector
-- Portal Link
-- Location Vector
-- Operational Scope & Methodology
+- Resource Name
+- Category / Subtitle
+- Phone Number
+- Website Link
+- Address
+- Description
 - Input: Resource Name
-- Input: e.g. Hospital Grade / Specialist Title
+- Input: e.g. Hospital / Specialist Title
 - Input: Support Contact
 - Input: https://official.domain
-- Input: Full Operational Address
+- Input: Full Address
 - Input: Detail the assistance protocols, application requirements, and organization vetting criteria...
 
 ## ⚡ Interactive Action Items
 - **Dashboard**: Interactive button to initiate dashboard operation.
 - **Public Portal View**: Interactive button to initiate public portal view operation.
-- **New Sector**: Interactive button to initiate new sector operation (Triggers addCategory).
+- **New Category**: Interactive button to initiate new category operation (Triggers addCategory).
 - **removeCategory(cat.id)}>**: Interactive button to initiate removecategory(cat.id)}> operation (Triggers () => removeCategory(cat.id)).
 - **removeResource(cat.id, res.id)}>**: Interactive button to initiate removeresource(cat.id, res.id)}> operation (Triggers () => removeResource(cat.id, res.id)).
 - **Access Portal**: Interactive button to initiate access portal operation.

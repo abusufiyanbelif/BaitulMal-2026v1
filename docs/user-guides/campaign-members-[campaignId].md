@@ -1,7 +1,7 @@
 # 📘 User Guide: /campaign-members/[campaignId]
     
-**Build Version:** `2026.09.12.3`
-**Last Updated:** 12/9/2026, 12:58:40 am
+**Build Version:** `2026.10.08.1`
+**Last Updated:** 8/10/2026, 11:36:00 pm
 **Internal Route:** `/campaign-members/[campaignId]`
 
 ---
@@ -49,7 +49,7 @@ The following fields are mapped within this interface:
 - **Back To Campaigns**: Interactive button to initiate back to campaigns operation.
 - **Back To Campaigns**: Interactive button to initiate back to campaigns operation.
 - **Cancel**: Interactive button to initiate cancel operation (Triggers handleCancel).
-- **Secure Procurement**: Interactive button to initiate secure procurement operation (Triggers handleSave).
+- **Save Procurement**: Interactive button to initiate save procurement operation (Triggers handleSave).
 - **handleEditCategoryClick(category)}>**: Interactive button to initiate handleeditcategoryclick(category)}> operation (Triggers () => handleEditCategoryClick(category)).
 - **Add Category**: Interactive button to initiate add category operation.
 - **Create Category**: Interactive button to initiate create category operation (Triggers handleAddNewCategory).

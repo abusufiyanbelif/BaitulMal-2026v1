@@ -1,7 +1,7 @@
 # 📘 User Guide: /leads-members/[leadId]/donations/[donationId]
     
-**Build Version:** `2026.09.12.3`
-**Last Updated:** 12/9/2026, 12:58:40 am
+**Build Version:** `2026.10.08.1`
+**Last Updated:** 8/10/2026, 11:36:00 pm
 **Internal Route:** `/leads-members/[leadId]/donations/[donationId]`
 
 ---

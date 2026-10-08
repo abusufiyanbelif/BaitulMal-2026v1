@@ -43,7 +43,7 @@ import {
 } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { approveVerificationAction, rejectVerificationAction, cancelVerificationAction } from './actions';
 import type { PendingVerification } from '@/lib/types';
@@ -237,17 +237,20 @@ export default function VerificationsPage() {
             </div>
 
             <Tabs defaultValue="assigned" className="w-full space-y-8 animate-fade-in-up" style={{ animationDelay: '100ms' }}>
-                <TabsList className="bg-white/50 backdrop-blur-md p-1 border border-primary/10 rounded-2xl h-12 shadow-sm">
-                    <TabsTrigger value="assigned" className="rounded-xl px-6 font-bold h-10 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
-                        My Tasks
-                    </TabsTrigger>
-                    <TabsTrigger value="global" className="rounded-xl px-6 font-bold h-10 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
-                        Global Pipeline
-                    </TabsTrigger>
-                    <TabsTrigger value="history" className="rounded-xl px-6 font-bold h-10 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
-                        Audit History
-                    </TabsTrigger>
-                </TabsList>
+                <ScrollArea className="w-full">
+                    <TabsList className="bg-white/50 backdrop-blur-md p-1 border border-primary/10 rounded-2xl h-12 shadow-sm min-w-max">
+                        <TabsTrigger value="assigned" className="rounded-xl px-6 font-bold h-10 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
+                            My Tasks
+                        </TabsTrigger>
+                        <TabsTrigger value="global" className="rounded-xl px-6 font-bold h-10 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
+                            Global Pipeline
+                        </TabsTrigger>
+                        <TabsTrigger value="history" className="rounded-xl px-6 font-bold h-10 data-[state=active]:bg-primary data-[state=active]:text-white transition-all">
+                            Audit History
+                        </TabsTrigger>
+                    </TabsList>
+                    <ScrollBar orientation="horizontal" className="h-1.5" />
+                </ScrollArea>
 
                 <TabsContent value="assigned" className="space-y-6 outline-none">
                     {myPendingRequests.length > 0 ? (
@@ -680,7 +683,7 @@ function VerificationCard({ request, index, onView, onWithdraw }: { request: Pen
                     <div className="p-3 bg-white rounded-2xl text-primary shadow-sm group-hover:scale-110 group-hover:rotate-6 transition-all duration-500">
                         <Icon className="h-5 w-5" />
                     </div>
-                    <Badge className={cn("font-bold text-[10px] border-0 px-3 h-6 rounded-full shadow-sm tracking-widest", statusColor)}>
+                    <Badge className={cn("font-bold text-xs border-0 px-3 h-6 rounded-full shadow-sm tracking-widest", statusColor)}>
                         {request.status}
                     </Badge>
                 </div>
@@ -689,13 +692,13 @@ function VerificationCard({ request, index, onView, onWithdraw }: { request: Pen
                 </CardTitle>
                 <div className="flex items-center justify-between mt-4">
                     <div className="flex items-center gap-2">
-                        <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-[8px]">
+                        <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-[10px]">
                             {request.requestedBy.name.charAt(0)}
                         </div>
-                        <span className="text-[10px] font-bold text-primary opacity-60">{request.requestedBy.name}</span>
+                        <span className="text-xs font-bold text-primary opacity-60">{request.requestedBy.name}</span>
                     </div>
                     <div className="flex items-center gap-3">
-                        <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1">
+                        <span className="text-xs font-bold text-muted-foreground flex items-center gap-1">
                             <Clock className="h-3 w-3" />
                             {formatDate(request.createdAt, { day: 'numeric', month: 'short', year: 'numeric' })}
                         </span>
@@ -709,7 +712,7 @@ function VerificationCard({ request, index, onView, onWithdraw }: { request: Pen
             </CardHeader>
             <CardContent className="pt-6 space-y-5 font-normal p-6">
                 <div className="space-y-2">
-                    <div className="flex justify-between items-center text-[10px] font-bold text-muted-foreground tracking-widest">
+                    <div className="flex justify-between items-center text-xs font-bold text-muted-foreground tracking-widest">
                         <span>Quorum Status</span>
                         <span className="text-primary">{approvedCount} / {totalCount} Verified</span>
                     </div>

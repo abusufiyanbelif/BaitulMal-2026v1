@@ -1,0 +1,142 @@
+BUILD FAILURE LOG - 6/10/2026, 10:45:03 pm
+Version: 2026.10.06.2
+
+STDOUT:
+  ▲ Next.js 14.2.35
+  - Environments: .env.local, .env
+
+   Creating an optimized production build ...
+ ✓ Compiled successfully
+   Linting and checking validity of types ...
+   Collecting page data ...
+
+
+STDERR:
+Browserslist: caniuse-lite is outdated. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Error: Cannot find module 'C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\app\api\extract-medical\route.js'
+Require stack:
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\load-components.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\utils.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\worker.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
+    at mod.require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\build\\worker.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\compiled\\jest-worker\\processChild.js'
+  ]
+}
+Error: Cannot find module 'C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\app\api\extract-text\route.js'
+Require stack:
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\load-components.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\utils.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\worker.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
+    at mod.require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\build\\worker.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\compiled\\jest-worker\\processChild.js'
+  ]
+}
+
+> Build error occurred
+Error: Failed to collect page data for /api/extract-medical
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\utils.js:1269:15
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  type: 'Error'
+}
+
+
+ERROR MESSAGE:
+Command failed: npx next build
+Browserslist: caniuse-lite is outdated. Please run:
+  npx update-browserslist-db@latest
+  Why you should do it regularly: https://github.com/browserslist/update-db#readme
+Error: Cannot find module 'C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\app\api\extract-medical\route.js'
+Require stack:
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\load-components.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\utils.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\worker.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
+    at mod.require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\build\\worker.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\compiled\\jest-worker\\processChild.js'
+  ]
+}
+Error: Cannot find module 'C:\Users\Admin\Documents\baitulamal_2026v1\.next\server\app\api\extract-text\route.js'
+Require stack:
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\load-components.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\utils.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\worker.js
+- C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\compiled\jest-worker\processChild.js
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1420:15)
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:55:36
+    at defaultResolveImpl (node:internal/modules/cjs/loader:1058:19)
+    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1063:22)
+    at Module._load (node:internal/modules/cjs/loader:1226:37)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+    at wrapModuleLoad (node:internal/modules/cjs/loader:244:24)
+    at Module.<anonymous> (node:internal/modules/cjs/loader:1503:12)
+    at mod.require (C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\server\require-hook.js:65:28)
+    at require (node:internal/modules/helpers:152:16) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\server\\require.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\server\\load-components.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\build\\utils.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\build\\worker.js',
+    'C:\\Users\\Admin\\Documents\\baitulamal_2026v1\\node_modules\\next\\dist\\compiled\\jest-worker\\processChild.js'
+  ]
+}
+
+> Build error occurred
+Error: Failed to collect page data for /api/extract-medical
+    at C:\Users\Admin\Documents\baitulamal_2026v1\node_modules\next\dist\build\utils.js:1269:15
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  type: 'Error'
+}
