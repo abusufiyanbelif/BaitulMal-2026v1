@@ -132,7 +132,7 @@ export default function AboutOrganizationPage() {
                 </p>
             </section>
 
-            <Accordion type="multiple" defaultValue={['verifiable', 'contribution', 'principles']} className="space-y-6">
+            <Accordion type="multiple" defaultValue={[]} className="space-y-6">
                 
                 {/* Verifiable Details */}
                 <AccordionItem value="verifiable" className="border rounded-xl bg-white shadow-lg overflow-hidden border-primary/10">
@@ -252,7 +252,7 @@ export default function AboutOrganizationPage() {
                         </div>
                     </AccordionTrigger>
                     <AccordionContent className="px-6 pt-6 pb-8">
-                        <Accordion type="multiple" defaultValue={['founder', 'co-founder', 'finance', 'member']} className="w-full">
+                        <Accordion type="multiple" defaultValue={[]} className="w-full">
                             {GROUPS.map((group) => (
                                 <AccordionItem value={group.id} key={group.id} className="border-primary/5">
                                     <AccordionTrigger className="text-lg font-bold hover:text-primary transition-colors py-6 tracking-tight">

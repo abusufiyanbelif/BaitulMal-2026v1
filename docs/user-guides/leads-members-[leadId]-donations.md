@@ -1,7 +1,7 @@
 # 📘 User Guide: /leads-members/[leadId]/donations
     
-**Build Version:** `2026.10.08.1`
-**Last Updated:** 8/10/2026, 11:36:00 pm
+**Build Version:** `2026.10.10.1`
+**Last Updated:** 10/10/2026, 3:35:54 am
 **Internal Route:** `/leads-members/[leadId]/donations`
 
 ---
@@ -32,8 +32,11 @@ The following fields are mapped within this interface:
 - **Change Status**: Interactive button to initiate change status operation.
 - **setSelectedIds([])}>**: Interactive button to initiate setselectedids([])}> operation (Triggers () => setSelectedIds([])).
 - **Export CSV**: Interactive button to initiate export csv operation (Triggers handleExport).
+- **Clear Filters**: Interactive button to initiate clear filters operation (Triggers resetAllFilters).
 - **{ setDateRange(undefined); setCurrentPage(1); }}>**: Interactive button to initiate { setdaterange(undefined); setcurrentpage(1); }}> operation (Triggers () => { setDateRange(undefined); setCurrentPage(1); ).
+- **Reset All Filters**: Interactive button to initiate reset all filters operation (Triggers resetAllFilters).
 - **{isOpen ?  : }**: Interactive button to initiate {isopen ?  : } operation.
+- **handleToggle**: Internal logic handler for Toggle workflow.
 - **handleSort**: Internal logic handler for Sort workflow.
 - **handleUnlinkClick**: Internal logic handler for UnlinkClick workflow.
 - **handleUnlinkConfirm**: Internal logic handler for UnlinkConfirm workflow.

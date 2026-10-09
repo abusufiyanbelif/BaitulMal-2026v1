@@ -592,20 +592,7 @@ export default function CampaignPage() {
     ].filter(s => s.items.length > 0);
   }, [filteredCampaigns]);
 
-  const [expandedSections, setExpandedSections] = useState<string[]>(['published', 'internal', 'completed']);
-
-  useEffect(() => {
-    if (sections.length > 0) {
-      setExpandedSections(prev => {
-        const allIds = sections.map(s => s.id);
-        const hasAll = allIds.every(id => prev.includes(id));
-        if (!hasAll) {
-          return Array.from(new Set([...prev, ...allIds]));
-        }
-        return prev;
-      });
-    }
-  }, [sections]);
+  const [expandedSections, setExpandedSections] = useState<string[]>([]);
 
   const isLoading = isProfileLoading || areCampaignsLoading || areDonationsLoading;
   

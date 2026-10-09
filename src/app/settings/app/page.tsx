@@ -90,7 +90,8 @@ import {
     Sliders,
     Zap,
     Check,
-    FileText
+    FileText,
+    Type
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -108,6 +109,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn, getNestedValue } from '@/lib/utils';
 import { donationCategories } from '@/lib/modules';
 import { SectionLoader } from '@/components/section-loader';
+
 
 interface FormDataType {
     name: string;
@@ -192,6 +194,9 @@ interface FormDataType {
     isDonorSelfRecordPaymentEnabled: boolean;
     portalAuthMethod: 'OTP' | 'Password';
     isPortalPasswordEnabled: boolean;
+    headingFont?: string;
+    bodyFont?: string;
+    fontScale?: 'Compact' | 'Normal' | 'Large';
 }
 
 interface VisibilityToggleProps {
@@ -317,6 +322,7 @@ export default function AppSettingsPage() {
         items: { id: string; name: string; status: 'pass' | 'warn' | 'fail'; message: string }[];
     } | null>(null);
     const [isPreviewBannerOpen, setIsPreviewBannerOpen] = useState(false);
+    const [isQrModalOpen, setIsQrModalOpen] = useState(false);
 
     // Smart Alert Generator Topic Selection
     const [alertIncludeTopics, setAlertIncludeTopics] = useState<{
@@ -424,6 +430,9 @@ export default function AppSettingsPage() {
                 isDonorSelfRecordPaymentEnabled: brandingSettings?.isDonorSelfRecordPaymentEnabled ?? false,
                 portalAuthMethod: brandingSettings?.portalAuthMethod || 'OTP',
                 isPortalPasswordEnabled: brandingSettings?.isPortalPasswordEnabled ?? true,
+                headingFont: brandingSettings?.headingFont || 'Space Grotesk',
+                bodyFont: brandingSettings?.bodyFont || 'Inter',
+                fontScale: brandingSettings?.fontScale || 'Normal',
             });
         }
     }, [isEditMode, brandingSettings, paymentSettings, guidingPrinciplesData]);
@@ -547,6 +556,9 @@ export default function AppSettingsPage() {
                 isDonorSelfRecordPaymentEnabled: editableData.isDonorSelfRecordPaymentEnabled,
                 portalAuthMethod: editableData.portalAuthMethod,
                 isPortalPasswordEnabled: editableData.isPortalPasswordEnabled,
+                headingFont: editableData.headingFont || 'Space Grotesk',
+                bodyFont: editableData.bodyFont || 'Inter',
+                fontScale: editableData.fontScale || 'Normal',
             };
             batch.set(doc(firestore, 'settings', 'branding'), brandingData, { merge: true });
 
@@ -722,6 +734,9 @@ export default function AppSettingsPage() {
         isDonorSelfRecordPaymentEnabled: brandingSettings?.isDonorSelfRecordPaymentEnabled ?? false,
         portalAuthMethod: brandingSettings?.portalAuthMethod || 'OTP',
         isPortalPasswordEnabled: brandingSettings?.isPortalPasswordEnabled ?? true,
+        headingFont: brandingSettings?.headingFont || 'Space Grotesk',
+        bodyFont: brandingSettings?.bodyFont || 'Inter',
+        fontScale: brandingSettings?.fontScale || 'Normal',
     };
 
     return (
@@ -867,7 +882,7 @@ export default function AppSettingsPage() {
                     title="Interactive Diagnostic, Sandbox & Testing Suite"
                     description="Run live system diagnostics, generate test UPI links & QR codes, copy bank transfer payloads, and simulate application test mode."
                     icon={FlaskConical}
-                    defaultOpen={true}
+                    defaultOpen={false}
                 >
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Tool 1: Sandbox Test Mode */}
@@ -997,14 +1012,16 @@ export default function AppSettingsPage() {
                                             </Button>
                                             <Button
                                                 type="button"
-                                                asChild
                                                 variant="outline"
                                                 size="sm"
-                                                className="h-7 text-xs font-bold text-emerald-700 border-emerald-200 bg-emerald-50 hover:bg-emerald-100"
+                                                onClick={() => {
+                                                    const uri = `upi://pay?pa=${encodeURIComponent(displayData.upiId)}&pn=${encodeURIComponent(displayData.bankAccountName || displayData.name || 'Baitulmal')}&am=${testUpiAmount}&tn=${encodeURIComponent(testUpiNote)}&cu=INR`;
+                                                    setIsQrModalOpen(true);
+                                                    try { window.location.href = uri; } catch (e) {}
+                                                }}
+                                                className="h-7 text-xs font-bold text-emerald-700 border-emerald-200 bg-emerald-50 hover:bg-emerald-100 transition-all active:scale-95"
                                             >
-                                                <a href={`upi://pay?pa=${encodeURIComponent(displayData.upiId)}&pn=${encodeURIComponent(displayData.bankAccountName || displayData.name || 'Baitulmal')}&am=${testUpiAmount}&tn=${encodeURIComponent(testUpiNote)}&cu=INR`}>
-                                                    <ExternalLink className="mr-1 h-3 w-3" /> Launch UPI App
-                                                </a>
+                                                <ExternalLink className="mr-1 h-3 w-3" /> Launch UPI App
                                             </Button>
                                         </div>
                                     </div>
@@ -1059,12 +1076,13 @@ export default function AppSettingsPage() {
                     )}
                 </SettingsSection>
 
+
                 {/* Section 3: Website Display */}
                 <SettingsSection 
                     title="Website Display" 
                     description="Change how your website looks and what people can see."
                     icon={Layout}
-                    defaultOpen={true}
+                    defaultOpen={false}
                 >
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
                         <div className="space-y-6">
@@ -1200,7 +1218,7 @@ export default function AppSettingsPage() {
                     title="Bank & Payment Details" 
                     description="Set up your primary & backup UPI accounts, full bank account info, and online payment gateways."
                     icon={CreditCard}
-                    defaultOpen={true}
+                    defaultOpen={false}
                 >
                     <div className="p-5 rounded-3xl bg-primary/5 border border-primary/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
                         <div className="space-y-1">
@@ -1647,7 +1665,7 @@ export default function AppSettingsPage() {
                     title="Footer Content & Visibility Controls"
                     description="Manage visibility rules for social icons, contact details, quick links, and footer layout sections."
                     icon={Layout}
-                    defaultOpen={true}
+                    defaultOpen={false}
                 >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <VisibilityToggle
@@ -1811,6 +1829,82 @@ export default function AppSettingsPage() {
                     </div>
                 </div>
             )}
+            {/* Interactive UPI Link & QR Tester Dialog */}
+            <Dialog open={isQrModalOpen} onOpenChange={setIsQrModalOpen}>
+                <DialogContent className="sm:max-w-md rounded-[32px] p-6 border-primary/10 bg-white/95 backdrop-blur-xl shadow-2xl">
+                    <DialogHeader className="space-y-2 text-center">
+                        <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 text-emerald-600 flex items-center justify-center mx-auto mb-1">
+                            <QrCode className="h-6 w-6" />
+                        </div>
+                        <DialogTitle className="text-xl font-black text-primary tracking-tight">Interactive UPI QR & Deep-Link Tester</DialogTitle>
+                        <DialogDescription className="text-xs font-bold text-muted-foreground leading-relaxed">
+                            Test live UPI payments instantly. Scan this generated QR code using PhonePe, Google Pay, Paytm, or BHIM on your mobile phone:
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="flex flex-col items-center space-y-4 py-2">
+                        {displayData.upiId && (
+                            <div className="p-3 bg-white border border-primary/10 rounded-2xl shadow-sm">
+                                <img 
+                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=${encodeURIComponent(`upi://pay?pa=${encodeURIComponent(displayData.upiId)}&pn=${encodeURIComponent(displayData.bankAccountName || displayData.name || 'Baitulmal')}&am=${testUpiAmount}&tn=${encodeURIComponent(testUpiNote)}&cu=INR`)}`} 
+                                    alt="Live Test UPI QR Code" 
+                                    className="w-48 h-48 rounded-xl object-contain"
+                                />
+                            </div>
+                        )}
+                        
+                        <div className="w-full space-y-2 p-3 bg-primary/[0.03] rounded-2xl border border-primary/5 text-xs">
+                            <div className="flex justify-between font-bold">
+                                <span className="text-muted-foreground">Payee VPA:</span>
+                                <span className="font-mono text-primary">{displayData.upiId}</span>
+                            </div>
+                            <div className="flex justify-between font-bold">
+                                <span className="text-muted-foreground">Amount:</span>
+                                <span className="text-emerald-600 font-mono">₹{testUpiAmount}</span>
+                            </div>
+                            <div className="flex justify-between font-bold">
+                                <span className="text-muted-foreground">Note:</span>
+                                <span className="text-primary truncate max-w-[180px]">{testUpiNote}</span>
+                            </div>
+                        </div>
+
+                        <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200 text-[11px] font-bold text-amber-800 space-y-1">
+                            <p className="flex items-center gap-1 font-black">
+                                <Info className="h-3.5 w-3.5 shrink-0 text-amber-700" /> Why doesn't "Launch UPI App" open directly on PC?
+                            </p>
+                            <p className="opacity-80 font-normal leading-normal">
+                                Desktop operating systems (Windows/Mac) don't have native UPI apps installed to handle <code className="bg-amber-100 px-1 py-0.5 rounded text-amber-900">upi://</code> links. Deep-links work directly on Android & iOS mobile devices. On PCs, scan the QR code above with your mobile phone camera or UPI app!
+                            </p>
+                        </div>
+                    </div>
+
+                    <DialogFooter className="flex-col sm:flex-row gap-2">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                                const uri = `upi://pay?pa=${encodeURIComponent(displayData.upiId)}&pn=${encodeURIComponent(displayData.bankAccountName || displayData.name || 'Baitulmal')}&am=${testUpiAmount}&tn=${encodeURIComponent(testUpiNote)}&cu=INR`;
+                                navigator.clipboard.writeText(uri);
+                                toast({ title: "UPI URI Copied", description: uri, variant: "success" });
+                            }}
+                            className="w-full font-bold rounded-xl text-xs h-10"
+                        >
+                            <Copy className="mr-2 h-4 w-4" /> Copy URI Link
+                        </Button>
+                        <Button
+                            variant="default"
+                            size="sm"
+                            onClick={() => {
+                                const uri = `upi://pay?pa=${encodeURIComponent(displayData.upiId)}&pn=${encodeURIComponent(displayData.bankAccountName || displayData.name || 'Baitulmal')}&am=${testUpiAmount}&tn=${encodeURIComponent(testUpiNote)}&cu=INR`;
+                                window.location.href = uri;
+                            }}
+                            className="w-full font-bold rounded-xl text-xs h-10 bg-emerald-600 hover:bg-emerald-700 text-white"
+                        >
+                            <ExternalLink className="mr-2 h-4 w-4" /> Force Mobile Launch
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </main>
     );
 }

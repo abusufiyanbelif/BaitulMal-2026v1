@@ -78,7 +78,7 @@ export default function OrganizationMembersPage() {
                     </div>
                 </CardHeader>
                 <CardContent className="pt-2">
-                    <Accordion type="multiple" defaultValue={['founder', 'co-founder', 'finance', 'member']} className="w-full space-y-1.5">
+                    <Accordion type="multiple" defaultValue={[]} className="w-full space-y-1.5">
                         {GROUPS.map((group) => (
                             <AccordionItem value={group.id} key={group.id} className="border rounded-lg bg-primary/[0.02] px-3">
                                 <AccordionTrigger className="text-sm font-bold hover:no-underline tracking-tight py-3">{group.name} ({(membersByGroup[group.id] || []).length})</AccordionTrigger>

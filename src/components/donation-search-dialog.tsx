@@ -11,6 +11,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Loader2, Search, IndianRupee, Filter, X, Link as LinkIcon, AlertCircle, Info, Lock, ShieldAlert } from 'lucide-react';
 import { Badge } from './ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import { useSession } from '@/hooks/use-session';
 import { cn } from '@/lib/utils';
 import { Separator } from './ui/separator';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
@@ -26,12 +27,13 @@ interface DonationSearchDialogProps {
 
 export function DonationSearchDialog({ open, onOpenChange, targetId, targetName, targetType, allowedTypes }: DonationSearchDialogProps) {
   const firestore = useFirestore();
+  const { user, isStaff } = useSession();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [isLinking, setIsLinking] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'eligible' | 'ineligible'>('eligible');
   
-  const donationsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
+  const donationsRef = useMemoFirebase(() => (firestore && user && isStaff) ? collection(firestore, 'donations') : null, [firestore, user, isStaff]);
   const { data: allDonations, isLoading: isInitialLoading } = useCollection<Donation>(donationsRef);
 
   const categorizedDonations = useMemo(() => {

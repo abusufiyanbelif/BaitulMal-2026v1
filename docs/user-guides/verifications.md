@@ -1,7 +1,7 @@
 # 📘 User Guide: /verifications
     
-**Build Version:** `2026.10.08.1`
-**Last Updated:** 8/10/2026, 11:36:00 pm
+**Build Version:** `2026.10.10.1`
+**Last Updated:** 10/10/2026, 3:35:54 am
 **Internal Route:** `/verifications`
 
 ---
@@ -28,6 +28,7 @@ The following fields are mapped within this interface:
 - Input: Type rejection reason here...
 
 ## ⚡ Interactive Action Items
+- **Dashboard**: Interactive button to initiate dashboard operation.
 - **Confirm Rejection**: Interactive button to initiate confirm rejection operation (Triggers handleReject).
 - **Review Audit**: Interactive button to initiate review audit operation (Triggers onView).
 - **handleApprove**: Internal logic handler for Approve workflow.

@@ -13,6 +13,8 @@ import { Badge } from './ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { cn } from '@/lib/utils';
 
+import { useSession } from '@/hooks/use-session';
+
 interface BeneficiarySearchDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -23,6 +25,7 @@ interface BeneficiarySearchDialogProps {
 
 export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiary, currentLeadId, initiativeType }: BeneficiarySearchDialogProps) {
   const firestore = useFirestore();
+  const { user, isStaff } = useSession();
   const [searchTerm, setSearchTerm] = useState('');
   const [referralFilter, setReferralFilter] = useState('All');
   const [isInitialLoading, setIsInitialLoading] = useState(false);
@@ -41,7 +44,7 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
   }, [existingBeneficiaries]);
 
   const fetchMasterList = useCallback(async () => {
-    if (!firestore) return;
+    if (!firestore || !user || !isStaff) return;
     setIsInitialLoading(true);
     try {
       const beneficiariesQuery = query(collection(firestore, 'beneficiaries'));
@@ -56,7 +59,7 @@ export function BeneficiarySearchDialog({ open, onOpenChange, onSelectBeneficiar
     } finally {
       setIsInitialLoading(false);
     }
-  }, [firestore]);
+  }, [firestore, user, isStaff]);
 
   useEffect(() => {
     if (open) {

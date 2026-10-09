@@ -82,7 +82,7 @@ const monthlyContributionChartConfig = {
 export default function DonationsSummaryPage() {
     const firestore = useFirestore();
     const pathname = usePathname();
-    const { userProfile, isLoading: isProfileLoading } = useSession();
+    const { user, userProfile, isStaff, isLoading: isProfileLoading } = useSession();
 
     const [date, setDate] = useState<DateRange | undefined>(undefined);
     const [isClient, setIsClient] = useState(false);
@@ -92,9 +92,9 @@ export default function DonationsSummaryPage() {
     }, []);
 
     const donationsCollectionRef = useMemoFirebase(() => {
-        if (!firestore) return null;
+        if (!firestore || !user || !isStaff) return null;
         return collection(firestore, 'donations');
-    }, [firestore]);
+    }, [firestore, user, isStaff]);
     const { data: donations, isLoading: areDonationsLoading } = useCollection<Donation>(donationsCollectionRef);
     
     const campaignsCollectionRef = useMemoFirebase(() => {

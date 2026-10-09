@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+import Link from 'next/link';
 import { 
     Loader2, 
     MessageSquare, 
@@ -30,7 +31,8 @@ import {
     Eraser,
     CheckSquare,
     Square,
-    RefreshCcw
+    RefreshCcw,
+    ArrowLeft
 } from 'lucide-react';
 import { 
     DropdownMenu, 

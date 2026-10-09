@@ -130,7 +130,7 @@ export default function UsersPage() {
   const { toast } = useToast();
   usePageHit('user_management');
 
-  const { userProfile, isLoading: isProfileLoading } = useSession();
+  const { user, userProfile, isStaff, isLoading: isProfileLoading } = useSession();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('All');
@@ -143,9 +143,9 @@ export default function UsersPage() {
   const [isConsolidating, setIsConsolidating] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const usersRef = useMemoFirebase(() => (firestore && userProfile) ? collection(firestore, 'users') : null, [firestore, userProfile]);
-  const donorsRef = useMemoFirebase(() => (firestore && userProfile) ? collection(firestore, 'donors') : null, [firestore, userProfile]);
-  const beneficiariesRef = useMemoFirebase(() => (firestore && userProfile) ? collection(firestore, 'beneficiaries') : null, [firestore, userProfile]);
+  const usersRef = useMemoFirebase(() => (firestore && user && isStaff) ? collection(firestore, 'users') : null, [firestore, user, isStaff]);
+  const donorsRef = useMemoFirebase(() => (firestore && user && isStaff) ? collection(firestore, 'donors') : null, [firestore, user, isStaff]);
+  const beneficiariesRef = useMemoFirebase(() => (firestore && user && isStaff) ? collection(firestore, 'beneficiaries') : null, [firestore, user, isStaff]);
   
   const { data: users, isLoading: areUsersLoading } = useCollection<UserProfile>(usersRef);
   const { data: donors } = useCollection<Donor>(donorsRef);

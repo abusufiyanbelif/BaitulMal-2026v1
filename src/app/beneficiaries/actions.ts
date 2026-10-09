@@ -232,13 +232,18 @@ export async function upsertInitiativeBeneficiaryAction(
             
             // 1. Update Master Profile
             const masterStatusToSave = status === 'Given' ? 'Verified' : (status || 'Pending');
-            transaction.set(masterRef, {
+            const isNewSublink = !subSnap.exists;
+            const masterPayload: any = {
                 ...masterFields,
                 status: masterStatusToSave,
                 updatedAt: FieldValue.serverTimestamp(),
                 updatedById: updatedBy.id,
                 updatedByName: updatedBy.name,
-            }, { merge: true });
+            };
+            if (isNewSublink) {
+                masterPayload.initiativeCount = FieldValue.increment(1);
+            }
+            transaction.set(masterRef, masterPayload, { merge: true });
 
             // 2. Update Initiative-Specific Record
             // Explicitly coerce numeric fields to 0 if they are undefined or null
@@ -663,11 +668,13 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
         
         const masterBeneficiariesSnap = await adminDb.collection('beneficiaries').get();
         const masterIds = new Set(masterBeneficiariesSnap.docs.map((d: any) => d.id));
+        const initiativeCounts: Record<string, number> = {};
 
         const campaignsSnap = await adminDb.collection('campaigns').get();
         for (const campaignDoc of campaignsSnap.docs) {
             const campaignBeneficiariesSnap = await adminDb.collection(`campaigns/${campaignDoc.id}/beneficiaries`).get();
             for (const benDoc of campaignBeneficiariesSnap.docs) {
+                initiativeCounts[benDoc.id] = (initiativeCounts[benDoc.id] || 0) + 1;
                 if (!masterIds.has(benDoc.id)) {
                     const masterRef = adminDb.collection('beneficiaries').doc(benDoc.id);
                     const sanitizedData = benDoc.data();
@@ -687,6 +694,7 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
         for (const leadDoc of leadsSnap.docs) {
             const leadBeneficiariesSnap = await adminDb.collection(`leads/${leadDoc.id}/beneficiaries`).get();
             for (const benDoc of leadBeneficiariesSnap.docs) {
+                initiativeCounts[benDoc.id] = (initiativeCounts[benDoc.id] || 0) + 1;
                 if (!masterIds.has(benDoc.id)) {
                     const masterRef = adminDb.collection('beneficiaries').doc(benDoc.id);
                     const sanitizedData = benDoc.data();
@@ -702,12 +710,16 @@ export async function syncMasterBeneficiaryListAction(): Promise<{ success: bool
             }
         }
 
-        if (addedCount > 0) {
-            await batch.commit();
+        // Update initiativeCount on all master beneficiaries
+        for (const masterDoc of masterBeneficiariesSnap.docs) {
+            const count = initiativeCounts[masterDoc.id] || 0;
+            batch.update(masterDoc.ref, { initiativeCount: count });
         }
 
+        await batch.commit();
+
         revalidatePath('/beneficiaries');
-        return { success: true, message: `Synchronization Complete. Discovered ${addedCount} New Registry Entries.`, addedCount };
+        return { success: true, message: `Synchronization Complete. Discovered ${addedCount} New Registry Entries. Recalculated repeat metrics.`, addedCount };
 
     } catch (error: any) {
         console.error("Error Syncing Master List:", error);

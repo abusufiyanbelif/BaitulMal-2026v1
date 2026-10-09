@@ -1,38 +1,32 @@
-release: v2026.10.09.1
+Uncommitted Changes Summary - BaitulMal 2026
 
-Type: Major Feature & UI Polish - Multi-Device Responsiveness, Explicit Case ID & Progress Reconciliation Engine
-Message: Comprehensive system enhancement and UI reconciliation:
-1. Explicit Case ID & ID Separation: Rendered both Document ID (ID) and Organizational Case ID (Case ID) side-by-side across all donation cards, list views, detail pages, notification bells, search dialogs, and select options (/donations, donation-search-dialog, donor-search-dialog, public-donation-form, donation-form, campaign-members, leads-members). Fixed resolveCaseId to avoid fallback to internal Firestore id when no Case ID exists.
-2. Progress Bar & Reconciliation Synchronization: Resolved progress bar desynchronization bug between summary pages (/leads-public/[leadId]/summary, /leads-members/[leadId]/summary, /campaign-public/[campaignId]/summary, /campaign-members/[campaignId]/summary) and card/grid list views (usePublicData reconcileInitiative). Enforced that when an initiative has status Completed, Closed, or Archived, finalCollected defaults to at least targetAmount, guaranteeing 100% funded progress bar rendering across all cards and summary dashboards.
-3. Multi-Aspect Ratio & Mobile Device Compatibility: Updated viewport configuration in src/app/layout.tsx (width: 'device-width', initialScale: 1, maximumScale: 5). Wrapped horizontal tab lists (/donations, /verifications, /users, /campaign-members, /leads-members, /donors) in responsive ScrollArea containers with horizontal scrollbars to eliminate text clipping or layout breaks across 9:16, 16:9, 19.5:9, 20:9, and foldable smartphones (e.g. Galaxy Z Fold 8 Ultra outer screen 280-340px width and expanded screen).
-4. Deep Alignment, Whitespace & Microscopic Typography Overhaul: Deep-scanned all pages (/donations, /verifications, /users, /donors, /beneficiaries, /campaign-members, /leads-members, mobile-nav, notification-bell, donor-search-dialog, donation-form). Upgraded microscopic fonts (text-[8px], text-[9px], text-[10px]) to clear, scalable sizes (text-xs / text-[10px]–text-[11px]) with comfortable padding (py-0.5 px-2.5).
-5. Search Filter, Mouse Click & Mobile Touch Selection Support: Fixed /donations list filter where records failed to load upon filter change; added an explicit Search / Apply Filter button. Fixed mobile touch/click selection issues where filter items only responded to arrow keys and Enter. Added full mouse click (onClick), touch tap (onPointerDown), and tab keyboard accessibility.
-Reference: n/a
-Branch: test_bmss_26
-Commit: latest
+Type: Uncommitted UI & Security Updates - Beneficiaries Registry, App Settings UPI Tester, Viewport Themes & Collapsible Sections
 
-Verification Steps:
-1. TypeScript Validation: Executed `npx tsc --noEmit` - passed with 0 errors.
-2. Calculation Reconciliation: Reconciled progress percentages and collected amounts across admin list cards, public grid views, and summary pages.
-3. Aspect Ratio & Touch Verification: Verified responsive scaling and horizontal tab scrolling across mobile aspect ratios (9:16, 16:9, 19.5:9, 20:9, Z Fold 8 Ultra).
-4. Explicit Case ID Verification: Verified both Document ID and Case ID are rendered distinctly in all lists, forms, and dialogs.
+Summary of Modifications:
+1. Beneficiary Registry & Repeat Beneficiaries Integration:
+   - Updated /beneficiaries with in-place tab switching between "Master Registry" and "Repeat Beneficiaries Directory" without mutating browser URL query strings.
+   - Refactored Repeat Beneficiaries data fetching to use parent campaign/lead subcollections, eliminating root collectionGroup permission errors.
+   - Enhanced desktop table rows and mobile cards to display repeat cause count badges (Repeat X Causes) and disbursement categories.
 
----
-release: v2026.10.08.1
+2. Dashboard Cleanup:
+   - Removed duplicate "Repeat Beneficiaries" navigation card from /dashboard, retaining single "People Receiving Help" entry linking to /beneficiaries.
 
-Type: Major feature - social media profiles integration & comprehensive footer content & visibility settings
-Message: Added full support for Twitter/X, LinkedIn, WhatsApp, and Telegram social profiles alongside Instagram, Facebook, and YouTube. Introduced granular Footer Content & Visibility Controls in System Settings to configure layout elements and section visibility.
-Reference: n/a
-Branch: test_bmss_26
-Commit: b2de088f
+3. App Settings UPI Interactive Tester (/settings/app):
+   - Upgraded "Launch UPI App" button to launch an Interactive UPI QR Code & Deep-Link Tester Dialog.
+   - Added live scannable QR code generation for desktop PC browser testing where native upi:// protocol handlers are absent.
+   - Provided Copy URI, Force Mobile Launch, and desktop guidance callouts.
+
+4. Expandable & Default-Collapsed Sections:
+   - Integrated default-collapsed section controls across App Settings, Resources (/settings/resources), Fundraising, and Info pages for streamlined layout clutter reduction.
+
+5. Viewport Theme & Palette Sync (/settings/viewport):
+   - Fixed Appearance Palette & Real-Time Preview live sync by connecting palette tokens directly to root CSS variables and localStorage synchronization.
 
 Verification Steps:
-1. TypeScript Validation: Executed `npx tsc --noEmit` - passed with 0 errors.
-2. Calculation Reconciliation: Reconciled progress percentages and collected amounts across admin list cards, public grid views, and summary pages.
-3. Runtime Exception Verification: Verified zero runtime crashes on sparse Firestore records across all search dialogs and settings pages.
-4. Admin Control Test: Navigated to `/settings/app`, configured social profile links, and toggled individual footer visibility switches.
-5. Footer Verification: Verified public footer dynamically renders all configured social profile icons (Instagram, Facebook, YouTube, Twitter/X, LinkedIn, WhatsApp, Telegram) and respects all visibility toggles.
-6. Type Safety: TypeScript compilation checked cleanly with 0 errors.
+1. TypeScript Validation: Executed `npx tsc --noEmit` - 0 errors.
+2. Runtime Verification: Confirmed zero Firestore permission errors on /beneficiaries and /dashboard.
+3. Desktop & Mobile UI Test: Verified tab switching on /beneficiaries maintains clean URL /beneficiaries without query param clutter.
+4. Interactive UPI Tester: Verified QR Code modal opens on desktop with live scannable QR code and VPA parameters.
 
 ---
-*Build Summary Updated: 9/10/2026, 02:00:00 am*
+*Build Summary Updated: 10/10/2026*

@@ -61,7 +61,7 @@ interface UnlinkedDonationResolverProps {
  */
 export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId }: UnlinkedDonationResolverProps) {
     const firestore = useFirestore();
-    const { userProfile } = useSession();
+    const { user, userProfile, isStaff } = useSession();
     const { toast } = useToast();
 
     const configRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donation_config') : null, [firestore]);
@@ -76,7 +76,7 @@ export function UnlinkedDonationResolver({ open, onOpenChange, initialDonationId
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
 
-    const donationsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
+    const donationsRef = useMemoFirebase(() => (firestore && user && isStaff) ? collection(firestore, 'donations') : null, [firestore, user, isStaff]);
     const { data: allDonations, isLoading: isLoadingDonations } = useCollection<Donation>(donationsRef);
 
     const unlinkedDonations = useMemo(() => {

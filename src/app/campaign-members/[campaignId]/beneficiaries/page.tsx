@@ -783,7 +783,7 @@ function BeneficiaryListContent() {
                         }
                         const currentPage = currentPages[catId] || 1;
                         const paginatedList = list.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-                        const isExpanded = openGroups[catId] !== false;
+                        const isExpanded = !!openGroups[catId];
                         if (list.length === 0) return null;
 
                         return (

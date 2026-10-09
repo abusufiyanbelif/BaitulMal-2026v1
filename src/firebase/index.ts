@@ -58,6 +58,7 @@ export {
   increment,
   writeBatch,
   Timestamp,
+  collectionGroup,
 } from 'firebase/firestore';
 
 export type {

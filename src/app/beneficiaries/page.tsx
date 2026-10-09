@@ -1,6 +1,6 @@
 'use client';
-import React, { useState, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useMemo, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { useFirestore, useMemoFirebase, useCollection, collection } from '@/firebase';
 import { useSession } from '@/hooks/use-session';
@@ -77,6 +77,8 @@ import { cn, getNestedValue } from '@/lib/utils';
 import { SectionLoader } from '@/components/section-loader';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { BeneficiaryImportDialog } from '@/components/beneficiary-import-dialog';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { RepeatBeneficiariesSection } from '@/components/repeat-beneficiaries-section';
 import { DateRange } from "react-day-picker";
 import { Calendar } from "@/components/ui/calendar";
 import { format, parseISO, startOfDay, endOfDay } from 'date-fns';
@@ -194,11 +196,13 @@ function MultiSelectFilter({ title, options, selected, onChange }: { title: stri
     );
 }
 
-export default function BeneficiariesPage() {
+function BeneficiariesPageContent() {
   const firestore = useFirestore();
   const { toast } = useToast();
   const router = useRouter();
-  const { user, userProfile, isLoading: isProfileLoading } = useSession();
+  const { user, userProfile, isStaff, isLoading: isProfileLoading } = useSession();
+
+  const [activeTab, setActiveTab] = useState<string>('master');
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
@@ -214,7 +218,7 @@ export default function BeneficiariesPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkUpdating, setIsBulkUpdating] = useState(false);
 
-  const beneficiariesRef = useMemoFirebase(() => (firestore && user) ? collection(firestore, 'beneficiaries') : null, [firestore, user]);
+  const beneficiariesRef = useMemoFirebase(() => (firestore && user && isStaff) ? collection(firestore, 'beneficiaries') : null, [firestore, user, isStaff]);
   const { data: beneficiaries, isLoading: areBeneficiariesLoading } = useCollection<Beneficiary>(beneficiariesRef);
 
   const canCreate = userProfile?.role === 'Admin' || !!getNestedValue(userProfile, 'permissions.beneficiaries.create', false);
@@ -307,7 +311,7 @@ export default function BeneficiariesPage() {
           verified: allData.filter(b => b.status === 'Verified').length,
           hold: allData.filter(b => b.status === 'Hold').length,
           needDetails: allData.filter(b => b.status === 'Need More Details').length,
-          zakat: allData.filter(b => b.isEligibleForZakat).length
+          zakat: allData.filter(b => b.isEligibleForZakat).length,
       }
   }, [beneficiaries]);
 
@@ -484,14 +488,34 @@ export default function BeneficiariesPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 animate-fade-in-up">
-          <StatCard title="Global Total" count={stats.total} description="Authorized System Records" icon={Users} delay="100ms" onClick={() => { setStatusFilter([]); setZakatFilter([]); setSelectedReferrals([]); setSearchTerm(''); }} />
-          <StatCard title="Pending Review" count={stats.pending} description="Awaiting Authentication" icon={Hourglass} delay="150ms" onClick={() => setStatusFilter(['Pending'])} />
-          <StatCard title="Verified" count={stats.verified} description="Confirmed Identity State" icon={CheckCircle2} delay="200ms" onClick={() => setStatusFilter(['Verified'])} />
-          <StatCard title="Registry Hold" count={stats.hold} description="Temporarily Suspended" icon={XCircle} delay="250ms" onClick={() => setStatusFilter(['Hold'])} />
-          <StatCard title="Deficiency" count={stats.needDetails} description="Incomplete Profiles" icon={Info} delay="300ms" onClick={() => setStatusFilter(['Need More Details'])} />
-          <StatCard title="Zakat Quota" count={stats.zakat} description="Eligible Fund Recipients" icon={Coins} delay="350ms" onClick={() => setZakatFilter(['Eligible'])} />
-      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
+          <TabsList className="bg-white/60 backdrop-blur-md p-1.5 rounded-2xl border border-primary/10 shadow-sm inline-flex gap-2">
+              <TabsTrigger 
+                  value="master" 
+                  className="rounded-xl px-5 py-2.5 font-bold text-xs data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+              >
+                  <Users className="h-4 w-4" />
+                  Master Registry
+              </TabsTrigger>
+              <TabsTrigger 
+                  value="repeat" 
+                  className="rounded-xl px-5 py-2.5 font-bold text-xs data-[state=active]:bg-primary data-[state=active]:text-white transition-all flex items-center gap-2"
+              >
+                  <RotateCw className="h-4 w-4" />
+                  Repeat Beneficiaries Directory
+              </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="master" className="space-y-6 mt-0">
+              <div className="space-y-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 sm:gap-6 animate-fade-in-up">
+                      <StatCard title="Global Total" count={stats.total} description="Authorized System Records" icon={Users} delay="100ms" onClick={() => { setStatusFilter([]); setZakatFilter([]); setSelectedReferrals([]); setSearchTerm(''); }} />
+                      <StatCard title="Pending Review" count={stats.pending} description="Awaiting Authentication" icon={Hourglass} delay="150ms" onClick={() => setStatusFilter(['Pending'])} />
+                      <StatCard title="Verified" count={stats.verified} description="Confirmed Identity State" icon={CheckCircle2} delay="200ms" onClick={() => setStatusFilter(['Verified'])} />
+                      <StatCard title="Registry Hold" count={stats.hold} description="Temporarily Suspended" icon={XCircle} delay="250ms" onClick={() => setStatusFilter(['Hold'])} />
+                      <StatCard title="Deficiency" count={stats.needDetails} description="Incomplete Profiles" icon={Info} delay="300ms" onClick={() => setStatusFilter(['Need More Details'])} />
+                      <StatCard title="Zakat Quota" count={stats.zakat} description="Eligible Fund Recipients" icon={Coins} delay="350ms" onClick={() => setZakatFilter(['Eligible'])} />
+                  </div>
 
       <Card className="rounded-[32px] border border-primary/5 bg-white/30 backdrop-blur-md overflow-hidden shadow-none animate-fade-in-zoom" style={{ animationDelay: '400ms' }}>
         <CardHeader className="p-4 sm:p-6 border-b bg-white/80 backdrop-blur-md sticky top-[73px] z-20">
@@ -702,7 +726,17 @@ export default function BeneficiariesPage() {
                                     </Button>
                                 </div>
                                 <div className="font-mono text-[11px] font-bold opacity-30">{(currentPage - 1) * itemsPerPage + idx + 1}</div>
-                                <div className="font-bold text-sm truncate pr-4 text-primary tracking-tight">{b.name}</div>
+                                <div className="flex flex-col justify-center min-w-0 pr-4">
+                                    <div className="font-bold text-sm truncate text-primary tracking-tight">{b.name}</div>
+                                    {(b.initiativeCount || 0) > 1 && (
+                                        <div className="flex items-center gap-1 mt-1">
+                                            <Badge variant="outline" className="bg-amber-500/10 text-amber-800 border-amber-500/20 text-[9px] font-black px-2 py-0.5 rounded-full w-max">
+                                                <RotateCw className="h-2.5 w-2.5 mr-1 text-amber-600 shrink-0" />
+                                                Repeat ({b.initiativeCount} Causes)
+                                            </Badge>
+                                        </div>
+                                    )}
+                                </div>
                                 <div className="font-mono text-[11px] font-bold opacity-50 text-primary">{b.phone || '—'}</div>
                                 <div className="text-center">
                                     <Badge variant={b.status === 'Verified' ? 'eligible' : 'outline'} className="text-xs font-black px-3 py-1 h-auto rounded-full tracking-wider border-0 shadow-sm">
@@ -710,7 +744,9 @@ export default function BeneficiariesPage() {
                                     </Badge>
                                 </div>
                                 <div className="text-center">
-                                    <p className="text-xs font-bold text-muted-foreground opacity-50 tracking-tight">Operational</p>
+                                    <p className="text-xs font-bold text-muted-foreground opacity-70 tracking-tight truncate">
+                                        {b.itemCategoryName || ((b.initiativeCount || 0) > 1 ? `${b.initiativeCount} Disbursements` : 'Operational')}
+                                    </p>
                                 </div>
                                 <div className="text-center">
                                     <Badge 
@@ -776,6 +812,12 @@ export default function BeneficiariesPage() {
                                         <div className="space-y-1">
                                             <h3 className="font-black text-lg text-primary tracking-tighter group-hover/mobile:text-primary transition-colors">{b.name}</h3>
                                             <p className="font-mono text-[11px] font-bold text-muted-foreground tracking-tight">{b.phone || 'No Contact Logged'}</p>
+                                            {(b.initiativeCount || 0) > 1 && (
+                                                <Badge variant="outline" className="bg-amber-500/10 text-amber-800 border-amber-500/20 text-[9px] font-black px-2 py-0.5 rounded-full w-max mt-1">
+                                                    <RotateCw className="h-2.5 w-2.5 mr-1 text-amber-600 shrink-0" />
+                                                    Repeat ({b.initiativeCount} Causes)
+                                                </Badge>
+                                            )}
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
@@ -852,8 +894,23 @@ export default function BeneficiariesPage() {
           </div>
         </div>
       )}
+              </div>
+          </TabsContent>
+
+          <TabsContent value="repeat" className="mt-0 space-y-6">
+              <RepeatBeneficiariesSection />
+          </TabsContent>
+      </Tabs>
 
       <BeneficiaryImportDialog open={isImportOpen} onOpenChange={setIsImportOpen} onImport={handleImport} />
     </main>
+  );
+}
+
+export default function BeneficiariesPage() {
+  return (
+    <Suspense fallback={<SectionLoader label="Loading Beneficiary Registry..." description="Preparing registry views." />}>
+      <BeneficiariesPageContent />
+    </Suspense>
   );
 }

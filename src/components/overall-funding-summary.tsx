@@ -4,7 +4,7 @@
 import { usePublicData } from '@/hooks/use-public-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from './ui/skeleton';
-import { Target, Users, CheckCircle2, IndianRupee } from 'lucide-react';
+import { Target, Users, CheckCircle2, IndianRupee, RotateCw } from 'lucide-react';
 import { useMemo, useState, useEffect } from 'react';
 import {
   RadialBarChart,
@@ -63,6 +63,8 @@ export function OverallFundingSummary() {
   const rangeDescription = summaryDateRange 
     ? `Verified Goal Contributions From ${summaryDateRange.start || 'The Beginning'} To ${summaryDateRange.end || 'Today'}.`
     : 'A Summary Of Verified Goal Contributions Across All Projects.';
+
+  const isRepeatCardVisible = (overallSummary as any).isRepeatBeneficiariesVisible !== false;
 
   return (
     <div className="space-y-10">
@@ -147,7 +149,7 @@ export function OverallFundingSummary() {
             </CardContent>
         </Card>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className={`grid grid-cols-1 ${isRepeatCardVisible ? 'sm:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-3'} gap-6`}>
             <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1 shadow-sm">
                 <CardHeader className="flex items-center justify-between space-y-0 pb-2">
                     <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60 capitalize">Families Impacted</CardTitle>
@@ -158,6 +160,19 @@ export function OverallFundingSummary() {
                     <p className="text-[9px] text-muted-foreground mt-1 font-normal">Unique Beneficiaries Supported Across Initiatives.</p>
                 </CardContent>
             </Card>
+
+            {isRepeatCardVisible && (
+                <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1 shadow-sm animate-fade-in-up">
+                    <CardHeader className="flex items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-[10px] font-bold text-primary tracking-tight opacity-60 capitalize">Repeat Beneficiaries</CardTitle>
+                        <RotateCw className="h-5 w-5 text-primary opacity-40" />
+                    </CardHeader>
+                    <CardContent className="p-4 sm:p-6">
+                        <div className="text-2xl sm:text-3xl font-bold text-primary">{((overallSummary as any).repeatBeneficiariesCount || 0).toLocaleString()}</div>
+                        <p className="text-[9px] text-muted-foreground mt-1 font-normal">Recipients Supported Across &gt; 1 Initiative.</p>
+                    </CardContent>
+                </Card>
+            )}
             
             <Card className="bg-white border-primary/10 transition-all hover:shadow-lg hover:-translate-y-1 shadow-sm">
                 <CardHeader className="flex items-center justify-between space-y-0 pb-2">

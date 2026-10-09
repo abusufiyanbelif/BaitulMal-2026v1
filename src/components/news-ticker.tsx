@@ -92,10 +92,10 @@ export function NewsTicker({ items, label = "Updates", variant = "active" }: New
       link: "text-blue-700 dark:text-blue-300 hover:opacity-80"
     },
     completed: {
-      container: "border-muted",
-      label: "bg-muted text-muted-foreground",
-      dot: "bg-muted-foreground",
-      link: "text-muted-foreground hover:text-foreground"
+      container: "border-emerald-300 dark:border-emerald-800/60 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-sm",
+      label: "bg-emerald-600 text-white dark:bg-emerald-700",
+      dot: "bg-emerald-600 dark:bg-emerald-400",
+      link: "text-emerald-800 dark:text-emerald-300 hover:text-emerald-950 dark:hover:text-white font-bold"
     }
   }[variant];
 

@@ -15,6 +15,7 @@ import { revokeAllSessionsForRoleAction } from '../auth-actions';
 
 const VISIBILITY_OPTIONS = [
     { id: 'stat_cards', name: 'Top metrics (total/verified/pending)' },
+    { id: 'repeat_card', name: 'Repeat Beneficiaries metric (supported > 1 time)' },
     { id: 'status_chart', name: 'Status distribution donut' },
     { id: 'zakat_chart', name: 'Zakat eligibility donut' },
     { id: 'referral_chart', name: 'Top referral sources bar' },

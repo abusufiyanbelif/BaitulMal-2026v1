@@ -18,9 +18,11 @@ export function usePublicData() {
 
   const brandingRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'branding') : null, [firestore]);
   const visRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'donation_visibility') : null, [firestore]);
+  const benVisRef = useMemoFirebase(() => (firestore) ? doc(firestore, 'settings', 'beneficiary_visibility') : null, [firestore]);
 
   const { data: brandingSettings, isLoading: isBrandingLoading } = useDoc<BrandingSettings>(brandingRef);
   const { data: visSettings, isLoading: isVisLoading } = useDoc<any>(visRef);
+  const { data: benVisSettings, isLoading: isBenVisLoading } = useDoc<any>(benVisRef);
 
   const campaignsCollectionRef = useMemoFirebase(() => {
     if (!firestore) return null;
@@ -70,7 +72,7 @@ export function usePublicData() {
     return rawDonations.filter(d => d.status === 'Pending');
   }, [rawDonations]);
 
-  const isLoading = areCampaignsLoading || areLeadsLoading || areDonationsLoading || (user ? areBeneficiariesLoading : false) || isSessionLoading || isBrandingLoading || isVisLoading;
+  const isLoading = areCampaignsLoading || areLeadsLoading || areDonationsLoading || (user && isStaff ? areBeneficiariesLoading : false) || isSessionLoading || isBrandingLoading || isVisLoading || isBenVisLoading;
 
   const memoizedData = useMemo(() => {
     if (isLoading || !campaigns || !leads || !donations) {
@@ -84,6 +86,8 @@ export function usePublicData() {
           grandTotalUnlinked: 0,
           progress: 0,
           familiesImpacted: 0,
+          repeatBeneficiariesCount: 0,
+          isRepeatBeneficiariesVisible: true,
           showUnlinkedFunds: false,
         },
         yearlySummary: [],
@@ -304,6 +308,14 @@ export function usePublicData() {
             };
         }) : [];
 
+    const publicFamiliesImpacted = (user && isStaff && beneficiaries)
+        ? beneficiaries.length
+        : (benVisSettings?.publicTotalCount || combinedItems.reduce((s, i) => s + ((i as any).beneficiaryStats?.total || 0), 0));
+
+    const publicRepeatCount = (user && isStaff && beneficiaries)
+        ? beneficiaries.filter(b => (b.initiativeCount || 0) > 1).length
+        : (benVisSettings?.publicRepeatCount || 0);
+
     return {
       campaignsWithProgress,
       leadsWithProgress,
@@ -313,7 +325,9 @@ export function usePublicData() {
         totalCollectedForGoals: totalGoalReceived,
         grandTotalUnlinked: 0, // In public view, we don't show global unlinked pool
         progress: overallProgress,
-        familiesImpacted: beneficiaries?.length || 0,
+        familiesImpacted: publicFamiliesImpacted,
+        repeatBeneficiariesCount: publicRepeatCount,
+        isRepeatBeneficiariesVisible: benVisSettings?.public_repeat_card !== false && visSettings?.public_repeat_card !== false,
         showUnlinkedFunds: false
       },
       yearlySummary: sortedYearlyData,
@@ -327,7 +341,7 @@ export function usePublicData() {
       maxCompleted
     };
 
-  }, [isLoading, campaigns, leads, donations, beneficiaries, brandingSettings, visSettings, user]);
+  }, [isLoading, campaigns, leads, donations, beneficiaries, brandingSettings, visSettings, benVisSettings, user]);
 
   return { isLoading, ...memoizedData };
 }

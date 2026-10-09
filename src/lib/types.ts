@@ -39,6 +39,10 @@ export interface BrandingSettings extends DocumentData {
   isUnderConstructionAlertVisible?: boolean;
   underConstructionAlertText?: string;
   underConstructionAlertStyle?: 'amber' | 'blue' | 'emerald' | 'rose';
+  // Font & Typography Configuration
+  headingFont?: string;
+  bodyFont?: string;
+  fontScale?: 'Compact' | 'Normal' | 'Large';
 }
 
 export interface PaymentSettings extends DocumentData {
@@ -557,6 +561,7 @@ export interface Beneficiary extends DocumentData {
     updatedByName?: string;
     bankDetails?: BankDetail[];
     upiIds?: string[];
+    initiativeCount?: number;
 }
 
 export interface BankDetail {

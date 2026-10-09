@@ -8,7 +8,7 @@ import type { Beneficiary } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import Link from 'next/link';
-import { ArrowLeft, Loader2, Users, CheckCircle2, Hourglass, XCircle, UserCheck } from 'lucide-react';
+import { ArrowLeft, Loader2, Users, CheckCircle2, Hourglass, XCircle, UserCheck, RotateCw } from 'lucide-react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { DateRange } from 'react-day-picker';
@@ -21,6 +21,8 @@ import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Toolti
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import type { ChartConfig } from '@/components/ui/chart';
 import { Skeleton } from '@/components/ui/skeleton';
+
+import { useSession } from '@/hooks/use-session';
 
 const statusChartConfig = {
     Verified: { label: "Verified", color: "hsl(var(--chart-1))" },
@@ -38,6 +40,7 @@ const zakatChartConfig = {
 
 export default function BeneficiariesSummaryPage() {
     const firestore = useFirestore();
+    const { user, isStaff } = useSession();
     const pathname = usePathname();
     const [date, setDate] = useState<DateRange | undefined>(undefined);
     const [isClient, setIsClient] = useState(false);
@@ -47,9 +50,9 @@ export default function BeneficiariesSummaryPage() {
     }, []);
 
     const beneficiariesCollectionRef = useMemoFirebase(() => {
-        if (!firestore) return null;
+        if (!firestore || !user || !isStaff) return null;
         return collection(firestore, 'beneficiaries');
-    }, [firestore]);
+    }, [firestore, user, isStaff]);
     const { data: beneficiaries, isLoading } = useCollection<Beneficiary>(beneficiariesCollectionRef);
 
     const filteredBeneficiaries = useMemo(() => {
@@ -106,8 +109,11 @@ export default function BeneficiariesSummaryPage() {
             .sort(([, a], [, b]) => b - a)
             .slice(0, 10);
 
+        const repeatCount = filteredBeneficiaries.filter(b => (b.initiativeCount || 0) > 1).length;
+
         return {
             total: filteredBeneficiaries.length,
+            repeatCount,
             statusCounts,
             zakatCounts,
             topReferrals,
@@ -219,7 +225,7 @@ export default function BeneficiariesSummaryPage() {
             </div>
             
              <div className="space-y-6 animate-fade-in-zoom">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <Card className="bg-white border-primary/10">
                         <CardHeader className="p-4 flex-row items-center justify-between">
                             <CardTitle className="text-[10px] font-bold capitalize tracking-widest text-primary">Total Beneficiaries</CardTitle>
@@ -227,6 +233,16 @@ export default function BeneficiariesSummaryPage() {
                         </CardHeader>
                         <CardContent className="p-4 pt-0">
                             <div className="text-3xl font-bold text-primary">{summaryData.total}</div>
+                        </CardContent>
+                    </Card>
+                    <Card className="bg-white border-primary/10">
+                        <CardHeader className="p-4 flex-row items-center justify-between">
+                            <CardTitle className="text-[10px] font-bold capitalize tracking-widest text-primary">Repeat Cases</CardTitle>
+                            <RotateCw className="h-4 w-4 text-primary opacity-60"/>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-0">
+                            <div className="text-3xl font-bold text-primary">{summaryData.repeatCount}</div>
+                            <p className="text-[9px] text-muted-foreground mt-0.5 font-normal">Supported &gt; 1 Initiative</p>
                         </CardContent>
                     </Card>
                      <Card className="bg-white border-primary/10">

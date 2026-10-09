@@ -1,7 +1,7 @@
 # 📘 User Guide: /campaign-members
     
-**Build Version:** `2026.10.08.1`
-**Last Updated:** 8/10/2026, 11:36:00 pm
+**Build Version:** `2026.10.10.1`
+**Last Updated:** 10/10/2026, 3:35:54 am
 **Internal Route:** `/campaign-members`
 
 ---
@@ -31,7 +31,9 @@ The following fields are mapped within this interface:
 - **Back To Home**: Interactive button to initiate back to home operation.
 - **Dashboard**: Interactive button to initiate dashboard operation.
 - **New Campaign**: Interactive button to initiate new campaign operation.
+- **Search**: Interactive button to initiate search operation.
 - **Date Range**: Interactive button to initiate date range operation.
+- **handleToggle**: Internal logic handler for Toggle workflow.
 - **handleDeleteConfirm**: Internal logic handler for DeleteConfirm workflow.
 - **handleStatusUpdate**: Internal logic handler for StatusUpdate workflow.
 

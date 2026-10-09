@@ -1,7 +1,7 @@
 # 📘 User Guide: /beneficiaries
     
-**Build Version:** `2026.10.08.1`
-**Last Updated:** 8/10/2026, 11:36:00 pm
+**Build Version:** `2026.10.10.1`
+**Last Updated:** 10/10/2026, 3:35:54 am
 **Internal Route:** `/beneficiaries`
 
 ---
@@ -28,12 +28,15 @@ The following fields are mapped within this interface:
 ## ⚡ Interactive Action Items
 - **Dashboard**: Interactive button to initiate dashboard operation.
 - **Export**: Interactive button to initiate export operation (Triggers handleExport).
+- **Clear Filters**: Interactive button to initiate clear filters operation (Triggers resetAllFilters).
 - **{ setDateRange(undefined); setCurrentPage(1); }}>**: Interactive button to initiate { setdaterange(undefined); setcurrentpage(1); }}> operation (Triggers () => { setDateRange(undefined); setCurrentPage(1); ).
 - **Set Verification**: Interactive button to initiate set verification operation.
 - **Zakat Status**: Interactive button to initiate zakat status operation.
 - **setSelectedIds([])}>**: Interactive button to initiate setselectedids([])}> operation (Triggers () => setSelectedIds([])).
+- **Reset All Filters**: Interactive button to initiate reset all filters operation (Triggers resetAllFilters).
 - **router.push(`/beneficiaries/${b.id}`)}>**: Interactive button to initiate router.push(`/beneficiaries/${b.id}`)}> operation (Triggers () => router.push(`/beneficiaries/${b.id).
 - **Audit Profile**: Interactive button to initiate audit profile operation.
+- **handleToggle**: Internal logic handler for Toggle workflow.
 - **handleSort**: Internal logic handler for Sort workflow.
 - **handleBulkStatusChange**: Internal logic handler for BulkStatusChange workflow.
 - **handleBulkZakatChange**: Internal logic handler for BulkZakatChange workflow.

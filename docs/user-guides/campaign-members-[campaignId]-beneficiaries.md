@@ -1,7 +1,7 @@
 # 📘 User Guide: /campaign-members/[campaignId]/beneficiaries
     
-**Build Version:** `2026.10.08.1`
-**Last Updated:** 8/10/2026, 11:36:00 pm
+**Build Version:** `2026.10.10.1`
+**Last Updated:** 10/10/2026, 3:35:54 am
 **Internal Route:** `/campaign-members/[campaignId]/beneficiaries`
 
 ---
@@ -29,10 +29,12 @@ The following fields are mapped within this interface:
 ## ⚡ Interactive Action Items
 - **Back To Campaigns**: Interactive button to initiate back to campaigns operation.
 - **Export Full CSV**: Interactive button to initiate export full csv operation (Triggers handleExport).
+- **Search**: Interactive button to initiate search operation.
 - **Disbursement**: Interactive button to initiate disbursement operation.
 - **Verification**: Interactive button to initiate verification operation.
 - **Zakat**: Interactive button to initiate zakat operation.
 - **setSelectedIds([])}>**: Interactive button to initiate setselectedids([])}> operation (Triggers () => setSelectedIds([])).
+- **handleToggle**: Internal logic handler for Toggle workflow.
 - **handleBulkDisbursementChange**: Internal logic handler for BulkDisbursementChange workflow.
 - **handleBulkVerificationChange**: Internal logic handler for BulkVerificationChange workflow.
 - **handleBulkZakatChange**: Internal logic handler for BulkZakatChange workflow.

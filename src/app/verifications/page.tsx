@@ -17,6 +17,7 @@ import { useSession } from '@/hooks/use-session';
 import { BrandedLoader } from '@/components/branded-loader';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import Link from 'next/link';
 import { Badge } from '@/components/ui/badge';
 import { 
     ShieldCheck, 
@@ -24,6 +25,7 @@ import {
     CheckCircle2, 
     XCircle, 
     ArrowRight, 
+    ArrowLeft,
     User, 
     Info, 
     Eye,
@@ -214,6 +216,14 @@ export default function VerificationsPage() {
         <main className="container mx-auto p-4 md:p-8 text-primary font-normal relative min-h-screen">
             <div className="absolute -top-20 -left-20 w-64 h-64 bg-primary/5 rounded-full blur-3xl -z-10 animate-pulse" />
             <div className="absolute top-40 -right-20 w-72 h-72 bg-emerald-500/5 rounded-full blur-3xl -z-10 animate-pulse" />
+
+            <div className="mb-4">
+                <Button variant="secondary" asChild size="sm" className="w-fit font-bold border-primary/20 text-primary transition-transform active:scale-95 rounded-xl px-5 h-9 shadow-sm">
+                    <Link href="/dashboard">
+                        <ArrowLeft className="mr-2 h-4 w-4" /> Dashboard
+                    </Link>
+                </Button>
+            </div>
 
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-6">
                 <div className="space-y-1.5">

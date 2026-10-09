@@ -1,7 +1,7 @@
 # 📘 User Guide: /donations
     
-**Build Version:** `2026.10.08.1`
-**Last Updated:** 8/10/2026, 11:36:00 pm
+**Build Version:** `2026.10.10.1`
+**Last Updated:** 10/10/2026, 3:35:54 am
 **Internal Route:** `/donations`
 
 ---
@@ -30,9 +30,12 @@ The following fields are mapped within this interface:
 - **router.push(`/donations/${donation.id}`)}>**: Interactive button to initiate router.push(`/donations/${donation.id}`)}> operation (Triggers () => router.push(`/donations/${donation.id).
 - **setIsOpen(!isOpen)}>**: Interactive button to initiate setisopen(!isopen)}> operation (Triggers () => setIsOpen(!isOpen)).
 - **Dashboard**: Interactive button to initiate dashboard operation.
+- **Clear Filters**: Interactive button to initiate clear filters operation (Triggers resetAllFilters).
 - **Auto-Map Profiles**: Interactive button to initiate auto-map profiles operation (Triggers handleBulkMapDonors).
 - **Authentication**: Interactive button to initiate authentication operation.
 - **setSelectedIds([])}>**: Interactive button to initiate setselectedids([])}> operation (Triggers () => setSelectedIds([])).
+- **Reset All Filters**: Interactive button to initiate reset all filters operation (Triggers resetAllFilters).
+- **handleToggle**: Internal logic handler for Toggle workflow.
 - **handleSort**: Internal logic handler for Sort workflow.
 - **handleFormSubmit**: Internal logic handler for FormSubmit workflow.
 - **handleBulkStatusChange**: Internal logic handler for BulkStatusChange workflow.

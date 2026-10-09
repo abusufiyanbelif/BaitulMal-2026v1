@@ -76,6 +76,8 @@ function StatCard({ title, value, description, icon: Icon, delay, colorClass }: 
     );
 }
 
+import { useSession } from '@/hooks/use-session';
+
 const donationCategoryChartConfig = donationCategories.reduce((acc, category, index) => {
     acc[category] = {
         label: category,
@@ -86,14 +88,15 @@ const donationCategoryChartConfig = donationCategories.reduce((acc, category, in
 
 export default function AnalyticsPage() {
     const firestore = useFirestore();
+    const { user, isStaff } = useSession();
     const [isClient, setIsClient] = useState(false);
     useEffect(() => { setIsClient(true) }, []);
 
-    const usersRef = useMemoFirebase(() => firestore ? collection(firestore, 'users') : null, [firestore]);
+    const usersRef = useMemoFirebase(() => (firestore && user && isStaff) ? collection(firestore, 'users') : null, [firestore, user, isStaff]);
     const campaignsRef = useMemoFirebase(() => firestore ? collection(firestore, 'campaigns') : null, [firestore]);
     const leadsRef = useMemoFirebase(() => firestore ? collection(firestore, 'leads') : null, [firestore]);
-    const donationsRef = useMemoFirebase(() => firestore ? collection(firestore, 'donations') : null, [firestore]);
-    const beneficiariesRef = useMemoFirebase(() => firestore ? collection(firestore, 'beneficiaries') : null, [firestore]);
+    const donationsRef = useMemoFirebase(() => (firestore && user && isStaff) ? collection(firestore, 'donations') : null, [firestore, user, isStaff]);
+    const beneficiariesRef = useMemoFirebase(() => (firestore && user && isStaff) ? collection(firestore, 'beneficiaries') : null, [firestore, user, isStaff]);
 
     const { data: users, isLoading: usersLoading } = useCollection<UserProfile>(usersRef);
     const { data: campaigns, isLoading: campaignsLoading } = useCollection<Campaign>(campaignsRef);

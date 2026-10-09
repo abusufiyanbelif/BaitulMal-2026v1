@@ -1,7 +1,7 @@
 # 📘 User Guide: /settings/viewport
     
-**Build Version:** `2026.10.08.1`
-**Last Updated:** 8/10/2026, 11:36:00 pm
+**Build Version:** `2026.10.10.1`
+**Last Updated:** 10/10/2026, 3:35:54 am
 **Internal Route:** `/settings/viewport`
 
 ---
@@ -23,16 +23,24 @@ Application Module
 ## ⌨️ Fields & Data Mapping
 The following fields are mapped within this interface:
 - Select Organization Color Theme
+- Heading Font Style
+- Body Font Style
+- Font Size Scale
 - UI Transitions
 - Smooth Scrolling
 - Reduced Motion Mode
+- Input: Select Heading Font
+- Input: Select Body Font
+- Input: Select Font Scale
 
 ## ⚡ Interactive Action Items
 - **Primary Action**: Interactive button to initiate primary action operation.
 - **Secondary**: Interactive button to initiate secondary operation.
+- **Cancel**: Interactive button to initiate cancel operation (Triggers handleCancel).
 - **setPendingTheme('light')}> Light Mode**: Interactive button to initiate setpendingtheme('light')}> light mode operation (Triggers () => setPendingTheme('light')).
 - **setPendingTheme('dark')}> Dark Mode**: Interactive button to initiate setpendingtheme('dark')}> dark mode operation (Triggers () => setPendingTheme('dark')).
 - **setPendingTheme('system')}> System Default**: Interactive button to initiate setpendingtheme('system')}> system default operation (Triggers () => setPendingTheme('system')).
+- **handleCancel**: Internal logic handler for Cancel workflow.
 - **handleSave**: Internal logic handler for Save workflow.
 
 ## 🛡️ Security & Access

@@ -36,6 +36,7 @@ function ThemeSync() {
 }
 
 import { UnderConstructionAlert } from '@/components/under-construction-alert';
+import { FontThemeSync } from '@/components/font-theme-sync';
 
 export function Providers({ children }: { children: ReactNode }) {
   const pathname = usePathname();
@@ -54,6 +55,7 @@ export function Providers({ children }: { children: ReactNode }) {
         disableTransitionOnChange
       >
         <ThemeSync />
+        <FontThemeSync />
         
         <div className="relative min-h-screen w-full overflow-x-hidden flex flex-col">
           <div className="fixed inset-0 -z-10 flex items-center justify-center pointer-events-none opacity-[0.08] mix-blend-multiply overflow-hidden">

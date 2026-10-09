@@ -1,9 +1,20 @@
 {
-  "version": "2026.10.09.1",
-  "buildDate": "2026-10-09T02:00:00.000Z",
+  "version": "2026.10.10.1",
+  "buildDate": "2026-10-09T22:02:31.897Z",
   "commitHash": "latest",
   "changelog": [],
   "history": [
+    {
+      "version": "2026.10.10.1",
+      "date": "2026-10-09T22:02:31.897Z",
+      "commit": "279bdc5d",
+      "branch": "test_bmss_26",
+      "repo": "BaitulMal-2026v1",
+      "reference": "n/a",
+      "steps": "1. TypeScript Validation: Executed `npx tsc --noEmit` - passed with 0 errors.\n2. Calculation Reconciliation: Reconciled progress percentages and collected amounts across admin list cards, public grid views, and summary pages.\n3. Aspect Ratio & Touch Verification: Verified responsive scaling and horizontal tab scrolling across mobile aspect ratios (9:16, 16:9, 19.5:9, 20:9, Z Fold 8 Ultra).\n4. Explicit Case ID Verification: Verified both Document ID and Case ID are rendered distinctly in all lists, forms, and dialogs.\n1. TypeScript Validation: Executed `npx tsc --noEmit` - passed with 0 errors.\n2. Calculation Reconciliation: Reconciled progress percentages and collected amounts across admin list cards, public grid views, and summary pages.\n3. Runtime Exception Verification: Verified zero runtime crashes on sparse Firestore records across all search dialogs and settings pages.\n4. Admin Control Test: Navigated to `/settings/app`, configured social profile links, and toggled individual footer visibility switches.\n5. Footer Verification: Verified public footer dynamically renders all configured social profile icons (Instagram, Facebook, YouTube, Twitter/X, LinkedIn, WhatsApp, Telegram) and respects all visibility toggles.\n6. Type Safety: TypeScript compilation checked cleanly with 0 errors.",
+      "type": "Major feature - social media profiles integration & comprehensive footer content & visibility settings",
+      "message": "Added full support for Twitter/X, LinkedIn, WhatsApp, and Telegram social profiles alongside Instagram, Facebook, and YouTube. Introduced granular Footer Content & Visibility Controls in System Settings to configure layout elements and section visibility."
+    },
     {
       "version": "2026.10.09.1",
       "date": "2026-10-09T02:00:00.000Z",
@@ -535,28 +546,6 @@
     {
       "version": "2026.05.08.3",
       "date": "2026-05-07T22:12:11.047Z",
-      "commit": "1392db24",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "MB-MSG-FULL-2026 (Full Messaging Hardening)",
-      "steps": "Manual verification required.",
-      "type": "Feature, bugfix, infrastructure hardening & deep scan",
-      "message": "WhatsApp OTP channel for portal login, profile-specific template expansion (21 templates), forgot-password multi-collection fix, Firestore template path correction, and comprehensive messaging error handling."
-    },
-    {
-      "version": "2026.05.08.2",
-      "date": "2026-05-07T22:05:42.229Z",
-      "commit": "1392db24",
-      "branch": "test_bmss_26",
-      "repo": "BaitulMal-2026v1",
-      "reference": "MB-MSG-FULL-2026 (Full Messaging Hardening)",
-      "steps": "Manual verification required.",
-      "type": "Feature, bugfix, infrastructure hardening & deep scan",
-      "message": "WhatsApp OTP channel for portal login, profile-specific template expansion (21 templates), forgot-password multi-collection fix, Firestore template path correction, and comprehensive messaging error handling."
-    },
-    {
-      "version": "2026.05.08.1",
-      "date": "2026-05-07T21:45:47.803Z",
       "commit": "1392db24",
       "branch": "test_bmss_26",
       "repo": "BaitulMal-2026v1",
