@@ -46,85 +46,87 @@ export default function PaymentGatewaysSettingsPage() {
   const canEdit = userProfile?.role === 'Admin';
 
   useEffect(() => {
-    if (gatewaySettings) {
-      setFormData({
-        isOnlineGatewayEnabled: gatewaySettings.isOnlineGatewayEnabled ?? true,
-        isInternalTestMode: gatewaySettings.isInternalTestMode ?? false,
-        isPublicGatewayEnabled: gatewaySettings.isPublicGatewayEnabled ?? true,
-        isDonorGatewayEnabled: gatewaySettings.isDonorGatewayEnabled ?? true,
-        activeGateway: gatewaySettings.activeGateway || 'razorpay',
-        isMonthlyDonationEnabled: gatewaySettings.isMonthlyDonationEnabled ?? true,
-        showUpiApps: gatewaySettings.showUpiApps ?? true,
-        showNetBanking: gatewaySettings.showNetBanking ?? true,
-        showCards: gatewaySettings.showCards ?? true,
-        razorpay: {
-          keyId: gatewaySettings.razorpay?.keyId || '',
-          keySecret: gatewaySettings.razorpay?.keySecret || '',
-          webhookSecret: gatewaySettings.razorpay?.webhookSecret || '',
-          mode: gatewaySettings.razorpay?.mode || 'test',
-          isEnabled: gatewaySettings.razorpay?.isEnabled ?? true,
-        },
-        instamojo: {
-          apiKey: gatewaySettings.instamojo?.apiKey || '',
-          authToken: gatewaySettings.instamojo?.authToken || '',
-          salt: gatewaySettings.instamojo?.salt || '',
-          mode: gatewaySettings.instamojo?.mode || 'test',
-          isEnabled: gatewaySettings.instamojo?.isEnabled ?? false,
-        },
-        phonepe: {
-          merchantId: gatewaySettings.phonepe?.merchantId || '',
-          saltKey: gatewaySettings.phonepe?.saltKey || '',
-          saltIndex: gatewaySettings.phonepe?.saltIndex || '1',
-          mode: gatewaySettings.phonepe?.mode || 'test',
-          isEnabled: gatewaySettings.phonepe?.isEnabled ?? false,
-        },
-        stripe: {
-          publishableKey: gatewaySettings.stripe?.publishableKey || '',
-          secretKey: gatewaySettings.stripe?.secretKey || '',
-          mode: gatewaySettings.stripe?.mode || 'test',
-          isEnabled: gatewaySettings.stripe?.isEnabled ?? false,
-        },
-        paytm: {
-          merchantId: gatewaySettings.paytm?.merchantId || '',
-          merchantKey: gatewaySettings.paytm?.merchantKey || '',
-          websiteName: gatewaySettings.paytm?.websiteName || 'WEBSTAGING',
-          mode: gatewaySettings.paytm?.mode || 'test',
-          isEnabled: gatewaySettings.paytm?.isEnabled ?? false,
-        },
-        cashfree: {
-          appId: gatewaySettings.cashfree?.appId || '',
-          secretKey: gatewaySettings.cashfree?.secretKey || '',
-          mode: gatewaySettings.cashfree?.mode || 'test',
-          isEnabled: gatewaySettings.cashfree?.isEnabled ?? false,
-        },
-        paypal: {
-          clientId: gatewaySettings.paypal?.clientId || '',
-          clientSecret: gatewaySettings.paypal?.clientSecret || '',
-          mode: gatewaySettings.paypal?.mode || 'sandbox',
-          isEnabled: gatewaySettings.paypal?.isEnabled ?? false,
-        }
-      });
-    } else if (!isGatewayLoading) {
-      setFormData({
-        isOnlineGatewayEnabled: true,
-        isInternalTestMode: false,
-        isPublicGatewayEnabled: true,
-        isDonorGatewayEnabled: true,
-        activeGateway: 'razorpay',
-        isMonthlyDonationEnabled: true,
-        showUpiApps: true,
-        showNetBanking: true,
-        showCards: true,
-        razorpay: { keyId: '', keySecret: '', webhookSecret: '', mode: 'test', isEnabled: true },
-        instamojo: { apiKey: '', authToken: '', salt: '', mode: 'test', isEnabled: false },
-        phonepe: { merchantId: '', saltKey: '', saltIndex: '1', mode: 'test', isEnabled: false },
-        stripe: { publishableKey: '', secretKey: '', mode: 'test', isEnabled: false },
-        paytm: { merchantId: '', merchantKey: '', websiteName: 'WEBSTAGING', mode: 'test', isEnabled: false },
-        cashfree: { appId: '', secretKey: '', mode: 'test', isEnabled: false },
-        paypal: { clientId: '', clientSecret: '', mode: 'sandbox', isEnabled: false },
-      });
+    if (!formData) {
+      if (gatewaySettings) {
+        setFormData({
+          isOnlineGatewayEnabled: gatewaySettings.isOnlineGatewayEnabled ?? true,
+          isInternalTestMode: gatewaySettings.isInternalTestMode ?? false,
+          isPublicGatewayEnabled: gatewaySettings.isPublicGatewayEnabled ?? true,
+          isDonorGatewayEnabled: gatewaySettings.isDonorGatewayEnabled ?? true,
+          activeGateway: gatewaySettings.activeGateway || 'razorpay',
+          isMonthlyDonationEnabled: gatewaySettings.isMonthlyDonationEnabled ?? true,
+          showUpiApps: gatewaySettings.showUpiApps ?? true,
+          showNetBanking: gatewaySettings.showNetBanking ?? true,
+          showCards: gatewaySettings.showCards ?? true,
+          razorpay: {
+            keyId: gatewaySettings.razorpay?.keyId || '',
+            keySecret: gatewaySettings.razorpay?.keySecret || '',
+            webhookSecret: gatewaySettings.razorpay?.webhookSecret || '',
+            mode: gatewaySettings.razorpay?.mode || 'test',
+            isEnabled: gatewaySettings.razorpay?.isEnabled ?? true,
+          },
+          instamojo: {
+            apiKey: gatewaySettings.instamojo?.apiKey || '',
+            authToken: gatewaySettings.instamojo?.authToken || '',
+            salt: gatewaySettings.instamojo?.salt || '',
+            mode: gatewaySettings.instamojo?.mode || 'test',
+            isEnabled: gatewaySettings.instamojo?.isEnabled ?? false,
+          },
+          phonepe: {
+            merchantId: gatewaySettings.phonepe?.merchantId || '',
+            saltKey: gatewaySettings.phonepe?.saltKey || '',
+            saltIndex: gatewaySettings.phonepe?.saltIndex || '1',
+            mode: gatewaySettings.phonepe?.mode || 'test',
+            isEnabled: gatewaySettings.phonepe?.isEnabled ?? false,
+          },
+          stripe: {
+            publishableKey: gatewaySettings.stripe?.publishableKey || '',
+            secretKey: gatewaySettings.stripe?.secretKey || '',
+            mode: gatewaySettings.stripe?.mode || 'test',
+            isEnabled: gatewaySettings.stripe?.isEnabled ?? false,
+          },
+          paytm: {
+            merchantId: gatewaySettings.paytm?.merchantId || '',
+            merchantKey: gatewaySettings.paytm?.merchantKey || '',
+            websiteName: gatewaySettings.paytm?.websiteName || 'WEBSTAGING',
+            mode: gatewaySettings.paytm?.mode || 'test',
+            isEnabled: gatewaySettings.paytm?.isEnabled ?? false,
+          },
+          cashfree: {
+            appId: gatewaySettings.cashfree?.appId || '',
+            secretKey: gatewaySettings.cashfree?.secretKey || '',
+            mode: gatewaySettings.cashfree?.mode || 'test',
+            isEnabled: gatewaySettings.cashfree?.isEnabled ?? false,
+          },
+          paypal: {
+            clientId: gatewaySettings.paypal?.clientId || '',
+            clientSecret: gatewaySettings.paypal?.clientSecret || '',
+            mode: gatewaySettings.paypal?.mode || 'sandbox',
+            isEnabled: gatewaySettings.paypal?.isEnabled ?? false,
+          }
+        });
+      } else if (!isGatewayLoading) {
+        setFormData({
+          isOnlineGatewayEnabled: true,
+          isInternalTestMode: false,
+          isPublicGatewayEnabled: true,
+          isDonorGatewayEnabled: true,
+          activeGateway: 'razorpay',
+          isMonthlyDonationEnabled: true,
+          showUpiApps: true,
+          showNetBanking: true,
+          showCards: true,
+          razorpay: { keyId: '', keySecret: '', webhookSecret: '', mode: 'test', isEnabled: true },
+          instamojo: { apiKey: '', authToken: '', salt: '', mode: 'test', isEnabled: false },
+          phonepe: { merchantId: '', saltKey: '', saltIndex: '1', mode: 'test', isEnabled: false },
+          stripe: { publishableKey: '', secretKey: '', mode: 'test', isEnabled: false },
+          paytm: { merchantId: '', merchantKey: '', websiteName: 'WEBSTAGING', mode: 'test', isEnabled: false },
+          cashfree: { appId: '', secretKey: '', mode: 'test', isEnabled: false },
+          paypal: { clientId: '', clientSecret: '', mode: 'sandbox', isEnabled: false },
+        });
+      }
     }
-  }, [gatewaySettings, isGatewayLoading]);
+  }, [gatewaySettings, isGatewayLoading, formData]);
 
   const handleSave = async () => {
     if (!firestore || !canEdit || !formData) return;

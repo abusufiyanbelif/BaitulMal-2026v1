@@ -1,31 +1,39 @@
 Uncommitted Changes Summary - BaitulMal 2026
 
-Type: Uncommitted UI & Security Updates - Beneficiaries Registry, App Settings UPI Tester, Viewport Themes & Collapsible Sections
+Type: Uncommitted Fixes, Security & Documentation Updates - Beneficiaries Registry, App Settings UPI QR Tester, Payment Gateway Loop Fix, Guidance Fallbacks & User Guides
 
 Summary of Modifications:
-1. Beneficiary Registry & Repeat Beneficiaries Integration:
-   - Updated /beneficiaries with in-place tab switching between "Master Registry" and "Repeat Beneficiaries Directory" without mutating browser URL query strings.
-   - Refactored Repeat Beneficiaries data fetching to use parent campaign/lead subcollections, eliminating root collectionGroup permission errors.
-   - Enhanced desktop table rows and mobile cards to display repeat cause count badges (Repeat X Causes) and disbursement categories.
+1. Beneficiary Registry & Repeat Beneficiaries Integration (/beneficiaries):
+   - Refactored /beneficiaries with in-place tab switching between "Master Registry" and "Repeat Beneficiaries Directory" without mutating browser URL query strings.
+   - Converted Repeat Beneficiaries data fetching to use campaign/lead subcollections, resolving root collectionGroup permission errors.
+   - Added repeat cause count badges (Repeat X Causes) and disbursement category info directly to table rows and mobile cards.
 
-2. Dashboard Cleanup:
+2. Dashboard Cleanup (/dashboard):
    - Removed duplicate "Repeat Beneficiaries" navigation card from /dashboard, retaining single "People Receiving Help" entry linking to /beneficiaries.
 
 3. App Settings UPI Interactive Tester (/settings/app):
    - Upgraded "Launch UPI App" button to launch an Interactive UPI QR Code & Deep-Link Tester Dialog.
-   - Added live scannable QR code generation for desktop PC browser testing where native upi:// protocol handlers are absent.
-   - Provided Copy URI, Force Mobile Launch, and desktop guidance callouts.
+   - Added live scannable QR code generation for PC desktop testing where native upi:// protocol handlers are absent.
+   - Provided Copy URI, Force Mobile Launch, and desktop callout guidance.
 
-4. Expandable & Default-Collapsed Sections:
-   - Integrated default-collapsed section controls across App Settings, Resources (/settings/resources), Fundraising, and Info pages for streamlined layout clutter reduction.
+4. Guidance Settings Fallback & Layout (/settings/guidance):
+   - Resolved blank/empty page loading by providing automatic default fallback state ({ title, description, categories, isPublic }) when Firestore settings/guidance is uninitialized.
+   - Wrapped controls in default-collapsed SettingsSection components.
 
-5. Viewport Theme & Palette Sync (/settings/viewport):
-   - Fixed Appearance Palette & Real-Time Preview live sync by connecting palette tokens directly to root CSS variables and localStorage synchronization.
+5. Payment Gateways Infinite Loop Fix (/settings/payment-gateways, usePaymentGateways):
+   - Resolved "Maximum update depth exceeded" crash caused by unstable object references in usePaymentGateways hook.
+   - Memoized DEFAULT_GATEWAY_SETTINGS and enabledGateways list; added !formData guard in useEffect to populate initial state once.
+
+6. Viewport Theme & Palette Sync (/settings/viewport):
+   - Fixed Appearance Palette & Real-Time Preview live sync by connecting palette tokens directly to root CSS variables and localStorage.
+
+7. Documentation Engine Updates:
+   - Updated User Guides: /beneficiaries, /settings/app, /settings/payment-gateways, and /settings/guidance with full specifications.
 
 Verification Steps:
 1. TypeScript Validation: Executed `npx tsc --noEmit` - 0 errors.
-2. Runtime Verification: Confirmed zero Firestore permission errors on /beneficiaries and /dashboard.
-3. Desktop & Mobile UI Test: Verified tab switching on /beneficiaries maintains clean URL /beneficiaries without query param clutter.
+2. Runtime Verification: Verified zero Firestore permission errors on /beneficiaries and zero re-render loops on /settings/payment-gateways.
+3. Desktop & Mobile UI Test: Verified tab switching on /beneficiaries maintains clean URL without query string clutter.
 4. Interactive UPI Tester: Verified QR Code modal opens on desktop with live scannable QR code and VPA parameters.
 
 ---

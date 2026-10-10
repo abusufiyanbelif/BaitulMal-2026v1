@@ -1,52 +1,43 @@
 # 📘 User Guide: /beneficiaries
     
-**Build Version:** `2026.10.10.1`
-**Last Updated:** 10/10/2026, 3:35:54 am
+**Build Version:** `v2026.10.10.1`
+**Last Updated:** 10/10/2026
 **Internal Route:** `/beneficiaries`
 
 ---
 
 ## 🎯 Purpose
-Application Module
+Centralized Beneficiary Registry for managing, verifying, and tracking individuals and families supported across all organization initiatives and campaigns.
 
 ## 📋 Primary Use Cases
-- Maintain records of individuals receiving organization support.
-- Generate and download data reports for external audit.
+- View and search master records of all supported individuals.
+- Access the **Master Registry** tab for unified search, verification status updates, Zakat eligibility management, and CSV export/import.
+- Switch to the **Repeat Beneficiaries Directory** tab to inspect recipients receiving recurring assistance across multiple causes, viewing total funding allocations and initiative counts.
+- Export filtered beneficiary registries for auditing and batch import updated records.
 
-## 🧪 Reproducible Steps
-- Navigate to `/beneficiaries` through the organization dashboard.
-- Interact with the available data fields and action buttons listed below.
+## 🧪 In-Place Navigation & Tab Architecture
+- Default URL: `http://localhost:3000/beneficiaries`
+- In-place Tab Switcher:
+  - **Master Registry**: Unified table with verification badges, Zakat eligibility, contact information, and referral tracking.
+  - **Repeat Beneficiaries Directory**: Subcollection-queried directory displaying recurring aid recipients, total disbursed funding, and cause breakdowns.
+- Clean URL Guarantee: Switching tabs toggles UI state in-place without appending query strings (`?tab=repeat` is omitted).
 
 ## 🏗️ Data Architecture (Firestore)
-*No direct Firestore collection interactions detected.*
+- Root Collection: `beneficiaries`
+- Subcollections (for Repeat Beneficiary resolution):
+  - `campaigns/{campaignId}/beneficiaries`
+  - `leads/{leadId}/beneficiaries`
+- Resolves subcollection records via campaign/lead parents to prevent client-side `collectionGroup` root permission errors.
 
 ## ⌨️ Fields & Data Mapping
-The following fields are mapped within this interface:
-- Input: Search identities...
-- Input: Search sources...
+- **Master Registry Fields**: Identity Name, Phone Number, Verification Status (`Verified`, `Pending`, `Hold`, `Need More Details`), Zakat Eligibility (`Eligible`, `Hold`), Disbursement Category, Referral Source, Added Date.
+- **Repeat Beneficiary Fields**: Multi-Cause Badge (`Repeat (X Causes)`), Total Initiatives Supported, Cumulative Aid Amount (₹), Cumulative Zakat Amount (₹), Top Recurring Cause.
 
-## ⚡ Interactive Action Items
-- **Dashboard**: Interactive button to initiate dashboard operation.
-- **Export**: Interactive button to initiate export operation (Triggers handleExport).
-- **Clear Filters**: Interactive button to initiate clear filters operation (Triggers resetAllFilters).
-- **{ setDateRange(undefined); setCurrentPage(1); }}>**: Interactive button to initiate { setdaterange(undefined); setcurrentpage(1); }}> operation (Triggers () => { setDateRange(undefined); setCurrentPage(1); ).
-- **Set Verification**: Interactive button to initiate set verification operation.
-- **Zakat Status**: Interactive button to initiate zakat status operation.
-- **setSelectedIds([])}>**: Interactive button to initiate setselectedids([])}> operation (Triggers () => setSelectedIds([])).
-- **Reset All Filters**: Interactive button to initiate reset all filters operation (Triggers resetAllFilters).
-- **router.push(`/beneficiaries/${b.id}`)}>**: Interactive button to initiate router.push(`/beneficiaries/${b.id}`)}> operation (Triggers () => router.push(`/beneficiaries/${b.id).
-- **Audit Profile**: Interactive button to initiate audit profile operation.
-- **handleToggle**: Internal logic handler for Toggle workflow.
-- **handleSort**: Internal logic handler for Sort workflow.
-- **handleBulkStatusChange**: Internal logic handler for BulkStatusChange workflow.
-- **handleBulkZakatChange**: Internal logic handler for BulkZakatChange workflow.
-- **handleStatusChange**: Internal logic handler for StatusChange workflow.
-- **handleZakatToggle**: Internal logic handler for ZakatToggle workflow.
-- **handleExport**: Internal logic handler for Export workflow.
-- **handleImport**: Internal logic handler for Import workflow.
+## ⚡ Interactive Actions & Controls
+- **Tab Switcher**: Toggle between `Master Registry` and `Repeat Beneficiaries Directory`.
+- **Search & Filters**: Real-time name, contact, and address search; status filters; Zakat filters; referral filters; date range pickers.
+- **Batch Actions**: Bulk verification status updates and bulk Zakat eligibility toggles.
+- **Export / Import**: CSV export of master registry and batch CSV import dialog.
 
 ## 🛡️ Security & Access
-Access to this module is restricted based on organization roles (Admin, Staff, or Portal User). Ensure you have the necessary clearance before attempting modifications.
-
----
-*Generated by Organization Documentation Engine v1.2*
+Restricted to authenticated Admin and Staff users with `permissions.beneficiaries.read` permission. Batch updates and deletions require `permissions.beneficiaries.update` / `delete`.

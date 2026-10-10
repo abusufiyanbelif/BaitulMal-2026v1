@@ -1,111 +1,41 @@
 # 📘 User Guide: /settings/app
     
-**Build Version:** `2026.10.10.1`
-**Last Updated:** 10/10/2026, 3:35:54 am
+**Build Version:** `v2026.10.10.1`
+**Last Updated:** 10/10/2026
 **Internal Route:** `/settings/app`
 
 ---
 
 ## 🎯 Purpose
-Application Module
+App Settings & System Diagnostic Control Panel for configuring organization branding, payment handles, section visibility, and system self-tests.
 
 ## 📋 Primary Use Cases
-- Configure administrative parameters, API keys, and resource limits.
-- Generate and download data reports for external audit.
-- Attach supporting documentation or evidence to organization records.
+- Configure Organization Name, Registration Number, PAN, Email, Phone, and Address.
+- Manage Primary & Backup UPI handles (VPA), Bank Account Details, and IFSC codes.
+- Test UPI deep-link generation and scannable QR codes using the **Interactive UPI Link & QR Tester**.
+- Configure social media links (Instagram, Facebook, YouTube, Twitter/X, LinkedIn, WhatsApp, Telegram).
+- Toggle visibility of home sections (Hero banner, News Ticker, Guiding Principles, Summary cards, Footer components).
+- Run cloud diagnostic self-tests for Firestore rules, storage connectivity, and payment gateways.
 
-## 🧪 Reproducible Steps
-- Navigate to `/settings/app` through the organization dashboard.
-- Interact with the available data fields and action buttons listed below.
+## 🧪 Interactive UPI Link & QR Tester
+- **Mobile Deep-Link Protocol**: Generates `upi://pay?pa=...` links for custom test amounts (₹100) and notes.
+- **Desktop Interactive Modal**: When clicking **"Launch UPI App"** on a PC/Mac browser, opens an interactive modal rendering a live scannable QR code (`api.qrserver.com`) so admins can scan and test payments using PhonePe, GPay, Paytm, or BHIM on their mobile phone.
+- **Copy URI & Force Launch**: Provides instant clipboard copying and direct protocol triggering.
 
 ## 🏗️ Data Architecture (Firestore)
-*No direct Firestore collection interactions detected.*
+- Collection / Document: `settings/branding`, `settings/payment_gateways`, `settings/app`
 
 ## ⌨️ Fields & Data Mapping
-The following fields are mapped within this interface:
-- Visible
-- Test Amount (₹)
-- Test Note / Remark
-- Big Title / Headline
-- Short Description
-- {ticker.label}
-- Max Feed Items
-- Archive Depth
-- Update Vector
-- Primary UPI ID (VPA Handle)
-- Secondary / Backup UPI ID
-- Mobile Number for Payment
-- Display QR & UPI Publicly
-- Public View
-- Account Holder Name
-- Bank Name
-- Branch Name
-- Account Number
-- Bank IFSC Code
-- Account Type
-- SWIFT / BIC Code
-- Inbound Portal (Donors)
-- Outbound Portal (Recipients)
-- Primary Auth Method
-- Donor Self-Reporting
-- Organization Name
-- Registration No.
-- PAN Vector
-- Banner Color Theme
-- Smart Message Generator
-- Custom Alert Message (Fully Editable)
-- Official Portal URL
-- Contact Email Vector
-- Instagram Profile URL
-- Facebook Profile URL
-- YouTube Channel URL
-- Twitter / X Profile URL
-- LinkedIn Profile URL
-- WhatsApp Link / Number
-- Telegram Channel / Link
-- Input: 100
-- Input: Donation Test Note
-- Input: handle@upi
-- Input: backup@icici
-- Input: +91-XXXXX-XXXXX
-- Input: Baitulmal Samajik Sanstha
-- Input: State Bank of India
-- Input: Solapur Main Branch
-- Input: 0000000000
-- Input: SBIN0000000
-- Input: Select Account Type
-- Input: SBININBBXXX
-- Input: Notice: Official domain registration & web URL setup is in progress. All online donation options and community portals are fully operational.
-- Input: https://organization.org
-- Input: admin@organization.org
-- Input: https://instagram.com/your_profile
-- Input: https://facebook.com/your_page
-- Input: https://youtube.com/@your_channel
-- Input: https://x.com/your_handle
-- Input: https://linkedin.com/company/your_org
-- Input: https://wa.me/919876543210 or +919876543210
-- Input: https://t.me/your_channel or @your_channel
+- **Organization Identity**: Name, Logo, Registration No., PAN, Email, Phone, Address, Website.
+- **Payment & Bank Settings**: Primary VPA Handle, Secondary VPA Handle, Bank Name, Account Name, Account Number, IFSC, SWIFT Code, Payment Mobile Number.
+- **Interactive Tester Inputs**: Test Amount (₹), Test Note / Remark.
+- **Social Media Profile URLs**: Instagram, Facebook, YouTube, Twitter/X, LinkedIn, WhatsApp, Telegram.
 
 ## ⚡ Interactive Action Items
-- **Cancel**: Interactive button to initiate cancel operation (Triggers handleCancel).
-- **View Usage & Billing**: Interactive button to initiate view usage & billing operation.
-- **Launch UPI App**: Interactive button to initiate launch upi app operation.
-- **Manage Gateways**: Interactive button to initiate manage gateways operation.
-- **Discard Updates**: Interactive button to initiate discard updates operation (Triggers handleCancel).
-- **handleFieldChange**: Internal logic handler for FieldChange workflow.
-- **handleRemoveLogo**: Internal logic handler for RemoveLogo workflow.
-- **handleRemoveQrCode**: Internal logic handler for RemoveQrCode workflow.
-- **handleAddPrinciple**: Internal logic handler for AddPrinciple workflow.
-- **handleRemovePrinciple**: Internal logic handler for RemovePrinciple workflow.
-- **handlePrincipleChange**: Internal logic handler for PrincipleChange workflow.
-- **handleAddFocusArea**: Internal logic handler for AddFocusArea workflow.
-- **handleRemoveFocusArea**: Internal logic handler for RemoveFocusArea workflow.
-- **handleFocusAreaChange**: Internal logic handler for FocusAreaChange workflow.
-- **handleSave**: Internal logic handler for Save workflow.
-- **handleCancel**: Internal logic handler for Cancel workflow.
+- **Launch UPI App**: Triggers deep-link launch and opens the Interactive QR Tester Modal.
+- **Copy URI**: Copies the generated `upi://` URI to clipboard.
+- **Run Diagnostics**: Triggers system self-test suite checking database health and storage rules.
+- **Commit Sync**: Saves pending configuration changes to Firestore.
 
 ## 🛡️ Security & Access
-Access to this module is restricted based on organization roles (Admin, Staff, or Portal User). Ensure you have the necessary clearance before attempting modifications.
-
----
-*Generated by Organization Documentation Engine v1.2*
+Restricted to Admin users and Staff members with `permissions.settings.app.update` permissions.

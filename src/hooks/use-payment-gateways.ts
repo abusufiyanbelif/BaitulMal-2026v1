@@ -1,8 +1,17 @@
 'use client';
 
+import { useMemo } from 'react';
 import { useMemoFirebase, useFirestore, useDoc, doc, type DocumentReference } from '@/firebase';
 import type { PaymentGatewaySettings } from '@/lib/types';
 import { useSession } from '@/hooks/use-session';
+
+const DEFAULT_GATEWAY_SETTINGS: PaymentGatewaySettings = {
+  isOnlineGatewayEnabled: true,
+  isPublicGatewayEnabled: true,
+  isDonorGatewayEnabled: true,
+  isInternalTestMode: false,
+  activeGateway: 'none',
+};
 
 export function usePaymentGateways() {
   const firestore = useFirestore();
@@ -15,13 +24,7 @@ export function usePaymentGateways() {
 
   const { data: rawSettings, isLoading, error } = useDoc<PaymentGatewaySettings>(docRef);
 
-  const gatewaySettings: PaymentGatewaySettings = rawSettings || {
-    isOnlineGatewayEnabled: true,
-    isPublicGatewayEnabled: true,
-    isDonorGatewayEnabled: true,
-    isInternalTestMode: false,
-    activeGateway: 'none',
-  };
+  const gatewaySettings: PaymentGatewaySettings = rawSettings || DEFAULT_GATEWAY_SETTINGS;
 
   const isStaff = userProfile?.role === 'Admin' || userProfile?.role === 'User' || userProfile?.role === 'Staff' || userProfile?.role === 'Member';
 
@@ -31,14 +34,25 @@ export function usePaymentGateways() {
   const canPublicUseGateway = isMasterEnabled && (gatewaySettings.isPublicGatewayEnabled !== false) && (!isInternalTest || isStaff);
   const canDonorUseGateway = isMasterEnabled && (gatewaySettings.isDonorGatewayEnabled !== false) && (!isInternalTest || isStaff);
 
-  const enabledGateways: string[] = [];
-  if (gatewaySettings.razorpay?.isEnabled !== false) enabledGateways.push('razorpay');
-  if (gatewaySettings.instamojo?.isEnabled) enabledGateways.push('instamojo');
-  if (gatewaySettings.phonepe?.isEnabled) enabledGateways.push('phonepe');
-  if (gatewaySettings.stripe?.isEnabled) enabledGateways.push('stripe');
-  if (gatewaySettings.paytm?.isEnabled) enabledGateways.push('paytm');
-  if (gatewaySettings.cashfree?.isEnabled) enabledGateways.push('cashfree');
-  if (gatewaySettings.paypal?.isEnabled) enabledGateways.push('paypal');
+  const enabledGateways = useMemo(() => {
+    const list: string[] = [];
+    if (gatewaySettings.razorpay?.isEnabled !== false) list.push('razorpay');
+    if (gatewaySettings.instamojo?.isEnabled) list.push('instamojo');
+    if (gatewaySettings.phonepe?.isEnabled) list.push('phonepe');
+    if (gatewaySettings.stripe?.isEnabled) list.push('stripe');
+    if (gatewaySettings.paytm?.isEnabled) list.push('paytm');
+    if (gatewaySettings.cashfree?.isEnabled) list.push('cashfree');
+    if (gatewaySettings.paypal?.isEnabled) list.push('paypal');
+    return list;
+  }, [
+    gatewaySettings.razorpay?.isEnabled,
+    gatewaySettings.instamojo?.isEnabled,
+    gatewaySettings.phonepe?.isEnabled,
+    gatewaySettings.stripe?.isEnabled,
+    gatewaySettings.paytm?.isEnabled,
+    gatewaySettings.cashfree?.isEnabled,
+    gatewaySettings.paypal?.isEnabled,
+  ]);
 
   const activeGateway = gatewaySettings.activeGateway && gatewaySettings.activeGateway !== 'none'
     ? gatewaySettings.activeGateway
